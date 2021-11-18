@@ -1,5 +1,13 @@
 # Apptainer Changelog
 
+## Changes Since Last Release
+
+### New features / functionalities
+
+- Updated seccomp support allows use of seccomp profiles that set an error
+  return code with `errnoRet` and `defaultErrnoRet`. Previously EPERM was hard
+  coded. The example `etc/seccomp-profiles/default.json` has been updated.
+
 ## Apptainer 1.0
 
 The Singularity Project has been adopted by the Linux Foundation
