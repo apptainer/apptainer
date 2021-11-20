@@ -9,4 +9,4 @@ and re-branded as Apptainer 1.0
 
 ## Singularity
 
-[Archived Singulary Change Log](https://github.com/apptainer/singularity/blob/e6435db1783d5e939c95a4f85f43d14b0321f079/CHANGELOG.md)
+[Archived Singulary Change Log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md)
