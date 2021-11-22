@@ -13,7 +13,7 @@ require (
 	github.com/containerd/containerd v1.5.8
 	github.com/containernetworking/cni v1.0.1
 	github.com/containernetworking/plugins v1.0.1
-	github.com/containers/image/v5 v5.16.1
+	github.com/containers/image/v5 v5.17.0
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/docker/docker v20.10.11+incompatible
 	github.com/fatih/color v1.13.0
@@ -22,9 +22,9 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/hpcng/sif/v2 v2.0.0
 	github.com/kr/pty v1.1.8
-	github.com/moby/sys/mount v0.2.0 // indirect
+	github.com/moby/sys/mount v0.3.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0
-	github.com/opencontainers/image-spec v1.0.2-0.20210819154149-5ad6f50d6283
+	github.com/opencontainers/image-spec v1.0.2
 	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/opencontainers/runtime-tools v0.9.1-0.20210326182921-59cdde06764b
 	github.com/opencontainers/selinux v1.9.1
@@ -47,10 +47,15 @@ require (
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
 	github.com/yvasiyarov/gorelic v0.0.6 // indirect
 	github.com/yvasiyarov/newrelic_platform_go v0.0.0-20160601141957-9c099fbc30e9 // indirect
-	golang.org/x/sys v0.0.0-20210925032602-92d5a993a665
+	golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359
 	golang.org/x/term v0.0.0-20210916214954-140adaaadfaf
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools/v3 v3.0.3
 	mvdan.cc/sh/v3 v3.4.1-0.20211117155449-fd5bf4bda085
-	oras.land/oras-go v0.5.0
+	oras.land/oras-go v1.0.0
 )
+
+// Temporarily force an image-spec that has the main branch commits not in 1.0.2 which is being brought in by oras-go
+// These commits are needed by containers/image/v5 and the replace is necessary given how image-spec v1.0.2 has been
+// tagged / rebased.
+replace github.com/opencontainers/image-spec => github.com/opencontainers/image-spec v1.0.2-0.20211117181255-693428a734f5
