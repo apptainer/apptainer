@@ -47,6 +47,14 @@ func (c ctx) testPluginBasic(t *testing.T) {
 			expectExit: 0,
 		},
 		{
+			name:       "ListNoPlugins",
+			profile:    e2e.UserProfile,
+			command:    "plugin list",
+			args:       []string{},
+			expectExit: 0,
+			expectOp:   e2e.ExpectOutput(e2e.ExactMatch, "There are no plugins installed."),
+		},
+		{
 			name:       "Compile",
 			profile:    e2e.UserProfile,
 			command:    "plugin compile",
@@ -68,12 +76,12 @@ func (c ctx) testPluginBasic(t *testing.T) {
 			expectExit: 255,
 		},
 		{
-			name:       "List",
+			name:       "ListAfterInstall",
 			profile:    e2e.UserProfile,
 			command:    "plugin list",
 			args:       []string{},
 			expectExit: 0,
-			expectOp:   e2e.ExpectOutput(e2e.ContainMatch, pluginName),
+			expectOp:   e2e.ExpectOutput(e2e.ContainMatch, "yes  "+pluginName),
 		},
 		{
 			name:       "Disable",
@@ -81,6 +89,14 @@ func (c ctx) testPluginBasic(t *testing.T) {
 			command:    "plugin disable",
 			args:       []string{pluginName},
 			expectExit: 0,
+		},
+		{
+			name:       "ListAfterDisable",
+			profile:    e2e.UserProfile,
+			command:    "plugin list",
+			args:       []string{},
+			expectExit: 0,
+			expectOp:   e2e.ExpectOutput(e2e.ContainMatch, "no  "+pluginName),
 		},
 		{
 			name:       "DisableAsUser",
@@ -95,6 +111,14 @@ func (c ctx) testPluginBasic(t *testing.T) {
 			command:    "plugin enable",
 			args:       []string{pluginName},
 			expectExit: 0,
+		},
+		{
+			name:       "ListAfterEnable",
+			profile:    e2e.UserProfile,
+			command:    "plugin list",
+			args:       []string{},
+			expectExit: 0,
+			expectOp:   e2e.ExpectOutput(e2e.ContainMatch, "yes  "+pluginName),
 		},
 		{
 			name:       "EnableAsUser",
@@ -116,6 +140,7 @@ func (c ctx) testPluginBasic(t *testing.T) {
 			command:    "plugin inspect",
 			args:       []string{sifFile},
 			expectExit: 0,
+			expectOp:   e2e.ExpectOutput(e2e.ContainMatch, "Name: "+pluginName),
 		},
 		{
 			name:       "UninstallAsUser",
@@ -130,6 +155,14 @@ func (c ctx) testPluginBasic(t *testing.T) {
 			command:    "plugin uninstall",
 			args:       []string{pluginName},
 			expectExit: 0,
+		},
+		{
+			name:       "ListAfterUninstall",
+			profile:    e2e.UserProfile,
+			command:    "plugin list",
+			args:       []string{},
+			expectExit: 0,
+			expectOp:   e2e.ExpectOutput(e2e.ExactMatch, "There are no plugins installed."),
 		},
 	}
 
