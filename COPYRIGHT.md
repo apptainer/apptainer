@@ -1,9 +1,9 @@
 # Copyright
 
-Copyright (c) 2021 Apptainer a Series of LF Projects LLC 
+Copyright (c) 2021 Apptainer a Series of LF Projects LLC
 
 - For website terms of use, trademark policy, privacy policy and other
-  project policies see https://lfprojects.org/policies
+  project policies see: [LF_POLICIES](https://lfprojects.org/policies)
 
 Copyright (c) 2017-2018, Sylabs, Inc. All rights reserved.
 
