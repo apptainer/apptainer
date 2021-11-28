@@ -1,8 +1,10 @@
 # License
 
 Copyright (c) 2021 Apptainer a Series of LF Projects LLC
--   For website terms of use, trademark policy, privacy policy and other
+
+- For website terms of use, trademark policy, privacy policy and other
    project policies see https://lfprojects.org/policies
+
 Copyright (c) 2015-2017, Gregory M. Kurtzer. All rights reserved.
 
 Copyright (c) 2016-2017, The Regents of the University of California. All right reserved.
