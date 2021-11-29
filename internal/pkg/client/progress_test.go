@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 func TestProgressCallback(t *testing.T) {

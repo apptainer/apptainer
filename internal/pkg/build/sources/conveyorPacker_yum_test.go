@@ -12,11 +12,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/test"
-	"github.com/hpcng/singularity/internal/pkg/test/tool/require"
-	"github.com/hpcng/singularity/internal/pkg/util/bin"
-	"github.com/hpcng/singularity/pkg/build/types"
-	"github.com/hpcng/singularity/pkg/build/types/parser"
+	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/pkg/build/types"
+	"github.com/apptainer/apptainer/pkg/build/types/parser"
 )
 
 const yumDef = "../../../../examples/centos/Singularity"

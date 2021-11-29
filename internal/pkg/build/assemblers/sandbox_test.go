@@ -11,11 +11,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/build/assemblers"
-	"github.com/hpcng/singularity/internal/pkg/build/sources"
-	"github.com/hpcng/singularity/internal/pkg/cache"
-	testCache "github.com/hpcng/singularity/internal/pkg/test/tool/cache"
-	"github.com/hpcng/singularity/pkg/build/types"
+	"github.com/apptainer/apptainer/internal/pkg/build/assemblers"
+	"github.com/apptainer/apptainer/internal/pkg/build/sources"
+	"github.com/apptainer/apptainer/internal/pkg/cache"
+	testCache "github.com/apptainer/apptainer/internal/pkg/test/tool/cache"
+	"github.com/apptainer/apptainer/pkg/build/types"
 )
 
 const (

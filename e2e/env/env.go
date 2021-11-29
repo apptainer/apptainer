@@ -14,8 +14,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hpcng/singularity/e2e/internal/e2e"
-	"github.com/hpcng/singularity/e2e/internal/testhelper"
+	"github.com/apptainer/apptainer/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/e2e/internal/testhelper"
 )
 
 type ctx struct {

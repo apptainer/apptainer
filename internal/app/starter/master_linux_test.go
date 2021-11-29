@@ -9,8 +9,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine"
-	"github.com/hpcng/singularity/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
+	"github.com/apptainer/apptainer/internal/pkg/test"
 )
 
 // TODO: actually we can't really test Master function which is

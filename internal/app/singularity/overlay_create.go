@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/hpcng/sif/pkg/sif"
-	"github.com/hpcng/singularity/internal/pkg/util/bin"
-	"github.com/hpcng/singularity/pkg/image"
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/pkg/image"
 	"golang.org/x/sys/unix"
 )
 

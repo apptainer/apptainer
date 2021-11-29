@@ -11,11 +11,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hpcng/singularity/internal/pkg/remote"
-	"github.com/hpcng/singularity/internal/pkg/remote/endpoint"
-	"github.com/hpcng/singularity/internal/pkg/util/auth"
-	"github.com/hpcng/singularity/internal/pkg/util/interactive"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/remote"
+	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
+	"github.com/apptainer/apptainer/internal/pkg/util/auth"
+	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 type LoginArgs struct {

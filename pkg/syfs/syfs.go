@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // Configuration files/directories.

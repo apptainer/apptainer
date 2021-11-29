@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
-	"github.com/hpcng/singularity/internal/pkg/util/user"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/user"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // Passwd creates a passwd template based on content of file provided in path,

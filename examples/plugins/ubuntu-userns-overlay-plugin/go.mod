@@ -1,7 +1,7 @@
-module github.com/hpcng/singularity/ubuntu-userns-overlay-plugin
+module github.com/apptainer/apptainer/ubuntu-userns-overlay-plugin
 
 go 1.13
 
-require github.com/hpcng/singularity v0.0.0
+require github.com/apptainer/apptainer v0.0.0
 
-replace github.com/hpcng/singularity => ./singularity_source
+replace github.com/apptainer/apptainer => ./singularity_source

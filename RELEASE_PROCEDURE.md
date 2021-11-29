@@ -4,7 +4,7 @@ The release procedure below can be performed by a project member with
 "maintainer" or higher privileges on the GitHub repository. It assumes
 that you will be working in an up-to-date local clone of the GitHub
 repository, where the `upstream` remote points to
-`github.com/hpcng/singularity`.
+`github.com/apptainer/apptainer`.
 
 ## Prior to Release
 
@@ -62,9 +62,9 @@ covered by tests.
 1. Ensure the user and admin documentation is up-to-date for the new
    version, branched, and tagged.
    - [User Docs](https://singularity.hpcng.org/user-docs/master/) can be
-     edited [here](https://github.com/hpcng/singularity-userdocs)
+     edited [here](https://github.com/apptainer/apptainer-userdocs)
    - [Admin Docs](https://singularity.hpcng.org/admin-docs/master/) can be
-     edited [here](https://github.com/hpcng/singularity-admindocs)
+     edited [here](https://github.com/apptainer/apptainer-admindocs)
 1. Ensure the user and admin documentation has been deployed to the
    singularity.hpcng.org website.
 1. Modify the `README.md`, `INSTALL.md`, `CHANGELOG.md` via PR against

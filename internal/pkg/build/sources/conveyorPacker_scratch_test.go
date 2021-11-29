@@ -11,10 +11,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/build/sources"
-	"github.com/hpcng/singularity/internal/pkg/test"
-	"github.com/hpcng/singularity/pkg/build/types"
-	"github.com/hpcng/singularity/pkg/build/types/parser"
+	"github.com/apptainer/apptainer/internal/pkg/build/sources"
+	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/apptainer/apptainer/pkg/build/types"
+	"github.com/apptainer/apptainer/pkg/build/types/parser"
 )
 
 const scratchDef = "../../../../pkg/build/types/parser/testdata_good/scratch/scratch"

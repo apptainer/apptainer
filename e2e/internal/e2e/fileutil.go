@@ -10,7 +10,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/pkg/errors"
 )
 

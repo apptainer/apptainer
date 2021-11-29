@@ -12,7 +12,7 @@ import (
 	"runtime"
 
 	"github.com/hpcng/sif/pkg/sif"
-	"github.com/hpcng/singularity/internal/pkg/util/machine"
+	"github.com/apptainer/apptainer/internal/pkg/util/machine"
 )
 
 const (

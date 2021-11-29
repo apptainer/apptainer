@@ -20,8 +20,8 @@ import (
 	"strings"
 
 	"github.com/hpcng/sif/pkg/sif"
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // ErrUnknownArch is the error returned for unknown architecture.

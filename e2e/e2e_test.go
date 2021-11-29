@@ -22,7 +22,7 @@ import (
 	// identity to the original user but will retain privileges for
 	// Privileged method enabling the execution of a function with root
 	// privileges when required
-	_ "github.com/hpcng/singularity/e2e/internal/e2e/init"
+	_ "github.com/apptainer/apptainer/e2e/internal/e2e/init"
 )
 
 func TestE2E(t *testing.T) {

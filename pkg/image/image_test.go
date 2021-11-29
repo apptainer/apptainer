@@ -18,9 +18,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/image/unpacker"
-	"github.com/hpcng/singularity/internal/pkg/test"
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/image/unpacker"
+	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 
 	imageSpecs "github.com/opencontainers/image-spec/specs-go/v1"
 )

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hpcng/singularity/pkg/util/capabilities"
+	"github.com/apptainer/apptainer/pkg/util/capabilities"
 )
 
 // CapListConfig instructs CapabilityList on what to list

@@ -13,10 +13,10 @@ import (
 	"strings"
 
 	ocitypes "github.com/containers/image/v5/types"
-	"github.com/hpcng/singularity/internal/pkg/cache"
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/cryptkey"
+	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/cryptkey"
 	scskeyclient "github.com/sylabs/scs-key-client/client"
 	"golang.org/x/sys/unix"
 )

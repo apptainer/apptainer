@@ -14,9 +14,9 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/hpcng/singularity/internal/pkg/instance"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/fs/proc"
+	"github.com/apptainer/apptainer/internal/pkg/instance"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 )
 
 type instanceInfo struct {

@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 )
 
 // MakeDir creates a new temporary image cache directory in the

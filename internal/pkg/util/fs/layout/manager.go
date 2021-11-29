@@ -13,7 +13,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 )
 
 const (

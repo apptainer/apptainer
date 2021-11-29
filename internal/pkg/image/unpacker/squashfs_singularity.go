@@ -21,8 +21,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 func init() {
@@ -78,7 +78,7 @@ func getLibraries(binary string) ([]string, error) {
 	// set an empty environment as LD_LIBRARY_PATH
 	// may mix dependencies, just rely only on the library
 	// cache or its own lookup mechanism, see issue:
-	// https://github.com/hpcng/singularity/issues/5666
+	// https://github.com/apptainer/apptainer/issues/5666
 	cmd.Env = []string{}
 
 	if err := cmd.Run(); err != nil {

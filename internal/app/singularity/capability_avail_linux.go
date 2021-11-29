@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hpcng/singularity/pkg/util/capabilities"
+	"github.com/apptainer/apptainer/pkg/util/capabilities"
 )
 
 // CapAvailConfig instructs CapabilityAvail on what capability to list/describe

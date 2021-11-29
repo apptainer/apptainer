@@ -17,9 +17,9 @@ import (
 
 	"github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/types"
-	"github.com/hpcng/singularity/internal/pkg/cache"
-	"github.com/hpcng/singularity/internal/pkg/test"
-	buildTypes "github.com/hpcng/singularity/pkg/build/types"
+	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/test"
+	buildTypes "github.com/apptainer/apptainer/pkg/build/types"
 )
 
 const (

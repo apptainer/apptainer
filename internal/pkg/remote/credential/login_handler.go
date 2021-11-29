@@ -13,9 +13,9 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/hpcng/singularity/internal/pkg/util/interactive"
-	"github.com/hpcng/singularity/pkg/syfs"
-	useragent "github.com/hpcng/singularity/pkg/util/user-agent"
+	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
+	"github.com/apptainer/apptainer/pkg/syfs"
+	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	auth "oras.land/oras-go/pkg/auth/docker"
 )
 

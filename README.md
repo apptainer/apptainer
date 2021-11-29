@@ -1,6 +1,6 @@
 # Singularity
 
-[![CI](https://github.com/hpcng/singularity/actions/workflows/ci.yml/badge.svg)](https://github.com/hpcng/singularity/actions/workflows/ci.yml)
+[![CI](https://github.com/apptainer/apptainer/actions/workflows/ci.yml/badge.svg)](https://github.com/apptainer/apptainer/actions/workflows/ci.yml)
 
 - [Documentation](https://singularity.hpcng.org/docs/)
 - [Support](#support)
@@ -58,8 +58,8 @@ Our roadmap, other documents, and user/developer meeting information can be
 found in the [singularity community page](https://singularity.hpcng.org/help).
 
 We also welcome contributions to our [user
-guide](https://github.com/hpcng/singularity-userdocs) and [admin
-guide](https://github.com/hpcng/singularity-admindocs).
+guide](https://github.com/apptainer/apptainer-userdocs) and [admin
+guide](https://github.com/apptainer/apptainer-admindocs).
 
 ## Support
 

@@ -6,7 +6,7 @@
 package singularity
 
 import (
-	"github.com/hpcng/singularity/internal/pkg/plugin"
+	"github.com/apptainer/apptainer/internal/pkg/plugin"
 )
 
 // InstallPlugin takes a plugin located at path and installs it into

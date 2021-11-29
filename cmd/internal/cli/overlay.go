@@ -3,8 +3,8 @@ package cli
 import (
 	"errors"
 
-	"github.com/hpcng/singularity/docs"
-	"github.com/hpcng/singularity/pkg/cmdline"
+	"github.com/apptainer/apptainer/docs"
+	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/spf13/cobra"
 )
 

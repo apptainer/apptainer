@@ -14,8 +14,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hpcng/singularity/internal/pkg/util/user"
-	"github.com/hpcng/singularity/pkg/util/fs/lock"
+	"github.com/apptainer/apptainer/internal/pkg/util/user"
+	"github.com/apptainer/apptainer/pkg/util/fs/lock"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 

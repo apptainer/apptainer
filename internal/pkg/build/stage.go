@@ -13,10 +13,10 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hpcng/singularity/internal/pkg/build/files"
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/pkg/build/types"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/build/files"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/pkg/build/types"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // stage represents the process of constructing a root filesystem.

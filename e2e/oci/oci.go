@@ -13,11 +13,11 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/hpcng/singularity/e2e/internal/e2e"
-	"github.com/hpcng/singularity/e2e/internal/testhelper"
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/config/oci"
-	"github.com/hpcng/singularity/internal/pkg/test/tool/require"
-	"github.com/hpcng/singularity/pkg/ociruntime"
+	"github.com/apptainer/apptainer/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/e2e/internal/testhelper"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci"
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
+	"github.com/apptainer/apptainer/pkg/ociruntime"
 	"github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 )

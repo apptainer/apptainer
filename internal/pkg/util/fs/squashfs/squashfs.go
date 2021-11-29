@@ -8,9 +8,9 @@ package squashfs
 import (
 	"fmt"
 
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/internal/pkg/util/bin"
-	"github.com/hpcng/singularity/pkg/util/apptainerconf"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
 
 func getConfig() (*singularityconf.File, error) {

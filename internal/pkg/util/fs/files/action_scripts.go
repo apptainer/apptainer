@@ -34,7 +34,7 @@ clear_env() {
     # wildcard evaluated by shell. It can cause serious
     # performance issue when the current directory contains
     # a lot of files/directories, see:
-    # https://github.com/hpcng/singularity/issues/5389
+    # https://github.com/apptainer/apptainer/issues/5389
     set -o noglob
 
     for e in ${__exported_env__}; do
@@ -61,7 +61,7 @@ restore_env() {
     # statement below may contain wildcard evaluated by shell.
     # It can cause serious performance issue when the current
     # directory contains a lot of files/directories, see:
-    # https://github.com/hpcng/singularity/issues/5389
+    # https://github.com/apptainer/apptainer/issues/5389
     set -o noglob
 
     # restore environment variables which haven't been
@@ -131,7 +131,7 @@ fi
 shopt -u expand_aliases
 restore_env
 
-# See https://github.com/hpcng/singularity/issues/5340
+# See https://github.com/apptainer/apptainer/issues/5340
 # If there is no .singularity.d then a custom PS1 wasn't set.
 # If we were called through a script and PS1 is empty this
 # gives a confusing silent prompt. Force a PS1 if it's empty.
@@ -139,7 +139,7 @@ if test -z "${PS1:-}"; then
 	export PS1="Singularity> "
 fi
 
-# See https://github.com/hpcng/singularity/issues/2721,
+# See https://github.com/apptainer/apptainer/issues/2721,
 # as bash is often used as the current shell it may confuse
 # users if the provided command is /bin/bash implying to
 # override PS1 set by singularity, then we may end up

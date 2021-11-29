@@ -10,7 +10,7 @@ import (
 	"path"
 
 	cgroupsv2 "github.com/containerd/cgroups/v2"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 

@@ -13,9 +13,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hpcng/singularity/internal/pkg/util/fs/layout"
-	"github.com/hpcng/singularity/internal/pkg/util/fs/mount"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/layout"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/mount"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 const underlayDir = "/underlay"

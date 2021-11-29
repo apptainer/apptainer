@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/test"
 )
 
 const testSubDir = "testing"

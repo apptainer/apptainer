@@ -13,9 +13,9 @@ import (
 
 	golog "github.com/go-log/log"
 
-	"github.com/hpcng/singularity/internal/pkg/client/library"
-	"github.com/hpcng/singularity/pkg/build/types"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/client/library"
+	"github.com/apptainer/apptainer/pkg/build/types"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/sylabs/scs-library-client/client"
 )
 

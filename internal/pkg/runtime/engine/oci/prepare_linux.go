@@ -9,11 +9,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hpcng/singularity/internal/pkg/cgroups"
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/config/starter"
-	"github.com/hpcng/singularity/pkg/ociruntime"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/capabilities"
+	"github.com/apptainer/apptainer/internal/pkg/cgroups"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/starter"
+	"github.com/apptainer/apptainer/pkg/ociruntime"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/capabilities"
 	"github.com/kr/pty"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )

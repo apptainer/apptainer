@@ -12,9 +12,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/sylog"
 
-	"github.com/hpcng/singularity/internal/pkg/client"
+	"github.com/apptainer/apptainer/internal/pkg/client"
 	scslibrary "github.com/sylabs/scs-library-client/client"
 )
 

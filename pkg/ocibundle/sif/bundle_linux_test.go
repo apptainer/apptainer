@@ -11,11 +11,11 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/config/oci"
-	"github.com/hpcng/singularity/internal/pkg/test"
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
-	"github.com/hpcng/singularity/pkg/ocibundle/tools"
-	"github.com/hpcng/singularity/pkg/util/fs/proc"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci"
+	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/pkg/ocibundle/tools"
+	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/opencontainers/runtime-tools/validate"
 )
 
@@ -107,7 +107,7 @@ func TestFromSif(t *testing.T) {
 // in order avoid needing buildcfg for this unit test, such that
 // it can be run directly from the source tree without compilation.
 // This bundle code is in `pkg/` so *should not* depend on a compiled
-// Singularity (https://github.com/hpcng/singularity/issues/2316).
+// Singularity (https://github.com/apptainer/apptainer/issues/2316).
 //
 // Ideally we would refactor i/p/t/t/require so requirements that
 // don't need a compiled Singularity can be used without compiled

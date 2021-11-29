@@ -5,7 +5,7 @@
 
 package singularity
 
-import "github.com/hpcng/singularity/internal/pkg/plugin"
+import "github.com/apptainer/apptainer/internal/pkg/plugin"
 
 // EnablePlugin enables the named plugin.
 func EnablePlugin(name string) error {

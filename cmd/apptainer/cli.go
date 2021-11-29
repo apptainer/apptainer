@@ -6,9 +6,9 @@
 package main
 
 import (
-	"github.com/hpcng/singularity/cmd/internal/cli"
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	useragent "github.com/hpcng/singularity/pkg/util/user-agent"
+	"github.com/apptainer/apptainer/cmd/internal/cli"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 )
 
 func main() {

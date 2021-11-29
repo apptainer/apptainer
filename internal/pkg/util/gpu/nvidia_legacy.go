@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // NvidiaPaths returns a list of Nvidia libraries/binaries that should be

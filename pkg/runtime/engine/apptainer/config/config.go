@@ -11,9 +11,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/config/oci"
-	"github.com/hpcng/singularity/pkg/image"
-	"github.com/hpcng/singularity/pkg/util/apptainerconf"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci"
+	"github.com/apptainer/apptainer/pkg/image"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
 
 // Name is the name of the runtime.

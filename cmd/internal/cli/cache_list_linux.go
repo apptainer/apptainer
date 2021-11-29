@@ -8,11 +8,11 @@ package cli
 import (
 	"os"
 
-	"github.com/hpcng/singularity/docs"
-	"github.com/hpcng/singularity/internal/app/singularity"
-	"github.com/hpcng/singularity/internal/pkg/cache"
-	"github.com/hpcng/singularity/pkg/cmdline"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/docs"
+	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/pkg/cmdline"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
 )
 

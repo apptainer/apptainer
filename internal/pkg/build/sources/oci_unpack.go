@@ -18,9 +18,9 @@ import (
 
 	apexlog "github.com/apex/log"
 	"github.com/containers/image/v5/types"
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
-	sytypes "github.com/hpcng/singularity/pkg/build/types"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	sytypes "github.com/apptainer/apptainer/pkg/build/types"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	imgspecv1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/opencontainers/umoci"
 	umocilayer "github.com/opencontainers/umoci/oci/layer"

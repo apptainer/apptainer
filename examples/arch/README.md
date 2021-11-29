@@ -19,7 +19,7 @@ docker run -it  --privileged pritunl/archlinux bash
 ```bash
 pacman -S -y git autoconf libtool automake gcc python make sudo vim \
  arch-install-scripts wget
-git clone https://github.com/hpcng/singularity
+git clone https://github.com/apptainer/apptainer
 cd singularity
 git checkout -b development
 git pull origin development

@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hpcng/singularity/internal/pkg/remote/credential"
-	useragent "github.com/hpcng/singularity/pkg/util/user-agent"
+	"github.com/apptainer/apptainer/internal/pkg/remote/credential"
+	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	jsonresp "github.com/sylabs/json-resp"
 )
 

@@ -12,8 +12,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/remote/endpoint"
-	useragent "github.com/hpcng/singularity/pkg/util/user-agent"
+	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
+	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	yaml "gopkg.in/yaml.v2"
 )
 

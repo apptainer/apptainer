@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hpcng/singularity/internal/pkg/remote"
+	"github.com/apptainer/apptainer/internal/pkg/remote"
 )
 
 // RemoteRemove deletes a remote endpoint from the configuration

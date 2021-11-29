@@ -7,10 +7,10 @@
 package cli
 
 import (
-	"github.com/hpcng/singularity/docs"
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/sypgp"
+	"github.com/apptainer/apptainer/docs"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/sypgp"
 	"github.com/spf13/cobra"
 )
 

@@ -9,7 +9,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/hpcng/singularity/pkg/runtime/engine/config"
+	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 )
 
 // MonitorContainer callback allows to monitor container process.

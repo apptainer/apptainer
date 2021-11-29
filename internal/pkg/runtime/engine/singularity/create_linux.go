@@ -11,8 +11,8 @@ import (
 	"net"
 	"net/rpc"
 
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/apptainer/rpc/client"
-	singularityConfig "github.com/hpcng/singularity/pkg/runtime/engine/apptainer/config"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc/client"
+	singularityConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 )
 
 // CreateContainer is called from master process to prepare container

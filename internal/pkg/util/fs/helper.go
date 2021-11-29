@@ -15,7 +15,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"golang.org/x/sys/unix"
 )
 

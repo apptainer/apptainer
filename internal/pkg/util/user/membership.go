@@ -9,8 +9,8 @@ import (
 	"os/user"
 	"strconv"
 
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/slice"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/slice"
 )
 
 // UIDInList returns true if the user with supplied uid is in list (match by uid or username).

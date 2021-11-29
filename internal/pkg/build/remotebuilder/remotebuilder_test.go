@@ -10,9 +10,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/test"
-	"github.com/hpcng/singularity/pkg/build/types"
-	useragent "github.com/hpcng/singularity/pkg/util/user-agent"
+	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/apptainer/apptainer/pkg/build/types"
+	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 )
 
 func TestMain(m *testing.M) {

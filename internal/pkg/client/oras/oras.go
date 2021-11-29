@@ -24,9 +24,9 @@ import (
 	"github.com/containerd/containerd/remotes"
 	"github.com/containerd/containerd/remotes/docker"
 	ocitypes "github.com/containers/image/v5/types"
-	"github.com/hpcng/singularity/pkg/image"
-	"github.com/hpcng/singularity/pkg/syfs"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/image"
+	"github.com/apptainer/apptainer/pkg/syfs"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	auth "oras.land/oras-go/pkg/auth/docker"
@@ -51,7 +51,7 @@ const (
 
 	// SifLayerMediaTypeProto is the mediaType from prototyping and Singularity
 	// <3.7 which unfortunately includes a typo and doesn't have a version suffix
-	// See: https://github.com/hpcng/singularity/issues/4437
+	// See: https://github.com/apptainer/apptainer/issues/4437
 	SifLayerMediaTypeProto = "appliciation/vnd.sylabs.sif.layer.tar"
 )
 

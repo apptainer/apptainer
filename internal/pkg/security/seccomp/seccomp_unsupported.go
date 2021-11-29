@@ -11,7 +11,7 @@ package seccomp
 import (
 	"fmt"
 
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/config/oci/generate"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 

@@ -12,10 +12,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/config/oci/generate"
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/oci"
-	"github.com/hpcng/singularity/internal/pkg/util/starter"
-	"github.com/hpcng/singularity/pkg/runtime/engine/config"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/oci"
+	"github.com/apptainer/apptainer/internal/pkg/util/starter"
+	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 )
 
 // OciCreate creates a container from an OCI bundle

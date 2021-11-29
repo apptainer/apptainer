@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/hpcng/singularity/internal/pkg/plugin"
+	"github.com/apptainer/apptainer/internal/pkg/plugin"
 )
 
 // ListPlugins lists the singularity plugins installed in the plugin

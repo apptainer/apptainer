@@ -108,14 +108,14 @@ repository to a specific location.
 Clone the repository with `git` in a location of your choice:
 
 ```sh
-git clone https://github.com/hpcng/singularity.git
+git clone https://github.com/apptainer/apptainer.git
 cd singularity
 ```
 
 By default your clone will be on the `master` branch which is where development
 of Singularity happens.
 To build a specific version of Singularity, check out a
-[release tag](https://github.com/hpcng/singularity/tags) before compiling,
+[release tag](https://github.com/apptainer/apptainer/tags) before compiling,
 for example:
 
 ```sh
@@ -178,7 +178,7 @@ To build from a release source tarball do these commands:
 export VERSION=3.8.4  # this is the singularity version, change as you need
 
 # Fetch the source
-wget https://github.com/hpcng/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz
+wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz
 # Build the rpm from the source tar.gz
 rpmbuild -tb singularity-${VERSION}.tar.gz
 # Install Singularity using the resulting rpm

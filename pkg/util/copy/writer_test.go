@@ -9,7 +9,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/test"
 )
 
 func TestMultiWriter(t *testing.T) {

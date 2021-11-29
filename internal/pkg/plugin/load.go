@@ -12,8 +12,8 @@ import (
 	"strings"
 	"sync"
 
-	callback "github.com/hpcng/singularity/internal/pkg/plugin/callback"
-	pluginapi "github.com/hpcng/singularity/pkg/plugin"
+	callback "github.com/apptainer/apptainer/internal/pkg/plugin/callback"
+	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
 )
 
 type loadedPlugins struct {

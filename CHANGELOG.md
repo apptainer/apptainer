@@ -42,7 +42,7 @@
 - `--bind`, `--nv` and `--rocm` options for `build` command can't be set through
   environment variables `SINGULARITY_BIND`, `SINGULARITY_BINDPATH`, `SINGULARITY_NV`,
   `SINGULARITY_ROCM` anymore due to side effects reported by users in this
-  [issue](https://github.com/hpcng/singularity/pull/6211), they must be explicitely
+  [issue](https://github.com/apptainer/apptainer/pull/6211), they must be explicitely
   requested via command line.
 - `--nohttps` flag has been deprecated in favour of `--no-https`. The old flag
   is still accepted, but will display a deprecation warning.
@@ -150,7 +150,7 @@
 
 ### Changed defaults / behaviours
 
-> :warning: Go module was renamed from `github.com/sylabs/singularity` to `github.com/hpcng/singularity`
+> :warning: Go module was renamed from `github.com/sylabs/singularity` to `github.com/apptainer/apptainer`
 
 ### New features / functionalities
 
@@ -192,7 +192,7 @@ of use:
 
 ### Security Related Fixes
 
-- [CVE-2021-32635](https://github.com/hpcng/singularity/security/advisories/GHSA-jq42-hfch-42f3):
+- [CVE-2021-32635](https://github.com/apptainer/apptainer/security/advisories/GHSA-jq42-hfch-42f3):
   Due to incorrect use of a default URL, singularity action commands
   (run/shell/exec) specifying a container using a library:// URI will
   always attempt to retrieve the container from the default remote
@@ -337,7 +337,7 @@ of use:
 
 Singularity 3.6.4 addresses the following security issue.
 
-- [CVE-2020-15229](https://github.com/hpcng/singularity/security/advisories/GHSA-7gcp-w6ww-2xv9):
+- [CVE-2020-15229](https://github.com/apptainer/apptainer/security/advisories/GHSA-7gcp-w6ww-2xv9):
   Due to insecure handling of path traversal and the lack of path sanitization
   within unsquashfs (a distribution provided utility used by Singularity), it is
   possible to overwrite/create files on the host filesystem during the
@@ -355,7 +355,7 @@ Singularity 3.6.4 addresses the following security issue.
 
 Singularity 3.6.3 addresses the following security issues.
 
-- [CVE-2020-25039](https://github.com/hpcng/singularity/security/advisories/GHSA-w6v2-qchm-grj7):
+- [CVE-2020-25039](https://github.com/apptainer/apptainer/security/advisories/GHSA-w6v2-qchm-grj7):
   When a Singularity action command (run, shell, exec) is run with the fakeroot
   or user namespace option, Singularity will extract a container image to a
   temporary sandbox directory. Due to insecure permissions on the temporary
@@ -364,7 +364,7 @@ Singularity 3.6.3 addresses the following security issues.
   file or directory, it is possible for a user to inject arbitrary content into
   the running container.
 
-- [CVE-2020-25040](https://github.com/hpcng/singularity/security/advisories/GHSA-jv9c-w74q-6762):
+- [CVE-2020-25040](https://github.com/apptainer/apptainer/security/advisories/GHSA-jv9c-w74q-6762):
   When a Singularity command that results in a container build operation is
   executed, it is possible for a user with access to the system to read the
   contents of the image during the build. Additionally, if the image contains a
@@ -450,7 +450,7 @@ to the signing / verification code to address:
   could be exploited to cause malicious behavior.
 
 Please see the published security advisories at
-<https://github.com/hpcng/singularity/security/advisories> for full detail of
+<https://github.com/apptainer/apptainer/security/advisories> for full detail of
 these security issues.
 
 Note that the new signature format is necessarily incompatible with Singularity

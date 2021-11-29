@@ -15,8 +15,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hpcng/singularity/internal/pkg/util/user"
-	"github.com/hpcng/singularity/pkg/syfs"
+	"github.com/apptainer/apptainer/internal/pkg/util/user"
+	"github.com/apptainer/apptainer/pkg/syfs"
 )
 
 const (

@@ -11,12 +11,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hpcng/singularity/docs"
-	"github.com/hpcng/singularity/internal/app/singularity"
-	"github.com/hpcng/singularity/internal/pkg/remote"
-	"github.com/hpcng/singularity/pkg/cmdline"
-	"github.com/hpcng/singularity/pkg/syfs"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/docs"
+	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/pkg/remote"
+	"github.com/apptainer/apptainer/pkg/cmdline"
+	"github.com/apptainer/apptainer/pkg/syfs"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
 )
 

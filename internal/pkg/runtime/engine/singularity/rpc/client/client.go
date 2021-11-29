@@ -9,8 +9,8 @@ import (
 	"net/rpc"
 	"os"
 
-	args "github.com/hpcng/singularity/internal/pkg/runtime/engine/apptainer/rpc"
-	"github.com/hpcng/singularity/pkg/util/loop"
+	args "github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc"
+	"github.com/apptainer/apptainer/pkg/util/loop"
 )
 
 // RPC holds the state necessary for remote procedure calls.

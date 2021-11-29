@@ -12,7 +12,7 @@ import (
 	"sort"
 	"text/tabwriter"
 
-	"github.com/hpcng/singularity/internal/pkg/remote"
+	"github.com/apptainer/apptainer/internal/pkg/remote"
 )
 
 const listLine = "%s\t%s\t%s\t%s\t%s\n"

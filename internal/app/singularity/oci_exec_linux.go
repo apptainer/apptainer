@@ -10,9 +10,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/oci"
-	"github.com/hpcng/singularity/internal/pkg/util/starter"
-	"github.com/hpcng/singularity/pkg/ociruntime"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/oci"
+	"github.com/apptainer/apptainer/internal/pkg/util/starter"
+	"github.com/apptainer/apptainer/pkg/ociruntime"
 )
 
 // OciExec executes a command in a container

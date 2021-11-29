@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hpcng/singularity/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/test"
 )
 
 func init() {

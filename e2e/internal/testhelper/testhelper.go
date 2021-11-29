@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/hpcng/singularity/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/e2e/internal/e2e"
 )
 
 // TestRunner returns a function that when called runs the provided list

@@ -12,7 +12,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hpcng/singularity/pkg/util/apptainerconf"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"golang.org/x/sys/unix"
 )
 

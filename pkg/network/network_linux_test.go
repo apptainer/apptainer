@@ -23,8 +23,8 @@ import (
 	"testing"
 
 	"github.com/containernetworking/cni/libcni"
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/test"
 )
 
 var confFiles = []struct {

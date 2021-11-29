@@ -1,4 +1,4 @@
-module github.com/hpcng/singularity
+module github.com/apptainer/apptainer
 
 go 1.16
 

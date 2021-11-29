@@ -11,7 +11,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // Caplist defines a map of users/groups with associated list of capabilities

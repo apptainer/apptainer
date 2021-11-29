@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hpcng/singularity/internal/pkg/remote"
-	"github.com/hpcng/singularity/internal/pkg/remote/endpoint"
+	"github.com/apptainer/apptainer/internal/pkg/remote"
+	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 )
 
 // RemoteLogout logs out from an endpoint or service.

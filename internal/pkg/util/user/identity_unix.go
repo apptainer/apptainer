@@ -6,7 +6,7 @@
 package user
 
 import (
-	"github.com/hpcng/singularity/pkg/util/namespaces"
+	"github.com/apptainer/apptainer/pkg/util/namespaces"
 )
 
 // User represents a Unix user account information.

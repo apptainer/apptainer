@@ -13,7 +13,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/sylabs/scs-key-client/client"
 	"golang.org/x/crypto/openpgp"
 )

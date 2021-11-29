@@ -18,10 +18,10 @@ import (
 	"testing"
 
 	"github.com/containerd/cgroups"
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/internal/pkg/security/seccomp"
-	"github.com/hpcng/singularity/pkg/network"
-	"github.com/hpcng/singularity/pkg/util/fs/proc"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
+	"github.com/apptainer/apptainer/pkg/network"
+	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 )
 
 var (

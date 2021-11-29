@@ -13,9 +13,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/hpcng/singularity/pkg/image"
-	pluginapi "github.com/hpcng/singularity/pkg/plugin"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/image"
+	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // Install installs a plugin from a SIF image under rootDir. It will:

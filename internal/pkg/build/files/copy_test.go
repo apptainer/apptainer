@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 )
 
 var sourceFileContent = "Source File Content\n"

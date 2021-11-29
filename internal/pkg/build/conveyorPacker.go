@@ -9,8 +9,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hpcng/singularity/internal/pkg/build/sources"
-	"github.com/hpcng/singularity/pkg/build/types"
+	"github.com/apptainer/apptainer/internal/pkg/build/sources"
+	"github.com/apptainer/apptainer/pkg/build/types"
 )
 
 // Conveyor is responsible for downloading from remote sources (library, shub, docker...).

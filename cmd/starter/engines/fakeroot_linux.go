@@ -10,5 +10,5 @@ package engines
 
 import (
 	// register the fakeroot runtime engine
-	_ "github.com/hpcng/singularity/internal/pkg/runtime/engine/fakeroot"
+	_ "github.com/apptainer/apptainer/internal/pkg/runtime/engine/fakeroot"
 )

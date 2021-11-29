@@ -6,8 +6,8 @@
 package cli
 
 import (
-	"github.com/hpcng/singularity/pkg/cmdline"
-	"github.com/hpcng/singularity/pkg/runtime/engine/config"
+	"github.com/apptainer/apptainer/pkg/cmdline"
+	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 )
 
 // Command callback allows to add/modify commands and/or flags.

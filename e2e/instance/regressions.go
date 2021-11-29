@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hpcng/singularity/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/e2e/internal/e2e"
 )
 
 func (c *ctx) issue5033(t *testing.T) {

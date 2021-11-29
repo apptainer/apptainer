@@ -10,10 +10,10 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/security/apparmor"
-	"github.com/hpcng/singularity/internal/pkg/security/selinux"
-	"github.com/hpcng/singularity/internal/pkg/test"
-	"github.com/hpcng/singularity/internal/pkg/util/mainthread"
+	"github.com/apptainer/apptainer/internal/pkg/security/apparmor"
+	"github.com/apptainer/apptainer/internal/pkg/security/selinux"
+	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 
