@@ -497,7 +497,7 @@ static char *nserror(int err, int nstype) {
         }
     } else if ( err == EPERM ) {
         if ( nstype != CLONE_NEWUSER ) {
-            snprintf(msg, MSG_SIZE-1, "%s namespace requires privileges, check Singularity installation", name);
+            snprintf(msg, MSG_SIZE-1, "%s namespace requires privileges, check Apptainer installation", name);
         } else {
             snprintf(path, MAX_PATH_SIZE-1, "/proc/sys/kernel/unprivileged_userns_clone");
             if ( access(path, 0) == 0 ) {
@@ -1302,7 +1302,7 @@ __attribute__((constructor)) static void init(void) {
     process = fork_ns(CLONE_FILES);
     if ( process == 0 ) {
         /*
-         *  stage1 is responsible for singularity configuration file parsing,
+         *  stage1 is responsible for apptainer configuration file parsing,
          *  handling user input, reading capabilities, and checking what
          *  namespaces are required
          */
@@ -1648,7 +1648,7 @@ __attribute__((constructor)) static void init(void) {
                 } else {
                     warningf("Running inside a weak chrooted environment, prefer pivot_root instead of chroot\n");
                 }
-                fatalf("Aborting as Singularity cannot run correctly without modifications to your environment\n");
+                fatalf("Aborting as Apptainer cannot run correctly without modifications to your environment\n");
             }
 
             send_event(master_socket[0]);
