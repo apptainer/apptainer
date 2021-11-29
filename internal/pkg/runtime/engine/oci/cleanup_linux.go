@@ -25,7 +25,7 @@ import (
 // and thus no additional privileges can be gained.
 //
 // Specifically in oci engine, no additional privileges are gained here. However,
-// most likely this still will be executed as root since `singularity oci`
+// most likely this still will be executed as root since `apptainer oci`
 // command set requires privileged execution.
 func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, status syscall.WaitStatus) error {
 	if e.EngineConfig.Cgroups != nil {

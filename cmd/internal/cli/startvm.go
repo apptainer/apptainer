@@ -21,7 +21,7 @@ import (
 
 func getHypervisorArgs(sifImage, bzImage, initramfs, singAction, cliExtra string) []string {
 	// Setup some needed variables
-	appendArgs := fmt.Sprintf("root=/dev/ram0 console=ttyS0 quiet singularity_action=%s singularity_arguments=\"%s\"", singAction, cliExtra)
+	appendArgs := fmt.Sprintf("root=/dev/ram0 console=ttyS0 quiet apptainer_action=%s apptainer_arguments=\"%s\"", singAction, cliExtra)
 
 	args := []string{"/usr/libexec/qemu-kvm", "-cpu", "host", "-smp", VMCPU, "-enable-kvm", "-device", "virtio-rng-pci", "-display", "none", "-realtime", "mlock=on", "-hda", sifImage, "-serial", "stdio", "-kernel", bzImage, "-initrd", initramfs, "-m", VMRAM, "-append", appendArgs}
 
@@ -53,8 +53,8 @@ func execVM(cmd *cobra.Command, image string, args []string) {
 }
 
 func startVM(sifImage, singAction, cliExtra string, isInternal bool) error {
-	bzImage := fmt.Sprintf("%s/%s-%s", buildcfg.LIBEXECDIR, "/singularity/vm/syos-kernel", runtime.GOARCH)
-	initramfs := fmt.Sprintf("%s/%s_%s.gz", buildcfg.LIBEXECDIR, "/singularity/vm/initramfs", runtime.GOARCH)
+	bzImage := fmt.Sprintf("%s/%s-%s", buildcfg.LIBEXECDIR, "/apptainer/vm/syos-kernel", runtime.GOARCH)
+	initramfs := fmt.Sprintf("%s/%s_%s.gz", buildcfg.LIBEXECDIR, "/apptainer/vm/initramfs", runtime.GOARCH)
 
 	args := getHypervisorArgs(sifImage, bzImage, initramfs, singAction, cliExtra)
 
@@ -69,10 +69,10 @@ func startVM(sifImage, singAction, cliExtra string, isInternal bool) error {
 		sylog.Fatalf("Failed to determine image absolute path for %s: %s", sifImage, err)
 	}
 	if _, err := os.Stat(bzImage); os.IsNotExist(err) {
-		sylog.Fatalf("This functionality is not supported. For more information visit: https://sylabs.io/singularity-desktop-macos")
+		sylog.Fatalf("This functionality is not supported. For more information visit: https://sylabs.io/apptainer-desktop-macos")
 	}
 	if _, err := os.Stat(initramfs); os.IsNotExist(err) {
-		sylog.Fatalf("This functionality is not supported. For more information visit: https://sylabs.io/singularity-desktop-macos")
+		sylog.Fatalf("This functionality is not supported. For more information visit: https://sylabs.io/apptainer-desktop-macos")
 	}
 
 	args[0] = "Sylabs"

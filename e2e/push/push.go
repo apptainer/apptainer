@@ -29,7 +29,7 @@ func (c ctx) testInvalidTransport(t *testing.T) {
 	tests := []struct {
 		name       string
 		uri        string
-		expectOp   e2e.SingularityCmdResultOp
+		expectOp   e2e.ApptainerCmdResultOp
 		expectExit int
 	}{
 		{
@@ -43,7 +43,7 @@ func (c ctx) testInvalidTransport(t *testing.T) {
 	for _, tt := range tests {
 		args := []string{c.env.ImagePath, tt.uri}
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -120,7 +120,7 @@ func (c ctx) testPushCmd(t *testing.T) {
 			args = tt.imagePath + " " + args
 		}
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.desc),
 			e2e.WithProfile(e2e.UserProfile),

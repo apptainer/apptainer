@@ -18,8 +18,8 @@ import (
 )
 
 var zyppDef = [...]string{
-	"../../../../examples/opensuse/Singularity",
-	"../../../../examples/sle/Singularity",
+	"../../../../examples/opensuse/Apptainer",
+	"../../../../examples/sle/Apptainer",
 }
 
 func testForSLE(t *testing.T, b *types.Bundle) {

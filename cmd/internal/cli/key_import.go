@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// KeyImportCmd is `singularity key (or keys) import` and imports a local key into the singularity keyring.
+// KeyImportCmd is `apptainer key (or keys) import` and imports a local key into the apptainer keyring.
 var KeyImportCmd = &cobra.Command{
 	PreRun:                checkGlobal,
 	Args:                  cobra.ExactArgs(1),

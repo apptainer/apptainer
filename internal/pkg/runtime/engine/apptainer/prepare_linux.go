@@ -4,7 +4,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"bufio"
@@ -34,7 +34,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/image"
 	fakerootcallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/fakeroot"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
-	singularityConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
+	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/sypgp"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
@@ -57,7 +57,7 @@ var nsProcName = map[specs.LinuxNamespaceType]string{
 }
 
 // PrepareConfig is called during stage1 to validate and prepare
-// container configuration. It is responsible for singularity
+// container configuration. It is responsible for apptainer
 // configuration file parsing, handling user input, reading capabilities,
 // and checking what namespaces are required.
 //
@@ -66,7 +66,7 @@ var nsProcName = map[specs.LinuxNamespaceType]string{
 func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	var err error
 
-	if e.CommonConfig.EngineName != singularityConfig.Name {
+	if e.CommonConfig.EngineName != apptainerConfig.Name {
 		return fmt.Errorf("incorrect engine")
 	}
 
@@ -82,9 +82,9 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		}
 	}
 
-	e.EngineConfig.File, err = singularityconf.Parse(configurationFile)
+	e.EngineConfig.File, err = apptainerconf.Parse(configurationFile)
 	if err != nil {
-		return fmt.Errorf("unable to parse singularity.conf file: %s", err)
+		return fmt.Errorf("unable to parse apptainer.conf file: %s", err)
 	}
 
 	if !e.EngineConfig.File.AllowSetuid && starterConfig.GetIsSUID() {
@@ -92,7 +92,7 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	}
 
 	if starterConfig.GetIsSUID() {
-		// check for ownership of singularity.conf
+		// check for ownership of apptainer.conf
 		if !fs.IsOwner(configurationFile, 0) {
 			return fmt.Errorf("%s must be owned by root", configurationFile)
 		}
@@ -169,7 +169,7 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	// sharing its file descriptor table with the wrapper / stage 2.
 	//
 	// At this point we do not have elevated privileges. We assume
-	// that the user running singularity has access to /dev/fuse
+	// that the user running apptainer has access to /dev/fuse
 	// (typically it's 0666, or 0660 belonging to a group that
 	// allows the user to read and write to it).
 	sendFd, err := openDevFuse(e, starterConfig)
@@ -680,7 +680,7 @@ func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Conf
 
 	// instance configuration holding configuration read
 	// from instance file
-	instanceEngineConfig := singularityConfig.NewConfig()
+	instanceEngineConfig := apptainerConfig.NewConfig()
 
 	// extract engine configuration from instance file, the whole content
 	// of this file can't be trusted
@@ -990,7 +990,7 @@ func (e *EngineOperations) checkSignalPropagation() {
 
 // setSessionLayer will test if overlay is supported/allowed.
 func (e *EngineOperations) setSessionLayer(img *image.Image) error {
-	e.EngineConfig.SetSessionLayer(singularityConfig.DefaultLayer)
+	e.EngineConfig.SetSessionLayer(apptainerConfig.DefaultLayer)
 
 	writableTmpfs := e.EngineConfig.GetWritableTmpfs()
 	writableImage := e.EngineConfig.GetWritableImage()
@@ -1025,7 +1025,7 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 			return fmt.Errorf("you need to specify an image driver with 'enable overlay = driver'")
 		}
 		if !writableImage || hasSIFOverlay {
-			e.EngineConfig.SetSessionLayer(singularityConfig.OverlayLayer)
+			e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
 			return nil
 		}
 		sylog.Debugf("Not attempting to use overlay or underlay: writable flag requested")
@@ -1054,7 +1054,7 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 		}
 		if !writableImage {
 			sylog.Debugf("Using underlay layer: user namespace requested")
-			e.EngineConfig.SetSessionLayer(singularityConfig.UnderlayLayer)
+			e.EngineConfig.SetSessionLayer(apptainerConfig.UnderlayLayer)
 			return nil
 		}
 		sylog.Debugf("Not attempting to use overlay or underlay: writable flag requested")
@@ -1067,7 +1067,7 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 		sylog.Debugf("Overlay seems supported and allowed by kernel")
 		switch e.EngineConfig.File.EnableOverlay {
 		case "yes", "try":
-			e.EngineConfig.SetSessionLayer(singularityConfig.OverlayLayer)
+			e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
 
 			if !writableImage || hasSIFOverlay {
 				sylog.Debugf("Attempting to use overlayfs (enable overlay = %v)\n", e.EngineConfig.File.EnableOverlay)
@@ -1075,7 +1075,7 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 			}
 
 			sylog.Debugf("Not attempting to use overlay or underlay: writable flag requested")
-			e.EngineConfig.SetSessionLayer(singularityConfig.DefaultLayer)
+			e.EngineConfig.SetSessionLayer(apptainerConfig.DefaultLayer)
 			return nil
 		default:
 			if hasOverlayImage {
@@ -1098,7 +1098,7 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 	// if --writable wasn't set, use underlay if possible
 	if !writableImage && e.EngineConfig.File.EnableUnderlay {
 		sylog.Debugf("Attempting to use underlay (enable underlay = yes)\n")
-		e.EngineConfig.SetSessionLayer(singularityConfig.UnderlayLayer)
+		e.EngineConfig.SetSessionLayer(apptainerConfig.UnderlayLayer)
 		return nil
 	} else if writableImage {
 		sylog.Debugf("Not attempting to use overlay or underlay: writable flag requested")
@@ -1149,12 +1149,12 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config) error {
 		// C starter code will position current working directory
 		starterConfig.SetWorkingDirectoryFd(int(img.Fd))
 
-		if e.EngineConfig.GetSessionLayer() == singularityConfig.OverlayLayer {
+		if e.EngineConfig.GetSessionLayer() == apptainerConfig.OverlayLayer {
 			if err := overlay.CheckLower(img.Path); overlay.IsIncompatible(err) {
-				layer := singularityConfig.UnderlayLayer
+				layer := apptainerConfig.UnderlayLayer
 				if !e.EngineConfig.File.EnableUnderlay {
 					sylog.Warningf("Could not fallback to underlay, disabled by configuration ('enable underlay = no')")
-					layer = singularityConfig.DefaultLayer
+					layer = apptainerConfig.DefaultLayer
 				}
 				e.EngineConfig.SetSessionLayer(layer)
 
@@ -1207,7 +1207,7 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config) error {
 		}
 
 		// look for potential overlay partition in SIF image
-		if e.EngineConfig.GetSessionLayer() == singularityConfig.OverlayLayer {
+		if e.EngineConfig.GetSessionLayer() == apptainerConfig.OverlayLayer {
 			overlays, err := img.GetOverlayPartitions()
 			if err != nil {
 				return fmt.Errorf("while getting overlay partitions in %s: %s", img.Path, err)
@@ -1228,13 +1228,13 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config) error {
 	}
 
 	switch e.EngineConfig.GetSessionLayer() {
-	case singularityConfig.OverlayLayer:
+	case apptainerConfig.OverlayLayer:
 		overlayImages, err := e.loadOverlayImages(starterConfig, writableOverlayPath)
 		if err != nil {
 			return fmt.Errorf("while loading overlay images: %s", err)
 		}
 		images = append(images, overlayImages...)
-	case singularityConfig.UnderlayLayer:
+	case apptainerConfig.UnderlayLayer:
 		if e.EngineConfig.GetWritableTmpfs() {
 			sylog.Warningf("Disabling --writable-tmpfs as it can't be used in conjunction with underlay")
 			e.EngineConfig.SetWritableTmpfs(false)
@@ -1363,21 +1363,21 @@ func (e *EngineOperations) loadImage(path string, writable bool) (*image.Image, 
 		if authorized, err := imgObject.AuthorizedPath(e.EngineConfig.File.LimitContainerPaths); err != nil {
 			return nil, err
 		} else if !authorized {
-			return nil, fmt.Errorf("singularity image is not in an allowed configured path")
+			return nil, fmt.Errorf("apptainer image is not in an allowed configured path")
 		}
 	}
 	if len(e.EngineConfig.File.LimitContainerGroups) != 0 {
 		if authorized, err := imgObject.AuthorizedGroup(e.EngineConfig.File.LimitContainerGroups); err != nil {
 			return nil, err
 		} else if !authorized {
-			return nil, fmt.Errorf("singularity image is not owned by required group(s)")
+			return nil, fmt.Errorf("apptainer image is not owned by required group(s)")
 		}
 	}
 	if len(e.EngineConfig.File.LimitContainerOwners) != 0 {
 		if authorized, err := imgObject.AuthorizedOwner(e.EngineConfig.File.LimitContainerOwners); err != nil {
 			return nil, err
 		} else if !authorized {
-			return nil, fmt.Errorf("singularity image is not owned by required user(s)")
+			return nil, fmt.Errorf("apptainer image is not owned by required user(s)")
 		}
 	}
 

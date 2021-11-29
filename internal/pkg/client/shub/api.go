@@ -19,13 +19,13 @@ import (
 )
 
 const (
-	defaultRegistry string = `https://singularity-hub.org`
+	defaultRegistry string = `https://apptainer-hub.org`
 	shubAPIRoute    string = "/api/container/"
 	// URINotSupported if we are using a non default registry error out for now
-	URINotSupported string = "Only the default Singularity Hub registry is supported for now"
+	URINotSupported string = "Only the default Apptainer Hub registry is supported for now"
 )
 
-// URI stores the various components of a singularityhub URI
+// URI stores the various components of a apptainerhub URI
 type URI struct {
 	registry  string
 	user      string
@@ -48,7 +48,7 @@ type APIResponse struct {
 }
 
 // GetManifest will return the image manifest for a container uri
-// from Singularity Hub.
+// from Apptainer Hub.
 func GetManifest(uri URI, noHTTPS bool) (APIResponse, error) {
 	// Create a new http Hub client
 	httpc := http.Client{
@@ -80,10 +80,10 @@ func GetManifest(uri URI, noHTTPS bool) (APIResponse, error) {
 	// Do the request, if status isn't success, return error
 	res, err := httpc.Do(req)
 	if res == nil {
-		return APIResponse{}, fmt.Errorf("no response received from singularity hub")
+		return APIResponse{}, fmt.Errorf("no response received from apptainer hub")
 	}
 	if res.StatusCode == http.StatusNotFound {
-		return APIResponse{}, fmt.Errorf("the requested manifest was not found in singularity hub")
+		return APIResponse{}, fmt.Errorf("the requested manifest was not found in apptainer hub")
 	}
 	sylog.Debugf("%s response received, beginning manifest download\n", res.Status)
 

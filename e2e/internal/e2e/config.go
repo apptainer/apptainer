@@ -15,9 +15,9 @@ import (
 )
 
 func SetupDefaultConfig(t *testing.T, path string) {
-	c, err := singularityconf.Parse("")
+	c, err := apptainerconf.Parse("")
 	if err != nil {
-		t.Fatalf("while generating singularity configuration: %s", err)
+		t.Fatalf("while generating apptainer configuration: %s", err)
 	}
 
 	// e2e tests should call the specific external binaries found/coonfigured in the build.
@@ -32,11 +32,11 @@ func SetupDefaultConfig(t *testing.T, path string) {
 	Privileged(func(t *testing.T) {
 		f, err := os.Create(path)
 		if err != nil {
-			t.Fatalf("while creating singularity configuration: %s", err)
+			t.Fatalf("while creating apptainer configuration: %s", err)
 		}
 
-		if err := singularityconf.Generate(f, "", c); err != nil {
-			t.Fatalf("while generating singularity configuration: %s", err)
+		if err := apptainerconf.Generate(f, "", c); err != nil {
+			t.Fatalf("while generating apptainer configuration: %s", err)
 		}
 
 		f.Close()

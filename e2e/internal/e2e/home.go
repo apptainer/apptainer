@@ -149,24 +149,24 @@ func SetupHomeDirectories(t *testing.T) {
 func shadowInstanceDirectory(t *testing.T, env TestEnv) func(t *testing.T) {
 	u := CurrentUser(t)
 
-	// $TESTDIR/.singularity directory
-	fakeSingularityDir := filepath.Join(env.TestDir, ".singularity")
-	// $TESTDIR/.singularity/instances symlink
-	fakeInstanceSymlink := filepath.Join(fakeSingularityDir, "instances")
+	// $TESTDIR/.apptainer directory
+	fakeApptainerDir := filepath.Join(env.TestDir, ".apptainer")
+	// $TESTDIR/.apptainer/instances symlink
+	fakeInstanceSymlink := filepath.Join(fakeApptainerDir, "instances")
 
-	// create directory $TESTDIR/.singularity
-	if err := os.Mkdir(fakeSingularityDir, 0o755); err != nil && !os.IsExist(err) {
-		err = errors.Wrapf(err, "create temporary singularity data directory at %q", fakeSingularityDir)
-		t.Fatalf("failed to create fake singularity directory: %+v", err)
+	// create directory $TESTDIR/.apptainer
+	if err := os.Mkdir(fakeApptainerDir, 0o755); err != nil && !os.IsExist(err) {
+		err = errors.Wrapf(err, "create temporary apptainer data directory at %q", fakeApptainerDir)
+		t.Fatalf("failed to create fake apptainer directory: %+v", err)
 	}
 	// mount $TESTDIR on top of $HOME
 	if err := syscall.Mount(env.TestDir, u.Dir, "", syscall.MS_BIND, ""); err != nil {
-		err = errors.Wrapf(err, "mounting temporary singularity data directory from %q to %q", env.TestDir, u.Dir)
+		err = errors.Wrapf(err, "mounting temporary apptainer data directory from %q to %q", env.TestDir, u.Dir)
 		t.Fatalf("failed to mount directory: %+v", err)
 	}
-	// create symlink $HOME/.singularity/instances -> $TESTDIR/.singularity
-	if err := os.Symlink(fakeSingularityDir, fakeInstanceSymlink); err != nil && !os.IsExist(err) {
-		err = errors.Wrapf(err, "symlink temporary singularity data directory from %q to %q", fakeSingularityDir, fakeInstanceSymlink)
+	// create symlink $HOME/.apptainer/instances -> $TESTDIR/.apptainer
+	if err := os.Symlink(fakeApptainerDir, fakeInstanceSymlink); err != nil && !os.IsExist(err) {
+		err = errors.Wrapf(err, "symlink temporary apptainer data directory from %q to %q", fakeApptainerDir, fakeInstanceSymlink)
 		t.Fatalf("failed to create symlink: %+v", err)
 	}
 

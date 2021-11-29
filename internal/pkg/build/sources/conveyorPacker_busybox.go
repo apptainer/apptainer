@@ -129,7 +129,7 @@ func (c *BusyBoxConveyor) insertBaseEnv() (err error) {
 }
 
 func (cp *BusyBoxConveyorPacker) insertRunScript() error {
-	return ioutil.WriteFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/runscript"), []byte("#!/bin/sh\n"), 0o755)
+	return ioutil.WriteFile(filepath.Join(cp.b.RootfsPath, "/.apptainer.d/runscript"), []byte("#!/bin/sh\n"), 0o755)
 }
 
 // CleanUp removes any tmpfs owned by the conveyorPacker on the filesystem

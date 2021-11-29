@@ -92,12 +92,12 @@ func Create(path, name string) error {
 		return fmt.Errorf("while creating plugin %s: %s", filename, err)
 	}
 
-	// create symlink to singularity source directory
-	source := filepath.Join(dir, SingularitySource)
+	// create symlink to apptainer source directory
+	source := filepath.Join(dir, ApptainerSource)
 
 	if _, err := os.Stat(buildcfg.SOURCEDIR); os.IsNotExist(err) {
-		ls := fmt.Sprintf("ln -s /path/to/singularity/source %s", source)
-		sylog.Warningf("Singularity source %s doesn't exist, you would have to execute manually %q", buildcfg.SOURCEDIR, ls)
+		ls := fmt.Sprintf("ln -s /path/to/apptainer/source %s", source)
+		sylog.Warningf("Apptainer source %s doesn't exist, you would have to execute manually %q", buildcfg.SOURCEDIR, ls)
 		return nil
 	} else if err != nil {
 		return fmt.Errorf("while getting %s information: %s", source, err)

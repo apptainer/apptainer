@@ -70,14 +70,14 @@ func TestSandboxAssemblerDocker(t *testing.T) {
 	defer os.RemoveAll(assemblerDockerDestDir)
 }
 
-// TestSandboxAssemblerShub sees if we can build a sandbox from an image from a Singularity registry
+// TestSandboxAssemblerShub sees if we can build a sandbox from an image from a Apptainer registry
 func TestSandboxAssemblerShub(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()
 	}
 
 	// TODO(mem): reenable this; disabled while shub is down
-	t.Skip("Skipping tests that access singularity hub")
+	t.Skip("Skipping tests that access apptainer hub")
 
 	b, err := types.NewBundle(filepath.Join(os.TempDir(), "sbuild-sandboxAssembler"), os.TempDir())
 	if err != nil {

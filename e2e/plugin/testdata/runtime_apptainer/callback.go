@@ -11,9 +11,9 @@ import (
 	"time"
 
 	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
-	singularitycallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
+	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
-	singularityConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
+	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 )
 
 // Plugin is the only variable which a plugin MUST export.
@@ -26,15 +26,15 @@ var Plugin = pluginapi.Plugin{
 		Description: "E2E runtime plugin",
 	},
 	Callbacks: []pluginapi.Callback{
-		(singularitycallback.MonitorContainer)(callbackMonitor),
-		(singularitycallback.PostStartProcess)(callbackPostStart),
+		(apptainercallback.MonitorContainer)(callbackMonitor),
+		(apptainercallback.PostStartProcess)(callbackPostStart),
 	},
 }
 
 func callbackMonitor(config *config.Common, pid int, signals chan os.Signal) (syscall.WaitStatus, error) {
 	var status syscall.WaitStatus
 
-	cfg := config.EngineConfig.(*singularityConfig.EngineConfig)
+	cfg := config.EngineConfig.(*apptainerConfig.EngineConfig)
 	if !cfg.GetContain() {
 		os.Exit(42)
 	} else {
@@ -46,7 +46,7 @@ func callbackMonitor(config *config.Common, pid int, signals chan os.Signal) (sy
 }
 
 func callbackPostStart(config *config.Common, pit int) error {
-	cfg := config.EngineConfig.(*singularityConfig.EngineConfig)
+	cfg := config.EngineConfig.(*apptainerConfig.EngineConfig)
 
 	if cfg.GetContain() {
 		os.Exit(43)

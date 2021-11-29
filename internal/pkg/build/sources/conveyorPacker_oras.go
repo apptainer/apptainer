@@ -20,7 +20,7 @@ type OrasConveyorPacker struct {
 	LocalPacker
 }
 
-// Get downloads container from Singularityhub
+// Get downloads container from Apptainerhub
 func (cp *OrasConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err error) {
 	sylog.Debugf("Getting container from registry using ORAS")
 

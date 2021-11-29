@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"bytes"
@@ -39,16 +39,16 @@ func contains(slice []string, val string) bool {
 	return false
 }
 
-func generateConfig(path string, directives singularityconf.Directives, dry bool) error {
+func generateConfig(path string, directives apptainerconf.Directives, dry bool) error {
 	// Generate the config structure from our directives
-	c, err := singularityconf.GetConfig(directives)
+	c, err := apptainerconf.GetConfig(directives)
 	if err != nil {
 		return fmt.Errorf("configuration directive invalid: %w", err)
 	}
 
 	// Write a config file to our in memory buffer
 	newConfig := new(bytes.Buffer)
-	if err := singularityconf.Generate(newConfig, "", c); err != nil {
+	if err := apptainerconf.Generate(newConfig, "", c); err != nil {
 		return fmt.Errorf("while generating configuration from template: %w", err)
 	}
 
@@ -76,7 +76,7 @@ func generateConfig(path string, directives singularityconf.Directives, dry bool
 }
 
 // GlobalConfig allows to set/unset/reset a configuration directive value
-// in singularity.conf
+// in apptainer.conf
 func GlobalConfig(args []string, configFile string, dry bool, op GlobalConfigOp) error {
 	directive := args[0]
 	value := ""
@@ -88,7 +88,7 @@ func GlobalConfig(args []string, configFile string, dry bool, op GlobalConfigOp)
 		value = args[1]
 	}
 
-	if !singularityconf.HasDirective(directive) {
+	if !apptainerconf.HasDirective(directive) {
 		return fmt.Errorf("%q is not a valid configuration directive", directive)
 	}
 
@@ -98,7 +98,7 @@ func GlobalConfig(args []string, configFile string, dry bool, op GlobalConfigOp)
 	}
 	defer f.Close()
 
-	directives, err := singularityconf.GetDirectives(f)
+	directives, err := apptainerconf.GetDirectives(f)
 	if err != nil {
 		return err
 	}

@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var ociArgs singularity.OciArgs
+var ociArgs apptainer.OciArgs
 
 // -b|--bundle
 var ociBundleFlag = cmdline.Flag{
@@ -168,7 +168,7 @@ var OciCreateCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := singularity.OciCreate(args[0], &ociArgs); err != nil {
+		if err := apptainer.OciCreate(args[0], &ociArgs); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -184,7 +184,7 @@ var OciRunCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := singularity.OciRun(cmd.Context(), args[0], &ociArgs); err != nil {
+		if err := apptainer.OciRun(cmd.Context(), args[0], &ociArgs); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -200,7 +200,7 @@ var OciStartCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := singularity.OciStart(args[0]); err != nil {
+		if err := apptainer.OciStart(args[0]); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -216,7 +216,7 @@ var OciDeleteCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := singularity.OciDelete(cmd.Context(), args[0]); err != nil {
+		if err := apptainer.OciDelete(cmd.Context(), args[0]); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -242,7 +242,7 @@ var OciKillCmd = &cobra.Command{
 		if ociArgs.ForceKill {
 			killSignal = "SIGKILL"
 		}
-		if err := singularity.OciKill(args[0], killSignal, timeout); err != nil {
+		if err := apptainer.OciKill(args[0], killSignal, timeout); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -258,7 +258,7 @@ var OciStateCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := singularity.OciState(args[0], &ociArgs); err != nil {
+		if err := apptainer.OciState(args[0], &ociArgs); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -274,7 +274,7 @@ var OciAttachCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := singularity.OciAttach(cmd.Context(), args[0]); err != nil {
+		if err := apptainer.OciAttach(cmd.Context(), args[0]); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -290,7 +290,7 @@ var OciExecCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := singularity.OciExec(args[0], args[1:]); err != nil {
+		if err := apptainer.OciExec(args[0], args[1:]); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -306,7 +306,7 @@ var OciUpdateCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := singularity.OciUpdate(args[0], &ociArgs); err != nil {
+		if err := apptainer.OciUpdate(args[0], &ociArgs); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -322,7 +322,7 @@ var OciPauseCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := singularity.OciPauseResume(args[0], true); err != nil {
+		if err := apptainer.OciPauseResume(args[0], true); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -338,7 +338,7 @@ var OciResumeCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := singularity.OciPauseResume(args[0], false); err != nil {
+		if err := apptainer.OciPauseResume(args[0], false); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -354,7 +354,7 @@ var OciMountCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := singularity.OciMount(args[0], args[1]); err != nil {
+		if err := apptainer.OciMount(args[0], args[1]); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -370,7 +370,7 @@ var OciUmountCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := singularity.OciUmount(args[0]); err != nil {
+		if err := apptainer.OciUmount(args[0]); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -380,7 +380,7 @@ var OciUmountCmd = &cobra.Command{
 	Example: docs.OciUmountExample,
 }
 
-// OciCmd singularity oci runtime.
+// OciCmd apptainer oci runtime.
 var OciCmd = &cobra.Command{
 	Run:                   nil,
 	DisableFlagsInUseLine: true,

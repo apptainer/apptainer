@@ -10,10 +10,10 @@ import (
 	"testing"
 )
 
-func TestSingularityVersion(t *testing.T) {
-	InitValue("singularity", "3.0.0-alpha.1-303-gaed8d30-dirty")
+func TestApptainerVersion(t *testing.T) {
+	InitValue("apptainer", "3.0.0-alpha.1-303-gaed8d30-dirty")
 
-	re := regexp.MustCompile(`Singularity/[[:digit:]]+(.[[:digit:]]+){2} \(Linux [[:alnum:]]+\) Go/[[:digit:]]+(.[[:digit:]]+){1,2}`)
+	re := regexp.MustCompile(`Apptainer/[[:digit:]]+(.[[:digit:]]+){2} \(Linux [[:alnum:]]+\) Go/[[:digit:]]+(.[[:digit:]]+){1,2}`)
 	if !re.MatchString(Value()) {
 		t.Fatalf("user agent did not match regexp")
 	}

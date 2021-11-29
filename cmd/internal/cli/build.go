@@ -339,9 +339,9 @@ func checkBuildTarget(path string) error {
 		if buildArgs.update && !f.IsDir() {
 			return fmt.Errorf("only sandbox update is supported: %s is not a directory", abspath)
 		}
-		// check if the sandbox image being overwritten looks like a Singularity
+		// check if the sandbox image being overwritten looks like a Apptainer
 		// image and inform users to check its content and use --force option if
-		// the sandbox image is not a Singularity image
+		// the sandbox image is not a Apptainer image
 		if f.IsDir() && !forceOverwrite {
 			files, err := ioutil.ReadDir(abspath)
 			if err != nil {
@@ -350,12 +350,12 @@ func checkBuildTarget(path string) error {
 				required := 0
 				for _, f := range files {
 					switch f.Name() {
-					case ".singularity.d", "dev", "proc", "sys":
+					case ".apptainer.d", "dev", "proc", "sys":
 						required++
 					}
 				}
 				if required != 4 {
-					return fmt.Errorf("%s is not empty and is not a Singularity sandbox, check its content first and use --force if you want to overwrite it", abspath)
+					return fmt.Errorf("%s is not empty and is not a Apptainer sandbox, check its content first and use --force if you want to overwrite it", abspath)
 				}
 			}
 		}

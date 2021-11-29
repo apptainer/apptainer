@@ -68,13 +68,13 @@ func DownloadImage(ctx context.Context, manifest APIResponse, filePath, shubRef 
 	// Do the request, if status isn't success, return error
 	resp, err := httpc.Do(req)
 	if resp == nil {
-		return fmt.Errorf("no response received from singularity hub")
+		return fmt.Errorf("no response received from apptainer hub")
 	}
 	if err != nil {
 		return err
 	}
 	if resp.StatusCode == http.StatusNotFound {
-		return fmt.Errorf("the requested image was not found in singularity hub")
+		return fmt.Errorf("the requested image was not found in apptainer hub")
 	}
 	sylog.Debugf("%s response received, beginning image download\n", resp.Status)
 

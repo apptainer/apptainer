@@ -45,7 +45,7 @@ func getCacheHandle(cfg cache.Config) *cache.Handle {
 func actionPreRun(cmd *cobra.Command, args []string) {
 	// For compatibility - we still set USER_PATH so it will be visible in the
 	// container, and can be used there if needed. USER_PATH is not used by
-	// singularity itself in 3.9+
+	// apptainer itself in 3.9+
 	userPath := strings.Join([]string{os.Getenv("PATH"), defaultPath}, ":")
 	os.Setenv("USER_PATH", userPath)
 
@@ -54,7 +54,7 @@ func actionPreRun(cmd *cobra.Command, args []string) {
 	replaceURIWithImage(cmd.Context(), cmd, args)
 
 	// --compat infers other options that give increased OCI / Docker compatibility
-	// Excludes uts/user/net namespaces as these are restrictive for many Singularity
+	// Excludes uts/user/net namespaces as these are restrictive for many Apptainer
 	// installs.
 	if IsCompat {
 		IsContainAll = true
@@ -177,7 +177,7 @@ var ExecCmd = &cobra.Command{
 	Args:                  cobra.MinimumNArgs(2),
 	PreRun:                actionPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
-		a := append([]string{"/.singularity.d/actions/exec"}, args[1:]...)
+		a := append([]string{"/.apptainer.d/actions/exec"}, args[1:]...)
 		setVM(cmd)
 		if VM {
 			execVM(cmd, args[0], a)
@@ -199,7 +199,7 @@ var ShellCmd = &cobra.Command{
 	Args:                  cobra.MinimumNArgs(1),
 	PreRun:                actionPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
-		a := []string{"/.singularity.d/actions/shell"}
+		a := []string{"/.apptainer.d/actions/shell"}
 		setVM(cmd)
 		if VM {
 			execVM(cmd, args[0], a)
@@ -221,7 +221,7 @@ var RunCmd = &cobra.Command{
 	Args:                  cobra.MinimumNArgs(1),
 	PreRun:                actionPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
-		a := append([]string{"/.singularity.d/actions/run"}, args[1:]...)
+		a := append([]string{"/.apptainer.d/actions/run"}, args[1:]...)
 		setVM(cmd)
 		if VM {
 			execVM(cmd, args[0], a)
@@ -243,7 +243,7 @@ var TestCmd = &cobra.Command{
 	Args:                  cobra.MinimumNArgs(1),
 	PreRun:                actionPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
-		a := append([]string{"/.singularity.d/actions/test"}, args[1:]...)
+		a := append([]string{"/.apptainer.d/actions/test"}, args[1:]...)
 		setVM(cmd)
 		if VM {
 			execVM(cmd, args[0], a)

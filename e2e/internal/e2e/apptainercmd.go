@@ -24,13 +24,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-// SingularityCmdResultOp is a function type executed
+// ApptainerCmdResultOp is a function type executed
 // by ExpectExit to process and test execution result.
-type SingularityCmdResultOp func(*testing.T, *SingularityCmdResult)
+type ApptainerCmdResultOp func(*testing.T, *ApptainerCmdResult)
 
-// SingularityCmdResult holds the result for a Singularity command
+// ApptainerCmdResult holds the result for a Apptainer command
 // execution test.
-type SingularityCmdResult struct {
+type ApptainerCmdResult struct {
 	Stdout  []byte
 	Stderr  []byte
 	FullCmd string
@@ -80,7 +80,7 @@ const (
 	errorStream
 )
 
-func (r *SingularityCmdResult) expectMatch(mt MatchType, stream streamType, pattern string) error {
+func (r *ApptainerCmdResult) expectMatch(mt MatchType, stream streamType, pattern string) error {
 	var output string
 	var streamName string
 
@@ -144,8 +144,8 @@ func (r *SingularityCmdResult) expectMatch(mt MatchType, stream streamType, patt
 
 // ExpectOutput tests if the command output stream match the
 // pattern string based on the type of match.
-func ExpectOutput(mt MatchType, pattern string) SingularityCmdResultOp {
-	return func(t *testing.T, r *SingularityCmdResult) {
+func ExpectOutput(mt MatchType, pattern string) ApptainerCmdResultOp {
+	return func(t *testing.T, r *ApptainerCmdResult) {
 		t.Helper()
 
 		err := r.expectMatch(mt, outputStream, pattern)
@@ -158,8 +158,8 @@ func ExpectOutput(mt MatchType, pattern string) SingularityCmdResultOp {
 
 // ExpectOutputf tests if the command output stream match the
 // formatted string pattern based on the type of match.
-func ExpectOutputf(mt MatchType, formatPattern string, a ...interface{}) SingularityCmdResultOp {
-	return func(t *testing.T, r *SingularityCmdResult) {
+func ExpectOutputf(mt MatchType, formatPattern string, a ...interface{}) ApptainerCmdResultOp {
+	return func(t *testing.T, r *ApptainerCmdResult) {
 		t.Helper()
 
 		pattern := fmt.Sprintf(formatPattern, a...)
@@ -173,8 +173,8 @@ func ExpectOutputf(mt MatchType, formatPattern string, a ...interface{}) Singula
 
 // ExpectError tests if the command error stream match the
 // pattern string based on the type of match.
-func ExpectError(mt MatchType, pattern string) SingularityCmdResultOp {
-	return func(t *testing.T, r *SingularityCmdResult) {
+func ExpectError(mt MatchType, pattern string) ApptainerCmdResultOp {
+	return func(t *testing.T, r *ApptainerCmdResult) {
 		t.Helper()
 
 		err := r.expectMatch(mt, errorStream, pattern)
@@ -187,8 +187,8 @@ func ExpectError(mt MatchType, pattern string) SingularityCmdResultOp {
 
 // ExpectErrorf tests if the command error stream match the
 // pattern string based on the type of match.
-func ExpectErrorf(mt MatchType, formatPattern string, a ...interface{}) SingularityCmdResultOp {
-	return func(t *testing.T, r *SingularityCmdResult) {
+func ExpectErrorf(mt MatchType, formatPattern string, a ...interface{}) ApptainerCmdResultOp {
+	return func(t *testing.T, r *ApptainerCmdResult) {
 		t.Helper()
 
 		pattern := fmt.Sprintf(formatPattern, a...)
@@ -201,8 +201,8 @@ func ExpectErrorf(mt MatchType, formatPattern string, a ...interface{}) Singular
 }
 
 // GetStreams gets command stdout and stderr result.
-func GetStreams(stdout *string, stderr *string) SingularityCmdResultOp {
-	return func(t *testing.T, r *SingularityCmdResult) {
+func GetStreams(stdout *string, stderr *string) ApptainerCmdResultOp {
+	return func(t *testing.T, r *ApptainerCmdResult) {
 		t.Helper()
 
 		*stdout = string(r.Stdout)
@@ -210,13 +210,13 @@ func GetStreams(stdout *string, stderr *string) SingularityCmdResultOp {
 	}
 }
 
-// SingularityConsoleOp is a function type passed to ConsoleRun
+// ApptainerConsoleOp is a function type passed to ConsoleRun
 // to execute interactive commands.
-type SingularityConsoleOp func(*testing.T, *expect.Console)
+type ApptainerConsoleOp func(*testing.T, *expect.Console)
 
 // ConsoleExpectf reads from the console until the provided formatted string
 // is read or an error occurs.
-func ConsoleExpectf(format string, args ...interface{}) SingularityConsoleOp {
+func ConsoleExpectf(format string, args ...interface{}) ApptainerConsoleOp {
 	return func(t *testing.T, c *expect.Console) {
 		t.Helper()
 
@@ -231,7 +231,7 @@ func ConsoleExpectf(format string, args ...interface{}) SingularityConsoleOp {
 
 // ConsoleExpect reads from the console until the provided string is read or
 // an error occurs.
-func ConsoleExpect(s string) SingularityConsoleOp {
+func ConsoleExpect(s string) ApptainerConsoleOp {
 	return func(t *testing.T, c *expect.Console) {
 		t.Helper()
 
@@ -244,7 +244,7 @@ func ConsoleExpect(s string) SingularityConsoleOp {
 }
 
 // ConsoleSend writes a string to the console.
-func ConsoleSend(s string) SingularityConsoleOp {
+func ConsoleSend(s string) ApptainerConsoleOp {
 	return func(t *testing.T, c *expect.Console) {
 		t.Helper()
 
@@ -256,7 +256,7 @@ func ConsoleSend(s string) SingularityConsoleOp {
 }
 
 // ConsoleSendLine writes a string to the console with a trailing newline.
-func ConsoleSendLine(s string) SingularityConsoleOp {
+func ConsoleSendLine(s string) ApptainerConsoleOp {
 	return func(t *testing.T, c *expect.Console) {
 		t.Helper()
 
@@ -267,12 +267,12 @@ func ConsoleSendLine(s string) SingularityConsoleOp {
 	}
 }
 
-// SingularityCmdOp is a function type passed to RunCommand
+// ApptainerCmdOp is a function type passed to RunCommand
 // used to define the test execution context.
-type SingularityCmdOp func(*singularityCmd)
+type ApptainerCmdOp func(*apptainerCmd)
 
-// singularityCmd defines a Singularity command execution test.
-type singularityCmd struct {
+// apptainerCmd defines a Apptainer command execution test.
+type apptainerCmd struct {
 	globalOptions []string
 	cmd           []string
 	args          []string
@@ -283,31 +283,31 @@ type singularityCmd struct {
 	waitErr       error
 	preFn         func(*testing.T)
 	postFn        func(*testing.T)
-	consoleFn     SingularityCmdOp
+	consoleFn     ApptainerCmdOp
 	console       *expect.Console
-	resultFn      SingularityCmdOp
-	result        *SingularityCmdResult
+	resultFn      ApptainerCmdOp
+	result        *ApptainerCmdResult
 	t             *testing.T
 	profile       Profile
 }
 
 // AsSubtest requests the command to be run as a subtest
-func AsSubtest(name string) SingularityCmdOp {
-	return func(s *singularityCmd) {
+func AsSubtest(name string) ApptainerCmdOp {
+	return func(s *apptainerCmd) {
 		s.subtestName = name
 	}
 }
 
-// WithCommand sets the singularity command to execute.
-func WithCommand(command string) SingularityCmdOp {
-	return func(s *singularityCmd) {
+// WithCommand sets the apptainer command to execute.
+func WithCommand(command string) ApptainerCmdOp {
+	return func(s *apptainerCmd) {
 		s.cmd = strings.Split(command, " ")
 	}
 }
 
-// WithArgs sets the singularity command arguments.
-func WithArgs(args ...string) SingularityCmdOp {
-	return func(s *singularityCmd) {
+// WithArgs sets the apptainer command arguments.
+func WithArgs(args ...string) ApptainerCmdOp {
+	return func(s *apptainerCmd) {
 		if len(args) > 0 {
 			s.args = append(s.args, args...)
 		}
@@ -315,9 +315,9 @@ func WithArgs(args ...string) SingularityCmdOp {
 }
 
 // WithEnv sets environment variables to use while running a
-// singularity command.
-func WithEnv(envs []string) SingularityCmdOp {
-	return func(s *singularityCmd) {
+// apptainer command.
+func WithEnv(envs []string) ApptainerCmdOp {
+	return func(s *apptainerCmd) {
 		if len(envs) > 0 {
 			s.envs = append(s.envs, envs...)
 		}
@@ -325,37 +325,37 @@ func WithEnv(envs []string) SingularityCmdOp {
 }
 
 // WithDir sets the current working directory for the execution of a command.
-func WithDir(dir string) SingularityCmdOp {
-	return func(s *singularityCmd) {
+func WithDir(dir string) ApptainerCmdOp {
+	return func(s *apptainerCmd) {
 		if dir != "" {
 			s.dir = dir
 		}
 	}
 }
 
-// WithProfile sets the Singularity execution profile, this
+// WithProfile sets the Apptainer execution profile, this
 // is a convenient way to automatically set requirements like
 // privileges, arguments injection in order to execute
-// Singularity command with the corresponding profile.
+// Apptainer command with the corresponding profile.
 // RootProfile, RootUserNamespaceProfile will set privileges which
 // means that PreRun and PostRun are executed with privileges.
-func WithProfile(profile Profile) SingularityCmdOp {
-	return func(s *singularityCmd) {
+func WithProfile(profile Profile) ApptainerCmdOp {
+	return func(s *apptainerCmd) {
 		s.profile = profile
 	}
 }
 
 // WithStdin sets a reader to use as input data to pass
-// to the singularity command.
-func WithStdin(r io.Reader) SingularityCmdOp {
-	return func(s *singularityCmd) {
+// to the apptainer command.
+func WithStdin(r io.Reader) ApptainerCmdOp {
+	return func(s *apptainerCmd) {
 		s.stdin = r
 	}
 }
 
-// WithGlobalOptions sets global singularity option (eg: --debug, --silent).
-func WithGlobalOptions(options ...string) SingularityCmdOp {
-	return func(s *singularityCmd) {
+// WithGlobalOptions sets global apptainer option (eg: --debug, --silent).
+func WithGlobalOptions(options ...string) ApptainerCmdOp {
+	return func(s *apptainerCmd) {
 		if len(options) > 0 {
 			s.globalOptions = append(s.globalOptions, options...)
 		}
@@ -364,8 +364,8 @@ func WithGlobalOptions(options ...string) SingularityCmdOp {
 
 // ConsoleRun sets console operations to interact with the
 // running command.
-func ConsoleRun(consoleOps ...SingularityConsoleOp) SingularityCmdOp {
-	return func(s *singularityCmd) {
+func ConsoleRun(consoleOps ...ApptainerConsoleOp) ApptainerCmdOp {
+	return func(s *apptainerCmd) {
 		if s.consoleFn == nil {
 			s.consoleFn = ConsoleRun(consoleOps...)
 			return
@@ -377,23 +377,23 @@ func ConsoleRun(consoleOps ...SingularityConsoleOp) SingularityCmdOp {
 }
 
 // PreRun sets a function to execute before running the
-// singularity command, this function is executed with
+// apptainer command, this function is executed with
 // privileges if the profile is either RootProfile or
 // RootUserNamespaceProfile.
-func PreRun(fn func(*testing.T)) SingularityCmdOp {
-	return func(s *singularityCmd) {
+func PreRun(fn func(*testing.T)) ApptainerCmdOp {
+	return func(s *apptainerCmd) {
 		s.preFn = fn
 	}
 }
 
-// PostRun sets a function to execute when the singularity
+// PostRun sets a function to execute when the apptainer
 // command execution finished, this function is executed with
 // privileges if the profile is either RootProfile or
 // RootUserNamespaceProfile. PostRun is executed in all cases
 // even when the command execution failed, it's the responsibility
 // of the caller to check if the test failed with t.Failed().
-func PostRun(fn func(*testing.T)) SingularityCmdOp {
-	return func(s *singularityCmd) {
+func PostRun(fn func(*testing.T)) ApptainerCmdOp {
+	return func(s *apptainerCmd) {
 		s.postFn = fn
 	}
 }
@@ -403,8 +403,8 @@ func PostRun(fn func(*testing.T)) SingularityCmdOp {
 // function is always required by RunCommand and can call additional
 // test functions processing the command result like ExpectOutput,
 // ExpectError.
-func ExpectExit(code int, resultOps ...SingularityCmdResultOp) SingularityCmdOp {
-	return func(s *singularityCmd) {
+func ExpectExit(code int, resultOps ...ApptainerCmdResultOp) ApptainerCmdOp {
+	return func(s *apptainerCmd) {
 		if s.resultFn == nil {
 			s.resultFn = ExpectExit(code, resultOps...)
 			return
@@ -459,17 +459,17 @@ func ExpectExit(code int, resultOps ...SingularityCmdResultOp) SingularityCmdOp 
 	}
 }
 
-// RunSingularity executes a singularity command within a test execution
+// RunApptainer executes a apptainer command within a test execution
 // context.
 //
-// cmdPath specifies the path to the singularity binary and cmdOps
+// cmdPath specifies the path to the apptainer binary and cmdOps
 // provides a list of operations to be executed before or after running
 // the command.
-func (env TestEnv) RunSingularity(t *testing.T, cmdOps ...SingularityCmdOp) {
+func (env TestEnv) RunApptainer(t *testing.T, cmdOps ...ApptainerCmdOp) {
 	t.Helper()
 
 	cmdPath := env.CmdPath
-	s := new(singularityCmd)
+	s := new(apptainerCmd)
 
 	for _, op := range cmdOps {
 		op(s)
@@ -498,7 +498,7 @@ func (env TestEnv) RunSingularity(t *testing.T, cmdOps ...SingularityCmdOp) {
 	fn := func(t *testing.T) {
 		t.Helper()
 
-		s.result = new(SingularityCmdResult)
+		s.result = new(ApptainerCmdResult)
 		pargs := append(s.globalOptions, s.cmd...)
 		pargs = append(pargs, s.profile.args(s.cmd)...)
 		s.args = append(pargs, s.args...)
@@ -675,7 +675,7 @@ func (env TestEnv) RunSingularity(t *testing.T, cmdOps ...SingularityCmdOp) {
 		// if this is not a subtest, we will execute the above
 		// function in a separated go routine like t.Run would do
 		// in order to not mess up with privileges if a subsequent
-		// RunSingularity is executed without being a sub-test in
+		// RunApptainer is executed without being a sub-test in
 		// PostRun
 		wg.Add(1)
 		go func() {

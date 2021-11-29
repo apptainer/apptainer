@@ -31,7 +31,7 @@ type actionTests struct {
 	env e2e.TestEnv
 }
 
-// run tests min fuctionality for singularity run
+// run tests min fuctionality for apptainer run
 func (c actionTests) actionRun(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
@@ -68,7 +68,7 @@ func (c actionTests) actionRun(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -79,7 +79,7 @@ func (c actionTests) actionRun(t *testing.T) {
 	}
 }
 
-// exec tests min fuctionality for singularity exec
+// exec tests min fuctionality for apptainer exec
 func (c actionTests) actionExec(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
@@ -98,7 +98,7 @@ func (c actionTests) actionExec(t *testing.T) {
 	}
 
 	// Create a temp testfile
-	tmpfile, err := fs.MakeTmpFile(testdataTmp, "testSingularityExec.", 0o644)
+	tmpfile, err := fs.MakeTmpFile(testdataTmp, "testApptainerExec.", 0o644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -254,7 +254,7 @@ func (c actionTests) actionExec(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -279,21 +279,21 @@ func (c actionTests) actionShell(t *testing.T) {
 	tests := []struct {
 		name       string
 		argv       []string
-		consoleOps []e2e.SingularityConsoleOp
+		consoleOps []e2e.ApptainerConsoleOp
 		exit       int
 	}{
 		{
 			name: "ShellExit",
 			argv: []string{c.env.ImagePath},
-			consoleOps: []e2e.SingularityConsoleOp{
+			consoleOps: []e2e.ApptainerConsoleOp{
 				// "cd /" to work around issue where a long
 				// working directory name causes the test
-				// to fail because the "Singularity" that
+				// to fail because the "Apptainer" that
 				// we are looking for is chopped from the
 				// front.
 				// TODO(mem): This test was added back in 491a71716013654acb2276e4b37c2e015d2dfe09
 				e2e.ConsoleSendLine("cd /"),
-				e2e.ConsoleExpect("Singularity"),
+				e2e.ConsoleExpect("Apptainer"),
 				e2e.ConsoleSendLine("exit"),
 			},
 			exit: 0,
@@ -301,7 +301,7 @@ func (c actionTests) actionShell(t *testing.T) {
 		{
 			name: "ShellHostname",
 			argv: []string{c.env.ImagePath},
-			consoleOps: []e2e.SingularityConsoleOp{
+			consoleOps: []e2e.ApptainerConsoleOp{
 				e2e.ConsoleSendLine("hostname"),
 				e2e.ConsoleExpect(hostname),
 				e2e.ConsoleSendLine("exit"),
@@ -311,7 +311,7 @@ func (c actionTests) actionShell(t *testing.T) {
 		{
 			name: "ShellBadCommand",
 			argv: []string{c.env.ImagePath},
-			consoleOps: []e2e.SingularityConsoleOp{
+			consoleOps: []e2e.ApptainerConsoleOp{
 				e2e.ConsoleSendLine("_a_fake_command"),
 				e2e.ConsoleSendLine("exit"),
 			},
@@ -320,7 +320,7 @@ func (c actionTests) actionShell(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -332,7 +332,7 @@ func (c actionTests) actionShell(t *testing.T) {
 	}
 }
 
-// STDPipe tests pipe stdin/stdout to singularity actions cmd
+// STDPipe tests pipe stdin/stdout to apptainer actions cmd
 func (c actionTests) STDPipe(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
@@ -389,7 +389,7 @@ func (c actionTests) STDPipe(t *testing.T) {
 		// {
 		// 	name:    "TrueShub",
 		// 	command: "shell",
-		// 	argv:    []string{"shub://singularityhub/busybox"},
+		// 	argv:    []string{"shub://apptainerhub/busybox"},
 		// 	input:   "true",
 		// 	exit:    0,
 		// },
@@ -397,7 +397,7 @@ func (c actionTests) STDPipe(t *testing.T) {
 		// {
 		// 	name:    "FalseShub",
 		// 	command: "shell",
-		// 	argv:    []string{"shub://singularityhub/busybox"},
+		// 	argv:    []string{"shub://apptainerhub/busybox"},
 		// 	input:   "false",
 		// 	exit:    1,
 		// },
@@ -406,7 +406,7 @@ func (c actionTests) STDPipe(t *testing.T) {
 	var input bytes.Buffer
 
 	for _, tt := range stdinTests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -459,7 +459,7 @@ func (c actionTests) STDPipe(t *testing.T) {
 		},
 	}
 	for _, tt := range stdoutTests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -473,12 +473,12 @@ func (c actionTests) STDPipe(t *testing.T) {
 	}
 }
 
-// RunFromURI tests min fuctionality for singularity run/exec URI://
+// RunFromURI tests min fuctionality for apptainer run/exec URI://
 func (c actionTests) RunFromURI(t *testing.T) {
 	e2e.EnsureRegistry(t)
 
 	runScript := "testdata/runscript.sh"
-	bind := fmt.Sprintf("%s:/.singularity.d/runscript", runScript)
+	bind := fmt.Sprintf("%s:/.apptainer.d/runscript", runScript)
 
 	fi, err := os.Stat(runScript)
 	if err != nil {
@@ -519,7 +519,7 @@ func (c actionTests) RunFromURI(t *testing.T) {
 		// {
 		// 	name:    "RunFromShubOK",
 		// 	command: "run",
-		// 	argv:    []string{"--bind", bind, "shub://singularityhub/busybox", size},
+		// 	argv:    []string{"--bind", bind, "shub://apptainerhub/busybox", size},
 		// 	exit:    0,
 		// 	profile: e2e.UserProfile,
 		// },
@@ -548,7 +548,7 @@ func (c actionTests) RunFromURI(t *testing.T) {
 		// {
 		// 	name:    "RunFromShubKO",
 		// 	command: "run",
-		// 	argv:    []string{"--bind", bind, "shub://singularityhub/busybox", "0"},
+		// 	argv:    []string{"--bind", bind, "shub://apptainerhub/busybox", "0"},
 		// 	exit:    1,
 		// 	profile: e2e.UserProfile,
 		// },
@@ -579,7 +579,7 @@ func (c actionTests) RunFromURI(t *testing.T) {
 		// {
 		// 	name:    "ExecTrueShub",
 		// 	command: "exec",
-		// 	argv:    []string{"shub://singularityhub/busybox", "true"},
+		// 	argv:    []string{"shub://apptainerhub/busybox", "true"},
 		// 	exit:    0,
 		// 	profile: e2e.UserProfile,
 		// },
@@ -608,7 +608,7 @@ func (c actionTests) RunFromURI(t *testing.T) {
 		// {
 		// 	name:    "ExecFalseShub",
 		// 	command: "exec",
-		// 	argv:    []string{"shub://singularityhub/busybox", "false"},
+		// 	argv:    []string{"shub://apptainerhub/busybox", "false"},
 		// 	exit:    1,
 		// 	profile: e2e.UserProfile,
 		// },
@@ -639,7 +639,7 @@ func (c actionTests) RunFromURI(t *testing.T) {
 		// {
 		// 	name:    "ExecTrueShubUserns",
 		// 	command: "exec",
-		// 	argv:    []string{"shub://singularityhub/busybox", "true"},
+		// 	argv:    []string{"shub://apptainerhub/busybox", "true"},
 		// 	exit:    0,
 		// 	profile: e2e.UserNamespaceProfile,
 		// },
@@ -668,7 +668,7 @@ func (c actionTests) RunFromURI(t *testing.T) {
 		// {
 		// 	name:    "ExecFalseShubUserns",
 		// 	command: "exec",
-		// 	argv:    []string{"shub://singularityhub/busybox", "false"},
+		// 	argv:    []string{"shub://apptainerhub/busybox", "false"},
 		// 	exit:    1,
 		// 	profile: e2e.UserNamespaceProfile,
 		// },
@@ -682,7 +682,7 @@ func (c actionTests) RunFromURI(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -719,7 +719,7 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 		}
 	}
 	// sandbox overlay implies creation of upper/work directories by
-	// Singularity, so we would need privileges to delete the test
+	// Apptainer, so we would need privileges to delete the test
 	// directory correctly
 	defer e2e.Privileged(cleanup)
 
@@ -762,7 +762,7 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 	}
 
 	// create a sandbox image from test image
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -890,7 +890,7 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -980,7 +980,7 @@ func (c actionTests) actionBasicProfiles(t *testing.T) {
 
 		t.Run(profile.String(), func(t *testing.T) {
 			for _, tt := range tests {
-				env.RunSingularity(
+				env.RunApptainer(
 					t,
 					e2e.AsSubtest(tt.name),
 					e2e.WithProfile(profile),
@@ -1043,7 +1043,7 @@ func (c actionTests) actionNetwork(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -1112,7 +1112,7 @@ func (c actionTests) actionBinds(t *testing.T) {
 	}
 
 	// convert test image to sandbox
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -1520,7 +1520,7 @@ func (c actionTests) actionBinds(t *testing.T) {
 
 		t.Run(profile.String(), func(t *testing.T) {
 			for _, tt := range tests {
-				c.env.RunSingularity(
+				c.env.RunApptainer(
 					t,
 					e2e.AsSubtest(tt.name),
 					e2e.WithProfile(profile),
@@ -1570,7 +1570,7 @@ func (c actionTests) exitSignals(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -1593,7 +1593,7 @@ func (c actionTests) fuseMount(t *testing.T) {
 	rootPrivKey := filepath.Join(imageDir, "/etc/ssh/ssh_host_rsa_key")
 	userPrivKey := filepath.Join(imageDir, "user.key")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -1624,7 +1624,7 @@ func (c actionTests) fuseMount(t *testing.T) {
 	// we don't use an instance as it could conflict with
 	// instance tests running in parallel
 	go func() {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.RootProfile),
 			e2e.WithStdin(stdinReader),
@@ -1764,7 +1764,7 @@ func (c actionTests) fuseMount(t *testing.T) {
 	sshConfig := filepath.Join(imageDir, "etc", "ssh", "ssh_config")
 
 	for _, tt := range basicTests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -1840,14 +1840,14 @@ func (c actionTests) bindImage(t *testing.T) {
 	}
 
 	// create new SIF images
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("sif"),
 		e2e.WithArgs([]string{"new", sifSquashImage}...),
 		e2e.ExpectExit(0),
 	)
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("sif"),
@@ -1857,7 +1857,7 @@ func (c actionTests) bindImage(t *testing.T) {
 
 	// arch partition doesn't matter for data partition so
 	// take amd64 by default
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("sif"),
@@ -1870,7 +1870,7 @@ func (c actionTests) bindImage(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("sif"),
@@ -2074,7 +2074,7 @@ func (c actionTests) bindImage(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -2095,7 +2095,7 @@ func (c actionTests) actionUmask(t *testing.T) {
 	oldUmask := syscall.Umask(0)
 	defer syscall.Umask(oldUmask)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithDir(u.Dir),
@@ -2107,7 +2107,7 @@ func (c actionTests) actionUmask(t *testing.T) {
 		),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithDir(u.Dir),
@@ -2210,7 +2210,7 @@ func (c actionTests) actionNoMount(t *testing.T) {
 	for _, tt := range tests {
 
 		if tt.testDefault {
-			c.env.RunSingularity(
+			c.env.RunApptainer(
 				t,
 				e2e.WithDir(tt.cwd),
 				e2e.AsSubtest(tt.name),
@@ -2222,7 +2222,7 @@ func (c actionTests) actionNoMount(t *testing.T) {
 			)
 		}
 		if tt.testContained {
-			c.env.RunSingularity(
+			c.env.RunApptainer(
 				t,
 				e2e.WithDir(tt.cwd),
 				e2e.AsSubtest(tt.name+"Contained"),
@@ -2245,7 +2245,7 @@ func (c actionTests) actionCompat(t *testing.T) {
 		name     string
 		args     []string
 		exitCode int
-		expect   e2e.SingularityCmdResultOp
+		expect   e2e.ApptainerCmdResultOp
 	}
 
 	tests := []test{
@@ -2278,7 +2278,7 @@ func (c actionTests) actionCompat(t *testing.T) {
 	defer syscall.Umask(oldUmask)
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -2302,9 +2302,9 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 
 	return testhelper.Tests{
 		"action URI":            c.RunFromURI,          // action_URI
-		"exec":                  c.actionExec,          // singularity exec
+		"exec":                  c.actionExec,          // apptainer exec
 		"persistent overlay":    c.PersistentOverlay,   // Persistent Overlay
-		"run":                   c.actionRun,           // singularity run
+		"run":                   c.actionRun,           // apptainer run
 		"shell":                 c.actionShell,         // shell interaction
 		"STDPIPE":               c.STDPipe,             // stdin/stdout pipe
 		"action basic profiles": c.actionBasicProfiles, // run basic action under different profiles

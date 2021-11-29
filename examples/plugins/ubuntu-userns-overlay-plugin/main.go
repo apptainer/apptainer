@@ -12,7 +12,7 @@ import (
 
 	"github.com/apptainer/apptainer/pkg/image"
 	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
-	singularitycallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
+	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
 )
 
 // Allow to use overlay with user namespace on Ubuntu flavors.
@@ -24,7 +24,7 @@ var Plugin = pluginapi.Plugin{
 		Description: "Overlay ubuntu driver with user namespace",
 	},
 	Callbacks: []pluginapi.Callback{
-		(singularitycallback.RegisterImageDriver)(ubuntuOvlRegister),
+		(apptainercallback.RegisterImageDriver)(ubuntuOvlRegister),
 	},
 	Install: setConfiguration,
 }
@@ -44,7 +44,7 @@ func (d *ubuntuOvlDriver) Features() image.DriverFeature {
 	if d.unprivileged {
 		return image.OverlayFeature
 	}
-	// privileged run are handled as usual by the singularity runtime
+	// privileged run are handled as usual by the apptainer runtime
 	return 0
 }
 
@@ -67,15 +67,15 @@ func (d *ubuntuOvlDriver) Stop() error {
 }
 
 // setConfiguration sets "image driver" and "enable overlay" configuration directives
-// during singularity plugin install step.
+// during apptainer plugin install step.
 func setConfiguration(_ string) error {
 	cmd := exec.Command("/proc/self/exe", "config", "global", "--set", "image driver", driverName)
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("could not set 'image driver = %s' in singularity.conf", driverName)
+		return fmt.Errorf("could not set 'image driver = %s' in apptainer.conf", driverName)
 	}
 	cmd = exec.Command("/proc/self/exe", "config", "global", "--set", "enable overlay", "driver")
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("could not set 'enable overlay = driver' in singularity.conf")
+		return fmt.Errorf("could not set 'enable overlay = driver' in apptainer.conf")
 	}
 	return nil
 }

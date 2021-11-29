@@ -72,30 +72,30 @@ var globalConfigDryRunFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "dry-run",
 	ShortHand:    "d",
-	Usage:        "dump resulting configuration on stdout but doesn't write it to singularity.conf",
+	Usage:        "dump resulting configuration on stdout but doesn't write it to apptainer.conf",
 }
 
-// configGlobalCmd singularity config global
+// configGlobalCmd apptainer config global
 var configGlobalCmd = &cobra.Command{
 	Args:                  cobra.RangeArgs(1, 2),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRootOrUnpriv,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var op singularity.GlobalConfigOp
+		var op apptainer.GlobalConfigOp
 
 		if globalConfigSet {
-			op = singularity.GlobalConfigSet
+			op = apptainer.GlobalConfigSet
 		} else if globalConfigUnset {
-			op = singularity.GlobalConfigUnset
+			op = apptainer.GlobalConfigUnset
 		} else if globalConfigReset {
-			op = singularity.GlobalConfigReset
+			op = apptainer.GlobalConfigReset
 		} else if globalConfigGet {
-			op = singularity.GlobalConfigGet
+			op = apptainer.GlobalConfigGet
 		} else {
 			return fmt.Errorf("you must specify an option (eg: --set/--unset)")
 		}
 
-		if err := singularity.GlobalConfig(args, configurationFile, globalConfigDryRun, op); err != nil {
+		if err := apptainer.GlobalConfig(args, configurationFile, globalConfigDryRun, op); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 

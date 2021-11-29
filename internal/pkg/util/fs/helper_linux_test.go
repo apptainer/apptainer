@@ -489,7 +489,7 @@ func testCopyFileFunc(t *testing.T, fn copyFileFunc) {
 	test.DropPrivilege(t)
 	defer test.ResetPrivilege(t)
 
-	testData := []byte("Hello, Singularity!")
+	testData := []byte("Hello, Apptainer!")
 
 	tmpDir, err := ioutil.TempDir("", "copy-file")
 	if err != nil {

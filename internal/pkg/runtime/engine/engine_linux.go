@@ -18,7 +18,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 )
 
-// Engine is the combination of an Operations and a config.Common. The singularity
+// Engine is the combination of an Operations and a config.Common. The apptainer
 // startup routines (internal/app/starter/*) can spawn a container process from this type.
 type Engine struct {
 	Operations

@@ -172,11 +172,11 @@ func TestFindFromConfigOrPath(t *testing.T) {
 			cfg := fmt.Sprintf("%s = %s\n", tc.configKey, tc.configVal)
 			ioutil.WriteFile(f.Name(), []byte(cfg), 0o644)
 
-			conf, err := singularityconf.Parse(f.Name())
+			conf, err := apptainerconf.Parse(f.Name())
 			if err != nil {
-				t.Errorf("Error parsing test singularityconf: %v", err)
+				t.Errorf("Error parsing test apptainerconf: %v", err)
 			}
-			singularityconf.SetCurrentConfig(conf)
+			apptainerconf.SetCurrentConfig(conf)
 
 			path, err := findFromConfigOrPath(tc.bin)
 
@@ -307,11 +307,11 @@ func TestFindFromConfigOnly(t *testing.T) {
 			cfg := fmt.Sprintf("%s = %s\n", tc.configKey, tc.configVal)
 			ioutil.WriteFile(f.Name(), []byte(cfg), 0o644)
 
-			conf, err := singularityconf.Parse(f.Name())
+			conf, err := apptainerconf.Parse(f.Name())
 			if err != nil {
-				t.Errorf("Error parsing test singularityconf: %v", err)
+				t.Errorf("Error parsing test apptainerconf: %v", err)
 			}
-			singularityconf.SetCurrentConfig(conf)
+			apptainerconf.SetCurrentConfig(conf)
 
 			path, err := findFromConfigOnly(tc.bin)
 

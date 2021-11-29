@@ -91,8 +91,8 @@ func Network(t *testing.T) {
 		nsPath := fmt.Sprintf("/proc/%d/ns/net", cmd.Process.Pid)
 
 		cniPath := new(network.CNIPath)
-		cniPath.Conf = filepath.Join(buildcfg.SYSCONFDIR, "singularity", "network")
-		cniPath.Plugin = filepath.Join(buildcfg.LIBEXECDIR, "singularity", "cni")
+		cniPath.Conf = filepath.Join(buildcfg.SYSCONFDIR, "apptainer", "network")
+		cniPath.Plugin = filepath.Join(buildcfg.LIBEXECDIR, "apptainer", "cni")
 
 		setup, err := network.NewSetup([]string{"bridge"}, "_test_", nsPath, cniPath)
 		if err != nil {
@@ -229,7 +229,7 @@ func Command(t *testing.T, command string) {
 // current test is skipped with a message.
 func Seccomp(t *testing.T) {
 	if !seccomp.Enabled() {
-		t.Skipf("seccomp disabled, Singularity was compiled without the seccomp library")
+		t.Skipf("seccomp disabled, Apptainer was compiled without the seccomp library")
 	}
 }
 

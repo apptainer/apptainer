@@ -119,7 +119,7 @@ func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pull
 		}
 	}
 
-	if err := singularity.Verify(ctx, pullTo, singularity.OptVerifyUseKeyServer(co...)); err != nil {
+	if err := apptainer.Verify(ctx, pullTo, apptainer.OptVerifyUseKeyServer(co...)); err != nil {
 		sylog.Warningf("%v", err)
 		return pullTo, ErrLibraryPullUnsigned
 	}

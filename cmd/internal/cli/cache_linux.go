@@ -21,7 +21,7 @@ func init() {
 	})
 }
 
-// CacheCmd : aka, `singularity cache`
+// CacheCmd : aka, `apptainer cache`
 var CacheCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return errors.New("invalid command")

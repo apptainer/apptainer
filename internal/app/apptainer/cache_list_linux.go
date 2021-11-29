@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"fmt"
@@ -50,12 +50,12 @@ func listTypeCache(printList bool, name, cachePath string) (int, int64, error) {
 	return len(cacheEntries), totalSize, nil
 }
 
-// ListSingularityCache will list the local singularity cache for the
+// ListApptainerCache will list the local apptainer cache for the
 // types specified by cacheListTypes. If cacheListTypes contains the
 // value "all", all the cache entries are considered. If cacheListVerbose is
 // true, the entries will be shown in the output, otherwise only a
 // summary is provided.
-func ListSingularityCache(imgCache *cache.Handle, cacheListTypes []string, cacheListVerbose bool) error {
+func ListApptainerCache(imgCache *cache.Handle, cacheListTypes []string, cacheListVerbose bool) error {
 	if imgCache == nil {
 		return errInvalidCacheHandle
 	}

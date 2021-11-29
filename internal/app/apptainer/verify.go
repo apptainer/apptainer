@@ -4,7 +4,7 @@
 // distributed with the sources of this project regarding your rights to use or distribute this
 // software.
 
-package singularity
+package apptainer
 
 import (
 	"context"
@@ -172,7 +172,7 @@ func (v verifier) getOpts(ctx context.Context, f *sif.FileImage) ([]integrity.Ve
 
 // Verify verifies digital signature(s) in the SIF image found at path, according to opts.
 //
-// By default, the singularity public keyring provides key material. To supplement this with a
+// By default, the apptainer public keyring provides key material. To supplement this with a
 // keyserver, use OptVerifyUseKeyServer.
 //
 // By default, non-legacy signatures for all object groups are verified. To override the default
@@ -206,7 +206,7 @@ func Verify(ctx context.Context, path string, opts ...VerifyOpt) error {
 
 // VerifyFingerprints verifies an image and checks it was signed by *all* of the provided fingerprints
 //
-// By default, the singularity public keyring provides key material. To supplement this with a
+// By default, the apptainer public keyring provides key material. To supplement this with a
 // keyserver, use OptVerifyUseKeyServer.
 //
 // By default, non-legacy signatures for all object groups are verified. To override the default

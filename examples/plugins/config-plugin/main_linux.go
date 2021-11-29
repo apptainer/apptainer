@@ -13,7 +13,7 @@ import (
 	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
 	clicallback "github.com/apptainer/apptainer/pkg/plugin/callback/cli"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
-	singularity "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
+	apptainer "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
@@ -24,15 +24,15 @@ var Plugin = pluginapi.Plugin{
 		Name:        "github.com/apptainer/apptainer/config-example-plugin",
 		Author:      "Sylabs Team",
 		Version:     "0.1.0",
-		Description: "This is a short example config plugin for Singularity",
+		Description: "This is a short example config plugin for Apptainer",
 	},
 	Callbacks: []pluginapi.Callback{
-		(clicallback.SingularityEngineConfig)(callbackCgroups),
+		(clicallback.ApptainerEngineConfig)(callbackCgroups),
 	},
 }
 
 func callbackCgroups(common *config.Common) {
-	c, ok := common.EngineConfig.(*singularity.EngineConfig)
+	c, ok := common.EngineConfig.(*apptainer.EngineConfig)
 	if !ok {
 		log.Printf("Unexpected engine config")
 		return

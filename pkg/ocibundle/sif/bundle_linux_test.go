@@ -107,11 +107,11 @@ func TestFromSif(t *testing.T) {
 // in order avoid needing buildcfg for this unit test, such that
 // it can be run directly from the source tree without compilation.
 // This bundle code is in `pkg/` so *should not* depend on a compiled
-// Singularity (https://github.com/apptainer/apptainer/issues/2316).
+// Apptainer (https://github.com/apptainer/apptainer/issues/2316).
 //
 // Ideally we would refactor i/p/t/t/require so requirements that
-// don't need a compiled Singularity can be used without compiled
-// Singularity.
+// don't need a compiled Apptainer can be used without compiled
+// Apptainer.
 //
 // Filesystem checks that the current test could use the
 // corresponding filesystem, if the filesystem is not

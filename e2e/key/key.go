@@ -25,8 +25,8 @@ type ctx struct {
 	keyRing                string
 }
 
-func buildConsoleLines(lines ...string) []e2e.SingularityConsoleOp {
-	consoleLines := make([]e2e.SingularityConsoleOp, 0, len(lines))
+func buildConsoleLines(lines ...string) []e2e.ApptainerConsoleOp {
+	consoleLines := make([]e2e.ApptainerConsoleOp, 0, len(lines))
 	for _, line := range lines {
 		consoleLines = append(consoleLines, e2e.ConsoleSendLine(line))
 	}
@@ -34,7 +34,7 @@ func buildConsoleLines(lines ...string) []e2e.SingularityConsoleOp {
 	return consoleLines
 }
 
-func (c *ctx) singularityKeyList(t *testing.T) {
+func (c *ctx) apptainerKeyList(t *testing.T) {
 	tests := []struct {
 		name   string
 		args   []string
@@ -65,7 +65,7 @@ func (c *ctx) singularityKeyList(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -76,7 +76,7 @@ func (c *ctx) singularityKeyList(t *testing.T) {
 	}
 }
 
-func (c *ctx) singularityKeySearch(t *testing.T) {
+func (c *ctx) apptainerKeySearch(t *testing.T) {
 	tests := []struct {
 		name   string
 		args   []string
@@ -131,7 +131,7 @@ func (c *ctx) singularityKeySearch(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -142,7 +142,7 @@ func (c *ctx) singularityKeySearch(t *testing.T) {
 	}
 }
 
-func (c *ctx) singularityKeyNewpair(t *testing.T) {
+func (c *ctx) apptainerKeyNewpair(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       []string
@@ -168,7 +168,7 @@ func (c *ctx) singularityKeyNewpair(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -180,8 +180,8 @@ func (c *ctx) singularityKeyNewpair(t *testing.T) {
 	}
 }
 
-// singularityKeyExport will export a private, and public (binary and ASCII) key.
-func (c *ctx) singularityKeyExport(t *testing.T) {
+// apptainerKeyExport will export a private, and public (binary and ASCII) key.
+func (c *ctx) apptainerKeyExport(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       []string
@@ -230,7 +230,7 @@ func (c *ctx) singularityKeyExport(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -242,9 +242,9 @@ func (c *ctx) singularityKeyExport(t *testing.T) {
 	}
 }
 
-// singularityKeyImport will export a private, and public (binary and ASCII) key.
+// apptainerKeyImport will export a private, and public (binary and ASCII) key.
 // And will try (and fail) to import a key with the wrong password.
-func (c *ctx) singularityKeyImport(t *testing.T) {
+func (c *ctx) apptainerKeyImport(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       []string
@@ -317,8 +317,8 @@ func (c *ctx) singularityKeyImport(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.singularityResetKeyring(t) // Remove the tmp keyring before each import
-		c.env.RunSingularity(
+		c.apptainerResetKeyring(t) // Remove the tmp keyring before each import
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -330,7 +330,7 @@ func (c *ctx) singularityKeyImport(t *testing.T) {
 	}
 }
 
-func (c *ctx) singularityResetKeyring(t *testing.T) {
+func (c *ctx) apptainerResetKeyring(t *testing.T) {
 	// TODO: run this as non-root
 	err := os.RemoveAll(c.keyRing)
 	if os.IsNotExist(err) && err != nil {
@@ -338,7 +338,7 @@ func (c *ctx) singularityResetKeyring(t *testing.T) {
 	}
 }
 
-func (c *ctx) singularityKeyPush(t *testing.T) {
+func (c *ctx) apptainerKeyPush(t *testing.T) {
 	tests := []struct {
 		name          string
 		cmdArgs       []string
@@ -353,7 +353,7 @@ func (c *ctx) singularityKeyPush(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.UserProfile),
 			e2e.AsSubtest(tt.name),
@@ -364,7 +364,7 @@ func (c *ctx) singularityKeyPush(t *testing.T) {
 	}
 }
 
-func (c *ctx) singularityKeyPull(t *testing.T) {
+func (c *ctx) apptainerKeyPull(t *testing.T) {
 	tests := []struct {
 		name          string
 		cmdArgs       []string
@@ -379,7 +379,7 @@ func (c *ctx) singularityKeyPull(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.UserProfile),
 			e2e.AsSubtest(tt.name),
@@ -390,7 +390,7 @@ func (c *ctx) singularityKeyPull(t *testing.T) {
 	}
 }
 
-func (c *ctx) singularityKeyRemove(t *testing.T) {
+func (c *ctx) apptainerKeyRemove(t *testing.T) {
 	tests := []struct {
 		name          string
 		cmdArgs       []string
@@ -405,7 +405,7 @@ func (c *ctx) singularityKeyRemove(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.UserProfile),
 			e2e.AsSubtest(tt.name),
@@ -416,7 +416,7 @@ func (c *ctx) singularityKeyRemove(t *testing.T) {
 	}
 }
 
-func (c ctx) singularityKeyNewpairWithLen(t *testing.T) {
+func (c ctx) apptainerKeyNewpairWithLen(t *testing.T) {
 	// Create a unique keyring shared for all these tests
 	tempKeyring, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "keyring-", "")
 	defer cleanup(t)
@@ -458,7 +458,7 @@ func (c ctx) singularityKeyNewpairWithLen(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.UserProfile),
 			e2e.AsSubtest(tt.name),
@@ -467,7 +467,7 @@ func (c ctx) singularityKeyNewpairWithLen(t *testing.T) {
 			e2e.WithArgs(tt.args...),
 			e2e.PostRun(func(t *testing.T) {
 				c.checkKeyLength(t, tt.expectedKeyLength)
-				c.singularityResetKeyring(t)
+				c.apptainerResetKeyring(t)
 			}),
 			e2e.ExpectExit(0, e2e.ExpectOutput(e2e.RegexMatch, tt.stdout)),
 		)
@@ -477,7 +477,7 @@ func (c ctx) singularityKeyNewpairWithLen(t *testing.T) {
 func (c *ctx) checkKeyLength(t *testing.T, expectedKeyLength int) {
 	if expectedKeyLength >= 0 {
 		cmdArgs := []string{"list"}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.UserProfile),
 			e2e.WithCommand("key"),
@@ -501,7 +501,7 @@ func (c *ctx) globalKeyring(t *testing.T) {
 		command  string
 		args     []string
 		profile  e2e.Profile
-		resultOp []e2e.SingularityCmdResultOp
+		resultOp []e2e.ApptainerCmdResultOp
 		exit     int
 	}{
 		{
@@ -530,7 +530,7 @@ func (c *ctx) globalKeyring(t *testing.T) {
 			command: "key list",
 			profile: e2e.UserProfile,
 			args:    []string{"--global"},
-			resultOp: []e2e.SingularityCmdResultOp{
+			resultOp: []e2e.ApptainerCmdResultOp{
 				e2e.ExpectOutput(e2e.ContainMatch, keyMap["key1"]),
 				e2e.ExpectOutput(e2e.ContainMatch, keyMap["key2"]),
 			},
@@ -574,7 +574,7 @@ func (c *ctx) globalKeyring(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -586,18 +586,18 @@ func (c *ctx) globalKeyring(t *testing.T) {
 }
 
 // Run the 'key' tests in order
-func (c ctx) singularityKeyCmd(t *testing.T) {
-	c.singularityKeySearch(t)
-	c.singularityKeyList(t)
-	c.singularityKeyNewpair(t)
-	c.singularityKeyExport(t)
-	c.singularityKeyImport(t)
-	c.singularityKeyExport(t)
-	c.singularityKeyImport(t)
-	c.singularityKeyList(t)
-	c.singularityKeyPull(t)
-	c.singularityKeyPush(t)
-	c.singularityKeyRemove(t)
+func (c ctx) apptainerKeyCmd(t *testing.T) {
+	c.apptainerKeySearch(t)
+	c.apptainerKeyList(t)
+	c.apptainerKeyNewpair(t)
+	c.apptainerKeyExport(t)
+	c.apptainerKeyImport(t)
+	c.apptainerKeyExport(t)
+	c.apptainerKeyImport(t)
+	c.apptainerKeyList(t)
+	c.apptainerKeyPull(t)
+	c.apptainerKeyPush(t)
+	c.apptainerKeyRemove(t)
 }
 
 // E2ETests is the main func to trigger the test suite
@@ -615,8 +615,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	return testhelper.Tests{
 		"global": testhelper.NoParallel(c.globalKeyring), // global keyring
 		"ordered": func(t *testing.T) {
-			t.Run("keyCmd", c.singularityKeyCmd)                       // Run all the tests in order
-			t.Run("keyNewpairWithLen", c.singularityKeyNewpairWithLen) // We run a separate test for `key newpair --bit-length` because it requires handling a keyring a specific way
+			t.Run("keyCmd", c.apptainerKeyCmd)                       // Run all the tests in order
+			t.Run("keyNewpairWithLen", c.apptainerKeyNewpairWithLen) // We run a separate test for `key newpair --bit-length` because it requires handling a keyring a specific way
 		},
 	}
 }

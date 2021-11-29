@@ -31,8 +31,8 @@ var tests = []struct {
 func (c ctx) testSemanticVersion(t *testing.T) {
 	for _, tt := range tests {
 
-		checkSemanticVersionFn := func(t *testing.T, r *e2e.SingularityCmdResult) {
-			outputVer := strings.TrimPrefix(string(r.Stdout), "singularity version ")
+		checkSemanticVersionFn := func(t *testing.T, r *e2e.ApptainerCmdResult) {
+			outputVer := strings.TrimPrefix(string(r.Stdout), "apptainer version ")
 			outputVer = strings.TrimSpace(outputVer)
 			if semanticVersion, err := semver.Make(outputVer); err != nil {
 				t.Log(semanticVersion)
@@ -40,7 +40,7 @@ func (c ctx) testSemanticVersion(t *testing.T) {
 			}
 		}
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.UserProfile),
 			e2e.WithArgs(tt.args...),
@@ -54,14 +54,14 @@ func (c ctx) testSemanticVersion(t *testing.T) {
 	}
 }
 
-// Test that both versions when running: singularity --version and
-// singularity version give the same result
+// Test that both versions when running: apptainer --version and
+// apptainer version give the same result
 func (c ctx) testEqualVersion(t *testing.T) {
 	tmpVersion := ""
 	for _, tt := range tests {
 
-		checkEqualVersionFn := func(t *testing.T, r *e2e.SingularityCmdResult) {
-			outputVer := strings.TrimPrefix(string(r.Stdout), "singularity version ")
+		checkEqualVersionFn := func(t *testing.T, r *e2e.ApptainerCmdResult) {
+			outputVer := strings.TrimPrefix(string(r.Stdout), "apptainer version ")
 			outputVer = strings.TrimSpace(outputVer)
 			semanticVersion, err := semver.Make(outputVer)
 			if err != nil {
@@ -77,14 +77,14 @@ func (c ctx) testEqualVersion(t *testing.T) {
 				// compare versions and see if they are equal
 				if semanticVersion.Compare(versionTmp) != 0 {
 					err = errors.Wrapf(err, "comparing versions %q and %q", outputVer, tmpVersion)
-					t.Fatalf("singularity version command and singularity --version give a non-matching version result: %+v", err)
+					t.Fatalf("apptainer version command and apptainer --version give a non-matching version result: %+v", err)
 				}
 			} else {
 				tmpVersion = outputVer
 			}
 		}
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.UserProfile),
 			e2e.WithArgs(tt.args...),
@@ -101,14 +101,14 @@ func (c ctx) testEqualVersion(t *testing.T) {
 
 // Test the help option
 func (c ctx) testHelpOption(t *testing.T) {
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("version"),
 		e2e.WithArgs("--help"),
 		e2e.ExpectExit(
 			0,
-			e2e.ExpectOutput(e2e.RegexMatch, "^Show the version for Singularity"),
+			e2e.ExpectOutput(e2e.RegexMatch, "^Show the version for Apptainer"),
 		),
 	)
 }

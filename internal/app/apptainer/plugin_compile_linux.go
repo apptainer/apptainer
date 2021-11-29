@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"bytes"
@@ -38,7 +38,7 @@ func main() { fmt.Printf(runtime.Version()) }`
 
 type buildToolchain struct {
 	goPath            string
-	singularitySource string
+	apptainerSource string
 	pluginDir         string
 	buildTags         string
 	envs              []string
@@ -51,8 +51,8 @@ func getPackageName() string {
 	return "github.com/apptainer/apptainer"
 }
 
-// getSingularitySrcDir returns the source directory for singularity.
-func getSingularitySrcDir() (string, error) {
+// getApptainerSrcDir returns the source directory for apptainer.
+func getApptainerSrcDir() (string, error) {
 	dir := buildcfg.SOURCEDIR
 	pkgName := getPackageName()
 
@@ -83,7 +83,7 @@ func getSingularitySrcDir() (string, error) {
 }
 
 // checkGoVersion returns an error if the currently Go toolchain is
-// different from the one used to compile singularity. Singularity
+// different from the one used to compile apptainer. Apptainer
 // and plugin must be compiled with the same toolchain.
 func checkGoVersion(tmpDir, goPath string) error {
 	var out bytes.Buffer
@@ -128,9 +128,9 @@ func pluginManifestPath(sourceDir string) string {
 // plugin's source code directory; and destSif, the path to the intended final
 // location of the plugin SIF file.
 func CompilePlugin(sourceDir, destSif, buildTags string, disableMinorCheck bool) error {
-	singularitySrcDir, err := getSingularitySrcDir()
+	apptainerSrcDir, err := getApptainerSrcDir()
 	if err != nil {
-		return errors.New("singularity source directory not found")
+		return errors.New("apptainer source directory not found")
 	}
 	goPath, err := bin.FindBin("go")
 	if err != nil {
@@ -145,7 +145,7 @@ func CompilePlugin(sourceDir, destSif, buildTags string, disableMinorCheck bool)
 	defer os.RemoveAll(d)
 
 	// we need to use the exact same go runtime version used
-	// to compile Singularity
+	// to compile Apptainer
 	if err := checkGoVersion(d, goPath); err != nil {
 		return fmt.Errorf("while checking go version: %s", err)
 	}
@@ -157,17 +157,17 @@ func CompilePlugin(sourceDir, destSif, buildTags string, disableMinorCheck bool)
 		return err
 	}
 
-	sourceLink := filepath.Join(pluginDir, plugin.SingularitySource)
+	sourceLink := filepath.Join(pluginDir, plugin.ApptainerSource)
 	// delete it first if already present
 	os.Remove(sourceLink)
 
-	if err := os.Symlink(singularitySrcDir, sourceLink); err != nil {
+	if err := os.Symlink(apptainerSrcDir, sourceLink); err != nil {
 		return fmt.Errorf("while creating %s symlink: %s", sourceLink, err)
 	}
 
 	bTool := buildToolchain{
 		buildTags:         buildTags,
-		singularitySource: singularitySrcDir,
+		apptainerSource: apptainerSrcDir,
 		pluginDir:         pluginDir,
 		goPath:            goPath,
 		envs:              append(os.Environ(), "GO111MODULE=on"),

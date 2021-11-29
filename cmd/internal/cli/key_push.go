@@ -21,7 +21,7 @@ import (
 	"github.com/sylabs/scs-key-client/client"
 )
 
-// KeyPushCmd is `singularity key list' and lists local store OpenPGP keys
+// KeyPushCmd is `apptainer key list' and lists local store OpenPGP keys
 var KeyPushCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,

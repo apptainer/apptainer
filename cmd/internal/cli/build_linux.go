@@ -92,7 +92,7 @@ func fakerootExec(cmdArgs []string) {
 	}
 
 	err = starter.Exec(
-		"Singularity fakeroot",
+		"Apptainer fakeroot",
 		cfg,
 		starter.UseSuid(useSuid),
 	)
@@ -282,7 +282,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string) {
 	}
 
 	if syscall.Getuid() != 0 && !buildArgs.fakeroot && fs.IsFile(spec) && !isImage(spec) {
-		sylog.Fatalf("You must be the root user, however you can use --remote or --fakeroot to build from a Singularity recipe file")
+		sylog.Fatalf("You must be the root user, however you can use --remote or --fakeroot to build from a Apptainer recipe file")
 	}
 
 	err := checkSections()

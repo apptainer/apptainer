@@ -134,7 +134,7 @@ var deleteImageCmd = &cobra.Command{
 		ctx, cancel := context.WithTimeout(cmd.Context(), time.Duration(deleteImageTimeout)*time.Second)
 		defer cancel()
 
-		if err := singularity.DeleteImage(ctx, libraryConfig, r, deleteImageArch); err != nil {
+		if err := apptainer.DeleteImage(ctx, libraryConfig, r, deleteImageArch); err != nil {
 			sylog.Fatalf("Unable to delete image from library: %s\n", err)
 		}
 

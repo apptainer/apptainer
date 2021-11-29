@@ -23,7 +23,7 @@ type ctx struct {
 	env e2e.TestEnv
 }
 
-// remoteAdd checks the functionality of "singularity remote add" command.
+// remoteAdd checks the functionality of "apptainer remote add" command.
 // It Verifies that adding valid endpoints results in success and invalid
 // one's results in failure.
 func (c ctx) remoteAdd(t *testing.T) {
@@ -44,7 +44,7 @@ func (c ctx) remoteAdd(t *testing.T) {
 
 	for _, tt := range testPass {
 		argv := []string{"--config", config.Name(), "add", "--no-login", tt.remote, tt.uri}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -65,7 +65,7 @@ func (c ctx) remoteAdd(t *testing.T) {
 
 	for _, tt := range testFail {
 		argv := []string{"--config", config.Name(), "add", "--no-login", tt.remote, tt.uri}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -76,7 +76,7 @@ func (c ctx) remoteAdd(t *testing.T) {
 	}
 }
 
-// remoteRemove tests the functionality of "singularity remote remove" command.
+// remoteRemove tests the functionality of "apptainer remote remove" command.
 // 1. Adds remote endpoints
 // 2. Deletes the already added entries
 // 3. Verfies that removing an invalid entry results in a failure
@@ -100,7 +100,7 @@ func (c ctx) remoteRemove(t *testing.T) {
 
 	for _, tt := range add {
 		argv := []string{"--config", config.Name(), "add", "--no-login", tt.remote, tt.uri}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -120,7 +120,7 @@ func (c ctx) remoteRemove(t *testing.T) {
 
 	for _, tt := range testPass {
 		argv := []string{"--config", config.Name(), "remove", tt.remote}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -139,7 +139,7 @@ func (c ctx) remoteRemove(t *testing.T) {
 
 	for _, tt := range testFail {
 		argv := []string{"--config", config.Name(), "remove", tt.remote}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -150,7 +150,7 @@ func (c ctx) remoteRemove(t *testing.T) {
 	}
 }
 
-// remoteUse tests the functionality of "singularity remote use" command.
+// remoteUse tests the functionality of "apptainer remote use" command.
 // 1. Tries to use non-existing remote entry
 // 2. Adds remote entries and tries to use those
 func (c ctx) remoteUse(t *testing.T) {
@@ -170,7 +170,7 @@ func (c ctx) remoteUse(t *testing.T) {
 
 	for _, tt := range testFail {
 		argv := []string{"--config", config.Name(), "use", tt.remote}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -192,7 +192,7 @@ func (c ctx) remoteUse(t *testing.T) {
 
 	for _, tt := range add {
 		argv := []string{"--config", config.Name(), "add", "--no-login", tt.remote, tt.uri}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -212,7 +212,7 @@ func (c ctx) remoteUse(t *testing.T) {
 
 	for _, tt := range testPass {
 		argv := []string{"--config", config.Name(), "use", tt.remote}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -223,7 +223,7 @@ func (c ctx) remoteUse(t *testing.T) {
 	}
 }
 
-// remoteStatus tests the functionality of "singularity remote status" command.
+// remoteStatus tests the functionality of "apptainer remote status" command.
 // 1. Adds remote endpoints
 // 2. Verifies that remote status command succeeds on existing endpoints
 // 3. Verifies that remote status command fails on non-existing endpoints
@@ -247,7 +247,7 @@ func (c ctx) remoteStatus(t *testing.T) {
 
 	for _, tt := range add {
 		argv := []string{"--config", config.Name(), "add", "--no-login", tt.remote, tt.uri}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -266,7 +266,7 @@ func (c ctx) remoteStatus(t *testing.T) {
 
 	for _, tt := range testPass {
 		argv := []string{"--config", config.Name(), "status", tt.remote}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -286,7 +286,7 @@ func (c ctx) remoteStatus(t *testing.T) {
 
 	for _, tt := range testFail {
 		argv := []string{"--config", config.Name(), "status", tt.remote}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -297,7 +297,7 @@ func (c ctx) remoteStatus(t *testing.T) {
 	}
 }
 
-// remoteList tests the functionality of "singularity remote list" command
+// remoteList tests the functionality of "apptainer remote list" command
 func (c ctx) remoteList(t *testing.T) {
 	config, err := ioutil.TempFile(c.env.TestDir, "testConfig-")
 	if err != nil {
@@ -314,7 +314,7 @@ func (c ctx) remoteList(t *testing.T) {
 
 	for _, tt := range testPass {
 		argv := []string{"--config", config.Name(), "list"}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -336,7 +336,7 @@ func (c ctx) remoteList(t *testing.T) {
 
 	for _, tt := range add {
 		argv := []string{"--config", config.Name(), "add", "--no-login", tt.remote, tt.uri}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -354,7 +354,7 @@ func (c ctx) remoteList(t *testing.T) {
 
 	for _, tt := range testPass {
 		argv := []string{"--config", config.Name(), "list"}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -374,7 +374,7 @@ func (c ctx) remoteList(t *testing.T) {
 
 	for _, tt := range use {
 		argv := []string{"--config", config.Name(), "use", tt.remote}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -392,7 +392,7 @@ func (c ctx) remoteList(t *testing.T) {
 
 	for _, tt := range testPass {
 		argv := []string{"--config", config.Name(), "list"}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -412,37 +412,37 @@ func (c ctx) remoteTestFlag(t *testing.T) {
 		{
 			name:           "add help",
 			cmdArgs:        []string{"add", "--help"},
-			expectedOutput: "Add a new singularity remote endpoint",
+			expectedOutput: "Add a new apptainer remote endpoint",
 		},
 		{
 			name:           "list help",
 			cmdArgs:        []string{"list", "--help"},
-			expectedOutput: "List all singularity remote endpoints, keyservers, and OCI credentials that are configured",
+			expectedOutput: "List all apptainer remote endpoints, keyservers, and OCI credentials that are configured",
 		},
 		{
 			name:           "login help",
 			cmdArgs:        []string{"login", "--help"},
-			expectedOutput: "Login to a singularity remote endpoint, an OCI/Docker registry or a keyserver using credentials",
+			expectedOutput: "Login to a apptainer remote endpoint, an OCI/Docker registry or a keyserver using credentials",
 		},
 		{
 			name:           "remove help",
 			cmdArgs:        []string{"remove", "--help"},
-			expectedOutput: "Remove an existing singularity remote endpoint",
+			expectedOutput: "Remove an existing apptainer remote endpoint",
 		},
 		{
 			name:           "status help",
 			cmdArgs:        []string{"status", "--help"},
-			expectedOutput: "Check the status of the singularity services at an endpoint",
+			expectedOutput: "Check the status of the apptainer services at an endpoint",
 		},
 		{
 			name:           "use help",
 			cmdArgs:        []string{"use", "--help"},
-			expectedOutput: "Set a singularity remote endpoint to be actively used",
+			expectedOutput: "Set a apptainer remote endpoint to be actively used",
 		},
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -535,7 +535,7 @@ func (c ctx) remoteBasicLogin(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -589,7 +589,7 @@ func (c ctx) remoteLoginPushPrivate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -602,7 +602,7 @@ func (c ctx) remoteLoginPushPrivate(t *testing.T) {
 
 // Repeated logins with same URI should not create duplicate remote.yaml entries.
 // If we login twice, and logout once we should not see the URI in list.
-// See https://github.com/sylabs/singularity/issues/214
+// See https://github.com/sylabs/apptainer/issues/214
 func (c ctx) remoteLoginRepeated(t *testing.T) {
 	e2e.EnsureRegistry(t)
 	e2e.EnsureImage(t, c.env)
@@ -614,7 +614,7 @@ func (c ctx) remoteLoginRepeated(t *testing.T) {
 		command    string
 		args       []string
 		expectExit int
-		resultOp   e2e.SingularityCmdResultOp
+		resultOp   e2e.ApptainerCmdResultOp
 	}{
 		{
 			name:       "FirstLogin",
@@ -643,7 +643,7 @@ func (c ctx) remoteLoginRepeated(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -780,7 +780,7 @@ func (c ctx) remoteKeyserver(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -790,7 +790,7 @@ func (c ctx) remoteKeyserver(t *testing.T) {
 				if t.Failed() || len(tt.listLines) == 0 {
 					return
 				}
-				c.env.RunSingularity(
+				c.env.RunApptainer(
 					t,
 					e2e.WithProfile(e2e.UserProfile),
 					e2e.WithCommand("remote list"),
@@ -922,7 +922,7 @@ func (c ctx) remoteUseExclusive(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),

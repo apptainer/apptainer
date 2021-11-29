@@ -22,7 +22,7 @@ func (c buildcfgTests) buildcfgBasic(t *testing.T) {
 		name    string
 		cmdArgs []string
 		exit    int
-		op      e2e.SingularityCmdResultOp
+		op      e2e.ApptainerCmdResultOp
 	}{
 		{
 			name:    "help",
@@ -59,7 +59,7 @@ func (c buildcfgTests) buildcfgBasic(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),

@@ -67,7 +67,7 @@ func New(imagePath, libraryURL string, d types.Definition, isDetached, force boo
 		Definition:  d,
 		IsDetached:  isDetached,
 		AuthToken:   authToken,
-		// TODO - set RAM requirements, singularity version, etc.
+		// TODO - set RAM requirements, apptainer version, etc.
 		BuilderRequirements: map[string]string{
 			"arch": buildArch,
 		},
@@ -105,7 +105,7 @@ func (rb *RemoteBuilder) Build(ctx context.Context) (err error) {
 	libraryRefRaw := strings.TrimPrefix(bi.LibraryRef, "library://")
 	if rb.IsDetached {
 		fmt.Printf("Build submitted! Once it is complete, the image can be retrieved by running:\n")
-		fmt.Printf("\tsingularity pull --library %s library://%s\n\n", bi.LibraryURL, libraryRefRaw)
+		fmt.Printf("\tapptainer pull --library %s library://%s\n\n", bi.LibraryURL, libraryRefRaw)
 		if rb.WebURL != "" {
 			fmt.Printf("Alternatively, you can access it from a browser at:\n\t%s/library/%s\n", rb.WebURL, libraryRefRaw)
 		}

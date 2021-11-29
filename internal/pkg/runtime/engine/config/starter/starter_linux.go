@@ -95,8 +95,8 @@ func (c *Config) SetMasterPropagateMount(propagate bool) {
 }
 
 // SetNamespaceJoinOnly changes starter config so that the created process
-// will join an already running container (used for `singularity shell` and
-// `singularity oci exec`) if join is true.
+// will join an already running container (used for `apptainer shell` and
+// `apptainer oci exec`) if join is true.
 func (c *Config) SetNamespaceJoinOnly(join bool) {
 	if join {
 		c.config.container.namespace.joinOnly = C.true

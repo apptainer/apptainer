@@ -31,7 +31,7 @@ var instanceStartPidFileFlag = cmdline.Flag{
 	EnvKeys:      []string{"PID_FILE"},
 }
 
-// singularity instance start
+// apptainer instance start
 var instanceStartCmd = &cobra.Command{
 	Args:                  cobra.MinimumNArgs(2),
 	PreRun:                actionPreRun,
@@ -40,7 +40,7 @@ var instanceStartCmd = &cobra.Command{
 		image := args[0]
 		name := args[1]
 
-		a := append([]string{"/.singularity.d/actions/start"}, args[2:]...)
+		a := append([]string{"/.apptainer.d/actions/start"}, args[2:]...)
 		setVM(cmd)
 		if VM {
 			execVM(cmd, image, a)
@@ -49,7 +49,7 @@ var instanceStartCmd = &cobra.Command{
 		execStarter(cmd, image, a, name)
 
 		if instanceStartPidFile != "" {
-			err := singularity.WriteInstancePidFile(name, instanceStartPidFile)
+			err := apptainer.WriteInstancePidFile(name, instanceStartPidFile)
 			if err != nil {
 				sylog.Warningf("Failed to write pid file: %v", err)
 			}

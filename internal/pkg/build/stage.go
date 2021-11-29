@@ -33,7 +33,7 @@ type stage struct {
 
 const (
 	sLabelsPath  = "/.build.labels"
-	sEnvironment = "APPTAINER_ENVIRONMENT=/.singularity.d/env/91-environment.sh"
+	sEnvironment = "APPTAINER_ENVIRONMENT=/.apptainer.d/env/91-environment.sh"
 	sLabels      = "APPTAINER_LABELS=" + sLabelsPath
 )
 
@@ -101,7 +101,7 @@ func (s *stage) runPostScript(configFile, sessionResolv, sessionHosts string) er
 			return fmt.Errorf("while processing section %%post arguments: %s", err)
 		}
 
-		exe := filepath.Join(buildcfg.BINDIR, "singularity")
+		exe := filepath.Join(buildcfg.BINDIR, "apptainer")
 
 		cmdArgs = append(cmdArgs, s.b.RootfsPath)
 		cmdArgs = append(cmdArgs, args...)
@@ -109,7 +109,7 @@ func (s *stage) runPostScript(configFile, sessionResolv, sessionHosts string) er
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Dir = "/"
-		cmd.Env = currentEnvNoSingularity([]string{"NV", "NVCCLI", "ROCM", "BINDPATH"})
+		cmd.Env = currentEnvNoApptainer([]string{"NV", "NVCCLI", "ROCM", "BINDPATH"})
 
 		sylog.Infof("Running post scriptlet")
 		return cmd.Run()
@@ -128,14 +128,14 @@ func (s *stage) runTestScript(configFile, sessionResolv, sessionHosts string) er
 			cmdArgs = append(cmdArgs, "-B", sessionHosts+":/etc/hosts")
 		}
 
-		exe := filepath.Join(buildcfg.BINDIR, "singularity")
+		exe := filepath.Join(buildcfg.BINDIR, "apptainer")
 
 		cmdArgs = append(cmdArgs, s.b.RootfsPath)
 		cmd := exec.Command(exe, cmdArgs...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Dir = "/"
-		cmd.Env = currentEnvNoSingularity([]string{"NV", "NVCCLI", "ROCM", "BINDPATH", "WRITABLE_TMPFS"})
+		cmd.Env = currentEnvNoApptainer([]string{"NV", "NVCCLI", "ROCM", "BINDPATH", "WRITABLE_TMPFS"})
 
 		sylog.Infof("Running testscript")
 		return cmd.Run()

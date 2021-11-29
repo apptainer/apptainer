@@ -173,7 +173,7 @@ func checkPerms(rootfs string) (err error) {
 		}
 		// Warn on any directory not `rwX` - technically other combinations may
 		// be traversable / removable... but are confusing to the user vs
-		// the Singularity 3.4 behavior.
+		// the Apptainer 3.4 behavior.
 		if f.Mode().IsDir() && f.Mode().Perm()&0o700 != 0o700 {
 			sylog.Debugf("Path %q has restrictive permissions", path)
 			return errRestrictivePerm
@@ -184,7 +184,7 @@ func checkPerms(rootfs string) (err error) {
 	if errors.Is(err, errRestrictivePerm) {
 		sylog.Warningf("The sandbox contain files/dirs that cannot be removed with 'rm'.")
 		sylog.Warningf("Use 'chmod -R u+rwX' to set permissions that allow removal.")
-		sylog.Warningf("Use the '--fix-perms' option to 'singularity build' to modify permissions at build time.")
+		sylog.Warningf("Use the '--fix-perms' option to 'apptainer build' to modify permissions at build time.")
 		// It's not an error any further up... the rootfs is still usable
 		return nil
 	}

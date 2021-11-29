@@ -3,8 +3,8 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-//go:build singularity_engine
-// +build singularity_engine
+//go:build apptainer_engine
+// +build apptainer_engine
 
 package loop
 
@@ -16,12 +16,12 @@ import (
 func GetMaxLoopDevices() int {
 	// if the caller has set the current config use it
 	// otherwise parse the default configuration file
-	cfg := singularityconf.GetCurrentConfig()
+	cfg := apptainerconf.GetCurrentConfig()
 	if cfg == nil {
 		var err error
 
 		configFile := buildcfg.APPTAINER_CONF_FILE
-		cfg, err = singularityconf.Parse(configFile)
+		cfg, err = apptainerconf.Parse(configFile)
 		if err != nil {
 			return 256
 		}

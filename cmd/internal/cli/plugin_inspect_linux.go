@@ -17,7 +17,7 @@ import (
 // PluginInspectCmd displays information about a plugin.
 var PluginInspectCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
-		err := singularity.InspectPlugin(args[0])
+		err := apptainer.InspectPlugin(args[0])
 		if err != nil {
 			if os.IsNotExist(err) {
 				sylog.Fatalf("Failed to inspect plugin %q: plugin not found.", args[0])

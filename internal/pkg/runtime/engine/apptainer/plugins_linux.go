@@ -13,7 +13,7 @@
 //go:build cni_plugins
 // +build cni_plugins
 
-package singularity
+package apptainer
 
 import (
 	_ "github.com/containernetworking/plugins/plugins/ipam/dhcp"

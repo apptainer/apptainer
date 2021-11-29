@@ -19,7 +19,7 @@ type ctx struct {
 	env             e2e.TestEnv
 	imgCache        string
 	keyringDir      string
-	passphraseInput []e2e.SingularityConsoleOp
+	passphraseInput []e2e.ApptainerConsoleOp
 }
 
 const (
@@ -27,9 +27,9 @@ const (
 	imgName = "testImage.sif"
 )
 
-func (c ctx) singularitySignHelpOption(t *testing.T) {
+func (c ctx) apptainerSignHelpOption(t *testing.T) {
 	c.env.KeyringDir = c.keyringDir
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("sign"),
@@ -60,14 +60,14 @@ func (c *ctx) prepareImage(t *testing.T) (string, func(*testing.T)) {
 }
 
 //nolint:dupl
-func (c ctx) singularitySignIDOption(t *testing.T) {
+func (c ctx) apptainerSignIDOption(t *testing.T) {
 	imgPath, cleanup := c.prepareImage(t)
 	defer cleanup(t)
 
 	tests := []struct {
 		name       string
 		args       []string
-		expectOp   e2e.SingularityCmdResultOp
+		expectOp   e2e.ApptainerCmdResultOp
 		expectExit int
 	}{
 		{
@@ -88,7 +88,7 @@ func (c ctx) singularitySignIDOption(t *testing.T) {
 	c.env.ImgCacheDir = c.imgCache
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -100,14 +100,14 @@ func (c ctx) singularitySignIDOption(t *testing.T) {
 	}
 }
 
-func (c ctx) singularitySignAllOption(t *testing.T) {
+func (c ctx) apptainerSignAllOption(t *testing.T) {
 	imgPath, cleanup := c.prepareImage(t)
 	defer cleanup(t)
 
 	tests := []struct {
 		name       string
 		args       []string
-		expectOp   e2e.SingularityCmdResultOp
+		expectOp   e2e.ApptainerCmdResultOp
 		expectExit int
 	}{
 		{
@@ -128,7 +128,7 @@ func (c ctx) singularitySignAllOption(t *testing.T) {
 	c.env.ImgCacheDir = c.imgCache
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -141,14 +141,14 @@ func (c ctx) singularitySignAllOption(t *testing.T) {
 }
 
 //nolint:dupl
-func (c ctx) singularitySignGroupIDOption(t *testing.T) {
+func (c ctx) apptainerSignGroupIDOption(t *testing.T) {
 	imgPath, cleanup := c.prepareImage(t)
 	defer cleanup(t)
 
 	tests := []struct {
 		name       string
 		args       []string
-		expectOp   e2e.SingularityCmdResultOp
+		expectOp   e2e.ApptainerCmdResultOp
 		expectExit int
 	}{
 		{
@@ -169,7 +169,7 @@ func (c ctx) singularitySignGroupIDOption(t *testing.T) {
 	c.env.ImgCacheDir = c.imgCache
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -181,14 +181,14 @@ func (c ctx) singularitySignGroupIDOption(t *testing.T) {
 	}
 }
 
-func (c ctx) singularitySignKeyidxOption(t *testing.T) {
+func (c ctx) apptainerSignKeyidxOption(t *testing.T) {
 	imgPath, cleanup := c.prepareImage(t)
 	defer cleanup(t)
 
 	cmdArgs := []string{"--keyidx", "0", imgPath}
 	c.env.KeyringDir = c.keyringDir
 	c.env.ImgCacheDir = c.imgCache
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("sign"),
@@ -202,7 +202,7 @@ func (c ctx) singularitySignKeyidxOption(t *testing.T) {
 }
 
 func (c *ctx) generateKeypair(t *testing.T) {
-	keyGenInput := []e2e.SingularityConsoleOp{
+	keyGenInput := []e2e.ApptainerConsoleOp{
 		e2e.ConsoleSendLine("e2e sign test key"),
 		e2e.ConsoleSendLine("jdoe@sylabs.io"),
 		e2e.ConsoleSendLine("sign e2e test"),
@@ -212,7 +212,7 @@ func (c *ctx) generateKeypair(t *testing.T) {
 	}
 
 	c.env.KeyringDir = c.keyringDir
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.ConsoleRun(keyGenInput...),
 		e2e.WithProfile(e2e.UserProfile),
@@ -256,14 +256,14 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			}()
 			c.generateKeypair(t)
 
-			c.passphraseInput = []e2e.SingularityConsoleOp{
+			c.passphraseInput = []e2e.ApptainerConsoleOp{
 				e2e.ConsoleSendLine("passphrase"),
 			}
-			t.Run("singularitySignAllOption", c.singularitySignAllOption)
-			t.Run("singularitySignHelpOption", c.singularitySignHelpOption)
-			t.Run("singularitySignIDOption", c.singularitySignIDOption)
-			t.Run("singularitySignGroupIDOption", c.singularitySignGroupIDOption)
-			t.Run("singularitySignKeyidxOption", c.singularitySignKeyidxOption)
+			t.Run("apptainerSignAllOption", c.apptainerSignAllOption)
+			t.Run("apptainerSignHelpOption", c.apptainerSignHelpOption)
+			t.Run("apptainerSignIDOption", c.apptainerSignIDOption)
+			t.Run("apptainerSignGroupIDOption", c.apptainerSignGroupIDOption)
+			t.Run("apptainerSignKeyidxOption", c.apptainerSignKeyidxOption)
 		},
 	}
 }

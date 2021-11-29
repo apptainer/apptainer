@@ -34,7 +34,7 @@ func (c ctx) testPluginBasic(t *testing.T) {
 		command    string
 		args       []string
 		expectExit int
-		expectOp   e2e.SingularityCmdResultOp
+		expectOp   e2e.ApptainerCmdResultOp
 	}{
 		{
 			name:       "Create",
@@ -131,7 +131,7 @@ func (c ctx) testPluginBasic(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -179,7 +179,7 @@ func (c ctx) testCLICallbacks(t *testing.T) {
 			expectExit: 42,
 		},
 		{
-			name:       "SingularityConfigCallback",
+			name:       "ApptainerConfigCallback",
 			profile:    e2e.UserProfile,
 			command:    "shell",
 			args:       []string{c.env.TestDir},
@@ -195,7 +195,7 @@ func (c ctx) testCLICallbacks(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -206,10 +206,10 @@ func (c ctx) testCLICallbacks(t *testing.T) {
 	}
 }
 
-func (c ctx) testSingularityCallbacks(t *testing.T) {
+func (c ctx) testApptainerCallbacks(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
-	pluginDir := "./plugin/testdata/runtime_singularity"
+	pluginDir := "./plugin/testdata/runtime_apptainer"
 	pluginName := "github.com/apptainer/apptainer/e2e-runtime-plugin"
 
 	// plugin sif file
@@ -261,7 +261,7 @@ func (c ctx) testSingularityCallbacks(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -283,6 +283,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	return testhelper.Tests{
 		"basic":                 np(c.testPluginBasic),
 		"CLI_callbacks":         np(c.testCLICallbacks),
-		"Singularity_callbacks": np(c.testSingularityCallbacks),
+		"Apptainer_callbacks": np(c.testApptainerCallbacks),
 	}
 }

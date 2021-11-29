@@ -4,8 +4,8 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-//go:build !singularity_engine
-// +build !singularity_engine
+//go:build !apptainer_engine
+// +build !apptainer_engine
 
 package unpacker
 

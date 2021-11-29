@@ -32,9 +32,9 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	imgutil "github.com/apptainer/apptainer/pkg/image"
 	clicallback "github.com/apptainer/apptainer/pkg/plugin/callback/cli"
-	singularitycallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
+	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
-	singularityConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
+	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
@@ -66,7 +66,7 @@ func convertImage(filename string, unsquashfsPath string) (tempDir, imageDir str
 	if part.Type == imgutil.EXT3 {
 		sylog.Errorf("File %q is an ext3 format continer image.", filename)
 		sylog.Errorf("Only SIF and squashfs images can be extracted in unprivileged mode.")
-		sylog.Errorf("Use `singularity build` to convert this image to a SIF file using a setuid install of Singularity.")
+		sylog.Errorf("Use `apptainer build` to convert this image to a SIF file using a setuid install of Apptainer.")
 	}
 
 	// Only squashfs can be extracted
@@ -140,8 +140,8 @@ func hidepidProc() bool {
 }
 
 // Set engine flags to disable mounts, to allow overriding them if they are set true
-// in the singularity.conf
-func setNoMountFlags(c *singularityConfig.EngineConfig) {
+// in the apptainer.conf
+func setNoMountFlags(c *apptainerConfig.EngineConfig) {
 	for _, v := range NoMount {
 		switch v {
 		case "proc":
@@ -193,14 +193,14 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		fn()
 	}
 
-	engineConfig := singularityConfig.NewConfig()
+	engineConfig := apptainerConfig.NewConfig()
 
 	imageArg := os.Getenv("IMAGE_ARG")
 	os.Unsetenv("IMAGE_ARG")
 	engineConfig.SetImageArg(imageArg)
-	engineConfig.File = singularityconf.GetCurrentConfig()
+	engineConfig.File = apptainerconf.GetCurrentConfig()
 	if engineConfig.File == nil {
-		sylog.Fatalf("Unable to get singularity configuration")
+		sylog.Fatalf("Unable to get apptainer configuration")
 	}
 
 	ociConfig := &oci.Config{}
@@ -277,7 +277,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	// privileged installation by default
 	useSuid := true
 
-	// singularity was compiled with '--without-suid' option
+	// apptainer was compiled with '--without-suid' option
 	if buildcfg.APPTAINER_SUID_INSTALL == 0 {
 		useSuid = false
 
@@ -291,7 +291,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	// - if running as root
 	// - if already running inside a user namespace
 	// - if user namespace is requested
-	// - if running as user and 'allow setuid = no' is set in singularity.conf
+	// - if running as user and 'allow setuid = no' is set in apptainer.conf
 	if uid == 0 || insideUserNs || UserNamespace || !engineConfig.File.AllowSetuid {
 		useSuid = false
 
@@ -351,7 +351,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		img.File.Close()
 	}
 
-	binds, err := singularityConfig.ParseBindPath(BindPaths)
+	binds, err := apptainerConfig.ParseBindPath(BindPaths)
 	if err != nil {
 		sylog.Fatalf("while parsing bind path: %s", err)
 	}
@@ -517,7 +517,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		}
 	} else {
 		generator.SetProcessArgs(args)
-		procname = "Singularity runtime parent"
+		procname = "Apptainer runtime parent"
 	}
 
 	if NetNamespace {
@@ -556,44 +556,44 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		}
 	}
 
-	if SingularityEnvFile != "" {
+	if ApptainerEnvFile != "" {
 		currentEnv := append(
 			os.Environ(),
 			"APPTAINER_IMAGE="+engineConfig.GetImage(),
 		)
 
-		content, err := ioutil.ReadFile(SingularityEnvFile)
+		content, err := ioutil.ReadFile(ApptainerEnvFile)
 		if err != nil {
-			sylog.Fatalf("Could not read %q environment file: %s", SingularityEnvFile, err)
+			sylog.Fatalf("Could not read %q environment file: %s", ApptainerEnvFile, err)
 		}
 
 		env, err := interpreter.EvaluateEnv(content, args, currentEnv)
 		if err != nil {
-			sylog.Fatalf("While processing %s: %s", SingularityEnvFile, err)
+			sylog.Fatalf("While processing %s: %s", ApptainerEnvFile, err)
 		}
 		// --env variables will take precedence over variables
 		// defined by the environment file
-		sylog.Debugf("Setting environment variables from file %s", SingularityEnvFile)
-		SingularityEnv = append(env, SingularityEnv...)
+		sylog.Debugf("Setting environment variables from file %s", ApptainerEnvFile)
+		ApptainerEnv = append(env, ApptainerEnv...)
 	}
 
 	// process --env and --env-file variables for injection
-	// into the environment by prefixing them with SINGULARITYENV_
-	for _, env := range SingularityEnv {
+	// into the environment by prefixing them with APPTAINERENV_
+	for _, env := range ApptainerEnv {
 		e := strings.SplitN(env, "=", 2)
 		if len(e) != 2 {
 			sylog.Warningf("Ignore environment variable %q: '=' is missing", env)
 			continue
 		}
-		os.Setenv("SINGULARITYENV_"+e[0], e[1])
+		os.Setenv("APPTAINERENV_"+e[0], e[1])
 	}
 
 	// Copy and cache environment
 	environment := os.Environ()
 
 	// Clean environment
-	singularityEnv := env.SetContainerEnv(generator, environment, IsCleanEnv, engineConfig.GetHomeDest())
-	engineConfig.SetSingularityEnv(singularityEnv)
+	apptainerEnv := env.SetContainerEnv(generator, environment, IsCleanEnv, engineConfig.GetHomeDest())
+	engineConfig.SetApptainerEnv(apptainerEnv)
 
 	if pwd, err := os.Getwd(); err == nil {
 		engineConfig.SetCwd(pwd)
@@ -626,13 +626,13 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 
 		if engineConfig.File.ImageDriver != "" {
 			// load image driver plugins
-			callbackType := (singularitycallback.RegisterImageDriver)(nil)
+			callbackType := (apptainercallback.RegisterImageDriver)(nil)
 			callbacks, err := plugin.LoadCallbacks(callbackType)
 			if err != nil {
 				sylog.Debugf("Loading plugins callbacks '%T' failed: %s", callbackType, err)
 			} else {
 				for _, callback := range callbacks {
-					if err := callback.(singularitycallback.RegisterImageDriver)(true); err != nil {
+					if err := callback.(apptainercallback.RegisterImageDriver)(true); err != nil {
 						sylog.Debugf("While registering image driver: %s", err)
 					}
 				}
@@ -683,18 +683,18 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	}
 
 	cfg := &config.Common{
-		EngineName:   singularityConfig.Name,
+		EngineName:   apptainerConfig.Name,
 		ContainerID:  name,
 		EngineConfig: engineConfig,
 	}
 
-	callbackType := (clicallback.SingularityEngineConfig)(nil)
+	callbackType := (clicallback.ApptainerEngineConfig)(nil)
 	callbacks, err := plugin.LoadCallbacks(callbackType)
 	if err != nil {
 		sylog.Fatalf("While loading plugins callbacks '%T': %s", callbackType, err)
 	}
 	for _, c := range callbacks {
-		c.(clicallback.SingularityEngineConfig)(cfg)
+		c.(clicallback.ApptainerEngineConfig)(cfg)
 	}
 
 	if engineConfig.GetInstance() {
@@ -752,14 +752,14 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 }
 
 // SetGPUConfig sets up EngineConfig entries for NV / ROCm usage, if requested.
-func SetGPUConfig(engineConfig *singularityConfig.EngineConfig) error {
+func SetGPUConfig(engineConfig *apptainerConfig.EngineConfig) error {
 	if engineConfig.File.AlwaysUseNv && !NoNvidia {
 		Nvidia = true
-		sylog.Verbosef("'always use nv = yes' found in singularity.conf")
+		sylog.Verbosef("'always use nv = yes' found in apptainer.conf")
 	}
 	if engineConfig.File.AlwaysUseRocm && !NoRocm {
 		Rocm = true
-		sylog.Verbosef("'always use rocm = yes' found in singularity.conf")
+		sylog.Verbosef("'always use rocm = yes' found in apptainer.conf")
 	}
 
 	if Nvidia && Rocm {
@@ -788,7 +788,7 @@ func SetGPUConfig(engineConfig *singularityConfig.EngineConfig) error {
 }
 
 // setNvCCLIConfig sets up EngineConfig entries for NVIDIA GPU configuration via nvidia-container-cli
-func setNvCCLIConfig(engineConfig *singularityConfig.EngineConfig) (err error) {
+func setNvCCLIConfig(engineConfig *apptainerConfig.EngineConfig) (err error) {
 	sylog.Debugf("Using nvidia-container-cli for GPU setup")
 	engineConfig.SetNvCCLI(true)
 
@@ -820,7 +820,7 @@ func setNvCCLIConfig(engineConfig *singularityConfig.EngineConfig) (err error) {
 }
 
 // setNvLegacyConfig sets up EngineConfig entries for NVIDIA GPU configuration via direct binds of configured bins/libs.
-func setNVLegacyConfig(engineConfig *singularityConfig.EngineConfig) error {
+func setNVLegacyConfig(engineConfig *apptainerConfig.EngineConfig) error {
 	sylog.Debugf("Using legacy binds for nv GPU setup")
 	engineConfig.SetNvLegacy(true)
 	gpuConfFile := filepath.Join(buildcfg.APPTAINER_CONFDIR, "nvliblist.conf")
@@ -838,7 +838,7 @@ func setNVLegacyConfig(engineConfig *singularityConfig.EngineConfig) error {
 }
 
 // setRocmConfig sets up EngineConfig entries for ROCm GPU configuration via direct binds of configured bins/libs.
-func setRocmConfig(engineConfig *singularityConfig.EngineConfig) error {
+func setRocmConfig(engineConfig *apptainerConfig.EngineConfig) error {
 	sylog.Debugf("Using rocm GPU setup")
 	engineConfig.SetRocm(true)
 	gpuConfFile := filepath.Join(buildcfg.APPTAINER_CONFDIR, "rocmliblist.conf")
@@ -851,7 +851,7 @@ func setRocmConfig(engineConfig *singularityConfig.EngineConfig) error {
 }
 
 // setGPUBinds sets EngineConfig entries to bind the provided list of libs, bins, ipc files.
-func setGPUBinds(engineConfig *singularityConfig.EngineConfig, libs, bins, ipcs []string, gpuPlatform string) {
+func setGPUBinds(engineConfig *apptainerConfig.EngineConfig, libs, bins, ipcs []string, gpuPlatform string) {
 	files := make([]string, len(bins)+len(ipcs))
 	if len(files) == 0 {
 		sylog.Warningf("Could not find any %s files on this host!", gpuPlatform)

@@ -23,35 +23,35 @@ func assertAccess(dir string) {
 
 func markdownDocs(rootCmd *cobra.Command, outDir string) {
 	assertAccess(outDir)
-	sylog.Infof("Creating Singularity markdown docs at %s\n", outDir)
+	sylog.Infof("Creating Apptainer markdown docs at %s\n", outDir)
 	if err := doc.GenMarkdownTree(rootCmd, outDir); err != nil {
-		sylog.Fatalf("Failed to create markdown docs for singularity\n")
+		sylog.Fatalf("Failed to create markdown docs for apptainer\n")
 	}
 }
 
 func manDocs(rootCmd *cobra.Command, outDir string) {
 	assertAccess(outDir)
-	sylog.Infof("Creating Singularity man pages at %s\n", outDir)
+	sylog.Infof("Creating Apptainer man pages at %s\n", outDir)
 	header := &doc.GenManHeader{
-		Title:   "singularity",
+		Title:   "apptainer",
 		Section: "1",
 	}
 
 	// works recursively on all sub-commands (thanks bauerm97)
 	if err := doc.GenManTree(rootCmd, header, outDir); err != nil {
-		sylog.Fatalf("Failed to create man pages for singularity\n")
+		sylog.Fatalf("Failed to create man pages for apptainer\n")
 	}
 }
 
 func rstDocs(rootCmd *cobra.Command, outDir string) {
 	assertAccess(outDir)
-	sylog.Infof("Creating Singularity RST docs at %s\n", outDir)
+	sylog.Infof("Creating Apptainer RST docs at %s\n", outDir)
 	if err := doc.GenReSTTreeCustom(rootCmd, outDir, func(a string) string {
 		return ""
 	}, func(name, ref string) string {
 		return fmt.Sprintf(":ref:`%s <%s>`", name, ref)
 	}); err != nil {
-		sylog.Fatalf("Failed to create RST docs for singularity\n")
+		sylog.Fatalf("Failed to create RST docs for apptainer\n")
 	}
 }
 
@@ -61,7 +61,7 @@ func main() {
 		ValidArgs: []string{"markdown", "man", "rst"},
 		Args:      cobra.ExactArgs(1),
 		Use:       "makeDocs {markdown | man | rst}",
-		Short:     "Generates Singularity documentation",
+		Short:     "Generates Apptainer documentation",
 		Run: func(cmd *cobra.Command, args []string) {
 			// We must Init() as loading commands etc. is deferred until this is called.
 			// Using true here will result in local docs including any content for installed

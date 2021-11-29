@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"context"
@@ -32,8 +32,8 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/image"
 	"github.com/apptainer/apptainer/pkg/network"
-	singularitycallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
-	singularity "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
+	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
+	apptainer "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/apptainer/apptainer/pkg/util/loop"
@@ -58,10 +58,10 @@ var (
 )
 
 // defaultCNIConfPath is the default directory to CNI network configuration files.
-var defaultCNIConfPath = filepath.Join(buildcfg.SYSCONFDIR, "singularity", "network")
+var defaultCNIConfPath = filepath.Join(buildcfg.SYSCONFDIR, "apptainer", "network")
 
 // defaultCNIPluginPath is the default directory to CNI plugins executables.
-var defaultCNIPluginPath = filepath.Join(buildcfg.LIBEXECDIR, "singularity", "cni")
+var defaultCNIPluginPath = filepath.Join(buildcfg.LIBEXECDIR, "apptainer", "cni")
 
 type lastMount struct {
 	dest  string
@@ -101,9 +101,9 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 		}
 	}
 
-	engine.EngineConfig.File, err = singularityconf.Parse(configurationFile)
+	engine.EngineConfig.File, err = apptainerconf.Parse(configurationFile)
 	if err != nil {
-		return fmt.Errorf("unable to parse singularity.conf file: %s", err)
+		return fmt.Errorf("unable to parse apptainer.conf file: %s", err)
 	}
 
 	c := &container{
@@ -152,13 +152,13 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 	}
 
 	// load image driver plugins
-	callbackType := (singularitycallback.RegisterImageDriver)(nil)
+	callbackType := (apptainercallback.RegisterImageDriver)(nil)
 	callbacks, err := plugin.LoadCallbacks(callbackType)
 	if err != nil {
 		return fmt.Errorf("while loading plugins callbacks '%T': %s", callbackType, err)
 	}
 	for _, callback := range callbacks {
-		if err := callback.(singularitycallback.RegisterImageDriver)(c.userNS); err != nil {
+		if err := callback.(apptainercallback.RegisterImageDriver)(c.userNS); err != nil {
 			return fmt.Errorf("while registering image driver: %s", err)
 		}
 	}
@@ -271,8 +271,8 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 
 		sylog.Debugf("nvidia-container-cli")
 		// If we are not inside a user namespace then the NVCCLI call must exec nvidia-container-cli
-		// as the host uid 0. This may happen via the setuid starter, or from singularity being run
-		// directly as uid 0, e.g. `sudo singularity`.
+		// as the host uid 0. This may happen via the setuid starter, or from apptainer being run
+		// directly as uid 0, e.g. `sudo apptainer`.
 		if err := c.rpcOps.NvCCLI(engine.EngineConfig.GetNvCCLIEnv(), c.session.FinalPath(), c.userNS); err != nil {
 			return err
 		}
@@ -319,7 +319,7 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 	return nil
 }
 
-// setupSessionLayout will create the session layout according to the capabilities of Singularity
+// setupSessionLayout will create the session layout according to the capabilities of Apptainer
 // on the system. It will first attempt to use "overlay", followed by "underlay", and if neither
 // are available it will not use either. If neither are used, we will not be able to bind mount
 // to non-existent paths within the container
@@ -337,11 +337,11 @@ func (c *container) setupSessionLayout(system *mount.System) error {
 	sylog.Debugf("Using Layer system: %s\n", sessionLayer)
 
 	switch sessionLayer {
-	case singularity.DefaultLayer:
+	case apptainer.DefaultLayer:
 		err = c.setupDefaultLayout(system, sessionPath)
-	case singularity.OverlayLayer:
+	case apptainer.OverlayLayer:
 		err = c.setupOverlayLayout(system, sessionPath)
-	case singularity.UnderlayLayer:
+	case apptainer.UnderlayLayer:
 		err = c.setupUnderlayLayout(system, sessionPath)
 	default:
 		return fmt.Errorf("unknown session layer set: %s", sessionLayer)
@@ -380,7 +380,7 @@ func (c *container) setupDefaultLayout(system *mount.System, sessionPath string)
 // isLayerEnabled returns whether or not overlay or underlay system
 // is enabled
 func (c *container) isLayerEnabled() bool {
-	return c.engine.EngineConfig.GetSessionLayer() != singularity.DefaultLayer
+	return c.engine.EngineConfig.GetSessionLayer() != apptainer.DefaultLayer
 }
 
 func (c *container) mount(point *mount.Point, system *mount.System) error {
@@ -397,7 +397,7 @@ func (c *container) mount(point *mount.Point, system *mount.System) error {
 	return nil
 }
 
-// setupImageDriver prepare the image driver configured in singularity.conf
+// setupImageDriver prepare the image driver configured in apptainer.conf
 // to start it after the session setup.
 func (c *container) setupImageDriver(system *mount.System) error {
 	if imageDriver == nil {
@@ -654,12 +654,12 @@ mount:
 		default:
 			if c.engine.EngineConfig.GetWritableImage() {
 				sylog.Warningf(
-					"By using --writable, Singularity can't create %s destination automatically without overlay or underlay",
+					"By using --writable, Apptainer can't create %s destination automatically without overlay or underlay",
 					mnt.Destination,
 				)
 			} else if !c.isLayerEnabled() {
 				sylog.Warningf("No layer in use (overlay or underlay), check your configuration, "+
-					"Singularity can't create %s destination automatically without overlay or underlay", mnt.Destination)
+					"Apptainer can't create %s destination automatically without overlay or underlay", mnt.Destination)
 			}
 			return fmt.Errorf("destination %s doesn't exist in container", mnt.Destination)
 		}
@@ -2031,7 +2031,7 @@ func (c *container) addLibsMount(system *mount.System) error {
 
 	flags := uintptr(syscall.MS_BIND | syscall.MS_NOSUID | syscall.MS_NODEV | syscall.MS_RDONLY | syscall.MS_REC)
 
-	containerDir := "/.singularity.d/libs"
+	containerDir := "/.apptainer.d/libs"
 	sessionDir := "/libs"
 
 	if err := c.session.AddDir(sessionDir); err != nil {

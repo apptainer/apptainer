@@ -3,20 +3,20 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc/server"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
-	singularityConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
+	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 )
 
-// EngineOperations is a Singularity runtime engine that implements engine.Operations.
-// Basically, this is the core of `singularity run/exec/shell/instance` commands.
+// EngineOperations is a Apptainer runtime engine that implements engine.Operations.
+// Basically, this is the core of `apptainer run/exec/shell/instance` commands.
 type EngineOperations struct {
 	CommonConfig *config.Common                  `json:"-"`
-	EngineConfig *singularityConfig.EngineConfig `json:"engineConfig"`
+	EngineConfig *apptainerConfig.EngineConfig `json:"engineConfig"`
 }
 
 // InitConfig stores the parsed config.Common inside the engine.
@@ -27,7 +27,7 @@ func (e *EngineOperations) InitConfig(cfg *config.Common) {
 	e.CommonConfig = cfg
 }
 
-// Config returns a pointer to a singularityConfig.EngineConfig
+// Config returns a pointer to a apptainerConfig.EngineConfig
 // literal as a config.EngineConfig interface. This pointer
 // gets stored in the engine.Engine.Common field.
 //
@@ -40,14 +40,14 @@ func (e *EngineOperations) Config() config.EngineConfig {
 
 func init() {
 	engine.RegisterOperations(
-		singularityConfig.Name,
+		apptainerConfig.Name,
 		&EngineOperations{
-			EngineConfig: singularityConfig.NewConfig(),
+			EngineConfig: apptainerConfig.NewConfig(),
 		},
 	)
 
 	engine.RegisterRPCMethods(
-		singularityConfig.Name,
+		apptainerConfig.Name,
 		new(server.Methods),
 	)
 }

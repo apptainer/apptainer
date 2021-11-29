@@ -31,7 +31,7 @@ var (
 //
 // No additional privileges can be gained as any of them are already
 // dropped by the time PrepareConfig is called. However, most likely this
-// still will be executed as root since `singularity oci` command set
+// still will be executed as root since `apptainer oci` command set
 // requires privileged execution.
 func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	if e.CommonConfig.EngineName != Name {

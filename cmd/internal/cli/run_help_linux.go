@@ -36,7 +36,7 @@ func init() {
 	})
 }
 
-// RunHelpCmd singularity run-help <image>
+// RunHelpCmd apptainer run-help <image>
 var RunHelpCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Args:                  cobra.ExactArgs(1),
@@ -53,7 +53,7 @@ var RunHelpCmd = &cobra.Command{
 		}
 		cmdArgs = append(cmdArgs, args[0])
 
-		execCmd := exec.Command(filepath.Join(buildcfg.BINDIR, "singularity"), cmdArgs...)
+		execCmd := exec.Command(filepath.Join(buildcfg.BINDIR, "apptainer"), cmdArgs...)
 		execCmd.Stderr = os.Stderr
 		execCmd.Env = []string{}
 

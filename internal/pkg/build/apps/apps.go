@@ -4,8 +4,8 @@
 // rights to use or distribute this software.
 
 // Package apps [apps-plugin] provides the functions which are necessary for adding SCI-F apps support
-// to Singularity 3.0.0. In 3.1.0+, this package will be able to be built standalone as
-// a plugin so it will be maintainable separately from the core Singularity functionality
+// to Apptainer 3.0.0. In 3.1.0+, this package will be able to be built standalone as
+// a plugin so it will be maintainable separately from the core Apptainer functionality
 package apps
 
 import (
@@ -25,7 +25,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
-const name = "singularity_apps"
+const name = "apptainer_apps"
 
 const (
 	sectionInstall = "appinstall"
@@ -125,7 +125,7 @@ func New() *BuildApp {
 	}
 }
 
-// Name returns this handler's name [singularity_apps]
+// Name returns this handler's name [apptainer_apps]
 func (pl *BuildApp) Name() string {
 	return name
 }
@@ -242,7 +242,7 @@ func (pl *BuildApp) createAllApps(b *types.Bundle) error {
 		globalEnv94 += globalAppEnv(b, app)
 	}
 
-	return ioutil.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/env/94-appsbase.sh"), []byte(globalEnv94), 0o755)
+	return ioutil.WriteFile(filepath.Join(b.RootfsPath, "/.apptainer.d/env/94-appsbase.sh"), []byte(globalEnv94), 0o755)
 }
 
 func createAppRoot(b *types.Bundle, a *App) error {

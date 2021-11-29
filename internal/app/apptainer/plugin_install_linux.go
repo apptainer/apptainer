@@ -3,14 +3,14 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
 )
 
 // InstallPlugin takes a plugin located at path and installs it into
-// the singularity plugin installation directory.
+// the apptainer plugin installation directory.
 //
 // Installing a plugin will also automatically enable it.
 func InstallPlugin(pluginPath string) error {

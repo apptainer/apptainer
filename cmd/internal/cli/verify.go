@@ -134,7 +134,7 @@ func init() {
 	})
 }
 
-// VerifyCmd singularity verify
+// VerifyCmd apptainer verify
 var VerifyCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Args:                  cobra.ExactArgs(1),
@@ -151,7 +151,7 @@ var VerifyCmd = &cobra.Command{
 }
 
 func doVerifyCmd(cmd *cobra.Command, cpath string) {
-	var opts []singularity.VerifyOpt
+	var opts []apptainer.VerifyOpt
 
 	// Set keyserver option, if applicable.
 	if !localVerify {
@@ -160,36 +160,36 @@ func doVerifyCmd(cmd *cobra.Command, cpath string) {
 			sylog.Fatalf("Error while getting keyserver client config: %v", err)
 		}
 
-		opts = append(opts, singularity.OptVerifyUseKeyServer(co...))
+		opts = append(opts, apptainer.OptVerifyUseKeyServer(co...))
 	}
 
 	// Set group option, if applicable.
 	if cmd.Flag(verifySifGroupIDFlag.Name).Changed || cmd.Flag(verifyOldSifGroupIDFlag.Name).Changed {
-		opts = append(opts, singularity.OptVerifyGroup(sifGroupID))
+		opts = append(opts, apptainer.OptVerifyGroup(sifGroupID))
 	}
 
 	// Set object option, if applicable.
 	if cmd.Flag(verifySifDescSifIDFlag.Name).Changed || cmd.Flag(verifySifDescIDFlag.Name).Changed {
-		opts = append(opts, singularity.OptVerifyObject(sifDescID))
+		opts = append(opts, apptainer.OptVerifyObject(sifDescID))
 	}
 
 	// Set all option, if applicable.
 	if verifyAll {
-		opts = append(opts, singularity.OptVerifyAll())
+		opts = append(opts, apptainer.OptVerifyAll())
 	}
 
 	// Set legacy option, if applicable.
 	if verifyLegacy {
-		opts = append(opts, singularity.OptVerifyLegacy())
+		opts = append(opts, apptainer.OptVerifyLegacy())
 	}
 
 	// Set callback option.
 	if jsonVerify {
 		var kl keyList
 
-		opts = append(opts, singularity.OptVerifyCallback(getJSONCallback(&kl)))
+		opts = append(opts, apptainer.OptVerifyCallback(getJSONCallback(&kl)))
 
-		verifyErr := singularity.Verify(cmd.Context(), cpath, opts...)
+		verifyErr := apptainer.Verify(cmd.Context(), cpath, opts...)
 
 		// Always output JSON.
 		if err := outputJSON(os.Stdout, kl); err != nil {
@@ -200,11 +200,11 @@ func doVerifyCmd(cmd *cobra.Command, cpath string) {
 			sylog.Fatalf("Failed to verify container: %s", verifyErr)
 		}
 	} else {
-		opts = append(opts, singularity.OptVerifyCallback(outputVerify))
+		opts = append(opts, apptainer.OptVerifyCallback(outputVerify))
 
 		fmt.Printf("Verifying image: %s\n", cpath)
 
-		if err := singularity.Verify(cmd.Context(), cpath, opts...); err != nil {
+		if err := apptainer.Verify(cmd.Context(), cpath, opts...); err != nil {
 			sylog.Fatalf("Failed to verify container: %s", err)
 		}
 

@@ -212,7 +212,7 @@ func newBundle(parentPath, tempDir string, keyInfo *cryptkey.KeyInfo) (*Bundle, 
 				cleanupDir(rootfsNewPath)
 				cleanupDir(parentPath)
 				sylog.Errorf("Could not set files/directories ownership, if %s is on a network filesystem, "+
-					"you must set TMPDIR to a local path (eg: TMPDIR=/var/tmp singularity build ...)", rootfsNewPath)
+					"you must set TMPDIR to a local path (eg: TMPDIR=/var/tmp apptainer build ...)", rootfsNewPath)
 				return nil, fmt.Errorf("ownership change not allowed in %s, aborting", tempDir)
 			}
 			rootfsPath = rootfsNewPath

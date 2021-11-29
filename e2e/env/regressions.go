@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularityenv
+package apptainerenv
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ func (c ctx) issue5426(t *testing.T) {
 	defer cleanup(t)
 
 	// Build a current sandbox
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -33,9 +33,9 @@ func (c ctx) issue5426(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	// Remove the /.singularity.d
-	if err := os.RemoveAll(path.Join(sandboxDir, ".singularity.d")); err != nil {
-		t.Fatalf("Could not remove sandbox /.singularity.d: %s", err)
+	// Remove the /.apptainer.d
+	if err := os.RemoveAll(path.Join(sandboxDir, ".apptainer.d")); err != nil {
+		t.Fatalf("Could not remove sandbox /.apptainer.d: %s", err)
 	}
 	// Remove the /environment symlink
 	if err := os.Remove(path.Join(sandboxDir, "environment")); err != nil {
@@ -47,7 +47,7 @@ func (c ctx) issue5426(t *testing.T) {
 		t.Fatalf("Could not add legacy /environment to sandbox: %s", err)
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -82,7 +82,7 @@ func (c ctx) issue5057(t *testing.T) {
 		bigEnv[i] = fmt.Sprintf("B%d=%s", i, string(big))
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -91,7 +91,7 @@ func (c ctx) issue5057(t *testing.T) {
 		e2e.ExpectExit(255),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -101,16 +101,16 @@ func (c ctx) issue5057(t *testing.T) {
 	)
 }
 
-// If a $ in a SINGULARITYENV_ env var is escaped, it should become a
+// If a $ in a APPTAINERENV_ env var is escaped, it should become a
 // literal $ in the container env var.
 // This allows setting e.g. LD_PRELOAD=/foo/bar/$LIB/baz.so
 func (c ctx) issue43(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
-	env := []string{`SINGULARITYENV_LD_PRELOAD=/foo/bar/\$LIB/baz.so`}
+	env := []string{`APPTAINERENV_LD_PRELOAD=/foo/bar/\$LIB/baz.so`}
 	args := []string{c.env.ImagePath, "/bin/sh", "-c", "echo \"${LD_PRELOAD}\""}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -123,13 +123,13 @@ func (c ctx) issue43(t *testing.T) {
 	)
 }
 
-// https://github.com/sylabs/singularity/issues/274
+// https://github.com/sylabs/apptainer/issues/274
 // The conda profile.d script must be able to be source'd from %environment.
 // This has been broken by changes to mvdan.cc/sh interacting badly with our
 // custom internalExecHandler.
 // The test is quite heavyweight, but is warranted IMHO to ensure that conda
 // environment activation works as expected, as this is a common use-case
-// for SingularityCE.
+// for ApptainerCE.
 func (c ctx) issue274(t *testing.T) {
 	imageDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "issue274-", "")
 	defer cleanup(t)
@@ -155,7 +155,7 @@ From: continuumio/miniconda3:latest
 		t.Fatalf("Unable to create test definition file: %v", err)
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("build"),
 		e2e.WithProfile(e2e.RootProfile),
@@ -165,7 +165,7 @@ From: continuumio/miniconda3:latest
 	)
 	// An exec of `conda info` in the container should show environment active, no errors.
 	// I.E. the `%environment` section should have worked.
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("exec"),
 		e2e.WithProfile(e2e.UserProfile),

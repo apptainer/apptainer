@@ -41,7 +41,7 @@ func (c Config) Path() string {
 }
 
 // RunScript is the default process argument
-const RunScript = "/.singularity.d/actions/run"
+const RunScript = "/.apptainer.d/actions/run"
 
 // GenerateBundleConfig generates a minimal OCI bundle directory
 // with the provided OCI configuration or a default one

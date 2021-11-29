@@ -29,8 +29,8 @@ const (
 	// LibraryProtocol holds the sylabs cloud library base URI,
 	// for more info refer to https://cloud.sylabs.io/library.
 	LibraryProtocol = "library"
-	// ShubProtocol holds singularity hub base URI,
-	// for more info refer to https://singularity-hub.org/
+	// ShubProtocol holds apptainer hub base URI,
+	// for more info refer to https://apptainer-hub.org/
 	ShubProtocol = "shub"
 	// HTTPProtocol holds the remote http base URI.
 	HTTPProtocol = "http"
@@ -152,7 +152,7 @@ func init() {
 	})
 }
 
-// PullCmd singularity pull
+// PullCmd apptainer pull
 var PullCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Args:                  cobra.RangeArgs(1, 2),

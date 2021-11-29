@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-// This test sets singularity image specific environment variables and
+// This test sets apptainer image specific environment variables and
 // verifies that they are properly set.
 
 package help
@@ -28,7 +28,7 @@ var helpOciContentTests = []struct {
 	name string
 	cmds []string
 }{
-	// singularity oci
+	// apptainer oci
 	{"HelpOci", []string{"oci"}},
 	{"HelpOciAttach", []string{"oci", "attach"}},
 	{"HelpOciCreate", []string{"oci", "create"}},
@@ -50,13 +50,13 @@ func (c ctx) testHelpOciContent(t *testing.T) {
 
 		name := fmt.Sprintf("help-%s.txt", strings.Join(tc.cmds, "-"))
 
-		testHelpOciContentFn := func(t *testing.T, r *e2e.SingularityCmdResult) {
+		testHelpOciContentFn := func(t *testing.T, r *e2e.ApptainerCmdResult) {
 			path := filepath.Join("help", name)
 			got := string(r.Stdout)
 			assert.Assert(t, golden.String(got, path))
 		}
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tc.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -129,7 +129,7 @@ func (c ctx) testCommands(t *testing.T) {
 				argRun = tf.argv
 			}
 
-			c.env.RunSingularity(
+			c.env.RunApptainer(
 				t,
 				e2e.AsSubtest(tf.name),
 				e2e.WithProfile(e2e.UserProfile),
@@ -167,7 +167,7 @@ func (c ctx) testFailure(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -187,7 +187,7 @@ const (
 	helpHelpExpectedOutput = "Help about any command"
 )
 
-func (c ctx) testSingularity(t *testing.T) {
+func (c ctx) testApptainer(t *testing.T) {
 	tests := []struct {
 		name           string
 		argv           []string
@@ -234,7 +234,7 @@ func (c ctx) testSingularity(t *testing.T) {
 
 	for _, tt := range tests {
 
-		printSuccessOrFailureFn := func(t *testing.T, r *e2e.SingularityCmdResult) {
+		printSuccessOrFailureFn := func(t *testing.T, r *e2e.ApptainerCmdResult) {
 			if r.Stdout != nil {
 				t.Logf(string(r.Stdout) + "\n")
 			}
@@ -243,7 +243,7 @@ func (c ctx) testSingularity(t *testing.T) {
 			}
 		}
 
-		c.env.RunSingularity(t,
+		c.env.RunApptainer(t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
 			e2e.WithArgs(tt.argv...),
@@ -265,6 +265,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"commands":     c.testCommands,
 		"failure":      c.testFailure,
 		"help content": c.testHelpOciContent,
-		"singularity":  c.testSingularity,
+		"apptainer":  c.testApptainer,
 	}
 }

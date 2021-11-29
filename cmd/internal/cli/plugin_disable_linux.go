@@ -17,11 +17,11 @@ import (
 
 // PluginDisableCmd disables the named plugin.
 //
-// singularity plugin disable <name>
+// apptainer plugin disable <name>
 var PluginDisableCmd = &cobra.Command{
 	PreRun: CheckRootOrUnpriv,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := singularity.DisablePlugin(args[0], buildcfg.LIBEXECDIR)
+		err := apptainer.DisablePlugin(args[0], buildcfg.LIBEXECDIR)
 		if err != nil {
 			if os.IsNotExist(err) {
 				sylog.Fatalf("Failed to disable plugin %q: plugin not found.", args[0])

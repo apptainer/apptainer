@@ -25,7 +25,7 @@ func (c ctx) issue5808(t *testing.T) {
 
 	// Add another endpoint
 	argv := []string{"add", "--no-login", testEndpoint, testEndpointURI}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("remote add"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -36,7 +36,7 @@ func (c ctx) issue5808(t *testing.T) {
 	// Remove test remote when we are done here
 	defer func(t *testing.T) {
 		argv := []string{"remove", testEndpoint}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest("remote remove"),
 			e2e.WithProfile(e2e.UserProfile),
@@ -48,7 +48,7 @@ func (c ctx) issue5808(t *testing.T) {
 
 	// Set as default
 	argv = []string{"use", testEndpoint}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("remote use"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -60,7 +60,7 @@ func (c ctx) issue5808(t *testing.T) {
 	// Pull a library image
 	dest := path.Join(pullDir, "alpine.sif")
 	argv = []string{"--arch", "amd64", "--library", defaultLibraryURI, dest, testImage}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("pull"),
 		e2e.WithProfile(e2e.UserProfile),

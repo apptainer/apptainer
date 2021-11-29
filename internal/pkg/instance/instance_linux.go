@@ -22,15 +22,15 @@ import (
 const (
 	// OciSubDir represents directory where OCI instance files are stored
 	OciSubDir = "oci"
-	// SingSubDir represents directory where Singularity instance files are stored
+	// SingSubDir represents directory where Apptainer instance files are stored
 	SingSubDir = "sing"
-	// LogSubDir represents directory where Singularity instance log files are stored
+	// LogSubDir represents directory where Apptainer instance log files are stored
 	LogSubDir = "logs"
 )
 
 const (
-	// ProgPrefix is the prefix used by a singularity instance process
-	ProgPrefix      = "Singularity instance"
+	// ProgPrefix is the prefix used by a apptainer instance process
+	ProgPrefix      = "Apptainer instance"
 	instancePath    = "instances"
 	authorizedChars = `^[a-zA-Z0-9._-]+$`
 	prognameFormat  = "%s: %s [%s]"
@@ -178,7 +178,7 @@ func List(username string, name string, subDir string) ([]*File, error) {
 		}
 		r.Close()
 		f.Path = file
-		// delete ghost singularity instance files
+		// delete ghost apptainer instance files
 		if subDir == SingSubDir && f.isExited() {
 			f.Delete()
 			continue

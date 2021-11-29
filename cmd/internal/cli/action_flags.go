@@ -32,8 +32,8 @@ var (
 	VMIP               string
 	ContainLibsPath    []string
 	FuseMount          []string
-	SingularityEnv     []string
-	SingularityEnvFile string
+	ApptainerEnv     []string
+	ApptainerEnvFile string
 	NoMount            []string
 
 	IsBoot          bool
@@ -402,7 +402,7 @@ var actionWritableFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "writable",
 	ShortHand:    "w",
-	Usage:        "by default all Singularity containers are available as read only. This option makes the file system accessible as read/write.",
+	Usage:        "by default all Apptainer containers are available as read only. This option makes the file system accessible as read/write.",
 	EnvKeys:      []string{"WRITABLE"},
 }
 
@@ -432,7 +432,7 @@ var actionNoMountFlag = cmdline.Flag{
 	Value:        &NoMount,
 	DefaultValue: []string{},
 	Name:         "no-mount",
-	Usage:        "disable one or more mount xxx options set in singularity.conf",
+	Usage:        "disable one or more mount xxx options set in apptainer.conf",
 	EnvKeys:      []string{"NO_MOUNT"},
 }
 
@@ -547,7 +547,7 @@ var actionUserNamespaceFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "userns",
 	ShortHand:    "u",
-	Usage:        "run container in a new user namespace, allowing Singularity to run completely unprivileged on recent kernels. This disables some features of Singularity, for example it only works with sandbox images.",
+	Usage:        "run container in a new user namespace, allowing Apptainer to run completely unprivileged on recent kernels. This disables some features of Apptainer, for example it only works with sandbox images.",
 	EnvKeys:      []string{"USERNS", "UNSHARE_USERNS"},
 }
 
@@ -604,7 +604,7 @@ var actionAllowSetuidFlag = cmdline.Flag{
 // --env
 var actionEnvFlag = cmdline.Flag{
 	ID:           "actionEnvFlag",
-	Value:        &SingularityEnv,
+	Value:        &ApptainerEnv,
 	DefaultValue: []string{},
 	Name:         "env",
 	Usage:        "pass environment variable to contained process",
@@ -613,7 +613,7 @@ var actionEnvFlag = cmdline.Flag{
 // --env-file
 var actionEnvFileFlag = cmdline.Flag{
 	ID:           "actionEnvFileFlag",
-	Value:        &SingularityEnvFile,
+	Value:        &ApptainerEnvFile,
 	DefaultValue: "",
 	Name:         "env-file",
 	Usage:        "pass environment variables from file to contained process",

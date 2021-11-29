@@ -251,7 +251,7 @@ func DefaultConfigV2() (*generate.Generator, error) {
 	c := gen.Config
 
 	// TODO: Enter a cgroup namespace
-	// See https://github.com/sylabs/singularity/issues/298
+	// See https://github.com/sylabs/apptainer/issues/298
 	// We need to be unsharing the namespace at an appropriate point before we can enable this.
 	//
 	// c.Linux.Namespaces = append(c.Linux.Namespaces, specs.LinuxNamespace{Type: "cgroup"})

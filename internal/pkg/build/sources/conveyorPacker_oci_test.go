@@ -25,13 +25,13 @@ import (
 
 const (
 	dockerURI         = "docker://alpine"
-	dockerArchiveURI  = "https://s3.amazonaws.com/singularity-ci-public/alpine-docker-save.tar"
-	ociArchiveURI     = "https://s3.amazonaws.com/singularity-ci-public/alpine-oci-archive.tar"
+	dockerArchiveURI  = "https://s3.amazonaws.com/apptainer-ci-public/alpine-docker-save.tar"
+	ociArchiveURI     = "https://s3.amazonaws.com/apptainer-ci-public/alpine-oci-archive.tar"
 	dockerDaemonImage = "alpine:latest"
 )
 
 func TestMain(m *testing.M) {
-	useragent.InitValue("singularity", "3.0.0-alpha.1-303-gaed8d30-dirty")
+	useragent.InitValue("apptainer", "3.0.0-alpha.1-303-gaed8d30-dirty")
 
 	os.Exit(m.Run())
 }

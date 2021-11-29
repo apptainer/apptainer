@@ -1,4 +1,4 @@
-package singularity
+package apptainer
 
 import (
 	"bytes"
@@ -104,7 +104,7 @@ func OverlayCreate(size int, imgPath string, overlayDirs ...string) error {
 				if overlay.Type != image.EXT3 {
 					continue
 				}
-				delCmd := fmt.Sprintf("singularity sif del %d %s", overlay.ID, imgPath)
+				delCmd := fmt.Sprintf("apptainer sif del %d %s", overlay.ID, imgPath)
 				return fmt.Errorf("a writable overlay partition already exists in %s (ID: %d), delete it first with %q", imgPath, overlay.ID, delCmd)
 			}
 

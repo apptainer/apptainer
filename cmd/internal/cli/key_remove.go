@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// KeyRemoveCmd is `singularity key remove <fingerprint>' command
+// KeyRemoveCmd is `apptainer key remove <fingerprint>' command
 var KeyRemoveCmd = &cobra.Command{
 	PreRun:                checkGlobal,
 	Args:                  cobra.ExactArgs(1),

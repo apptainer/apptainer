@@ -21,7 +21,7 @@ type ctx struct {
 }
 
 // testRun555Cache tests the specific case where the cache directory is
-// 0555 for access rights, and we try to run a singularity run command
+// 0555 for access rights, and we try to run a apptainer run command
 // using that directory as cache. This reflects a problem that is important
 // for the grid use case.
 func (c ctx) testRun555Cache(t *testing.T) {
@@ -38,7 +38,7 @@ func (c ctx) testRun555Cache(t *testing.T) {
 	// We explicitly pass the environment to the command, not through c.env.ImgCacheDir
 	// because c.env is shared between all the tests, something we do not want here.
 	cacheDirEnv := fmt.Sprintf("%s=%s", cache.DirEnv, cacheDir)
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("run"),
@@ -49,7 +49,7 @@ func (c ctx) testRun555Cache(t *testing.T) {
 }
 
 func (c ctx) testRunPEMEncrypted(t *testing.T) {
-	// If the version of cryptsetup is not compatible with Singularity encryption,
+	// If the version of cryptsetup is not compatible with Apptainer encryption,
 	// the build commands are expected to fail
 	err := e2e.CheckCryptsetupVersion()
 	if err != nil {
@@ -67,7 +67,7 @@ func (c ctx) testRunPEMEncrypted(t *testing.T) {
 
 	imgPath := filepath.Join(tempDir, "encrypted_cmdline_pem-path.sif")
 	cmdArgs := []string{"--encrypt", "--pem-path", pemPubFile, imgPath, "library://alpine:3.11.5"}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -77,7 +77,7 @@ func (c ctx) testRunPEMEncrypted(t *testing.T) {
 
 	// Using command line
 	cmdArgs = []string{"--pem-path", pemPrivFile, imgPath}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("pem file cmdline"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -89,7 +89,7 @@ func (c ctx) testRunPEMEncrypted(t *testing.T) {
 	// Using environment variable
 	cmdArgs = []string{imgPath}
 	pemEnvVar := fmt.Sprintf("%s=%s", "APPTAINER_ENCRYPTION_PEM_PATH", pemPrivFile)
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("pem file cmdline"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -101,7 +101,7 @@ func (c ctx) testRunPEMEncrypted(t *testing.T) {
 }
 
 func (c ctx) testRunPassphraseEncrypted(t *testing.T) {
-	// If the version of cryptsetup is not compatible with Singularity encryption,
+	// If the version of cryptsetup is not compatible with Apptainer encryption,
 	// the build commands are expected to fail
 	err := e2e.CheckCryptsetupVersion()
 	if err != nil {
@@ -117,7 +117,7 @@ func (c ctx) testRunPassphraseEncrypted(t *testing.T) {
 
 	imgPath := filepath.Join(tempDir, "encrypted_cmdline_passphrase.sif")
 	cmdArgs := []string{"--encrypt", imgPath, "library://alpine:3.11.5"}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -126,13 +126,13 @@ func (c ctx) testRunPassphraseEncrypted(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	passphraseInput := []e2e.SingularityConsoleOp{
+	passphraseInput := []e2e.ApptainerConsoleOp{
 		e2e.ConsoleSendLine(e2e.Passphrase),
 	}
 
 	// Interactive command
 	cmdArgs = []string{"--passphrase", imgPath, "/bin/true"}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("interactive passphrase"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -144,7 +144,7 @@ func (c ctx) testRunPassphraseEncrypted(t *testing.T) {
 
 	// Using the environment variable to specify the passphrase
 	cmdArgs = []string{imgPath}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("env var passphrase"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -156,7 +156,7 @@ func (c ctx) testRunPassphraseEncrypted(t *testing.T) {
 
 	// Ensure decryption works with an IPC namespace
 	cmdArgs = []string{"--ipc", imgPath}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("env var passphrase with ipc namespace"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -168,7 +168,7 @@ func (c ctx) testRunPassphraseEncrypted(t *testing.T) {
 
 	// Ensure decryption works with containall (IPC and PID namespaces)
 	cmdArgs = []string{"--containall", imgPath}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("env var passphrase with containall"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -180,7 +180,7 @@ func (c ctx) testRunPassphraseEncrypted(t *testing.T) {
 
 	// Specifying the passphrase on the command line should always fail
 	cmdArgs = []string{"--passphrase", e2e.Passphrase, imgPath}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("passphrase on cmdline"),
 		e2e.WithProfile(e2e.UserProfile),

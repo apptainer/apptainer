@@ -21,7 +21,7 @@ const (
 	libraryURI = "library://alpine:latest"
 )
 
-// TestLibraryConveyor tests if we can pull an image from singularity hub
+// TestLibraryConveyor tests if we can pull an image from apptainer hub
 func TestLibraryConveyor(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()

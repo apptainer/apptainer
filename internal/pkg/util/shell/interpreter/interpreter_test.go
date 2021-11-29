@@ -271,7 +271,7 @@ func TestEvaluateEnv(t *testing.T) {
 		{
 			name:      "ArgZeroVar",
 			script:    "FOO=$0",
-			resultEnv: []string{"FOO=singularity"},
+			resultEnv: []string{"FOO=apptainer"},
 		},
 		{
 			name:      "ArgOneVar",

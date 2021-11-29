@@ -17,13 +17,13 @@ import (
 )
 
 const (
-	shubURI = "shub://ikaneshiro/singularityhub:latest"
+	shubURI = "shub://ikaneshiro/apptainerhub:latest"
 )
 
-// TestShubConveyor tests if we can pull an image from singularity hub
+// TestShubConveyor tests if we can pull an image from apptainer hub
 func TestShubConveyor(t *testing.T) {
 	// TODO(mem): reenable this; disabled while shub is down
-	t.Skip("Skipping tests that access singularity hub")
+	t.Skip("Skipping tests that access apptainer hub")
 
 	if testing.Short() {
 		t.SkipNow()
@@ -55,7 +55,7 @@ func TestShubConveyor(t *testing.T) {
 // TestShubPacker checks if we can create a Bundle from the pulled image
 func TestShubPacker(t *testing.T) {
 	// TODO(mem): reenable this; disabled while shub is down
-	t.Skip("Skipping tests that access singularity hub")
+	t.Skip("Skipping tests that access apptainer hub")
 	test.DropPrivilege(t)
 	defer test.ResetPrivilege(t)
 

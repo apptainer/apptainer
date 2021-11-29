@@ -226,8 +226,8 @@ type keyList struct {
 	SignerKeys []*key
 }
 
-// getJSONCallback returns a singularity.VerifyCallback that appends to kl.
-func getJSONCallback(kl *keyList) singularity.VerifyCallback {
+// getJSONCallback returns a apptainer.VerifyCallback that appends to kl.
+func getJSONCallback(kl *keyList) apptainer.VerifyCallback {
 	return func(f *sif.FileImage, r integrity.VerifyResult) bool {
 		name, fp := "unknown", ""
 		var keyLocal, keyCheck bool

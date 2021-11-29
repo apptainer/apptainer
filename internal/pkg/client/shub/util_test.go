@@ -29,7 +29,7 @@ var validShubURIs = []string{
 }
 
 func TestMain(m *testing.M) {
-	useragent.InitValue("singularity", "3.0.0-alpha.1-303-gaed8d30-dirty")
+	useragent.InitValue("apptainer", "3.0.0-alpha.1-303-gaed8d30-dirty")
 
 	os.Exit(m.Run())
 }

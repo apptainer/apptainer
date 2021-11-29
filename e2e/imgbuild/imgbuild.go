@@ -54,7 +54,7 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 	e2e.EnsureRegistry(t)
 
 	// use a trailing slash in tests for sandbox intentionally to make sure
-	// `singularity build -s /tmp/sand/ docker://alpine` works,
+	// `apptainer build -s /tmp/sand/ docker://alpine` works,
 	// see https://github.com/apptainer/apptainer/issues/4407
 	tt := []struct {
 		name        string
@@ -65,14 +65,14 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 		// Disabled due to frequent download failures of the busybox tgz
 		// {
 		// 	name:      "BusyBox",
-		// 	buildSpec: "../examples/busybox/Singularity",
+		// 	buildSpec: "../examples/busybox/Apptainer",
 		// 	// TODO: example has arch hard coded in download URL
 		// 	requireArch: "amd64",
 		// },
 		{
 			name:       "Debootstrap",
 			dependency: "debootstrap",
-			buildSpec:  "../examples/debian/Singularity",
+			buildSpec:  "../examples/debian/Apptainer",
 		},
 		{
 			name:      "DockerURI",
@@ -80,7 +80,7 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 		},
 		{
 			name:      "DockerDefFile",
-			buildSpec: "../examples/docker/Singularity",
+			buildSpec: "../examples/docker/Apptainer",
 		},
 		// TODO(mem): reenable this; disabled while shub is down
 		// {
@@ -90,11 +90,11 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 		// TODO(mem): reenable this; disabled while shub is down
 		// {
 		// 	name:       "ShubDefFile",
-		// 	buildSpec:  "../examples/shub/Singularity",
+		// 	buildSpec:  "../examples/shub/Apptainer",
 		// },
 		{
 			name:      "LibraryDefFile",
-			buildSpec: "../examples/library/Singularity",
+			buildSpec: "../examples/library/Apptainer",
 		},
 		{
 			name:      "OrasURI",
@@ -103,25 +103,25 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 		{
 			name:        "Yum",
 			dependency:  "yum",
-			buildSpec:   "../examples/centos/Singularity",
+			buildSpec:   "../examples/centos/Apptainer",
 			requireArch: "amd64",
 		},
 		{
 			name:        "YumArm64",
 			dependency:  "yum",
-			buildSpec:   "../examples/centos-arm64/Singularity",
+			buildSpec:   "../examples/centos-arm64/Apptainer",
 			requireArch: "arm64",
 		},
 		{
 			name:        "Zypper",
 			dependency:  "zypper",
-			buildSpec:   "../examples/opensuse/Singularity",
+			buildSpec:   "../examples/opensuse/Apptainer",
 			requireArch: "amd64",
 		},
 		{
 			name:        "ZypperArm64",
 			dependency:  "zypper",
-			buildSpec:   "../examples/opensuse-arm64/Singularity",
+			buildSpec:   "../examples/opensuse-arm64/Apptainer",
 			requireArch: "arm64",
 		},
 	}
@@ -141,7 +141,7 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 				// build by skipping the SIF creation step.
 				args := []string{"--force", "--sandbox", imagePath, tc.buildSpec}
 
-				c.env.RunSingularity(
+				c.env.RunApptainer(
 					t,
 					e2e.AsSubtest(tc.name),
 					e2e.WithProfile(profile),
@@ -217,7 +217,7 @@ func (c imgBuildTests) nonRootBuild(t *testing.T) {
 
 		args := append(tc.args, imagePath, tc.buildSpec)
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tc.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -261,7 +261,7 @@ func (c imgBuildTests) buildLocalImage(t *testing.T) {
 
 	sandboxImage := path.Join(tmpdir, "test-sandbox")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -297,7 +297,7 @@ func (c imgBuildTests) buildLocalImage(t *testing.T) {
 		t.Run(profile.String(), func(t *testing.T) {
 			for i, tc := range tt {
 				imagePath := filepath.Join(tmpdir, fmt.Sprintf("image-%d", i))
-				c.env.RunSingularity(
+				c.env.RunApptainer(
 					t,
 					e2e.AsSubtest(tc.name),
 					e2e.WithProfile(profile),
@@ -323,7 +323,7 @@ func (c imgBuildTests) badPath(t *testing.T) {
 
 	imagePath := path.Join(dn, "container")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -525,7 +525,7 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 		// sandboxes take less time to build
 		args := []string{"--sandbox", imagePath, defFile}
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.RootProfile),
 			e2e.WithCommand("build"),
@@ -816,7 +816,7 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 
 				defFile := e2e.PrepareDefFile(dfd)
 
-				c.env.RunSingularity(
+				c.env.RunApptainer(
 					t,
 					e2e.AsSubtest(name),
 					e2e.WithProfile(profile),
@@ -839,7 +839,7 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 func (c *imgBuildTests) ensureImageIsEncrypted(t *testing.T, imgPath string) {
 	sifID := "4" // Which SIF descriptor slot contains the (encrypted) rootfs
 	cmdArgs := []string{"info", sifID, imgPath}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("sif"),
@@ -864,7 +864,7 @@ func (c imgBuildTests) buildEncryptPemFile(t *testing.T) {
 	// Generate the PEM file
 	pemFile, _ := e2e.GeneratePemFiles(t, c.env.TestDir)
 
-	// If the version of cryptsetup is not compatible with Singularity encryption,
+	// If the version of cryptsetup is not compatible with Apptainer encryption,
 	// the build commands are expected to fail
 	err := e2e.CheckCryptsetupVersion()
 	if err != nil {
@@ -878,7 +878,7 @@ func (c imgBuildTests) buildEncryptPemFile(t *testing.T) {
 	// First with the command line argument
 	imgPath1 := filepath.Join(dn, "encrypted_cmdline_option.sif")
 	cmdArgs := []string{"--encrypt", "--pem-path", pemFile, imgPath1, "library://alpine:latest"}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -897,7 +897,7 @@ func (c imgBuildTests) buildEncryptPemFile(t *testing.T) {
 	pemEnvVar := fmt.Sprintf("%s=%s", "APPTAINER_ENCRYPTION_PEM_PATH", pemFile)
 	imgPath2 := filepath.Join(dn, "encrypted_env_var.sif")
 	cmdArgs = []string{"--encrypt", imgPath2, "library://alpine:latest"}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -927,7 +927,7 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 	dn, cleanup := c.tempDir(t, "passphrase-encryption")
 	defer cleanup()
 
-	// If the version of cryptsetup is not compatible with Singularity encryption,
+	// If the version of cryptsetup is not compatible with Apptainer encryption,
 	// the build commands are expected to fail
 	err := e2e.CheckCryptsetupVersion()
 	if err != nil {
@@ -936,13 +936,13 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 	}
 
 	// First with the command line argument, only using --passphrase
-	passphraseInput := []e2e.SingularityConsoleOp{
+	passphraseInput := []e2e.ApptainerConsoleOp{
 		e2e.ConsoleSendLine(e2e.Passphrase),
 	}
 	cmdlineTestImgPath := filepath.Join(dn, "encrypted_cmdline_option.sif")
 	// The image is deleted during cleanup of the temporary directory
 	cmdArgs := []string{"--passphrase", cmdlineTestImgPath, "library://alpine:latest"}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("passphrase flag"),
 		e2e.WithProfile(e2e.RootProfile),
@@ -962,7 +962,7 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 	// With the command line argument, using --encrypt and --passphrase
 	cmdlineTest2ImgPath := filepath.Join(dn, "encrypted_cmdline2_option.sif")
 	cmdArgs = []string{"--encrypt", "--passphrase", cmdlineTest2ImgPath, "library://alpine:latest"}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("encrypt and passphrase flags"),
 		e2e.WithProfile(e2e.RootProfile),
@@ -983,7 +983,7 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 	passphraseEnvVar := fmt.Sprintf("%s=%s", "APPTAINER_ENCRYPTION_PASSPHRASE", e2e.Passphrase)
 	envvarImgPath := filepath.Join(dn, "encrypted_env_var.sif")
 	cmdArgs = []string{"--encrypt", envvarImgPath, "library://alpine:latest"}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("passphrase env var"),
 		e2e.WithProfile(e2e.RootProfile),
@@ -1003,7 +1003,7 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 	// Finally a test that must fail: try to specify the passphrase on the command line
 	dummyImgPath := filepath.Join(dn, "dummy_encrypted_env_var.sif")
 	cmdArgs = []string{"--encrypt", "--passphrase", e2e.Passphrase, dummyImgPath, "library://alpine:latest"}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("passphrase on cmdline"),
 		e2e.WithProfile(e2e.RootProfile),
@@ -1058,7 +1058,7 @@ func (c imgBuildTests) buildUpdateSandbox(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.RootProfile),
@@ -1090,13 +1090,13 @@ func (c imgBuildTests) buildWithFingerprint(t *testing.T) {
 		name       string
 		command    string
 		args       []string
-		consoleOps []e2e.SingularityConsoleOp
+		consoleOps []e2e.ApptainerConsoleOp
 	}{
 		{
 			name:    "import key1 local",
 			command: "key import",
 			args:    []string{"testdata/ecl-pgpkeys/key1.asc"},
-			consoleOps: []e2e.SingularityConsoleOp{
+			consoleOps: []e2e.ApptainerConsoleOp{
 				e2e.ConsoleSendLine("e2e"),
 			},
 		},
@@ -1104,7 +1104,7 @@ func (c imgBuildTests) buildWithFingerprint(t *testing.T) {
 			name:    "import key2 local",
 			command: "key import",
 			args:    []string{"testdata/ecl-pgpkeys/key2.asc"},
-			consoleOps: []e2e.SingularityConsoleOp{
+			consoleOps: []e2e.ApptainerConsoleOp{
 				e2e.ConsoleSendLine("e2e"),
 			},
 		},
@@ -1127,7 +1127,7 @@ func (c imgBuildTests) buildWithFingerprint(t *testing.T) {
 			name:    "sign single signed image with key1",
 			command: "sign",
 			args:    []string{"-k", "0", singleSigned},
-			consoleOps: []e2e.SingularityConsoleOp{
+			consoleOps: []e2e.ApptainerConsoleOp{
 				e2e.ConsoleSendLine("e2e"),
 			},
 		},
@@ -1135,7 +1135,7 @@ func (c imgBuildTests) buildWithFingerprint(t *testing.T) {
 			name:    "sign double signed image with key1",
 			command: "sign",
 			args:    []string{"-k", "0", doubleSigned},
-			consoleOps: []e2e.SingularityConsoleOp{
+			consoleOps: []e2e.ApptainerConsoleOp{
 				e2e.ConsoleSendLine("e2e"),
 			},
 		},
@@ -1143,14 +1143,14 @@ func (c imgBuildTests) buildWithFingerprint(t *testing.T) {
 			name:    "sign double signed image with key2",
 			command: "sign",
 			args:    []string{"-k", "1", doubleSigned},
-			consoleOps: []e2e.SingularityConsoleOp{
+			consoleOps: []e2e.ApptainerConsoleOp{
 				e2e.ConsoleSendLine("e2e"),
 			},
 		},
 	}
 
 	for _, tt := range prep {
-		cmdOps := []e2e.SingularityCmdOp{
+		cmdOps := []e2e.ApptainerCmdOp{
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
 			e2e.WithCommand(tt.command),
@@ -1160,7 +1160,7 @@ func (c imgBuildTests) buildWithFingerprint(t *testing.T) {
 		if tt.consoleOps != nil {
 			cmdOps = append(cmdOps, e2e.ConsoleRun(tt.consoleOps...))
 		}
-		c.env.RunSingularity(t, cmdOps...)
+		c.env.RunApptainer(t, cmdOps...)
 	}
 
 	// Test builds with "Fingerprint:" headers
@@ -1240,7 +1240,7 @@ func (c imgBuildTests) buildWithFingerprint(t *testing.T) {
 			log.Fatal(err)
 		}
 		defer os.Remove(defFile)
-		c.env.RunSingularity(t,
+		c.env.RunApptainer(t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.RootProfile),
 			e2e.WithCommand("build"),
@@ -1349,7 +1349,7 @@ func (c imgBuildTests) buildBindMount(t *testing.T) {
 		args := tt.buildOption
 		args = append(args, "-F", "--sandbox", sandboxImage, defFile)
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.RootProfile),
@@ -1375,7 +1375,7 @@ func (c imgBuildTests) buildLibraryHost(t *testing.T) {
 
 	defFile := e2e.RawDefFile(t, tmpdir, strings.NewReader(definition))
 	imagePath := filepath.Join(tmpdir, "image-libaryhost")
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -1402,7 +1402,7 @@ func (c imgBuildTests) testWritableTmpfs(t *testing.T) {
 
 	defFile := e2e.RawDefFile(t, tmpdir, strings.NewReader(definition))
 	imagePath := filepath.Join(tmpdir, "image-writabletmpfs")
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),

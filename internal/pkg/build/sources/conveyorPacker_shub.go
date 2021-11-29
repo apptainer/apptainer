@@ -21,7 +21,7 @@ type ShubConveyorPacker struct {
 	LocalPacker
 }
 
-// Get downloads container from Singularityhub.
+// Get downloads container from Apptainerhub.
 func (cp *ShubConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err error) {
 	sylog.Debugf("Getting container from Shub")
 

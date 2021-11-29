@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularityconf
+package apptainerconf
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ func TestGenerate(t *testing.T) {
 }
 
 func TestParser(t *testing.T) {
-	f, err := ioutil.TempFile("", "singularity.conf-")
+	f, err := ioutil.TempFile("", "apptainer.conf-")
 	if err != nil {
 		t.Fatalf("failed to create temporary configuration file: %s", err)
 	}

@@ -30,7 +30,7 @@ const (
 	containerTesterDEF = "testdata/inspecter_container.def"
 )
 
-func (c ctx) singularityInspect(t *testing.T) {
+func (c ctx) apptainerInspect(t *testing.T) {
 	testDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "inspect-", "")
 	defer cleanup(t)
 
@@ -38,7 +38,7 @@ func (c ctx) singularityInspect(t *testing.T) {
 	squashImage := filepath.Join(testDir, "image.sqs")
 	sandboxImage := filepath.Join(testDir, "sandbox")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -138,28 +138,28 @@ func (c ctx) singularityInspect(t *testing.T) {
 		{
 			name:      "label_org.label-schema.usage",
 			insType:   "--labels",
-			compareFn: compareLabel("org.label-schema.usage", "/.singularity.d/runscript.help", ""),
+			compareFn: compareLabel("org.label-schema.usage", "/.apptainer.d/runscript.help", ""),
 		},
 		{
-			name:      "label_org.label-schema.usage.singularity.deffile.bootstrap",
+			name:      "label_org.label-schema.usage.apptainer.deffile.bootstrap",
 			insType:   "--labels",
-			compareFn: compareLabel("org.label-schema.usage.singularity.deffile.bootstrap", "library", ""),
+			compareFn: compareLabel("org.label-schema.usage.apptainer.deffile.bootstrap", "library", ""),
 		},
 		{
-			name:      "label_org.label-schema.usage.singularity.deffile.from",
+			name:      "label_org.label-schema.usage.apptainer.deffile.from",
 			insType:   "--labels",
-			compareFn: compareLabel("org.label-schema.usage.singularity.deffile.from", "alpine:3.11.5", ""),
+			compareFn: compareLabel("org.label-schema.usage.apptainer.deffile.from", "alpine:3.11.5", ""),
 		},
 		{
-			name:      "label_org.label-schema.usage.singularity.runscript.help",
+			name:      "label_org.label-schema.usage.apptainer.runscript.help",
 			insType:   "--labels",
-			compareFn: compareLabel("org.label-schema.usage.singularity.runscript.help", "/.singularity.d/runscript.help", ""),
+			compareFn: compareLabel("org.label-schema.usage.apptainer.runscript.help", "/.apptainer.d/runscript.help", ""),
 		},
 		{
 			name:    "runscript",
 			insType: "--runscript",
 			compareFn: func(t *testing.T, meta *inspect.Metadata) {
-				out := "#!/bin/sh\n\ncat /.singularity.d/runscript.help"
+				out := "#!/bin/sh\n\ncat /.apptainer.d/runscript.help"
 				v := meta.Attributes.Runscript
 				if v != out {
 					t.Errorf("unexpected runscript output, got %s instead of %s", v, out)
@@ -207,8 +207,8 @@ func (c ctx) singularityInspect(t *testing.T) {
 			name:    "helpfile",
 			insType: "--helpfile",
 			compareFn: func(t *testing.T, meta *inspect.Metadata) {
-				helpFile := "/.singularity.d/runscript.help"
-				out := "This is a e2e test container used for testing the 'inspect'\ncommand. This container \"inspector_container.sif\" should be placed\nin the \"e2e/testdata\" directory of Singularity."
+				helpFile := "/.apptainer.d/runscript.help"
+				out := "This is a e2e test container used for testing the 'inspect'\ncommand. This container \"inspector_container.sif\" should be placed\nin the \"e2e/testdata\" directory of Apptainer."
 				v := meta.Attributes.Helpfile
 				if v != out {
 					t.Errorf("unexpected %s output, got %s instead of %s", helpFile, v, out)
@@ -219,14 +219,14 @@ func (c ctx) singularityInspect(t *testing.T) {
 			name:    "environment",
 			insType: "--environment",
 			compareFn: func(t *testing.T, meta *inspect.Metadata) {
-				envFile := "/.singularity.d/env/90-environment.sh"
+				envFile := "/.apptainer.d/env/90-environment.sh"
 				out := "#!/bin/sh\n# Custom environment shell code should follow\n\n\nexport test=\"testing\"\nexport e2e=\"e2e testing\""
 				v := meta.Attributes.Environment[envFile]
 				if v != out {
 					t.Errorf("unexpected environment for %s, got %s instead of %s", envFile, v, out)
 				}
 
-				envFile = "/.singularity.d/env/91-environment.sh"
+				envFile = "/.apptainer.d/env/91-environment.sh"
 				out = "export hello=\"world\""
 				v = meta.Attributes.Environment[envFile]
 				if v != out {
@@ -325,7 +325,7 @@ func (c ctx) singularityInspect(t *testing.T) {
 
 	for _, tt := range tests {
 		// Inspect the container, and get the output
-		compareOutput := func(t *testing.T, r *e2e.SingularityCmdResult) {
+		compareOutput := func(t *testing.T, r *e2e.ApptainerCmdResult) {
 			meta := new(inspect.Metadata)
 			if err := json.Unmarshal(r.Stdout, meta); err != nil {
 				t.Errorf("unable to parse json output: %s", err)
@@ -339,7 +339,7 @@ func (c ctx) singularityInspect(t *testing.T) {
 			args = append(args, "--app", tt.appName)
 		}
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest("SIF/"+tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -348,7 +348,7 @@ func (c ctx) singularityInspect(t *testing.T) {
 			e2e.ExpectExit(0, compareOutput),
 		)
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest("Squash/"+tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -357,7 +357,7 @@ func (c ctx) singularityInspect(t *testing.T) {
 			e2e.ExpectExit(0, compareOutput),
 		)
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest("Sandbox/"+tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -368,7 +368,7 @@ func (c ctx) singularityInspect(t *testing.T) {
 	}
 
 	// test --all
-	compareAll := func(t *testing.T, r *e2e.SingularityCmdResult) {
+	compareAll := func(t *testing.T, r *e2e.ApptainerCmdResult) {
 		meta := new(inspect.Metadata)
 		if err := json.Unmarshal(r.Stdout, meta); err != nil {
 			t.Errorf("unable to parse json output: %s", err)
@@ -378,7 +378,7 @@ func (c ctx) singularityInspect(t *testing.T) {
 		}
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("SIF/all"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -387,7 +387,7 @@ func (c ctx) singularityInspect(t *testing.T) {
 		e2e.ExpectExit(0, compareAll),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("Squash/all"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -396,7 +396,7 @@ func (c ctx) singularityInspect(t *testing.T) {
 		e2e.ExpectExit(0, compareAll),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("Sandbox/all"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -413,6 +413,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"inspect command": c.singularityInspect,
+		"inspect command": c.apptainerInspect,
 	}
 }

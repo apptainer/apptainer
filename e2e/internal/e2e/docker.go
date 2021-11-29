@@ -50,7 +50,7 @@ func PrepRegistry(t *testing.T, env TestEnv) {
 		dockerDefinition := "testdata/Docker_registry.def"
 		dockerImage := filepath.Join(env.TestDir, "docker-registry")
 
-		env.RunSingularity(
+		env.RunApptainer(
 			t,
 			WithProfile(RootProfile),
 			WithCommand("build"),
@@ -70,7 +70,7 @@ func PrepRegistry(t *testing.T, env TestEnv) {
 
 		var umountFn func(*testing.T)
 
-		env.RunSingularity(
+		env.RunApptainer(
 			t,
 			WithProfile(RootProfile),
 			WithCommand("instance start"),
@@ -108,7 +108,7 @@ func PrepRegistry(t *testing.T, env TestEnv) {
 
 		atomic.StoreUint32(&registrySetup.up, 1)
 
-		env.RunSingularity(
+		env.RunApptainer(
 			t,
 			WithProfile(UserProfile),
 			WithCommand("push"),
@@ -126,7 +126,7 @@ func KillRegistry(t *testing.T, env TestEnv) {
 
 	var umountFn func(*testing.T)
 
-	env.RunSingularity(
+	env.RunApptainer(
 		t,
 		WithProfile(RootProfile),
 		WithCommand("instance stop"),

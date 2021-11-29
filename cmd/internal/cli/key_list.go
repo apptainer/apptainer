@@ -36,7 +36,7 @@ func init() {
 	})
 }
 
-// KeyListCmd is `singularity key list' and lists local store OpenPGP keys
+// KeyListCmd is `apptainer key list' and lists local store OpenPGP keys
 var KeyListCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(0),
 	DisableFlagsInUseLine: true,

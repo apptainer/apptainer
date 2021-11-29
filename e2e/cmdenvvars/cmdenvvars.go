@@ -75,7 +75,7 @@ func (c ctx) pullTestImage(t *testing.T) string {
 	cmdArgs := []string{imgPath, "library://alpine:latest"}
 
 	// Pull the specified image to the temporary location
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
@@ -112,14 +112,14 @@ func (c ctx) assertCacheDoesNotExist(t *testing.T) {
 	}
 }
 
-func (c ctx) testSingularityCacheDir(t *testing.T) {
+func (c ctx) testApptainerCacheDir(t *testing.T) {
 	// Test plan:
 	//
 	// - create a temporary directory for the cache
 	// - pull a known image from the network
 	// - assert that there's an entry for this image in the cache
 	//
-	// If the file is in the temporary cache, it means singularity
+	// If the file is in the temporary cache, it means apptainer
 	// followed the APPTAINER_CACHEDIR environment variable (set
 	// up deep in the e2e framework) to store the cached image.
 
@@ -149,7 +149,7 @@ func ls(t *testing.T, dir string) {
 	}
 }
 
-func (c ctx) testSingularityDisableCache(t *testing.T) {
+func (c ctx) testApptainerDisableCache(t *testing.T) {
 	// Test plan:
 	//
 	// - create a temporary directory for the cache
@@ -158,11 +158,11 @@ func (c ctx) testSingularityDisableCache(t *testing.T) {
 	// - assert that there is no entry for this image in the cache
 	//
 	// If the file is not in the temporary cache, it means
-	// singularity followed the APPTAINER_DISABLE_CACHE environment
+	// apptainer followed the APPTAINER_DISABLE_CACHE environment
 	// variable (set up deep in the e2e framework) and avoided
 	// creating an entry in the library cache. If it fails to do so,
 	// we expect the entry to be found in the directory specified by
-	// APPTAINER_CACHEDIR (see testSingularityCacheDir).
+	// APPTAINER_CACHEDIR (see testApptainerCacheDir).
 
 	cleanup := c.setupTemporaryCache(t)
 	defer cleanup(t)
@@ -178,7 +178,7 @@ func (c ctx) testSingularityDisableCache(t *testing.T) {
 	c.assertCacheDoesNotExist(t)
 }
 
-func (c ctx) testSingularityReadOnlyCacheDir(t *testing.T) {
+func (c ctx) testApptainerReadOnlyCacheDir(t *testing.T) {
 	// Test plan:
 	//
 	// - create a temporary directory for the cache
@@ -188,13 +188,13 @@ func (c ctx) testSingularityReadOnlyCacheDir(t *testing.T) {
 	// - assert that there is no entry for this image in the cache
 	//
 	// If the file is not in the temporary cache, it means
-	// singularity followed the APPTAINER_DISABLE_CACHE environment
+	// apptainer followed the APPTAINER_DISABLE_CACHE environment
 	// variable (set up deep in the e2e framework) and disabled
 	// caching (because the directory is readonly). If it fails to
 	// do so (e.g. by "fixing" the access permissions on the
 	// directory), we expect the entry to be found in the directory
 	// specified by APPTAINER_CACHEDIR (see
-	// testSingularityCacheDir).
+	// testApptainerCacheDir).
 	//
 	// This use case is common in the context of grid computing
 	// where the usage of sandboxes shared between users is a common
@@ -224,15 +224,15 @@ func (c ctx) testSingularityReadOnlyCacheDir(t *testing.T) {
 	c.assertCacheDoesNotExist(t)
 }
 
-func (c ctx) testSingularitySypgpDir(t *testing.T) {
+func (c ctx) testApptainerSypgpDir(t *testing.T) {
 	// Test plan:
 	//
 	// - create a temporary directory for the keyrings
-	// - run 'singularity key list' to create the keyrings
+	// - run 'apptainer key list' to create the keyrings
 	// - assert that both files were created
 	//
 	// If the files are in the temporary directory, it means
-	// singularity followed the APPTAINER_SYPGPDIR environment
+	// apptainer followed the APPTAINER_SYPGPDIR environment
 	// variable (set up deep in the e2e framework) to store the
 	// keyrings.
 
@@ -240,7 +240,7 @@ func (c ctx) testSingularitySypgpDir(t *testing.T) {
 	defer cleanup(t)
 
 	// run 'key list' to initialize the keyring directory.
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("key"),
@@ -266,9 +266,9 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"read-only cache directory": c.testSingularityReadOnlyCacheDir,
-		"APPTAINER_CACHEDIR":      c.testSingularityCacheDir,
-		"singularity disable cache": c.testSingularityDisableCache,
-		"APPTAINER_SYPGPDIR":      c.testSingularitySypgpDir,
+		"read-only cache directory": c.testApptainerReadOnlyCacheDir,
+		"APPTAINER_CACHEDIR":      c.testApptainerCacheDir,
+		"apptainer disable cache": c.testApptainerDisableCache,
+		"APPTAINER_SYPGPDIR":      c.testApptainerSypgpDir,
 	}
 }

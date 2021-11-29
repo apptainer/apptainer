@@ -20,7 +20,7 @@ func init() {
 }
 
 // BuildConfigCmd outputs a list of the compile-time parameters with which
-// singularity was compiled
+// apptainer was compiled
 var BuildConfigCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := ""
@@ -35,7 +35,7 @@ var BuildConfigCmd = &cobra.Command{
 	Args:    cobra.MaximumNArgs(1),
 	Use:     "buildcfg [parameter]",
 	Short:   "Output the currently set compile-time parameters",
-	Example: "$ singularity buildcfg",
+	Example: "$ apptainer buildcfg",
 }
 
 func printParam(name string) error {

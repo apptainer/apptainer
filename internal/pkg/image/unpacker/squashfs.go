@@ -217,7 +217,7 @@ func TestUserXattr(path string) (ok bool, err error) {
 	tmp, err := ioutil.TempFile(path, "uxattr-")
 	defer os.Remove(tmp.Name())
 	tmp.Close()
-	err = unix.Setxattr(tmp.Name(), "user.singularity", []byte{}, 0)
+	err = unix.Setxattr(tmp.Name(), "user.apptainer", []byte{}, 0)
 	if err == unix.ENOTSUP || err == unix.EOPNOTSUPP {
 		return false, nil
 	} else if err != nil {

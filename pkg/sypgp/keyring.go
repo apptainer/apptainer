@@ -18,7 +18,7 @@ import (
 	"golang.org/x/crypto/openpgp"
 )
 
-// PublicKeyRing retrieves the Singularity public KeyRing.
+// PublicKeyRing retrieves the Apptainer public KeyRing.
 func PublicKeyRing() (openpgp.KeyRing, error) {
 	return NewHandle("").LoadPubKeyring()
 }

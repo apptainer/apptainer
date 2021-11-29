@@ -4,8 +4,8 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-//go:build singularity_engine
-// +build singularity_engine
+//go:build apptainer_engine
+// +build apptainer_engine
 
 package unpacker
 
@@ -110,7 +110,7 @@ func getLibraries(binary string) ([]string, error) {
 }
 
 // unsquashfsSandboxCmd is the command instance for executing unsquashfs command
-// in a sandboxed environment with singularity.
+// in a sandboxed environment with apptainer.
 func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filter string, opts ...string) (*exec.Cmd, error) {
 	const (
 		// will contain both dest and filename inside the sandbox
@@ -153,7 +153,7 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 		}
 	}
 
-	// the decision to use user namespace is left to singularity
+	// the decision to use user namespace is left to apptainer
 	// which will detect automatically depending of the configuration
 	// what workflow it could use
 	args := []string{
@@ -201,7 +201,7 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 	}
 
 	// create files and directories in the sandbox and
-	// add singularity bind mount options
+	// add apptainer bind mount options
 	for _, b := range roFiles {
 		file := filepath.Join(rootfs, b)
 		dir := filepath.Dir(file)
@@ -214,7 +214,7 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 		args = append(args, "-B", fmt.Sprintf("%s:%s:ro", b, b))
 	}
 
-	// singularity sandbox
+	// apptainer sandbox
 	args = append(args, rootfs)
 
 	// unsquashfs execution arguments
@@ -231,8 +231,8 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 		args = append(args, filter)
 	}
 
-	sylog.Debugf("Calling wrapped unsquashfs: singularity %v", args)
-	cmd := exec.Command(filepath.Join(buildcfg.BINDIR, "singularity"), args...)
+	sylog.Debugf("Calling wrapped unsquashfs: apptainer %v", args)
+	cmd := exec.Command(filepath.Join(buildcfg.BINDIR, "apptainer"), args...)
 	cmd.Dir = "/"
 	cmd.Env = []string{
 		fmt.Sprintf("LD_LIBRARY_PATH=%s", strings.Join(libraryPath, string(os.PathListSeparator))),

@@ -28,7 +28,7 @@ func FindBin(name string) (path string, err error) {
 	case "mount", "mknod", "debootstrap", "pacstrap", "dnf", "yum", "rpm", "curl", "uname", "zypper", "SUSEConnect", "rpmkeys":
 		return findOnPath(name)
 	// Configurable executables that are found at build time, can be overridden
-	// in singularity.conf. If config value is "" will look on PATH.
+	// in apptainer.conf. If config value is "" will look on PATH.
 	case "unsquashfs", "mksquashfs", "go":
 		return findFromConfigOrPath(name)
 	// distro provided setUID executables that are used in the fakeroot flow to setup subuid/subgid mappings
@@ -59,14 +59,14 @@ func findOnPath(name string) (path string, err error) {
 	return path, err
 }
 
-// findFromConfigOrPath retrieves the path to an executable from singularity.conf,
+// findFromConfigOrPath retrieves the path to an executable from apptainer.conf,
 // or searches PATH if not set there.
 func findFromConfigOrPath(name string) (path string, err error) {
-	cfg := singularityconf.GetCurrentConfig()
+	cfg := apptainerconf.GetCurrentConfig()
 	if cfg == nil {
-		cfg, err = singularityconf.Parse(buildcfg.APPTAINER_CONF_FILE)
+		cfg, err = apptainerconf.Parse(buildcfg.APPTAINER_CONF_FILE)
 		if err != nil {
-			return "", errors.Wrap(err, "unable to parse singularity configuration file")
+			return "", errors.Wrap(err, "unable to parse apptainer configuration file")
 		}
 	}
 
@@ -85,20 +85,20 @@ func findFromConfigOrPath(name string) (path string, err error) {
 		return findOnPath(name)
 	}
 
-	sylog.Debugf("Using %q at %q (from singularity.conf)", name, path)
+	sylog.Debugf("Using %q at %q (from apptainer.conf)", name, path)
 
 	// Use lookPath with the absolute path to confirm it is accessible & executable
 	return exec.LookPath(path)
 }
 
-// findFromConfigOnly retrieves the path to an executable from singularity.conf.
+// findFromConfigOnly retrieves the path to an executable from apptainer.conf.
 // If it's not set there we error.
 func findFromConfigOnly(name string) (path string, err error) {
-	cfg := singularityconf.GetCurrentConfig()
+	cfg := apptainerconf.GetCurrentConfig()
 	if cfg == nil {
-		cfg, err = singularityconf.Parse(buildcfg.APPTAINER_CONF_FILE)
+		cfg, err = apptainerconf.Parse(buildcfg.APPTAINER_CONF_FILE)
 		if err != nil {
-			return "", errors.Wrap(err, "unable to parse singularity configuration file")
+			return "", errors.Wrap(err, "unable to parse apptainer configuration file")
 		}
 	}
 
@@ -114,10 +114,10 @@ func findFromConfigOnly(name string) (path string, err error) {
 	}
 
 	if path == "" {
-		return "", fmt.Errorf("path to %q not set in singularity.conf", name)
+		return "", fmt.Errorf("path to %q not set in apptainer.conf", name)
 	}
 
-	sylog.Debugf("Using %q at %q (from singularity.conf)", name, path)
+	sylog.Debugf("Using %q at %q (from apptainer.conf)", name, path)
 
 	// Use lookPath with the absolute path to confirm it is accessible & executable
 	return exec.LookPath(path)

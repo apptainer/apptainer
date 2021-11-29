@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ import (
 )
 
 // Name is the name of the runtime.
-const Name = "singularity"
+const Name = "apptainer"
 
 const (
 	// DefaultLayer is the string representation for the default layer.
@@ -35,15 +35,15 @@ type EngineConfig struct {
 
 	// File is not passed across stage but stay here for
 	// convenient use by runtime code and plugins.
-	File *singularityconf.File `json:"-"`
+	File *apptainerconf.File `json:"-"`
 }
 
-// NewConfig returns singularity.EngineConfig.
+// NewConfig returns apptainer.EngineConfig.
 func NewConfig() *EngineConfig {
 	ret := &EngineConfig{
 		JSON:      new(JSONConfig),
 		OciConfig: new(oci.Config),
-		File:      new(singularityconf.File),
+		File:      new(apptainerconf.File),
 	}
 	return ret
 }
@@ -111,7 +111,7 @@ type JSONConfig struct {
 	FuseMount         []FuseMount       `json:"fuseMount,omitempty"`
 	ImageList         []image.Image     `json:"imageList,omitempty"`
 	BindPath          []BindPath        `json:"bindpath,omitempty"`
-	SingularityEnv    map[string]string `json:"singularityEnv,omitempty"`
+	ApptainerEnv    map[string]string `json:"apptainerEnv,omitempty"`
 	UnixSocketPair    [2]int            `json:"unixSocketPair,omitempty"`
 	OpenFd            []int             `json:"openFd,omitempty"`
 	TargetGID         []int             `json:"targetGID,omitempty"`
@@ -848,19 +848,19 @@ func (e *EngineConfig) GetTargetGID() []int {
 }
 
 // SetLibrariesPath sets libraries to bind in container
-// /.singularity.d/libs directory.
+// /.apptainer.d/libs directory.
 func (e *EngineConfig) SetLibrariesPath(libraries []string) {
 	e.JSON.LibrariesPath = libraries
 }
 
 // AppendLibrariesPath adds libraries to bind in container
-// /.singularity.d/libs directory.
+// /.apptainer.d/libs directory.
 func (e *EngineConfig) AppendLibrariesPath(libraries ...string) {
 	e.JSON.LibrariesPath = append(e.JSON.LibrariesPath, libraries...)
 }
 
 // GetLibrariesPath returns libraries to bind in container
-// /.singularity.d/libs directory.
+// /.apptainer.d/libs directory.
 func (e *EngineConfig) GetLibrariesPath() []string {
 	return e.JSON.LibrariesPath
 }
@@ -988,25 +988,25 @@ func (e *EngineConfig) GetUnixSocketPair() [2]int {
 	return e.JSON.UnixSocketPair
 }
 
-// SetSingularityEnv sets singularity environment variables
+// SetApptainerEnv sets apptainer environment variables
 // as a key/value string map.
-func (e *EngineConfig) SetSingularityEnv(senv map[string]string) {
-	e.JSON.SingularityEnv = senv
+func (e *EngineConfig) SetApptainerEnv(senv map[string]string) {
+	e.JSON.ApptainerEnv = senv
 }
 
-// GetSingularityEnv returns singularity environment variables
+// GetApptainerEnv returns apptainer environment variables
 // as a key/value string map.
-func (e *EngineConfig) GetSingularityEnv() map[string]string {
-	return e.JSON.SingularityEnv
+func (e *EngineConfig) GetApptainerEnv() map[string]string {
+	return e.JSON.ApptainerEnv
 }
 
-// SetConfigurationFile sets the singularity configuration file to
+// SetConfigurationFile sets the apptainer configuration file to
 // use instead of the default one.
 func (e *EngineConfig) SetConfigurationFile(filename string) {
 	e.JSON.ConfigurationFile = filename
 }
 
-// GetConfigurationFile returns the singularity configuration file to use.
+// GetConfigurationFile returns the apptainer configuration file to use.
 func (e *EngineConfig) GetConfigurationFile() string {
 	return e.JSON.ConfigurationFile
 }

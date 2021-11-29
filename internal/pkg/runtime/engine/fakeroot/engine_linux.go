@@ -30,7 +30,7 @@ import (
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 
-// EngineOperations is a Singularity fakeroot runtime engine that implements engine.Operations.
+// EngineOperations is a Apptainer fakeroot runtime engine that implements engine.Operations.
 type EngineOperations struct {
 	CommonConfig *config.Common               `json:"-"`
 	EngineConfig *fakerootConfig.EngineConfig `json:"engineConfig"`
@@ -56,7 +56,7 @@ func (e *EngineOperations) Config() config.EngineConfig {
 }
 
 // PrepareConfig is called during stage1 to validate and prepare
-// container configuration. It is responsible for singularity
+// container configuration. It is responsible for apptainer
 // configuration file parsing, reading capabilities, configuring
 // UID/GID mappings, etc.
 //
@@ -67,14 +67,14 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 
 	configurationFile := buildcfg.APPTAINER_CONF_FILE
 
-	// check for ownership of singularity.conf
+	// check for ownership of apptainer.conf
 	if starterConfig.GetIsSUID() && !fs.IsOwner(configurationFile, 0) {
 		return fmt.Errorf("%s must be owned by root", configurationFile)
 	}
 
-	fileConfig, err := singularityconf.Parse(configurationFile)
+	fileConfig, err := apptainerconf.Parse(configurationFile)
 	if err != nil {
-		return fmt.Errorf("unable to parse singularity.conf file: %s", err)
+		return fmt.Errorf("unable to parse apptainer.conf file: %s", err)
 	}
 
 	if starterConfig.GetIsSUID() {
@@ -240,7 +240,7 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 	} else {
 		sylog.Warningf("Not compiled with seccomp, fakeroot may not work correctly, " +
 			"if you get permission denied error during creation of pseudo devices, " +
-			"you should install seccomp library and recompile Singularity")
+			"you should install seccomp library and recompile Apptainer")
 	}
 	return syscall.Exec(args[0], args, env)
 }

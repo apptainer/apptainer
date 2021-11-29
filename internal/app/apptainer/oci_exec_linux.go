@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"fmt"
@@ -36,6 +36,6 @@ func OciExec(containerID string, cmdArgs []string) error {
 
 	os.Clearenv()
 
-	procName := fmt.Sprintf("Singularity OCI %s", containerID)
+	procName := fmt.Sprintf("Apptainer OCI %s", containerID)
 	return starter.Exec(procName, commonConfig)
 }

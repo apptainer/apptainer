@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"bufio"
@@ -37,8 +37,8 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/shell"
 	"github.com/apptainer/apptainer/internal/pkg/util/shell/interpreter"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
-	singularitycallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
-	singularityConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
+	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
+	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/rlimit"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
@@ -318,17 +318,17 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 // a hybrid workflow (e.g. fakeroot), then there is no privileged saved uid
 // and thus no additional privileges can be gained.
 //
-// Here, however, singularity engine does not escalate privileges.
+// Here, however, apptainer engine does not escalate privileges.
 func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error {
 	sylog.Debugf("Post start process")
 
-	callbackType := (singularitycallback.PostStartProcess)(nil)
+	callbackType := (apptainercallback.PostStartProcess)(nil)
 	callbacks, err := plugin.LoadCallbacks(callbackType)
 	if err != nil {
 		return fmt.Errorf("while loading plugins callbacks '%T': %s", callbackType, err)
 	}
 	for _, cb := range callbacks {
-		if err := cb.(singularitycallback.PostStartProcess)(e.CommonConfig, pid); err != nil {
+		if err := cb.(apptainercallback.PostStartProcess)(e.CommonConfig, pid); err != nil {
 			return err
 		}
 	}
@@ -620,8 +620,8 @@ func (b *bufferCloser) Close() error {
 	return nil
 }
 
-// Register a virtual file /.singularity.d/env/inject-singularity-env.sh sourced
-// after /.singularity.d/env/99-base.sh or /environment.
+// Register a virtual file /.apptainer.d/env/inject-apptainer-env.sh sourced
+// after /.apptainer.d/env/99-base.sh or /environment.
 // This handler turns all SINGUALRITYENV_KEY=VAL defined variables into their form:
 // export KEY=VAL. It can be sourced only once otherwise it returns an empty content.
 func injectEnvHandler(senv map[string]string) interpreter.OpenHandler {
@@ -640,7 +640,7 @@ func injectEnvHandler(senv map[string]string) interpreter.OpenHandler {
 
 			// We wrap the value of the export in double quotes manually, and do not use
 			// go's %q format string as it prevents passing an escaped literal $ in
-			// a SINGULARITYENV_ as \$
+			// a APPTAINERENV_ as \$
 			snippet := `
 			if test -v %[1]s; then
 				sylog debug "Overriding %[1]s environment variable"
@@ -652,7 +652,7 @@ func injectEnvHandler(senv map[string]string) interpreter.OpenHandler {
 				case "UID", "GID":
 				case "LD_LIBRARY_PATH":
 					if value != "" {
-						b.WriteString(fmt.Sprintf(snippet, key, value+":/.singularity.d/libs"))
+						b.WriteString(fmt.Sprintf(snippet, key, value+":/.apptainer.d/libs"))
 					}
 				default:
 					b.WriteString(fmt.Sprintf(snippet, key, shell.EscapeDoubleQuotes(value)))
@@ -798,7 +798,7 @@ func umaskBuiltin(ctx context.Context, argv []string) error {
 
 // runActionScript interprets and executes the action script within
 // an embedded shell interpreter.
-func runActionScript(engineConfig *singularityConfig.EngineConfig) ([]string, []string, error) {
+func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []string, error) {
 	args := engineConfig.OciConfig.Process.Args
 	env := append(engineConfig.OciConfig.Process.Env, "APPTAINER_COMMAND="+filepath.Base(args[0]))
 
@@ -820,11 +820,11 @@ func runActionScript(engineConfig *singularityConfig.EngineConfig) ([]string, []
 		return nil
 	}
 
-	// inject SINGULARITYENV_ defined variables
-	senv := engineConfig.GetSingularityEnv()
-	shell.RegisterOpenHandler("/.inject-singularity-env.sh", injectEnvHandler(senv))
+	// inject APPTAINERENV_ defined variables
+	senv := engineConfig.GetApptainerEnv()
+	shell.RegisterOpenHandler("/.inject-apptainer-env.sh", injectEnvHandler(senv))
 
-	shell.RegisterOpenHandler("/.singularity.d/env/99-runtimevars.sh", runtimeVarsHandler(senv))
+	shell.RegisterOpenHandler("/.apptainer.d/env/99-runtimevars.sh", runtimeVarsHandler(senv))
 
 	// register few builtin
 	shell.RegisterShellBuiltin("getallenv", getAllEnvBuiltin(shell))
@@ -849,7 +849,7 @@ func runActionScript(engineConfig *singularityConfig.EngineConfig) ([]string, []
 		return nil, nil, err
 	}
 
-	if len(args) > 0 && args[0] == "/.singularity.d/runscript" {
+	if len(args) > 0 && args[0] == "/.apptainer.d/runscript" {
 		b, err := getDockerRunscript(args[0])
 		if err != nil {
 			return nil, nil, err

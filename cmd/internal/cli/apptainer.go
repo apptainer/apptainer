@@ -63,7 +63,7 @@ const (
 	envPrefix = "APPTAINER_"
 )
 
-// singularity command flags
+// apptainer command flags
 var (
 	debug   bool
 	nocolor bool
@@ -301,7 +301,7 @@ func handleConfDir(confDir string) {
 
 func persistentPreRun(*cobra.Command, []string) {
 	setSylogMessageLevel()
-	sylog.Debugf("Singularity version: %s", buildcfg.PACKAGE_VERSION)
+	sylog.Debugf("Apptainer version: %s", buildcfg.PACKAGE_VERSION)
 
 	if os.Geteuid() != 0 && buildcfg.APPTAINER_SUID_INSTALL == 1 {
 		if configurationFile != singConfigFileFlag.DefaultValue {
@@ -310,48 +310,48 @@ func persistentPreRun(*cobra.Command, []string) {
 	}
 
 	sylog.Debugf("Parsing configuration file %s", configurationFile)
-	config, err := singularityconf.Parse(configurationFile)
+	config, err := apptainerconf.Parse(configurationFile)
 	if err != nil {
 		sylog.Fatalf("Couldn't not parse configuration file %s: %s", configurationFile, err)
 	}
-	singularityconf.SetCurrentConfig(config)
+	apptainerconf.SetCurrentConfig(config)
 
-	// Handle the config dir (~/.singularity),
+	// Handle the config dir (~/.apptainer),
 	// then check the remove conf file permission.
 	handleConfDir(syfs.ConfigDir())
 	handleRemoteConf(syfs.RemoteConf())
 }
 
-// Init initializes and registers all singularity commands.
+// Init initializes and registers all apptainer commands.
 func Init(loadPlugins bool) {
-	cmdManager := cmdline.NewCommandManager(singularityCmd)
+	cmdManager := cmdline.NewCommandManager(apptainerCmd)
 
-	singularityCmd.Flags().SetInterspersed(false)
-	singularityCmd.PersistentFlags().SetInterspersed(false)
+	apptainerCmd.Flags().SetInterspersed(false)
+	apptainerCmd.PersistentFlags().SetInterspersed(false)
 
 	templateFuncs := template.FuncMap{
 		"TraverseParentsUses": TraverseParentsUses,
 	}
 	cobra.AddTemplateFuncs(templateFuncs)
 
-	singularityCmd.SetHelpTemplate(docs.HelpTemplate)
-	singularityCmd.SetUsageTemplate(docs.UseTemplate)
+	apptainerCmd.SetHelpTemplate(docs.HelpTemplate)
+	apptainerCmd.SetUsageTemplate(docs.UseTemplate)
 
 	vt := fmt.Sprintf("%s version {{printf \"%%s\" .Version}}\n", buildcfg.PACKAGE_NAME)
-	singularityCmd.SetVersionTemplate(vt)
+	apptainerCmd.SetVersionTemplate(vt)
 
 	// set persistent pre run function here to avoid initialization loop error
-	singularityCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+	apptainerCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		persistentPreRun(cmd, args)
 		return cmdManager.UpdateCmdFlagFromEnv(cmd, envPrefix)
 	}
 
-	cmdManager.RegisterFlagForCmd(&singDebugFlag, singularityCmd)
-	cmdManager.RegisterFlagForCmd(&singNoColorFlag, singularityCmd)
-	cmdManager.RegisterFlagForCmd(&singSilentFlag, singularityCmd)
-	cmdManager.RegisterFlagForCmd(&singQuietFlag, singularityCmd)
-	cmdManager.RegisterFlagForCmd(&singVerboseFlag, singularityCmd)
-	cmdManager.RegisterFlagForCmd(&singConfigFileFlag, singularityCmd)
+	cmdManager.RegisterFlagForCmd(&singDebugFlag, apptainerCmd)
+	cmdManager.RegisterFlagForCmd(&singNoColorFlag, apptainerCmd)
+	cmdManager.RegisterFlagForCmd(&singSilentFlag, apptainerCmd)
+	cmdManager.RegisterFlagForCmd(&singQuietFlag, apptainerCmd)
+	cmdManager.RegisterFlagForCmd(&singVerboseFlag, apptainerCmd)
+	cmdManager.RegisterFlagForCmd(&singConfigFileFlag, apptainerCmd)
 
 	cmdManager.RegisterCmd(VersionCmd)
 
@@ -382,32 +382,32 @@ func Init(loadPlugins bool) {
 	}
 }
 
-// singularityCmd is the base command when called without any subcommands
-var singularityCmd = &cobra.Command{
+// apptainerCmd is the base command when called without any subcommands
+var apptainerCmd = &cobra.Command{
 	TraverseChildren:      true,
 	DisableFlagsInUseLine: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmdline.CommandError("invalid command")
 	},
 
-	Use:           docs.SingularityUse,
+	Use:           docs.ApptainerUse,
 	Version:       buildcfg.PACKAGE_VERSION,
-	Short:         docs.SingularityShort,
-	Long:          docs.SingularityLong,
-	Example:       docs.SingularityExample,
+	Short:         docs.ApptainerShort,
+	Long:          docs.ApptainerLong,
+	Example:       docs.ApptainerExample,
 	SilenceErrors: true,
 	SilenceUsage:  true,
 }
 
-// RootCmd returns the root singularity cobra command.
+// RootCmd returns the root apptainer cobra command.
 func RootCmd() *cobra.Command {
-	return singularityCmd
+	return apptainerCmd
 }
 
-// ExecuteSingularity adds all child commands to the root command and sets
+// ExecuteApptainer adds all child commands to the root command and sets
 // flags appropriately. This is called by main.main(). It only needs to happen
-// once to the root command (singularity).
-func ExecuteSingularity() {
+// once to the root command (apptainer).
+func ExecuteApptainer() {
 	loadPlugins := true
 
 	// we avoid to load installed plugins to not double load
@@ -437,30 +437,30 @@ func ExecuteSingularity() {
 		}
 	}()
 
-	if err := singularityCmd.ExecuteContext(ctx); err != nil {
+	if err := apptainerCmd.ExecuteContext(ctx); err != nil {
 		// Find the subcommand to display more useful help, and the correct
-		// subcommand name in messages - i.e. 'run' not 'singularity'
+		// subcommand name in messages - i.e. 'run' not 'apptainer'
 		// This is required because we previously used ExecuteC that returns the
 		// subcommand... but there is no ExecuteC that variant accepts a context.
-		subCmd, _, subCmdErr := singularityCmd.Find(args[1:])
+		subCmd, _, subCmdErr := apptainerCmd.Find(args[1:])
 		if subCmdErr != nil {
-			singularityCmd.Printf("Error: %v\n\n", subCmdErr)
+			apptainerCmd.Printf("Error: %v\n\n", subCmdErr)
 		}
 
 		name := subCmd.Name()
 		switch err.(type) {
 		case cmdline.FlagError:
 			usage := subCmd.Flags().FlagUsagesWrapped(getColumns())
-			singularityCmd.Printf("Error for command %q: %s\n\n", name, err)
-			singularityCmd.Printf("Options for %s command:\n\n%s\n", name, usage)
+			apptainerCmd.Printf("Error for command %q: %s\n\n", name, err)
+			apptainerCmd.Printf("Options for %s command:\n\n%s\n", name, usage)
 		case cmdline.CommandError:
-			singularityCmd.Println(subCmd.UsageString())
+			apptainerCmd.Println(subCmd.UsageString())
 		default:
-			singularityCmd.Printf("Error for command %q: %s\n\n", name, err)
-			singularityCmd.Println(subCmd.UsageString())
+			apptainerCmd.Printf("Error for command %q: %s\n\n", name, err)
+			apptainerCmd.Println(subCmd.UsageString())
 		}
-		singularityCmd.Printf("Run '%s --help' for more detailed usage information.\n",
-			singularityCmd.CommandPath())
+		apptainerCmd.Printf("Run '%s --help' for more detailed usage information.\n",
+			apptainerCmd.CommandPath())
 		os.Exit(1)
 	}
 }
@@ -468,7 +468,7 @@ func ExecuteSingularity() {
 // GenBashCompletion writes the bash completion file to w.
 func GenBashCompletion(w io.Writer) error {
 	Init(false)
-	return singularityCmd.GenBashCompletion(w)
+	return apptainerCmd.GenBashCompletion(w)
 }
 
 // TraverseParentsUses walks the parent commands and outputs a properly formatted use string
@@ -480,7 +480,7 @@ func TraverseParentsUses(cmd *cobra.Command) string {
 	return cmd.Use + " "
 }
 
-// VersionCmd displays installed singularity version
+// VersionCmd displays installed apptainer version
 var VersionCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -488,7 +488,7 @@ var VersionCmd = &cobra.Command{
 	},
 
 	Use:   "version",
-	Short: "Show the version for Singularity",
+	Short: "Show the version for Apptainer",
 }
 
 func loadRemoteConf(filepath string) (*remote.Config, error) {
@@ -538,7 +538,7 @@ func sylabsRemote() (*endpoint.Config, error) {
 		}
 		// otherwise notify users about available endpoints and
 		// invite them to select one of them
-		help := "use 'singularity remote use <endpoint>', available endpoints are: "
+		help := "use 'apptainer remote use <endpoint>', available endpoints are: "
 		endpoints := make([]string, 0, len(c.Remotes))
 		for name := range c.Remotes {
 			endpoints = append(endpoints, name)
@@ -550,7 +550,7 @@ func sylabsRemote() (*endpoint.Config, error) {
 	return ep, err
 }
 
-func singularityExec(image string, args []string) (string, error) {
+func apptainerExec(image string, args []string) (string, error) {
 	// Record from stdout and store as a string to return as the contents of the file.
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -560,14 +560,14 @@ func singularityExec(image string, args []string) (string, error) {
 		return "", fmt.Errorf("while determining absolute path for %s: %v", image, err)
 	}
 
-	// re-use singularity exec to grab image file content,
+	// re-use apptainer exec to grab image file content,
 	// we reduce binds to the bare minimum with options below
 	cmdArgs := []string{"exec", "--contain", "--no-home", "--no-nv", "--no-rocm", abspath}
 	cmdArgs = append(cmdArgs, args...)
 
-	singularityCmd := filepath.Join(buildcfg.BINDIR, "singularity")
+	apptainerCmd := filepath.Join(buildcfg.BINDIR, "apptainer")
 
-	cmd := exec.Command(singularityCmd, cmdArgs...)
+	cmd := exec.Command(apptainerCmd, cmdArgs...)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	// move to the root to not bind the current working directory
@@ -589,7 +589,7 @@ func CheckRoot(cmd *cobra.Command, args []string) {
 }
 
 // CheckRootOrUnpriv ensures that a command is executed with root
-// privileges or that Singularity is installed unprivileged.
+// privileges or that Apptainer is installed unprivileged.
 func CheckRootOrUnpriv(cmd *cobra.Command, args []string) {
 	if os.Geteuid() != 0 && buildcfg.APPTAINER_SUID_INSTALL == 1 {
 		sylog.Fatalf("%q command requires root privileges or an unprivileged installation", cmd.CommandPath())

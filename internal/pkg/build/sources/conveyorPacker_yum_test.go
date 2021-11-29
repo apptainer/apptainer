@@ -19,7 +19,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/build/types/parser"
 )
 
-const yumDef = "../../../../examples/centos/Singularity"
+const yumDef = "../../../../examples/centos/Apptainer"
 
 func TestYumConveyor(t *testing.T) {
 	// TODO - Centos puts non-amd64 at a different mirror location

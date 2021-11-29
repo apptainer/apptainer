@@ -14,6 +14,6 @@ import (
 func main() {
 	useragent.InitValue(buildcfg.PACKAGE_NAME, buildcfg.PACKAGE_VERSION)
 
-	// In cmd/internal/cli/singularity.go
-	cli.ExecuteSingularity()
+	// In cmd/internal/cli/apptainer.go
+	cli.ExecuteApptainer()
 }

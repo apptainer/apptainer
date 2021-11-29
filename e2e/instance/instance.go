@@ -48,7 +48,7 @@ func (c *ctx) testBasicEchoServer(t *testing.T) {
 	args := []string{c.env.ImagePath, instanceName, strconv.Itoa(instanceStartPort)}
 
 	// Start the instance.
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("instance start"),
@@ -74,7 +74,7 @@ func (c *ctx) testCreateManyInstances(t *testing.T) {
 		port := instanceStartPort + i
 		instanceName := "echo" + strconv.Itoa(i+1)
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(c.profile),
 			e2e.WithCommand("instance start"),
@@ -118,7 +118,7 @@ func (c *ctx) testBasicOptions(t *testing.T) {
 	}
 
 	// Start an instance with the temporary directory as the home directory.
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("instance start"),
@@ -167,7 +167,7 @@ func (c *ctx) testContain(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	// Start the instance.
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("instance start"),
@@ -216,13 +216,13 @@ func (c *ctx) testInstanceFromURI(t *testing.T) {
 		// TODO(mem): reenable this; disabled while shub is down
 		// {
 		// 	name: "test_from_shub",
-		// 	uri:  "shub://singularityhub/busybox",
+		// 	uri:  "shub://apptainerhub/busybox",
 		// },
 	}
 
 	for _, i := range instances {
 		args := []string{i.uri, i.name}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(c.profile),
 			e2e.WithCommand("instance start"),
@@ -268,7 +268,7 @@ func (c *ctx) testGhostInstance(t *testing.T) {
 		}
 
 		// starting same instance twice must return an error
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(c.profile),
 			e2e.WithCommand("instance start"),
@@ -285,7 +285,7 @@ func (c *ctx) testGhostInstance(t *testing.T) {
 		}
 
 		// now check we are deleting ghost instance files correctly
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(c.profile),
 			e2e.WithCommand("instance start"),
@@ -300,7 +300,7 @@ func (c *ctx) testGhostInstance(t *testing.T) {
 		)
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("instance start"),
@@ -321,7 +321,7 @@ func (c *ctx) applyCgroupsInstance(t *testing.T) {
 	instanceName := randomName(t)
 	joinName := fmt.Sprintf("instance://%s", instanceName)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("instance start"),
@@ -329,7 +329,7 @@ func (c *ctx) applyCgroupsInstance(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("exec"),

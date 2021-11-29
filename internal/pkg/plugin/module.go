@@ -19,9 +19,9 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
-// SingularitySource represents the symlink name which will
-// point to the Singularity source directory.
-const SingularitySource = "apptainer_source"
+// ApptainerSource represents the symlink name which will
+// point to the Apptainer source directory.
+const ApptainerSource = "apptainer_source"
 
 // Module describes a Go module with its corresponding path and version.
 type Module struct {
@@ -144,16 +144,16 @@ func GetModules(dir string) (*GoMod, error) {
 }
 
 // PrepareGoModules returns a byte array containing a generated go.mod matching
-// Singularity modules in use in order to compile/load the plugin with same version
+// Apptainer modules in use in order to compile/load the plugin with same version
 // of dependencies.
 func PrepareGoModules(pluginDir string, disableMinorCheck bool) ([]byte, error) {
 	var goMod bytes.Buffer
 
 	singModules, err := GetModules(buildcfg.SOURCEDIR)
 	if err != nil {
-		return nil, fmt.Errorf("while getting Singularity Go modules: %s", err)
+		return nil, fmt.Errorf("while getting Apptainer Go modules: %s", err)
 	}
-	singularityPackage := singModules.Module.Path
+	apptainerPackage := singModules.Module.Path
 
 	pluginModules, err := GetModules(pluginDir)
 	if err != nil {
@@ -174,16 +174,16 @@ func PrepareGoModules(pluginDir string, disableMinorCheck bool) ([]byte, error) 
 				return nil, fmt.Errorf("package %q error: %s", r.Path, err)
 			}
 			r.Version = sr.Version
-		} else if r.Path == singularityPackage {
-			// force singularity version to v0.0.0
+		} else if r.Path == apptainerPackage {
+			// force apptainer version to v0.0.0
 			r.Version = "v0.0.0"
 		}
 
 		if sr := singModules.GetExclude(r.Path); sr != nil && sr.Version == r.Version {
-			return nil, fmt.Errorf("plugin requires %q but it's excluded by singularity go.mod %q", r, sr)
+			return nil, fmt.Errorf("plugin requires %q but it's excluded by apptainer go.mod %q", r, sr)
 		}
 		if sr := singModules.GetReplace(r.Path); sr != nil && sr.New.Version != r.Version {
-			return nil, fmt.Errorf("plugin requires %q but it's replaced by singularity go.mod %q", r, sr)
+			return nil, fmt.Errorf("plugin requires %q but it's replaced by apptainer go.mod %q", r, sr)
 		}
 
 		fmt.Fprintf(&goMod, "\t%s\n", r)
@@ -194,9 +194,9 @@ func PrepareGoModules(pluginDir string, disableMinorCheck bool) ([]byte, error) 
 	}
 
 	fmt.Fprintf(&goMod, "replace (\n")
-	fmt.Fprintf(&goMod, "\t%s => ./%s\n", singularityPackage, SingularitySource)
+	fmt.Fprintf(&goMod, "\t%s => ./%s\n", apptainerPackage, ApptainerSource)
 
-	// inject singularity replace first
+	// inject apptainer replace first
 	for _, r := range singModules.Replace {
 		fmt.Fprintf(&goMod, "\t%s\n", r)
 	}
@@ -206,15 +206,15 @@ func PrepareGoModules(pluginDir string, disableMinorCheck bool) ([]byte, error) 
 			if sr.New.Version == r.New.Version && sr.New.Path == r.New.Path {
 				continue
 			}
-			return nil, fmt.Errorf("plugin go.mod contains replace %q while singularity replaced it with %q", r, sr)
-		} else if r.Old.Path == singularityPackage {
+			return nil, fmt.Errorf("plugin go.mod contains replace %q while apptainer replaced it with %q", r, sr)
+		} else if r.Old.Path == apptainerPackage {
 			// previously added above as first replace
 			continue
 		}
 
 		if sr := singModules.GetRequire(r.Old.Path); sr != nil {
 			if r.New.Path != sr.Path {
-				return nil, fmt.Errorf("plugin go.mod contains replace %q while singularity requires it with %q", r, sr)
+				return nil, fmt.Errorf("plugin go.mod contains replace %q while apptainer requires it with %q", r, sr)
 			}
 		}
 
@@ -229,15 +229,15 @@ func PrepareGoModules(pluginDir string, disableMinorCheck bool) ([]byte, error) 
 		}
 
 		// check for version incompatibilities in
-		// singularity required and replaced packages
+		// apptainer required and replaced packages
 		if sr := singModules.GetRequire(r.Path); sr != nil {
 			if sr.Version != r.Version {
-				return nil, fmt.Errorf("singularity go.mod contains require %q incompatible with plugin exclude %q", sr, r)
+				return nil, fmt.Errorf("apptainer go.mod contains require %q incompatible with plugin exclude %q", sr, r)
 			}
 		}
 		if sr := singModules.GetReplace(r.Path); sr != nil {
 			if sr.New.Version != r.Version {
-				return nil, fmt.Errorf("singularity go.mod contains replace %q incompatible with plugin exclude %q", sr, r)
+				return nil, fmt.Errorf("apptainer go.mod contains replace %q incompatible with plugin exclude %q", sr, r)
 			}
 		}
 
@@ -256,24 +256,24 @@ func checkCompatibility(pv string, sv string, disableMinorCheck bool) error {
 	if err != nil {
 		return fmt.Errorf("plugin version %s is not a semantic version: %s", pv, err)
 	}
-	singularityVer, err := semver.Make(sv[1:])
+	apptainerVer, err := semver.Make(sv[1:])
 	if err != nil {
-		return fmt.Errorf("singularity version %s is not a semantic version: %s", sv, err)
+		return fmt.Errorf("apptainer version %s is not a semantic version: %s", sv, err)
 	}
 
 	// if major version doesn't match we abort
-	if pluginVer.Major != singularityVer.Major {
-		return fmt.Errorf("incompatible major version, plugin %s / singularity %s", pv, sv)
+	if pluginVer.Major != apptainerVer.Major {
+		return fmt.Errorf("incompatible major version, plugin %s / apptainer %s", pv, sv)
 	}
 
-	// if the plugin package version is > to Singularity package
+	// if the plugin package version is > to Apptainer package
 	// version the backward compatibility is not valid and possible
 	// failures may occur at compilation, we abort in this case
-	if !disableMinorCheck && pluginVer.GT(singularityVer) {
-		return fmt.Errorf("plugin expect a more recent minor version %s while singularity uses %s", pv, sv)
+	if !disableMinorCheck && pluginVer.GT(apptainerVer) {
+		return fmt.Errorf("plugin expect a more recent minor version %s while apptainer uses %s", pv, sv)
 	}
 
-	// at this point we assume that Singularity
+	// at this point we assume that Apptainer
 	// package version is backward compatible
 	// with the one used by the plugin
 	return nil

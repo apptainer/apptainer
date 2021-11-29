@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"encoding/json"
@@ -70,7 +70,7 @@ func OciCreate(containerID string, args *OciArgs) error {
 		EngineConfig: engineConfig,
 	}
 
-	procName := fmt.Sprintf("Singularity OCI %s", containerID)
+	procName := fmt.Sprintf("Apptainer OCI %s", containerID)
 	return starter.Run(
 		procName,
 		commonConfig,

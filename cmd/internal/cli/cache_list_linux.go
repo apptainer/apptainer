@@ -48,7 +48,7 @@ func init() {
 	})
 }
 
-// CacheListCmd is 'singularity cache list' and will list your local singularity cache
+// CacheListCmd is 'apptainer cache list' and will list your local apptainer cache
 var CacheListCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -70,7 +70,7 @@ func cacheListCmd() error {
 		sylog.Fatalf("failed to create image cache handle")
 	}
 
-	err := singularity.ListSingularityCache(imgCache, cacheListTypes, cacheListVerbose)
+	err := apptainer.ListApptainerCache(imgCache, cacheListTypes, cacheListVerbose)
 	if err != nil {
 		sylog.Fatalf("An error occurred while listing cache: %v", err)
 		return err

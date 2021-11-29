@@ -255,7 +255,7 @@ func (e *EngineOperations) PreStartProcess(ctx context.Context, pid int, masterC
 // OCI hooks will be executed on behalf of a user who spawned a container
 // (but not the one who runs it as targetUID may be arbitrary).
 //
-// Most likely this still will be executed as root since `singularity oci`
+// Most likely this still will be executed as root since `apptainer oci`
 // command set requires privileged execution.
 func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error {
 	if err := e.updateState(ociruntime.Running); err != nil {

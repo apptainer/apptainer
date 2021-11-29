@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularityconf
+package apptainerconf
 
 // currentConfig corresponds to the current configuration, may
 // be useful for packages requiring to share the same configuration.
@@ -20,7 +20,7 @@ func GetCurrentConfig() *File {
 	return currentConfig
 }
 
-// File describes the singularity.conf file options
+// File describes the apptainer.conf file options
 type File struct {
 	AllowSetuid             bool     `default:"yes" authorized:"yes,no" directive:"allow setuid"`
 	AllowPidNs              bool     `default:"yes" authorized:"yes,no" directive:"allow pid ns"`
@@ -72,14 +72,14 @@ type File struct {
 	ImageDriver             string   `directive:"image driver"`
 }
 
-const TemplateAsset = `# SINGULARITY.CONF
-# This is the global configuration file for Singularity. This file controls
+const TemplateAsset = `# APPTAINER.CONF
+# This is the global configuration file for Apptainer. This file controls
 # what the container is allowed to do on a particular host, and as a result
 # this file must be owned by root.
 
 # ALLOW SETUID: [BOOL]
 # DEFAULT: yes
-# Should we allow users to utilize the setuid program flow within Singularity?
+# Should we allow users to utilize the setuid program flow within Apptainer?
 # note1: This is the default mode, and to utilize all features, this option
 # must be enabled.  For example, without this option loop mounts of image 
 # files will not work; only sandbox image directories, which do not need loop
@@ -91,7 +91,7 @@ allow setuid = {{ if eq .AllowSetuid true }}yes{{ else }}no{{ end }}
 
 # MAX LOOP DEVICES: [INT]
 # DEFAULT: 256
-# Set the maximum number of loop devices that Singularity should ever attempt
+# Set the maximum number of loop devices that Apptainer should ever attempt
 # to utilize.
 max loop devices = {{ .MaxLoopDevices }}
 
@@ -175,10 +175,10 @@ mount hostfs = {{ if eq .MountHostfs true }}yes{{ else }}no{{ end }}
 # the container. The file or directory must exist within the container on
 # which to attach to. you can specify a different source and destination
 # path (respectively) with a colon; otherwise source and dest are the same.
-# NOTE: these are ignored if singularity is invoked with --contain except
+# NOTE: these are ignored if apptainer is invoked with --contain except
 # for /etc/hosts and /etc/localtime. When invoked with --contain and --net,
 # /etc/hosts would contain a default generated content for localhost resolution.
-#bind path = /etc/singularity/default-nsswitch.conf:/etc/nsswitch.conf
+#bind path = /etc/apptainer/default-nsswitch.conf:/etc/nsswitch.conf
 #bind path = /opt
 #bind path = /scratch
 {{ range $path := .BindPath }}
@@ -232,9 +232,9 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 # DEFAULT: NULL
 # Only allow containers to be used that are owned by a given user. If this
 # configuration is undefined (commented or set to NULL), all containers are
-# allowed to be used. This feature only applies when Singularity is running in
+# allowed to be used. This feature only applies when Apptainer is running in
 # SUID mode and the user is non-root.
-#limit container owners = gmk, singularity, nobody
+#limit container owners = gmk, apptainer, nobody
 {{ range $index, $owner := .LimitContainerOwners }}
 {{- if eq $index 0 }}limit container owners = {{ else }}, {{ end }}{{$owner}}
 {{- end }}
@@ -243,9 +243,9 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 # DEFAULT: NULL
 # Only allow containers to be used that are owned by a given group. If this
 # configuration is undefined (commented or set to NULL), all containers are
-# allowed to be used. This feature only applies when Singularity is running in
+# allowed to be used. This feature only applies when Apptainer is running in
 # SUID mode and the user is non-root.
-#limit container groups = group1, singularity, nobody
+#limit container groups = group1, apptainer, nobody
 {{ range $index, $group := .LimitContainerGroups }}
 {{- if eq $index 0 }}limit container groups = {{ else }}, {{ end }}{{$group}}
 {{- end }}
@@ -255,7 +255,7 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 # Only allow containers to be used that are located within an allowed path
 # prefix. If this configuration is undefined (commented or set to NULL),
 # containers will be allowed to run from anywhere on the file system. This
-# feature only applies when Singularity is running in SUID mode and the user is
+# feature only applies when Apptainer is running in SUID mode and the user is
 # non-root.
 #limit container paths = /scratch, /tmp, /global
 {{ range $index, $path := .LimitContainerPaths }}
@@ -264,7 +264,7 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 
 # ALLOW CONTAINER ${TYPE}: [BOOL]
 # DEFAULT: yes
-# This feature limits what kind of containers that Singularity will allow
+# This feature limits what kind of containers that Apptainer will allow
 # users to use (note this does not apply for root).
 #
 # Allow use of unencrypted SIF containers
@@ -283,9 +283,9 @@ allow container dir = {{ if eq .AllowContainerDir true }}yes{{ else }}no{{ end }
 # Allow specified root administered CNI network configurations to be used by the
 # specified list of users. By default only root may use CNI configuration,
 # except in the case of a fakeroot execution where only 40_fakeroot.conflist
-# is used. This feature only applies when Singularity is running in
+# is used. This feature only applies when Apptainer is running in
 # SUID mode and the user is non-root.
-#allow net users = gmk, singularity
+#allow net users = gmk, apptainer
 {{ range $index, $owner := .AllowNetUsers }}
 {{- if eq $index 0 }}allow net users = {{ else }}, {{ end }}{{$owner}}
 {{- end }}
@@ -295,9 +295,9 @@ allow container dir = {{ if eq .AllowContainerDir true }}yes{{ else }}no{{ end }
 # Allow specified root administered CNI network configurations to be used by the
 # specified list of users. By default only root may use CNI configuration,
 # except in the case of a fakeroot execution where only 40_fakeroot.conflist
-# is used. This feature only applies when Singularity is running in
+# is used. This feature only applies when Apptainer is running in
 # SUID mode and the user is non-root.
-#allow net groups = group1, singularity
+#allow net groups = group1, apptainer
 {{ range $index, $group := .AllowNetGroups }}
 {{- if eq $index 0 }}allow net groups = {{ else }}, {{ end }}{{$group}}
 {{- end }}
@@ -306,7 +306,7 @@ allow container dir = {{ if eq .AllowContainerDir true }}yes{{ else }}no{{ end }
 # DEFAULT: NULL
 # Specify the names of CNI network configurations that may be used by users and
 # groups listed in the allow net users / allow net groups directives. Thus feature
-# only applies when Singularity is running in SUID mode and the user is non-root.
+# only applies when Apptainer is running in SUID mode and the user is non-root.
 #allow net networks = bridge
 {{ range $index, $group := .AllowNetNetworks }}
 {{- if eq $index 0 }}allow net networks = {{ else }}, {{ end }}{{$group}}
@@ -322,7 +322,7 @@ always use nv = {{ if eq .AlwaysUseNv true }}yes{{ else }}no{{ end }}
 # USE NVIDIA-NVIDIA-CONTAINER-CLI ${TYPE}: [BOOL]
 # DEFAULT: no
 # EXPERIMENTAL
-# If set to yes, Singularity will attempt to use nvidia-container-cli to setup
+# If set to yes, Apptainer will attempt to use nvidia-container-cli to setup
 # GPUs within a container when the --nv flag is enabled.
 # If no (default), the legacy binding of entries in nvbliblist.conf will be performed.
 use nvidia-container-cli = {{ if eq .UseNvCCLI true }}yes{{ else }}no{{ end }}
@@ -338,14 +338,14 @@ always use rocm = {{ if eq .AlwaysUseRocm true }}yes{{ else }}no{{ end }}
 # DEFAULT: full
 # Define default root capability set kept during runtime
 # - full: keep all capabilities (same as --keep-privs)
-# - file: keep capabilities configured in ${prefix}/etc/singularity/capabilities/user.root
+# - file: keep capabilities configured in ${prefix}/etc/apptainer/capabilities/user.root
 # - no: no capabilities (same as --no-privs)
 root default capabilities = {{ .RootDefaultCapabilities }}
 
 # MEMORY FS TYPE: [tmpfs/ramfs]
 # DEFAULT: tmpfs
-# This feature allow to choose temporary filesystem type used by Singularity.
-# Cray CLE 5 and 6 up to CLE 6.0.UP05 there is an issue (kernel panic) when Singularity
+# This feature allow to choose temporary filesystem type used by Apptainer.
+# Cray CLE 5 and 6 up to CLE 6.0.UP05 there is an issue (kernel panic) when Apptainer
 # use tmpfs, so on affected version it's recommended to set this value to ramfs to avoid
 # kernel panic
 memory fs type = {{ .MemoryFSType }}
@@ -372,7 +372,7 @@ memory fs type = {{ .MemoryFSType }}
 # GO PATH: [STRING]
 # DEFAULT: Undefined
 # Path to the go executable, used to compile plugins.
-# If not set, Singularity will search $PATH, /usr/local/sbin, /usr/local/bin,
+# If not set, Apptainer will search $PATH, /usr/local/sbin, /usr/local/bin,
 # /usr/sbin, /usr/bin, /sbin, /bin.
 # go path =
 {{ if ne .GoPath "" }}go path = {{ .GoPath }}{{ end }}
@@ -388,7 +388,7 @@ memory fs type = {{ .MemoryFSType }}
 # MKSQUASHFS PATH: [STRING]
 # DEFAULT: Undefined
 # Path to the mksquashfs executable, used to create SIF and SquashFS containers.
-# If not set, Singularity will search $PATH, /usr/local/sbin, /usr/local/bin,
+# If not set, Apptainer will search $PATH, /usr/local/sbin, /usr/local/bin,
 # /usr/sbin, /usr/bin, /sbin, /bin.
 # mksquashfs path =
 {{ if ne .MksquashfsPath "" }}mksquashfs path = {{ .MksquashfsPath }}{{ end }}
@@ -422,7 +422,7 @@ mksquashfs procs = {{ .MksquashfsProcs }}
 # UNSQUASHFS PATH: [STRING]
 # DEFAULT: Undefined
 # Path to the unsquashfs executable, used to extract SIF and SquashFS containers
-# If not set, Singularity will search $PATH, /usr/local/sbin, /usr/local/bin,
+# If not set, Apptainer will search $PATH, /usr/local/sbin, /usr/local/bin,
 # /usr/sbin, /usr/bin, /sbin, /bin.
 # unsquashfs path =
 {{ if ne .UnsquashfsPath "" }}unsquashfs path = {{ .UnsquashfsPath }}{{ end }}

@@ -91,11 +91,11 @@ func RelocatePath(original string) (string) {
 	prefix := filepath.Dir(executablePath)
 
 	switch filepath.Base(executablePath) {
-	case "singularity":
-		// PREFIX/bin/singularity
+	case "apptainer":
+		// PREFIX/bin/apptainer
 		prefix = filepath.Dir(prefix)
 	case "starter":
-		// PREFIX/libexec/singularity/bin/starter
+		// PREFIX/libexec/apptainer/bin/starter
 		prefix = filepath.Dir(filepath.Dir(filepath.Dir(prefix)))
 	default:
 		return original

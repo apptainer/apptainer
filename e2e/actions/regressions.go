@@ -27,7 +27,7 @@ import (
 func (c actionTests) issue4488(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -56,7 +56,7 @@ func (c actionTests) issue4587(t *testing.T) {
 
 	homeBind := homeDir + ":" + u.Dir
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithDir(u.Dir),
@@ -75,7 +75,7 @@ func (c actionTests) issue4755(t *testing.T) {
 	defer cleanup(t)
 
 	// convert test image to sandbox
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -95,7 +95,7 @@ func (c actionTests) issue4755(t *testing.T) {
 	}
 
 	// use of user namespace to force runtime to use underlay
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserNamespaceProfile),
 		e2e.WithDir(c.env.TestDir),
@@ -119,7 +119,7 @@ func (c actionTests) issue4768(t *testing.T) {
 		t.Fatalf("failed to create symlink %s: %s", symCwdPath, err)
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithDir(symCwdPath),
@@ -169,7 +169,7 @@ func (c actionTests) issue4797(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserNamespaceProfile),
@@ -208,7 +208,7 @@ func (c actionTests) issue4836(t *testing.T) {
 
 	// chdir will resolve the path so we check against dir, we could also
 	// check $PWD content but that's enough
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -304,7 +304,7 @@ func (c actionTests) issue4823(t *testing.T) {
 		}
 
 		c.env.ImgCacheDir = cacheDir
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithGlobalOptions("--debug"),
@@ -328,7 +328,7 @@ func (c actionTests) issue5228(t *testing.T) {
 
 	// We don't actually switch user to one with `/` - we put this mount in using `--home`
 	// which has the same effect.
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithDir(u.Dir),
@@ -346,12 +346,12 @@ func (c actionTests) issue5211(t *testing.T) {
 	u := e2e.UserProfile.HostUser(t)
 
 	// Make non-hidden file in host home to check if it was mounted in container
-	canaryDir, cleanup := e2e.MakeTempDir(t, u.Dir, "singularity-issue5211-dir-", "")
+	canaryDir, cleanup := e2e.MakeTempDir(t, u.Dir, "apptainer-issue5211-dir-", "")
 	defer cleanup(t)
 
 	canaryBasename := filepath.Base(canaryDir)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithDir(u.Dir),
@@ -361,7 +361,7 @@ func (c actionTests) issue5211(t *testing.T) {
 	)
 
 	// Check we preserve `$HOME` as /root even when we `--contain` with `--fakeroot`
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithDir(u.Dir),
@@ -380,7 +380,7 @@ func (c actionTests) issue5271(t *testing.T) {
 
 	e2e.EnsureImage(t, c.env)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -393,7 +393,7 @@ func (c actionTests) issue5271(t *testing.T) {
 func (c actionTests) issue5307(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserNamespaceProfile),
 		e2e.WithCommand("exec"),
@@ -415,7 +415,7 @@ func (c actionTests) issue5399(t *testing.T) {
 	// Build as root to guarantee no issue setting the system xattr
 	// Certain config may not allow us to do it as fakeroot e.g. it failed
 	// in Ubuntu1604 CI.
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -425,7 +425,7 @@ func (c actionTests) issue5399(t *testing.T) {
 
 	// Fakeroot will extract to a sandbox using mksquashfs as the user.
 	// Should succeed, though it can't set a system xattr.
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
@@ -444,7 +444,7 @@ func (c actionTests) issue5455(t *testing.T) {
 	dir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "issue5455-", "")
 	defer e2e.Privileged(cleanup)(t)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -464,7 +464,7 @@ func (c actionTests) issue5455(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -481,8 +481,8 @@ func (c actionTests) issue5631(t *testing.T) {
 	// Set enable fusemount = no in a custom config file
 	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "issue-5631-", "")
 	defer e2e.Privileged(cleanup)(t)
-	tmpConfig := path.Join(tmpDir, "singularity.conf")
-	c.env.RunSingularity(
+	tmpConfig := path.Join(tmpDir, "apptainer.conf")
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.PreRun(
@@ -500,7 +500,7 @@ func (c actionTests) issue5631(t *testing.T) {
 	)
 
 	// Check we can run a bare container still against the custom config
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("exec"),
@@ -519,7 +519,7 @@ func (c actionTests) issue5465(t *testing.T) {
 	defer cleanup(t)
 
 	// convert test image to sandbox
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -545,8 +545,8 @@ func (c actionTests) issue5465(t *testing.T) {
 		t.Fatalf("couldn't symlink sandbox hosts: %s", err)
 	}
 
-	// The standard flow where the binds come from singularity.conf
-	c.env.RunSingularity(
+	// The standard flow where the binds come from apptainer.conf
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("Standard"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -557,7 +557,7 @@ func (c actionTests) issue5465(t *testing.T) {
 	)
 
 	// With `--contain` where the binds are hard coded
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("Contain"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -570,7 +570,7 @@ func (c actionTests) issue5465(t *testing.T) {
 
 // Check that flag / env var binds are passed in $APPTAINER_BIND in the
 // container. Sometimes used by containers that require data to be bound in to a
-// location etc., and was present in older versions of Singularity.
+// location etc., and was present in older versions of Apptainer.
 func (c actionTests) issue5599(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
@@ -581,7 +581,7 @@ func (c actionTests) issue5599(t *testing.T) {
 	bindEnv := "APPTAINER_BIND=" + envBind
 	flagBind := tmpDir + ":/mnt"
 	expectedEnv := fmt.Sprintf("APPTAINER_BIND=%s,%s", flagBind, envBind)
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -598,7 +598,7 @@ func (c actionTests) issue5599(t *testing.T) {
 func (c actionTests) issue5690(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -606,7 +606,7 @@ func (c actionTests) issue5690(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
@@ -627,7 +627,7 @@ func (c actionTests) invalidRemote(t *testing.T) {
 
 	// Exec library image from the default remote... ensure it succeeds
 	argv := []string{testImage, "/bin/true"}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("exec default"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -638,7 +638,7 @@ func (c actionTests) invalidRemote(t *testing.T) {
 
 	// Add another endpoint
 	argv = []string{"add", "--no-login", testEndpoint, testEndpointURI}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("remote add"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -649,7 +649,7 @@ func (c actionTests) invalidRemote(t *testing.T) {
 	// Remove test remote when we are done here
 	defer func(t *testing.T) {
 		argv := []string{"remove", testEndpoint}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest("remote remove"),
 			e2e.WithProfile(e2e.UserProfile),
@@ -661,7 +661,7 @@ func (c actionTests) invalidRemote(t *testing.T) {
 
 	// Set as default
 	argv = []string{"use", testEndpoint}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("remote use"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -672,7 +672,7 @@ func (c actionTests) invalidRemote(t *testing.T) {
 
 	// Exec library image from the invalid remote, should fail
 	argv = []string{testImage, "/bin/true"}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("exec invalid"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -695,7 +695,7 @@ func (c actionTests) issue6165(t *testing.T) {
 		t.Fatalf("failed to create canary_file: %s", err)
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),

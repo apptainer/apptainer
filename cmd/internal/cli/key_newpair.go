@@ -71,7 +71,7 @@ var (
 		Usage:        "specify to push the public key to the remote keystore",
 	}
 
-	// KeyNewPairCmd is 'singularity key newpair' and generate a new OpenPGP key pair
+	// KeyNewPairCmd is 'apptainer key newpair' and generate a new OpenPGP key pair
 	KeyNewPairCmd = &cobra.Command{
 		Args:                  cobra.ExactArgs(0),
 		DisableFlagsInUseLine: true,

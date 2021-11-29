@@ -95,7 +95,7 @@ func init() {
 	})
 }
 
-// SignCmd singularity sign
+// SignCmd apptainer sign
 var SignCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Args:                  cobra.ExactArgs(1),
@@ -112,7 +112,7 @@ var SignCmd = &cobra.Command{
 }
 
 func doSignCmd(cmd *cobra.Command, cpath string) {
-	var opts []singularity.SignOpt
+	var opts []apptainer.SignOpt
 
 	// Set entity selector option, and ensure the entity is decrypted.
 	var f sypgp.EntitySelector
@@ -122,21 +122,21 @@ func doSignCmd(cmd *cobra.Command, cpath string) {
 		f = selectEntityInteractive()
 	}
 	f = decryptSelectedEntityInteractive(f)
-	opts = append(opts, singularity.OptSignEntitySelector(f))
+	opts = append(opts, apptainer.OptSignEntitySelector(f))
 
 	// Set group option, if applicable.
 	if cmd.Flag(signSifGroupIDFlag.Name).Changed || cmd.Flag(signOldSifGroupIDFlag.Name).Changed {
-		opts = append(opts, singularity.OptSignGroup(sifGroupID))
+		opts = append(opts, apptainer.OptSignGroup(sifGroupID))
 	}
 
 	// Set object option, if applicable.
 	if cmd.Flag(signSifDescSifIDFlag.Name).Changed || cmd.Flag(signSifDescIDFlag.Name).Changed {
-		opts = append(opts, singularity.OptSignObjects(sifDescID))
+		opts = append(opts, apptainer.OptSignObjects(sifDescID))
 	}
 
 	// Sign the image.
 	fmt.Printf("Signing image: %s\n", cpath)
-	if err := singularity.Sign(cpath, opts...); err != nil {
+	if err := apptainer.Sign(cpath, opts...); err != nil {
 		sylog.Fatalf("Failed to sign container: %s", err)
 	}
 	fmt.Printf("Signature created and applied to %s\n", cpath)

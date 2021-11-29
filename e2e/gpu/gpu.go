@@ -47,7 +47,7 @@ func (c ctx) testNvidiaLegacy(t *testing.T) {
 	imagePath := imageFile.Name()
 	defer os.Remove(imagePath)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
@@ -90,7 +90,7 @@ func (c ctx) testNvidiaLegacy(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -116,7 +116,7 @@ func (c ctx) testNvCCLI(t *testing.T) {
 	imagePath := imageFile.Name()
 	defer os.Remove(imagePath)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
@@ -131,7 +131,7 @@ func (c ctx) testNvCCLI(t *testing.T) {
 		args        []string
 		env         []string
 		expectExit  int
-		expectMatch e2e.SingularityCmdResultOp
+		expectMatch e2e.ApptainerCmdResultOp
 	}{
 		{
 			name:       "User",
@@ -188,7 +188,7 @@ func (c ctx) testNvCCLI(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -213,7 +213,7 @@ func (c ctx) testRocm(t *testing.T) {
 	imagePath := imageFile.Name()
 	defer os.Remove(imagePath)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
@@ -255,7 +255,7 @@ func (c ctx) testRocm(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -282,7 +282,7 @@ func (c ctx) testBuildNvidiaLegacy(t *testing.T) {
 
 	sourceImage := filepath.Join(tmpdir, "source")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -335,7 +335,7 @@ func (c ctx) testBuildNvidiaLegacy(t *testing.T) {
 		}
 		args = append(args, "-F", "--sandbox", sandboxImage, defFile)
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -368,7 +368,7 @@ func (c ctx) testBuildNvCCLI(t *testing.T) {
 
 	sourceImage := filepath.Join(tmpdir, "source")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -409,7 +409,7 @@ func (c ctx) testBuildNvCCLI(t *testing.T) {
 		}
 		args = append(args, "-F", "--sandbox", sandboxImage, defFile)
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -442,7 +442,7 @@ func (c ctx) testBuildRocm(t *testing.T) {
 
 	sourceImage := filepath.Join(tmpdir, "source")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -495,7 +495,7 @@ func (c ctx) testBuildRocm(t *testing.T) {
 		}
 		args = append(args, "--force", "--sandbox", sandboxImage, defFile)
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),

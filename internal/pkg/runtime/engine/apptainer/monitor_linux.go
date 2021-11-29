@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
-	singularitycallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
+	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
 )
 
 // MonitorContainer is called from master once the container has
@@ -27,7 +27,7 @@ import (
 func (e *EngineOperations) MonitorContainer(pid int, signals chan os.Signal) (syscall.WaitStatus, error) {
 	var status syscall.WaitStatus
 
-	callbackType := (singularitycallback.MonitorContainer)(nil)
+	callbackType := (apptainercallback.MonitorContainer)(nil)
 	callbacks, err := plugin.LoadCallbacks(callbackType)
 	if err != nil {
 		return status, fmt.Errorf("while loading plugins callbacks '%T': %s", callbackType, err)
@@ -35,7 +35,7 @@ func (e *EngineOperations) MonitorContainer(pid int, signals chan os.Signal) (sy
 	if len(callbacks) > 1 {
 		return status, fmt.Errorf("multiple plugins have registered callback for '%T'", callbackType)
 	} else if len(callbacks) == 1 {
-		return callbacks[0].(singularitycallback.MonitorContainer)(e.CommonConfig, pid, signals)
+		return callbacks[0].(apptainercallback.MonitorContainer)(e.CommonConfig, pid, signals)
 	}
 
 	for {

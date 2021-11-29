@@ -37,7 +37,7 @@ type ctx struct {
 }
 
 func (c *ctx) checkOciState(t *testing.T, containerID, state string) {
-	checkStateFn := func(t *testing.T, r *e2e.SingularityCmdResult) {
+	checkStateFn := func(t *testing.T, r *e2e.ApptainerCmdResult) {
 		s := &ociruntime.State{}
 		if err := json.Unmarshal(r.Stdout, s); err != nil {
 			err = errors.Wrapf(err, "unmarshaling OCI state from JSON: %s", r.Stdout)
@@ -49,7 +49,7 @@ func (c *ctx) checkOciState(t *testing.T, containerID, state string) {
 		}
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci state"),
@@ -69,7 +69,7 @@ func genericOciMount(t *testing.T, c *ctx) (string, func()) {
 	}
 	ociConfig := filepath.Join(bundleDir, "config.json")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci mount"),
@@ -96,7 +96,7 @@ func genericOciMount(t *testing.T, c *ctx) (string, func()) {
 	)
 
 	cleanup := func() {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.RootProfile),
 			e2e.WithCommand("oci umount"),
@@ -118,7 +118,7 @@ func (c ctx) testOciRun(t *testing.T) {
 	defer umountFn()
 
 	// oci run -b
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci run"),
@@ -134,7 +134,7 @@ func (c ctx) testOciRun(t *testing.T) {
 	)
 
 	// oci state should fail
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci state"),
@@ -152,7 +152,7 @@ func (c ctx) testOciAttach(t *testing.T) {
 	// umount bundle
 	defer umountFn()
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci create"),
@@ -170,7 +170,7 @@ func (c ctx) testOciAttach(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci start"),
@@ -183,7 +183,7 @@ func (c ctx) testOciAttach(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci attach"),
@@ -201,7 +201,7 @@ func (c ctx) testOciAttach(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci delete"),
@@ -219,7 +219,7 @@ func (c ctx) testOciBasic(t *testing.T) {
 	// umount bundle
 	defer umountFn()
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci create"),
@@ -237,7 +237,7 @@ func (c ctx) testOciBasic(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci start"),
@@ -250,7 +250,7 @@ func (c ctx) testOciBasic(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci pause"),
@@ -267,7 +267,7 @@ func (c ctx) testOciBasic(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci resume"),
@@ -284,7 +284,7 @@ func (c ctx) testOciBasic(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci start"),
@@ -292,7 +292,7 @@ func (c ctx) testOciBasic(t *testing.T) {
 		e2e.ExpectExit(255),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci exec"),
@@ -300,7 +300,7 @@ func (c ctx) testOciBasic(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci kill"),
@@ -313,7 +313,7 @@ func (c ctx) testOciBasic(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci delete"),
@@ -321,21 +321,21 @@ func (c ctx) testOciBasic(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci state"),
 		e2e.WithArgs(containerID),
 		e2e.ExpectExit(255),
 	)
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci kill"),
 		e2e.WithArgs(containerID),
 		e2e.ExpectExit(255),
 	)
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci start"),
@@ -401,7 +401,7 @@ func (c ctx) testOciHelp(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c.env.RunSingularity(
+			c.env.RunApptainer(
 				t,
 				e2e.AsSubtest(tt.name),
 				e2e.WithProfile(e2e.UserProfile),

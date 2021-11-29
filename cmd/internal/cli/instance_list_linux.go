@@ -63,7 +63,7 @@ var instanceListLogsFlag = cmdline.Flag{
 	EnvKeys:      []string{"LOGS"},
 }
 
-// singularity instance list
+// apptainer instance list
 var instanceListCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -77,7 +77,7 @@ var instanceListCmd = &cobra.Command{
 			sylog.Fatalf("Only root user can list user's instances")
 		}
 
-		err := singularity.PrintInstanceList(os.Stdout, name, instanceListUser, instanceListJSON, instanceListLogs)
+		err := apptainer.PrintInstanceList(os.Stdout, name, instanceListUser, instanceListJSON, instanceListLogs)
 		if err != nil {
 			sylog.Fatalf("Could not list instances: %v", err)
 		}

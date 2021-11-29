@@ -49,7 +49,7 @@ func init() {
 	})
 }
 
-// KeyExportCmd is `singularity key export` and exports a public or secret
+// KeyExportCmd is `apptainer key export` and exports a public or secret
 // key from local keyring.
 var KeyExportCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),

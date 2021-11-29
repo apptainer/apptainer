@@ -148,7 +148,7 @@ func (cp *DebootstrapConveyorPacker) prepareFakerootEnv(ctx context.Context) (fu
 func (cp *DebootstrapConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err error) {
 	cp.b = b
 
-	// check for debootstrap on system(script using "singularity_which" not sure about its importance)
+	// check for debootstrap on system(script using "apptainer_which" not sure about its importance)
 	debootstrapPath, err := bin.FindBin("debootstrap")
 	if err != nil {
 		return fmt.Errorf("debootstrap is not in PATH... Perhaps 'apt-get install' it: %v", err)
@@ -275,7 +275,7 @@ func (cp *DebootstrapConveyorPacker) insertBaseEnv(b *types.Bundle) (err error) 
 }
 
 func (cp *DebootstrapConveyorPacker) insertRunScript(b *types.Bundle) (err error) {
-	f, err := os.Create(b.RootfsPath + "/.singularity.d/runscript")
+	f, err := os.Create(b.RootfsPath + "/.apptainer.d/runscript")
 	if err != nil {
 		return
 	}
@@ -293,7 +293,7 @@ func (cp *DebootstrapConveyorPacker) insertRunScript(b *types.Bundle) (err error
 
 	f.Sync()
 
-	err = os.Chmod(b.RootfsPath+"/.singularity.d/runscript", 0o755)
+	err = os.Chmod(b.RootfsPath+"/.apptainer.d/runscript", 0o755)
 	if err != nil {
 		return
 	}

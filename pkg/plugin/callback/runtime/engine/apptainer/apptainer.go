@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the URIs of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"os"

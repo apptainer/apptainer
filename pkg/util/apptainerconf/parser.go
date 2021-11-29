@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularityconf
+package apptainerconf
 
 import (
 	"fmt"
@@ -203,7 +203,7 @@ func Generate(out io.Writer, tmplPath string, config *File) error {
 			return fmt.Errorf("unable to parse template %s: %s", tmplPath, err)
 		}
 	} else {
-		t, err = template.New("singularity.conf").Parse(TemplateAsset)
+		t, err = template.New("apptainer.conf").Parse(TemplateAsset)
 		if err != nil {
 			return fmt.Errorf("unable to create template: %s", err)
 		}

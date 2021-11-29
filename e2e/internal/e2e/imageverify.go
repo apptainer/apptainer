@@ -33,27 +33,27 @@ func (env TestEnv) ImageVerify(t *testing.T, imagePath string, profile Profile) 
 		},
 		{
 			name: "RunScript",
-			argv: []string{imagePath, "test", "-f", "/.singularity.d/runscript"},
+			argv: []string{imagePath, "test", "-f", "/.apptainer.d/runscript"},
 			exit: 0,
 		},
 		{
 			name: "OneBase",
-			argv: []string{imagePath, "test", "-f", "/.singularity.d/env/01-base.sh"},
+			argv: []string{imagePath, "test", "-f", "/.apptainer.d/env/01-base.sh"},
 			exit: 0,
 		},
 		{
 			name: "ActionsShell",
-			argv: []string{imagePath, "test", "-f", "/.singularity.d/actions/shell"},
+			argv: []string{imagePath, "test", "-f", "/.apptainer.d/actions/shell"},
 			exit: 0,
 		},
 		{
 			name: "ActionsExec",
-			argv: []string{imagePath, "test", "-f", "/.singularity.d/actions/exec"},
+			argv: []string{imagePath, "test", "-f", "/.apptainer.d/actions/exec"},
 			exit: 0,
 		},
 		{
 			name: "ActionsRun",
-			argv: []string{imagePath, "test", "-f", "/.singularity.d/actions/run"},
+			argv: []string{imagePath, "test", "-f", "/.apptainer.d/actions/run"},
 			exit: 0,
 		},
 		{
@@ -62,14 +62,14 @@ func (env TestEnv) ImageVerify(t *testing.T, imagePath string, profile Profile) 
 			exit: 0,
 		},
 		{
-			name: "Singularity",
+			name: "Apptainer",
 			argv: []string{imagePath, "test", "-L", "/apptainer"},
 			exit: 0,
 		},
 	}
 
 	for _, tc := range tt {
-		env.RunSingularity(
+		env.RunApptainer(
 			t,
 			AsSubtest(tc.name),
 			WithProfile(profile),
@@ -98,7 +98,7 @@ func (env TestEnv) ImageVerify(t *testing.T, imagePath string, profile Profile) 
 
 	// Verify the label partition
 	for _, tt := range tests {
-		verifyOutput := func(t *testing.T, r *SingularityCmdResult) {
+		verifyOutput := func(t *testing.T, r *ApptainerCmdResult) {
 			jsonOut, err := jsonparser.GetString(r.Stdout, tt.jsonPath...)
 			if err != nil {
 				t.Fatalf("unable to get expected output from json: %v", err)
@@ -108,7 +108,7 @@ func (env TestEnv) ImageVerify(t *testing.T, imagePath string, profile Profile) 
 			}
 		}
 
-		env.RunSingularity(
+		env.RunApptainer(
 			t,
 			AsSubtest(tt.name),
 			WithProfile(UserProfile),
@@ -122,7 +122,7 @@ func (env TestEnv) ImageVerify(t *testing.T, imagePath string, profile Profile) 
 // DefinitionImageVerify checks for image correctness based off off supplied DefFileDetail
 func DefinitionImageVerify(t *testing.T, cmdPath, imagePath string, dfd DefFileDetails) {
 	if dfd.Help != nil {
-		helpPath := filepath.Join(imagePath, `/.singularity.d/runscript.help`)
+		helpPath := filepath.Join(imagePath, `/.apptainer.d/runscript.help`)
 		if !fs.IsFile(helpPath) {
 			t.Fatalf("unexpected failure: Script %v does not exist in container", helpPath)
 		}
@@ -157,7 +157,7 @@ func DefinitionImageVerify(t *testing.T, cmdPath, imagePath string, dfd DefFileD
 	}
 
 	if dfd.RunScript != nil {
-		scriptPath := filepath.Join(imagePath, `/.singularity.d/runscript`)
+		scriptPath := filepath.Join(imagePath, `/.apptainer.d/runscript`)
 		if !fs.IsFile(scriptPath) {
 			t.Fatalf("unexpected failure: Script %v does not exist in container", scriptPath)
 		}
@@ -168,7 +168,7 @@ func DefinitionImageVerify(t *testing.T, cmdPath, imagePath string, dfd DefFileD
 	}
 
 	if dfd.StartScript != nil {
-		scriptPath := filepath.Join(imagePath, `/.singularity.d/startscript`)
+		scriptPath := filepath.Join(imagePath, `/.apptainer.d/startscript`)
 		if !fs.IsFile(scriptPath) {
 			t.Fatalf("unexpected failure: Script %v does not exist in container", scriptPath)
 		}
@@ -179,7 +179,7 @@ func DefinitionImageVerify(t *testing.T, cmdPath, imagePath string, dfd DefFileD
 	}
 
 	if dfd.Test != nil {
-		scriptPath := filepath.Join(imagePath, `/.singularity.d/test`)
+		scriptPath := filepath.Join(imagePath, `/.apptainer.d/test`)
 		if !fs.IsFile(scriptPath) {
 			t.Fatalf("unexpected failure: Script %v does not exist in container", scriptPath)
 		}

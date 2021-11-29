@@ -45,7 +45,7 @@ func (c *ctx) eclConfig(t *testing.T) {
 		command    string
 		args       []string
 		profile    e2e.Profile
-		consoleOps []e2e.SingularityConsoleOp
+		consoleOps []e2e.ApptainerConsoleOp
 		config     *syecl.EclConfig
 		exit       int
 	}{
@@ -54,7 +54,7 @@ func (c *ctx) eclConfig(t *testing.T) {
 			command: "key import",
 			profile: e2e.UserProfile,
 			args:    []string{"testdata/ecl-pgpkeys/key1.asc"},
-			consoleOps: []e2e.SingularityConsoleOp{
+			consoleOps: []e2e.ApptainerConsoleOp{
 				e2e.ConsoleSendLine("e2e"),
 			},
 			exit: 0,
@@ -64,7 +64,7 @@ func (c *ctx) eclConfig(t *testing.T) {
 			command: "key import",
 			profile: e2e.UserProfile,
 			args:    []string{"testdata/ecl-pgpkeys/key2.asc"},
-			consoleOps: []e2e.SingularityConsoleOp{
+			consoleOps: []e2e.ApptainerConsoleOp{
 				e2e.ConsoleSendLine("e2e"),
 			},
 			exit: 0,
@@ -109,7 +109,7 @@ func (c *ctx) eclConfig(t *testing.T) {
 			command: "sign",
 			profile: e2e.UserProfile,
 			args:    []string{"-k", "0", signed},
-			consoleOps: []e2e.SingularityConsoleOp{
+			consoleOps: []e2e.ApptainerConsoleOp{
 				e2e.ConsoleSendLine("e2e"),
 			},
 			exit: 0,
@@ -119,7 +119,7 @@ func (c *ctx) eclConfig(t *testing.T) {
 			command: "sign",
 			profile: e2e.UserProfile,
 			args:    []string{"-k", "1", signed},
-			consoleOps: []e2e.SingularityConsoleOp{
+			consoleOps: []e2e.ApptainerConsoleOp{
 				e2e.ConsoleSendLine("e2e"),
 			},
 			exit: 0,
@@ -129,7 +129,7 @@ func (c *ctx) eclConfig(t *testing.T) {
 			command: "sign",
 			profile: e2e.UserProfile,
 			args:    []string{"-k", "0", signedOne},
-			consoleOps: []e2e.SingularityConsoleOp{
+			consoleOps: []e2e.ApptainerConsoleOp{
 				e2e.ConsoleSendLine("e2e"),
 			},
 			exit: 0,
@@ -348,7 +348,7 @@ func (c *ctx) eclConfig(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		cmdOps := []e2e.SingularityCmdOp{
+		cmdOps := []e2e.ApptainerCmdOp{
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
 			e2e.WithCommand(tt.command),
@@ -375,7 +375,7 @@ func (c *ctx) eclConfig(t *testing.T) {
 			cmdOps = append(cmdOps, e2e.ConsoleRun(tt.consoleOps...))
 		}
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			cmdOps...,
 		)

@@ -17,7 +17,7 @@ import (
 )
 
 // issue5097 - need to handle an existing directory entry present in the cache
-// from older singularity versions.
+// from older apptainer versions.
 func (c cacheTests) issue5097(t *testing.T) {
 	imgCacheDir, cleanCache := e2e.MakeCacheDir(t, c.env.TestDir)
 	defer cleanCache(t)
@@ -28,7 +28,7 @@ func (c cacheTests) issue5097(t *testing.T) {
 	imagePath := filepath.Join(tempDir, imgName)
 
 	// Pull through the cache - will give us a new style file in the cache
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
@@ -37,7 +37,7 @@ func (c cacheTests) issue5097(t *testing.T) {
 	)
 
 	// Replace the cache entry with a directory, containing the image,
-	// like in older versions of singularity
+	// like in older versions of apptainer
 	hash, err := client.ImageHash(imagePath)
 	if err != nil {
 		t.Fatalf("Could not calculate hash of test image: %v", err)
@@ -58,7 +58,7 @@ func (c cacheTests) issue5097(t *testing.T) {
 
 	// Pull through the cache - it should work as we now remove the directory and
 	// re-pull a file into the cache
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
@@ -88,7 +88,7 @@ func (c cacheTests) issue5350(t *testing.T) {
 		t.Fatalf("Could not chmod 000 cache outer dir: %v", err)
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),

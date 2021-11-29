@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"errors"
@@ -25,13 +25,13 @@ func cleanCache(imgCache *cache.Handle, cacheType string, dryRun bool, days int)
 	return imgCache.CleanCache(cacheType, dryRun, days)
 }
 
-// CleanSingularityCache is the main function that drives all these
+// CleanApptainerCache is the main function that drives all these
 // other functions. If force is true, remove the entries, otherwise only
 // provide a summary of what would have been done. If cacheCleanTypes
 // contains something, only clean that type. The special value "all" is
 // interpreted as "all types of entries". If cacheName contains
 // something, clean only cache entries matching that name.
-func CleanSingularityCache(imgCache *cache.Handle, dryRun bool, cacheCleanTypes []string, days int) error {
+func CleanApptainerCache(imgCache *cache.Handle, dryRun bool, cacheCleanTypes []string, days int) error {
 	if imgCache == nil {
 		return errInvalidCacheHandle
 	}

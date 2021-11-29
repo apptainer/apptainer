@@ -20,21 +20,21 @@ import (
 )
 
 /*
- * This tool aims at gathering the list of Singularity commands and optionally
+ * This tool aims at gathering the list of Apptainer commands and optionally
  * the list of commands covered by the E2E tests. When gathering the list of
- * E2E tests, we also calculate the coverage compared to all the Singularity
+ * E2E tests, we also calculate the coverage compared to all the Apptainer
  * commands.
  *
  * Note that the list of all the commands has some limitations. Since we create
  * the list with Cobra, the following assumptions are made:
  * - Commands are based on the following scheme (which is not matching reality at 100%):
- *		singularity <cmd> [[--<cmd-opt>] [<sub-cmd> [--<subcmd-opt]]]
+ *		apptainer <cmd> [[--<cmd-opt>] [<sub-cmd> [--<subcmd-opt]]]
  * - Cobra does not actually create a tree of commands/sub-commands/options but rather
  * a list of commands and sub-list of sub-commands and options. As a result, it is not
  * possible to track sub-command that are specific to a command option; and therefore
- * not possible to get all the actual Singularity commands. For instance, Singularity
+ * not possible to get all the actual Apptainer commands. For instance, Apptainer
  * support commands such as:
- *		singularity remote --config <configfile> add --global <name> <uri>
+ *		apptainer remote --config <configfile> add --global <name> <uri>
  * As the code stands, it is not possible to capture the fact that the config option
  * alloows one to use the add sub-command.
  * - the e2e tests are using the long version of the option, not the short version. At
@@ -44,10 +44,10 @@ import (
 // Global variable to track the total number of tested commands.
 var tested = 0
 
-type singularityCmd struct {
+type apptainerCmd struct {
 	Name     string           `json:"name"`
 	Options  []string         `json:"options"`
-	Children []singularityCmd `json:"children"`
+	Children []apptainerCmd `json:"children"`
 }
 
 func checkCmd(sCmd string, e2eCmds string, resultFile *os.File, verbose bool) error {
@@ -94,7 +94,7 @@ func checkCmd(sCmd string, e2eCmds string, resultFile *os.File, verbose bool) er
 	return nil
 }
 
-func loadData(singularityCmdsFile, e2eCmdsFile string) (string, string, error) {
+func loadData(apptainerCmdsFile, e2eCmdsFile string) (string, string, error) {
 	e2eData, err := ioutil.ReadFile(e2eCmdsFile)
 	if err != nil {
 		return "", "", err
@@ -104,25 +104,25 @@ func loadData(singularityCmdsFile, e2eCmdsFile string) (string, string, error) {
 	// Strip ` --debug` (and ` -d` just in case) from commands
 	// This is needed as the generated command tree doesn't have anything ahead
 	// of the command name, so --debug will stop a match happening
-	e2eCmds = strings.ReplaceAll(e2eCmds, "singularity --debug", "singularity")
-	e2eCmds = strings.ReplaceAll(e2eCmds, "singularity -d", "singularity")
+	e2eCmds = strings.ReplaceAll(e2eCmds, "apptainer --debug", "apptainer")
+	e2eCmds = strings.ReplaceAll(e2eCmds, "apptainer -d", "apptainer")
 
-	singularityData, err := ioutil.ReadFile(singularityCmdsFile)
+	apptainerData, err := ioutil.ReadFile(apptainerCmdsFile)
 	if err != nil {
 		return "", "", err
 	}
-	singularityCmds := string(singularityData)
+	apptainerCmds := string(apptainerData)
 
-	return singularityCmds, e2eCmds, nil
+	return apptainerCmds, e2eCmds, nil
 }
 
-func analyseData(singularityCmds string, e2eCmds string, report string, verbose bool) (string, error) {
+func analyseData(apptainerCmds string, e2eCmds string, report string, verbose bool) (string, error) {
 	var (
 		err        error
 		resultFile *os.File
 	)
 	if report == "" {
-		resultFile, err = ioutil.TempFile("", "singularity-cmd-coverage-")
+		resultFile, err = ioutil.TempFile("", "apptainer-cmd-coverage-")
 	} else {
 		resultFile, err = os.OpenFile(report, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	}
@@ -131,34 +131,34 @@ func analyseData(singularityCmds string, e2eCmds string, report string, verbose 
 	}
 	defer resultFile.Close()
 
-	for _, singularityCmd := range strings.Split(singularityCmds, "\n") {
-		if singularityCmd != "" {
-			err = checkCmd(singularityCmd, e2eCmds, resultFile, verbose)
+	for _, apptainerCmd := range strings.Split(apptainerCmds, "\n") {
+		if apptainerCmd != "" {
+			err = checkCmd(apptainerCmd, e2eCmds, resultFile, verbose)
 			if err != nil {
-				return "", fmt.Errorf("failed to check cmd %s", singularityCmd)
+				return "", fmt.Errorf("failed to check cmd %s", apptainerCmd)
 			}
 		}
 	}
 
-	totalCmds := len(strings.Split(singularityCmds, "\n"))
+	totalCmds := len(strings.Split(apptainerCmds, "\n"))
 	ratio := tested * 100 / totalCmds
 	fmt.Printf("E2E cmd coverage: %d/%d (%d%%)\n", tested, totalCmds, ratio)
 	return resultFile.Name(), nil
 }
 
-func parseCmd(cmd singularityCmd, outputFile *os.File) error {
+func parseCmd(cmd apptainerCmd, outputFile *os.File) error {
 	str := fmt.Sprintf("%s", cmd)
 
 	// When creating the tree of commands, it includes elements such as:
-	//		{singularity cache [help] [{singularity cache clean [force help name type] []} {singularity cache list [help type verbose] []}]}
+	//		{apptainer cache [help] [{apptainer cache clean [force help name type] []} {apptainer cache list [help type verbose] []}]}
 	// The fact that the element includes "[{" means that the first part is a command to
-	// consider (here, "singularity cache [help]"), while the rest of the element is
+	// consider (here, "apptainer cache [help]"), while the rest of the element is
 	// a summary of commands already listed independently. This type of element is the
 	// result of reaching to bottom of a tree branch.
 	if strings.Contains(str, "[{") {
 		str = strings.Split(str, "[{")[0]
 	}
-	cmds := strings.Split(str, "singularity")
+	cmds := strings.Split(str, "apptainer")
 	for _, cmdStr := range cmds { // This may be a command with sub-commands
 		if cmdStr != "{" { // Going down the tree, we may be at the bottom with an empty list
 
@@ -177,13 +177,13 @@ func parseCmd(cmd singularityCmd, outputFile *os.File) error {
 				for _, opt := range strings.Split(opts, " ") {
 					if strings.Trim(opt, " \t") != "" {
 						// Command with option
-						str = fmt.Sprintf("singularity %s --%s\n", strings.Trim(subcmds[0], " \t"), strings.Trim(opt, " \t"))
+						str = fmt.Sprintf("apptainer %s --%s\n", strings.Trim(subcmds[0], " \t"), strings.Trim(opt, " \t"))
 						outputFile.WriteString(str)
 					}
 				}
 			} else {
 				// Command without option or sub-commands
-				str = fmt.Sprintf("singularity %s\n", cmdStr)
+				str = fmt.Sprintf("apptainer %s\n", cmdStr)
 				outputFile.WriteString(str)
 			}
 		}
@@ -192,19 +192,19 @@ func parseCmd(cmd singularityCmd, outputFile *os.File) error {
 	return nil
 }
 
-func (c *singularityCmd) addCmd(cmd singularityCmd, outputFile *os.File) error {
+func (c *apptainerCmd) addCmd(cmd apptainerCmd, outputFile *os.File) error {
 	c.Children = append(c.Children, cmd)
 	return parseCmd(cmd, outputFile)
 }
 
-func (c *singularityCmd) addOpt(opt string) {
+func (c *apptainerCmd) addOpt(opt string) {
 	c.Options = append(c.Options, opt)
 }
 
-func buildTree(root *cobra.Command, outputFile *os.File) singularityCmd {
+func buildTree(root *cobra.Command, outputFile *os.File) apptainerCmd {
 	root.InitDefaultHelpFlag()
 
-	tree := singularityCmd{Name: root.CommandPath(), Options: nil, Children: nil}
+	tree := apptainerCmd{Name: root.CommandPath(), Options: nil, Children: nil}
 
 	root.Flags().VisitAll(func(flag *pflag.Flag) {
 		tree.addOpt(flag.Name)
@@ -218,19 +218,19 @@ func buildTree(root *cobra.Command, outputFile *os.File) singularityCmd {
 }
 
 func createCmdsFiles() (string, string, error) {
-	jsonFile, err := ioutil.TempFile("", "singularityCmdsJSON-")
+	jsonFile, err := ioutil.TempFile("", "apptainerCmdsJSON-")
 	if err != nil {
 		return "", "", fmt.Errorf("failed to create command JSON file: %s", err)
 	}
 	defer jsonFile.Close()
 
-	textFile, err := ioutil.TempFile("", "singularityCmds-")
+	textFile, err := ioutil.TempFile("", "apptainerCmds-")
 	if err != nil {
 		return "", "", fmt.Errorf("failed to create command text file: %s", err)
 	}
 	defer textFile.Close()
 
-	// iniatialize singularity CLI by registering all commands without plugins
+	// iniatialize apptainer CLI by registering all commands without plugins
 	cli.Init(false)
 	cli.RootCmd().InitDefaultHelpCmd()
 	cli.RootCmd().InitDefaultVersionFlag()
@@ -256,24 +256,24 @@ func main() {
 
 	jsonFilePath, textFilePath, err := createCmdsFiles()
 	if err != nil {
-		log.Fatalf("failed to gather all the Singularity commands: %s", err)
+		log.Fatalf("failed to gather all the Apptainer commands: %s", err)
 	}
 
 	resultFilePath := ""
 	if *coverage != "" {
-		singularityCmds, e2eCmds, err := loadData(textFilePath, *coverage)
+		apptainerCmds, e2eCmds, err := loadData(textFilePath, *coverage)
 		if err != nil {
 			log.Fatalf("failed to load e2e-test coverage data: %s", err)
 		}
-		resultFilePath, err = analyseData(singularityCmds, e2eCmds, *report, *verbose)
+		resultFilePath, err = analyseData(apptainerCmds, e2eCmds, *report, *verbose)
 		if err != nil {
 			log.Fatalf("failed to analyze e2e-test coverage data: %s", err)
 		}
 	}
 
 	if *verbose {
-		fmt.Printf("List of all the Singularity commands (JSON) is in: %s\n", jsonFilePath)
-		fmt.Printf("List of all the Singularity commands (text) is in: %s\n", textFilePath)
+		fmt.Printf("List of all the Apptainer commands (JSON) is in: %s\n", jsonFilePath)
+		fmt.Printf("List of all the Apptainer commands (text) is in: %s\n", textFilePath)
 	}
 	if *coverage != "" {
 		fmt.Printf("E2E coverage report saved in: %s\n", resultFilePath)

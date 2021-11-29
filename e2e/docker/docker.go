@@ -97,7 +97,7 @@ func (c ctx) testDockerPulls(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -124,7 +124,7 @@ func (c ctx) testDockerAUFS(t *testing.T) {
 	defer cleanup(t)
 	imagePath := filepath.Join(imageDir, "container")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -154,7 +154,7 @@ func (c ctx) testDockerAUFS(t *testing.T) {
 	}
 
 	for _, tt := range fileTests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -171,7 +171,7 @@ func (c ctx) testDockerPermissions(t *testing.T) {
 	defer cleanup(t)
 	imagePath := filepath.Join(imageDir, "container")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -200,7 +200,7 @@ func (c ctx) testDockerPermissions(t *testing.T) {
 		},
 	}
 	for _, tt := range fileTests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -217,7 +217,7 @@ func (c ctx) testDockerWhiteoutSymlink(t *testing.T) {
 	defer cleanup(t)
 	imagePath := filepath.Join(imageDir, "container")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -307,7 +307,7 @@ func (c ctx) testDockerDefFile(t *testing.T) {
 			From:      tt.from,
 		})
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.RootProfile),
@@ -378,7 +378,7 @@ func (c ctx) testDockerRegistry(t *testing.T) {
 	for _, tt := range tests {
 		defFile := e2e.PrepareDefFile(tt.dfd)
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.RootProfile),
 			e2e.WithCommand("build"),
@@ -398,9 +398,9 @@ func (c ctx) testDockerRegistry(t *testing.T) {
 	}
 }
 
-// https://github.com/sylabs/singularity/issues/233
+// https://github.com/sylabs/apptainer/issues/233
 func (c ctx) testDockerCMDQuotes(t *testing.T) {
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("run"),
@@ -417,12 +417,12 @@ func (c ctx) testDockerLabels(t *testing.T) {
 	imagePath := filepath.Join(imageDir, "container")
 
 	// Test container & set labels
-	// See: https://github.com/sylabs/singularity-test-containers/pull/1
+	// See: https://github.com/sylabs/apptainer-test-containers/pull/1
 	imgSrc := "docker://sylabsio/labels"
 	label1 := "LABEL1: 1"
 	label2 := "LABEL2: TWO"
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("build"),
 		e2e.WithProfile(e2e.RootProfile),
@@ -431,7 +431,7 @@ func (c ctx) testDockerLabels(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	verifyOutput := func(t *testing.T, r *e2e.SingularityCmdResult) {
+	verifyOutput := func(t *testing.T, r *e2e.ApptainerCmdResult) {
 		output := string(r.Stdout)
 		for _, l := range []string{label1, label2} {
 			if !strings.Contains(output, l) {
@@ -440,7 +440,7 @@ func (c ctx) testDockerLabels(t *testing.T) {
 		}
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("inspect"),
 		e2e.WithProfile(e2e.UserProfile),

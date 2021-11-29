@@ -32,7 +32,7 @@ type instanceList struct {
 func (c *ctx) listInstance(t *testing.T, listArgs ...string) (stdout string, stderr string, success bool) {
 	var args []string
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("instance list"),
@@ -53,7 +53,7 @@ func (c *ctx) stopInstance(t *testing.T, instance string, stopArgs ...string) (s
 		args = append(args, instance)
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("instance stop"),
@@ -73,7 +73,7 @@ func (c *ctx) execInstance(t *testing.T, instance string, execArgs ...string) (s
 	args := []string{"instance://" + instance}
 	args = append(args, execArgs...)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("exec"),
@@ -89,7 +89,7 @@ func (c *ctx) execInstance(t *testing.T, instance string, execArgs ...string) (s
 
 // Check if there is the number of expected instances with the provided name.
 func (c *ctx) expectInstance(t *testing.T, name string, nb int) {
-	listInstancesFn := func(t *testing.T, r *e2e.SingularityCmdResult) {
+	listInstancesFn := func(t *testing.T, r *e2e.ApptainerCmdResult) {
 		var instances instanceList
 
 		if err := json.Unmarshal([]byte(r.Stdout), &instances); err != nil {
@@ -100,7 +100,7 @@ func (c *ctx) expectInstance(t *testing.T, name string, nb int) {
 		}
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("instance list"),

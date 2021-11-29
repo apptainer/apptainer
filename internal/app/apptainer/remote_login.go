@@ -4,7 +4,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"errors"
@@ -60,7 +60,7 @@ func RemoteLogin(usrConfigFile string, args *LoginArgs) (err error) {
 	}
 
 	if r != nil {
-		// endpoints (sylabs cloud, singularity enterprise etc.)
+		// endpoints (sylabs cloud, apptainer enterprise etc.)
 		err := endPointLogin(r, args)
 		if err == ErrLoginAborted {
 			return nil

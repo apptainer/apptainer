@@ -46,7 +46,7 @@ var capGroupFlag = cmdline.Flag{
 	EnvKeys:      []string{"CAP_GROUP"},
 }
 
-// CapabilityAvailCmd singularity capability avail
+// CapabilityAvailCmd apptainer capability avail
 var CapabilityAvailCmd = &cobra.Command{
 	Args:                  cobra.RangeArgs(0, 1),
 	DisableFlagsInUseLine: true,
@@ -55,11 +55,11 @@ var CapabilityAvailCmd = &cobra.Command{
 		if len(args) > 0 {
 			caps = args[0]
 		}
-		c := singularity.CapAvailConfig{
+		c := apptainer.CapAvailConfig{
 			Caps: caps,
 			Desc: len(args) == 0,
 		}
-		if err := singularity.CapabilityAvail(c); err != nil {
+		if err := apptainer.CapabilityAvail(c); err != nil {
 			sylog.Fatalf("Unable to list available capabilities: %s", err)
 		}
 	},
@@ -70,18 +70,18 @@ var CapabilityAvailCmd = &cobra.Command{
 	Example: docs.CapabilityAvailExample,
 }
 
-// CapabilityAddCmd singularity capability add
+// CapabilityAddCmd apptainer capability add
 var CapabilityAddCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		c := singularity.CapManageConfig{
+		c := apptainer.CapManageConfig{
 			Caps:  args[0],
 			User:  capConfig.CapUser,
 			Group: capConfig.CapGroup,
 		}
 
-		if err := singularity.CapabilityAdd(buildcfg.CAPABILITY_FILE, c); err != nil {
+		if err := apptainer.CapabilityAdd(buildcfg.CAPABILITY_FILE, c); err != nil {
 			sylog.Fatalf("Unable to add capabilities: %s", err)
 		}
 	},
@@ -92,18 +92,18 @@ var CapabilityAddCmd = &cobra.Command{
 	Example: docs.CapabilityAddExample,
 }
 
-// CapabilityDropCmd singularity capability drop
+// CapabilityDropCmd apptainer capability drop
 var CapabilityDropCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		c := singularity.CapManageConfig{
+		c := apptainer.CapManageConfig{
 			Caps:  args[0],
 			User:  capConfig.CapUser,
 			Group: capConfig.CapGroup,
 		}
 
-		if err := singularity.CapabilityDrop(buildcfg.CAPABILITY_FILE, c); err != nil {
+		if err := apptainer.CapabilityDrop(buildcfg.CAPABILITY_FILE, c); err != nil {
 			sylog.Fatalf("Unable to drop capabilities: %s", err)
 		}
 	},
@@ -114,7 +114,7 @@ var CapabilityDropCmd = &cobra.Command{
 	Example: docs.CapabilityDropExample,
 }
 
-// CapabilityListCmd singularity capability list
+// CapabilityListCmd apptainer capability list
 var CapabilityListCmd = &cobra.Command{
 	Args:                  cobra.RangeArgs(0, 1),
 	DisableFlagsInUseLine: true,
@@ -123,13 +123,13 @@ var CapabilityListCmd = &cobra.Command{
 		if len(args) == 1 {
 			userGroup = args[0]
 		}
-		c := singularity.CapListConfig{
+		c := apptainer.CapListConfig{
 			User:  userGroup,
 			Group: userGroup,
 			All:   len(args) == 0,
 		}
 
-		if err := singularity.CapabilityList(buildcfg.CAPABILITY_FILE, c); err != nil {
+		if err := apptainer.CapabilityList(buildcfg.CAPABILITY_FILE, c); err != nil {
 			sylog.Fatalf("Unable to list capabilities: %s", err)
 		}
 	},
