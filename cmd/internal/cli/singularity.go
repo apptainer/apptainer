@@ -30,7 +30,7 @@ import (
 	clicallback "github.com/hpcng/singularity/pkg/plugin/callback/cli"
 	"github.com/hpcng/singularity/pkg/syfs"
 	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/singularityconf"
+	"github.com/hpcng/singularity/pkg/util/apptainerconf"
 	"github.com/spf13/cobra"
 	scsbuildclient "github.com/sylabs/scs-build-client/client"
 	scskeyclient "github.com/sylabs/scs-key-client/client"

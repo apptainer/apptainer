@@ -11,7 +11,7 @@ import (
 	"syscall"
 
 	"github.com/hpcng/singularity/internal/pkg/plugin"
-	singularitycallback "github.com/hpcng/singularity/pkg/plugin/callback/runtime/engine/singularity"
+	singularitycallback "github.com/hpcng/singularity/pkg/plugin/callback/runtime/engine/apptainer"
 )
 
 // MonitorContainer is called from master once the container has

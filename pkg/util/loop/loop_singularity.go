@@ -10,7 +10,7 @@ package loop
 
 import (
 	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/pkg/util/singularityconf"
+	"github.com/hpcng/singularity/pkg/util/apptainerconf"
 )
 
 func GetMaxLoopDevices() int {

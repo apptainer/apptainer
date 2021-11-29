@@ -9,8 +9,8 @@ import (
 	"os"
 
 	ociargs "github.com/hpcng/singularity/internal/pkg/runtime/engine/oci/rpc"
-	args "github.com/hpcng/singularity/internal/pkg/runtime/engine/singularity/rpc"
-	client "github.com/hpcng/singularity/internal/pkg/runtime/engine/singularity/rpc/client"
+	args "github.com/hpcng/singularity/internal/pkg/runtime/engine/apptainer/rpc"
+	client "github.com/hpcng/singularity/internal/pkg/runtime/engine/apptainer/rpc/client"
 )
 
 // RPC holds the state necessary for remote procedure calls.

@@ -14,7 +14,7 @@ import (
 	"strings"
 	"syscall"
 
-	args "github.com/hpcng/singularity/internal/pkg/runtime/engine/singularity/rpc"
+	args "github.com/hpcng/singularity/internal/pkg/runtime/engine/apptainer/rpc"
 	"github.com/hpcng/singularity/internal/pkg/util/crypt"
 	"github.com/hpcng/singularity/internal/pkg/util/fs"
 	"github.com/hpcng/singularity/internal/pkg/util/gpu"

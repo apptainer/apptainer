@@ -8,7 +8,7 @@ package oci
 import (
 	"github.com/hpcng/singularity/internal/pkg/runtime/engine"
 	ociServer "github.com/hpcng/singularity/internal/pkg/runtime/engine/oci/rpc/server"
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/singularity/rpc/server"
+	"github.com/hpcng/singularity/internal/pkg/runtime/engine/apptainer/rpc/server"
 	"github.com/hpcng/singularity/pkg/runtime/engine/config"
 )
 

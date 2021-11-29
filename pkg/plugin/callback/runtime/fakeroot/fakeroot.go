@@ -14,7 +14,7 @@ import (
 // than one plugin uses this callback the runtime aborts its execution.
 // This callback is called in:
 // - internal/pkg/runtime/engine/fakeroot/engine_linux.go (build command)
-// - internal/pkg/runtime/engine/singularity/prepare_linux.go (actions commands)
+// - internal/pkg/runtime/engine/apptainer/prepare_linux.go (actions commands)
 // This function is usually called two times, a first time with path
 // set to "/etc/subuid" and a second time with path set to "/etc/subgid"
 // to get container UID and GID mappings for the user specified by the

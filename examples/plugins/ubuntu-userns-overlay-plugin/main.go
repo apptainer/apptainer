@@ -12,7 +12,7 @@ import (
 
 	"github.com/hpcng/singularity/pkg/image"
 	pluginapi "github.com/hpcng/singularity/pkg/plugin"
-	singularitycallback "github.com/hpcng/singularity/pkg/plugin/callback/runtime/engine/singularity"
+	singularitycallback "github.com/hpcng/singularity/pkg/plugin/callback/runtime/engine/apptainer"
 )
 
 // Allow to use overlay with user namespace on Ubuntu flavors.

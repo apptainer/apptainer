@@ -11,9 +11,9 @@ import (
 	"time"
 
 	pluginapi "github.com/hpcng/singularity/pkg/plugin"
-	singularitycallback "github.com/hpcng/singularity/pkg/plugin/callback/runtime/engine/singularity"
+	singularitycallback "github.com/hpcng/singularity/pkg/plugin/callback/runtime/engine/apptainer"
 	"github.com/hpcng/singularity/pkg/runtime/engine/config"
-	singularityConfig "github.com/hpcng/singularity/pkg/runtime/engine/singularity/config"
+	singularityConfig "github.com/hpcng/singularity/pkg/runtime/engine/apptainer/config"
 )
 
 // Plugin is the only variable which a plugin MUST export.

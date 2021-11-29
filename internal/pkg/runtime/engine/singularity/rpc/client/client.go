@@ -9,7 +9,7 @@ import (
 	"net/rpc"
 	"os"
 
-	args "github.com/hpcng/singularity/internal/pkg/runtime/engine/singularity/rpc"
+	args "github.com/hpcng/singularity/internal/pkg/runtime/engine/apptainer/rpc"
 	"github.com/hpcng/singularity/pkg/util/loop"
 )
 

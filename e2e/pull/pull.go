@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-// This file has been migrated from cmd/singularity/pull_test.go
+// This file has been migrated from cmd/apptainer/pull_test.go
 
 package pull
 

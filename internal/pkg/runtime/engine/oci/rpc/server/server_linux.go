@@ -12,8 +12,8 @@ import (
 	"github.com/hpcng/singularity/internal/pkg/util/fs"
 
 	ociargs "github.com/hpcng/singularity/internal/pkg/runtime/engine/oci/rpc"
-	args "github.com/hpcng/singularity/internal/pkg/runtime/engine/singularity/rpc"
-	server "github.com/hpcng/singularity/internal/pkg/runtime/engine/singularity/rpc/server"
+	args "github.com/hpcng/singularity/internal/pkg/runtime/engine/apptainer/rpc"
+	server "github.com/hpcng/singularity/internal/pkg/runtime/engine/apptainer/rpc/server"
 	"github.com/hpcng/singularity/internal/pkg/util/mainthread"
 )
 

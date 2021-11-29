@@ -18,7 +18,7 @@ import (
 
 	"github.com/hpcng/singularity/internal/pkg/util/fs"
 	"github.com/hpcng/singularity/pkg/util/fs/proc"
-	"github.com/hpcng/singularity/pkg/util/singularityconf"
+	"github.com/hpcng/singularity/pkg/util/apptainerconf"
 
 	"github.com/hpcng/singularity/internal/pkg/build/apps"
 	"github.com/hpcng/singularity/internal/pkg/build/assemblers"

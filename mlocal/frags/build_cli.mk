@@ -15,7 +15,7 @@ singularity_deps := $(BUILDDIR_ABSPATH)/singularity.d
 
 $(singularity_deps): $(GO_MODFILES)
 	@echo " GEN GO DEP" $@
-	$(V)$(SOURCEDIR)/makeit/gengodep -v3 "$(GO)" "singularity_SOURCE" "$(GO_TAGS)" "$@" "$(SOURCEDIR)/cmd/singularity"
+	$(V)$(SOURCEDIR)/makeit/gengodep -v3 "$(GO)" "singularity_SOURCE" "$(GO_TAGS)" "$@" "$(SOURCEDIR)/cmd/apptainer"
 
 # Look at dependencies file changes via singularity_deps
 # because it means that a module was updated.
@@ -23,7 +23,7 @@ singularity := $(BUILDDIR)/singularity
 $(singularity): $(singularity_build_config) $(singularity_deps) $(singularity_SOURCE)
 	@echo " GO" $@; echo "    [+] GO_TAGS" \"$(GO_TAGS)\"
 	$(V)$(GO) build $(GO_MODFLAGS) $(GO_BUILDMODE) -tags "$(GO_TAGS)" $(GO_LDFLAGS) $(GO_GCFLAGS) $(GO_ASMFLAGS) \
-		-o $(BUILDDIR)/singularity $(SOURCEDIR)/cmd/singularity
+		-o $(BUILDDIR)/singularity $(SOURCEDIR)/cmd/apptainer
 
 singularity_INSTALL := $(DESTDIR)$(BINDIR)/singularity
 $(singularity_INSTALL): $(singularity)
@@ -62,7 +62,7 @@ config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/singularity.conf
 # override this to empty to avoid merging old configuration settings
 old_config := $(config_INSTALL)
 
-$(config): $(singularity_build_config) $(SOURCEDIR)/etc/conf/gen.go $(SOURCEDIR)/pkg/runtime/engine/singularity/config/config.go
+$(config): $(singularity_build_config) $(SOURCEDIR)/etc/conf/gen.go $(SOURCEDIR)/pkg/runtime/engine/apptainer/config/config.go
 	@echo " GEN $@`if [ -n "$(old_config)" ]; then echo " from $(old_config)"; fi`"
 	$(V)$(GO) run $(GO_MODFLAGS) $(GO_GCFLAGS) $(GO_ASMFLAGS) $(SOURCEDIR)/etc/conf/gen.go \
 		$(old_config) $(config)

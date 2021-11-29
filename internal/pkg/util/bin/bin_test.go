@@ -14,7 +14,7 @@ import (
 
 	"github.com/hpcng/singularity/internal/pkg/buildcfg"
 	"github.com/hpcng/singularity/internal/pkg/util/env"
-	"github.com/hpcng/singularity/pkg/util/singularityconf"
+	"github.com/hpcng/singularity/pkg/util/apptainerconf"
 )
 
 func TestFindOnPath(t *testing.T) {

@@ -26,7 +26,7 @@ import (
 	"github.com/hpcng/singularity/pkg/sylog"
 	"github.com/hpcng/singularity/pkg/util/capabilities"
 	"github.com/hpcng/singularity/pkg/util/fs/proc"
-	"github.com/hpcng/singularity/pkg/util/singularityconf"
+	"github.com/hpcng/singularity/pkg/util/apptainerconf"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 

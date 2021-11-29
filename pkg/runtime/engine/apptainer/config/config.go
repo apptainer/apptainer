@@ -13,7 +13,7 @@ import (
 
 	"github.com/hpcng/singularity/internal/pkg/runtime/engine/config/oci"
 	"github.com/hpcng/singularity/pkg/image"
-	"github.com/hpcng/singularity/pkg/util/singularityconf"
+	"github.com/hpcng/singularity/pkg/util/apptainerconf"
 )
 
 // Name is the name of the runtime.

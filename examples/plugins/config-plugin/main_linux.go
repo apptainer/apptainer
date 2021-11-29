@@ -13,7 +13,7 @@ import (
 	pluginapi "github.com/hpcng/singularity/pkg/plugin"
 	clicallback "github.com/hpcng/singularity/pkg/plugin/callback/cli"
 	"github.com/hpcng/singularity/pkg/runtime/engine/config"
-	singularity "github.com/hpcng/singularity/pkg/runtime/engine/singularity/config"
+	singularity "github.com/hpcng/singularity/pkg/runtime/engine/apptainer/config"
 	"github.com/hpcng/singularity/pkg/sylog"
 )
 
