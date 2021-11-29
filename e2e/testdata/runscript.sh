@@ -1,6 +1,6 @@
 #!/bin/sh
 
-size=`stat -c %s /.singularity.d/runscript`
+size=`stat -c %s /.apptainer.d/runscript`
 if [ "$size" == "$1" ]; then
     exit 0
 else

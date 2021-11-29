@@ -109,7 +109,7 @@ Clone the repository with `git` in a location of your choice:
 
 ```sh
 git clone https://github.com/apptainer/apptainer.git
-cd singularity
+cd apptainer
 ```
 
 By default your clone will be on the `master` branch which is where development

@@ -1,7 +1,7 @@
 # This file contains all of the rules for building the apptainer CLI binary
 
 # apptainer build config
-singularity_build_config := $(SOURCEDIR)/internal/pkg/buildcfg/config.go
+apptainer_build_config := $(SOURCEDIR)/internal/pkg/buildcfg/config.go
 $(singularity_build_config): $(BUILDDIR)/config.h $(SOURCEDIR)/scripts/go-generate
 	$(V)rm -f $(singularity_build_config)
 	$(V) cd $(SOURCEDIR)/internal/pkg/buildcfg && $(SOURCEDIR)/scripts/go-generate
@@ -9,7 +9,7 @@ $(singularity_build_config): $(BUILDDIR)/config.h $(SOURCEDIR)/scripts/go-genera
 CLEANFILES += $(singularity_build_config)
 
 # contain singularity_SOURCE variable list
-singularity_deps := $(BUILDDIR_ABSPATH)/singularity.d
+singularity_deps := $(BUILDDIR_ABSPATH)/apptainer.d
 
 -include $(singularity_deps)
 

@@ -1,7 +1,7 @@
-var/lib/singularity
-var/lib/singularity/mnt
-var/lib/singularity/mnt/container
-var/lib/singularity/mnt/final
-var/lib/singularity/mnt/overlay
-var/lib/singularity/mnt/session
+var/lib/apptainer
+var/lib/apptainer/mnt
+var/lib/apptainer/mnt/container
+var/lib/apptainer/mnt/final
+var/lib/apptainer/mnt/overlay
+var/lib/apptainer/mnt/session
 usr/share/bash-completion

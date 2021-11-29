@@ -24,31 +24,31 @@ From: rockylinux/rockylinux:8.4
     export EL_VERSION=8
     export VERSION=$*
     export TMP_DIR=$(mktemp -d -u -p .)
-    curl -L -o singularity-${VERSION}.tar.gz https://github.com/apptainer/apptainer/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz
-    rpmbuild --define "_topdir `pwd`/${TMP_DIR}" -tb singularity-${VERSION}.tar.gz
-    cp ./${TMP_DIR}/RPMS/x86_64/singularity-${VERSION}-1.el${EL_VERSION}.x86_64.rpm .
-    fakeroot alien singularity-${VERSION}-1.el${EL_VERSION}.x86_64.rpm
+    curl -L -o apptainer-${VERSION}.tar.gz https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
+    rpmbuild --define "_topdir `pwd`/${TMP_DIR}" -tb apptainer-${VERSION}.tar.gz
+    cp ./${TMP_DIR}/RPMS/x86_64/apptainer-${VERSION}-1.el${EL_VERSION}.x86_64.rpm .
+    fakeroot alien apptainer-${VERSION}-1.el${EL_VERSION}.x86_64.rpm
     chmod -R 777 ./${TMP_DIR}
     rm -rf ./${TMP_DIR}
-    rm singularity-${VERSION}.tar.gz
+    rm apptainer-${VERSION}.tar.gz
 
 %help
 
     SUMMARY
-    This is a build container that generates installable singularity packages for singularity v3.x.x . 
+    This is a build container that generates installable apptainer packages for apptainer v3.x.x .
     The container will output a deb and rpm in the current directory.
 
     KNOWN BUGS
-    Some versions of singularity contain the character 'v', such as v3.0.0.
+    Some versions of apptainer contain the character 'v', such as v3.0.0.
     The container will have to be rebuilt with the following statement modified:
 
-        curl -L -o singularity-${VERSION}.tar.gz https://github.com/apptainer/apptainer/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz
+        curl -L -o apptainer-${VERSION}.tar.gz https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
 
     USAGE
 
-        ./build-singularity.sif {version}
+        ./build-apptainer.sif {version}
 
-    	./build-singularity.sif 3.8.0
+    	./build-apptainer.sif 3.8.0
 
     CHANGELOG
 

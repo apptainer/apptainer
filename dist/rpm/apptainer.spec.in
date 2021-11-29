@@ -129,27 +129,27 @@ mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 make -C builddir DESTDIR=$RPM_BUILD_ROOT install man
 
 %files
-%attr(4755, root, root) %{_libexecdir}/singularity/bin/starter-suid
-%{_bindir}/singularity
-%{_bindir}/run-singularity
-%dir %{_libexecdir}/singularity
-%{_libexecdir}/singularity/bin/starter
-%{_libexecdir}/singularity/cni/*
-%dir %{_sysconfdir}/singularity
-%config(noreplace) %{_sysconfdir}/singularity/*.conf
-%config(noreplace) %{_sysconfdir}/singularity/*.toml
-%config(noreplace) %{_sysconfdir}/singularity/*.json
-%config(noreplace) %{_sysconfdir}/singularity/*.yaml
-%config(noreplace) %{_sysconfdir}/singularity/global-pgp-public
-%config(noreplace) %{_sysconfdir}/singularity/cgroups/*
-%config(noreplace) %{_sysconfdir}/singularity/network/*
-%config(noreplace) %{_sysconfdir}/singularity/seccomp-profiles/*
+%attr(4755, root, root) %{_libexecdir}/apptainer/bin/starter-suid
+%{_bindir}/apptainer
+%{_bindir}/run-apptainer
+%dir %{_libexecdir}/apptainer
+%{_libexecdir}/apptainer/bin/starter
+%{_libexecdir}/apptainer/cni/*
+%dir %{_sysconfdir}/apptainer
+%config(noreplace) %{_sysconfdir}/apptainer/*.conf
+%config(noreplace) %{_sysconfdir}/apptainer/*.toml
+%config(noreplace) %{_sysconfdir}/apptainer/*.json
+%config(noreplace) %{_sysconfdir}/apptainer/*.yaml
+%config(noreplace) %{_sysconfdir}/apptainer/global-pgp-public
+%config(noreplace) %{_sysconfdir}/apptainer/cgroups/*
+%config(noreplace) %{_sysconfdir}/apptainer/network/*
+%config(noreplace) %{_sysconfdir}/apptainer/seccomp-profiles/*
 %dir %{_sysconfdir}/bash_completion.d
 %{_sysconfdir}/bash_completion.d/*
-%dir %{_localstatedir}/singularity
-%dir %{_localstatedir}/singularity/mnt
-%dir %{_localstatedir}/singularity/mnt/session
-%{_mandir}/man1/singularity*
+%dir %{_localstatedir}/apptainer
+%dir %{_localstatedir}/apptainer/mnt
+%dir %{_localstatedir}/apptainer/mnt/session
+%{_mandir}/man1/apptainer*
 
 
 %changelog

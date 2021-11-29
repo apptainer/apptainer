@@ -33,7 +33,7 @@ if you have mounted a volume.
 ```bash
 cd /tmp
 apptainer create arch.img
-sudo singularity bootstrap arch.img Apptainer
+sudo apptainer bootstrap arch.img Apptainer
 ```
 
 That should do the trick!

@@ -9,7 +9,7 @@ DistType "arch"
 
 # "Setup" keyword doesn't do anything anymore, at least as of Singularity
 # 2.1.2. Undocumented "PreSetup" replaced it and is called at each
-# `singularity bootstrap' run.
+# `apptainer bootstrap' run.
 # Setup
 
 Bootstrap
@@ -21,7 +21,7 @@ RunCmd ln -s /usr/share/zoneinfo/UTC /etc/localtime
 # after `>' or `>>`) with $APPTAINER_BUILD_ROOT in RunCmd calls, as below.
 # Otherwise such command will write to host's filesystem, at least as of
 # Singularity 2.1.2! This is a known issue, going to be fixed. See
-# https://github.com/gmkurtzer/singularity/issues/200.
+# https://github.com/gmkurtzer/apptainer/issues/200.
 
 # Set locale. Use whatever you prefer instead of en_US.
 RunCmd echo 'en_US.UTF-8 UTF-8' > "$APPTAINER_BUILD_ROOT"/etc/locale.gen

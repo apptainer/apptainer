@@ -4,7 +4,7 @@
 # in the LICENSE file.
 set -e
 
-package_name=singularity
+package_name=apptainer
 
 if [ ! -f $package_name.spec ]; then
     echo "Run this from the top of the source tree after mconfig" >&2
