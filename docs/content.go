@@ -107,7 +107,7 @@ Enterprise Performance Computing (EPC)`
       %setup
           echo "This is a scriptlet that will be executed on the host, as root, after"
           echo "the container has been bootstrapped. To install things into the container"
-          echo "reference the file system location with $SINGULARITY_ROOTFS."
+          echo "reference the file system location with $APPTAINER_ROOTFS."
 
       %post
           echo "This scriptlet section will be executed from within the container after"
@@ -178,7 +178,7 @@ Enterprise Performance Computing (EPC)`
 	CacheCleanShort string = `Clean your local Singularity cache`
 	CacheCleanLong  string = `
   This will clean your local cache (stored at $HOME/.singularity/cache if
-  SINGULARITY_CACHEDIR is not set). By default the entire cache is cleaned, use
+  APPTAINER_CACHEDIR is not set). By default the entire cache is cleaned, use
   --days and --type flags to override this behavior. Note: if you use Singularity
   as root, cache will be stored in '/root/.singularity/.cache', to clean that
   cache, you will need to run 'cache clean' as root, or with 'sudo'.`
@@ -196,7 +196,7 @@ Enterprise Performance Computing (EPC)`
 	CacheListShort string = `List your local Singularity cache`
 	CacheListLong  string = `
   This will list your local cache (stored at $HOME/.singularity/cache if
-  SINGULARITY_CACHEDIR is not set).`
+  APPTAINER_CACHEDIR is not set).`
 	CacheListExample string = `
   All group commands have their own help output:
 
@@ -211,7 +211,7 @@ Enterprise Performance Computing (EPC)`
 	KeyShort string = `Manage OpenPGP keys`
 	KeyLong  string = `
   Manage your trusted, public and private keys in your local or in the global keyring
-  (local keyring: '~/.singularity/sypgp' if 'SINGULARITY_SYPGPDIR' is not set,
+  (local keyring: '~/.singularity/sypgp' if 'APPTAINER_SYPGPDIR' is not set,
   global keyring: '%[1]s/singularity/global-pgp-public')`
 	KeyExample string = `
   All group commands have their own help output:

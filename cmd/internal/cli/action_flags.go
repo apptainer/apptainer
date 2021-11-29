@@ -270,7 +270,7 @@ var actionVMIPFlag = cmdline.Flag{
 	EnvKeys:      []string{"VM_IP"},
 }
 
-// hidden flag to handle SINGULARITY_CONTAINLIBS environment variable
+// hidden flag to handle APPTAINER_CONTAINLIBS environment variable
 var actionContainLibsFlag = cmdline.Flag{
 	ID:           "actionContainLibsFlag",
 	Value:        &ContainLibsPath,
@@ -290,7 +290,7 @@ var actionFuseMountFlag = cmdline.Flag{
 	EnvKeys:      []string{"FUSESPEC"},
 }
 
-// hidden flag to handle SINGULARITY_TMPDIR environment variable
+// hidden flag to handle APPTAINER_TMPDIR environment variable
 var actionTmpDirFlag = cmdline.Flag{
 	ID:           "actionTmpDirFlag",
 	Value:        &tmpDir,

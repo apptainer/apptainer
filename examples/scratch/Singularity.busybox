@@ -4,18 +4,18 @@ Bootstrap: scratch
     busybox_url='https://www.busybox.net/downloads/binaries/1.28.2-defconfig-multiarch/busybox-x86_64'
 
     # Create necessary config files.
-    printf 'root:!:0:0:root:/root:/bin/sh\n' > "${SINGULARITY_ROOTFS}/etc/passwd"
-    printf 'root:x:0:\n' > "${SINGULARITY_ROOTFS}/etc/group"
+    printf 'root:!:0:0:root:/root:/bin/sh\n' > "${APPTAINER_ROOTFS}/etc/passwd"
+    printf 'root:x:0:\n' > "${APPTAINER_ROOTFS}/etc/group"
 
-    chmod 0644 "${SINGULARITY_ROOTFS}/etc/passwd" "${SINGULARITY_ROOTFS}/etc/group"
+    chmod 0644 "${APPTAINER_ROOTFS}/etc/passwd" "${APPTAINER_ROOTFS}/etc/group"
 
     # Create bin directory.
-    mkdir "${SINGULARITY_ROOTFS}/bin"
-    chmod 0755 "${SINGULARITY_ROOTFS}/bin"
+    mkdir "${APPTAINER_ROOTFS}/bin"
+    chmod 0755 "${APPTAINER_ROOTFS}/bin"
 
     # Download busybox binary.
-    curl -o "${SINGULARITY_ROOTFS}/bin/busybox" "${busybox_url}"
-    chmod 0755 "${SINGULARITY_ROOTFS}/bin/busybox"
+    curl -o "${APPTAINER_ROOTFS}/bin/busybox" "${busybox_url}"
+    chmod 0755 "${APPTAINER_ROOTFS}/bin/busybox"
 
     # Install busybox.
-    "${SINGULARITY_ROOTFS}/bin/busybox" --install "${SINGULARITY_ROOTFS}/bin"
+    "${APPTAINER_ROOTFS}/bin/busybox" --install "${APPTAINER_ROOTFS}/bin"

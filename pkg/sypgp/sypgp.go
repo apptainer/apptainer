@@ -109,7 +109,7 @@ func GetTokenFile() string {
 
 // dirPath returns a string describing the path to the sypgp home folder
 func dirPath() string {
-	sypgpDir := os.Getenv("SINGULARITY_SYPGPDIR")
+	sypgpDir := os.Getenv("APPTAINER_SYPGPDIR")
 	if sypgpDir == "" {
 		return filepath.Join(syfs.ConfigDir(), "sypgp")
 	}

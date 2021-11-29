@@ -134,7 +134,7 @@ func isLocal(e *openpgp.Entity) bool {
 
 // isGlobal returns true if signing entity e is found in the global keyring, and false otherwise.
 func isGlobal(e *openpgp.Entity) bool {
-	keyring := sypgp.NewHandle(buildcfg.SINGULARITY_CONFDIR, sypgp.GlobalHandleOpt())
+	keyring := sypgp.NewHandle(buildcfg.APPTAINER_CONFDIR, sypgp.GlobalHandleOpt())
 	kr, err := keyring.LoadPubKeyring()
 	if err != nil {
 		return false

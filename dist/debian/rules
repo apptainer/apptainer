@@ -49,7 +49,7 @@ endif
 MAKEPARALLEL = $(shell nproc --ignore=2 || echo 1 )
 override pkgdir = debian/$(pkgsrc)
 
-export SINGULARITY_CACHEDIR=$(pkgdir)/var/lib/singularity/cache
+export APPTAINER_CACHEDIR=$(pkgdir)/var/lib/singularity/cache
 
 %:
 	dh $@  --with=autoreconf

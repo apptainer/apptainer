@@ -26,9 +26,9 @@ var errInvalidCacheType = errors.New("invalid cache type")
 const (
 	// DirEnv specifies the environment variable which can set the directory
 	// for image downloads to be cached in
-	DirEnv = "SINGULARITY_CACHEDIR"
+	DirEnv = "APPTAINER_CACHEDIR"
 	// DisableEnv specifies whether the image should be used
-	DisableEnv = "SINGULARITY_DISABLE_CACHE"
+	DisableEnv = "APPTAINER_DISABLE_CACHE"
 	// SubDirName specifies the name of the directory relative to the
 	// ParentDir specified when the cache is created.
 	// By default the cache will be placed at "~/.singularity/cache" which

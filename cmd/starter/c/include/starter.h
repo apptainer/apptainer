@@ -6,8 +6,8 @@
   your rights to use or distribute this software.
 */
 
-#ifndef _SINGULARITY_STARTER_H
-#define _SINGULARITY_STARTER_H
+#ifndef _APPTAINER_STARTER_H
+#define _APPTAINER_STARTER_H
 
 #include <limits.h>
 #include <sys/user.h>
@@ -173,4 +173,4 @@ struct starterConfig {
     struct engine engine;
 };
 
-#endif /* _SINGULARITY_STARTER_H */
+#endif /* _APPTAINER_STARTER_H */

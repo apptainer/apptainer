@@ -145,7 +145,7 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 	err := e2e.CheckCryptsetupVersion()
 	if err == nil {
 		// encrypted SIF image
-		passphraseEnvVar := fmt.Sprintf("%s=%s", "SINGULARITY_ENCRYPTION_PASSPHRASE", e2e.Passphrase)
+		passphraseEnvVar := fmt.Sprintf("%s=%s", "APPTAINER_ENCRYPTION_PASSPHRASE", e2e.Passphrase)
 
 		sifEncryptedImage := filepath.Join(tmpDir, "encrypted.sif")
 

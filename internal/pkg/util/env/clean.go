@@ -15,8 +15,8 @@ import (
 const (
 	// DefaultPath defines default value for PATH environment variable.
 	DefaultPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-	// SingularityPrefix defines the environment variable prefix SINGULARITY_.
-	SingularityPrefix = "SINGULARITY_"
+	// SingularityPrefix defines the environment variable prefix APPTAINER_.
+	SingularityPrefix = "APPTAINER_"
 	// SingularityEnvPrefix defines the environment variable prefix SINGULARITYENV_.
 	SingularityEnvPrefix = "SINGULARITYENV_"
 )
@@ -40,8 +40,8 @@ var alwaysPassKeys = map[string]struct{}{
 var alwaysOmitKeys = map[string]bool{
 	"HOME":                false,
 	"PATH":                false,
-	"SINGULARITY_SHELL":   false,
-	"SINGULARITY_APPNAME": false,
+	"APPTAINER_SHELL":   false,
+	"APPTAINER_APPNAME": false,
 	"LD_LIBRARY_PATH":     true,
 }
 

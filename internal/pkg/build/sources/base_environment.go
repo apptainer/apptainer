@@ -35,12 +35,12 @@ for script in /.singularity.d/env/*.sh; do
     fi
 done
 
-if test -n "${SINGULARITY_APPNAME:-}"; then
+if test -n "${APPTAINER_APPNAME:-}"; then
 
-    if test -x "/scif/apps/${SINGULARITY_APPNAME:-}/scif/runscript"; then
-        exec "/scif/apps/${SINGULARITY_APPNAME:-}/scif/runscript" "$@"
+    if test -x "/scif/apps/${APPTAINER_APPNAME:-}/scif/runscript"; then
+        exec "/scif/apps/${APPTAINER_APPNAME:-}/scif/runscript" "$@"
     else
-        echo "No Singularity runscript for contained app: ${SINGULARITY_APPNAME:-}"
+        echo "No Singularity runscript for contained app: ${APPTAINER_APPNAME:-}"
         exit 1
     fi
 
@@ -60,15 +60,15 @@ for script in /.singularity.d/env/*.sh; do
     fi
 done
 
-if test -n "$SINGULARITY_SHELL" -a -x "$SINGULARITY_SHELL"; then
-    exec $SINGULARITY_SHELL "$@"
+if test -n "$APPTAINER_SHELL" -a -x "$APPTAINER_SHELL"; then
+    exec $APPTAINER_SHELL "$@"
 
-    echo "ERROR: Failed running shell as defined by '\$SINGULARITY_SHELL'" 1>&2
+    echo "ERROR: Failed running shell as defined by '\$APPTAINER_SHELL'" 1>&2
     exit 1
 
 elif test -x /bin/bash; then
     SHELL=/bin/bash
-    PS1="Singularity $SINGULARITY_NAME:\\w> "
+    PS1="Singularity $APPTAINER_NAME:\\w> "
     export SHELL PS1
     exec /bin/bash --norc "$@"
 elif test -x /bin/sh; then
@@ -107,12 +107,12 @@ for script in /.singularity.d/env/*.sh; do
 done
 
 
-if test -n "${SINGULARITY_APPNAME:-}"; then
+if test -n "${APPTAINER_APPNAME:-}"; then
 
-    if test -x "/scif/apps/${SINGULARITY_APPNAME:-}/scif/test"; then
-        exec "/scif/apps/${SINGULARITY_APPNAME:-}/scif/test" "$@"
+    if test -x "/scif/apps/${APPTAINER_APPNAME:-}/scif/test"; then
+        exec "/scif/apps/${APPTAINER_APPNAME:-}/scif/test" "$@"
     else
-        echo "No tests for contained app: ${SINGULARITY_APPNAME:-}"
+        echo "No tests for contained app: ${APPTAINER_APPNAME:-}"
         exit 1
     fi
 elif test -x "/.singularity.d/test"; then
@@ -167,39 +167,39 @@ fi
 # except according to the terms contained in the LICENSE.md file.
 
 
-if test -n "${SINGULARITY_APPNAME:-}"; then
+if test -n "${APPTAINER_APPNAME:-}"; then
 
     # The active app should be exported
-    export SINGULARITY_APPNAME
+    export APPTAINER_APPNAME
 
-    if test -d "/scif/apps/${SINGULARITY_APPNAME:-}/"; then
+    if test -d "/scif/apps/${APPTAINER_APPNAME:-}/"; then
         SCIF_APPS="/scif/apps"
-        SCIF_APPROOT="/scif/apps/${SINGULARITY_APPNAME:-}"
+        SCIF_APPROOT="/scif/apps/${APPTAINER_APPNAME:-}"
         export SCIF_APPROOT SCIF_APPS
-        PATH="/scif/apps/${SINGULARITY_APPNAME:-}:$PATH"
+        PATH="/scif/apps/${APPTAINER_APPNAME:-}:$PATH"
 
         # Automatically add application bin to path
-        if test -d "/scif/apps/${SINGULARITY_APPNAME:-}/bin"; then
-            PATH="/scif/apps/${SINGULARITY_APPNAME:-}/bin:$PATH"
+        if test -d "/scif/apps/${APPTAINER_APPNAME:-}/bin"; then
+            PATH="/scif/apps/${APPTAINER_APPNAME:-}/bin:$PATH"
         fi
 
         # Automatically add application lib to LD_LIBRARY_PATH
-        if test -d "/scif/apps/${SINGULARITY_APPNAME:-}/lib"; then
-            LD_LIBRARY_PATH="/scif/apps/${SINGULARITY_APPNAME:-}/lib:$LD_LIBRARY_PATH"
+        if test -d "/scif/apps/${APPTAINER_APPNAME:-}/lib"; then
+            LD_LIBRARY_PATH="/scif/apps/${APPTAINER_APPNAME:-}/lib:$LD_LIBRARY_PATH"
             export LD_LIBRARY_PATH
         fi
 
         # Automatically source environment
-        if [ -f "/scif/apps/${SINGULARITY_APPNAME:-}/scif/env/01-base.sh" ]; then
-            . "/scif/apps/${SINGULARITY_APPNAME:-}/scif/env/01-base.sh"
+        if [ -f "/scif/apps/${APPTAINER_APPNAME:-}/scif/env/01-base.sh" ]; then
+            . "/scif/apps/${APPTAINER_APPNAME:-}/scif/env/01-base.sh"
         fi
-        if [ -f "/scif/apps/${SINGULARITY_APPNAME:-}/scif/env/90-environment.sh" ]; then
-            . "/scif/apps/${SINGULARITY_APPNAME:-}/scif/env/90-environment.sh"
+        if [ -f "/scif/apps/${APPTAINER_APPNAME:-}/scif/env/90-environment.sh" ]; then
+            . "/scif/apps/${APPTAINER_APPNAME:-}/scif/env/90-environment.sh"
         fi
 
         export PATH
     else
-        echo "Could not locate the container application: ${SINGULARITY_APPNAME}"
+        echo "Could not locate the container application: ${APPTAINER_APPNAME}"
         exit 1
     fi
 fi

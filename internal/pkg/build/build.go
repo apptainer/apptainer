@@ -355,7 +355,7 @@ func (b *Build) Full(ctx context.Context) error {
 	// in builds run with --nv / --nvccli. Must grab paths from the main config.
 	sysConfig := singularityconf.GetCurrentConfig()
 	if sysConfig == nil {
-		configFile := buildcfg.SINGULARITY_CONF_FILE
+		configFile := buildcfg.APPTAINER_CONF_FILE
 		sysConfig, err = singularityconf.Parse(configFile)
 		if err != nil {
 			return fmt.Errorf("could not parse %q: %v", configFile, err)

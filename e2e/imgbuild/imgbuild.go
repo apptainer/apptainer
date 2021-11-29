@@ -894,7 +894,7 @@ func (c imgBuildTests) buildEncryptPemFile(t *testing.T) {
 	}
 
 	// Second with the environment variable
-	pemEnvVar := fmt.Sprintf("%s=%s", "SINGULARITY_ENCRYPTION_PEM_PATH", pemFile)
+	pemEnvVar := fmt.Sprintf("%s=%s", "APPTAINER_ENCRYPTION_PEM_PATH", pemFile)
 	imgPath2 := filepath.Join(dn, "encrypted_env_var.sif")
 	cmdArgs = []string{"--encrypt", imgPath2, "library://alpine:latest"}
 	c.env.RunSingularity(
@@ -980,7 +980,7 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 	}
 
 	// With the environment variable
-	passphraseEnvVar := fmt.Sprintf("%s=%s", "SINGULARITY_ENCRYPTION_PASSPHRASE", e2e.Passphrase)
+	passphraseEnvVar := fmt.Sprintf("%s=%s", "APPTAINER_ENCRYPTION_PASSPHRASE", e2e.Passphrase)
 	envvarImgPath := filepath.Join(dn, "encrypted_env_var.sif")
 	cmdArgs = []string{"--encrypt", envvarImgPath, "library://alpine:latest"}
 	c.env.RunSingularity(

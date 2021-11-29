@@ -67,7 +67,7 @@ func exportRun(cmd *cobra.Command, args []string) {
 	path := ""
 
 	if keyGlobalPubKey {
-		path = buildcfg.SINGULARITY_CONFDIR
+		path = buildcfg.APPTAINER_CONFDIR
 		opts = append(opts, sypgp.GlobalHandleOpt())
 	}
 

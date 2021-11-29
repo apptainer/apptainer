@@ -33,8 +33,8 @@ type stage struct {
 
 const (
 	sLabelsPath  = "/.build.labels"
-	sEnvironment = "SINGULARITY_ENVIRONMENT=/.singularity.d/env/91-environment.sh"
-	sLabels      = "SINGULARITY_LABELS=" + sLabelsPath
+	sEnvironment = "APPTAINER_ENVIRONMENT=/.singularity.d/env/91-environment.sh"
+	sLabels      = "APPTAINER_LABELS=" + sLabelsPath
 )
 
 // Assemble assembles the bundle to the specified path.
@@ -49,7 +49,7 @@ func (s *stage) runSectionScript(name string, script types.Script) error {
 			return fmt.Errorf("attempted to build with scripts as non-root user or without --fakeroot")
 		}
 
-		sRootfs := "SINGULARITY_ROOTFS=" + s.b.RootfsPath
+		sRootfs := "APPTAINER_ROOTFS=" + s.b.RootfsPath
 
 		scriptPath := filepath.Join(s.b.TmpDir, name)
 		if err := createScript(scriptPath, []byte(script.Script)); err != nil {

@@ -568,7 +568,7 @@ func (c actionTests) issue5465(t *testing.T) {
 	)
 }
 
-// Check that flag / env var binds are passed in $SINGULARITY_BIND in the
+// Check that flag / env var binds are passed in $APPTAINER_BIND in the
 // container. Sometimes used by containers that require data to be bound in to a
 // location etc., and was present in older versions of Singularity.
 func (c actionTests) issue5599(t *testing.T) {
@@ -578,9 +578,9 @@ func (c actionTests) issue5599(t *testing.T) {
 	defer e2e.Privileged(cleanup)(t)
 	// Binds from env var and flag are additive
 	envBind := tmpDir + ":/srv"
-	bindEnv := "SINGULARITY_BIND=" + envBind
+	bindEnv := "APPTAINER_BIND=" + envBind
 	flagBind := tmpDir + ":/mnt"
-	expectedEnv := fmt.Sprintf("SINGULARITY_BIND=%s,%s", flagBind, envBind)
+	expectedEnv := fmt.Sprintf("APPTAINER_BIND=%s,%s", flagBind, envBind)
 	c.env.RunSingularity(
 		t,
 		e2e.WithProfile(e2e.UserProfile),

@@ -93,8 +93,8 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 		return fmt.Errorf("no root filesystem image provided")
 	}
 
-	configurationFile := buildcfg.SINGULARITY_CONF_FILE
-	if buildcfg.SINGULARITY_SUID_INSTALL == 0 || os.Geteuid() == 0 {
+	configurationFile := buildcfg.APPTAINER_CONF_FILE
+	if buildcfg.APPTAINER_SUID_INSTALL == 0 || os.Geteuid() == 0 {
 		configFile := engine.EngineConfig.GetConfigurationFile()
 		if configFile != "" {
 			configurationFile = configFile

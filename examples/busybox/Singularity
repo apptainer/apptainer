@@ -13,8 +13,8 @@ MirrorURL: https://www.busybox.net/downloads/binaries/1.26.2-defconfig-multiarch
     export TESTAPP
 
 %appinstall testapp
-    echo 'echo $TESTAPP' > $SINGULARITY_APPROOT/bin/testapp.sh
-    chmod 0755 $SINGULARITY_APPROOT/bin/testapp.sh
+    echo 'echo $TESTAPP' > $APPTAINER_APPROOT/bin/testapp.sh
+    chmod 0755 $APPTAINER_APPROOT/bin/testapp.sh
 
 %apprun testapp
     $TESTAPP.sh

@@ -64,7 +64,7 @@ func findOnPath(name string) (path string, err error) {
 func findFromConfigOrPath(name string) (path string, err error) {
 	cfg := singularityconf.GetCurrentConfig()
 	if cfg == nil {
-		cfg, err = singularityconf.Parse(buildcfg.SINGULARITY_CONF_FILE)
+		cfg, err = singularityconf.Parse(buildcfg.APPTAINER_CONF_FILE)
 		if err != nil {
 			return "", errors.Wrap(err, "unable to parse singularity configuration file")
 		}
@@ -96,7 +96,7 @@ func findFromConfigOrPath(name string) (path string, err error) {
 func findFromConfigOnly(name string) (path string, err error) {
 	cfg := singularityconf.GetCurrentConfig()
 	if cfg == nil {
-		cfg, err = singularityconf.Parse(buildcfg.SINGULARITY_CONF_FILE)
+		cfg, err = singularityconf.Parse(buildcfg.APPTAINER_CONF_FILE)
 		if err != nil {
 			return "", errors.Wrap(err, "unable to parse singularity configuration file")
 		}

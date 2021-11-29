@@ -23,7 +23,7 @@ var buildDefinition = `Bootstrap: localimage
 From: %[1]s
 
 %%setup
-	touch $SINGULARITY_ROOTFS%[2]s
+	touch $APPTAINER_ROOTFS%[2]s
 %%post
 	%[3]s
 %%test

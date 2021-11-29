@@ -60,7 +60,7 @@ var (
 )
 
 const (
-	envPrefix = "SINGULARITY_"
+	envPrefix = "APPTAINER_"
 )
 
 // singularity command flags
@@ -219,7 +219,7 @@ var commonTmpDirFlag = cmdline.Flag{
 var singConfigFileFlag = cmdline.Flag{
 	ID:           "singConfigFileFlag",
 	Value:        &configurationFile,
-	DefaultValue: buildcfg.SINGULARITY_CONF_FILE,
+	DefaultValue: buildcfg.APPTAINER_CONF_FILE,
 	Name:         "config",
 	ShortHand:    "c",
 	Usage:        "specify a configuration file (for root or unprivileged installation only)",
@@ -303,7 +303,7 @@ func persistentPreRun(*cobra.Command, []string) {
 	setSylogMessageLevel()
 	sylog.Debugf("Singularity version: %s", buildcfg.PACKAGE_VERSION)
 
-	if os.Geteuid() != 0 && buildcfg.SINGULARITY_SUID_INSTALL == 1 {
+	if os.Geteuid() != 0 && buildcfg.APPTAINER_SUID_INSTALL == 1 {
 		if configurationFile != singConfigFileFlag.DefaultValue {
 			sylog.Fatalf("--config requires to be root or an unprivileged installation")
 		}
@@ -591,7 +591,7 @@ func CheckRoot(cmd *cobra.Command, args []string) {
 // CheckRootOrUnpriv ensures that a command is executed with root
 // privileges or that Singularity is installed unprivileged.
 func CheckRootOrUnpriv(cmd *cobra.Command, args []string) {
-	if os.Geteuid() != 0 && buildcfg.SINGULARITY_SUID_INSTALL == 1 {
+	if os.Geteuid() != 0 && buildcfg.APPTAINER_SUID_INSTALL == 1 {
 		sylog.Fatalf("%q command requires root privileges or an unprivileged installation", cmd.CommandPath())
 	}
 }

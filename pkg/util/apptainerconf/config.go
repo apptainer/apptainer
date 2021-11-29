@@ -151,7 +151,7 @@ mount devpts = {{ if eq .MountDevPts true }}yes{{ else }}no{{ end }}
 # Should we automatically determine the calling user's home directory and
 # attempt to mount it's base path into the container? If the --contain option
 # is used, the home directory will be created within the session directory or
-# can be overridden with the SINGULARITY_HOME or SINGULARITY_WORKDIR
+# can be overridden with the APPTAINER_HOME or APPTAINER_WORKDIR
 # environment variables (or their corresponding command line options).
 mount home = {{ if eq .MountHome true }}yes{{ else }}no{{ end }}
 
@@ -159,7 +159,7 @@ mount home = {{ if eq .MountHome true }}yes{{ else }}no{{ end }}
 # DEFAULT: yes
 # Should we automatically bind mount /tmp and /var/tmp into the container? If
 # the --contain option is used, both tmp locations will be created in the
-# session directory or can be specified via the  SINGULARITY_WORKDIR
+# session directory or can be specified via the  APPTAINER_WORKDIR
 # environment variable (or the --workingdir command line option).
 mount tmp = {{ if eq .MountTmp true }}yes{{ else }}no{{ end }}
 

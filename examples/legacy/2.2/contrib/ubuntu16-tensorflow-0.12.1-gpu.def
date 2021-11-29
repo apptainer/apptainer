@@ -56,7 +56,7 @@ From: ubuntu:16.10
     working_dir=$(pwd)
 
     echo "Unpacking NVIDIA driver into container..."
-    cd ${SINGULARITY_ROOTFS}/usr/local/
+    cd ${APPTAINER_ROOTFS}/usr/local/
     sh ${working_dir}/${NV_DRIVER_FILE} -x
     mv NVIDIA-Linux-x86_64-${NV_DRIVER_VERSION} NVIDIA-Linux-x86_64
     cd NVIDIA-Linux-x86_64/
@@ -68,11 +68,11 @@ From: ubuntu:16.10
     cd $working_dir
 
     echo "Running NVIDIA CUDA installer..."
-    sh $NV_CUDA_FILE -noprompt -nosymlink -prefix=${SINGULARITY_ROOTFS}/usr/local/cuda-8.0
-    ln -r -s ${SINGULARITY_ROOTFS}/usr/local/cuda-8.0 ${SINGULARITY_ROOTFS}/usr/local/cuda
+    sh $NV_CUDA_FILE -noprompt -nosymlink -prefix=${APPTAINER_ROOTFS}/usr/local/cuda-8.0
+    ln -r -s ${APPTAINER_ROOTFS}/usr/local/cuda-8.0 ${APPTAINER_ROOTFS}/usr/local/cuda
 
     echo "Unpacking cuDNN..."
-    tar xvf $NV_CUDNN_FILE -C ${SINGULARITY_ROOTFS}/usr/local/
+    tar xvf $NV_CUDNN_FILE -C ${APPTAINER_ROOTFS}/usr/local/
 
     echo "Adding NVIDIA PATHs to /environment..."
     NV_DRIVER_PATH=/usr/local/NVIDIA-Linux-x86_64
@@ -82,7 +82,7 @@ LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:$NV_DRI
 PATH=$NV_DRIVER_PATH:\$PATH
 export PATH LD_LIBRARY_PATH
     
-" >> $SINGULARITY_ROOTFS/environment
+" >> $APPTAINER_ROOTFS/environment
 
 
 %post

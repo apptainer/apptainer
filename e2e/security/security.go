@@ -203,7 +203,7 @@ func (c ctx) testSecurityPriv(t *testing.T) {
 func (c ctx) testSecurityConfOwnership(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
-	configFile := buildcfg.SINGULARITY_CONF_FILE
+	configFile := buildcfg.APPTAINER_CONF_FILE
 
 	c.env.RunSingularity(
 		t,

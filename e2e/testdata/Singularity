@@ -18,7 +18,7 @@ from: alpine:3.11.5
 %setup
     echo "SETUP"
     # to test extraction to a sandbox for non root users
-    mknod $SINGULARITY_ROOTFS/dev/null c 1 3
+    mknod $APPTAINER_ROOTFS/dev/null c 1 3
 
 %appenv testapp
     TESTAPP=testapp

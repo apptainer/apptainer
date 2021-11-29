@@ -88,7 +88,7 @@ func (c ctx) testRunPEMEncrypted(t *testing.T) {
 
 	// Using environment variable
 	cmdArgs = []string{imgPath}
-	pemEnvVar := fmt.Sprintf("%s=%s", "SINGULARITY_ENCRYPTION_PEM_PATH", pemPrivFile)
+	pemEnvVar := fmt.Sprintf("%s=%s", "APPTAINER_ENCRYPTION_PEM_PATH", pemPrivFile)
 	c.env.RunSingularity(
 		t,
 		e2e.AsSubtest("pem file cmdline"),
@@ -108,7 +108,7 @@ func (c ctx) testRunPassphraseEncrypted(t *testing.T) {
 		t.Skip("cryptsetup is not compatible, skipping test")
 	}
 
-	passphraseEnvVar := fmt.Sprintf("%s=%s", "SINGULARITY_ENCRYPTION_PASSPHRASE", e2e.Passphrase)
+	passphraseEnvVar := fmt.Sprintf("%s=%s", "APPTAINER_ENCRYPTION_PASSPHRASE", e2e.Passphrase)
 
 	// We create a temporary directory to store the image, making sure tests
 	// will not pollute each other

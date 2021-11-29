@@ -41,8 +41,8 @@ func SetupDefaultConfig(t *testing.T, path string) {
 
 		f.Close()
 
-		if err := unix.Mount(path, buildcfg.SINGULARITY_CONF_FILE, "", unix.MS_BIND, ""); err != nil {
-			t.Fatalf("while mounting %s to %s: %s", path, buildcfg.SINGULARITY_CONF_FILE, err)
+		if err := unix.Mount(path, buildcfg.APPTAINER_CONF_FILE, "", unix.MS_BIND, ""); err != nil {
+			t.Fatalf("while mounting %s to %s: %s", path, buildcfg.APPTAINER_CONF_FILE, err)
 		}
 	})(t)
 }

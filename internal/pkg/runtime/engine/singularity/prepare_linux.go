@@ -74,8 +74,8 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		return fmt.Errorf("bad engine configuration provided")
 	}
 
-	configurationFile := buildcfg.SINGULARITY_CONF_FILE
-	if buildcfg.SINGULARITY_SUID_INSTALL == 0 || os.Geteuid() == 0 {
+	configurationFile := buildcfg.APPTAINER_CONF_FILE
+	if buildcfg.APPTAINER_SUID_INSTALL == 0 || os.Geteuid() == 0 {
 		configFile := e.EngineConfig.GetConfigurationFile()
 		if configFile != "" {
 			configurationFile = configFile
@@ -1192,7 +1192,7 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config) error {
 			// single location.
 			var kr openpgp.KeyRing = openpgp.EntityList{}
 			if ecl.Activated {
-				keyring := sypgp.NewHandle(buildcfg.SINGULARITY_CONFDIR, sypgp.GlobalHandleOpt())
+				keyring := sypgp.NewHandle(buildcfg.APPTAINER_CONFDIR, sypgp.GlobalHandleOpt())
 				kr, err = keyring.LoadPubKeyring()
 				if err != nil {
 					return fmt.Errorf("while obtaining keyring for ECL: %s", err)

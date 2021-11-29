@@ -131,10 +131,10 @@ func RunE2ETests(t *testing.T) {
 
 Test your topic using the `e2e` target in the `Makefile`. To avoid skipping
 these tests (default), make sure you set the environment variable
-`SINGULARITY_E2E` to `1`.
+`APPTAINER_E2E` to `1`.
 
 ```sh
-SINGULARITY_E2E=1 make -C builddir e2e-test
+APPTAINER_E2E=1 make -C builddir e2e-test
 ```
 
 - Verify that your test was run by modifying the `Makefile` to add a verbose

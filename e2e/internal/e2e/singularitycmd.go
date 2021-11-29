@@ -557,12 +557,12 @@ func (env TestEnv) RunSingularity(t *testing.T, cmdOps ...SingularityCmdOp) {
 			sypgpDir = keyringDir
 			defer cleanSyPGPDir(t)
 		}
-		sypgpDirEnv := fmt.Sprintf("%s=%s", "SINGULARITY_SYPGPDIR", sypgpDir)
+		sypgpDirEnv := fmt.Sprintf("%s=%s", "APPTAINER_SYPGPDIR", sypgpDir)
 		cmd.Env = append(cmd.Env, sypgpDirEnv)
 
 		// We check if we need to disable the cache
 		if env.DisableCache {
-			cmd.Env = append(cmd.Env, "SINGULARITY_DISABLE_CACHE=1")
+			cmd.Env = append(cmd.Env, "APPTAINER_DISABLE_CACHE=1")
 		}
 
 		cmd.Dir = s.dir
@@ -626,7 +626,7 @@ func (env TestEnv) RunSingularity(t *testing.T, cmdOps ...SingularityCmdOp) {
 			defer s.postFn(t)
 		}
 
-		if os.Getenv("SINGULARITY_E2E_COVERAGE") != "" {
+		if os.Getenv("APPTAINER_E2E_COVERAGE") != "" {
 			log.Printf("COVERAGE: %q", s.result.FullCmd)
 		}
 		t.Logf("Running command %q", s.result.FullCmd)

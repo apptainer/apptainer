@@ -138,9 +138,9 @@ func getSectionScriptArgs(name string, script string, s types.Script) ([]string,
 	return args, nil
 }
 
-// currentEnvNoSingularity returns the current environment, minus any SINGULARITY_ vars,
+// currentEnvNoSingularity returns the current environment, minus any APPTAINER_ vars,
 // but allowing those specified in the permitted slice. E.g. 'NV' in the permitted slice
-// will pass through `SINGULARITY_NV`, but strip out `SINGULARITY_OTHERVAR`.
+// will pass through `APPTAINER_NV`, but strip out `APPTAINER_OTHERVAR`.
 func currentEnvNoSingularity(permitted []string) []string {
 	envs := make([]string, 0)
 

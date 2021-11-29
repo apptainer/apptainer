@@ -39,11 +39,11 @@
 			},
 			"setup": {
 				"args": "",
-				"script": "    touch ${SINGULARITY_ROOTFS}/mock.txt\n    touch mock.txt\n\n    touch ${SINGULARITY_ROOTFS}/secondmock.txt\n    touch secondmock.txt\n\n"
+				"script": "    touch ${APPTAINER_ROOTFS}/mock.txt\n    touch mock.txt\n\n    touch ${APPTAINER_ROOTFS}/secondmock.txt\n    touch secondmock.txt\n\n"
 			},
 			"post": {
 				"args": "",
-				"script": "    echo 'this is a command so long that the user had to' \\\n    'add a new line'\n    echo 'export GOPATH=$HOME/go' \u003e\u003e $SINGULARITY_ENVIRONMENT\n\n    echo 'this is a command so long that the user had to' \\\n    'add a new line again'\n    echo 'export GOPATH=$HOME/go' \u003e\u003e $SINGULARITY_ENVIRONMENT\n\n"
+				"script": "    echo 'this is a command so long that the user had to' \\\n    'add a new line'\n    echo 'export GOPATH=$HOME/go' \u003e\u003e $APPTAINER_ENVIRONMENT\n\n    echo 'this is a command so long that the user had to' \\\n    'add a new line again'\n    echo 'export GOPATH=$HOME/go' \u003e\u003e $APPTAINER_ENVIRONMENT\n\n"
 			},
 			"test": {
 				"args": "",

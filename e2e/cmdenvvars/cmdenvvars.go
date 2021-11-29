@@ -120,7 +120,7 @@ func (c ctx) testSingularityCacheDir(t *testing.T) {
 	// - assert that there's an entry for this image in the cache
 	//
 	// If the file is in the temporary cache, it means singularity
-	// followed the SINGULARITY_CACHEDIR environment variable (set
+	// followed the APPTAINER_CACHEDIR environment variable (set
 	// up deep in the e2e framework) to store the cached image.
 
 	cleanup := c.setupTemporaryCache(t)
@@ -158,11 +158,11 @@ func (c ctx) testSingularityDisableCache(t *testing.T) {
 	// - assert that there is no entry for this image in the cache
 	//
 	// If the file is not in the temporary cache, it means
-	// singularity followed the SINGULARITY_DISABLE_CACHE environment
+	// singularity followed the APPTAINER_DISABLE_CACHE environment
 	// variable (set up deep in the e2e framework) and avoided
 	// creating an entry in the library cache. If it fails to do so,
 	// we expect the entry to be found in the directory specified by
-	// SINGULARITY_CACHEDIR (see testSingularityCacheDir).
+	// APPTAINER_CACHEDIR (see testSingularityCacheDir).
 
 	cleanup := c.setupTemporaryCache(t)
 	defer cleanup(t)
@@ -188,12 +188,12 @@ func (c ctx) testSingularityReadOnlyCacheDir(t *testing.T) {
 	// - assert that there is no entry for this image in the cache
 	//
 	// If the file is not in the temporary cache, it means
-	// singularity followed the SINGULARITY_DISABLE_CACHE environment
+	// singularity followed the APPTAINER_DISABLE_CACHE environment
 	// variable (set up deep in the e2e framework) and disabled
 	// caching (because the directory is readonly). If it fails to
 	// do so (e.g. by "fixing" the access permissions on the
 	// directory), we expect the entry to be found in the directory
-	// specified by SINGULARITY_CACHEDIR (see
+	// specified by APPTAINER_CACHEDIR (see
 	// testSingularityCacheDir).
 	//
 	// This use case is common in the context of grid computing
@@ -232,7 +232,7 @@ func (c ctx) testSingularitySypgpDir(t *testing.T) {
 	// - assert that both files were created
 	//
 	// If the files are in the temporary directory, it means
-	// singularity followed the SINGULARITY_SYPGPDIR environment
+	// singularity followed the APPTAINER_SYPGPDIR environment
 	// variable (set up deep in the e2e framework) to store the
 	// keyrings.
 
@@ -267,8 +267,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 
 	return testhelper.Tests{
 		"read-only cache directory": c.testSingularityReadOnlyCacheDir,
-		"SINGULARITY_CACHEDIR":      c.testSingularityCacheDir,
+		"APPTAINER_CACHEDIR":      c.testSingularityCacheDir,
 		"singularity disable cache": c.testSingularityDisableCache,
-		"SINGULARITY_SYPGPDIR":      c.testSingularitySypgpDir,
+		"APPTAINER_SYPGPDIR":      c.testSingularitySypgpDir,
 	}
 }

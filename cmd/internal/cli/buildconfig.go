@@ -63,11 +63,11 @@ func printParam(name string) error {
 		{"LIBDIR", buildcfg.LIBDIR},
 		{"LOCALEDIR", buildcfg.LOCALEDIR},
 		{"MANDIR", buildcfg.MANDIR},
-		{"SINGULARITY_CONFDIR", buildcfg.SINGULARITY_CONFDIR},
+		{"APPTAINER_CONFDIR", buildcfg.APPTAINER_CONFDIR},
 		{"SESSIONDIR", buildcfg.SESSIONDIR},
 		{"PLUGIN_ROOTDIR", buildcfg.PLUGIN_ROOTDIR},
-		{"SINGULARITY_CONF_FILE", buildcfg.SINGULARITY_CONF_FILE},
-		{"SINGULARITY_SUID_INSTALL", fmt.Sprintf("%d", buildcfg.SINGULARITY_SUID_INSTALL)},
+		{"APPTAINER_CONF_FILE", buildcfg.APPTAINER_CONF_FILE},
+		{"APPTAINER_SUID_INSTALL", fmt.Sprintf("%d", buildcfg.APPTAINER_SUID_INSTALL)},
 	}
 
 	if name != "" {

@@ -800,7 +800,7 @@ func umaskBuiltin(ctx context.Context, argv []string) error {
 // an embedded shell interpreter.
 func runActionScript(engineConfig *singularityConfig.EngineConfig) ([]string, []string, error) {
 	args := engineConfig.OciConfig.Process.Args
-	env := append(engineConfig.OciConfig.Process.Env, "SINGULARITY_COMMAND="+filepath.Base(args[0]))
+	env := append(engineConfig.OciConfig.Process.Env, "APPTAINER_COMMAND="+filepath.Base(args[0]))
 
 	b := bytes.NewBufferString(files.ActionScript)
 
@@ -888,7 +888,7 @@ func getDockerRunscript(path string) (io.Reader, error) {
 	scanner := bufio.NewScanner(&b)
 
 	for scanner.Scan() {
-		if scanner.Text() == "eval \"set ${SINGULARITY_OCI_RUN}\"" {
+		if scanner.Text() == "eval \"set ${APPTAINER_OCI_RUN}\"" {
 			b.Reset()
 			if _, err := b.Write(r); err != nil {
 				return nil, err

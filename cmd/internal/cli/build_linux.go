@@ -41,11 +41,11 @@ func fakerootExec(cmdArgs []string) {
 		sylog.Infof("Use -T / --notest to disable running tests during the build")
 	}
 
-	useSuid := buildcfg.SINGULARITY_SUID_INSTALL == 1
+	useSuid := buildcfg.APPTAINER_SUID_INSTALL == 1
 
 	short := "-" + buildFakerootFlag.ShortHand
 	long := "--" + buildFakerootFlag.Name
-	envKey := fmt.Sprintf("SINGULARITY_%s", buildFakerootFlag.EnvKeys[0])
+	envKey := fmt.Sprintf("APPTAINER_%s", buildFakerootFlag.EnvKeys[0])
 	fakerootEnv := os.Getenv(envKey) != ""
 
 	argsLen := len(os.Args) - 1
@@ -104,25 +104,25 @@ func runBuild(cmd *cobra.Command, args []string) {
 		if buildArgs.remote {
 			sylog.Fatalf("--nv option is not supported for remote build")
 		}
-		os.Setenv("SINGULARITY_NV", "1")
+		os.Setenv("APPTAINER_NV", "1")
 	}
 	if buildArgs.nvccli {
 		if buildArgs.remote {
 			sylog.Fatalf("--nvccli option is not supported for remote build")
 		}
-		os.Setenv("SINGULARITY_NVCCLI", "1")
+		os.Setenv("APPTAINER_NVCCLI", "1")
 	}
 	if buildArgs.rocm {
 		if buildArgs.remote {
 			sylog.Fatalf("--rocm option is not supported for remote build")
 		}
-		os.Setenv("SINGULARITY_ROCM", "1")
+		os.Setenv("APPTAINER_ROCM", "1")
 	}
 	if len(buildArgs.bindPaths) > 0 {
 		if buildArgs.remote {
 			sylog.Fatalf("-B/--bind option is not supported for remote build")
 		}
-		os.Setenv("SINGULARITY_BINDPATH", strings.Join(buildArgs.bindPaths, ","))
+		os.Setenv("APPTAINER_BINDPATH", strings.Join(buildArgs.bindPaths, ","))
 	}
 	if buildArgs.writableTmpfs {
 		if buildArgs.remote {
@@ -131,7 +131,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 		if buildArgs.fakeroot {
 			sylog.Fatalf("--writable-tmpfs option is not supported for fakeroot build")
 		}
-		os.Setenv("SINGULARITY_WRITABLE_TMPFS", "1")
+		os.Setenv("APPTAINER_WRITABLE_TMPFS", "1")
 	}
 
 	if buildArgs.arch != runtime.GOARCH && !buildArgs.remote {
@@ -269,8 +269,8 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string) {
 		}
 		keyInfo = &k
 	} else {
-		_, passphraseEnvOK := os.LookupEnv("SINGULARITY_ENCRYPTION_PASSPHRASE")
-		_, pemPathEnvOK := os.LookupEnv("SINGULARITY_ENCRYPTION_PEM_PATH")
+		_, passphraseEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PASSPHRASE")
+		_, pemPathEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PEM_PATH")
 		if passphraseEnvOK || pemPathEnvOK {
 			sylog.Warningf("Encryption related env vars found, but --encrypt was not specified. NOT encrypting container.")
 		}
@@ -399,13 +399,13 @@ func isImage(spec string) bool {
 
 // getEncryptionMaterial handles the setting of encryption environment and flag parameters to eventually be
 // passed to the crypt package for handling.
-// This handles the SINGULARITY_ENCRYPTION_PASSPHRASE/PEM_PATH envvars outside of cobra in order to
+// This handles the APPTAINER_ENCRYPTION_PASSPHRASE/PEM_PATH envvars outside of cobra in order to
 // enforce the unique flag/env precedence for the encryption flow
 func getEncryptionMaterial(cmd *cobra.Command) (cryptkey.KeyInfo, error) {
 	passphraseFlag := cmd.Flags().Lookup("passphrase")
 	PEMFlag := cmd.Flags().Lookup("pem-path")
-	passphraseEnv, passphraseEnvOK := os.LookupEnv("SINGULARITY_ENCRYPTION_PASSPHRASE")
-	pemPathEnv, pemPathEnvOK := os.LookupEnv("SINGULARITY_ENCRYPTION_PEM_PATH")
+	passphraseEnv, passphraseEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PASSPHRASE")
+	pemPathEnv, pemPathEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PEM_PATH")
 
 	// checks for no flags/envvars being set
 	if !(PEMFlag.Changed || pemPathEnvOK || passphraseFlag.Changed || passphraseEnvOK) {

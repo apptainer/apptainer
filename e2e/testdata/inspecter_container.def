@@ -14,10 +14,10 @@ hi "hello world"
 HI "HELLO WORLD"
 
 %post
-echo "export hello=\"world\"" >> $SINGULARITY_ENVIRONMENT
+echo "export hello=\"world\"" >> $APPTAINER_ENVIRONMENT
 # add labels from post section
-k=first; echo "$k.build.labels  $k" >> $SINGULARITY_LABELS
-k=second; echo "$k.build.labels $k" >> $SINGULARITY_LABELS
+k=first; echo "$k.build.labels  $k" >> $APPTAINER_LABELS
+k=second; echo "$k.build.labels $k" >> $APPTAINER_LABELS
 
 %test
 ls /

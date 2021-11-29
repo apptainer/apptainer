@@ -17,7 +17,7 @@ import (
 func SetupSystemRemoteFile(t *testing.T, testDir string) {
 	Privileged(func(t *testing.T) {
 		orig := filepath.Join(buildcfg.SOURCEDIR, "etc", "remote.yaml")
-		dest := filepath.Join(buildcfg.SINGULARITY_CONFDIR, "remote.yaml")
+		dest := filepath.Join(buildcfg.APPTAINER_CONFDIR, "remote.yaml")
 		source := filepath.Join(testDir, "remote.yaml")
 
 		data, err := ioutil.ReadFile(orig)

@@ -4,7 +4,7 @@ From: rockylinux/rockylinux:8.4
 %post
     # Set build time env variable
     NOW=`date`
-    echo "export NOW=\"${NOW}\"" >> $SINGULARITY_ENVIRONMENT
+    echo "export NOW=\"${NOW}\"" >> $APPTAINER_ENVIRONMENT
 
     # Install build dependencies
     dnf -y install cryptsetup gcc git golang libseccomp-devel libuuid-devel make rpm-build wget

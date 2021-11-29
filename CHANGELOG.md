@@ -40,8 +40,8 @@
 - Instances are no longer created with an IPC namespace by default. An IPC
   namespace can be specified with the `-i|--ipc` flag.
 - `--bind`, `--nv` and `--rocm` options for `build` command can't be set through
-  environment variables `SINGULARITY_BIND`, `SINGULARITY_BINDPATH`, `SINGULARITY_NV`,
-  `SINGULARITY_ROCM` anymore due to side effects reported by users in this
+  environment variables `APPTAINER_BIND`, `APPTAINER_BINDPATH`, `APPTAINER_NV`,
+  `APPTAINER_ROCM` anymore due to side effects reported by users in this
   [issue](https://github.com/apptainer/apptainer/pull/6211), they must be explicitely
   requested via command line.
 - `--nohttps` flag has been deprecated in favour of `--no-https`. The old flag
@@ -255,7 +255,7 @@ of use:
   image can be verified, and is signed with keys matching all specified
   fingerprints.
 - Labels can be set dynamically from a build's `%post` section by setting them
-  in the `SINGULARITY_LABELS` environment variable.
+  in the `APPTAINER_LABELS` environment variable.
 - New `build-arch` label is automatically set to the architecture of the host
   during a container build.
 - New `-D/--description` flag for `singularity push` sets description for a
@@ -287,9 +287,9 @@ of use:
   `application/vnd.sylabs.sif.layer.v1.sif` reflecting the published
   [opencontainers/artifacts](https://github.com/opencontainers/artifacts/blob/master/artifact-authors.md#defining-layermediatypes)
   value.
-- `SINGULARITY_BIND` has been restored as an environment variable set within a
+- `APPTAINER_BIND` has been restored as an environment variable set within a
   running container. It now reflects all user binds requested by the `-B/--bind`
-  flag, as well as via `SINGULARITY_BIND[PATHS]`.
+  flag, as well as via `APPTAINER_BIND[PATHS]`.
 - `singularity search` now correctly searches for container images matching the
   host architecture by default. A new `--arch` flag allows searching for other
   architectures. A new results format gives more detail about container image
@@ -300,7 +300,7 @@ of use:
 - Support larger definition files, environments etc. by passing engine
   configuration in the environment vs. via socket buffer.
 - Ensure `docker-daemon:` and other source operations respect
-  `SINGULARITY_TMPDIR` for all temporary files.
+  `APPTAINER_TMPDIR` for all temporary files.
 - Support double quoted filenames in the `%files` section of build definitions.
 - Correct `cache list` sizes to show KiB with powers of 1024, matching `du` etc.
 - Don't fail on `enable fusemount=no` when no fuse mounts are needed.
@@ -523,7 +523,7 @@ signature implementation.
 
 - Don't try to mount `$HOME` when it is `/` (e.g. `nobody` user).
 - Process `%appinstall` sections in order when building from a definition file.
-- Ensure `SINGULARITY_CONTAINER`, `SINGULARITY_ENVIRONMENT` and the custom shell
+- Ensure `APPTAINER_CONTAINER`, `APPTAINER_ENVIRONMENT` and the custom shell
   prompt are set inside a container.
 - Honor insecure registry settings from `/etc/containers/registries.conf`.
 - Fix `http_proxy` env var handling in `yum` bootstrap builds.
@@ -586,7 +586,7 @@ not covered by the open-source CI runs.
 ### [Security related fix](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2019-19724)
 
 - 700 permissions are enforced on `$HOME/.singularity` and
-  `SINGULARITY_CACHEDIR` directories (CVE-2019-19724). Many thanks to Stuart
+  `APPTAINER_CACHEDIR` directories (CVE-2019-19724). Many thanks to Stuart
   Barkley for reporting this issue.
 
 ### Bug Fixes
@@ -722,7 +722,7 @@ This point release addresses the following issues:
     encrypted containers
   - `--passphrase` option added to `build` and action commands for passphrase
     based encrypted containers
-  - `SINGULARITY_ENCRYPTION_PEM_PATH` and `SINGULARITY_ENCRYPTION_PASSPHRASE`
+  - `APPTAINER_ENCRYPTION_PEM_PATH` and `APPTAINER_ENCRYPTION_PASSPHRASE`
     environment variables added to serve same functions as above
   - `--encrypt` option added to `build` command to build an encrypted container
     when environment variables contain a secret
@@ -734,7 +734,7 @@ This point release addresses the following issues:
   modules, otherurl (indexed)
 - Support multiple-architecture tags in the SCS library
 - Added a `--dry-run` flag to `cache clean`
-- Added a `SINGULARITY_SYPGPDIR` environment variable to specify the location of
+- Added a `APPTAINER_SYPGPDIR` environment variable to specify the location of
   PGP key data
 - Added a `--nonet` option to the action commands to disable networking when
   running with the `--vm` option
@@ -744,7 +744,7 @@ This point release addresses the following issues:
 
 ### Changed defaults / behaviors
 
-- Runtime now properly honors `SINGULARITY_DISABLE_CACHE` environment variable
+- Runtime now properly honors `APPTAINER_DISABLE_CACHE` environment variable
 - `remote add` command now automatically attempts to login and a `--no-login`
   flag is added to disable this behavior
 - Using the `pull` command to download an unsigned container no longer produces
@@ -949,8 +949,8 @@ This point release addresses the following issues:
 - Added support for pulling directly from HTTP and HTTPS
 - Made minor improvements to RPM packaging and added basic support for alpine
   packaging
-- The `$SINGULARITY_NOHTTPS`,`$SINGULARITY_TMPDIR`, and
-  `$SINGULARITY_DOCKER_USERNAME`/`$SINGULARITY_DOCKER_PASSWORD` environment
+- The `$APPTAINER_NOHTTPS`,`$APPTAINER_TMPDIR`, and
+  `$APPTAINER_DOCKER_USERNAME`/`$APPTAINER_DOCKER_PASSWORD` environment
   variables are now correctly respected
 - Pulling from a private shub registry now works as expected
 - Running a container with `--network="none"` no longer incorrectly fails with

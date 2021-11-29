@@ -29,7 +29,7 @@ func SetupSystemECLAndGlobalKeyRing(t *testing.T, testDir string) {
 			t.Fatalf("while mounting %s to %s: %s", source, dest, err)
 		}
 
-		handle := sypgp.NewHandle(buildcfg.SINGULARITY_CONFDIR, sypgp.GlobalHandleOpt())
+		handle := sypgp.NewHandle(buildcfg.APPTAINER_CONFDIR, sypgp.GlobalHandleOpt())
 		dest = handle.PublicPath()
 		source = filepath.Join(testDir, filepath.Base(dest))
 

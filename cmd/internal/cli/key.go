@@ -98,7 +98,7 @@ func init() {
 }
 
 func checkGlobal(cmd *cobra.Command, args []string) {
-	if !keyGlobalPubKey || os.Geteuid() == 0 || buildcfg.SINGULARITY_SUID_INSTALL == 0 {
+	if !keyGlobalPubKey || os.Geteuid() == 0 || buildcfg.APPTAINER_SUID_INSTALL == 0 {
 		return
 	}
 	path := cmd.CommandPath()

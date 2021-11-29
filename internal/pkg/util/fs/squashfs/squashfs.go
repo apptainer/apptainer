@@ -20,7 +20,7 @@ func getConfig() (*singularityconf.File, error) {
 	if cfg == nil {
 		var err error
 
-		configFile := buildcfg.SINGULARITY_CONF_FILE
+		configFile := buildcfg.APPTAINER_CONF_FILE
 		cfg, err = singularityconf.Parse(configFile)
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse singularity.conf file: %s", err)

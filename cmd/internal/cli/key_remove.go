@@ -24,7 +24,7 @@ var KeyRemoveCmd = &cobra.Command{
 		path := ""
 
 		if keyGlobalPubKey {
-			path = buildcfg.SINGULARITY_CONFDIR
+			path = buildcfg.APPTAINER_CONFDIR
 			opts = append(opts, sypgp.GlobalHandleOpt())
 		}
 

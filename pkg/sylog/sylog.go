@@ -18,7 +18,7 @@ import (
 	"strings"
 )
 
-const messageLevelEnv = "SINGULARITY_MESSAGELEVEL"
+const messageLevelEnv = "APPTAINER_MESSAGELEVEL"
 
 var messageColors = map[messageLevel]string{
 	FatalLevel: "\x1b[31m",

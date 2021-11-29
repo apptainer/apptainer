@@ -37,13 +37,13 @@ config_add_def PSDIR \"$psdir\"
 config_add_def LIBDIR \"$libdir\"
 config_add_def LOCALEDIR \"$localedir\"
 config_add_def MANDIR \"$mandir\"
-config_add_def SINGULARITY_CONFDIR SYSCONFDIR \"/singularity\"
-config_add_def SINGULARITY_CONF_FILE SINGULARITY_CONFDIR \"/singularity.conf\"
-config_add_def CAPABILITY_FILE SINGULARITY_CONFDIR \"/capability.json\"
-config_add_def ECL_FILE SINGULARITY_CONFDIR \"/ecl.toml\"
-config_add_def NVIDIALIBS_FILE SINGULARITY_CONFDIR \"/nvliblist.conf\"
+config_add_def APPTAINER_CONFDIR SYSCONFDIR \"/singularity\"
+config_add_def APPTAINER_CONF_FILE APPTAINER_CONFDIR \"/singularity.conf\"
+config_add_def CAPABILITY_FILE APPTAINER_CONFDIR \"/capability.json\"
+config_add_def ECL_FILE APPTAINER_CONFDIR \"/ecl.toml\"
+config_add_def NVIDIALIBS_FILE APPTAINER_CONFDIR \"/nvliblist.conf\"
 config_add_def SESSIONDIR LOCALSTATEDIR \"/singularity/mnt/session\"
-config_add_def SINGULARITY_SUID_INSTALL $with_suid
+config_add_def APPTAINER_SUID_INSTALL $with_suid
 config_add_def PLUGIN_ROOTDIR LIBEXECDIR \"/singularity/plugin\"
 
 # engine configuration constants
@@ -197,7 +197,7 @@ else
         exit 2;
     else
 	echo "yes"
-	config_add_def SINGULARITY_NO_NEW_PRIVS 1
+	config_add_def APPTAINER_NO_NEW_PRIVS 1
     fi
 fi
 
@@ -210,7 +210,7 @@ if ! printf "#include <sys/mount.h>\n#ifndef MS_SLAVE\n#error failed\n#endif\nin
 	echo "no"
 else
 	echo "yes"
-	config_add_def SINGULARITY_MS_SLAVE 1
+	config_add_def APPTAINER_MS_SLAVE 1
 fi
 
 ########################
@@ -280,7 +280,7 @@ if ! printf "#include <linux/securebits.h>\nint main() { }" | \
 	echo "no"
 else
 	echo "yes"
-	config_add_def SINGULARITY_SECUREBITS 1
+	config_add_def APPTAINER_SECUREBITS 1
 fi
 
 ########################

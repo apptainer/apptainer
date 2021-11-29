@@ -85,11 +85,11 @@ func convertImage(filename string, unsquashfsPath string) (tempDir, imageDir str
 	}
 
 	// keep compatibility with v2
-	tmpdir := os.Getenv("SINGULARITY_TMPDIR")
+	tmpdir := os.Getenv("APPTAINER_TMPDIR")
 	if tmpdir == "" {
-		tmpdir = os.Getenv("SINGULARITY_LOCALCACHEDIR")
+		tmpdir = os.Getenv("APPTAINER_LOCALCACHEDIR")
 		if tmpdir == "" {
-			tmpdir = os.Getenv("SINGULARITY_CACHEDIR")
+			tmpdir = os.Getenv("APPTAINER_CACHEDIR")
 		}
 	}
 
@@ -260,14 +260,14 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			sylog.Fatalf("%s", err)
 		}
 		UserNamespace = file.UserNs
-		generator.AddProcessEnv("SINGULARITY_CONTAINER", file.Image)
-		generator.AddProcessEnv("SINGULARITY_NAME", filepath.Base(file.Image))
+		generator.AddProcessEnv("APPTAINER_CONTAINER", file.Image)
+		generator.AddProcessEnv("APPTAINER_NAME", filepath.Base(file.Image))
 		engineConfig.SetImage(image)
 		engineConfig.SetInstanceJoin(true)
 	} else {
 		abspath, err := filepath.Abs(image)
-		generator.AddProcessEnv("SINGULARITY_CONTAINER", abspath)
-		generator.AddProcessEnv("SINGULARITY_NAME", filepath.Base(abspath))
+		generator.AddProcessEnv("APPTAINER_CONTAINER", abspath)
+		generator.AddProcessEnv("APPTAINER_NAME", filepath.Base(abspath))
 		if err != nil {
 			sylog.Fatalf("Failed to determine image absolute path for %s: %s", image, err)
 		}
@@ -278,7 +278,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	useSuid := true
 
 	// singularity was compiled with '--without-suid' option
-	if buildcfg.SINGULARITY_SUID_INSTALL == 0 {
+	if buildcfg.APPTAINER_SUID_INSTALL == 0 {
 		useSuid = false
 
 		if !UserNamespace && uid != 0 {
@@ -298,7 +298,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		// fallback to user namespace:
 		// - for non root user with setuid installation and 'allow setuid = no'
 		// - for root user without effective capability CAP_SYS_ADMIN
-		if uid != 0 && buildcfg.SINGULARITY_SUID_INSTALL == 1 && !engineConfig.File.AllowSetuid {
+		if uid != 0 && buildcfg.APPTAINER_SUID_INSTALL == 1 && !engineConfig.File.AllowSetuid {
 			sylog.Verbosef("'allow setuid' set to 'no' by configuration, fallback to user namespace")
 			UserNamespace = true
 		} else if uid == 0 && !UserNamespace {
@@ -356,7 +356,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		sylog.Fatalf("while parsing bind path: %s", err)
 	}
 	engineConfig.SetBindPath(binds)
-	generator.AddProcessEnv("SINGULARITY_BIND", strings.Join(BindPaths, ","))
+	generator.AddProcessEnv("APPTAINER_BIND", strings.Join(BindPaths, ","))
 
 	if len(FuseMount) > 0 {
 		/* If --fusemount is given, imply --pid */
@@ -398,7 +398,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	engineConfig.SetFakeroot(IsFakeroot)
 
 	if ShellPath != "" {
-		generator.AddProcessEnv("SINGULARITY_SHELL", ShellPath)
+		generator.AddProcessEnv("APPTAINER_SHELL", ShellPath)
 	}
 
 	checkPrivileges(CgroupsPath != "", "--apply-cgroups", func() {
@@ -527,7 +527,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			// unprivileged installation could not use fakeroot
 			// network because it requires a setuid installation
 			// so we fallback to none
-			if buildcfg.SINGULARITY_SUID_INSTALL == 0 || !engineConfig.File.AllowSetuid {
+			if buildcfg.APPTAINER_SUID_INSTALL == 0 || !engineConfig.File.AllowSetuid {
 				sylog.Warningf(
 					"fakeroot with unprivileged installation or 'allow setuid = no' " +
 						"could not use 'fakeroot' network, fallback to 'none' network",
@@ -559,7 +559,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	if SingularityEnvFile != "" {
 		currentEnv := append(
 			os.Environ(),
-			"SINGULARITY_IMAGE="+engineConfig.GetImage(),
+			"APPTAINER_IMAGE="+engineConfig.GetImage(),
 		)
 
 		content, err := ioutil.ReadFile(SingularityEnvFile)
@@ -612,11 +612,11 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 
 	// starter will force the loading of kernel overlay module
 	loadOverlay := false
-	if !UserNamespace && buildcfg.SINGULARITY_SUID_INSTALL == 1 {
+	if !UserNamespace && buildcfg.APPTAINER_SUID_INSTALL == 1 {
 		loadOverlay = true
 	}
 
-	generator.AddProcessEnv("SINGULARITY_APPNAME", AppName)
+	generator.AddProcessEnv("APPTAINER_APPNAME", AppName)
 
 	// convert image file to sandbox if we are using user
 	// namespace or if we are currently running inside a
@@ -658,7 +658,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			}
 			engineConfig.SetImage(imageDir)
 			engineConfig.SetDeleteTempDir(tempDir)
-			generator.AddProcessEnv("SINGULARITY_CONTAINER", imageDir)
+			generator.AddProcessEnv("APPTAINER_CONTAINER", imageDir)
 
 			// if '--disable-cache' flag, then remove original SIF after converting to sandbox
 			if disableCache {
@@ -774,7 +774,7 @@ func SetGPUConfig(engineConfig *singularityConfig.EngineConfig) error {
 
 		// TODO: In privileged fakeroot mode we don't have the correct namespace context to run nvidia-container-cli
 		// from  starter, so fall back to legacy NV handling until that workflow is refactored heavily.
-		fakeRootPriv := IsFakeroot && engineConfig.File.AllowSetuid && (buildcfg.SINGULARITY_SUID_INSTALL == 1)
+		fakeRootPriv := IsFakeroot && engineConfig.File.AllowSetuid && (buildcfg.APPTAINER_SUID_INSTALL == 1)
 		if !fakeRootPriv {
 			return setNvCCLIConfig(engineConfig)
 		}
@@ -823,7 +823,7 @@ func setNvCCLIConfig(engineConfig *singularityConfig.EngineConfig) (err error) {
 func setNVLegacyConfig(engineConfig *singularityConfig.EngineConfig) error {
 	sylog.Debugf("Using legacy binds for nv GPU setup")
 	engineConfig.SetNvLegacy(true)
-	gpuConfFile := filepath.Join(buildcfg.SINGULARITY_CONFDIR, "nvliblist.conf")
+	gpuConfFile := filepath.Join(buildcfg.APPTAINER_CONFDIR, "nvliblist.conf")
 	// bind persistenced socket if found
 	ipcs, err := gpu.NvidiaIpcsPath()
 	if err != nil {
@@ -841,7 +841,7 @@ func setNVLegacyConfig(engineConfig *singularityConfig.EngineConfig) error {
 func setRocmConfig(engineConfig *singularityConfig.EngineConfig) error {
 	sylog.Debugf("Using rocm GPU setup")
 	engineConfig.SetRocm(true)
-	gpuConfFile := filepath.Join(buildcfg.SINGULARITY_CONFDIR, "rocmliblist.conf")
+	gpuConfFile := filepath.Join(buildcfg.APPTAINER_CONFDIR, "rocmliblist.conf")
 	libs, bins, err := gpu.RocmPaths(gpuConfFile)
 	if err != nil {
 		sylog.Warningf("While finding ROCm bind points: %v", err)

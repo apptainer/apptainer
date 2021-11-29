@@ -122,7 +122,7 @@ func (v verifier) getOpts(ctx context.Context, f *sif.FileImage) ([]integrity.Ve
 	}
 
 	// wrap the global keyring around
-	global := sypgp.NewHandle(buildcfg.SINGULARITY_CONFDIR, sypgp.GlobalHandleOpt())
+	global := sypgp.NewHandle(buildcfg.APPTAINER_CONFDIR, sypgp.GlobalHandleOpt())
 	gkr, err := global.LoadPubKeyring()
 	if err != nil {
 		return nil, err

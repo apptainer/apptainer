@@ -65,7 +65,7 @@ func (e *EngineOperations) Config() config.EngineConfig {
 func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	g := generate.New(nil)
 
-	configurationFile := buildcfg.SINGULARITY_CONF_FILE
+	configurationFile := buildcfg.APPTAINER_CONF_FILE
 
 	// check for ownership of singularity.conf
 	if starterConfig.GetIsSUID() && !fs.IsOwner(configurationFile, 0) {

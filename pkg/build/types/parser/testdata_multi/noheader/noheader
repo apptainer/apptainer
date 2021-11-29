@@ -2,7 +2,7 @@
 Hello Help!
 # # double Hashtag comment
 %setup
-    touch ${SINGULARITY_ROOTFS}/mock.txt
+    touch ${APPTAINER_ROOTFS}/mock.txt
     touch mock.txt
 
 # Some dummy comment 2
@@ -27,7 +27,7 @@ Version v1.0
 %post
     echo 'this is a command so long that the user had to' \
     'add a new line'
-    echo 'export GOPATH=$HOME/go' >> $SINGULARITY_ENVIRONMENT
+    echo 'export GOPATH=$HOME/go' >> $APPTAINER_ENVIRONMENT
 
 %runscript
     echo "Mock!"

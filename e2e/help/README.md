@@ -49,5 +49,5 @@ To verify this test, modify the `Makefile` to add both a verbose flag and a
 filter flag (`go test -v -r helpContentTests`) and then run the tests.
 
 ```sh
-SINGULARITY_E2E=1 make -C builddir e2e-test
+APPTAINER_E2E=1 make -C builddir e2e-test
 ```

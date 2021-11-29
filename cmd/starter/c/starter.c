@@ -39,11 +39,11 @@
 #include <sys/sysmacros.h>
 #include <linux/magic.h>
 
-#ifdef SINGULARITY_SECUREBITS
+#ifdef APPTAINER_SECUREBITS
 #  include <linux/securebits.h>
 #else
 #  include "include/securebits.h"
-#endif /* SINGULARITY_SECUREBITS */
+#endif /* APPTAINER_SECUREBITS */
 
 #include "include/capability.h"
 #include "include/message.h"
@@ -1153,7 +1153,7 @@ static void cleanenv(void) {
     }
 
     /*
-     * keep only SINGULARITY_MESSAGELEVEL for GO runtime, set others to empty
+     * keep only APPTAINER_MESSAGELEVEL for GO runtime, set others to empty
      * string and not NULL (see issue #3703 for why)
      */
     for (e = environ; *e != NULL; e++) {
@@ -1256,7 +1256,7 @@ __attribute__((constructor)) static void init(void) {
 
     verbosef("Starter initialization\n");
 
-#ifndef SINGULARITY_NO_NEW_PRIVS
+#ifndef APPTAINER_NO_NEW_PRIVS
     fatalf("Host kernel is outdated and does not support PR_SET_NO_NEW_PRIVS!\n");
 #endif
 

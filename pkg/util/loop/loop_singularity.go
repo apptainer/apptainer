@@ -20,7 +20,7 @@ func GetMaxLoopDevices() int {
 	if cfg == nil {
 		var err error
 
-		configFile := buildcfg.SINGULARITY_CONF_FILE
+		configFile := buildcfg.APPTAINER_CONF_FILE
 		cfg, err = singularityconf.Parse(configFile)
 		if err != nil {
 			return 256

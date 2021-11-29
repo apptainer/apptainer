@@ -50,7 +50,7 @@ func doKeyPullCmd(ctx context.Context, fingerprint string, co ...client.Option) 
 	mode := os.FileMode(0o600)
 
 	if keyGlobalPubKey {
-		path = buildcfg.SINGULARITY_CONFDIR
+		path = buildcfg.APPTAINER_CONFDIR
 		opts = append(opts, sypgp.GlobalHandleOpt())
 		mode = os.FileMode(0o644)
 	}
