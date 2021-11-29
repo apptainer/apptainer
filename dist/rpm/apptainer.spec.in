@@ -30,7 +30,7 @@
 %define package_version @PACKAGE_VERSION@
 
 Summary: Application and environment virtualization
-Name: singularity
+Name: apptainer
 Version: @PACKAGE_RPM_VERSION@
 Release: @PACKAGE_RELEASE@%{?dist}
 # https://spdx.org/licenses/BSD-3-Clause-LBNL.html

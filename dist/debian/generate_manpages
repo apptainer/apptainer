@@ -41,7 +41,7 @@ declare -A desc
 desc[Apptainer]="Apptainer containers command line interface"
 desc[run-Apptainer]="launch a Apptainer containers with a runscript"
 
-for b in singularity run-singularity; do
+for b in apptainer run-apptainer; do
     cp -p ${PKGDIR}/usr/bin/$b "$tbindir/"
     sed -i -e "s,^prefix=.*,prefix=${PKGDIR}/usr,g" "$tbindir/$b"
     manpage=${PKGDIR}/usr/share/man/man1/$b.1

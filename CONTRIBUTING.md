@@ -90,4 +90,4 @@ using the contents of the `CHANGELOG.md` file as reference.
    document anything that is pertinent to a system administrator who manages a
    system with Apptainer installed.
 1. If necessary, changes to the message displayed when running
-   `singularity help *` can be made by editing `docs/content.go`.
+   `apptainer help *` can be made by editing `docs/content.go`.

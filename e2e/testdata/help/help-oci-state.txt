@@ -1,7 +1,7 @@
 Query state of a container (root user only)
 
 Usage:
-  singularity oci state <container_ID>
+  apptainer oci state <container_ID>
 
 Description:
   State invoke state operation to query state of a created/running/stopped 
@@ -14,7 +14,7 @@ Options:
 
 
 Examples:
-  $ singularity oci state mycontainer
+  $ apptainer oci state mycontainer
 
 
 For additional help or support, please visit https://singularity.hpcng.org/help/

@@ -5,7 +5,7 @@
 #
 # This more complicated setup is needed for CircleCI too because their
 #  standard docker machine type does not give the container enough privileges
-#  for any reasonable subset of standard singularity tests to succeed.  
+#  for any reasonable subset of standard apptainer tests to succeed.
 # CircleCI does at least start a VM with docker already started.
 
 if [[ "$OS_TYPE" = "opensuse" ]]; then

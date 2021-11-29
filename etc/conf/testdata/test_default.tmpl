@@ -1,4 +1,4 @@
-# SINGULARITY.CONF
+# APPTAINER.CONF
 # This is the global configuration file for Apptainer. This file controls
 # what the container is allowed to do on a particular host, and as a result
 # this file must be owned by root.
@@ -113,7 +113,7 @@ mount hostfs = {{ if eq .MountHostfs true }}yes{{ else }}no{{ end }}
 # the container. The file or directory must exist within the container on
 # which to attach to. you can specify a different source and destination
 # path (respectively) with a colon; otherwise source and dest are the same.
-#bind path = /etc/singularity/default-nsswitch.conf:/etc/nsswitch.conf
+#bind path = /etc/apptainer/default-nsswitch.conf:/etc/nsswitch.conf
 #bind path = /opt
 #bind path = /scratch
 {{ range $path := .BindPath }}
@@ -160,7 +160,7 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 # configuration is undefined (commented or set to NULL), all containers are
 # allowed to be used. This feature only applies when Apptainer is running in
 # SUID mode and the user is non-root.
-#limit container owners = gmk, singularity, nobody
+#limit container owners = gmk, apptainer, nobody
 {{ range $index, $owners := .LimitContainerOwners }}
 limit container owners = 
 {{ if $index }}, {{ end }}{{$owners}}
@@ -172,7 +172,7 @@ limit container owners =
 # configuration is undefined (commented or set to NULL), all containers are
 # allowed to be used. This feature only applies when Apptainer is running in
 # SUID mode and the user is non-root.
-#limit container groups = group1, singularity, nobody
+#limit container groups = group1, apptainer, nobody
 {{ range $index, $groups := .LimitContainerGroups }}
 limit container groups = 
 {{ if $index }}, {{ end }}{{$groups}}
@@ -212,7 +212,7 @@ always use nv = {{ if eq .AlwaysUseNv true }}yes{{ else }}no{{ end }}
 # DEFAULT: no
 # Define default root capability set kept during runtime
 # - full: keep all capabilities (same as --keep-privs)
-# - file: keep capabilities configured in ${prefix}/etc/singularity/capabilities/user.root
+# - file: keep capabilities configured in ${prefix}/etc/apptainer/capabilities/user.root
 # - no: no capabilities (same as --no-privs)
 root default capabilities = {{ .RootDefaultCapabilities }}
 

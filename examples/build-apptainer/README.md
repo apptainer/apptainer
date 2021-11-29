@@ -2,26 +2,26 @@
 
 ## Summary
 
-This is a build container that generates installable singularity packages for
-singularity v3.X.X. The container will output a deb and rpm in the current
+This is a build container that generates installable apptainer packages for
+apptainer v3.X.X. The container will output a deb and rpm in the current
 directory.
 
 ## Known Bugs
 
-Some versions of singularity contain the character 'v', such as v3.0.0. The
+Some versions of apptainer contain the character 'v', such as v3.0.0. The
 container will have to be rebuilt with the following statement modified:
 
 ```sh
-curl -L -o singularity-${VERSION}.tar.gz
-    https://github.com/apptainer/apptainer/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz
+curl -L -o apptainer-${VERSION}.tar.gz
+    https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
 ```
 
 ## Usage
 
 ```sh
-sudo singularity build build-singularity.sif build-singularity.def
+sudo apptainer build build-apptainer.sif build-apptainer.def
 
-./build-singularity.sif {version}
+./build-apptainer.sif {version}
 
-./build-singularity.sif 3.8.0
+./build-apptainer.sif 3.8.0
 ```

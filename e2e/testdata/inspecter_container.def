@@ -29,7 +29,7 @@ export test="testing"
 export e2e="e2e testing"
 
 %runscript
-cat /.singularity.d/runscript.help
+cat /.apptainer.d/runscript.help
 
 %startscript
 exec "$@"

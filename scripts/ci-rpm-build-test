@@ -24,12 +24,12 @@ su testuser -c '
   set -x
   set -e
   ./mconfig --only-rpm
-  sudo yum-builddep -y singularity.spec
+  sudo yum-builddep -y apptainer.spec
   make -C builddir rpm
   sudo yum install -y $HOME/rpmbuild/RPMS/*/*.rpm
-  BLD=`echo $HOME/rpmbuild/BUILD/singularity-*`
+  BLD=`echo $HOME/rpmbuild/BUILD/apptainer-*`
   export GOPATH=$BLD/gopath
   PATH=$GOPATH/bin:$PATH
 
-  singularity exec library://alpine:3.11.5 /bin/true
+  apptainer exec library://alpine:3.11.5 /bin/true
 '

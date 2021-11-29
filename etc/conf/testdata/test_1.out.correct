@@ -1,4 +1,4 @@
-# SINGULARITY.CONF
+# APPTAINER.CONF
 # This is the global configuration file for Apptainer. This file controls
 # what the container is allowed to do on a particular host, and as a result
 # this file must be owned by root.

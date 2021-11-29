@@ -22,7 +22,7 @@ Options:
 
 
 Examples:
-  $ singularity oci create -b ~/bundle mycontainer
+  $ apptainer oci create -b ~/bundle mycontainer
 
 
 For additional help or support, please visit https://singularity.hpcng.org/help/

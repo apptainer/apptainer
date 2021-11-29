@@ -20,7 +20,7 @@ docker run -it  --privileged pritunl/archlinux bash
 pacman -S -y git autoconf libtool automake gcc python make sudo vim \
  arch-install-scripts wget
 git clone https://github.com/apptainer/apptainer
-cd singularity
+cd apptainer
 git checkout -b development
 git pull origin development
 ./autogen.sh
@@ -32,7 +32,7 @@ if you have mounted a volume.
 
 ```bash
 cd /tmp
-singularity create arch.img
+apptainer create arch.img
 sudo singularity bootstrap arch.img Apptainer
 ```
 

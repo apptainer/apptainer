@@ -6,7 +6,7 @@
 all: $(ALL)
 
 .PHONY: man
-man: singularity
+man: apptainer
 	mkdir -p $(DESTDIR)$(MANDIR)/man1
 	$(V)$(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" $(GO_GCFLAGS) $(GO_ASMFLAGS) \
 		$(SOURCEDIR)/cmd/docs/docs.go man --dir $(DESTDIR)$(MANDIR)/man1
@@ -110,10 +110,10 @@ rpm: dist
 	      --define '_sysconfdir $(RPMPREFIX)/etc' \
 	      --define '_localstatedir $(RPMPREFIX)/var' \
 	      --define '_mandir $(RPMPREFIX)/share/man' \
-	      $(SOURCEDIR)/singularity-$(VERSION).tar.gz; \
+	      $(SOURCEDIR)/apptainer-$(VERSION).tar.gz; \
 	  else \
 	    rpmbuild $(RPMCLEAN) -ta \
-	      $(SOURCEDIR)/singularity-$(VERSION).tar.gz; \
+	      $(SOURCEDIR)/apptainer-$(VERSION).tar.gz; \
 	  fi)
 
 .PHONY: cscope

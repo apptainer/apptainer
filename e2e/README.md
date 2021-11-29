@@ -1,6 +1,6 @@
 # End-to-End Testing
 
-This package contains the end-to-end tests for `singularity`.
+This package contains the end-to-end tests for `apptainer`.
 
 ## Contributing
 

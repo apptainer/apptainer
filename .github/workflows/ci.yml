@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Check singularity source
+      - name: Check apptainer source
         run: |
           ./mconfig -v -p /usr/local
           make -C ./builddir check

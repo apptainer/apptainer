@@ -1,4 +1,4 @@
-Source: singularity-container
+Source: apptainer-container
 Section: admin
 Priority: optional
 Maintainer: Gregory M. Kurtzer <gmkurtzer@gmail.com>
@@ -24,8 +24,8 @@ Homepage: http://gmkurtzer.github.io/singularity
 Vcs-Git: https://github.com/apptainer/apptainer.git
 Vcs-Browser: https://github.com/apptainer/apptainer
 
-# "singularity" is a packaged game (but the contents don't clash)
-Package: singularity-container
+# "apptainer" is a packaged game (but the contents don't clash)
+Package: apptainer-container
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, python, squashfs-tools
 Description: container platform focused on supporting "Mobility of Compute"

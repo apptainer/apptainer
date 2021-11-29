@@ -1,4 +1,4 @@
-# This file contains all of the rules for building the singularity runtime
+# This file contains all of the rules for building the apptainer runtime
 #   and installing the necessary config files.
 
 # contain starter_SOURCE variable list

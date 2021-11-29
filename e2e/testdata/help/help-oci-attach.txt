@@ -1,7 +1,7 @@
 Attach console to a running container process (root user only)
 
 Usage:
-  singularity oci attach <container_ID>
+  apptainer oci attach <container_ID>
 
 Description:
   Attach will attach console to a running container process running within 
@@ -12,7 +12,7 @@ Options:
 
 
 Examples:
-  $ singularity oci attach mycontainer
+  $ apptainer oci attach mycontainer
 
 
 For additional help or support, please visit https://singularity.hpcng.org/help/

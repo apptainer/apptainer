@@ -1,7 +1,7 @@
 Update container cgroups resources (root user only)
 
 Usage:
-  singularity oci update [update options...] <container_ID>
+  apptainer oci update [update options...] <container_ID>
 
 Description:
   Update will update cgroups resources for the specified container ID. Container 
@@ -14,11 +14,11 @@ Options:
 
 
 Examples:
-  $ singularity oci update --from-file /tmp/cgroups-update.json mycontainer
+  $ apptainer oci update --from-file /tmp/cgroups-update.json mycontainer
 
   or to update from stdin :
 
-  $ cat /tmp/cgroups-update.json | singularity oci update --from-file - mycontainer
+  $ cat /tmp/cgroups-update.json | apptainer oci update --from-file - mycontainer
 
 
 For additional help or support, please visit https://singularity.hpcng.org/help/

@@ -3,7 +3,7 @@
 What version of Apptainer are you using? Run:
 
 ```
-$ singularity --version
+$ apptainer --version
 
 ```
 

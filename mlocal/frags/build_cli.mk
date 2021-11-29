@@ -1,6 +1,6 @@
-# This file contains all of the rules for building the singularity CLI binary
+# This file contains all of the rules for building the apptainer CLI binary
 
-# singularity build config
+# apptainer build config
 singularity_build_config := $(SOURCEDIR)/internal/pkg/buildcfg/config.go
 $(singularity_build_config): $(BUILDDIR)/config.h $(SOURCEDIR)/scripts/go-generate
 	$(V)rm -f $(singularity_build_config)

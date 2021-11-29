@@ -1,4 +1,4 @@
-# Singularity Support
+# Apptainer Support
 
 Need help? We have several ways to reach us, depending on your preferences and needs.
 
@@ -17,7 +17,7 @@ For issues with code (and especially if you need to share debug output)
 we recommend Github issues boards.
 
 - [Apptainer Issues](https://github.com/apptainer/apptainer/issues): is
-    recommended for most issues with the Singularity software.
+    recommended for most issues with the Apptainer software.
 - [User Documentation](https://github.com/apptainer/apptainer-userdocs/issues)
     questions, feedback, and suggestions should go here. Feel free to
     create an issue on a board and additionally request updated content
