@@ -1,6 +1,6 @@
 #!/bin/sh -
 #
-# Singularity core libs system configuration detection
+# Apptainer core libs system configuration detection
 #
 set -e
 
@@ -98,7 +98,7 @@ if ! printf "#define _GNU_SOURCE\n#include <sched.h>\nint main() { unshare(CLONE
 	if [ "$build_runtime" -eq 1 ]; then
 		echo
 		echo "This host does not support the CLONE_NEWNS (mount) namespace flag! You"
-		echo "really really really don't want to run Singularity containers without a"
+		echo "really really really don't want to run Apptainer containers without a"
 		echo "Separate mount name namespace!"
 		echo
 		exit 2
@@ -320,11 +320,11 @@ fi
 # Configurable external programs
 ################################
 
-# Find external programs that Singularity will call, and are configurable
+# Find external programs that Apptainer will call, and are configurable
 # in singularity.conf. The build-time path will be set in the installed
 # singularity.conf, and can be customized by the user.
 #
-# Note that Singularity will fall back to looking on PATH if the conf file
+# Note that Apptainer will fall back to looking on PATH if the conf file
 # path is empty.
 
 echo

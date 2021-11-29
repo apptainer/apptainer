@@ -8,15 +8,15 @@ If you haven't already, read our [documentation](https://singularity.hpcng.org/d
 These docs have common use cases, and might be helpful to browse before
 submitting an issue.
 You can contribute to our documentation by creating PRs against the
-[singularity-admindocs](https://github.com/apptainer/apptainer-admindocs) and
-[singularity-userdocs](https://github.com/apptainer/apptainer-userdocs) repositories.
+[apptainer-admindocs](https://github.com/apptainer/apptainer-admindocs) and
+[apptainer-userdocs](https://github.com/apptainer/apptainer-userdocs) repositories.
 
 ## Github
 
 For issues with code (and especially if you need to share debug output)
 we recommend Github issues boards.
 
-- [Singularity Issues](https://github.com/apptainer/apptainer/issues): is
+- [Apptainer Issues](https://github.com/apptainer/apptainer/issues): is
     recommended for most issues with the Singularity software.
 - [User Documentation](https://github.com/apptainer/apptainer-userdocs/issues)
     questions, feedback, and suggestions should go here. Feel free to

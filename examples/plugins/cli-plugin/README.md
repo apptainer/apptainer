@@ -1,4 +1,4 @@
-# Singularity example plugin
+# Apptainer example plugin
 
 This directory contains an example CLI plugin for singularity. It demonstrates
 how to add a command and flags.
@@ -47,7 +47,7 @@ correct singularity directory using the command:
 singularity plugin install ./examples/plugins/cli-plugin/cli-plugin.sif
 ```
 
-Singularity will automatically load the plugin code from now on.
+Apptainer will automatically load the plugin code from now on.
 
 ## Other commands
 
@@ -82,7 +82,7 @@ And inspect a SIF file before installing:
 ```console
 $ singularity plugin inspect examples/plugins/cli-plugin/cli-plugin.sif
 Name: sylabs.io/cli-plugin
-Description: This is a short test CLI plugin for Singularity
+Description: This is a short test CLI plugin for Apptainer
 Author: Sylabs Team
 Version: 0.1.0
 ```

@@ -25,7 +25,7 @@ repository, where the `upstream` remote points to
 
 ## Creating the Release Branch and Release Candidate
 
-When a new 3.Y.0 minor version of Singularity is issued the release
+When a new 3.Y.0 minor version of Apptainer is issued the release
 process begins by branching, and then issuing a release candidate for
 broader testing.
 
@@ -39,7 +39,7 @@ and steps 1-2 should be skipped.
    new release branch if needed.
 1. Modify the `README.md`, `INSTALL.md`, `CHANGELOG.md` via PR against
    the release branch, so that they reflect the version to be released.
-1. Apply an annotated tag via `git tag -a -m "Singularity v3.8.0
+1. Apply an annotated tag via `git tag -a -m "Apptainer v3.8.0
    Release Candidate 1" v3.8.0-rc.1`.
 1. Push the tag via `git push upstream v3.8.0-rc.1`.
 1. Create a tarball via `./mconfig --only-rpm -v && make dist`.
@@ -69,7 +69,7 @@ covered by tests.
    singularity.hpcng.org website.
 1. Modify the `README.md`, `INSTALL.md`, `CHANGELOG.md` via PR against
    the release branch, so that they reflect the version to be released.
-1. Apply an annotated tag via `git tag -a -m "Singularity v3.8.0" v3.8.0`.
+1. Apply an annotated tag via `git tag -a -m "Apptainer v3.8.0" v3.8.0`.
 1. Push the tag via `git push upstream v3.8.0-rc.1`.
 1. Create a tarball via `./mconfig -v && make dist`.
 1. Test intallation from the tarball.

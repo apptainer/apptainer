@@ -1,4 +1,4 @@
-# Defines a Singularity container with TensorFlow pre-installed
+# Defines a Apptainer container with TensorFlow pre-installed
 #
 
 BootStrap: docker

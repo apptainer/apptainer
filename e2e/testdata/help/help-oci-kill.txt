@@ -1,7 +1,7 @@
 Kill a container (root user only)
 
 Usage:
-  singularity oci kill [kill options...] <container_ID>
+  apptainer oci kill [kill options...] <container_ID>
 
 Description:
   Kill invoke kill operation to kill processes running within container 
@@ -15,8 +15,8 @@ Options:
 
 
 Examples:
-  $ singularity oci kill mycontainer INT
-  $ singularity oci kill mycontainer -s INT
+  $ apptainer oci kill mycontainer INT
+  $ apptainer oci kill mycontainer -s INT
 
 
 For additional help or support, please visit https://singularity.hpcng.org/help/

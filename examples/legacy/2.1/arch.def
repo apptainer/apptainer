@@ -2,7 +2,7 @@
 #
 # Minimal installation process is defined in mods/linux_build_arch.smod. A
 # couple extra actions are called from here using RunCmd and InstallPkgs
-# Singularity bootstrap keywords. Adjust them as needed.
+# Apptainer bootstrap keywords. Adjust them as needed.
 # https://wiki.archlinux.org/index.php/Installation_Guide may come in handy.
 
 DistType "arch"
@@ -29,7 +29,7 @@ RunCmd echo 'en_US.UTF-8 UTF-8' > "$APPTAINER_BUILD_ROOT"/etc/locale.gen
 # RunCmd echo 'pl_PL.UTF-8 UTF-8' >> "$APPTAINER_BUILD_ROOT"/etc/locale.gen
 RunCmd locale-gen
 RunCmd echo 'LANG=en_US.UTF-8' > "$APPTAINER_BUILD_ROOT"/etc/locale.conf
-# Mind that Singularity's shell will use host's locale no matter what anyway,
+# Mind that Apptainer's shell will use host's locale no matter what anyway,
 # as of version 2.1.2. This may change in a future release.
 
 # Set the package mirror server(s). This is only for the output image's

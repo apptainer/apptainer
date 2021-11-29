@@ -20,7 +20,7 @@ From: rockylinux/rockylinux:8.4
     uname -r
     cat /etc/centos-release 
     echo "Container created: $NOW"
-    echo "Singularity build target: $* "
+    echo "Apptainer build target: $* "
     export EL_VERSION=8
     export VERSION=$*
     export TMP_DIR=$(mktemp -d -u -p .)

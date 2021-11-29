@@ -1,7 +1,7 @@
 Manage OCI containers
 
 Usage:
-  singularity oci
+  apptainer oci
 
 Description:
   Allow you to manage containers from OCI bundle directories.
@@ -29,8 +29,8 @@ Available Commands:
 Examples:
   All group commands have their own help output:
 
-  $ singularity oci create -b ~/bundle mycontainer
-  $ singularity oci start mycontainer
+  $ apptainer oci create -b ~/bundle mycontainer
+  $ apptainer oci start mycontainer
 
 
 For additional help or support, please visit https://singularity.hpcng.org/help/

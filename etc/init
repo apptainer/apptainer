@@ -1,4 +1,4 @@
-# This will be sourced before launching a Singularity container.
+# This will be sourced before launching a Apptainer container.
 # Any variables prefixed with "SINGULARITYENV_" will be transposed
 # properly into the container. For example:
 # SINGULARITYENV_LD_LIBRARY_PATH -> LD_LIBRARY_PATH

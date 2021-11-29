@@ -64,7 +64,7 @@ Provides: %{name}-runtime
 Obsoletes: %{name}-runtime
 
 %description
-Singularity provides functionality to make portable
+Apptainer provides functionality to make portable
 containers that can be used across host environments.
 
 %debug_package

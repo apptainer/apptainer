@@ -1,7 +1,7 @@
 Delete container (root user only)
 
 Usage:
-  singularity oci delete <container_ID>
+  apptainer oci delete <container_ID>
 
 Description:
   Delete invoke delete operation to delete resources that were created for 
@@ -12,7 +12,7 @@ Options:
 
 
 Examples:
-  $ singularity oci delete mycontainer
+  $ apptainer oci delete mycontainer
 
 
 For additional help or support, please visit https://singularity.hpcng.org/help/

@@ -1,16 +1,16 @@
-# Testing `singularity help` content
+# Testing `apptainer help` content
 
-This package contains the end-to-end tests for `singularity help`.
+This package contains the end-to-end tests for `apptainer help`.
 
 ## Contributing new help tests
 
 For this example, we're going to create a new test for
-`singularity help inspect`.
+`apptainer help inspect`.
 
 - Add the help text to the `testdata/help` directory.
 
 ```sh
-singularity help inspect > e2e/testdata/help/help-inspect.txt
+apptainer help inspect > e2e/testdata/help/help-inspect.txt
 ```
 
 - Add the help command to the `helpContentTests` struct in `help.go`
@@ -20,7 +20,7 @@ var helpContentTests = []struct {
         cmds []string
 }{
 	...
-	// singularity inspect
+	// apptainer inspect
 	{[]string{"help", "inspect"}},
 	...
 }	
@@ -29,7 +29,7 @@ var helpContentTests = []struct {
 ## Updating existing help tests
 
 For this example, we're going to update an existing test for
-`singularity help inspect`.
+`apptainer help inspect`.
 
 - When a help test fails, we need to check why it failed.
 
@@ -40,7 +40,7 @@ For this example, we're going to update an existing test for
 - Update the help text in the `testdata/help` directory.
 
 ```sh
-singularity help inspect > e2e/testdata/help/help-inspect.txt
+apptainer help inspect > e2e/testdata/help/help-inspect.txt
 ```
 
 ## Running the help tests

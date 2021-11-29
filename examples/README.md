@@ -1,6 +1,6 @@
 # Examples
 
-The example bootstrap definition files, each called `Singularity`, are located
+The example bootstrap definition files, each called `Apptainer`, are located
 in their respectively named folders in this directory. These files can be used
 to create new container images on a variety of Linux distributions or become the
 basis for customization to build reproducible containers for a specific purpose.
@@ -10,7 +10,7 @@ that you can use a Docker bootstrap to create almost any of them.
 ## Contributing
 
 If you have a specific scientific (or other) container, we suggest that you
-consider [singularity hub](https://singularity-hub.org) to serve it. If you do
+consider [apptainer hub](https://singularity-hub.org) to serve it. If you do
 not intend to build or use the container, or want to provide a base template,
 then you might also want to send a pull request to add it here.
 
@@ -37,4 +37,4 @@ examples/contrib/debian84-tensorflow-0.10.def
 
 If your contribution is more appropriate for one of the base or template
 distributions, then please make a respective folder in the [examples](.)
-directory, and name the definition file `Singularity`.
+directory, and name the definition file `Apptainer`.

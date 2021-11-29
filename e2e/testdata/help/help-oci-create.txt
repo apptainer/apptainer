@@ -1,7 +1,7 @@
 Create a container from a bundle directory (root user only)
 
 Usage:
-  singularity oci create -b <bundle_path> [create options...] <container_ID>
+  apptainer oci create -b <bundle_path> [create options...] <container_ID>
 
 Description:
   Create invoke create operation to create a container instance from an OCI 

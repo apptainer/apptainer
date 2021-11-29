@@ -28,7 +28,7 @@ Bootstrap: arch
     # echo 'pl_PL.UTF-8 UTF-8' >> /etc/locale.gen
     locale-gen
     echo 'LANG=en_US.UTF-8' > /etc/locale.conf
-    # Mind that Singularity's shell will use host's locale no matter what
+    # Mind that Apptainer's shell will use host's locale no matter what
     # anyway, as of version 2.1.2. This may change in a future release.
 
     # Set the package mirror server(s). This is only for the output image's

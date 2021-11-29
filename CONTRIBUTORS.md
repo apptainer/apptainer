@@ -1,4 +1,4 @@
-# Contributors to Singularity
+# Contributors to Apptainer
 
 ## Project Lead
 

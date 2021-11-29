@@ -38,8 +38,8 @@ trap "rm -rf \"$tbindir\"" TERM INT EXIT
 
 mkdir -p ${PKGDIR}/usr/share/man/man1
 declare -A desc
-desc[singularity]="Singularity containers command line interface"
-desc[run-singularity]="launch a Singularity containers with a runscript"
+desc[Apptainer]="Apptainer containers command line interface"
+desc[run-Apptainer]="launch a Apptainer containers with a runscript"
 
 for b in singularity run-singularity; do
     cp -p ${PKGDIR}/usr/bin/$b "$tbindir/"

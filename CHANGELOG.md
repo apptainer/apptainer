@@ -1,4 +1,4 @@
-# Singularity Changelog
+# Apptainer Changelog
 
 ## Changes since last release
 

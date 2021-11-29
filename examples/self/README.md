@@ -32,5 +32,5 @@ so we could do the following with the specification build file in this folder:
 
 ```sh
 singularity create --size 8000 container.img
-sudo singularity bootstrap container.img Singularity
+sudo singularity bootstrap container.img Apptainer
 ```

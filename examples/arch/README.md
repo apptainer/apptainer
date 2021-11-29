@@ -1,6 +1,6 @@
-# Arch for Singularity
+# Arch for Apptainer
 
-This bootstrap spec will generate an arch linux distribution using Singularity
+This bootstrap spec will generate an arch linux distribution using Apptainer
 2.3 (current development branch). Note that you can also just bootstrap a Docker
 image:
 
@@ -27,13 +27,13 @@ git pull origin development
 ./configure --prefix=/usr/local
 ```
 
-You can add the [Singularity](Singularity) build spec here, or cd to where it is
+You can add the [Apptainer](Apptainer) build spec here, or cd to where it is
 if you have mounted a volume.
 
 ```bash
 cd /tmp
 singularity create arch.img
-sudo singularity bootstrap arch.img Singularity
+sudo singularity bootstrap arch.img Apptainer
 ```
 
 That should do the trick!

@@ -109,7 +109,7 @@ usage_args () {
 	echo "     -l   build project with source code language (-l C -l Go ...)"
 	echo "     -h   this help"
 	echo
-	echo "  Singularity options:"
+	echo "  Apptainer options:"
 	echo "     --without-suid    do not install SUID binary (linux only)"
 	echo "     --without-network do not compile/install network plugins (linux only)"
 	echo "     --without-seccomp do not compile/install seccomp support even if available"

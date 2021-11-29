@@ -1,7 +1,7 @@
 Mount create an OCI bundle from SIF image (root user only)
 
 Usage:
-  singularity oci mount <sif_image> <bundle_path>
+  apptainer oci mount <sif_image> <bundle_path>
 
 Description:
   Mount will mount and create an OCI bundle from a SIF image.
@@ -11,7 +11,7 @@ Options:
 
 
 Examples:
-  $ singularity oci mount /tmp/example.sif /var/lib/singularity/bundles/example
+  $ apptainer oci mount /tmp/example.sif /var/lib/apptainer/bundles/example
 
 
 For additional help or support, please visit https://singularity.hpcng.org/help/

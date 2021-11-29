@@ -1,4 +1,4 @@
-# Build Singularity
+# Build Apptainer
 
 ## Summary
 

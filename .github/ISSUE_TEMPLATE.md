@@ -1,6 +1,6 @@
-### Version of Singularity:
+### Version of Apptainer:
 
-What version of Singularity are you using? Run:
+What version of Apptainer are you using? Run:
 
 ```
 $ singularity --version
@@ -37,8 +37,8 @@ $ cat /etc/os-release
 ```
 
 
-### How did you install Singularity
+### How did you install Apptainer
 
-Write here how you installed Singularity. Eg. RPM, source.
+Write here how you installed Apptainer. Eg. RPM, source.
 
 

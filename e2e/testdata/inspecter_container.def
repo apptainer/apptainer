@@ -4,7 +4,7 @@ from: alpine:3.11.5
 %help
 This is a e2e test container used for testing the 'inspect'
 command. This container "inspector_container.sif" should be placed
-in the "e2e/testdata" directory of Singularity.
+in the "e2e/testdata" directory of Apptainer.
 
 %labels
 MAINTAINER "WestleyK <westley@sylabs.io>"
