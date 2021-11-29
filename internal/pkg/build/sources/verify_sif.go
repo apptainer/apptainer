@@ -8,7 +8,7 @@ package sources
 import (
 	"context"
 
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	scskeyclient "github.com/sylabs/scs-key-client/client"
 )

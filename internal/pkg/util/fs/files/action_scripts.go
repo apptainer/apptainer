@@ -180,8 +180,8 @@ run)
         exit 1
     elif test -x "/.singularity.d/runscript"; then
         exec "/.singularity.d/runscript" "$@"
-    elif test -x "/singularity"; then
-        exec "/singularity" "$@"
+    elif test -x "/apptainer"; then
+        exec "/apptainer" "$@"
     elif test -x "/bin/sh"; then
         sylog info "No runscript found in container, executing /bin/sh"
         exec "/bin/sh" "$@"

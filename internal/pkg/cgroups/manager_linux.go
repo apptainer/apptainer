@@ -53,7 +53,7 @@ type Manager interface {
 // If group = "" then "/singularity/<pid>" is used as a default.
 func NewManagerFromFile(specPath string, pid int, group string) (manager Manager, err error) {
 	if group == "" {
-		group = filepath.Join("/singularity", strconv.Itoa(pid))
+		group = filepath.Join("/apptainer", strconv.Itoa(pid))
 	}
 	if cgroups.Mode() == cgroups.Unified {
 		sylog.Debugf("Applying cgroups v2 configuration")
@@ -71,7 +71,7 @@ func NewManagerFromFile(specPath string, pid int, group string) (manager Manager
 // If group = "" then "/singularity/<pid>" is used as a default.
 func NewManagerFromSpec(spec *specs.LinuxResources, pid int, group string) (manager Manager, err error) {
 	if group == "" {
-		group = filepath.Join("/singularity", strconv.Itoa(pid))
+		group = filepath.Join("/apptainer", strconv.Itoa(pid))
 	}
 
 	if cgroups.Mode() == cgroups.Unified {
