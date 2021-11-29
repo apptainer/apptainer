@@ -52,6 +52,6 @@
 
 void _print(int level, const char *function, const char *file, char *format, ...) __attribute__ ((__format__(printf, 4, 5)));
 
-#define singularity_message(a,b...) _print(a, __func__, __FILE__, b)
+#define apptainer_message(a,b...) _print(a, __func__, __FILE__, b)
 
 #endif /*_APPTAINER_MESSAGE_H */

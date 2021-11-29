@@ -2,43 +2,43 @@
 
 # apptainer build config
 apptainer_build_config := $(SOURCEDIR)/internal/pkg/buildcfg/config.go
-$(singularity_build_config): $(BUILDDIR)/config.h $(SOURCEDIR)/scripts/go-generate
-	$(V)rm -f $(singularity_build_config)
+$(apptainer_build_config): $(BUILDDIR)/config.h $(SOURCEDIR)/scripts/go-generate
+	$(V)rm -f $(apptainer_build_config)
 	$(V) cd $(SOURCEDIR)/internal/pkg/buildcfg && $(SOURCEDIR)/scripts/go-generate
 
-CLEANFILES += $(singularity_build_config)
+CLEANFILES += $(apptainer_build_config)
 
-# contain singularity_SOURCE variable list
-singularity_deps := $(BUILDDIR_ABSPATH)/apptainer.d
+# contain apptainer_SOURCE variable list
+apptainer_deps := $(BUILDDIR_ABSPATH)/apptainer.d
 
--include $(singularity_deps)
+-include $(apptainer_deps)
 
-$(singularity_deps): $(GO_MODFILES)
+$(apptainer_deps): $(GO_MODFILES)
 	@echo " GEN GO DEP" $@
-	$(V)$(SOURCEDIR)/makeit/gengodep -v3 "$(GO)" "singularity_SOURCE" "$(GO_TAGS)" "$@" "$(SOURCEDIR)/cmd/apptainer"
+	$(V)$(SOURCEDIR)/makeit/gengodep -v3 "$(GO)" "apptainer_SOURCE" "$(GO_TAGS)" "$@" "$(SOURCEDIR)/cmd/apptainer"
 
-# Look at dependencies file changes via singularity_deps
+# Look at dependencies file changes via apptainer_deps
 # because it means that a module was updated.
 singularity := $(BUILDDIR)/singularity
-$(singularity): $(singularity_build_config) $(singularity_deps) $(singularity_SOURCE)
+$(singularity): $(apptainer_build_config) $(apptainer_deps) $(apptainer_SOURCE)
 	@echo " GO" $@; echo "    [+] GO_TAGS" \"$(GO_TAGS)\"
 	$(V)$(GO) build $(GO_MODFLAGS) $(GO_BUILDMODE) -tags "$(GO_TAGS)" $(GO_LDFLAGS) $(GO_GCFLAGS) $(GO_ASMFLAGS) \
 		-o $(BUILDDIR)/singularity $(SOURCEDIR)/cmd/apptainer
 
-singularity_INSTALL := $(DESTDIR)$(BINDIR)/singularity
-$(singularity_INSTALL): $(singularity)
+apptainer_INSTALL := $(DESTDIR)$(BINDIR)/singularity
+$(apptainer_INSTALL): $(singularity)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
-	$(V)install -m 0755 $(singularity) $(singularity_INSTALL) # set cp to install
+	$(V)install -m 0755 $(singularity) $(apptainer_INSTALL) # set cp to install
 
 CLEANFILES += $(singularity)
-INSTALLFILES += $(singularity_INSTALL)
+INSTALLFILES += $(apptainer_INSTALL)
 ALL += $(singularity)
 
 
 # bash_completion file
 bash_completion :=  $(BUILDDIR)/etc/bash_completion.d/singularity
-$(bash_completion): $(singularity_build_config)
+$(bash_completion): $(apptainer_build_config)
 	@echo " GEN" $@
 	$(V)rm -f $@
 	$(V)mkdir -p $(@D)
@@ -62,7 +62,7 @@ config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/singularity.conf
 # override this to empty to avoid merging old configuration settings
 old_config := $(config_INSTALL)
 
-$(config): $(singularity_build_config) $(SOURCEDIR)/etc/conf/gen.go $(SOURCEDIR)/pkg/runtime/engine/apptainer/config/config.go
+$(config): $(apptainer_build_config) $(SOURCEDIR)/etc/conf/gen.go $(SOURCEDIR)/pkg/runtime/engine/apptainer/config/config.go
 	@echo " GEN $@`if [ -n "$(old_config)" ]; then echo " from $(old_config)"; fi`"
 	$(V)$(GO) run $(GO_MODFLAGS) $(GO_GCFLAGS) $(GO_ASMFLAGS) $(SOURCEDIR)/etc/conf/gen.go \
 		$(old_config) $(config)

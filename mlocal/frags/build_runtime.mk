@@ -23,7 +23,7 @@ $(BUILDDIR)/.clean-starter: $(starter_CSOURCE)
 # Look at dependencies file changes via starter_deps
 # because it means that a module was updated.
 starter := $(BUILDDIR)/cmd/starter/c/starter
-$(starter): $(BUILDDIR)/.clean-starter $(singularity_build_config) $(starter_deps) $(starter_SOURCE)
+$(starter): $(BUILDDIR)/.clean-starter $(apptainer_build_config) $(starter_deps) $(starter_SOURCE)
 	@echo " GO" $@
 	$(V)$(GO) build $(GO_MODFLAGS) $(GO_BUILDMODE) -tags "$(GO_TAGS)" $(GO_LDFLAGS) $(GO_GCFLAGS) $(GO_ASMFLAGS) \
 		-o $@ $(SOURCEDIR)/cmd/starter/main_linux.go
@@ -51,13 +51,13 @@ INSTALLFILES += $(sessiondir_INSTALL)
 # run-singularity script
 run_singularity := $(SOURCEDIR)/scripts/run-singularity
 
-run_singularity_INSTALL := $(DESTDIR)$(BINDIR)/run-singularity
-$(run_singularity_INSTALL): $(run_singularity)
+run_apptainer_INSTALL := $(DESTDIR)$(BINDIR)/run-singularity
+$(run_apptainer_INSTALL): $(run_singularity)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
 	$(V)install -m 0755 $< $@
 
-INSTALLFILES += $(run_singularity_INSTALL)
+INSTALLFILES += $(run_apptainer_INSTALL)
 
 
 # capability config file
