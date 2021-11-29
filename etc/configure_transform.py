@@ -40,7 +40,7 @@ import optparse
 
 def get_parser():
 
-    description = "singularity configuration parsing helper in python"
+    description = "apptainer configuration parsing helper in python"
     parser = optparse.OptionParser(description=description)
 
     # Configuration defaults header
@@ -51,14 +51,14 @@ def get_parser():
                       type=str)
 
     # input configuration file
-    help = "the configuration input file path (singularity.conf.in)"
+    help = "the configuration input file path (apptainer.conf.in)"
     parser.add_option("--infile",
                       dest='infile',
                       help=help,
                       type=str)
 
     # Output configuration file
-    help = "the configuration output file path (singularity.conf)"
+    help = "the configuration output file path (apptainer.conf)"
     parser.add_option("--outfile",
                       dest='outfile',
                       help=help,
@@ -107,7 +107,7 @@ def configure(args):
 
     # Get fullpath to each file, and concurrently check that exists
     defaultfile = get_fullpath(args.defaults)  # ../src/lib/config_defaults.h
-    infile = get_fullpath(args.infile)         # singularity.conf.in
+    infile = get_fullpath(args.infile)         # apptainer.conf.in
 
     # Find define statements
     define_re = re.compile("#define ([A-Z_]+) (.*)")

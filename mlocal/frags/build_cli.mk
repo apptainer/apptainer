@@ -19,25 +19,25 @@ $(apptainer_deps): $(GO_MODFILES)
 
 # Look at dependencies file changes via apptainer_deps
 # because it means that a module was updated.
-singularity := $(BUILDDIR)/singularity
-$(singularity): $(apptainer_build_config) $(apptainer_deps) $(apptainer_SOURCE)
+apptainer := $(BUILDDIR)/apptainer
+$(apptainer): $(apptainer_build_config) $(apptainer_deps) $(apptainer_SOURCE)
 	@echo " GO" $@; echo "    [+] GO_TAGS" \"$(GO_TAGS)\"
 	$(V)$(GO) build $(GO_MODFLAGS) $(GO_BUILDMODE) -tags "$(GO_TAGS)" $(GO_LDFLAGS) $(GO_GCFLAGS) $(GO_ASMFLAGS) \
-		-o $(BUILDDIR)/singularity $(SOURCEDIR)/cmd/apptainer
+		-o $(BUILDDIR)/apptainer $(SOURCEDIR)/cmd/apptainer
 
-apptainer_INSTALL := $(DESTDIR)$(BINDIR)/singularity
-$(apptainer_INSTALL): $(singularity)
+apptainer_INSTALL := $(DESTDIR)$(BINDIR)/apptainer
+$(apptainer_INSTALL): $(apptainer)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
-	$(V)install -m 0755 $(singularity) $(apptainer_INSTALL) # set cp to install
+	$(V)install -m 0755 $(apptainer) $(apptainer_INSTALL) # set cp to install
 
-CLEANFILES += $(singularity)
+CLEANFILES += $(apptainer)
 INSTALLFILES += $(apptainer_INSTALL)
-ALL += $(singularity)
+ALL += $(apptainer)
 
 
 # bash_completion file
-bash_completion :=  $(BUILDDIR)/etc/bash_completion.d/singularity
+bash_completion :=  $(BUILDDIR)/etc/bash_completion.d/apptainer
 $(bash_completion): $(apptainer_build_config)
 	@echo " GEN" $@
 	$(V)rm -f $@
@@ -45,7 +45,7 @@ $(bash_completion): $(apptainer_build_config)
 	$(V)$(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" $(GO_GCFLAGS) $(GO_ASMFLAGS) \
 		$(SOURCEDIR)/cmd/bash_completion/bash_completion.go $@
 
-bash_completion_INSTALL := $(DESTDIR)$(SYSCONFDIR)/bash_completion.d/singularity
+bash_completion_INSTALL := $(DESTDIR)$(SYSCONFDIR)/bash_completion.d/apptainer
 $(bash_completion_INSTALL): $(bash_completion)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
@@ -56,9 +56,9 @@ INSTALLFILES += $(bash_completion_INSTALL)
 ALL += $(bash_completion)
 
 
-# singularity.conf file
-config := $(BUILDDIR)/singularity.conf
-config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/singularity.conf
+# apptainer.conf file
+config := $(BUILDDIR)/apptainer.conf
+config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/apptainer.conf
 # override this to empty to avoid merging old configuration settings
 old_config := $(config_INSTALL)
 
@@ -78,7 +78,7 @@ ALL += $(config)
 # remote config file
 remote_config := $(SOURCEDIR)/etc/remote.yaml
 
-remote_config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/remote.yaml
+remote_config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/remote.yaml
 $(remote_config_INSTALL): $(remote_config)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)

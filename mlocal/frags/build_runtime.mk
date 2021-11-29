@@ -28,7 +28,7 @@ $(starter): $(BUILDDIR)/.clean-starter $(apptainer_build_config) $(starter_deps)
 	$(V)$(GO) build $(GO_MODFLAGS) $(GO_BUILDMODE) -tags "$(GO_TAGS)" $(GO_LDFLAGS) $(GO_GCFLAGS) $(GO_ASMFLAGS) \
 		-o $@ $(SOURCEDIR)/cmd/starter/main_linux.go
 
-starter_INSTALL := $(DESTDIR)$(LIBEXECDIR)/singularity/bin/starter
+starter_INSTALL := $(DESTDIR)$(LIBEXECDIR)/apptainer/bin/starter
 $(starter_INSTALL): $(starter)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
@@ -40,7 +40,7 @@ ALL += $(starter)
 
 
 # sessiondir
-sessiondir_INSTALL := $(DESTDIR)$(LOCALSTATEDIR)/singularity/mnt/session
+sessiondir_INSTALL := $(DESTDIR)$(LOCALSTATEDIR)/apptainer/mnt/session
 $(sessiondir_INSTALL):
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $@
@@ -48,11 +48,11 @@ $(sessiondir_INSTALL):
 INSTALLFILES += $(sessiondir_INSTALL)
 
 
-# run-singularity script
-run_singularity := $(SOURCEDIR)/scripts/run-singularity
+# run-apptainer script
+run_apptainer := $(SOURCEDIR)/scripts/run-apptainer
 
-run_apptainer_INSTALL := $(DESTDIR)$(BINDIR)/run-singularity
-$(run_apptainer_INSTALL): $(run_singularity)
+run_apptainer_INSTALL := $(DESTDIR)$(BINDIR)/run-apptainer
+$(run_apptainer_INSTALL): $(run_apptainer)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
 	$(V)install -m 0755 $< $@
@@ -61,7 +61,7 @@ INSTALLFILES += $(run_apptainer_INSTALL)
 
 
 # capability config file
-capability_config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/capability.json
+capability_config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/capability.json
 $(capability_config_INSTALL):
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
@@ -73,7 +73,7 @@ INSTALLFILES += $(capability_config_INSTALL)
 # syecl config file
 syecl_config := $(SOURCEDIR)/internal/pkg/syecl/syecl.toml.example
 
-syecl_config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/ecl.toml
+syecl_config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/ecl.toml
 $(syecl_config_INSTALL): $(syecl_config)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
@@ -85,7 +85,7 @@ INSTALLFILES += $(syecl_config_INSTALL)
 # seccomp profile
 seccomp_profile := $(SOURCEDIR)/etc/seccomp-profiles/default.json
 
-seccomp_profile_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/seccomp-profiles/default.json
+seccomp_profile_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/seccomp-profiles/default.json
 $(seccomp_profile_INSTALL): $(seccomp_profile)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
@@ -97,7 +97,7 @@ INSTALLFILES += $(seccomp_profile_INSTALL)
 # nvidia liblist config file
 nvidia_liblist := $(SOURCEDIR)/etc/nvliblist.conf
 
-nvidia_liblist_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/nvliblist.conf
+nvidia_liblist_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/nvliblist.conf
 $(nvidia_liblist_INSTALL): $(nvidia_liblist)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
@@ -109,7 +109,7 @@ INSTALLFILES += $(nvidia_liblist_INSTALL)
 # rocm liblist config file
 rocm_liblist := $(SOURCEDIR)/etc/rocmliblist.conf
 
- rocm_liblist_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/rocmliblist.conf
+ rocm_liblist_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/rocmliblist.conf
 $(rocm_liblist_INSTALL): $(rocm_liblist)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
@@ -121,7 +121,7 @@ INSTALLFILES += $(rocm_liblist_INSTALL)
 # cgroups config file
 cgroups_config := $(SOURCEDIR)/internal/pkg/cgroups/example/cgroups.toml
 
-cgroups_config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/cgroups/cgroups.toml
+cgroups_config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/cgroups/cgroups.toml
 $(cgroups_config_INSTALL): $(cgroups_config)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
@@ -132,7 +132,7 @@ INSTALLFILES += $(cgroups_config_INSTALL)
 # global keyring
 global_keyring := $(SOURCEDIR)/etc/global-pgp-public
 
-global_keyring_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/global-pgp-public
+global_keyring_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/global-pgp-public
 $(global_keyring_INSTALL): $(global_keyring)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
