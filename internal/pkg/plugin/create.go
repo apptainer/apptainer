@@ -21,7 +21,7 @@ go 1.13
 
 require github.com/apptainer/apptainer v0.0.0
 
-replace github.com/apptainer/apptainer => ./singularity_source
+replace github.com/apptainer/apptainer => ./apptainer_source
 `
 
 const mainGo = `package main
@@ -54,7 +54,7 @@ func installCallback(path string) error {
 // Write plugin callbacks here and register them in Callbacks
 `
 
-const gitIgnore = `singularity_source
+const gitIgnore = `apptainer_source
 *.sif
 *.o
 *.a

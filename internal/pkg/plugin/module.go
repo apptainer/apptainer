@@ -21,7 +21,7 @@ import (
 
 // SingularitySource represents the symlink name which will
 // point to the Singularity source directory.
-const SingularitySource = "singularity_source"
+const SingularitySource = "apptainer_source"
 
 // Module describes a Go module with its corresponding path and version.
 type Module struct {

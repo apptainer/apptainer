@@ -113,6 +113,6 @@ const (
   $ ls -1 ~/myplugin
   go.mod
   main.go
-  singularity_source
+  apptainer_source
   `
 )
