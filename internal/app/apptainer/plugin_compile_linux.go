@@ -28,7 +28,6 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/archive"
 	"github.com/hpcng/sif/v2/pkg/sif"
-	uuid "github.com/satori/go.uuid"
 )
 
 const version = "v0.0.0"

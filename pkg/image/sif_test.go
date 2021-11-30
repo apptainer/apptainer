@@ -16,7 +16,6 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/hpcng/sif/v2/pkg/sif"
-	uuid "github.com/satori/go.uuid"
 )
 
 const testSquash = "./testdata/squashfs.v4"
