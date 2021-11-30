@@ -1,0 +1,147 @@
+name: {{ .PackageName }}
+version: {{ .Version }}
+
+maintainer: "Apptainer a Series of LF Projects LLC"
+vendor: "Apptainer a Series of LF Projects LLC"
+homepage: "https://apptainer.org"
+license: "BSD-3-Clause"
+
+platform: {{ .Platform }}
+arch: {{ .Arch }}
+
+description: |
+  Apptainer provides functionality to make portable
+  containers that can be used across host environments.
+
+contents:
+  - src: ./builddir/{{ .AppName }}
+    dst: {{ .BinDir }}/{{ .AppName }}
+    file_info:
+      mode: 0755
+      owner: root
+      group: root
+
+  - src: ./builddir/{{ .AppName }}.conf
+    dst: {{ .ConfDir }}/{{ .AppName }}.conf
+    type: config|noreplace
+    file_info:
+      mode: 0644
+      owner: root
+      group: root
+
+  - src: ./scripts/run-singularity
+    dst: {{ .BinDir }}/run-singularity
+    file_info:
+      mode: 0755
+      owner: root
+      group: root
+
+  - src: ./internal/pkg/syecl/syecl.toml.example
+    dst: {{ .ConfDir }}/ecl.toml
+    type: config|noreplace
+    file_info:
+      mode: 0644
+      owner: root
+      group: root
+
+  - src: ./etc/nvliblist.conf
+    dst: {{ .ConfDir }}/nvliblist.conf
+    type: config|noreplace
+    file_info:
+      mode: 0644
+      owner: root
+      group: root
+
+  - src: ./etc/rocmliblist.conf
+    dst: {{ .ConfDir }}/rocmliblist.conf
+    type: config|noreplace
+    file_info:
+      mode: 0644
+      owner: root
+      group: root
+
+  - src: ./etc/remote.yaml
+    dst: {{ .ConfDir }}/remote.yaml
+    type: config|noreplace
+    file_info:
+      mode: 0644
+      owner: root
+      group: root
+
+  - src: /dev/null
+    dst: {{ .ConfDir }}/capability.json
+    type: config|noreplace
+    file_info:
+      mode: 0644
+      owner: root
+      group: root
+
+  - src: ./internal/pkg/cgroups/example/cgroups.toml
+    dst: {{ .ConfDir }}/cgroups/cgroups.toml
+    type: config|noreplace
+    file_info:
+      mode: 0644
+      owner: root
+      group: root
+
+  - src: /dev/null
+    dst: {{ .ConfDir }}/global-pgp-public
+    type: config|noreplace
+    file_info:
+      mode: 0644
+      owner: root
+      group: root
+
+  - src: ./etc/seccomp-profiles/default.json
+    dst: {{ .ConfDir }}/seccomp-profiles/default.json
+    type: config|noreplace
+    file_info:
+      mode: 0644
+      owner: root
+      group: root
+
+  - src: ./builddir/cmd/starter/c/starter
+    dst: {{ .LibExecDir }}/{{ .AppName }}/bin/starter
+    file_info:
+      mode: 0755
+      owner: root
+      group: root
+{{- if not .Rootless }}
+  - src: ./builddir/cmd/starter/c/starter-suid
+    dst: {{ .LibExecDir }}/{{ .AppName }}/bin/starter-suid
+    file_info:
+      mode: 04755
+      owner: root
+      group: root
+{{- end }}
+  - src: ./etc/network
+    dst: {{ .ConfDir }}/network
+    type: dir|config|noreplace
+
+  - src: ./builddir/cni
+    dst: {{ .LibExecDir }}/{{ .AppName }}/cni
+
+  - dst: {{ .SessionDir }}
+    src: ./dist/nfpm/session_dir
+    file_info:
+      mode: 0755
+      owner: root
+      group: root
+
+overrides:
+  deb:
+    depends:
+      - libseccomp2
+      - squashfs-tools
+{{- if .Rootless }}
+    recommends:
+      - uidmap
+{{- end }}
+  rpm:
+    depends:
+      - libseccomp
+      - squashfs-tools
+{{- if .Rootless }}
+    recommends:
+      - shadow-utils
+{{- end }}
