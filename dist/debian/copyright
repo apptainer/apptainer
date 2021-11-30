@@ -5,7 +5,10 @@ Source: https://github.com/apptainer/apptainer
 Files-Excluded: debian
 
 Files: *
-Copyright: 2015-2017, Gregory M. Kurtzer <gmkurtzer@lbl.gov>
+Copyright: Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+             For website terms of use, trademark policy, privacy policy and other
+             project policies see https://lfprojects.org/policies
+           2015-2017, Gregory M. Kurtzer <gmkurtzer@lbl.gov>
            2016-2017, The Regents of the University of California
            2017, SingularityWare, LLC
 License: BSD-3-Clause-LBNL

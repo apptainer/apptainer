@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
 // Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
@@ -123,6 +126,12 @@ func runBuild(cmd *cobra.Command, args []string) {
 			sylog.Fatalf("-B/--bind option is not supported for remote build")
 		}
 		os.Setenv("APPTAINER_BINDPATH", strings.Join(buildArgs.bindPaths, ","))
+	}
+	if len(buildArgs.mounts) > 0 {
+		if buildArgs.remote {
+			sylog.Fatalf("--mount option is not supported for remote build")
+		}
+		os.Setenv("SINGULARITY_MOUNT", strings.Join(buildArgs.mounts, "\n"))
 	}
 	if buildArgs.writableTmpfs {
 		if buildArgs.remote {

@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
@@ -351,10 +354,21 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		img.File.Close()
 	}
 
+	// First get binds from -B/--bind and env var
 	binds, err := apptainerConfig.ParseBindPath(BindPaths)
 	if err != nil {
 		sylog.Fatalf("while parsing bind path: %s", err)
 	}
+
+	// Now add binds from one or more --mount and env var.
+	for _, m := range Mounts {
+		bps, err := singularityConfig.ParseMountString(m)
+		if err != nil {
+			sylog.Fatalf("while parsing mount %q: %s", m, err)
+		}
+		binds = append(binds, bps...)
+	}
+
 	engineConfig.SetBindPath(binds)
 	generator.AddProcessEnv("APPTAINER_BIND", strings.Join(BindPaths, ","))
 

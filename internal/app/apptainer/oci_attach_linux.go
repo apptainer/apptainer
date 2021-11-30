@@ -1,4 +1,7 @@
-// Copyright (c) 2018-2020, Sylabs Inc. All rights reserved.
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
+// Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -24,7 +27,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/unix"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 func resize(controlSocket string, oversized bool) {
@@ -65,7 +68,7 @@ func resize(controlSocket string, oversized bool) {
 }
 
 func attach(engineConfig *oci.EngineConfig, run bool) error {
-	var ostate *terminal.State
+	var ostate *term.State
 	var conn net.Conn
 	var wg sync.WaitGroup
 
@@ -79,7 +82,7 @@ func attach(engineConfig *oci.EngineConfig, run bool) error {
 	}
 
 	hasTerminal := engineConfig.OciConfig.Process.Terminal
-	if hasTerminal && !terminal.IsTerminal(0) {
+	if hasTerminal && !term.IsTerminal(0) {
 		return fmt.Errorf("attach requires a terminal when terminal config is set to true")
 	}
 
@@ -91,7 +94,7 @@ func attach(engineConfig *oci.EngineConfig, run bool) error {
 	defer conn.Close()
 
 	if hasTerminal {
-		ostate, _ = terminal.MakeRaw(0)
+		ostate, _ = term.MakeRaw(0)
 		resize(state.ControlSocket, true)
 		resize(state.ControlSocket, false)
 	}
@@ -130,7 +133,7 @@ func attach(engineConfig *oci.EngineConfig, run bool) error {
 
 		if hasTerminal {
 			fmt.Printf("\r")
-			return terminal.Restore(0, ostate)
+			return term.Restore(0, ostate)
 		}
 		return nil
 	}

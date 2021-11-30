@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -13,7 +16,7 @@ import (
 	"testing"
 	"time"
 
-	pgppacket "golang.org/x/crypto/openpgp/packet"
+	pgppacket "github.com/ProtonMail/go-crypto/openpgp/packet"
 )
 
 var pubKeyTests = []struct {

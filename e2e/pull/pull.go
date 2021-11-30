@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
@@ -44,6 +47,7 @@ type testStruct struct {
 	pullDir          string
 	imagePath        string
 	expectedImage    string
+	envVars          []string
 }
 
 var tests = []testStruct{
@@ -250,6 +254,7 @@ func (c *ctx) imagePull(t *testing.T, tt testStruct) {
 		t,
 		e2e.AsSubtest(tt.desc),
 		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithEnv(tt.envVars),
 		e2e.WithCommand("pull"),
 		e2e.WithArgs(strings.Split(argv, " ")...),
 		e2e.ExpectExit(tt.expectedExitCode))
@@ -650,6 +655,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 
 			t.Run("pull", c.testPullCmd)
 			t.Run("pullDisableCache", c.testPullDisableCacheCmd)
+			t.Run("concurrencyConfig", c.testConcurrencyConfig)
+			t.Run("concurrentPulls", c.testConcurrentPulls)
 
 			// Regressions
 			// Disable for now, see issue #6299

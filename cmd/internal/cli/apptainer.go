@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
 // Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
@@ -35,7 +38,7 @@ import (
 	scsbuildclient "github.com/sylabs/scs-build-client/client"
 	scskeyclient "github.com/sylabs/scs-key-client/client"
 	scslibclient "github.com/sylabs/scs-library-client/client"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 // cmdInits holds all the init function to be called
@@ -254,7 +257,7 @@ func setSylogMessageLevel() {
 	}
 
 	color := true
-	if nocolor || !terminal.IsTerminal(2) {
+	if nocolor || !term.IsTerminal(2) {
 		color = false
 	}
 

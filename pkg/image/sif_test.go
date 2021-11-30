@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
@@ -12,41 +15,33 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
-	"github.com/hpcng/sif/pkg/sif"
+	"github.com/hpcng/sif/v2/pkg/sif"
 	uuid "github.com/satori/go.uuid"
 )
 
 const testSquash = "./testdata/squashfs.v4"
 
-func createSIF(t *testing.T, inputDesc []sif.DescriptorInput, corrupted bool) string {
+func createSIF(t *testing.T, corrupted bool, fns ...func() (sif.DescriptorInput, error)) string {
 	sifFile, err := fs.MakeTmpFile("", "sif-", 0o644)
 	if err != nil {
 		t.Fatalf("failed to create temporary file: %s", err)
 	}
 	sifFile.Close()
 
-	for _, d := range inputDesc {
-		if f, ok := d.Fp.(*os.File); ok {
-			f.Seek(0, 0)
+	var opts []sif.CreateOpt
+
+	for _, fn := range fns {
+		di, err := fn()
+		if err != nil {
+			t.Fatalf("failed to get DescriptorInput: %v", err)
 		}
+
+		opts = append(opts, sif.OptCreateWithDescriptors(di))
 	}
 
-	id, err := uuid.NewV4()
+	fp, err := sif.CreateContainerAtPath(sifFile.Name(), opts...)
 	if err != nil {
-		t.Fatal(err)
-	}
-
-	cinfo := sif.CreateInfo{
-		Pathname:   sifFile.Name(),
-		Launchstr:  sif.HdrLaunch,
-		Sifversion: sif.HdrVersion,
-		ID:         id,
-		InputDescr: inputDesc,
-	}
-
-	fp, err := sif.CreateContainer(cinfo)
-	if err != nil {
-		t.Fatalf("failed to create empty SIF")
+		t.Fatalf("failed to create SIF: %v", err)
 	}
 	fp.UnloadContainer()
 
@@ -70,73 +65,37 @@ func createSIF(t *testing.T, inputDesc []sif.DescriptorInput, corrupted bool) st
 }
 
 func TestSIFInitializer(t *testing.T) {
-	fp1, err := os.Open(testSquash)
+	b, err := os.ReadFile(testSquash)
 	if err != nil {
-		t.Fatalf("failed to open %s: %s", testSquash, err)
-	}
-	defer fp1.Close()
-
-	fp2, err := os.Open(testSquash)
-	if err != nil {
-		t.Fatalf("failed to open %s: %s", testSquash, err)
-	}
-	defer fp2.Close()
-
-	onePart := sif.DescriptorInput{
-		Datatype: sif.DataPartition,
-		Groupid:  sif.DescrDefaultGroup,
-		Link:     sif.DescrUnusedLink,
-		Fname:    "onePart",
-		Fp:       fp1,
-		Extra: *bytes.NewBuffer([]byte{
-			0x01, 0x00, 0x00, 0x00, // fstype
-			0x01, 0x00, 0x00, 0x00, // part type
-		}),
+		t.Fatalf("failed to read %s: %s", testSquash, err)
 	}
 
-	oneSection := sif.DescriptorInput{
-		Datatype: sif.DataGeneric,
-		Groupid:  sif.DescrDefaultGroup,
-		Link:     sif.DescrUnusedLink,
-		Fname:    "oneSection",
-		Fp:       fp1,
+	onePart := func() (sif.DescriptorInput, error) {
+		return sif.NewDescriptorInput(sif.DataPartition, bytes.NewReader(b),
+			sif.OptPartitionMetadata(sif.FsSquash, sif.PartSystem, runtime.GOARCH),
+		)
 	}
 
-	primPartNoArch := sif.DescriptorInput{
-		Datatype: sif.DataPartition,
-		Groupid:  sif.DescrDefaultGroup,
-		Link:     sif.DescrUnusedLink,
-		Fname:    "primPart",
-		Fp:       fp1,
-		Extra: *bytes.NewBuffer([]byte{
-			0x01, 0x00, 0x00, 0x00, // fstype
-			0x02, 0x00, 0x00, 0x00, // part type
-		}),
+	oneSection := func() (sif.DescriptorInput, error) {
+		return sif.NewDescriptorInput(sif.DataGeneric, bytes.NewReader(b))
 	}
 
-	primPart := sif.DescriptorInput{
-		Datatype: sif.DataPartition,
-		Groupid:  sif.DescrDefaultGroup,
-		Link:     sif.DescrUnusedLink,
-		Fname:    "primPart",
-		Fp:       fp1,
-		Extra: *bytes.NewBuffer([]byte{
-			0x01, 0x00, 0x00, 0x00, // fstype
-			0x02, 0x00, 0x00, 0x00, // part type
-		}),
+	primPartOtherArch := func() (sif.DescriptorInput, error) {
+		return sif.NewDescriptorInput(sif.DataPartition, bytes.NewReader(b),
+			sif.OptPartitionMetadata(sif.FsSquash, sif.PartPrimSys, "s390x"),
+		)
 	}
-	primPart.Extra.WriteString(sif.GetSIFArch(runtime.GOARCH))
 
-	overlayPart := sif.DescriptorInput{
-		Datatype: sif.DataPartition,
-		Groupid:  sif.DescrDefaultGroup,
-		Link:     sif.DescrUnusedLink,
-		Fname:    "overlayPart",
-		Fp:       fp2,
-		Extra: *bytes.NewBuffer([]byte{
-			0x01, 0x00, 0x00, 0x00, // fstype
-			0x04, 0x00, 0x00, 0x00, // part type
-		}),
+	primPart := func() (sif.DescriptorInput, error) {
+		return sif.NewDescriptorInput(sif.DataPartition, bytes.NewReader(b),
+			sif.OptPartitionMetadata(sif.FsSquash, sif.PartPrimSys, runtime.GOARCH),
+		)
+	}
+
+	overlayPart := func() (sif.DescriptorInput, error) {
+		return sif.NewDescriptorInput(sif.DataPartition, bytes.NewReader(b),
+			sif.OptPartitionMetadata(sif.FsSquash, sif.PartOverlay, runtime.GOARCH),
+		)
 	}
 
 	tests := []struct {
@@ -149,7 +108,7 @@ func TestSIFInitializer(t *testing.T) {
 	}{
 		{
 			name:               "NoPartitionSIF",
-			path:               createSIF(t, nil, false),
+			path:               createSIF(t, false),
 			writable:           false,
 			expectedSuccess:    true,
 			expectedPartitions: 0,
@@ -157,15 +116,15 @@ func TestSIFInitializer(t *testing.T) {
 		},
 		{
 			name:               "UnkownPartitionSIF",
-			path:               createSIF(t, []sif.DescriptorInput{onePart}, false),
+			path:               createSIF(t, false, onePart),
 			writable:           false,
 			expectedSuccess:    true,
 			expectedPartitions: 0,
 			expectedSections:   0,
 		},
 		{
-			name:               "PrimaryPartitionNoArchSIF",
-			path:               createSIF(t, []sif.DescriptorInput{primPartNoArch}, false),
+			name:               "PrimaryPartitionOtherArchSIF",
+			path:               createSIF(t, false, primPartOtherArch),
 			writable:           false,
 			expectedSuccess:    false,
 			expectedPartitions: 0,
@@ -173,7 +132,7 @@ func TestSIFInitializer(t *testing.T) {
 		},
 		{
 			name:               "PrimaryPartitionSIF",
-			path:               createSIF(t, []sif.DescriptorInput{primPart}, false),
+			path:               createSIF(t, false, primPart),
 			writable:           false,
 			expectedSuccess:    true,
 			expectedPartitions: 1,
@@ -181,7 +140,7 @@ func TestSIFInitializer(t *testing.T) {
 		},
 		{
 			name:               "PrimaryPartitionCorruptedSIF",
-			path:               createSIF(t, []sif.DescriptorInput{primPart}, true),
+			path:               createSIF(t, true, primPart),
 			writable:           false,
 			expectedSuccess:    false,
 			expectedPartitions: 0,
@@ -189,7 +148,7 @@ func TestSIFInitializer(t *testing.T) {
 		},
 		{
 			name:               "PrimaryAndOverlayPartitionsSIF",
-			path:               createSIF(t, []sif.DescriptorInput{primPart, overlayPart}, false),
+			path:               createSIF(t, false, primPart, overlayPart),
 			writable:           false,
 			expectedSuccess:    true,
 			expectedPartitions: 2,
@@ -197,7 +156,7 @@ func TestSIFInitializer(t *testing.T) {
 		},
 		{
 			name:               "SectionSIF",
-			path:               createSIF(t, []sif.DescriptorInput{oneSection}, false),
+			path:               createSIF(t, false, oneSection),
 			writable:           false,
 			expectedSuccess:    true,
 			expectedPartitions: 0,
@@ -205,7 +164,7 @@ func TestSIFInitializer(t *testing.T) {
 		},
 		{
 			name:               "PartitionAndSectionSIF",
-			path:               createSIF(t, []sif.DescriptorInput{primPart, oneSection}, false),
+			path:               createSIF(t, false, primPart, oneSection),
 			writable:           false,
 			expectedSuccess:    true,
 			expectedPartitions: 1,

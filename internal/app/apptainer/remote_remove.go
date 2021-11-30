@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright (c) 2019, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
@@ -7,6 +10,7 @@ package apptainer
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/apptainer/apptainer/internal/pkg/remote"
@@ -14,8 +18,6 @@ import (
 
 // RemoteRemove deletes a remote endpoint from the configuration
 func RemoteRemove(configFile, name string) (err error) {
-	c := &remote.Config{}
-
 	// opening config file
 	file, err := os.OpenFile(configFile, os.O_RDWR|os.O_CREATE, 0o600)
 	if err != nil {
@@ -24,7 +26,7 @@ func RemoteRemove(configFile, name string) (err error) {
 	defer file.Close()
 
 	// read file contents to config struct
-	c, err = remote.ReadFrom(file)
+	c, err := remote.ReadFrom(file)
 	if err != nil {
 		return fmt.Errorf("while parsing remote config data: %s", err)
 	}
@@ -38,7 +40,7 @@ func RemoteRemove(configFile, name string) (err error) {
 		return fmt.Errorf("while truncating remote config file: %s", err)
 	}
 
-	if n, err := file.Seek(0, os.SEEK_SET); err != nil || n != 0 {
+	if n, err := file.Seek(0, io.SeekStart); err != nil || n != 0 {
 		return fmt.Errorf("failed to reset %s cursor: %s", file.Name(), err)
 	}
 

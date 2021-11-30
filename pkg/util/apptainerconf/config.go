@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
@@ -70,6 +73,9 @@ type File struct {
 	NvidiaContainerCliPath  string   `directive:"nvidia-container-cli path"`
 	UnsquashfsPath          string   `directive:"unsquashfs path"`
 	ImageDriver             string   `directive:"image driver"`
+	DownloadConcurrency     uint     `default:"3" directive:"download concurrency"`
+	DownloadPartSize        uint     `default:"5242880" directive:"download part size"`
+	DownloadBufferSize      uint     `default:"32768" directive:"download buffer size"`
 }
 
 const TemplateAsset = `# APPTAINER.CONF
@@ -442,4 +448,22 @@ shared loop devices = {{ if eq .SharedLoopDevices true }}yes{{ else }}no{{ end }
 # If the driver name specified has not been registered via a plugin installation
 # the run-time will abort.
 image driver = {{ .ImageDriver }}
+
+# DOWNLOAD CONCURRENCY: [UINT]
+# DEFAULT: 3
+# This option specifies how many concurrent streams when downloading (pulling)
+# an image from cloud library.
+download concurrency = {{ .DownloadConcurrency }}
+
+# DOWNLOAD PART SIZE: [UINT]
+# DEFAULT: 5242880
+# This option specifies the size of each part when concurrent downloads are
+# enabled.
+download part size = {{ .DownloadPartSize }}
+
+# DOWNLOAD BUFFER SIZE: [UINT]
+# DEFAULT: 32768
+# This option specifies the transfer buffer size when concurrent downloads
+# are enabled.
+download buffer size = {{ .DownloadBufferSize }}
 `

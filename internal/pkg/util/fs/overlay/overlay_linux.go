@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
@@ -30,10 +33,10 @@ type fs struct {
 
 const (
 	nfs    int64 = 0x6969
-	fuse         = 0x65735546
-	ecrypt       = 0xF15F
-	lustre       = 0x0BD00BD0 //nolint:misspell
-	gpfs         = 0x47504653
+	fuse   int64 = 0x65735546
+	ecrypt int64 = 0xF15F
+	lustre int64 = 0x0BD00BD0 //nolint:misspell
+	gpfs   int64 = 0x47504653
 )
 
 var incompatibleFs = map[int64]fs{

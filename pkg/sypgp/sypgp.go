@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
 // Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
@@ -30,10 +33,10 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/ProtonMail/go-crypto/openpgp"
+	"github.com/ProtonMail/go-crypto/openpgp/armor"
+	"github.com/ProtonMail/go-crypto/openpgp/packet"
 	"github.com/sylabs/scs-key-client/client"
-	"golang.org/x/crypto/openpgp"
-	"golang.org/x/crypto/openpgp/armor"
-	"golang.org/x/crypto/openpgp/packet"
 )
 
 const (
@@ -56,7 +59,7 @@ var (
 
 // KeyExistsError is a type representing an error associated to a specific key.
 type KeyExistsError struct {
-	fingerprint [20]byte
+	fingerprint []byte
 }
 
 // HandleOpt is a type representing option which can be passed to NewHandle.
@@ -344,7 +347,7 @@ func (keyring *Handle) PrintPrivKeyring() error {
 // storePrivKeys writes all the private keys in list to the writer w.
 func storePrivKeys(w io.Writer, list openpgp.EntityList) error {
 	for _, e := range list {
-		if err := e.SerializePrivate(w, nil); err != nil {
+		if err := e.SerializePrivateWithoutSigning(w, nil); err != nil {
 			return err
 		}
 	}
@@ -914,7 +917,7 @@ func serializePrivateEntity(e *openpgp.Entity, blockType string) (string, error)
 		return "", err
 	}
 
-	if err = e.SerializePrivate(wr, nil); err != nil {
+	if err = e.SerializePrivateWithoutSigning(wr, nil); err != nil {
 		wr.Close()
 		return "", err
 	}
@@ -974,7 +977,7 @@ func (keyring *Handle) ExportPrivateKey(kpath string, armor bool) error {
 
 	if !armor {
 		// Export the key to the file
-		err = entityToExport.SerializePrivate(file, nil)
+		err = entityToExport.SerializePrivateWithoutSigning(file, nil)
 	} else {
 		var keyText string
 		keyText, err = serializePrivateEntity(entityToExport, openpgp.PrivateKeyType)
@@ -1030,9 +1033,9 @@ func (keyring *Handle) ExportPubKey(kpath string, armor bool) error {
 	return nil
 }
 
-func findEntityByFingerprint(entities openpgp.EntityList, fingerprint [20]byte) *openpgp.Entity {
+func findEntityByFingerprint(entities openpgp.EntityList, fingerprint []byte) *openpgp.Entity {
 	for _, entity := range entities {
-		if entity.PrimaryKey.Fingerprint == fingerprint {
+		if bytes.Equal(entity.PrimaryKey.Fingerprint, fingerprint) {
 			return entity
 		}
 	}

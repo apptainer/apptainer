@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
@@ -42,8 +45,8 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/rlimit"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
-	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/sys/unix"
+	"golang.org/x/term"
 	"mvdan.cc/sh/v3/interp"
 )
 
@@ -87,7 +90,7 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 		//   place.  Also, programs that don't use ttyname() and instead
 		//   directly do readlink() on /proc/self/fd/X need this.
 		for fd := 0; fd <= 2; fd++ {
-			if !terminal.IsTerminal(fd) {
+			if !term.IsTerminal(fd) {
 				continue
 			}
 			consfile, err := os.OpenFile("/dev/console", os.O_RDWR, 0o600)
@@ -98,7 +101,7 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 			sylog.Debugf("Replacing tty descriptors with /dev/console")
 			consfd := int(consfile.Fd())
 			for ; fd <= 2; fd++ {
-				if !terminal.IsTerminal(fd) {
+				if !term.IsTerminal(fd) {
 					continue
 				}
 				syscall.Close(fd)

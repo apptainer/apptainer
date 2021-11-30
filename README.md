@@ -2,13 +2,18 @@
 
 [![CI](https://github.com/apptainer/apptainer/actions/workflows/ci.yml/badge.svg)](https://github.com/apptainer/apptainer/actions/workflows/ci.yml)
 
-- [Documentation](https://singularity.hpcng.org/docs/)
+> *NOTE*: The apptainer repo is currently working towards a v1.0.0 release and
+  not ready for production in its current state. Until then, use the
+  [Singularity Repo](https://github.com/apptainer/singularity) for a production
+  ready version.
+
+- [Documentation](https://apptainer.org/docs/)
 - [Support](#support)
 - [Community Meetings / Minutes / Roadmap](https://drive.google.com/drive/u/0/folders/1npfBhIDxqeJIUHZ0tMeuHPvc_iB4T2B6)
 - [Project License](LICENSE.md)
 - [Guidelines for Contributing](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Citation](#citing-singularity)
+- [Citation](#citing-apptainer)
 
 ## What is Apptainer?
 
@@ -29,21 +34,21 @@ environments. It features:
 
 Apptainer is open source software, distributed under the [BSD License](LICENSE.md).
 
-Check out [talks about Singularity](https://singularity.hpcng.org/talks)
-and some [use cases of Singularity](https://singularity.hpcng.org/usecases)
+Check out [talks about Apptainer](https://apptainer.org/talks)
+and some [use cases of Apptainer](https://apptainer.org/usecases)
 on our website.
 
 ## Getting Started with Apptainer
 
 To install Apptainer from source, see the [installation
 instructions](INSTALL.md). For other installation options, see [our
-guide](https://singularity.hpcng.org/admin-docs/master/installation.html).
+guide](https://apptainer.org/admin-docs/master/installation.html).
 
 System administrators can learn how to configure Apptainer, and get an
 overview of its architecture and security features in the [administrator
-guide](https://singularity.hpcng.org/admin-docs/master/).
+guide](https://apptainer.org/admin-docs/master/).
 
-For users, see the [user guide](https://singularity.hpcng.org/user-docs/master/)
+For users, see the [user guide](https://apptainer.org/user-docs/master/)
 for details on how to run and build containers with Apptainer.
 
 ## Contributing to Apptainer
@@ -55,7 +60,7 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md). Please follow it in
 all your interactions with the project members and users.
 
 Our roadmap, other documents, and user/developer meeting information can be
-found in the [apptainer community page](https://singularity.hpcng.org/help).
+found in the [apptainer community page](https://apptainer.org/help).
 
 We also welcome contributions to our [user
 guide](https://github.com/apptainer/apptainer-userdocs) and [admin
@@ -64,7 +69,7 @@ guide](https://github.com/apptainer/apptainer-admindocs).
 ## Support
 
 To get help with Apptainer, check out the [Apptainer
-Help](https://singularity.hpcng.org/help) web page.
+Help](https://apptainer.org/help) web page.
 
 ## Go Version Compatibility
 
@@ -76,7 +81,9 @@ and [Security Policy](https://golang.org/security),
 ensuring critical bug fixes and security patches are available for all
 supported language versions.
 
-## Citing Singularity
+## Citing Apptainer
+
+Apptainer can be cited using its former name Singularity.
 
 The Singularity software may be cited using our Zenodo DOI `10.5281/zenodo.1310023`:
 

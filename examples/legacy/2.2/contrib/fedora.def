@@ -1,3 +1,6 @@
+# Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+#   For website terms of use, trademark policy, privacy policy and other
+#   project policies see https://lfprojects.org/policies
 BootStrap: yum
 OSVersion: 25
 MetaLink: https://mirrors.fedoraproject.org/metalink?repo=fedora-%{OSVERSION}&arch=$basearch

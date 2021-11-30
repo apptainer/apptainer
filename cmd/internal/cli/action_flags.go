@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
@@ -13,28 +16,29 @@ import (
 
 // actionflags.go contains flag variables for action-like commands to draw from
 var (
-	AppName          string
-	BindPaths        []string
-	HomePath         string
-	OverlayPath      []string
-	ScratchPath      []string
-	WorkdirPath      string
-	PwdPath          string
-	ShellPath        string
-	Hostname         string
-	Network          string
-	NetworkArgs      []string
-	DNS              string
-	Security         []string
-	CgroupsPath      string
-	VMRAM            string
-	VMCPU            string
-	VMIP             string
-	ContainLibsPath  []string
-	FuseMount        []string
-	ApptainerEnv     []string
-	ApptainerEnvFile string
-	NoMount          []string
+	AppName            string
+	BindPaths          []string
+	Mounts             []string
+	HomePath           string
+	OverlayPath        []string
+	ScratchPath        []string
+	WorkdirPath        string
+	PwdPath            string
+	ShellPath          string
+	Hostname           string
+	Network            string
+	NetworkArgs        []string
+	DNS                string
+	Security           []string
+	CgroupsPath        string
+	VMRAM              string
+	VMCPU              string
+	VMIP               string
+	ContainLibsPath    []string
+	FuseMount          []string
+	ApptainerEnv       []string
+	ApptainerEnvFile   string
+	NoMount            []string
 
 	IsBoot          bool
 	IsFakeroot      bool
@@ -89,6 +93,18 @@ var actionBindFlag = cmdline.Flag{
 	ShortHand:    "B",
 	Usage:        "a user-bind path specification.  spec has the format src[:dest[:opts]], where src and dest are outside and inside paths.  If dest is not given, it is set equal to src.  Mount options ('opts') may be specified as 'ro' (read-only) or 'rw' (read/write, which is the default). Multiple bind paths can be given by a comma separated list.",
 	EnvKeys:      []string{"BIND", "BINDPATH"},
+	Tag:          "<spec>",
+	EnvHandler:   cmdline.EnvAppendValue,
+}
+
+// --mount
+var actionMountFlag = cmdline.Flag{
+	ID:           "actionMountFlag",
+	Value:        &Mounts,
+	DefaultValue: cmdline.StringArray{},
+	Name:         "mount",
+	Usage:        "a mount specification e.g. 'type=bind,source=/opt,destination=/hostopt'.",
+	EnvKeys:      []string{"MOUNT"},
 	Tag:          "<spec>",
 	EnvHandler:   cmdline.EnvAppendValue,
 }
@@ -667,6 +683,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&actionHostnameFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionIpcNamespaceFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionKeepPrivsFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionMountFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionNetNamespaceFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionNetworkArgsFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionNetworkFlag, actionsInstanceCmd...)

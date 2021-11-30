@@ -12,6 +12,7 @@ generate_docs
 .idea/
 vendor/**
 builddir/
+vendor/**
 internal/pkg/buildcfg/config.go
 apptainer.spec
 trash.lock
