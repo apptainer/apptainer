@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright 2015 The Linux Foundation.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
