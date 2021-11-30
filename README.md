@@ -1,8 +1,10 @@
-# Singularity
+# Apptainer
 
-[![CI](https://github.com/hpcng/singularity/actions/workflows/ci.yml/badge.svg)](https://github.com/hpcng/singularity/actions/workflows/ci.yml)
+> *NOTE*: The apptainer repo is currently working towards a v1.0.0 release and not ready for production in its current state. Until then, use the [Singularity Repo](https://github.com/apptainer/singularity) for a production ready version.
 
-- [Documentation](https://singularity.hpcng.org/docs/)
+[![CI](https://github.com/apptainer/apptainer/actions/workflows/ci.yml/badge.svg)](https://github.com/apptainer/apptainer/actions/workflows/ci.yml)
+
+- [Documentation](https://apptainer.org/docs/)
 - [Support](#support)
 - [Community Meetings / Minutes / Roadmap](https://drive.google.com/drive/u/0/folders/1npfBhIDxqeJIUHZ0tMeuHPvc_iB4T2B6)
 - [Project License](LICENSE.md)
@@ -10,10 +12,10 @@
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Citation](#citing-singularity)
 
-## What is Singularity?
+## What is Apptainer?
 
-Singularity is an open source container platform designed to be simple, fast,
-and secure. Many container platforms are available, but Singularity is designed
+Apptainer is an open source container platform designed to be simple, fast,
+and secure. Many container platforms are available, but Apptainer is designed
 for ease-of-use on shared systems and in high performance computing (HPC)
 environments. It features:
 
@@ -27,35 +29,35 @@ environments. It features:
   as outside, and cannot gain additional privilege on the host system by
   default.
 
-Singularity is open source software, distributed under the [BSD License](LICENSE.md).
+Apptainer is open source software, distributed under the [BSD License](LICENSE.md).
 
-Check out [talks about Singularity](https://singularity.hpcng.org/talks)
-and some [use cases of Singularity](https://singularity.hpcng.org/usecases)
+Check out [talks about Apptainer](https://apptainer.org/talks)
+and some [use cases of Apptainer](https://apptainer.org/usecases)
 on our website.
 
-## Getting Started with Singularity
+## Getting Started with Apptainer
 
-To install Singularity from source, see the [installation
+To install Apptainer from source, see the [installation
 instructions](INSTALL.md). For other installation options, see [our
-guide](https://singularity.hpcng.org/admin-docs/master/installation.html).
+guide](https://apptainer.org/admin-docs/master/installation.html).
 
-System administrators can learn how to configure Singularity, and get an
+System administrators can learn how to configure Apptainer, and get an
 overview of its architecture and security features in the [administrator
-guide](https://singularity.hpcng.org/admin-docs/master/).
+guide](https://apptainer.org/admin-docs/master/).
 
-For users, see the [user guide](https://singularity.hpcng.org/user-docs/master/)
-for details on how to run and build containers with Singularity.
+For users, see the [user guide](https://apptainer.org/user-docs/master/)
+for details on how to run and build containers with Apptainer.
 
-## Contributing to Singularity
+## Contributing to Apptainer
 
 Community contributions are always greatly appreciated. To start developing
-Singularity, check out the [guidelines for contributing](CONTRIBUTING.md).
+Apptainer, check out the [guidelines for contributing](CONTRIBUTING.md).
 
 Please note we have a [code of conduct](CODE_OF_CONDUCT.md). Please follow it in
 all your interactions with the project members and users.
 
 Our roadmap, other documents, and user/developer meeting information can be
-found in the [singularity community page](https://singularity.hpcng.org/help).
+found in the [apptainer community page](https://apptainer.org/help).
 
 We also welcome contributions to our [user
 guide](https://github.com/hpcng/singularity-userdocs) and [admin
@@ -63,12 +65,12 @@ guide](https://github.com/hpcng/singularity-admindocs).
 
 ## Support
 
-To get help with Singularity, check out the [Singularity
-Help](https://singularity.hpcng.org/help) web page.
+To get help with Apptainer, check out the [Apptainer
+Help](https://apptainer.org/help) web page.
 
 ## Go Version Compatibility
 
-Singularity aims to maintain support for the two most recent stable versions
+Apptainer aims to maintain support for the two most recent stable versions
 of Go. This corresponds to the Go
 [Release Maintenance
 Policy](https://github.com/golang/go/wiki/Go-Release-Cycle#release-maintenance)
@@ -76,7 +78,9 @@ and [Security Policy](https://golang.org/security),
 ensuring critical bug fixes and security patches are available for all
 supported language versions.
 
-## Citing Singularity
+## Citing Apptainer
+
+Apptainer can be cited using its former name Singularity.
 
 The Singularity software may be cited using our Zenodo DOI `10.5281/zenodo.1310023`:
 
