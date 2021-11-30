@@ -32,7 +32,6 @@ require (
 	github.com/pelletier/go-toml v1.9.4
 	github.com/pkg/errors v0.9.1
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/seccomp/containers-golang v0.6.0
 	github.com/seccomp/libseccomp-golang v0.9.1
 	github.com/spf13/cobra v1.2.1
