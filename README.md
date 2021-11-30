@@ -13,7 +13,7 @@
 - [Project License](LICENSE.md)
 - [Guidelines for Contributing](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Citation](#citing-singularity)
+- [Citation](#citing-apptainer)
 
 ## What is Apptainer?
 
