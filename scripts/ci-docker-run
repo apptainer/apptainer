@@ -1,4 +1,7 @@
 #!/bin/bash -e
+# Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+#   For website terms of use, trademark policy, privacy policy and other
+#   project policies see https://lfprojects.org/policies
 
 # Run docker as shown at
 #  https://djw8605.github.io/2016/05/03/building-centos-packages-on-travisci/

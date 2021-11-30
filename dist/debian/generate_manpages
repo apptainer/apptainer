@@ -39,7 +39,7 @@ trap "rm -rf \"$tbindir\"" TERM INT EXIT
 mkdir -p ${PKGDIR}/usr/share/man/man1
 declare -A desc
 desc[Apptainer]="Apptainer containers command line interface"
-desc[run-Apptainer]="launch a Apptainer containers with a runscript"
+desc[run-Apptainer]="launch an Apptainer container with a runscript"
 
 for b in apptainer run-apptainer; do
     cp -p ${PKGDIR}/usr/bin/$b "$tbindir/"
