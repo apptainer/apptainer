@@ -1,7 +1,7 @@
 // Copyright (c) 2021 Apptainer a Series of LF Projects LLC
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2020, Sylabs Inc. All rights reserved.
+// Copyright (c) 2020-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the LICENSE.md file
 // distributed with the sources of this project regarding your rights to use or distribute this
 // software.
@@ -9,8 +9,8 @@
 package singularity
 
 import (
-	"github.com/hpcng/sif/pkg/integrity"
-	"github.com/hpcng/sif/pkg/sif"
+	"github.com/hpcng/sif/v2/pkg/integrity"
+	"github.com/hpcng/sif/v2/pkg/sif"
 	"github.com/hpcng/singularity/pkg/sypgp"
 )
 
@@ -70,14 +70,14 @@ func Sign(path string, opts ...SignOpt) error {
 	}
 
 	// Load container.
-	f, err := sif.LoadContainer(path, false)
+	f, err := sif.LoadContainerFromPath(path)
 	if err != nil {
 		return err
 	}
 	defer f.UnloadContainer()
 
 	// Apply signature(s).
-	is, err := integrity.NewSigner(&f, s.opts...)
+	is, err := integrity.NewSigner(f, s.opts...)
 	if err != nil {
 		return err
 	}

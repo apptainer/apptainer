@@ -1,7 +1,7 @@
 // Copyright (c) 2021 Apptainer a Series of LF Projects LLC
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2020, Sylabs Inc. All rights reserved.
+// Copyright (c) 2020-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the LICENSE.md file
 // distributed with the sources of this project regarding your rights to use or distribute this
 // software.
@@ -18,11 +18,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/hpcng/sif/pkg/integrity"
-	"github.com/hpcng/sif/pkg/sif"
+	"github.com/ProtonMail/go-crypto/openpgp"
+	"github.com/ProtonMail/go-crypto/openpgp/armor"
+	"github.com/hpcng/sif/v2/pkg/integrity"
+	"github.com/hpcng/sif/v2/pkg/sif"
 	"github.com/sylabs/scs-key-client/client"
-	"golang.org/x/crypto/openpgp"
-	"golang.org/x/crypto/openpgp/armor"
 )
 
 const (
@@ -127,13 +127,17 @@ func Test_newVerifier(t *testing.T) {
 }
 
 func Test_verifier_getOpts(t *testing.T) {
-	emptyImage, err := sif.LoadContainer(filepath.Join("testdata", "images", "empty.sif"), true)
+	emptyImage, err := sif.LoadContainerFromPath(filepath.Join("testdata", "images", "empty.sif"),
+		sif.OptLoadWithFlag(os.O_RDONLY),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer emptyImage.UnloadContainer()
 
-	oneGroupImage, err := sif.LoadContainer(filepath.Join("testdata", "images", "one-group.sif"), true)
+	oneGroupImage, err := sif.LoadContainerFromPath(filepath.Join("testdata", "images", "one-group.sif"),
+		sif.OptLoadWithFlag(os.O_RDONLY),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,7 +154,7 @@ func Test_verifier_getOpts(t *testing.T) {
 	}{
 		{
 			name: "TLSRequired",
-			f:    &emptyImage,
+			f:    emptyImage,
 			v: verifier{
 				opts: []client.Option{
 					client.OptBaseURL("hkp://pool.sks-keyservers.net"),
@@ -160,14 +164,14 @@ func Test_verifier_getOpts(t *testing.T) {
 			wantErr: client.ErrTLSRequired,
 		},
 		{
-			name:    "NotFound",
-			f:       &emptyImage,
+			name:    "NoObjects",
+			f:       emptyImage,
 			v:       verifier{legacy: true},
-			wantErr: sif.ErrNotFound,
+			wantErr: sif.ErrNoObjects,
 		},
 		{
 			name:     "Defaults",
-			f:        &oneGroupImage,
+			f:        oneGroupImage,
 			wantOpts: 1,
 		},
 		{
@@ -177,55 +181,55 @@ func Test_verifier_getOpts(t *testing.T) {
 					client.OptBearerToken("token"),
 				},
 			},
-			f:        &oneGroupImage,
+			f:        oneGroupImage,
 			wantOpts: 1,
 		},
 		{
 			name:     "Group1",
 			v:        verifier{groupIDs: []uint32{1}},
-			f:        &oneGroupImage,
+			f:        oneGroupImage,
 			wantOpts: 2,
 		},
 		{
 			name:     "Object1",
 			v:        verifier{objectIDs: []uint32{1}},
-			f:        &oneGroupImage,
+			f:        oneGroupImage,
 			wantOpts: 2,
 		},
 		{
 			name:     "All",
 			v:        verifier{all: true},
-			f:        &oneGroupImage,
+			f:        oneGroupImage,
 			wantOpts: 1,
 		},
 		{
 			name:     "Legacy",
 			v:        verifier{legacy: true},
-			f:        &oneGroupImage,
+			f:        oneGroupImage,
 			wantOpts: 3,
 		},
 		{
 			name:     "LegacyGroup1",
 			v:        verifier{legacy: true, groupIDs: []uint32{1}},
-			f:        &oneGroupImage,
+			f:        oneGroupImage,
 			wantOpts: 3,
 		},
 		{
 			name:     "LegacyObject1",
 			v:        verifier{legacy: true, objectIDs: []uint32{1}},
-			f:        &oneGroupImage,
+			f:        oneGroupImage,
 			wantOpts: 3,
 		},
 		{
 			name:     "LegacyAll",
 			v:        verifier{legacy: true, all: true},
-			f:        &oneGroupImage,
+			f:        oneGroupImage,
 			wantOpts: 2,
 		},
 		{
 			name:     "Callback",
 			v:        verifier{cb: cb},
-			f:        &oneGroupImage,
+			f:        oneGroupImage,
 			wantOpts: 2,
 		},
 	}
@@ -347,14 +351,24 @@ func TestVerify(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			i := 0
+
 			cb := func(f *sif.FileImage, r integrity.VerifyResult) bool {
-				if len(tt.wantVerified) == 0 {
+				defer func() { i++ }()
+
+				if i >= len(tt.wantVerified) {
 					t.Fatalf("wantVerified consumed")
 				}
-				if got, want := r.Verified(), tt.wantVerified[0]; !reflect.DeepEqual(got, want) {
-					t.Errorf("got verified %v, want %v", got, want)
+
+				if got, want := r.Verified(), tt.wantVerified[i]; len(got) != len(want) {
+					t.Errorf("got %v verified, want %v", got, want)
+				} else {
+					for i, od := range got {
+						if got, want := od.ID(), want[i]; got != want {
+							t.Errorf("got ID %v, want %v", got, want)
+						}
+					}
 				}
-				tt.wantVerified = tt.wantVerified[1:]
 
 				if got, want := r.Entity().PrimaryKey, tt.wantEntity.PrimaryKey; !reflect.DeepEqual(got, want) {
 					t.Errorf("got entity public key %+v, want %+v", got, want)
@@ -509,14 +523,24 @@ func TestVerifyFingerPrint(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			i := 0
+
 			cb := func(f *sif.FileImage, r integrity.VerifyResult) bool {
-				if len(tt.wantVerified) == 0 {
+				defer func() { i++ }()
+
+				if i >= len(tt.wantVerified) {
 					t.Fatalf("wantVerified consumed")
 				}
-				if got, want := r.Verified(), tt.wantVerified[0]; !reflect.DeepEqual(got, want) {
-					t.Errorf("got verified %v, want %v", got, want)
+
+				if got, want := r.Verified(), tt.wantVerified[i]; len(got) != len(want) {
+					t.Errorf("got %v verified, want %v", got, want)
+				} else {
+					for i, od := range got {
+						if got, want := od.ID(), want[i]; got != want {
+							t.Errorf("got ID %v, want %v", got, want)
+						}
+					}
 				}
-				tt.wantVerified = tt.wantVerified[1:]
 
 				if got, want := r.Entity().PrimaryKey, tt.wantEntity.PrimaryKey; !reflect.DeepEqual(got, want) {
 					t.Errorf("got entity public key %+v, want %+v", got, want)

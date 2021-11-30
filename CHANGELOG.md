@@ -23,6 +23,14 @@
   and it requires being used in combination with `--writable` in user
   namespace mode.
   Please see documentation for more details.
+- A new `--mount` flag and `SINGULARITY_MOUNT` environment variable can be used
+  to specify bind mounts in
+  `type=bind,source=<src>,destination=<dst>[,options...]` format. This improves
+  CLI compatibility with other runtimes, and allows binding paths containing
+  `:` and `,` characters (using CSV style escaping).
+- Perform concurrent multi-part downloads for `library://` URIs. Uses 3
+  concurrent downloads by default, and is configurable in `singularity.conf` or
+  via environment variables.
 
 ### Changed defaults / behaviours
 
@@ -97,6 +105,10 @@
 
 - Added seccomp, cryptsetup, devscripts & correct go version test to
   debian packaging.
+
+Additional changes include dependency updates for the SIF module (to v2.0.0),
+and migration to maintained versions of other modules. There is no change to
+functionality, on-disk SIF format etc.
 
 ## v3.8.3 - \[2021-09-07\]
 

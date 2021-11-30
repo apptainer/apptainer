@@ -1,7 +1,7 @@
 // Copyright (c) 2021 Apptainer a Series of LF Projects LLC
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2020, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -22,7 +22,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/hpcng/sif/pkg/sif"
 	"github.com/hpcng/singularity/internal/pkg/util/fs"
 	"github.com/hpcng/singularity/pkg/sylog"
 )
@@ -32,7 +31,6 @@ var ErrUnknownArch = errors.New("architecture not recognized")
 
 type format struct {
 	Arch       string
-	Sif        string
 	Compatible string
 	Machine    elf.Machine
 	Class      elf.Class
@@ -43,7 +41,6 @@ type format struct {
 var formats = []format{
 	{
 		Arch:       "386",
-		Sif:        sif.HdrArch386,
 		Compatible: "amd64",
 		Machine:    elf.EM_386,
 		Class:      elf.ELFCLASS32,
@@ -52,7 +49,6 @@ var formats = []format{
 	},
 	{
 		Arch:       "386",
-		Sif:        sif.HdrArch386,
 		Compatible: "amd64",
 		Machine:    elf.EM_486,
 		Class:      elf.ELFCLASS32,
@@ -61,7 +57,6 @@ var formats = []format{
 	},
 	{
 		Arch:       "amd64",
-		Sif:        sif.HdrArchAMD64,
 		Machine:    elf.EM_X86_64,
 		Class:      elf.ELFCLASS64,
 		Endianness: binary.LittleEndian,
@@ -69,7 +64,6 @@ var formats = []format{
 	},
 	{
 		Arch:       "arm",
-		Sif:        sif.HdrArchARM,
 		Compatible: "arm64",
 		Machine:    elf.EM_ARM,
 		Class:      elf.ELFCLASS32,
@@ -78,7 +72,6 @@ var formats = []format{
 	},
 	{
 		Arch:       "armbe",
-		Sif:        sif.HdrArchARM, // FIXME: add HdrArchARMbe to sif package
 		Compatible: "arm64be",
 		Machine:    elf.EM_ARM,
 		Class:      elf.ELFCLASS32,
@@ -87,7 +80,6 @@ var formats = []format{
 	},
 	{
 		Arch:       "arm64",
-		Sif:        sif.HdrArchARM64,
 		Machine:    elf.EM_AARCH64,
 		Class:      elf.ELFCLASS64,
 		Endianness: binary.LittleEndian,
@@ -95,7 +87,6 @@ var formats = []format{
 	},
 	{
 		Arch:       "arm64be",
-		Sif:        sif.HdrArchARM64, // FIXME: add HdrArchARM64be to sif package
 		Machine:    elf.EM_AARCH64,
 		Class:      elf.ELFCLASS64,
 		Endianness: binary.BigEndian,
@@ -103,7 +94,6 @@ var formats = []format{
 	},
 	{
 		Arch:       "s390x",
-		Sif:        sif.HdrArchS390x,
 		Machine:    elf.EM_S390,
 		Class:      elf.ELFCLASS64,
 		Endianness: binary.BigEndian,
@@ -111,7 +101,6 @@ var formats = []format{
 	},
 	{
 		Arch:       "ppc64",
-		Sif:        sif.HdrArchPPC64,
 		Machine:    elf.EM_PPC64,
 		Class:      elf.ELFCLASS32,
 		Endianness: binary.BigEndian,
@@ -119,7 +108,6 @@ var formats = []format{
 	},
 	{
 		Arch:       "ppc64le",
-		Sif:        sif.HdrArchPPC64le,
 		Machine:    elf.EM_PPC64,
 		Class:      elf.ELFCLASS64,
 		Endianness: binary.LittleEndian,
@@ -127,7 +115,6 @@ var formats = []format{
 	},
 	{
 		Arch:       "mips",
-		Sif:        sif.HdrArchMIPS,
 		Compatible: "mips64",
 		Machine:    elf.EM_MIPS,
 		Class:      elf.ELFCLASS32,
@@ -136,7 +123,6 @@ var formats = []format{
 	},
 	{
 		Arch:       "mipsle",
-		Sif:        sif.HdrArchMIPSle,
 		Compatible: "mips64le",
 		Machine:    elf.EM_MIPS,
 		Class:      elf.ELFCLASS32,
@@ -145,7 +131,6 @@ var formats = []format{
 	},
 	{
 		Arch:       "mips64",
-		Sif:        sif.HdrArchMIPS64,
 		Machine:    elf.EM_MIPS,
 		Class:      elf.ELFCLASS64,
 		Endianness: binary.BigEndian,
@@ -153,7 +138,6 @@ var formats = []format{
 	},
 	{
 		Arch:       "mips64le",
-		Sif:        sif.HdrArchMIPS64le,
 		Machine:    elf.EM_MIPS,
 		Class:      elf.ELFCLASS64,
 		Endianness: binary.LittleEndian,

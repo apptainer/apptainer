@@ -11,6 +11,7 @@ generate_docs
 .DS_store
 .idea/
 builddir/
+vendor/**
 internal/pkg/buildcfg/config.go
 singularity.spec
 trash.lock

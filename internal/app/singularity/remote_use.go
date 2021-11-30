@@ -11,6 +11,7 @@ package singularity
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/hpcng/singularity/internal/pkg/remote"
@@ -38,8 +39,6 @@ func syncSysConfig(cUsr *remote.Config) error {
 
 // RemoteUse sets remote to use
 func RemoteUse(usrConfigFile, name string, global, exclusive bool) (err error) {
-	c := &remote.Config{}
-
 	if exclusive {
 		if os.Getuid() != 0 {
 			return fmt.Errorf("unable to set endpoint as exclusive: not root user")
@@ -62,7 +61,7 @@ func RemoteUse(usrConfigFile, name string, global, exclusive bool) (err error) {
 	defer file.Close()
 
 	// read file contents to config struct
-	c, err = remote.ReadFrom(file)
+	c, err := remote.ReadFrom(file)
 	if err != nil {
 		return fmt.Errorf("while parsing remote config data: %s", err)
 	}
@@ -82,7 +81,7 @@ func RemoteUse(usrConfigFile, name string, global, exclusive bool) (err error) {
 		return fmt.Errorf("while truncating remote config file: %s", err)
 	}
 
-	if n, err := file.Seek(0, os.SEEK_SET); err != nil || n != 0 {
+	if n, err := file.Seek(0, io.SeekStart); err != nil || n != 0 {
 		return fmt.Errorf("failed to reset %s cursor: %s", file.Name(), err)
 	}
 
