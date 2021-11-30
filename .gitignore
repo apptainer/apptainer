@@ -10,6 +10,7 @@ generate_docs
 .vscode
 .DS_store
 .idea/
+vendor/**
 builddir/
 internal/pkg/buildcfg/config.go
 apptainer.spec
