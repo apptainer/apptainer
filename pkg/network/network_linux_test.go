@@ -22,9 +22,9 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/containernetworking/cni/libcni"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/containernetworking/cni/libcni"
 )
 
 var confFiles = []struct {

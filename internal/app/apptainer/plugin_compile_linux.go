@@ -19,13 +19,13 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/hpcng/sif/pkg/sif"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/archive"
+	"github.com/hpcng/sif/pkg/sif"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -37,11 +37,11 @@ import "runtime"
 func main() { fmt.Printf(runtime.Version()) }`
 
 type buildToolchain struct {
-	goPath            string
+	goPath          string
 	apptainerSource string
-	pluginDir         string
-	buildTags         string
-	envs              []string
+	pluginDir       string
+	buildTags       string
+	envs            []string
 }
 
 func getPackageName() string {
@@ -166,11 +166,11 @@ func CompilePlugin(sourceDir, destSif, buildTags string, disableMinorCheck bool)
 	}
 
 	bTool := buildToolchain{
-		buildTags:         buildTags,
+		buildTags:       buildTags,
 		apptainerSource: apptainerSrcDir,
-		pluginDir:         pluginDir,
-		goPath:            goPath,
-		envs:              append(os.Environ(), "GO111MODULE=on"),
+		pluginDir:       pluginDir,
+		goPath:          goPath,
+		envs:            append(os.Environ(), "GO111MODULE=on"),
 	}
 
 	// generating final go.mod file

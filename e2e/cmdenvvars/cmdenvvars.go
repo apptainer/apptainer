@@ -267,8 +267,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 
 	return testhelper.Tests{
 		"read-only cache directory": c.testApptainerReadOnlyCacheDir,
-		"APPTAINER_CACHEDIR":      c.testApptainerCacheDir,
-		"apptainer disable cache": c.testApptainerDisableCache,
-		"APPTAINER_SYPGPDIR":      c.testApptainerSypgpDir,
+		"APPTAINER_CACHEDIR":        c.testApptainerCacheDir,
+		"apptainer disable cache":   c.testApptainerDisableCache,
+		"APPTAINER_SYPGPDIR":        c.testApptainerSypgpDir,
 	}
 }

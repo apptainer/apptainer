@@ -38,11 +38,11 @@ var alwaysPassKeys = map[string]struct{}{
 // boolean value defines if the variable could be overridden
 // with the APPTAINERENV_ variant.
 var alwaysOmitKeys = map[string]bool{
-	"HOME":                false,
-	"PATH":                false,
+	"HOME":              false,
+	"PATH":              false,
 	"APPTAINER_SHELL":   false,
 	"APPTAINER_APPNAME": false,
-	"LD_LIBRARY_PATH":     true,
+	"LD_LIBRARY_PATH":   true,
 }
 
 // SetContainerEnv cleans environment variables before running the container.

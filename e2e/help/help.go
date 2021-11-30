@@ -265,6 +265,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"commands":     c.testCommands,
 		"failure":      c.testFailure,
 		"help content": c.testHelpOciContent,
-		"apptainer":  c.testApptainer,
+		"apptainer":    c.testApptainer,
 	}
 }

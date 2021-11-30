@@ -242,8 +242,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	np := testhelper.NoParallel
 
 	return testhelper.Tests{
-		"apptainerSecurityUnpriv": c.testSecurityUnpriv,
-		"apptainerSecurityPriv":   c.testSecurityPriv,
+		"apptainerSecurityUnpriv":   c.testSecurityUnpriv,
+		"apptainerSecurityPriv":     c.testSecurityPriv,
 		"testSecurityConfOwnership": np(c.testSecurityConfOwnership),
 	}
 }

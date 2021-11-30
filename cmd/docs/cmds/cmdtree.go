@@ -45,8 +45,8 @@ import (
 var tested = 0
 
 type apptainerCmd struct {
-	Name     string           `json:"name"`
-	Options  []string         `json:"options"`
+	Name     string         `json:"name"`
+	Options  []string       `json:"options"`
 	Children []apptainerCmd `json:"children"`
 }
 

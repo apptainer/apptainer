@@ -281,8 +281,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	np := testhelper.NoParallel
 
 	return testhelper.Tests{
-		"basic":                 np(c.testPluginBasic),
-		"CLI_callbacks":         np(c.testCLICallbacks),
+		"basic":               np(c.testPluginBasic),
+		"CLI_callbacks":       np(c.testCLICallbacks),
 		"Apptainer_callbacks": np(c.testApptainerCallbacks),
 	}
 }

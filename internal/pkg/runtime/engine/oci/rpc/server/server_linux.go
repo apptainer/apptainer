@@ -11,9 +11,9 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 
-	ociargs "github.com/apptainer/apptainer/internal/pkg/runtime/engine/oci/rpc"
 	args "github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc"
 	server "github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc/server"
+	ociargs "github.com/apptainer/apptainer/internal/pkg/runtime/engine/oci/rpc"
 	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
 )
 

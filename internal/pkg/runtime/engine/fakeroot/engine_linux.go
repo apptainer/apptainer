@@ -24,9 +24,9 @@ import (
 	fakerootcallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/fakeroot"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
-	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 

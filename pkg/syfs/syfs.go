@@ -22,7 +22,7 @@ const (
 	RemoteConfFile = "remote.yaml"
 	RemoteCache    = "remote-cache"
 	DockerConfFile = "docker-config.json"
-	apptainerDir = ".apptainer"
+	apptainerDir   = ".apptainer"
 )
 
 // cache contains the information for the current user

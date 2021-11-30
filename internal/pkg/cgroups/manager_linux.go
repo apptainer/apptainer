@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/containerd/cgroups"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/containerd/cgroups"
 	"github.com/opencontainers/runtime-spec/specs-go"
 )
 

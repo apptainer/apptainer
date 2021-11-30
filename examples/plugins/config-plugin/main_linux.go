@@ -12,8 +12,8 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/cgroups"
 	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
 	clicallback "github.com/apptainer/apptainer/pkg/plugin/callback/cli"
-	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	apptainer "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
+	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 

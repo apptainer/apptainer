@@ -7,8 +7,8 @@ package oci
 
 import (
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
-	ociServer "github.com/apptainer/apptainer/internal/pkg/runtime/engine/oci/rpc/server"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc/server"
+	ociServer "github.com/apptainer/apptainer/internal/pkg/runtime/engine/oci/rpc/server"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 )
 

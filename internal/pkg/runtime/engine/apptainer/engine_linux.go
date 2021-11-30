@@ -8,14 +8,14 @@ package apptainer
 import (
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc/server"
-	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
+	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 )
 
 // EngineOperations is a Apptainer runtime engine that implements engine.Operations.
 // Basically, this is the core of `apptainer run/exec/shell/instance` commands.
 type EngineOperations struct {
-	CommonConfig *config.Common                  `json:"-"`
+	CommonConfig *config.Common                `json:"-"`
 	EngineConfig *apptainerConfig.EngineConfig `json:"engineConfig"`
 }
 

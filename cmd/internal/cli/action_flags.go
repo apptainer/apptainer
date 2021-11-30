@@ -13,28 +13,28 @@ import (
 
 // actionflags.go contains flag variables for action-like commands to draw from
 var (
-	AppName            string
-	BindPaths          []string
-	HomePath           string
-	OverlayPath        []string
-	ScratchPath        []string
-	WorkdirPath        string
-	PwdPath            string
-	ShellPath          string
-	Hostname           string
-	Network            string
-	NetworkArgs        []string
-	DNS                string
-	Security           []string
-	CgroupsPath        string
-	VMRAM              string
-	VMCPU              string
-	VMIP               string
-	ContainLibsPath    []string
-	FuseMount          []string
+	AppName          string
+	BindPaths        []string
+	HomePath         string
+	OverlayPath      []string
+	ScratchPath      []string
+	WorkdirPath      string
+	PwdPath          string
+	ShellPath        string
+	Hostname         string
+	Network          string
+	NetworkArgs      []string
+	DNS              string
+	Security         []string
+	CgroupsPath      string
+	VMRAM            string
+	VMCPU            string
+	VMIP             string
+	ContainLibsPath  []string
+	FuseMount        []string
 	ApptainerEnv     []string
 	ApptainerEnvFile string
-	NoMount            []string
+	NoMount          []string
 
 	IsBoot          bool
 	IsFakeroot      bool

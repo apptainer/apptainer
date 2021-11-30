@@ -52,7 +52,7 @@ type Profile struct {
 	containerUID      int              // user ID corresponding to the profile inside container
 	defaultCwd        string           // the default current working directory if specified
 	requirementsFn    func(*testing.T) // function checking requirements for the profile
-	apptainerOption string           // option added to apptainer command for the profile
+	apptainerOption   string           // option added to apptainer command for the profile
 	optionForCommands []string         // apptainer commands concerned by the option to be added
 }
 
@@ -65,7 +65,7 @@ var Profiles = map[string]Profile{
 		containerUID:      origUID,
 		defaultCwd:        "",
 		requirementsFn:    nil,
-		apptainerOption: "",
+		apptainerOption:   "",
 		optionForCommands: []string{},
 	},
 	rootProfile: {
@@ -75,7 +75,7 @@ var Profiles = map[string]Profile{
 		containerUID:      0,
 		defaultCwd:        "",
 		requirementsFn:    nil,
-		apptainerOption: "",
+		apptainerOption:   "",
 		optionForCommands: []string{},
 	},
 	fakerootProfile: {
@@ -85,7 +85,7 @@ var Profiles = map[string]Profile{
 		containerUID:      0,
 		defaultCwd:        "",
 		requirementsFn:    fakerootRequirements,
-		apptainerOption: "--fakeroot",
+		apptainerOption:   "--fakeroot",
 		optionForCommands: []string{"shell", "exec", "run", "test", "instance start", "build"},
 	},
 	userNamespaceProfile: {
@@ -95,7 +95,7 @@ var Profiles = map[string]Profile{
 		containerUID:      origUID,
 		defaultCwd:        "",
 		requirementsFn:    require.UserNamespace,
-		apptainerOption: "--userns",
+		apptainerOption:   "--userns",
 		optionForCommands: []string{"shell", "exec", "run", "test", "instance start"},
 	},
 	rootUserNamespaceProfile: {
@@ -105,7 +105,7 @@ var Profiles = map[string]Profile{
 		containerUID:      0,
 		defaultCwd:        "/root", // need to run in a directory owned by root
 		requirementsFn:    require.UserNamespace,
-		apptainerOption: "--userns",
+		apptainerOption:   "--userns",
 		optionForCommands: []string{"shell", "exec", "run", "test", "instance start"},
 	},
 }

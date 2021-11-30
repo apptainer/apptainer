@@ -20,11 +20,11 @@ func TestSetContainerEnv(t *testing.T) {
 	defer test.ResetPrivilege(t)
 
 	tt := []struct {
-		name           string
-		cleanEnv       bool
-		homeDest       string
-		env            []string
-		resultEnv      []string
+		name         string
+		cleanEnv     bool
+		homeDest     string
+		env          []string
+		resultEnv    []string
 		apptainerEnv map[string]string
 	}{
 		{

@@ -111,7 +111,7 @@ type JSONConfig struct {
 	FuseMount         []FuseMount       `json:"fuseMount,omitempty"`
 	ImageList         []image.Image     `json:"imageList,omitempty"`
 	BindPath          []BindPath        `json:"bindpath,omitempty"`
-	ApptainerEnv    map[string]string `json:"apptainerEnv,omitempty"`
+	ApptainerEnv      map[string]string `json:"apptainerEnv,omitempty"`
 	UnixSocketPair    [2]int            `json:"unixSocketPair,omitempty"`
 	OpenFd            []int             `json:"openFd,omitempty"`
 	TargetGID         []int             `json:"targetGID,omitempty"`
