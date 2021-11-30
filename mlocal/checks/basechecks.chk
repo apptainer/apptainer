@@ -413,7 +413,7 @@ fi
 printf " checking: project version... "
 if [ "$package_version" = "" ]; then
 	package_version=`(\
-		git describe --match 'v[0-9]*' --dirty --always 2>/dev/null || \
+		git describe --first-parent --match 'v[0-9]*' --dirty --always 2>/dev/null || \
 		cat VERSION 2>/dev/null || echo "" \
 		) | \
 			sed -e "s/^v//;s/-/_/g;s/_/-/;s/_/./g"`
@@ -433,7 +433,7 @@ fi
 printf " checking: project short version... "
 if [ "$short_version" = "" ]; then
 	short_version=`(\
-	git describe --abbrev=0 --match 'v[0-9]*' --always 2>/dev/null || \
+	git describe --first-parent --abbrev=0 --match 'v[0-9]*' --always 2>/dev/null || \
 	cat VERSION 2>/dev/null || echo ""\
 	) | \
 		sed -e "s/^v//;s/-/_/g;s/_/-/;s/_/./g"`
