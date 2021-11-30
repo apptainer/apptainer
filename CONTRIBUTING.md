@@ -21,7 +21,10 @@ a larger fix or Enhancement, you are advised to first discuss the change with
 the project leader or developers.
 
 Please note we have a [code of conduct](CODE_OF_CONDUCT.md). Please follow it in
-all your interactions with the project members and users.
+all your interactions with the project members and users.  
+
+In addition, all commits must be "Signed-off" by using `git commit -s`,
+acknowledging that you agree to the [Developer Certificate of Origin](DCO.md).  
 
 ## Pull Requests (PRs)
 
