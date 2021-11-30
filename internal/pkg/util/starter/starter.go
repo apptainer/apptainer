@@ -143,7 +143,7 @@ func copyConfigToEnv(data []byte) ([]string, error) {
 
 	// stack size divided by four to determine the arguments+environments
 	// size limit
-	argSizeLimit := (cur / 4)
+	argSizeLimit := cur / 4
 
 	// config length to be passed via environment variables + some space
 	// for apptainer first argument

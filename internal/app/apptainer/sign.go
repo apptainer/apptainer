@@ -6,9 +6,9 @@
 package apptainer
 
 import (
+	"github.com/apptainer/apptainer/pkg/sypgp"
 	"github.com/hpcng/sif/pkg/integrity"
 	"github.com/hpcng/sif/pkg/sif"
-	"github.com/apptainer/apptainer/pkg/sypgp"
 )
 
 type signer struct {

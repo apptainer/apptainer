@@ -17,10 +17,10 @@ import (
 	"os"
 
 	apexlog "github.com/apex/log"
-	"github.com/containers/image/v5/types"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	sytypes "github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/containers/image/v5/types"
 	imgspecv1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/opencontainers/umoci"
 	umocilayer "github.com/opencontainers/umoci/oci/layer"

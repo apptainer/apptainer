@@ -13,13 +13,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	ocitypes "github.com/containers/image/v5/types"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	buildtypes "github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/slice"
+	ocitypes "github.com/containers/image/v5/types"
 	"golang.org/x/sys/unix"
 )
 

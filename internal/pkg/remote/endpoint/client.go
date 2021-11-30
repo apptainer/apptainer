@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	golog "github.com/go-log/log"
 	remoteutil "github.com/apptainer/apptainer/internal/pkg/remote/util"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
+	golog "github.com/go-log/log"
 	buildclient "github.com/sylabs/scs-build-client/client"
 	keyclient "github.com/sylabs/scs-key-client/client"
 	libclient "github.com/sylabs/scs-library-client/client"

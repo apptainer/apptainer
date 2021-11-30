@@ -10,10 +10,10 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	ocitypes "github.com/containers/image/v5/types"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	ocitypes "github.com/containers/image/v5/types"
 )
 
 // pull will pull an oras image into the cache if directTo="", or a specific file if directTo is set.

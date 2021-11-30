@@ -10,9 +10,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/hpcng/sif/pkg/sif"
 	"github.com/apptainer/apptainer/pkg/image"
 	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
+	"github.com/hpcng/sif/pkg/sif"
 )
 
 const (

@@ -12,10 +12,10 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/hpcng/sif/pkg/integrity"
-	"github.com/hpcng/sif/pkg/sif"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/pkg/sypgp"
+	"github.com/hpcng/sif/pkg/integrity"
+	"github.com/hpcng/sif/pkg/sif"
 	"github.com/sylabs/scs-key-client/client"
 	"golang.org/x/crypto/openpgp"
 )

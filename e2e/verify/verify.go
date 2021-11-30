@@ -10,10 +10,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/buger/jsonparser"
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/buger/jsonparser"
 	"github.com/pkg/errors"
 )
 

@@ -21,7 +21,7 @@ import (
 
 	"github.com/hpcng/sif/pkg/integrity"
 	"github.com/hpcng/sif/pkg/sif"
-	toml "github.com/pelletier/go-toml"
+	"github.com/pelletier/go-toml"
 	"golang.org/x/crypto/openpgp"
 )
 

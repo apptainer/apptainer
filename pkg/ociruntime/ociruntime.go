@@ -6,7 +6,7 @@
 package ociruntime
 
 import (
-	specs "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 const (

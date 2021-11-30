@@ -20,6 +20,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/apptainer/apptainer/internal/pkg/build/oci"
+	"github.com/apptainer/apptainer/internal/pkg/util/shell"
+	sytypes "github.com/apptainer/apptainer/pkg/build/types"
+	"github.com/apptainer/apptainer/pkg/image"
+	"github.com/apptainer/apptainer/pkg/syfs"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	"github.com/containers/image/v5/copy"
 	"github.com/containers/image/v5/docker"
 	dockerarchive "github.com/containers/image/v5/docker/archive"
@@ -28,13 +35,6 @@ import (
 	ocilayout "github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/types"
-	"github.com/apptainer/apptainer/internal/pkg/build/oci"
-	"github.com/apptainer/apptainer/internal/pkg/util/shell"
-	sytypes "github.com/apptainer/apptainer/pkg/build/types"
-	"github.com/apptainer/apptainer/pkg/image"
-	"github.com/apptainer/apptainer/pkg/syfs"
-	"github.com/apptainer/apptainer/pkg/sylog"
-	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	imgspecv1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 

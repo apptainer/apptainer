@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	expect "github.com/Netflix/go-expect"
+	"github.com/Netflix/go-expect"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/pkg/errors"
 )

@@ -13,7 +13,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
 	"github.com/apptainer/apptainer/internal/pkg/security/selinux"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	specs "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 // Configure applies security related configuration to current process

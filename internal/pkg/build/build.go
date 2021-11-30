@@ -17,8 +17,8 @@ import (
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
-	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
+	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 
 	"github.com/apptainer/apptainer/internal/pkg/build/apps"
 	"github.com/apptainer/apptainer/internal/pkg/build/assemblers"

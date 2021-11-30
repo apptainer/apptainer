@@ -16,12 +16,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/fs/lock"
 	"github.com/apptainer/apptainer/pkg/util/loop"
+	"github.com/google/uuid"
 )
 
 // Device describes a crypt device

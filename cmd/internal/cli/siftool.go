@@ -6,8 +6,8 @@
 package cli
 
 import (
-	"github.com/hpcng/sif/pkg/siftool"
 	"github.com/apptainer/apptainer/pkg/cmdline"
+	"github.com/hpcng/sif/pkg/siftool"
 )
 
 // SiftoolCmd is easily set since the sif repo allows the cobra.Command struct to be

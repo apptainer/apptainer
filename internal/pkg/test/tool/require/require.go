@@ -17,11 +17,11 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/containerd/cgroups"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
 	"github.com/apptainer/apptainer/pkg/network"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
+	"github.com/containerd/cgroups"
 )
 
 var (

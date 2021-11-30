@@ -16,13 +16,13 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/hpcng/sif/pkg/sif"
 	"github.com/apptainer/apptainer/internal/pkg/image/packer"
 	"github.com/apptainer/apptainer/internal/pkg/util/crypt"
 	"github.com/apptainer/apptainer/internal/pkg/util/machine"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
+	"github.com/hpcng/sif/pkg/sif"
 	uuid "github.com/satori/go.uuid"
 )
 

@@ -19,9 +19,9 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/hpcng/sif/pkg/sif"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/hpcng/sif/pkg/sif"
 )
 
 // ErrUnknownArch is the error returned for unknown architecture.

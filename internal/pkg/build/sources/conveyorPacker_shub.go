@@ -9,7 +9,7 @@ import (
 	"context"
 	"fmt"
 
-	shub "github.com/apptainer/apptainer/internal/pkg/client/shub"
+	"github.com/apptainer/apptainer/internal/pkg/client/shub"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )

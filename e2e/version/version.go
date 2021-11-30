@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/blang/semver/v4"
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
+	"github.com/blang/semver/v4"
 	"github.com/pkg/errors"
 )
 

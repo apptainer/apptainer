@@ -16,11 +16,11 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 

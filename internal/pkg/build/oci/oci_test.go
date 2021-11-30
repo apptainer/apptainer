@@ -15,11 +15,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/containers/image/v5/oci/layout"
-	"github.com/containers/image/v5/types"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	buildTypes "github.com/apptainer/apptainer/pkg/build/types"
+	"github.com/containers/image/v5/oci/layout"
+	"github.com/containers/image/v5/types"
 )
 
 const (

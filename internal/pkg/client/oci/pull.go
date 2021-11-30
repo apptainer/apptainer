@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	ocitypes "github.com/containers/image/v5/types"
 	"github.com/apptainer/apptainer/internal/pkg/build"
 	"github.com/apptainer/apptainer/internal/pkg/build/oci"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
@@ -19,6 +18,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
+	ocitypes "github.com/containers/image/v5/types"
 )
 
 // pull will build a SIF image into the cache if directTo="", or a specific file if directTo is set.

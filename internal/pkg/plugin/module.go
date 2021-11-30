@@ -13,10 +13,10 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/blang/semver/v4"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/blang/semver/v4"
 )
 
 // ApptainerSource represents the symlink name which will

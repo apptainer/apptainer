@@ -12,8 +12,8 @@ import (
 
 	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
 	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
-	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
+	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 )
 
 // Plugin is the only variable which a plugin MUST export.

@@ -19,13 +19,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hpcng/sif/pkg/sif"
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/image"
 	"github.com/apptainer/apptainer/pkg/inspect"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/hpcng/sif/pkg/sif"
 	"github.com/spf13/cobra"
 )
 

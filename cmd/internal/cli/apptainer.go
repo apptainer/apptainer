@@ -19,7 +19,6 @@ import (
 	"strings"
 	"text/template"
 
-	ocitypes "github.com/containers/image/v5/types"
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
@@ -31,6 +30,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
+	ocitypes "github.com/containers/image/v5/types"
 	"github.com/spf13/cobra"
 	scsbuildclient "github.com/sylabs/scs-build-client/client"
 	scskeyclient "github.com/sylabs/scs-key-client/client"

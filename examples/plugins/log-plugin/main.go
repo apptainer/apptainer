@@ -10,11 +10,11 @@ import (
 	"log/syslog"
 	"os"
 
-	"github.com/spf13/cobra"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
 	clicallback "github.com/apptainer/apptainer/pkg/plugin/callback/cli"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/spf13/cobra"
 )
 
 // Plugin is the only variable which a plugin MUST export.

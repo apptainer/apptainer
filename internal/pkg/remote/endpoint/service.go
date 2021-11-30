@@ -78,7 +78,7 @@ func (s *service) Status() (version string, err error) {
 	}
 
 	client := &http.Client{
-		Timeout: (30 * time.Second),
+		Timeout: 30 * time.Second,
 	}
 
 	req, err := http.NewRequest(http.MethodGet, s.cfg.URI+"/version", nil)

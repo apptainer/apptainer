@@ -11,8 +11,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/hpcng/sif/pkg/sif"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/hpcng/sif/pkg/sif"
 	uuid "github.com/satori/go.uuid"
 )
 

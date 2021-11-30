@@ -14,8 +14,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/hpcng/sif/pkg/integrity"
 	"github.com/apptainer/apptainer/pkg/sypgp"
+	"github.com/hpcng/sif/pkg/integrity"
 	"golang.org/x/crypto/openpgp"
 )
 
