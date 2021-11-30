@@ -1,6 +1,9 @@
 # Apptainer
 
-> *NOTE*: The apptainer repo is currently working towards a v1.0.0 release and not ready for production in its current state. Until then, use the [Singularity Repo](https://github.com/apptainer/singularity) for a production ready version.
+> *NOTE*: The apptainer repo is currently working towards a v1.0.0 release and
+  not ready for production in its current state. Until then, use the
+  [Singularity Repo](https://github.com/apptainer/singularity) for a production
+  ready version.
 
 [![CI](https://github.com/apptainer/apptainer/actions/workflows/ci.yml/badge.svg)](https://github.com/apptainer/apptainer/actions/workflows/ci.yml)
 
