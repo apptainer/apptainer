@@ -61,12 +61,12 @@ covered by tests.
 
 1. Ensure the user and admin documentation is up-to-date for the new
    version, branched, and tagged.
-   - [User Docs](https://singularity.hpcng.org/user-docs/master/) can be
+   - [User Docs](https://apptainer.org/user-docs/master/) can be
      edited [here](https://github.com/apptainer/apptainer-userdocs)
-   - [Admin Docs](https://singularity.hpcng.org/admin-docs/master/) can be
+   - [Admin Docs](https://apptainer.org/admin-docs/master/) can be
      edited [here](https://github.com/apptainer/apptainer-admindocs)
 1. Ensure the user and admin documentation has been deployed to the
-   singularity.hpcng.org website.
+   apptainer.org website.
 1. Modify the `README.md`, `INSTALL.md`, `CHANGELOG.md` via PR against
    the release branch, so that they reflect the version to be released.
 1. Apply an annotated tag via `git tag -a -m "Apptainer v3.8.0" v3.8.0`.

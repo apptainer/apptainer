@@ -15,4 +15,4 @@ Examples:
   $ apptainer oci start mycontainer
 
 
-For additional help or support, please visit https://singularity.hpcng.org/help/
+For additional help or support, please visit https://apptainer.org/help/

@@ -72,8 +72,8 @@ acknowledging that you agree to the [Developer Certificate of Origin](DCO.md).
 There are a few places where documentation for the Apptainer project lives.
 The [changelog](CHANGELOG.md) is where PRs should include documentation if
 necessary. When a new release is tagged, the
-[user-docs](https://singularity.hpcng.org/user-docs/master/) and
-[admin-docs](https://singularity.hpcng.org/admin-docs/master/) will be updated
+[user-docs](https://apptainer.org/user-docs/master/) and
+[admin-docs](https://apptainer.org/admin-docs/master/) will be updated
 using the contents of the `CHANGELOG.md` file as reference.
 
 1. The [changelog](CHANGELOG.md) is a place to document **functional**
@@ -87,9 +87,9 @@ using the contents of the `CHANGELOG.md` file as reference.
 1. The [README](README.md) is a place to document critical information for new
    users of Apptainer. It should typically not change, but in the case where
    a change is necessary a PR may update it.
-1. The [user-docs](https://singularity.hpcng.org/user-docs/master/) should
+1. The [user-docs](https://apptainer.org/user-docs/master/) should
    document anything pertinent to the usage of Apptainer.
-1. The [admin-docs](https://singularity.hpcng.org/admin-docs/master/)
+1. The [admin-docs](https://apptainer.org/admin-docs/master/)
    document anything that is pertinent to a system administrator who manages a
    system with Apptainer installed.
 1. If necessary, changes to the message displayed when running

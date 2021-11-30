@@ -131,7 +131,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 		if buildArgs.remote {
 			sylog.Fatalf("--mount option is not supported for remote build")
 		}
-		os.Setenv("SINGULARITY_MOUNT", strings.Join(buildArgs.mounts, "\n"))
+		os.Setenv("APPTAINER_MOUNT", strings.Join(buildArgs.mounts, "\n"))
 	}
 	if buildArgs.writableTmpfs {
 		if buildArgs.remote {

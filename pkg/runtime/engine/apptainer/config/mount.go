@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularity
+package apptainer
 
 import (
 	"encoding/csv"
@@ -14,7 +14,7 @@ import (
 // ParseMountString converts a --mount string into one or more BindPath structs.
 //
 // Our intention is to support common docker --mount strings, but have
-// additional fields for singularity specific concepts (image-src, id when
+// additional fields for apptainer specific concepts (image-src, id when
 // binding out of an image file).
 //
 // We use a CSV reader to parse the fields in a mount string according to CSV
@@ -67,20 +67,20 @@ func ParseMountString(mount string) (bindPaths []BindPath, err error) {
 				bp.Destination = val
 			case "ro", "readonly":
 				bp.Options["ro"] = &BindOption{}
-			// Singularity only - directory inside an image file source to mount from
+			// Apptainer only - directory inside an image file source to mount from
 			case "image-src":
 				if val == "" {
 					return []BindPath{}, fmt.Errorf("img-src cannot be empty")
 				}
 				bp.Options["image-src"] = &BindOption{Value: val}
-			// Singularity only - id of the descriptor in a SIF image source to mount from
+			// Apptainer only - id of the descriptor in a SIF image source to mount from
 			case "id":
 				if val == "" {
 					return []BindPath{}, fmt.Errorf("id cannot be empty")
 				}
 				bp.Options["id"] = &BindOption{Value: val}
 			case "bind-propagation":
-				return []BindPath{}, fmt.Errorf("bind-propagation not supported for individual mounts, check singularity.conf for global setting")
+				return []BindPath{}, fmt.Errorf("bind-propagation not supported for individual mounts, check apptainer.conf for global setting")
 			default:
 				return []BindPath{}, fmt.Errorf("invalid key %q in mount specification", key)
 			}

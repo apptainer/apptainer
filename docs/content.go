@@ -1078,6 +1078,6 @@ const (
 	SIFExample string = `
   All sif commands have their own help output:
 
-  $ singularity help sif list
-  $ singularity sif list --help`
+  $ apptainer help sif list
+  $ apptainer sif list --help`
 )

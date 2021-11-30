@@ -8,7 +8,7 @@ always be up-to-date with the latest source release version.
 
 For full instructions on installation, including building RPMs,
 installing pre-built EPEL packages etc. please check the
-[installation section of the admin guide](https://singularity.hpcng.org/admin-docs/master/installation.html).
+[installation section of the admin guide](https://apptainer.org/admin-docs/master/installation.html).
 
 ## Install system dependencies
 
@@ -217,7 +217,7 @@ make -C builddir rpm RPMPREFIX=/opt/singularity
 ```
 
 For more information on installing/updating/uninstalling the RPM, check out our
-[admin docs](https://singularity.hpcng.org/admin-docs/master/admin_quickstart.html).
+[admin docs](https://apptainer.org/admin-docs/master/admin_quickstart.html).
 
 ## Debian Package
 

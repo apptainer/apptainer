@@ -10,7 +10,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hpcng/singularity/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/e2e/internal/e2e"
 )
 
 func (c ctx) testConcurrencyConfig(t *testing.T) {
@@ -29,7 +29,7 @@ func (c ctx) testConcurrencyConfig(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name+"-set"),
 			e2e.WithProfile(e2e.RootProfile),
@@ -37,7 +37,7 @@ func (c ctx) testConcurrencyConfig(t *testing.T) {
 			e2e.WithArgs("--set", tt.setting, tt.value),
 			e2e.ExpectExit(tt.expectedExitCode),
 		)
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name+"-reset"),
 			e2e.WithProfile(e2e.RootProfile),
@@ -65,25 +65,25 @@ func (c ctx) testConcurrentPulls(t *testing.T) {
 		{"Concurrency10Cfg", map[string]string{"download concurrency": "10"}, nil, 0},
 
 		// test 1/3/10 goroutines (set via env vars)
-		{"Concurrency1Env", nil, []string{"SINGULARITY_DOWNLOAD_CONCURRENCY=1"}, 0},
-		{"Concurrency3Env", nil, []string{"SINGULARITY_DOWNLOAD_CONCURRENCY=3"}, 0},
-		{"Concurrency10Env", nil, []string{"SINGULARITY_DOWNLOAD_CONCURRENCY=10"}, 0},
+		{"Concurrency1Env", nil, []string{"APPTAINER_DOWNLOAD_CONCURRENCY=1"}, 0},
+		{"Concurrency3Env", nil, []string{"APPTAINER_DOWNLOAD_CONCURRENCY=3"}, 0},
+		{"Concurrency10Env", nil, []string{"APPTAINER_DOWNLOAD_CONCURRENCY=10"}, 0},
 
 		// test concurrent download with 1 MiB and 8 MiB part size
 		{"PartSize1MCfg", map[string]string{"download part size": "1048576"}, nil, 0},
 		{"PartSize8MCfg", map[string]string{"download part size": "8388608"}, nil, 0},
 
 		// test concurrent download with 1 MiB and 8 MiB part size (via env vars)
-		{"PartSize1MEnv", nil, []string{"SINGULARITY_DOWNLOAD_PART_SIZE=1048576"}, 0},
-		{"PartSize8MEnv", nil, []string{"SINGULARITY_DOWNLOAD_PART_SIZE=8388608"}, 0},
+		{"PartSize1MEnv", nil, []string{"APPTAINER_DOWNLOAD_PART_SIZE=1048576"}, 0},
+		{"PartSize8MEnv", nil, []string{"APPTAINER_DOWNLOAD_PART_SIZE=8388608"}, 0},
 
 		// use 8 byte and 64 KiB buffer size for concurrent downloads
 		{"BufferSize1Cfg", map[string]string{"download buffer size": "8"}, nil, 0},
 		{"BufferSize65536Cfg", map[string]string{"download buffer size": "65536"}, nil, 0},
 
 		// use 8 byte and 64 KiB buffer size for concurrent downloads (via env vars)
-		{"BufferSize1Env", nil, []string{"SINGULARITY_DOWNLOAD_BUFFER_SIZE=8"}, 0},
-		{"BufferSize65536Env", nil, []string{"SINGULARITY_DOWNLOAD_BUFFER_SIZE=65536"}, 0},
+		{"BufferSize1Env", nil, []string{"APPTAINER_DOWNLOAD_BUFFER_SIZE=8"}, 0},
+		{"BufferSize65536Env", nil, []string{"APPTAINER_DOWNLOAD_BUFFER_SIZE=65536"}, 0},
 
 		// multiple settings (concurrency 1, download buffer size 64 KiB)
 		{"MultipleSettings", map[string]string{"download concurrency": "1", "download buffer size": "65536"}, nil, 0},
@@ -101,7 +101,7 @@ func (c ctx) testConcurrentPulls(t *testing.T) {
 
 			// Set global configuration
 			if tt.settings != nil {
-				cfgCmdOps := []e2e.SingularityCmdOp{
+				cfgCmdOps := []e2e.ApptainerCmdOp{
 					e2e.WithProfile(e2e.RootProfile),
 					e2e.WithCommand("config global"),
 					e2e.ExpectExit(0),
@@ -110,11 +110,11 @@ func (c ctx) testConcurrentPulls(t *testing.T) {
 				for key, value := range tt.settings {
 					t.Logf("set %s %s", key, value)
 					cfgCmd := append(cfgCmdOps, e2e.WithArgs("--set", key, value))
-					c.env.RunSingularity(t, cfgCmd...)
+					c.env.RunApptainer(t, cfgCmd...)
 
 					t.Cleanup(func() {
 						t.Logf("reset %s", key)
-						c.env.RunSingularity(
+						c.env.RunApptainer(
 							t,
 							e2e.WithProfile(e2e.RootProfile),
 							e2e.WithCommand("config global"),

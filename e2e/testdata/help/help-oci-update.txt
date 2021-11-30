@@ -21,4 +21,4 @@ Examples:
   $ cat /tmp/cgroups-update.json | apptainer oci update --from-file - mycontainer
 
 
-For additional help or support, please visit https://singularity.hpcng.org/help/
+For additional help or support, please visit https://apptainer.org/help/

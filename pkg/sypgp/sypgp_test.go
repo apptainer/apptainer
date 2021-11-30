@@ -21,11 +21,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/apptainer/apptainer/internal/pkg/test"
-	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/ProtonMail/go-crypto/openpgp/armor"
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
+	"github.com/apptainer/apptainer/internal/pkg/test"
+	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	"github.com/sylabs/scs-key-client/client"
 )
 

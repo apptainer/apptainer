@@ -16,9 +16,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/pkg/sypgp"
-	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/hpcng/sif/v2/pkg/integrity"
 	"github.com/hpcng/sif/v2/pkg/sif"
 	"github.com/sylabs/scs-key-client/client"

@@ -19,4 +19,4 @@ Examples:
   $ apptainer oci kill mycontainer -s INT
 
 
-For additional help or support, please visit https://singularity.hpcng.org/help/
+For additional help or support, please visit https://apptainer.org/help/

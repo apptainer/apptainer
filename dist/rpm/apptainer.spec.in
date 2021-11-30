@@ -38,7 +38,7 @@ Version: @PACKAGE_RPM_VERSION@
 Release: @PACKAGE_RELEASE@%{?dist}
 # https://spdx.org/licenses/BSD-3-Clause-LBNL.html
 License: BSD-3-Clause-LBNL
-URL: https://singularity.hpcng.org
+URL: https://apptainer.org
 Source: %{name}-%{package_version}.tar.gz
 ExclusiveOS: linux
 

@@ -4,7 +4,7 @@ Need help? We have several ways to reach us, depending on your preferences and n
 
 ## Documentation
 
-If you haven't already, read our [documentation](https://singularity.hpcng.org/docs/).
+If you haven't already, read our [documentation](https://apptainer.org/docs/).
 These docs have common use cases, and might be helpful to browse before
 submitting an issue.
 You can contribute to our documentation by creating PRs against the

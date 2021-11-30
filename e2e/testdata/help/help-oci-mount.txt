@@ -14,4 +14,4 @@ Examples:
   $ apptainer oci mount /tmp/example.sif /var/lib/apptainer/bundles/example
 
 
-For additional help or support, please visit https://singularity.hpcng.org/help/
+For additional help or support, please visit https://apptainer.org/help/

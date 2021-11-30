@@ -362,7 +362,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 
 	// Now add binds from one or more --mount and env var.
 	for _, m := range Mounts {
-		bps, err := singularityConfig.ParseMountString(m)
+		bps, err := apptainerConfig.ParseMountString(m)
 		if err != nil {
 			sylog.Fatalf("while parsing mount %q: %s", m, err)
 		}

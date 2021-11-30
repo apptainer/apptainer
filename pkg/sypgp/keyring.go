@@ -16,8 +16,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/ProtonMail/go-crypto/openpgp"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/sylabs/scs-key-client/client"
 )
 
