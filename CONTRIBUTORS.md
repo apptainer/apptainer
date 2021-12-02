@@ -85,6 +85,7 @@
 - Rafal Gumienny <rafal.gumienny@gmail.com>
 - Ralph Castain <rhc@open-mpi.org>
 - Rémy Dernat <remy.dernat@umontpellier.fr>
+- Richard Hattersley <richard.hattersley@metoffice.gov.uk>
 - Richard Neuboeck <hawk@tbi.univie.ac.at>
 - Sasha Yakovtseva <sasha@sylabs.io>, <sashayakovtseva@gmail.com>
 - Satish Chebrolu  <satish@sylabs.io>
