@@ -105,3 +105,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   configuration file being written.
 - `--no-https` now applies to connections made to library services specified
   in `library://<hostname>/...` URIs.
+
+### Changes for Testing / Development
+
+- `E2E_DOCKER_MIRROR` and `E2E_DOCKER_MIRROR_INSECURE` were added to allow
+  to use a registry mirror (or a pull through cache).

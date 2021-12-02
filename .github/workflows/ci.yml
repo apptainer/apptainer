@@ -169,11 +169,12 @@ jobs:
 
       - name: Check changes
         env:
+          PROJECT_REF: ${{ github.ref }}
           PROJECT_REPOSITORY: ${{ github.repository }}
           PROJECT_PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           rc=0
-          ./scripts/should-e2e-run "${PROJECT_REPOSITORY}" "${GITHUB_REF##*/}" "${PROJECT_PR_NUMBER}" || rc=$?
+          ./scripts/should-e2e-run "${PROJECT_REPOSITORY}" "${PROJECT_REF##*/}" "${PROJECT_PR_NUMBER}" || rc=$?
           case $rc in
             0)
               echo "Verifying critical changes"
