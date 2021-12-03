@@ -849,7 +849,7 @@ func (c *imgBuildTests) ensureImageIsEncrypted(t *testing.T, imgPath string) {
 		e2e.WithArgs(cmdArgs...),
 		e2e.ExpectExit(
 			0,
-			e2e.ExpectOutput(e2e.ContainMatch, "Fstype:    Encrypted squashfs"),
+			e2e.ExpectOutput(e2e.ContainMatch, "Encrypted squashfs"),
 		),
 	)
 }
