@@ -12,7 +12,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/hpcng/singularity/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/e2e/internal/e2e"
 )
 
 // If a remote is set to a different endpoint we should be able to pull

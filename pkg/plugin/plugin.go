@@ -28,8 +28,8 @@ const PluginSymbol = "Plugin"
 //     package main
 //
 //     import (
-//             clicallback "github.com/hpcng/singularity/pkg/callback/cli"
-//	           pluginapi "github.com/hpcng/singularity/pkg/plugin"
+//             clicallback "github.com/apptainer/apptainer/pkg/callback/cli"
+//	           pluginapi "github.com/apptainer/apptainer/pkg/plugin"
 //     )
 //
 //     var Plugin = pluginapi.Plugin{

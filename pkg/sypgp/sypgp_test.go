@@ -24,8 +24,8 @@ import (
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/ProtonMail/go-crypto/openpgp/armor"
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
-	"github.com/hpcng/singularity/internal/pkg/test"
-	useragent "github.com/hpcng/singularity/pkg/util/user-agent"
+	"github.com/apptainer/apptainer/internal/pkg/test"
+	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	"github.com/sylabs/scs-key-client/client"
 )
 

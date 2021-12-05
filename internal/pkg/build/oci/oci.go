@@ -16,13 +16,13 @@ import (
 	"io"
 	"strings"
 
+	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/containers/image/v5/copy"
 	"github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/transports"
 	"github.com/containers/image/v5/types"
-	"github.com/hpcng/singularity/internal/pkg/cache"
-	"github.com/hpcng/singularity/pkg/sylog"
 	"github.com/pkg/errors"
 )
 

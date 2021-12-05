@@ -22,13 +22,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hpcng/sif/v2/pkg/sif"
-	"github.com/hpcng/singularity/docs"
-	"github.com/hpcng/singularity/internal/pkg/util/env"
-	"github.com/hpcng/singularity/pkg/cmdline"
-	"github.com/hpcng/singularity/pkg/image"
-	"github.com/hpcng/singularity/pkg/inspect"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/docs"
+	"github.com/apptainer/apptainer/internal/pkg/util/env"
+	"github.com/apptainer/apptainer/pkg/cmdline"
+	"github.com/apptainer/apptainer/pkg/image"
+	"github.com/apptainer/apptainer/pkg/inspect"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/sif/v2/pkg/sif"
 	"github.com/spf13/cobra"
 )
 

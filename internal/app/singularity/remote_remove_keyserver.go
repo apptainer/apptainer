@@ -15,8 +15,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hpcng/singularity/internal/pkg/remote"
-	"github.com/hpcng/singularity/internal/pkg/remote/endpoint"
+	"github.com/apptainer/apptainer/internal/pkg/remote"
+	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 )
 
 func RemoteRemoveKeyserver(name, uri string) error {

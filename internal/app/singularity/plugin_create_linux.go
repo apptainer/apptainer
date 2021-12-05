@@ -9,8 +9,8 @@
 package singularity
 
 import (
-	"github.com/hpcng/singularity/internal/pkg/plugin"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/plugin"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // CreatePlugin create the plugin directory skeleton.

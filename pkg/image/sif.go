@@ -14,8 +14,8 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/hpcng/sif/v2/pkg/sif"
-	"github.com/hpcng/singularity/internal/pkg/util/machine"
+	"github.com/apptainer/apptainer/internal/pkg/util/machine"
+	"github.com/apptainer/sif/v2/pkg/sif"
 )
 
 const (

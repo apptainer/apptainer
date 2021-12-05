@@ -9,9 +9,9 @@
 package singularity
 
 import (
-	"github.com/hpcng/sif/v2/pkg/integrity"
-	"github.com/hpcng/sif/v2/pkg/sif"
-	"github.com/hpcng/singularity/pkg/sypgp"
+	"github.com/apptainer/apptainer/pkg/sypgp"
+	"github.com/apptainer/sif/v2/pkg/integrity"
+	"github.com/apptainer/sif/v2/pkg/sif"
 )
 
 type signer struct {

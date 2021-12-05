@@ -1,4 +1,4 @@
-module github.com/hpcng/singularity
+module github.com/apptainer/apptainer
 
 go 1.16
 
@@ -7,6 +7,7 @@ require (
 	github.com/ProtonMail/go-crypto v0.0.0-20210707164159-52430bf6b52c
 	github.com/adigunhammedolalekan/registry-auth v0.0.0-20200730122110-8cde180a3a60
 	github.com/apex/log v1.9.0
+	github.com/apptainer/sif/v2 v2.1.2
 	github.com/blang/semver/v4 v4.0.0
 	github.com/buger/jsonparser v1.1.1
 	github.com/containerd/cgroups v1.0.2
@@ -20,7 +21,6 @@ require (
 	github.com/go-log/log v0.2.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.4.2
-	github.com/hpcng/sif/v2 v2.1.1
 	github.com/kr/pty v1.1.8
 	github.com/moby/sys/mount v0.3.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0

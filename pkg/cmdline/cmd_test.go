@@ -13,7 +13,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/test"
 	"github.com/spf13/cobra"
 )
 

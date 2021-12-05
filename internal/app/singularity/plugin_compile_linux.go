@@ -21,13 +21,13 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/hpcng/sif/v2/pkg/sif"
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/internal/pkg/plugin"
-	"github.com/hpcng/singularity/internal/pkg/util/bin"
-	pluginapi "github.com/hpcng/singularity/pkg/plugin"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/archive"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/plugin"
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/archive"
+	"github.com/apptainer/sif/v2/pkg/sif"
 )
 
 const version = "v0.0.0"
@@ -49,7 +49,7 @@ func getPackageName() string {
 	if buildInfo, ok := debug.ReadBuildInfo(); ok {
 		return buildInfo.Main.Path
 	}
-	return "github.com/hpcng/singularity"
+	return "github.com/apptainer/apptainer"
 }
 
 // getSingularitySrcDir returns the source directory for singularity.
@@ -63,7 +63,7 @@ func getSingularitySrcDir() (string, error) {
 		return "", fmt.Errorf("could not determine source directory")
 	}
 
-	// replace github.com/hpcng/singularity@v0.0.0
+	// replace github.com/apptainer/apptainer@v0.0.0
 	pattern := fmt.Sprintf("%s@%s", pkgName, version)
 	filename = strings.Replace(filename, pattern, "", 1)
 

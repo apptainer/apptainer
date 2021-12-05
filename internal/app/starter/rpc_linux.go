@@ -12,8 +12,8 @@ import (
 	"net"
 	"os"
 
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // RPCServer serves runtime engine requests.

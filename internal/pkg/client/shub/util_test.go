@@ -13,8 +13,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/test"
-	useragent "github.com/hpcng/singularity/pkg/util/user-agent"
+	"github.com/apptainer/apptainer/internal/pkg/test"
+	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 )
 
 var validShubURIs = []string{

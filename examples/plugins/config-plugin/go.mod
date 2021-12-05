@@ -1,7 +1,7 @@
-module github.com/hpcng/singularity/config-example-plugin
+module github.com/apptainer/apptainer/config-example-plugin
 
 go 1.16
 
-require github.com/hpcng/singularity v0.0.0
+require github.com/apptainer/apptainer v0.0.0
 
-replace github.com/hpcng/singularity => ./singularity_source
+replace github.com/apptainer/apptainer => ./singularity_source

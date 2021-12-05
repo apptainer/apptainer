@@ -17,9 +17,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/exec"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/buger/jsonparser"
-	"github.com/hpcng/singularity/internal/pkg/test/tool/exec"
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
 )
 
 // ImageVerify checks for an image integrity.

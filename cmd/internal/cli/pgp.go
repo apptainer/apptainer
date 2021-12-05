@@ -17,17 +17,17 @@ import (
 	"io"
 	"os"
 
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
+	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/sypgp"
+	"github.com/apptainer/sif/v2/pkg/integrity"
+	"github.com/apptainer/sif/v2/pkg/sif"
 	"github.com/fatih/color"
-	"github.com/hpcng/sif/v2/pkg/integrity"
-	"github.com/hpcng/sif/v2/pkg/sif"
-	"github.com/hpcng/singularity/internal/app/singularity"
-	"github.com/hpcng/singularity/internal/pkg/util/interactive"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/sypgp"
 )
 
 var (

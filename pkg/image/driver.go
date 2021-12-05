@@ -11,7 +11,7 @@ package image
 import (
 	"fmt"
 
-	"github.com/hpcng/singularity/pkg/runtime/engine/config"
+	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 )
 
 // DriverFeature defines a feature type that a driver is supporting.

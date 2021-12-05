@@ -8,21 +8,21 @@ If you haven't already, read our [documentation](https://singularity.hpcng.org/d
 These docs have common use cases, and might be helpful to browse before
 submitting an issue.
 You can contribute to our documentation by creating PRs against the
-[singularity-admindocs](https://github.com/hpcng/singularity-admindocs) and
-[singularity-userdocs](https://github.com/hpcng/singularity-userdocs) repositories.
+[singularity-admindocs](https://github.com/apptainer/apptainer-admindocs) and
+[singularity-userdocs](https://github.com/apptainer/apptainer-userdocs) repositories.
 
 ## Github
 
 For issues with code (and especially if you need to share debug output)
 we recommend Github issues boards.
 
-- [Singularity Issues](https://github.com/hpcng/singularity/issues): is
+- [Apptainer Issues](https://github.com/apptainer/apptainer/issues): is
     recommended for most issues with the Singularity software.
-- [User Documentation](https://github.com/hpcng/singularity-userdocs/issues)
+- [User Documentation](https://github.com/apptainer/apptainer-userdocs/issues)
     questions, feedback, and suggestions should go here. Feel free to
     create an issue on a board and additionally request updated content
     here.
-- [Admin Documentation](https://github.com/hpcng/singularity-admindocs/issues)
+- [Admin Documentation](https://github.com/apptainer/apptainer-admindocs/issues)
     questions, feedback, and suggestions should go here. Feel free to create
     an issue on a board and additionally request updated content here.
 
@@ -101,4 +101,4 @@ slack at [https://hpcng.slack.com/](https://hpcng.slack.com/). Ping the
 Google Group or one of the admins here to request to be added.
 
 Is there something missing here you'd like to see? Please [let us
-know](https://github.com/hpcng/singularity/issues).
+know](https://github.com/apptainer/apptainer/issues).

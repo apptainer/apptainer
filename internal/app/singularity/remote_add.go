@@ -16,8 +16,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/hpcng/singularity/internal/pkg/remote"
-	"github.com/hpcng/singularity/internal/pkg/remote/endpoint"
+	"github.com/apptainer/apptainer/internal/pkg/remote"
+	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 )
 
 // RemoteAdd adds remote to configuration

@@ -12,7 +12,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/hpcng/singularity/pkg/util/unix"
+	"github.com/apptainer/apptainer/pkg/util/unix"
 )
 
 // OciState query container state

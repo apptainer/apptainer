@@ -12,9 +12,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hpcng/singularity/pkg/build/types"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/archive"
+	"github.com/apptainer/apptainer/pkg/build/types"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/archive"
 )
 
 // SandboxPacker holds the locations of where to pack from and to

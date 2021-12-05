@@ -15,7 +15,7 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/test"
 )
 
 func TestHasFilesystem(t *testing.T) {
@@ -209,7 +209,7 @@ func TestGetMountInfo(t *testing.T) {
 			SuperOptions: []string{"rw"},
 			Options:      []string{"rw", "relatime"},
 		},
-		// github.com/hpcng/singularity/issues/6048
+		// github.com/apptainer/singularity/issues/6048
 		// Empty 9th field (source) in mountinfo line
 		{
 			ParentID:     "314",

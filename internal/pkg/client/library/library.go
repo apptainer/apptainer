@@ -16,9 +16,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/singularityconf"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/singularityconf"
 
 	scslibrary "github.com/sylabs/scs-library-client/client"
 )

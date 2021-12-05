@@ -22,10 +22,10 @@ import (
 
 	"github.com/kr/pty"
 
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/oci"
-	"github.com/hpcng/singularity/pkg/ociruntime"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/unix"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/oci"
+	"github.com/apptainer/apptainer/pkg/ociruntime"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/unix"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"golang.org/x/term"
 )

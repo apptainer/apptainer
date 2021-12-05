@@ -18,31 +18,31 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/internal/pkg/cgroups"
-	"github.com/hpcng/singularity/internal/pkg/plugin"
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/singularity/rpc/client"
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
-	"github.com/hpcng/singularity/internal/pkg/util/fs/files"
-	"github.com/hpcng/singularity/internal/pkg/util/fs/layout"
-	"github.com/hpcng/singularity/internal/pkg/util/fs/layout/layer/overlay"
-	"github.com/hpcng/singularity/internal/pkg/util/fs/layout/layer/underlay"
-	"github.com/hpcng/singularity/internal/pkg/util/fs/mount"
-	fsoverlay "github.com/hpcng/singularity/internal/pkg/util/fs/overlay"
-	"github.com/hpcng/singularity/internal/pkg/util/gpu"
-	"github.com/hpcng/singularity/internal/pkg/util/mainthread"
-	"github.com/hpcng/singularity/internal/pkg/util/priv"
-	"github.com/hpcng/singularity/internal/pkg/util/user"
-	"github.com/hpcng/singularity/pkg/image"
-	"github.com/hpcng/singularity/pkg/network"
-	singularitycallback "github.com/hpcng/singularity/pkg/plugin/callback/runtime/engine/singularity"
-	singularity "github.com/hpcng/singularity/pkg/runtime/engine/singularity/config"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/fs/proc"
-	"github.com/hpcng/singularity/pkg/util/loop"
-	"github.com/hpcng/singularity/pkg/util/namespaces"
-	"github.com/hpcng/singularity/pkg/util/singularityconf"
-	"github.com/hpcng/singularity/pkg/util/slice"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/cgroups"
+	"github.com/apptainer/apptainer/internal/pkg/plugin"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/singularity/rpc/client"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/files"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/layout"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/layout/layer/overlay"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/layout/layer/underlay"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/mount"
+	fsoverlay "github.com/apptainer/apptainer/internal/pkg/util/fs/overlay"
+	"github.com/apptainer/apptainer/internal/pkg/util/gpu"
+	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
+	"github.com/apptainer/apptainer/internal/pkg/util/priv"
+	"github.com/apptainer/apptainer/internal/pkg/util/user"
+	"github.com/apptainer/apptainer/pkg/image"
+	"github.com/apptainer/apptainer/pkg/network"
+	singularitycallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/singularity"
+	singularity "github.com/apptainer/apptainer/pkg/runtime/engine/singularity/config"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/fs/proc"
+	"github.com/apptainer/apptainer/pkg/util/loop"
+	"github.com/apptainer/apptainer/pkg/util/namespaces"
+	"github.com/apptainer/apptainer/pkg/util/singularityconf"
+	"github.com/apptainer/apptainer/pkg/util/slice"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"golang.org/x/sys/unix"
 	"golang.org/x/term"
@@ -674,7 +674,7 @@ mount:
 			} else if mnt.Type == "overlay" && err == syscall.ESTALE {
 				// overlay mount can return this error when a previous mount was
 				// done with an upper layer and overlay inodes index is enabled
-				// by default, see https://github.com/hpcng/singularity/issues/4539
+				// by default, see https://github.com/apptainer/singularity/issues/4539
 				sylog.Verbosef("Overlay mount failed with %s, mounting with index=off", err)
 				optsString = fmt.Sprintf("%s,index=off", optsString)
 				goto mount
@@ -857,7 +857,7 @@ func (c *container) addRootfsMount(system *mount.System) error {
 			return err
 		}
 		// re-apply mount propagation flag, on EL6 a kernel bug reset propagation flag
-		// and may lead to crash (see https://github.com/hpcng/singularity/issues/4851)
+		// and may lead to crash (see https://github.com/apptainer/singularity/issues/4851)
 		flags = syscall.MS_SLAVE
 		if !c.engine.EngineConfig.File.MountSlave {
 			flags = syscall.MS_PRIVATE

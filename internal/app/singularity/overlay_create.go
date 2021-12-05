@@ -18,9 +18,9 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/hpcng/sif/v2/pkg/sif"
-	"github.com/hpcng/singularity/internal/pkg/util/bin"
-	"github.com/hpcng/singularity/pkg/image"
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/pkg/image"
+	"github.com/apptainer/sif/v2/pkg/sif"
 	"golang.org/x/sys/unix"
 )
 

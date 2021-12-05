@@ -10,7 +10,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hpcng/singularity/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/e2e/internal/e2e"
 )
 
 func (c ctx) testConcurrencyConfig(t *testing.T) {

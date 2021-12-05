@@ -16,13 +16,13 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/config/oci/generate"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
 	imageSpecs "github.com/opencontainers/image-spec/specs-go/v1"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 
-	"github.com/hpcng/singularity/pkg/image"
-	"github.com/hpcng/singularity/pkg/ocibundle"
-	"github.com/hpcng/singularity/pkg/ocibundle/tools"
+	"github.com/apptainer/apptainer/pkg/image"
+	"github.com/apptainer/apptainer/pkg/ocibundle"
+	"github.com/apptainer/apptainer/pkg/ocibundle/tools"
 )
 
 type sifBundle struct {

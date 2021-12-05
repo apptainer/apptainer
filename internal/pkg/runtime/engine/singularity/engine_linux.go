@@ -9,10 +9,10 @@
 package singularity
 
 import (
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine"
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/singularity/rpc/server"
-	"github.com/hpcng/singularity/pkg/runtime/engine/config"
-	singularityConfig "github.com/hpcng/singularity/pkg/runtime/engine/singularity/config"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/singularity/rpc/server"
+	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
+	singularityConfig "github.com/apptainer/apptainer/pkg/runtime/engine/singularity/config"
 )
 
 // EngineOperations is a Singularity runtime engine that implements engine.Operations.

@@ -13,18 +13,18 @@ import (
 	"log/syslog"
 	"os"
 
+	"github.com/apptainer/apptainer/pkg/cmdline"
+	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
+	clicallback "github.com/apptainer/apptainer/pkg/plugin/callback/cli"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
-	"github.com/hpcng/singularity/pkg/cmdline"
-	pluginapi "github.com/hpcng/singularity/pkg/plugin"
-	clicallback "github.com/hpcng/singularity/pkg/plugin/callback/cli"
-	"github.com/hpcng/singularity/pkg/sylog"
 )
 
 // Plugin is the only variable which a plugin MUST export.
 // This symbol is accessed by the plugin framework to initialize the plugin
 var Plugin = pluginapi.Plugin{
 	Manifest: pluginapi.Manifest{
-		Name:        "github.com/hpcng/singularity/log-plugin",
+		Name:        "github.com/apptainer/apptainer/log-plugin",
 		Author:      "Sylabs Team",
 		Version:     "0.2.0",
 		Description: "Log executed CLI commands to syslog",

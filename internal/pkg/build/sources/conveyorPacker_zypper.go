@@ -23,9 +23,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hpcng/singularity/internal/pkg/util/bin"
-	"github.com/hpcng/singularity/pkg/build/types"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/pkg/build/types"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 const (
@@ -465,7 +465,7 @@ func rpmPathCheck() (err error) {
 			"%s\n"+
 			"%s\n"+
 			"After creating the file, re-run the bootstrap.\n"+
-			"More info: https://github.com/hpcng/singularity/issues/241\n",
+			"More info: https://github.com/apptainer/singularity/issues/241\n",
 			rpmDBPath, os.Getenv("HOME"), `%_var /var`, `%_dbpath %{_var}/lib/rpm`)
 	}
 

@@ -13,8 +13,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/hpcng/singularity/pkg/ociruntime"
-	"github.com/hpcng/singularity/pkg/util/unix"
+	"github.com/apptainer/apptainer/pkg/ociruntime"
+	"github.com/apptainer/apptainer/pkg/util/unix"
 )
 
 // OciPauseResume pauses/resumes processes in a container

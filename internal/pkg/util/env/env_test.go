@@ -11,7 +11,7 @@ package env
 import (
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/test"
 )
 
 func TestSetFromList(t *testing.T) {

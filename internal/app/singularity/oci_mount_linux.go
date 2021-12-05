@@ -9,7 +9,7 @@
 package singularity
 
 import (
-	ocibundle "github.com/hpcng/singularity/pkg/ocibundle/sif"
+	ocibundle "github.com/apptainer/apptainer/pkg/ocibundle/sif"
 )
 
 // OciMount mount a SIF image to create an OCI bundle

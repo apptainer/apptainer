@@ -22,38 +22,38 @@ import (
 	"testing"
 
 	// Tests imports
-	"github.com/hpcng/singularity/e2e/actions"
-	e2ebuildcfg "github.com/hpcng/singularity/e2e/buildcfg"
-	"github.com/hpcng/singularity/e2e/cache"
-	"github.com/hpcng/singularity/e2e/cmdenvvars"
-	"github.com/hpcng/singularity/e2e/config"
-	"github.com/hpcng/singularity/e2e/delete"
-	"github.com/hpcng/singularity/e2e/docker"
-	"github.com/hpcng/singularity/e2e/ecl"
-	singularityenv "github.com/hpcng/singularity/e2e/env"
-	"github.com/hpcng/singularity/e2e/gpu"
-	"github.com/hpcng/singularity/e2e/help"
-	"github.com/hpcng/singularity/e2e/imgbuild"
-	"github.com/hpcng/singularity/e2e/inspect"
-	"github.com/hpcng/singularity/e2e/instance"
-	"github.com/hpcng/singularity/e2e/key"
-	"github.com/hpcng/singularity/e2e/oci"
-	"github.com/hpcng/singularity/e2e/overlay"
-	"github.com/hpcng/singularity/e2e/plugin"
-	"github.com/hpcng/singularity/e2e/pull"
-	"github.com/hpcng/singularity/e2e/push"
-	"github.com/hpcng/singularity/e2e/remote"
-	"github.com/hpcng/singularity/e2e/run"
-	"github.com/hpcng/singularity/e2e/runhelp"
-	"github.com/hpcng/singularity/e2e/security"
-	"github.com/hpcng/singularity/e2e/sign"
-	"github.com/hpcng/singularity/e2e/verify"
-	"github.com/hpcng/singularity/e2e/version"
+	"github.com/apptainer/apptainer/e2e/actions"
+	e2ebuildcfg "github.com/apptainer/apptainer/e2e/buildcfg"
+	"github.com/apptainer/apptainer/e2e/cache"
+	"github.com/apptainer/apptainer/e2e/cmdenvvars"
+	"github.com/apptainer/apptainer/e2e/config"
+	"github.com/apptainer/apptainer/e2e/delete"
+	"github.com/apptainer/apptainer/e2e/docker"
+	"github.com/apptainer/apptainer/e2e/ecl"
+	singularityenv "github.com/apptainer/apptainer/e2e/env"
+	"github.com/apptainer/apptainer/e2e/gpu"
+	"github.com/apptainer/apptainer/e2e/help"
+	"github.com/apptainer/apptainer/e2e/imgbuild"
+	"github.com/apptainer/apptainer/e2e/inspect"
+	"github.com/apptainer/apptainer/e2e/instance"
+	"github.com/apptainer/apptainer/e2e/key"
+	"github.com/apptainer/apptainer/e2e/oci"
+	"github.com/apptainer/apptainer/e2e/overlay"
+	"github.com/apptainer/apptainer/e2e/plugin"
+	"github.com/apptainer/apptainer/e2e/pull"
+	"github.com/apptainer/apptainer/e2e/push"
+	"github.com/apptainer/apptainer/e2e/remote"
+	"github.com/apptainer/apptainer/e2e/run"
+	"github.com/apptainer/apptainer/e2e/runhelp"
+	"github.com/apptainer/apptainer/e2e/security"
+	"github.com/apptainer/apptainer/e2e/sign"
+	"github.com/apptainer/apptainer/e2e/verify"
+	"github.com/apptainer/apptainer/e2e/version"
 
-	"github.com/hpcng/singularity/e2e/internal/e2e"
-	"github.com/hpcng/singularity/e2e/internal/testhelper"
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	useragent "github.com/hpcng/singularity/pkg/util/user-agent"
+	"github.com/apptainer/apptainer/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/e2e/internal/testhelper"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 )
 
 var runDisabled = flag.Bool("run_disabled", false, "run tests that have been temporarily disabled")
@@ -156,7 +156,7 @@ func Run(t *testing.T) {
 	// Because tests are parallelized, and PrepRegistry temporarily masks
 	// the Singularity instance directory we *must* now call it before we
 	// start running tests which could use instance and oci functionality.
-	// See: https://github.com/hpcng/singularity/issues/5744
+	// See: https://github.com/apptainer/singularity/issues/5744
 	t.Run("PrepRegistry", func(t *testing.T) {
 		e2e.PrepRegistry(t, testenv)
 	})

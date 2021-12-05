@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/hpcng/singularity/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 )
 
 // Squashfs represents a squashfs packer

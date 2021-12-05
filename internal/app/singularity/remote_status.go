@@ -16,9 +16,9 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/hpcng/singularity/internal/pkg/remote"
-	"github.com/hpcng/singularity/internal/pkg/remote/endpoint"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/remote"
+	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 const statusLine = "%s\t%s\t%s\t%s\n"

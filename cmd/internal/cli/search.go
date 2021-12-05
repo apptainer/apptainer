@@ -12,10 +12,10 @@ package cli
 import (
 	"runtime"
 
-	"github.com/hpcng/singularity/docs"
-	"github.com/hpcng/singularity/internal/pkg/client/library"
-	"github.com/hpcng/singularity/pkg/cmdline"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/docs"
+	"github.com/apptainer/apptainer/internal/pkg/client/library"
+	"github.com/apptainer/apptainer/pkg/cmdline"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
 	"github.com/sylabs/scs-library-client/client"
 )

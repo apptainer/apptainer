@@ -19,12 +19,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/fs/lock"
+	"github.com/apptainer/apptainer/pkg/util/loop"
 	"github.com/google/uuid"
-	"github.com/hpcng/singularity/internal/pkg/util/bin"
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/fs/lock"
-	"github.com/hpcng/singularity/pkg/util/loop"
 )
 
 // Device describes a crypt device

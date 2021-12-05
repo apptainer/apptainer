@@ -12,9 +12,9 @@ import (
 	"io"
 	"os"
 
+	"github.com/apptainer/apptainer/pkg/sylog"
 	da "github.com/docker/docker/pkg/archive"
 	"github.com/docker/docker/pkg/idtools"
-	"github.com/hpcng/singularity/pkg/sylog"
 )
 
 // CopyWithTar is a wrapper around the docker pkg/archive/copy CopyWithTar allowing unprivileged use.

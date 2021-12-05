@@ -15,9 +15,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/hpcng/singularity/pkg/util/capabilities"
+	"github.com/apptainer/apptainer/pkg/util/capabilities"
 
-	"github.com/hpcng/singularity/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/test"
 	"github.com/opencontainers/runtime-spec/specs-go"
 )
 

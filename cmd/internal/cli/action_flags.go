@@ -11,7 +11,7 @@ package cli
 import (
 	"os"
 
-	"github.com/hpcng/singularity/pkg/cmdline"
+	"github.com/apptainer/apptainer/pkg/cmdline"
 )
 
 // actionflags.go contains flag variables for action-like commands to draw from

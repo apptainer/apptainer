@@ -15,21 +15,21 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	fakerootutil "github.com/hpcng/singularity/internal/pkg/fakeroot"
-	"github.com/hpcng/singularity/internal/pkg/plugin"
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine"
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/config/oci/generate"
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/config/starter"
-	fakerootConfig "github.com/hpcng/singularity/internal/pkg/runtime/engine/fakeroot/config"
-	"github.com/hpcng/singularity/internal/pkg/security/seccomp"
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
-	fakerootcallback "github.com/hpcng/singularity/pkg/plugin/callback/runtime/fakeroot"
-	"github.com/hpcng/singularity/pkg/runtime/engine/config"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/capabilities"
-	"github.com/hpcng/singularity/pkg/util/fs/proc"
-	"github.com/hpcng/singularity/pkg/util/singularityconf"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	fakerootutil "github.com/apptainer/apptainer/internal/pkg/fakeroot"
+	"github.com/apptainer/apptainer/internal/pkg/plugin"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/starter"
+	fakerootConfig "github.com/apptainer/apptainer/internal/pkg/runtime/engine/fakeroot/config"
+	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	fakerootcallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/fakeroot"
+	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/capabilities"
+	"github.com/apptainer/apptainer/pkg/util/fs/proc"
+	"github.com/apptainer/apptainer/pkg/util/singularityconf"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 
@@ -216,7 +216,7 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 		return fmt.Errorf("failed to mount proc filesystem: %s", err)
 	}
 
-	// fix potential issue with SELinux (https://github.com/hpcng/singularity/issues/4038)
+	// fix potential issue with SELinux (https://github.com/apptainer/singularity/issues/4038)
 	mounts, err := proc.GetMountPointMap(mountInfo)
 	if err != nil {
 		return fmt.Errorf("while parsing %s: %s", mountInfo, err)

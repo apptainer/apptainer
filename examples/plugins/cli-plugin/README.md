@@ -16,14 +16,14 @@ $ singularity version
 
 this means this version of singularity is _post_ 3.1.1 (but before the
 next version after that one). The suffix .gXXXXXXXXX indicates the exact
-commit in github.com/hpcng/singularity used to build this binary
+commit in github.com/apptainer/apptainer used to build this binary
 (7998470e7 in this example).
 
 Obtain a copy of the source code by running:
 
 ```sh
-git clone https://github.com/hpcng/singularity.git
-cd singularity
+git clone https://github.com/apptainer/apptainer.git
+cd apptainer
 git checkout 7998470e7
 ```
 

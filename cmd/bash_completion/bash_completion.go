@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hpcng/singularity/cmd/internal/cli"
+	"github.com/apptainer/apptainer/cmd/internal/cli"
 )
 
 func main() {
