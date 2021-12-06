@@ -23,9 +23,9 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 	apt-get update
 	apt-get install -y apt-transport-https build-essential cmake curl libsm6 libxrender1 libfontconfig1 wget vim git unzip python-setuptools ruby
 	apt-get clean
-	useradd -m singularity
-	su -c 'cd /Software && git clone https://github.com/Linuxbrew/brew.git' singularity
-	su -c '/Software/brew/bin/brew install bsdmainutils parallel util-linux' singularity
-	su -c '/Software/brew/bin/brew tap homebrew/science' singularity
-	su -c '/Software/brew/bin/brew install art bwa samtools' singularity
+	useradd -m apptainer
+	su -c 'cd /Software && git clone https://github.com/Linuxbrew/brew.git' apptainer
+	su -c '/Software/brew/bin/brew install bsdmainutils parallel util-linux' apptainer
+	su -c '/Software/brew/bin/brew tap homebrew/science' apptainer
+	su -c '/Software/brew/bin/brew install art bwa samtools' apptainer
 	sed -i 's|PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin|PATH="/Software/brew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"|' /environment

@@ -24,7 +24,7 @@ func (c *ctx) issue5033(t *testing.T) {
 	instanceName := randomName(t)
 	joinName := fmt.Sprintf("instance://%s", instanceName)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("instance start"),
@@ -32,7 +32,7 @@ func (c *ctx) issue5033(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("exec"),

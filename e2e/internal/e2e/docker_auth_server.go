@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	registry "github.com/adigunhammedolalekan/registry-auth"
+	"github.com/adigunhammedolalekan/registry-auth"
 )
 
 const (

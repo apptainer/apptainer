@@ -69,7 +69,7 @@ func init() {
 	})
 }
 
-// SearchCmd singularity search
+// SearchCmd apptainer search
 var SearchCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Args:                  cobra.ExactArgs(1),

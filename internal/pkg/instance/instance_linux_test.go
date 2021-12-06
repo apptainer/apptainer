@@ -36,13 +36,13 @@ func TestProcName(t *testing.T) {
 			desc:  "with valid same name/username",
 			name:  "test",
 			user:  "test",
-			match: "Singularity instance: test [test]",
+			match: "Apptainer instance: test [test]",
 		},
 		{
 			desc:  "with valid different name/username",
 			name:  "instance",
 			user:  "user",
-			match: "Singularity instance: user [instance]",
+			match: "Apptainer instance: user [instance]",
 		},
 		{
 			desc:            "with empty name",
@@ -259,7 +259,7 @@ func TestMain(m *testing.M) {
 	cmd := exec.Command("cat")
 	// keep cat running until it gets killed
 	cmd.StdinPipe()
-	// set process to "Singularity instance"
+	// set process to "Apptainer instance"
 	cmd.Args = []string{ProgPrefix}
 	if err := cmd.Start(); err != nil {
 		os.Exit(1)

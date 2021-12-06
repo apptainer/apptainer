@@ -12,7 +12,7 @@ import (
 	"fmt"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
@@ -66,28 +66,28 @@ var fakerootConfigDisableFlag = cmdline.Flag{
 	Usage:        "disable a user fakeroot mapping entry preventing him to use the fakeroot feature (the user mapping must be present)",
 }
 
-// configFakerootCmd singularity config fakeroot
+// configFakerootCmd apptainer config fakeroot
 var configFakerootCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		username := args[0]
-		var op singularity.FakerootConfigOp
+		var op apptainer.FakerootConfigOp
 
 		if fakerootConfigAdd {
-			op = singularity.FakerootAddUser
+			op = apptainer.FakerootAddUser
 		} else if fakerootConfigRemove {
-			op = singularity.FakerootRemoveUser
+			op = apptainer.FakerootRemoveUser
 		} else if fakerootConfigEnable {
-			op = singularity.FakerootEnableUser
+			op = apptainer.FakerootEnableUser
 		} else if fakerootConfigDisable {
-			op = singularity.FakerootDisableUser
+			op = apptainer.FakerootDisableUser
 		} else {
 			return fmt.Errorf("you must specify an option (eg: --add/--remove)")
 		}
 
-		if err := singularity.FakerootConfig(username, op); err != nil {
+		if err := apptainer.FakerootConfig(username, op); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 

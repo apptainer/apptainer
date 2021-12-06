@@ -52,7 +52,7 @@ const (
 	// SifLayerMediaTypeV1 is the mediaType for the "layer" which contains the actual SIF file
 	SifLayerMediaTypeV1 = "application/vnd.sylabs.sif.layer.v1.sif"
 
-	// SifLayerMediaTypeProto is the mediaType from prototyping and Singularity
+	// SifLayerMediaTypeProto is the mediaType from prototyping and Apptainer
 	// <3.7 which unfortunately includes a typo and doesn't have a version suffix
 	// See: https://github.com/apptainer/singularity/issues/4437
 	SifLayerMediaTypeProto = "appliciation/vnd.sylabs.sif.layer.tar"

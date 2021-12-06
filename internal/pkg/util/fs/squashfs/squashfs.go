@@ -13,20 +13,20 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
-	"github.com/apptainer/apptainer/pkg/util/singularityconf"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
 
-func getConfig() (*singularityconf.File, error) {
+func getConfig() (*apptainerconf.File, error) {
 	// if the caller has set the current config use it
 	// otherwise parse the default configuration file
-	cfg := singularityconf.GetCurrentConfig()
+	cfg := apptainerconf.GetCurrentConfig()
 	if cfg == nil {
 		var err error
 
-		configFile := buildcfg.SINGULARITY_CONF_FILE
-		cfg, err = singularityconf.Parse(configFile)
+		configFile := buildcfg.APPTAINER_CONF_FILE
+		cfg, err = apptainerconf.Parse(configFile)
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse singularity.conf file: %s", err)
+			return nil, fmt.Errorf("unable to parse apptainer.conf file: %s", err)
 		}
 	}
 	return cfg, nil

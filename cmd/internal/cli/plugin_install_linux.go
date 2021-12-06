@@ -10,7 +10,7 @@ package cli
 
 import (
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
 )
@@ -18,11 +18,11 @@ import (
 // PluginInstallCmd takes a compiled plugin.sif file and installs it
 // in the appropriate location.
 //
-// singularity plugin install <path>
+// apptainer plugin install <path>
 var PluginInstallCmd = &cobra.Command{
 	PreRun: CheckRootOrUnpriv,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := singularity.InstallPlugin(args[0])
+		err := apptainer.InstallPlugin(args[0])
 		if err != nil {
 			sylog.Fatalf("Failed to install plugin %q: %s.", args[0], err)
 		}

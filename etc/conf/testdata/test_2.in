@@ -1,12 +1,12 @@
-# SINGULARITY.CONF
-# This is the global configuration file for Singularity. This file controls
+# APPTAINER.CONF
+# This is the global configuration file for Apptainer. This file controls
 # what the container is allowed to do on a particular host, and as a result
 # this file must be owned by root.
 
 
 # ALLOW SETUID: [BOOL]
 # DEFAULT: yes
-# Should we allow users to utilize the setuid program flow within Singularity?
+# Should we allow users to utilize the setuid program flow within Apptainer?
 # note1: This is the default mode, and to utilize all features, this option
 # will need to be enabled.
 # note2: If this option is disabled, it will rely on the user namespace
@@ -17,7 +17,7 @@ allow setuid = yes
 
 # MAX LOOP DEVICES: [INT]
 # DEFAULT: 256
-# Set the maximum number of loop devices that Singularity should ever attempt
+# Set the maximum number of loop devices that Apptainer should ever attempt
 # to utilize.
 max loop devices = 200
 
@@ -86,7 +86,7 @@ mount devpts = yes
 # Should we automatically determine the calling user's home directory and
 # attempt to mount it's base path into the container? If the --contain option
 # is used, the home directory will be created within the session directory or
-# can be overridden with the SINGULARITY_HOME or SINGULARITY_WORKDIR
+# can be overridden with the APPTAINER_HOME or APPTAINER_WORKDIR
 # environment variables (or their corresponding command line options).
 mount home = yes
 
@@ -95,7 +95,7 @@ mount home = yes
 # DEFAULT: yes
 # Should we automatically bind mount /tmp and /var/tmp into the container? If
 # the --contain option is used, both tmp locations will be created in the
-# session directory or can be specified via the  SINGULARITY_WORKDIR
+# session directory or can be specified via the  APPTAINER_WORKDIR
 # environment variable (or the --workingdir command line option).
 mount tmp = yes
 
@@ -113,7 +113,7 @@ mount hostfs = no
 # the container. The file or directory must exist within the container on
 # which to attach to. you can specify a different source and destination
 # path (respectively) with a colon; otherwise source and dest are the same.
-#bind path = /etc/singularity/default-nsswitch.conf:/etc/nsswitch.conf
+#bind path = /etc/apptainer/default-nsswitch.conf:/etc/nsswitch.conf
 #bind path = /opt
 #bind path = /scratch
 bind path = /etc/localtime
@@ -156,18 +156,18 @@ sessiondir max size = 16
 # DEFAULT: NULL
 # Only allow containers to be used that are owned by a given user. If this
 # configuration is undefined (commented or set to NULL), all containers are
-# allowed to be used. This feature only applies when Singularity is running in
+# allowed to be used. This feature only applies when Apptainer is running in
 # SUID mode and the user is non-root.
-#limit container owners = gmk, singularity, nobody
+#limit container owners = gmk, apptainer, nobody
 
 
 # LIMIT CONTAINER GROUPS: [STRING]
 # DEFAULT: @LIMIT_CONTAINER_GROUPS_DEFAULT@
 # Only allow containers to be used that are owned by a given group. If this
 # configuration is undefined (commented or set to NULL), all containers are
-# allowed to be used. This feature only applies when Singularity is running in
+# allowed to be used. This feature only applies when Apptainer is running in
 # SUID mode and the user is non-root.
-#limit container groups = group1, singularity, nobody
+#limit container groups = group1, apptainer, nobody
 
 
 # LIMIT CONTAINER PATHS: [STRING]
@@ -175,14 +175,14 @@ sessiondir max size = 16
 # Only allow containers to be used that are located within an allowed path
 # prefix. If this configuration is undefined (commented or set to NULL),
 # containers will be allowed to run from anywhere on the file system. This
-# feature only applies when Singularity is running in SUID mode and the user is
+# feature only applies when Apptainer is running in SUID mode and the user is
 # non-root.
 #limit container paths = /scratch, /tmp, /global
 
 
 # ALLOW CONTAINER ${TYPE}: [BOOL]
 # DEFAULT: yes
-# This feature limits what kind of containers that Singularity will allow
+# This feature limits what kind of containers that Apptainer will allow
 # users to use (note this does not apply for root).
 allow container squashfs = yes
 allow container extfs = yes
@@ -201,7 +201,7 @@ always use nv = no
 # DEFAULT: no
 # Define default root capability set kept during runtime
 # - full: keep all capabilities (same as --keep-privs)
-# - file: keep capabilities configured in ${prefix}/etc/singularity/capabilities/user.root
+# - file: keep capabilities configured in ${prefix}/etc/apptainer/capabilities/user.root
 # - no: no capabilities (same as --no-privs)
 root default capabilities = full
 
@@ -212,7 +212,7 @@ root default capabilities = full
 # by root default capabilities.
 # Example:
 # If root default capabilities = file and allow root capabilities = no,
-# only capabilities defined in file ${prefix}/etc/singularity/capabilities/user.root
+# only capabilities defined in file ${prefix}/etc/apptainer/capabilities/user.root
 # could be obtained by root
 allow root capabilities = yes
 
@@ -226,8 +226,8 @@ allow user capabilities = no
 
 # MEMORY FS TYPE: [tmpfs/ramfs]
 # DEFAULT: tmpfs
-# This feature allow to choose temporary filesystem type used by Singularity.
-# Cray CLE 5 and 6 up to CLE 6.0.UP05 there is an issue (kernel panic) when Singularity
+# This feature allow to choose temporary filesystem type used by Apptainer.
+# Cray CLE 5 and 6 up to CLE 6.0.UP05 there is an issue (kernel panic) when Apptainer
 # use tmpfs, so on affected version it's recommended to set this value to ramfs to avoid
 # kernel panic
 memory fs type = tmpfs

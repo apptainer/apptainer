@@ -54,7 +54,7 @@ func (c ctx) testRunHelp(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),

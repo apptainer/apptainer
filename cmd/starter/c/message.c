@@ -62,7 +62,7 @@ void _print(int level, const char *function, const char *file_in, char *format, 
 
         if ( messagelevel_string == NULL ) {
             messagelevel = 5;
-            singularity_message(DEBUG, MSGLVL_ENV " undefined, setting level 5 (debug)\n");
+            apptainer_message(DEBUG, MSGLVL_ENV " undefined, setting level 5 (debug)\n");
         } else {
             messagelevel = atoi(messagelevel_string);
             if ( messagelevel >= NO_COLOR ) {
@@ -75,7 +75,7 @@ void _print(int level, const char *function, const char *file_in, char *format, 
             if ( messagelevel > 9 ) {
                 messagelevel = 9;
             }
-            singularity_message(VERBOSE, "Set messagelevel to: %d\n", messagelevel);
+            apptainer_message(VERBOSE, "Set messagelevel to: %d\n", messagelevel);
         }
     }
 

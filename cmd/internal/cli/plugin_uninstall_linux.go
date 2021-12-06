@@ -12,7 +12,7 @@ import (
 	"fmt"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
 )
@@ -20,12 +20,12 @@ import (
 // PluginUninstallCmd takes the name of a plugin and uninstalls it from the
 // plugin directory.
 //
-// singularity plugin uninstall <name>
+// apptainer plugin uninstall <name>
 var PluginUninstallCmd = &cobra.Command{
 	PreRun: CheckRootOrUnpriv,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
-		err := singularity.UninstallPlugin(name)
+		err := apptainer.UninstallPlugin(name)
 		if err != nil {
 			sylog.Fatalf("Failed to uninstall plugin %q: %s.", name, err)
 		}

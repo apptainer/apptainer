@@ -23,7 +23,7 @@ import (
 	remoteutil "github.com/apptainer/apptainer/internal/pkg/remote/util"
 	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 // ErrNoDefault indicates no default remote being set
@@ -45,7 +45,7 @@ var DefaultRemoteConfig = &Config{
 }
 
 // SystemConfigPath holds the path to the remote system configuration.
-var SystemConfigPath = filepath.Join(buildcfg.SYSCONFDIR, "singularity", syfs.RemoteConfFile)
+var SystemConfigPath = filepath.Join(buildcfg.SYSCONFDIR, "apptainer", syfs.RemoteConfFile)
 
 // Config stores the state of remote endpoint configurations
 type Config struct {
@@ -260,7 +260,7 @@ func (c *Config) Login(uri, username, password string, insecure bool) error {
 	}
 
 	// Remove any existing remote.yaml entry for the same URI.
-	// Older versions of Singularity can create duplicate entries with same URI,
+	// Older versions of Apptainer can create duplicate entries with same URI,
 	// so loop must handle removing multiple matches (#214).
 	for i := 0; i < len(c.Credentials); i++ {
 		cred := c.Credentials[i]
@@ -279,7 +279,7 @@ func (c *Config) Logout(uri string) error {
 	if err := credential.Manager.Logout(uri); err != nil {
 		return err
 	}
-	// Older versions of Singularity can create duplicate entries with same URI,
+	// Older versions of Apptainer can create duplicate entries with same URI,
 	// so loop must handle removing multiple matches (#214).
 	for i := 0; i < len(c.Credentials); i++ {
 		cred := c.Credentials[i]

@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
-	"github.com/apptainer/apptainer/pkg/util/singularityconf"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
 
 func main() {
@@ -32,16 +32,16 @@ func main() {
 	}
 }
 
-// genConf produces a singularity.conf file at out. It retains set configurations from in (leave blank for default)
+// genConf produces a apptainer.conf file at out. It retains set configurations from in (leave blank for default)
 func genConf(tmpl, in, out string) {
 	inFile := in
-	// Parse current singularity.conf file into c
+	// Parse current apptainer.conf file into c
 	if _, err := os.Stat(in); os.IsNotExist(err) {
 		inFile = ""
 	}
-	c, err := singularityconf.Parse(inFile)
+	c, err := apptainerconf.Parse(inFile)
 	if err != nil {
-		fmt.Printf("Unable to parse singularity.conf file: %s\n", err)
+		fmt.Printf("Unable to parse apptainer.conf file: %s\n", err)
 		os.Exit(1)
 	}
 
@@ -59,7 +59,7 @@ func genConf(tmpl, in, out string) {
 	}
 	defer newOutFile.Close()
 
-	if err := singularityconf.Generate(newOutFile, tmpl, c); err != nil {
+	if err := apptainerconf.Generate(newOutFile, tmpl, c); err != nil {
 		fmt.Printf("Unable to generate config file: %v\n", err)
 		os.Exit(1)
 	}

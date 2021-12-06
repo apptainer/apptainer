@@ -1,0 +1,67 @@
+BootStrap: docker
+From: rockylinux/rockylinux:8.4
+
+%post
+    # Set build time env variable
+    NOW=`date`
+    echo "export NOW=\"${NOW}\"" >> $APPTAINER_ENVIRONMENT
+
+    # Install build dependencies
+    dnf -y install cryptsetup gcc git golang libseccomp-devel libuuid-devel make rpm-build wget
+
+    # Build/Install alien package converter
+    dnf -y install 'dnf-command(config-manager)'
+    dnf config-manager --set-enabled powertools
+    dnf -y install epel-release perl
+    dnf -y install debhelper dpkg-dev fakeroot
+    dnf -y install alien
+
+%runscript
+    uname -r
+    cat /etc/centos-release 
+    echo "Container created: $NOW"
+    echo "Apptainer build target: $* "
+    export EL_VERSION=8
+    export VERSION=$*
+    export TMP_DIR=$(mktemp -d -u -p .)
+    curl -L -o apptainer-${VERSION}.tar.gz https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
+    rpmbuild --define "_topdir `pwd`/${TMP_DIR}" -tb apptainer-${VERSION}.tar.gz
+    cp ./${TMP_DIR}/RPMS/x86_64/apptainer-${VERSION}-1.el${EL_VERSION}.x86_64.rpm .
+    fakeroot alien apptainer-${VERSION}-1.el${EL_VERSION}.x86_64.rpm
+    chmod -R 777 ./${TMP_DIR}
+    rm -rf ./${TMP_DIR}
+    rm apptainer-${VERSION}.tar.gz
+
+%help
+
+    SUMMARY
+    This is a build container that generates installable apptainer packages for apptainer v3.x.x .
+    The container will output a deb and rpm in the current directory.
+
+    KNOWN BUGS
+    Some versions of apptainer contain the character 'v', such as v3.0.0.
+    The container will have to be rebuilt with the following statement modified:
+
+        curl -L -o apptainer-${VERSION}.tar.gz https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
+
+    USAGE
+
+        ./build-apptainer.sif {version}
+
+    	./build-apptainer.sif 3.8.0
+
+    CHANGELOG
+
+    v1.0.2
+    changed CentOS to RockyLinux
+    
+    v1.0.1
+    changed PowerTools -> powertools
+    removed manual alien build for rpm package
+    
+    v1.0.0
+    initial release
+
+%labels
+    Author chrismmaggio
+    Version 1.0.2

@@ -12,18 +12,18 @@ import (
 	"os"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
 )
 
 // PluginEnableCmd enables the named plugin.
 //
-// singularity plugin enable <name>
+// apptainer plugin enable <name>
 var PluginEnableCmd = &cobra.Command{
 	PreRun: CheckRootOrUnpriv,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := singularity.EnablePlugin(args[0])
+		err := apptainer.EnablePlugin(args[0])
 		if err != nil {
 			if os.IsNotExist(err) {
 				sylog.Fatalf("Failed to enable plugin %q: plugin not found.", args[0])

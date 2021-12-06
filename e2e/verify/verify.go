@@ -59,7 +59,7 @@ func getDataCheckJSON(keyNum int) []string {
 	return []string{"SignerKeys", fmt.Sprintf("[%d]", keyNum), "Signer", "DataCheck"}
 }
 
-func (c ctx) singularityVerifyAllKeyNum(t *testing.T) {
+func (c ctx) apptainerVerifyAllKeyNum(t *testing.T) {
 	keyNumPath := []string{"Signatures"}
 
 	tests := []struct {
@@ -90,7 +90,7 @@ func (c ctx) singularityVerifyAllKeyNum(t *testing.T) {
 			t.Fatalf("image file (%s) does not exist", tt.imagePath)
 		}
 
-		verifyOutput := func(t *testing.T, r *e2e.SingularityCmdResult) {
+		verifyOutput := func(t *testing.T, r *e2e.ApptainerCmdResult) {
 			// Get the Signatures and compare it
 			eNum, err := jsonparser.GetInt(r.Stdout, keyNumPath...)
 			if err != nil {
@@ -103,7 +103,7 @@ func (c ctx) singularityVerifyAllKeyNum(t *testing.T) {
 		}
 
 		// Inspect the container, and get the output
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -114,7 +114,7 @@ func (c ctx) singularityVerifyAllKeyNum(t *testing.T) {
 	}
 }
 
-func (c ctx) singularityVerifySigner(t *testing.T) {
+func (c ctx) apptainerVerifySigner(t *testing.T) {
 	tests := []struct {
 		expectOutput []verifyOutput
 		name         string
@@ -173,7 +173,7 @@ func (c ctx) singularityVerifySigner(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		verifyOutput := func(t *testing.T, r *e2e.SingularityCmdResult) {
+		verifyOutput := func(t *testing.T, r *e2e.ApptainerCmdResult) {
 			for keyNum, vo := range tt.expectOutput {
 				eName, err := jsonparser.GetString(r.Stdout, getNameJSON(keyNum)...)
 				if err != nil {
@@ -237,7 +237,7 @@ func (c ctx) singularityVerifySigner(t *testing.T) {
 		args = append(args, tt.imagePath)
 
 		// Inspect the container, and get the output
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -250,7 +250,7 @@ func (c ctx) singularityVerifySigner(t *testing.T) {
 
 func (c ctx) checkGroupidOption(t *testing.T) {
 	cmdArgs := []string{"--legacy-insecure", "--group-id", "1", c.successImage}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("verify"),
@@ -264,7 +264,7 @@ func (c ctx) checkGroupidOption(t *testing.T) {
 
 func (c ctx) checkIDOption(t *testing.T) {
 	cmdArgs := []string{"--legacy-insecure", "--sif-id", "1", c.successImage}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("verify"),
@@ -278,7 +278,7 @@ func (c ctx) checkIDOption(t *testing.T) {
 
 func (c ctx) checkAllOption(t *testing.T) {
 	cmdArgs := []string{"--legacy-insecure", "--all", c.successImage}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("verify"),
@@ -296,7 +296,7 @@ func (c ctx) checkURLOption(t *testing.T) {
 	}
 
 	cmdArgs := []string{"--legacy-insecure", "--url", "https://keys.sylabs.io", c.successImage}
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("verify"),
@@ -324,11 +324,11 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			e2e.PullImage(t, c.env, corruptedURL, "amd64", c.corruptedImage)
 
 			t.Run("checkAllOption", c.checkAllOption)
-			t.Run("singularityVerifyAllKeyNum", c.singularityVerifyAllKeyNum)
-			t.Run("singularityVerifySigner", c.singularityVerifySigner)
-			t.Run("singularityVerifyGroupIdOption", c.checkGroupidOption)
-			t.Run("singularityVerifyIDOption", c.checkIDOption)
-			t.Run("singularityVerifyURLOption", c.checkURLOption)
+			t.Run("apptainerVerifyAllKeyNum", c.apptainerVerifyAllKeyNum)
+			t.Run("apptainerVerifySigner", c.apptainerVerifySigner)
+			t.Run("apptainerVerifyGroupIdOption", c.checkGroupidOption)
+			t.Run("apptainerVerifyIDOption", c.checkIDOption)
+			t.Run("apptainerVerifyURLOption", c.checkURLOption)
 		},
 	}
 }

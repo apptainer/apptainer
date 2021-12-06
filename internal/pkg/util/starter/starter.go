@@ -60,10 +60,10 @@ func WithStdin(stdin io.Reader) CommandOp {
 func UseSuid(suid bool) CommandOp {
 	return func(c *Command) {
 		if suid {
-			c.path = filepath.Join(buildcfg.LIBEXECDIR, "singularity/bin/starter-suid")
+			c.path = filepath.Join(buildcfg.LIBEXECDIR, "apptainer/bin/starter-suid")
 			return
 		}
-		c.path = filepath.Join(buildcfg.LIBEXECDIR, "singularity/bin/starter")
+		c.path = filepath.Join(buildcfg.LIBEXECDIR, "apptainer/bin/starter")
 	}
 }
 
@@ -126,9 +126,9 @@ func copyConfigToEnv(data []byte) ([]string, error) {
 	var configEnv []string
 
 	const (
-		// space size for singularity argument and environment variables
+		// space size for apptainer argument and environment variables
 		// this is voluntary bigger than the real usage
-		singularityArgSize = 4096
+		apptainerArgSize = 4096
 
 		// for kilobyte conversion
 		kbyte = 1024
@@ -146,11 +146,11 @@ func copyConfigToEnv(data []byte) ([]string, error) {
 
 	// stack size divided by four to determine the arguments+environments
 	// size limit
-	argSizeLimit := (cur / 4)
+	argSizeLimit := cur / 4
 
 	// config length to be passed via environment variables + some space
-	// for singularity first argument
-	configLength := uint64(len(data)) + singularityArgSize
+	// for apptainer first argument
+	configLength := uint64(len(data)) + apptainerArgSize
 
 	// be sure everything fit with the current argument size limit
 	if configLength <= argSizeLimit {
@@ -195,7 +195,7 @@ func copyConfigToEnv(data []byte) ([]string, error) {
 }
 
 func (c *Command) init(config *config.Common, ops ...CommandOp) error {
-	c.path = filepath.Join(buildcfg.LIBEXECDIR, "singularity/bin/starter")
+	c.path = filepath.Join(buildcfg.LIBEXECDIR, "apptainer/bin/starter")
 
 	for _, op := range ops {
 		op(c)

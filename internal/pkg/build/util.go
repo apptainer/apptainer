@@ -141,19 +141,19 @@ func getSectionScriptArgs(name string, script string, s types.Script) ([]string,
 	return args, nil
 }
 
-// currentEnvNoSingularity returns the current environment, minus any SINGULARITY_ vars,
+// currentEnvNoApptainer returns the current environment, minus any APPTAINER_ vars,
 // but allowing those specified in the permitted slice. E.g. 'NV' in the permitted slice
-// will pass through `SINGULARITY_NV`, but strip out `SINGULARITY_OTHERVAR`.
-func currentEnvNoSingularity(permitted []string) []string {
+// will pass through `APPTAINER_NV`, but strip out `APPTAINER_OTHERVAR`.
+func currentEnvNoApptainer(permitted []string) []string {
 	envs := make([]string, 0)
 
 	for _, e := range os.Environ() {
-		if !strings.HasPrefix(e, env.SingularityPrefix) {
+		if !strings.HasPrefix(e, env.ApptainerPrefix) {
 			envs = append(envs, e)
 		} else {
 			envKey := strings.SplitN(e, "=", 2)
-			if slice.ContainsString(permitted, strings.TrimPrefix(envKey[0], env.SingularityPrefix)) {
-				sylog.Debugf("Passing through env var %s to singularity", e)
+			if slice.ContainsString(permitted, strings.TrimPrefix(envKey[0], env.ApptainerPrefix)) {
+				sylog.Debugf("Passing through env var %s to apptainer", e)
 				envs = append(envs, e)
 			}
 		}

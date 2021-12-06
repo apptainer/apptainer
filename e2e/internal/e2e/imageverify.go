@@ -65,14 +65,14 @@ func (env TestEnv) ImageVerify(t *testing.T, imagePath string, profile Profile) 
 			exit: 0,
 		},
 		{
-			name: "Singularity",
-			argv: []string{imagePath, "test", "-L", "/singularity"},
+			name: "Apptainer",
+			argv: []string{imagePath, "test", "-L", "/apptainer"},
 			exit: 0,
 		},
 	}
 
 	for _, tc := range tt {
-		env.RunSingularity(
+		env.RunApptainer(
 			t,
 			AsSubtest(tc.name),
 			WithProfile(profile),
@@ -101,7 +101,7 @@ func (env TestEnv) ImageVerify(t *testing.T, imagePath string, profile Profile) 
 
 	// Verify the label partition
 	for _, tt := range tests {
-		verifyOutput := func(t *testing.T, r *SingularityCmdResult) {
+		verifyOutput := func(t *testing.T, r *ApptainerCmdResult) {
 			jsonOut, err := jsonparser.GetString(r.Stdout, tt.jsonPath...)
 			if err != nil {
 				t.Fatalf("unable to get expected output from json: %v", err)
@@ -111,7 +111,7 @@ func (env TestEnv) ImageVerify(t *testing.T, imagePath string, profile Profile) 
 			}
 		}
 
-		env.RunSingularity(
+		env.RunApptainer(
 			t,
 			AsSubtest(tt.name),
 			WithProfile(UserProfile),

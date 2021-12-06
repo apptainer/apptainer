@@ -20,8 +20,8 @@
  * perform publicly and display publicly, and to permit other to do so. 
  */
 
-#ifndef _SINGULARITY_MESSAGE_H
-#define _SINGULARITY_MESSAGE_H
+#ifndef _APPTAINER_MESSAGE_H
+#define _APPTAINER_MESSAGE_H
 
 #define ABRT -4
 #define ERROR -3
@@ -51,10 +51,10 @@
 #define ANSI_COLOR_LIGHTCYAN    "\x1b[96m"
 #define ANSI_COLOR_RESET        "\x1b[0m"
 
-#define MSGLVL_ENV              "SINGULARITY_MESSAGELEVEL"
+#define MSGLVL_ENV              "APPTAINER_MESSAGELEVEL"
 
 void _print(int level, const char *function, const char *file, char *format, ...) __attribute__ ((__format__(printf, 4, 5)));
 
-#define singularity_message(a,b...) _print(a, __func__, __FILE__, b)
+#define apptainer_message(a,b...) _print(a, __func__, __FILE__, b)
 
-#endif /*_SINGULARITY_MESSAGE_H */
+#endif /*_APPTAINER_MESSAGE_H */

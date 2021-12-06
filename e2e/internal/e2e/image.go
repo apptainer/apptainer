@@ -41,11 +41,11 @@ func EnsureImage(t *testing.T, env TestEnv) {
 			err)
 	}
 
-	env.RunSingularity(
+	env.RunApptainer(
 		t,
 		WithProfile(RootProfile),
 		WithCommand("build"),
-		WithArgs("--force", env.ImagePath, "testdata/Singularity"),
+		WithArgs("--force", env.ImagePath, "testdata/Apptainer"),
 		ExpectExit(0),
 	)
 }
@@ -72,7 +72,7 @@ func PullImage(t *testing.T, env TestEnv, imageURL string, arch string, path str
 		t.Fatalf("Failed when checking image %q: %+v\n", path, err)
 	}
 
-	env.RunSingularity(
+	env.RunApptainer(
 		t,
 		WithProfile(UserProfile),
 		WithCommand("pull"),

@@ -67,7 +67,7 @@ var inspectDeffileFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "deffile",
 	ShortHand:    "d",
-	Usage:        "show the Singularity recipe file that was used to generate the image",
+	Usage:        "show the Apptainer recipe file that was used to generate the image",
 }
 
 // -j|--json
@@ -355,8 +355,8 @@ func (c *command) getMetadata() (*inspect.Metadata, error) {
 		outBuf.Write(out)
 		prefix = c.img.Path
 	} else {
-		// single file image, run singularity exec with the compound script
-		out, err := singularityExec(c.img.Path, args)
+		// single file image, run apptainer exec with the compound script
+		out, err := apptainerExec(c.img.Path, args)
 		if err != nil {
 			return nil, fmt.Errorf("could not inspect container: %v", err)
 		}
@@ -533,7 +533,7 @@ func (c *command) addEnvironmentCommand() {
 func (c *command) addDefinitionCommand() {
 	deffile, err := inspectDeffilePartition(c.img)
 	if err == errNoSIFMetadata || err == errNoSIF {
-		c.addSingleFileCommand("Singularity", "deffile")
+		c.addSingleFileCommand("Apptainer", "deffile")
 	} else if err != nil {
 		sylog.Warningf("Unable to inspect deffile: %s", err)
 	} else {

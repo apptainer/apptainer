@@ -151,7 +151,7 @@ func (cp *DebootstrapConveyorPacker) prepareFakerootEnv(ctx context.Context) (fu
 func (cp *DebootstrapConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err error) {
 	cp.b = b
 
-	// check for debootstrap on system(script using "singularity_which" not sure about its importance)
+	// check for debootstrap on system(script using "apptainer_which" not sure about its importance)
 	debootstrapPath, err := bin.FindBin("debootstrap")
 	if err != nil {
 		return fmt.Errorf("debootstrap is not in PATH... Perhaps 'apt-get install' it: %v", err)

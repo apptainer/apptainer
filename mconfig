@@ -50,7 +50,7 @@ cflags_opts="-Wall -Werror -Wfatal-errors -Wno-unknown-warning-option \
 cflags="$CFLAGS -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -fstack-protector --param ssp-buffer-size=4"
 ldflags=$LDFLAGS
 
-package_name=singularity
+package_name=apptainer
 package_version=`scripts/get-version`
 
 if test -z "${package_version}" ; then
@@ -112,7 +112,7 @@ usage_args () {
 	echo "     -l   build project with source code language (-l C -l Go ...)"
 	echo "     -h   this help"
 	echo
-	echo "  Singularity options:"
+	echo "  Apptainer options:"
 	echo "     --without-suid    do not install SUID binary (linux only)"
 	echo "     --without-network do not compile/install network plugins (linux only)"
 	echo "     --without-seccomp do not compile/install seccomp support even if available"
@@ -852,7 +852,7 @@ cat $makeit_fragsdir/Makefile.stub | awk \
 #######################################################################
 
 if [ "$host" = "unix" ]; then
-	RPMSPEC=singularity.spec
+	RPMSPEC=apptainer.spec
 	echo "=> generating $RPMSPEC ..."
 	rm -f $sourcedir/$RPMSPEC
 

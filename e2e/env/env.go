@@ -6,10 +6,10 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-// This test sets singularity image specific environment variables and
+// This test sets apptainer image specific environment variables and
 // verifies that they are properly set.
 
-package singularityenv
+package apptainerenv
 
 import (
 	"io/ioutil"
@@ -26,17 +26,17 @@ type ctx struct {
 }
 
 const (
-	defaultPath     = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-	singularityLibs = "/.singularity.d/libs"
+	defaultPath   = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+	apptainerLibs = "/.singularity.d/libs"
 )
 
-func (c ctx) singularityEnv(t *testing.T) {
+func (c ctx) apptainerEnv(t *testing.T) {
 	// use a cache to not download images over and over
 	imgCacheDir, cleanCache := e2e.MakeCacheDir(t, c.env.TestDir)
 	defer cleanCache(t)
 	c.env.ImgCacheDir = imgCacheDir
 
-	// Singularity defines a path by default. See singularityware/singularity/etc/init.
+	// Apptainer defines a path by default. See apptainerware/apptainer/etc/init.
 	defaultImage := "docker://alpine:3.8"
 
 	// This image sets a custom path.
@@ -71,42 +71,42 @@ func (c ctx) singularityEnv(t *testing.T) {
 			name:  "AppendToDefaultPath",
 			image: defaultImage,
 			path:  defaultPath + ":" + partialPath,
-			env:   []string{"SINGULARITYENV_APPEND_PATH=/foo"},
+			env:   []string{"APPTAINERENV_APPEND_PATH=/foo"},
 		},
 		{
 			name:  "AppendToCustomPath",
 			image: customImage,
 			path:  customPath + ":" + partialPath,
-			env:   []string{"SINGULARITYENV_APPEND_PATH=/foo"},
+			env:   []string{"APPTAINERENV_APPEND_PATH=/foo"},
 		},
 		{
 			name:  "PrependToDefaultPath",
 			image: defaultImage,
 			path:  partialPath + ":" + defaultPath,
-			env:   []string{"SINGULARITYENV_PREPEND_PATH=/foo"},
+			env:   []string{"APPTAINERENV_PREPEND_PATH=/foo"},
 		},
 		{
 			name:  "PrependToCustomPath",
 			image: customImage,
 			path:  partialPath + ":" + customPath,
-			env:   []string{"SINGULARITYENV_PREPEND_PATH=/foo"},
+			env:   []string{"APPTAINERENV_PREPEND_PATH=/foo"},
 		},
 		{
 			name:  "OverwriteDefaultPath",
 			image: defaultImage,
 			path:  overwrittenPath,
-			env:   []string{"SINGULARITYENV_PATH=" + overwrittenPath},
+			env:   []string{"APPTAINERENV_PATH=" + overwrittenPath},
 		},
 		{
 			name:  "OverwriteCustomPath",
 			image: customImage,
 			path:  overwrittenPath,
-			env:   []string{"SINGULARITYENV_PATH=" + overwrittenPath},
+			env:   []string{"APPTAINERENV_PATH=" + overwrittenPath},
 		},
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.UserProfile),
 			e2e.WithCommand("exec"),
@@ -120,7 +120,7 @@ func (c ctx) singularityEnv(t *testing.T) {
 	}
 }
 
-func (c ctx) singularityEnvOption(t *testing.T) {
+func (c ctx) apptainerEnvOption(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
 	imageDefaultPath := defaultPath + ":/go/bin:/usr/local/go/bin"
@@ -242,14 +242,14 @@ func (c ctx) singularityEnvOption(t *testing.T) {
 		{
 			name:     "TestImageCgoEnabledOverrideFromEnv",
 			image:    c.env.ImagePath,
-			hostEnv:  []string{"SINGULARITYENV_CGO_ENABLED=1"},
+			hostEnv:  []string{"APPTAINERENV_CGO_ENABLED=1"},
 			matchEnv: "CGO_ENABLED",
 			matchVal: "1",
 		},
 		{
 			name:     "TestImageCgoEnabledOverrideEnvOptionPrecedence",
 			image:    c.env.ImagePath,
-			hostEnv:  []string{"SINGULARITYENV_CGO_ENABLED=1"},
+			hostEnv:  []string{"APPTAINERENV_CGO_ENABLED=1"},
 			envOpt:   []string{"CGO_ENABLED=2"},
 			matchEnv: "CGO_ENABLED",
 			matchVal: "2",
@@ -290,14 +290,14 @@ func (c ctx) singularityEnvOption(t *testing.T) {
 			name:     "TestDefaultLdLibraryPath",
 			image:    c.env.ImagePath,
 			matchEnv: "LD_LIBRARY_PATH",
-			matchVal: singularityLibs,
+			matchVal: apptainerLibs,
 		},
 		{
 			name:     "TestCustomLdLibraryPath",
 			image:    c.env.ImagePath,
 			envOpt:   []string{"LD_LIBRARY_PATH=/foo"},
 			matchEnv: "LD_LIBRARY_PATH",
-			matchVal: "/foo:" + singularityLibs,
+			matchVal: "/foo:" + apptainerLibs,
 		},
 	}
 
@@ -307,7 +307,7 @@ func (c ctx) singularityEnvOption(t *testing.T) {
 			args = append(args, "--env", strings.Join(tt.envOpt, ","))
 		}
 		args = append(args, tt.image, "/bin/sh", "-c", "echo \"${"+tt.matchEnv+"}\"")
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -322,7 +322,7 @@ func (c ctx) singularityEnvOption(t *testing.T) {
 	}
 }
 
-func (c ctx) singularityEnvFile(t *testing.T) {
+func (c ctx) apptainerEnvFile(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
 	imageDefaultPath := defaultPath + ":/go/bin:/usr/local/go/bin"
@@ -400,14 +400,14 @@ func (c ctx) singularityEnvFile(t *testing.T) {
 			name:     "DefaultLdLibraryPath",
 			image:    c.env.ImagePath,
 			matchEnv: "LD_LIBRARY_PATH",
-			matchVal: singularityLibs,
+			matchVal: apptainerLibs,
 		},
 		{
 			name:     "CustomLdLibraryPath",
 			image:    c.env.ImagePath,
 			envFile:  "LD_LIBRARY_PATH=/foo",
 			matchEnv: "LD_LIBRARY_PATH",
-			matchVal: "/foo:" + singularityLibs,
+			matchVal: "/foo:" + apptainerLibs,
 		},
 	}
 
@@ -422,7 +422,7 @@ func (c ctx) singularityEnvFile(t *testing.T) {
 		}
 		args = append(args, tt.image, "/bin/sh", "-c", "echo $"+tt.matchEnv)
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -444,9 +444,9 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"environment manipulation": c.singularityEnv,
-		"environment option":       c.singularityEnvOption,
-		"environment file":         c.singularityEnvFile,
+		"environment manipulation": c.apptainerEnv,
+		"environment option":       c.apptainerEnvOption,
+		"environment file":         c.apptainerEnvFile,
 		"issue 5057":               c.issue5057, // https://github.com/hpcng/issues/5057
 		"issue 5426":               c.issue5426, // https://github.com/hpcng/issues/5426
 		"issue 43":                 c.issue43,   // https://github.com/sylabs/singularity/issues/43

@@ -53,13 +53,13 @@ func (d Define) WriteLine(isSuidInstall bool) (s string) {
 			"LIBEXECDIR",
 			"SYSCONFDIR",
 			"SESSIONDIR",
-			"SINGULARITY_CONFDIR",
+			"APPTAINER_CONFDIR",
 			"PLUGIN_ROOTDIR":
 			varType = "var"
 			varStatement = d.Words[1] + " = RelocatePath(" + s + ")"
 		default:
 			// Some variables are defined relative to others and cannot be const
-			if strings.Contains(s, "SINGULARITY_CONFDIR") {
+			if strings.Contains(s, "APPTAINER_CONFDIR") {
 				varType = "var"
 			}
 		}
@@ -79,8 +79,8 @@ import (
 
 func RelocatePath(original string) (string) {
 	// For security, never allow relocation when built with SetUID support
-	if SINGULARITY_SUID_INSTALL != 0 {
-		panic("This code should not exist when SINGULARITY_SUID_INSTALL is set")
+	if APPTAINER_SUID_INSTALL != 0 {
+		panic("This code should not exist when APPTAINER_SUID_INSTALL is set")
 	}
 
 	if ! strings.HasPrefix(original, "{{.Prefix}}") {
@@ -94,11 +94,11 @@ func RelocatePath(original string) (string) {
 	prefix := filepath.Dir(executablePath)
 
 	switch filepath.Base(executablePath) {
-	case "singularity":
-		// PREFIX/bin/singularity
+	case "apptainer":
+		// PREFIX/bin/apptainer
 		prefix = filepath.Dir(prefix)
 	case "starter":
-		// PREFIX/libexec/singularity/bin/starter
+		// PREFIX/libexec/apptainer/bin/starter
 		prefix = filepath.Dir(filepath.Dir(filepath.Dir(prefix)))
 	default:
 		return original
@@ -133,7 +133,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	re := regexp.MustCompile("#define SINGULARITY_SUID_INSTALL ([01])")
+	re := regexp.MustCompile("#define APPTAINER_SUID_INSTALL ([01])")
 	isSuidInstall := true
 	switch re.FindStringSubmatch(string(b))[1] {
 	case "0":
@@ -141,7 +141,7 @@ func main() {
 	case "1":
 		isSuidInstall = true
 	default:
-		panic("Failed to parse value of SINGULARITY_SUID_INSTALL")
+		panic("Failed to parse value of APPTAINER_SUID_INSTALL")
 	}
 
 	// Parse the config.h file

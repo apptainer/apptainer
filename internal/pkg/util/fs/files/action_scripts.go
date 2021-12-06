@@ -12,10 +12,10 @@ package files
 var ActionScript = `#!/bin/sh
 
 declare -r __exported_env__=$(getallenv)
-declare -r __singularity_cmd__=${SINGULARITY_COMMAND:-}
+declare -r __apptainer_cmd__=${APPTAINER_COMMAND:-}
 
-if test -n "${SINGULARITY_APPNAME:-}"; then
-    readonly SINGULARITY_APPNAME
+if test -n "${APPTAINER_APPNAME:-}"; then
+    readonly APPTAINER_APPNAME
 fi
 
 export PWD
@@ -43,9 +43,9 @@ clear_env() {
     for e in ${__exported_env__}; do
         key=$(getenvkey "${e}")
         case "${key}" in
-        PWD|HOME|OPTIND|UID|GID|SINGULARITY_APPNAME|SINGULARITY_SHELL)
+        PWD|HOME|OPTIND|UID|GID|APPTAINER_APPNAME|APPTAINER_SHELL)
             ;;
-        SINGULARITY_NAME|SINGULARITY_CONTAINER)
+        APPTAINER_NAME|APPTAINER_CONTAINER)
             readonly "${key}"
             ;;
         *)
@@ -103,14 +103,14 @@ if test -d "/.singularity.d/env"; then
             /.singularity.d/env/10-docker.sh)
                 source "${__script__}"
                 # append potential missing path from the default PATH
-                # used by Singularity
+                # used by Apptainer
                 export PATH="$(fixpath)"
                 ;;
             /.singularity.d/env/99-base.sh)
                 # this file is the common denominator in image built since
-                # Singularity 2.3, inject forwarded variables right after
+                # Apptainer 2.3, inject forwarded variables right after
                 source "${__script__}"
-                source "/.inject-singularity-env.sh"
+                source "/.inject-apptainer-env.sh"
                 ;;
             *)
                 source "${__script__}"
@@ -119,12 +119,12 @@ if test -d "/.singularity.d/env"; then
         fi
     done
 else
-    # this is for old images built with Singularity version prior to 2.3
+    # this is for old images built with Apptainer version prior to 2.3
     if test -f "/environment"; then
         source "/environment"
         export PATH="$(fixpath)"
     fi
-    source "/.inject-singularity-env.sh"
+    source "/.inject-apptainer-env.sh"
 fi
 
 if ! test -f "/.singularity.d/env/99-runtimevars.sh"; then
@@ -139,13 +139,13 @@ restore_env
 # If we were called through a script and PS1 is empty this
 # gives a confusing silent prompt. Force a PS1 if it's empty.
 if test -z "${PS1:-}"; then
-	export PS1="Singularity> "
+	export PS1="Apptainer> "
 fi
 
 # See https://github.com/apptainer/singularity/issues/2721,
 # as bash is often used as the current shell it may confuse
 # users if the provided command is /bin/bash implying to
-# override PS1 set by singularity, then we may end up
+# override PS1 set by apptainer, then we may end up
 # with a shell prompt identical to the host one, so we
 # force PS1 through bash PROMPT_COMMAND
 if test -z "${PROMPT_COMMAND:-}"; then
@@ -154,16 +154,16 @@ else
     export PROMPT_COMMAND="${PROMPT_COMMAND:-}; PROMPT_COMMAND=\"\${PROMPT_COMMAND%%; PROMPT_COMMAND=*}\"; PS1=\"${PS1}\""
 fi
 
-export SINGULARITY_ENVIRONMENT="${SINGULARITY_ENVIRONMENT:-/.singularity.d/env/91-environment.sh}"
+export APPTAINER_ENVIRONMENT="${APPTAINER_ENVIRONMENT:-/.singularity.d/env/91-environment.sh}"
 
-sylog debug "Running action command ${__singularity_cmd__}"
+sylog debug "Running action command ${__apptainer_cmd__}"
 
-case "${__singularity_cmd__}" in
+case "${__apptainer_cmd__}" in
 exec)
     exec "$@" ;;
 shell)
-    if test -n "${SINGULARITY_SHELL:-}" -a -x "${SINGULARITY_SHELL:-}"; then
-        exec "${SINGULARITY_SHELL:-}" "$@"
+    if test -n "${APPTAINER_SHELL:-}" -a -x "${APPTAINER_SHELL:-}"; then
+        exec "${APPTAINER_SHELL:-}" "$@"
     elif test -x "/bin/bash"; then
         export SHELL=/bin/bash
         exec "/bin/bash" --norc "$@"
@@ -175,16 +175,18 @@ shell)
     sylog error "/bin/sh does not exist in container"
     exit 1 ;;
 run)
-    if test -n "${SINGULARITY_APPNAME:-}"; then
-        if test -x "/scif/apps/${SINGULARITY_APPNAME:-}/scif/runscript"; then
-            exec "/scif/apps/${SINGULARITY_APPNAME:-}/scif/runscript" "$@"
+    if test -n "${APPTAINER_APPNAME:-}"; then
+        if test -x "/scif/apps/${APPTAINER_APPNAME:-}/scif/runscript"; then
+            exec "/scif/apps/${APPTAINER_APPNAME:-}/scif/runscript" "$@"
+		elif test -x "/scif/apps/singularity/scif/test"; then
+            exec "/scif/apps/singularity/scif/test" "$@"
         fi
-        sylog error "no runscript for contained app: ${SINGULARITY_APPNAME:-}"
+        sylog error "no runscript for contained app: ${APPTAINER_APPNAME:-}"
         exit 1
     elif test -x "/.singularity.d/runscript"; then
         exec "/.singularity.d/runscript" "$@"
-    elif test -x "/singularity"; then
-        exec "/singularity" "$@"
+    elif test -x "/apptainer"; then
+        exec "/apptainer" "$@"
     elif test -x "/bin/sh"; then
         sylog info "No runscript found in container, executing /bin/sh"
         exec "/bin/sh" "$@"
@@ -193,11 +195,13 @@ run)
     sylog error "No runscript and no /bin/sh executable found in container, aborting"
     exit 1 ;;
 test)
-    if test -n "${SINGULARITY_APPNAME:-}"; then
-        if test -x "/scif/apps/${SINGULARITY_APPNAME:-}/scif/test"; then
-            exec "/scif/apps/${SINGULARITY_APPNAME:-}/scif/test" "$@"
+    if test -n "${APPTAINER_APPNAME:-}"; then
+        if test -x "/scif/apps/${APPTAINER_APPNAME:-}/scif/test"; then
+            exec "/scif/apps/${APPTAINER_APPNAME:-}/scif/test" "$@"
+		elif test -x "/scif/apps/singularity/scif/test"; then
+            exec "/scif/apps/singularity/scif/test" "$@"
         fi
-        sylog error "No tests for contained app: ${SINGULARITY_APPNAME:-}"
+        sylog error "No tests for contained app: ${APPTAINER_APPNAME:-}"
         exit 1
     elif test -x "/.singularity.d/test"; then
         exec "/.singularity.d/test" "$@"
@@ -213,7 +217,7 @@ start)
     sylog info "No instance start script found in container"
     exit 0 ;;
 *)
-    sylog error "Unknown action ${__singularity_cmd__}"
+    sylog error "Unknown action ${__apptainer_cmd__}"
     exit 1 ;;
 esac
 `

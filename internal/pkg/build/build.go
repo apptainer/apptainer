@@ -20,8 +20,8 @@ import (
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
-	"github.com/apptainer/apptainer/pkg/util/singularityconf"
 
 	"github.com/apptainer/apptainer/internal/pkg/build/apps"
 	"github.com/apptainer/apptainer/internal/pkg/build/assemblers"
@@ -345,7 +345,7 @@ func (b *Build) Full(ctx context.Context) error {
 	oldumask := syscall.Umask(0o002)
 
 	// generate the default configuration
-	config, err := singularityconf.Parse("")
+	config, err := apptainerconf.Parse("")
 	if err != nil {
 		return err
 	}
@@ -356,10 +356,10 @@ func (b *Build) Full(ctx context.Context) error {
 
 	// nvidia-container-cli path / ldconfig path will be needed by %post/%test
 	// in builds run with --nv / --nvccli. Must grab paths from the main config.
-	sysConfig := singularityconf.GetCurrentConfig()
+	sysConfig := apptainerconf.GetCurrentConfig()
 	if sysConfig == nil {
-		configFile := buildcfg.SINGULARITY_CONF_FILE
-		sysConfig, err = singularityconf.Parse(configFile)
+		configFile := buildcfg.APPTAINER_CONF_FILE
+		sysConfig, err = apptainerconf.Parse(configFile)
 		if err != nil {
 			return fmt.Errorf("could not parse %q: %v", configFile, err)
 		}
@@ -369,7 +369,7 @@ func (b *Build) Full(ctx context.Context) error {
 
 	var buffer bytes.Buffer
 
-	if err := singularityconf.Generate(&buffer, "", config); err != nil {
+	if err := apptainerconf.Generate(&buffer, "", config); err != nil {
 		return fmt.Errorf("while generating configuration file: %s", err)
 	}
 	configData := buffer.Bytes()
@@ -455,7 +455,7 @@ func (b *Build) Full(ctx context.Context) error {
 		}
 
 		// write the build configuration used for %post and %test sections
-		configFile := filepath.Join(stage.b.TmpDir, "singularity.conf")
+		configFile := filepath.Join(stage.b.TmpDir, "apptainer.conf")
 		if err := ioutil.WriteFile(configFile, configData, 0o644); err != nil {
 			return fmt.Errorf("while creating %s: %s", configFile, err)
 		}

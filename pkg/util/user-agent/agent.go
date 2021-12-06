@@ -16,9 +16,9 @@ import (
 
 var value string
 
-// Value contains the Singularity user agent.
+// Value contains the Apptainer user agent.
 //
-// For example, "Singularity/3.0.0 (linux amd64) Go/1.10.3".
+// For example, "Apptainer/3.0.0 (linux amd64) Go/1.10.3".
 func Value() string {
 	if value == "" {
 		panic("useragent.InitValue() must be called before calling useragent.Value()")
@@ -28,16 +28,16 @@ func Value() string {
 }
 
 // InitValue sets value that will be returned when
-// user queries singularity version.
+// user queries apptainer version.
 func InitValue(name, version string) {
 	value = fmt.Sprintf("%v (%v %v) %v",
-		singularityVersion(name, version),
+		apptainerVersion(name, version),
 		strings.Title(runtime.GOOS),
 		runtime.GOARCH,
 		goVersion())
 }
 
-func singularityVersion(name, version string) string {
+func apptainerVersion(name, version string) string {
 	product := strings.Title(name)
 	ver := strings.Split(version, "-")[0]
 	return fmt.Sprintf("%v/%v", product, ver)

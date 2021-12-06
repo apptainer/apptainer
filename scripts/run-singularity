@@ -25,9 +25,9 @@
 # 
 # 
 
-# Simple wrapper for 'singularity run'
+# Simple wrapper for 'apptainer run'
 
-exec /usr/bin/env singularity --quiet run "$@"
+exec /usr/bin/env apptainer --quiet run "$@"
 
 exit 255
 

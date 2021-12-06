@@ -41,7 +41,7 @@ func SetupDockerHubCredentials(t *testing.T) {
 }
 
 func writeDockerHubCredentials(t *testing.T, dir, username, pass string) {
-	configPath := filepath.Join(dir, ".singularity", syfs.DockerConfFile)
+	configPath := filepath.Join(dir, ".apptainer", syfs.DockerConfFile)
 	cli, err := auth.NewClient(configPath)
 	if err != nil {
 		t.Fatalf("failed to get docker auth client: %v", err)

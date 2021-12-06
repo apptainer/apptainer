@@ -21,7 +21,7 @@ import (
 
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/sypgp"
@@ -137,7 +137,7 @@ func isLocal(e *openpgp.Entity) bool {
 
 // isGlobal returns true if signing entity e is found in the global keyring, and false otherwise.
 func isGlobal(e *openpgp.Entity) bool {
-	keyring := sypgp.NewHandle(buildcfg.SINGULARITY_CONFDIR, sypgp.GlobalHandleOpt())
+	keyring := sypgp.NewHandle(buildcfg.APPTAINER_CONFDIR, sypgp.GlobalHandleOpt())
 	kr, err := keyring.LoadPubKeyring()
 	if err != nil {
 		return false
@@ -223,8 +223,8 @@ type keyList struct {
 	SignerKeys []*key
 }
 
-// getJSONCallback returns a singularity.VerifyCallback that appends to kl.
-func getJSONCallback(kl *keyList) singularity.VerifyCallback {
+// getJSONCallback returns a apptainer.VerifyCallback that appends to kl.
+func getJSONCallback(kl *keyList) apptainer.VerifyCallback {
 	return func(f *sif.FileImage, r integrity.VerifyResult) bool {
 		name, fp := "unknown", ""
 		var keyLocal, keyCheck bool

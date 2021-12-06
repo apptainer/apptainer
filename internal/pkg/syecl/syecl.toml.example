@@ -1,4 +1,4 @@
-# Singularity Execution Control List config file
+# Apptainer Execution Control List config file
 #
 # This file describes execution groups in which SIF files are checked for
 # authorized loading/execution. The decision is made by validating both the

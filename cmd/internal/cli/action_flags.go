@@ -16,29 +16,29 @@ import (
 
 // actionflags.go contains flag variables for action-like commands to draw from
 var (
-	AppName            string
-	BindPaths          []string
-	Mounts             []string
-	HomePath           string
-	OverlayPath        []string
-	ScratchPath        []string
-	WorkdirPath        string
-	PwdPath            string
-	ShellPath          string
-	Hostname           string
-	Network            string
-	NetworkArgs        []string
-	DNS                string
-	Security           []string
-	CgroupsPath        string
-	VMRAM              string
-	VMCPU              string
-	VMIP               string
-	ContainLibsPath    []string
-	FuseMount          []string
-	SingularityEnv     []string
-	SingularityEnvFile string
-	NoMount            []string
+	AppName          string
+	BindPaths        []string
+	Mounts           []string
+	HomePath         string
+	OverlayPath      []string
+	ScratchPath      []string
+	WorkdirPath      string
+	PwdPath          string
+	ShellPath        string
+	Hostname         string
+	Network          string
+	NetworkArgs      []string
+	DNS              string
+	Security         []string
+	CgroupsPath      string
+	VMRAM            string
+	VMCPU            string
+	VMIP             string
+	ContainLibsPath  []string
+	FuseMount        []string
+	ApptainerEnv     []string
+	ApptainerEnvFile string
+	NoMount          []string
 
 	IsBoot          bool
 	IsFakeroot      bool
@@ -286,7 +286,7 @@ var actionVMIPFlag = cmdline.Flag{
 	EnvKeys:      []string{"VM_IP"},
 }
 
-// hidden flag to handle SINGULARITY_CONTAINLIBS environment variable
+// hidden flag to handle APPTAINER_CONTAINLIBS environment variable
 var actionContainLibsFlag = cmdline.Flag{
 	ID:           "actionContainLibsFlag",
 	Value:        &ContainLibsPath,
@@ -306,7 +306,7 @@ var actionFuseMountFlag = cmdline.Flag{
 	EnvKeys:      []string{"FUSESPEC"},
 }
 
-// hidden flag to handle SINGULARITY_TMPDIR environment variable
+// hidden flag to handle APPTAINER_TMPDIR environment variable
 var actionTmpDirFlag = cmdline.Flag{
 	ID:           "actionTmpDirFlag",
 	Value:        &tmpDir,
@@ -418,7 +418,7 @@ var actionWritableFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "writable",
 	ShortHand:    "w",
-	Usage:        "by default all Singularity containers are available as read only. This option makes the file system accessible as read/write.",
+	Usage:        "by default all Apptainer containers are available as read only. This option makes the file system accessible as read/write.",
 	EnvKeys:      []string{"WRITABLE"},
 }
 
@@ -448,7 +448,7 @@ var actionNoMountFlag = cmdline.Flag{
 	Value:        &NoMount,
 	DefaultValue: []string{},
 	Name:         "no-mount",
-	Usage:        "disable one or more mount xxx options set in singularity.conf",
+	Usage:        "disable one or more mount xxx options set in apptainer.conf",
 	EnvKeys:      []string{"NO_MOUNT"},
 }
 
@@ -563,7 +563,7 @@ var actionUserNamespaceFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "userns",
 	ShortHand:    "u",
-	Usage:        "run container in a new user namespace, allowing Singularity to run completely unprivileged on recent kernels. This disables some features of Singularity, for example it only works with sandbox images.",
+	Usage:        "run container in a new user namespace, allowing Apptainer to run completely unprivileged on recent kernels. This disables some features of Apptainer, for example it only works with sandbox images.",
 	EnvKeys:      []string{"USERNS", "UNSHARE_USERNS"},
 }
 
@@ -620,7 +620,7 @@ var actionAllowSetuidFlag = cmdline.Flag{
 // --env
 var actionEnvFlag = cmdline.Flag{
 	ID:           "actionEnvFlag",
-	Value:        &SingularityEnv,
+	Value:        &ApptainerEnv,
 	DefaultValue: []string{},
 	Name:         "env",
 	Usage:        "pass environment variable to contained process",
@@ -629,7 +629,7 @@ var actionEnvFlag = cmdline.Flag{
 // --env-file
 var actionEnvFileFlag = cmdline.Flag{
 	ID:           "actionEnvFileFlag",
-	Value:        &SingularityEnvFile,
+	Value:        &ApptainerEnvFile,
 	DefaultValue: "",
 	Name:         "env-file",
 	Usage:        "pass environment variables from file to contained process",

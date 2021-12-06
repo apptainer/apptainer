@@ -52,7 +52,7 @@ func init() {
 	})
 }
 
-// KeyExportCmd is `singularity key export` and exports a public or secret
+// KeyExportCmd is `apptainer key export` and exports a public or secret
 // key from local keyring.
 var KeyExportCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
@@ -70,7 +70,7 @@ func exportRun(cmd *cobra.Command, args []string) {
 	path := ""
 
 	if keyGlobalPubKey {
-		path = buildcfg.SINGULARITY_CONFDIR
+		path = buildcfg.APPTAINER_CONFDIR
 		opts = append(opts, sypgp.GlobalHandleOpt())
 	}
 

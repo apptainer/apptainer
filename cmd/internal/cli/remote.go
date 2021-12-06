@@ -15,7 +15,7 @@ import (
 	"strings"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/remote"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/syfs"
@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	remoteWarning = "no authentication token, log in with `singularity remote login`"
+	remoteWarning = "no authentication token, log in with `apptainer remote login`"
 )
 
 var (
@@ -188,7 +188,7 @@ func init() {
 	})
 }
 
-// RemoteCmd singularity remote [...]
+// RemoteCmd apptainer remote [...]
 var RemoteCmd = &cobra.Command{
 	Run: nil,
 
@@ -221,14 +221,14 @@ func setKeyserver(_ *cobra.Command, _ []string) {
 	}
 }
 
-// RemoteAddCmd singularity remote add [remoteName] [remoteURI]
+// RemoteAddCmd apptainer remote add [remoteName] [remoteURI]
 var RemoteAddCmd = &cobra.Command{
 	Args:   cobra.ExactArgs(2),
 	PreRun: setGlobalRemoteConfig,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
 		uri := args[1]
-		if err := singularity.RemoteAdd(remoteConfig, name, uri, global); err != nil {
+		if err := apptainer.RemoteAdd(remoteConfig, name, uri, global); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 		sylog.Infof("Remote %q added.", name)
@@ -238,11 +238,11 @@ var RemoteAddCmd = &cobra.Command{
 		if global && !remoteNoLogin {
 			sylog.Infof("Global option detected. Will not automatically log into remote.")
 		} else if !remoteNoLogin {
-			loginArgs := &singularity.LoginArgs{
+			loginArgs := &apptainer.LoginArgs{
 				Name:      name,
 				Tokenfile: loginTokenFile,
 			}
-			if err := singularity.RemoteLogin(remoteConfig, loginArgs); err != nil {
+			if err := apptainer.RemoteLogin(remoteConfig, loginArgs); err != nil {
 				sylog.Fatalf("%s", err)
 			}
 		}
@@ -256,13 +256,13 @@ var RemoteAddCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-// RemoteRemoveCmd singularity remote remove [remoteName]
+// RemoteRemoveCmd apptainer remote remove [remoteName]
 var RemoteRemoveCmd = &cobra.Command{
 	Args:   cobra.ExactArgs(1),
 	PreRun: setGlobalRemoteConfig,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
-		if err := singularity.RemoteRemove(remoteConfig, name); err != nil {
+		if err := apptainer.RemoteRemove(remoteConfig, name); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 		sylog.Infof("Remote %q removed.", name)
@@ -276,13 +276,13 @@ var RemoteRemoveCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-// RemoteUseCmd singularity remote use [remoteName]
+// RemoteUseCmd apptainer remote use [remoteName]
 var RemoteUseCmd = &cobra.Command{
 	Args:   cobra.ExactArgs(1),
 	PreRun: setGlobalRemoteConfig,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
-		if err := singularity.RemoteUse(remoteConfig, name, global, remoteUseExclusive); err != nil {
+		if err := apptainer.RemoteUse(remoteConfig, name, global, remoteUseExclusive); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 		sylog.Infof("Remote %q now in use.", name)
@@ -296,11 +296,11 @@ var RemoteUseCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-// RemoteListCmd singularity remote list
+// RemoteListCmd apptainer remote list
 var RemoteListCmd = &cobra.Command{
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := singularity.RemoteList(remoteConfig); err != nil {
+		if err := apptainer.RemoteList(remoteConfig); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -313,11 +313,11 @@ var RemoteListCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-// RemoteLoginCmd singularity remote login [remoteName]
+// RemoteLoginCmd apptainer remote login [remoteName]
 var RemoteLoginCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
-		loginArgs := new(singularity.LoginArgs)
+		loginArgs := new(apptainer.LoginArgs)
 
 		// default to empty string to signal to RemoteLogin to use default remote
 		if len(args) > 0 {
@@ -338,7 +338,7 @@ var RemoteLoginCmd = &cobra.Command{
 			loginArgs.Password = strings.TrimSuffix(loginArgs.Password, "\r")
 		}
 
-		if err := singularity.RemoteLogin(remoteConfig, loginArgs); err != nil {
+		if err := apptainer.RemoteLogin(remoteConfig, loginArgs); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -351,7 +351,7 @@ var RemoteLoginCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-// RemoteLogoutCmd singularity remote logout [remoteName|serviceURI]
+// RemoteLogoutCmd apptainer remote logout [remoteName|serviceURI]
 var RemoteLogoutCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -361,7 +361,7 @@ var RemoteLogoutCmd = &cobra.Command{
 			name = args[0]
 		}
 
-		if err := singularity.RemoteLogout(remoteConfig, name); err != nil {
+		if err := apptainer.RemoteLogout(remoteConfig, name); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 		sylog.Infof("Logout succeeded")
@@ -375,7 +375,7 @@ var RemoteLogoutCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-// RemoteStatusCmd singularity remote status [remoteName]
+// RemoteStatusCmd apptainer remote status [remoteName]
 var RemoteStatusCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -385,7 +385,7 @@ var RemoteStatusCmd = &cobra.Command{
 			name = args[0]
 		}
 
-		if err := singularity.RemoteStatus(remoteConfig, name); err != nil {
+		if err := apptainer.RemoteStatus(remoteConfig, name); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -398,7 +398,7 @@ var RemoteStatusCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-// RemoteAddKeyserverCmd singularity remote add-keyserver [option] [remoteName] <keyserver_url>
+// RemoteAddKeyserverCmd apptainer remote add-keyserver [option] [remoteName] <keyserver_url>
 var RemoteAddKeyserverCmd = &cobra.Command{
 	Args:   cobra.RangeArgs(1, 2),
 	PreRun: setKeyserver,
@@ -414,7 +414,7 @@ var RemoteAddKeyserverCmd = &cobra.Command{
 			sylog.Fatalf("order must be > 0")
 		}
 
-		if err := singularity.RemoteAddKeyserver(name, uri, remoteKeyserverOrder, remoteKeyserverInsecure); err != nil {
+		if err := apptainer.RemoteAddKeyserver(name, uri, remoteKeyserverOrder, remoteKeyserverInsecure); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},
@@ -427,7 +427,7 @@ var RemoteAddKeyserverCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-// RemoteRemoveKeyserverCmd singularity remote remove-keyserver [remoteName] <keyserver_url>
+// RemoteRemoveKeyserverCmd apptainer remote remove-keyserver [remoteName] <keyserver_url>
 var RemoteRemoveKeyserverCmd = &cobra.Command{
 	Args:   cobra.RangeArgs(1, 2),
 	PreRun: setKeyserver,
@@ -439,7 +439,7 @@ var RemoteRemoveKeyserverCmd = &cobra.Command{
 			uri = args[1]
 		}
 
-		if err := singularity.RemoteRemoveKeyserver(name, uri); err != nil {
+		if err := apptainer.RemoteRemoveKeyserver(name, uri); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},

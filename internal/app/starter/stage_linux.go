@@ -49,7 +49,7 @@ func StageTwo(masterSocket int, e *engine.Engine) {
 	// call engine operation StartProcess, at this stage
 	// we are in a container context, chroot was done.
 	// The privileges are those applied by the container
-	// configuration, in the case of Singularity engine
+	// configuration, in the case of Apptainer engine
 	// and if run as a user, there is no privileges set
 	if err := e.StartProcess(masterSocket); err != nil {
 		// write data to just tell master to not execute PostStartProcess

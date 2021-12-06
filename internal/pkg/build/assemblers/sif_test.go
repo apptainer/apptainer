@@ -31,7 +31,7 @@ const (
 )
 
 func TestMain(m *testing.M) {
-	useragent.InitValue("singularity", "3.0.0-alpha.1-303-gaed8d30-dirty")
+	useragent.InitValue("apptainer", "3.0.0-alpha.1-303-gaed8d30-dirty")
 
 	os.Exit(m.Run())
 }
@@ -90,7 +90,7 @@ func TestSIFAssemblerDocker(t *testing.T) {
 	defer os.Remove(assemblerDockerDest)
 }
 
-// TestSIFAssemblerShub sees if we can build a SIF image from an image from a Singularity registry
+// TestSIFAssemblerShub sees if we can build a SIF image from an image from a Apptainer registry
 func TestSIFAssemblerShub(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()

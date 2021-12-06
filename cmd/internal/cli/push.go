@@ -13,7 +13,7 @@ import (
 	"fmt"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
@@ -77,7 +77,7 @@ func init() {
 	})
 }
 
-// PushCmd singularity push
+// PushCmd apptainer push
 var PushCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Args:                  cobra.ExactArgs(2),
@@ -106,7 +106,7 @@ var PushCmd = &cobra.Command{
 				sylog.Fatalf("Unable to get keyserver client configuration: %v", err)
 			}
 
-			pushSpec := singularity.LibraryPushSpec{
+			pushSpec := apptainer.LibraryPushSpec{
 				SourceFile:    file,
 				DestRef:       dest,
 				Description:   pushDescription,
@@ -114,10 +114,10 @@ var PushCmd = &cobra.Command{
 				FrontendURI:   URI(),
 			}
 
-			err = singularity.LibraryPush(cmd.Context(), pushSpec, lc, co)
-			if err == singularity.ErrLibraryUnsigned {
-				fmt.Printf("TIP: You can push unsigned images with 'singularity push -U %s'.\n", file)
-				fmt.Printf("TIP: Learn how to sign your own containers by using 'singularity help sign'\n\n")
+			err = apptainer.LibraryPush(cmd.Context(), pushSpec, lc, co)
+			if err == apptainer.ErrLibraryUnsigned {
+				fmt.Printf("TIP: You can push unsigned images with 'apptainer push -U %s'.\n", file)
+				fmt.Printf("TIP: Learn how to sign your own containers by using 'apptainer help sign'\n\n")
 				sylog.Fatalf("Unable to upload container: unable to verify signature")
 			} else if err != nil {
 				sylog.Fatalf("Unable to push image to library: %v", err)

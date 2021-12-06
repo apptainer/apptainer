@@ -1,7 +1,7 @@
-if test -z "$SINGULARITY_INIT"; then
+if test -z "$APPTAINER_INIT"; then
     PATH="/canary/path:$PATH"
     PS1="$PS1"
-    SINGULARITY_INIT=1
-    export PATH PS1 SINGULARITY_INIT
+    APPTAINER_INIT=1
+    export PATH PS1 APPTAINER_INIT
 fi
 

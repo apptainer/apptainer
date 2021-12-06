@@ -39,10 +39,10 @@ var (
 )
 
 // Profile represents various properties required to run an E2E test
-// under a particular user profile. A profile can define if `RunSingularity`
+// under a particular user profile. A profile can define if `RunApptainer`
 // will run with privileges (`privileged`), if an option flag is injected
-// (`singularityOption`), the option injection is also controllable for a
-// subset of singularity commands with `optionForCommands`. A profile can
+// (`apptainerOption`), the option injection is also controllable for a
+// subset of apptainer commands with `optionForCommands`. A profile can
 // also set a default current working directory via `defaultCwd`, profile
 // like "RootUserNamespace" need to run from a directory owned by root. A
 // profile can also have two identities (eg: "Fakeroot" profile), a host
@@ -55,8 +55,8 @@ type Profile struct {
 	containerUID      int              // user ID corresponding to the profile inside container
 	defaultCwd        string           // the default current working directory if specified
 	requirementsFn    func(*testing.T) // function checking requirements for the profile
-	singularityOption string           // option added to singularity command for the profile
-	optionForCommands []string         // singularity commands concerned by the option to be added
+	apptainerOption   string           // option added to apptainer command for the profile
+	optionForCommands []string         // apptainer commands concerned by the option to be added
 }
 
 // Profiles defines all available profiles.
@@ -68,7 +68,7 @@ var Profiles = map[string]Profile{
 		containerUID:      origUID,
 		defaultCwd:        "",
 		requirementsFn:    nil,
-		singularityOption: "",
+		apptainerOption:   "",
 		optionForCommands: []string{},
 	},
 	rootProfile: {
@@ -78,7 +78,7 @@ var Profiles = map[string]Profile{
 		containerUID:      0,
 		defaultCwd:        "",
 		requirementsFn:    nil,
-		singularityOption: "",
+		apptainerOption:   "",
 		optionForCommands: []string{},
 	},
 	fakerootProfile: {
@@ -88,7 +88,7 @@ var Profiles = map[string]Profile{
 		containerUID:      0,
 		defaultCwd:        "",
 		requirementsFn:    fakerootRequirements,
-		singularityOption: "--fakeroot",
+		apptainerOption:   "--fakeroot",
 		optionForCommands: []string{"shell", "exec", "run", "test", "instance start", "build"},
 	},
 	userNamespaceProfile: {
@@ -98,7 +98,7 @@ var Profiles = map[string]Profile{
 		containerUID:      origUID,
 		defaultCwd:        "",
 		requirementsFn:    require.UserNamespace,
-		singularityOption: "--userns",
+		apptainerOption:   "--userns",
 		optionForCommands: []string{"shell", "exec", "run", "test", "instance start"},
 	},
 	rootUserNamespaceProfile: {
@@ -108,7 +108,7 @@ var Profiles = map[string]Profile{
 		containerUID:      0,
 		defaultCwd:        "/root", // need to run in a directory owned by root
 		requirementsFn:    require.UserNamespace,
-		singularityOption: "--userns",
+		apptainerOption:   "--userns",
 		optionForCommands: []string{"shell", "exec", "run", "test", "instance start"},
 	},
 }
@@ -128,10 +128,10 @@ func (p Profile) Requirements(t *testing.T) {
 }
 
 // Args returns the additional arguments, if any, to be passed
-// to the singularity command specified by cmd in order to run a
+// to the apptainer command specified by cmd in order to run a
 // test under this profile.
 func (p Profile) args(cmd []string) []string {
-	if p.singularityOption == "" {
+	if p.apptainerOption == "" {
 		return nil
 	}
 
@@ -139,7 +139,7 @@ func (p Profile) args(cmd []string) []string {
 
 	for _, c := range p.optionForCommands {
 		if c == command {
-			return strings.Split(p.singularityOption, " ")
+			return strings.Split(p.apptainerOption, " ")
 		}
 	}
 

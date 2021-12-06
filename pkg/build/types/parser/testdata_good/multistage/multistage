@@ -4,7 +4,7 @@ Stage: one
 
 
 %setup
-	mkdir -p $SINGULARITY_ROOTFS/root/go/src/hello
+	mkdir -p $APPTAINER_ROOTFS/root/go/src/hello
 
 
 %files

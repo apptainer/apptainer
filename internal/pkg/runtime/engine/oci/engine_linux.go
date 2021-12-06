@@ -10,13 +10,13 @@ package oci
 
 import (
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc/server"
 	ociServer "github.com/apptainer/apptainer/internal/pkg/runtime/engine/oci/rpc/server"
-	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/singularity/rpc/server"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 )
 
-// EngineOperations is a Singularity OCI runtime engine that implements engine.Operations.
-// Basically, this is the core of `singularity oci` commands.
+// EngineOperations is a Apptainer OCI runtime engine that implements engine.Operations.
+// Basically, this is the core of `apptainer oci` commands.
 type EngineOperations struct {
 	CommonConfig *config.Common `json:"-"`
 	EngineConfig *EngineConfig  `json:"engineConfig"`

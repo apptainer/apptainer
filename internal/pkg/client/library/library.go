@@ -18,7 +18,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/apptainer/apptainer/pkg/util/singularityconf"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 
 	scslibrary "github.com/sylabs/scs-library-client/client"
 )
@@ -70,19 +70,19 @@ func getEnvInt(key string, defval int64) int64 {
 
 func getDownloadConfig() (scslibrary.Downloader, error) {
 	// get downloader parameters from config
-	conf := singularityconf.GetCurrentConfig()
+	conf := apptainerconf.GetCurrentConfig()
 	if conf == nil {
-		// sylog.Fatalf("Unable to get singularity configuration")
+		// sylog.Fatalf("Unable to get apptainer configuration")
 		var err error
-		conf, err = singularityconf.Parse(buildcfg.SINGULARITY_CONF_FILE)
+		conf, err = apptainerconf.Parse(buildcfg.APPTAINER_CONF_FILE)
 		if err != nil {
-			sylog.Fatalf("unable to parse singularity.conf file: %s", err)
+			sylog.Fatalf("unable to parse apptainer.conf file: %s", err)
 		}
 	}
 
-	concurrency := int64(getEnvInt("SINGULARITY_DOWNLOAD_CONCURRENCY", int64(conf.DownloadConcurrency)))
-	partSize := int64(getEnvInt("SINGULARITY_DOWNLOAD_PART_SIZE", int64(conf.DownloadPartSize)))
-	bufferSize := int64(getEnvInt("SINGULARITY_DOWNLOAD_BUFFER_SIZE", int64(conf.DownloadBufferSize)))
+	concurrency := int64(getEnvInt("APPTAINER_DOWNLOAD_CONCURRENCY", int64(conf.DownloadConcurrency)))
+	partSize := int64(getEnvInt("APPTAINER_DOWNLOAD_PART_SIZE", int64(conf.DownloadPartSize)))
+	bufferSize := int64(getEnvInt("APPTAINER_DOWNLOAD_BUFFER_SIZE", int64(conf.DownloadBufferSize)))
 
 	if concurrency < 1 {
 		return scslibrary.Downloader{}, fmt.Errorf("invalid download concurrency value (%v)", concurrency)

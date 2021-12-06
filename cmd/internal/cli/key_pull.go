@@ -23,7 +23,7 @@ import (
 	"github.com/sylabs/scs-key-client/client"
 )
 
-// KeyPullCmd is `singularity key pull' and fetches public keys from a key server
+// KeyPullCmd is `apptainer key pull' and fetches public keys from a key server
 var KeyPullCmd = &cobra.Command{
 	PreRun:                checkGlobal,
 	Args:                  cobra.ExactArgs(1),
@@ -53,7 +53,7 @@ func doKeyPullCmd(ctx context.Context, fingerprint string, co ...client.Option) 
 	mode := os.FileMode(0o600)
 
 	if keyGlobalPubKey {
-		path = buildcfg.SINGULARITY_CONFDIR
+		path = buildcfg.APPTAINER_CONFDIR
 		opts = append(opts, sypgp.GlobalHandleOpt())
 		mode = os.FileMode(0o644)
 	}

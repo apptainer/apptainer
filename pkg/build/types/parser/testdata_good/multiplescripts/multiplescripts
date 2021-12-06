@@ -3,26 +3,26 @@ From: <registry>/<namespace>/<container>:<tag>@<digest>
 IncludeCmd: yes
 
 %setup
-    touch ${SINGULARITY_ROOTFS}/mock.txt
+    touch ${APPTAINER_ROOTFS}/mock.txt
     touch mock.txt
 
 %post
     echo 'this is a command so long that the user had to' \
     'add a new line'
-    echo 'export GOPATH=$HOME/go' >> $SINGULARITY_ENVIRONMENT
+    echo 'export GOPATH=$HOME/go' >> $APPTAINER_ENVIRONMENT
 
 %runscript
     echo "Mock!"
 
 
 %setup
-    touch ${SINGULARITY_ROOTFS}/secondmock.txt
+    touch ${APPTAINER_ROOTFS}/secondmock.txt
     touch secondmock.txt
 
 %post
     echo 'this is a command so long that the user had to' \
     'add a new line again'
-    echo 'export GOPATH=$HOME/go' >> $SINGULARITY_ENVIRONMENT
+    echo 'export GOPATH=$HOME/go' >> $APPTAINER_ENVIRONMENT
 
 %runscript
     echo "SecondMock!"

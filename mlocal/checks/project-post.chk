@@ -3,7 +3,7 @@
 #   For website terms of use, trademark policy, privacy policy and other
 #   project policies see https://lfprojects.org/policies
 #
-# Singularity core libs system configuration detection
+# Apptainer core libs system configuration detection
 #
 set -e
 
@@ -12,7 +12,7 @@ config_add_header
 config_add_def PACKAGE_NAME \"$package_name\"
 config_add_def PACKAGE_TARNAME \"$package_name\"
 config_add_def PACKAGE_VERSION \"$package_version\"
-config_add_def PACKAGE_STRING \"singularity $package_version\"
+config_add_def PACKAGE_STRING \"apptainer $package_version\"
 config_add_def PACKAGE_BUGREPORT \"support@sylabs.io\"
 config_add_def PACKAGE_URL \"\"
 
@@ -40,14 +40,14 @@ config_add_def PSDIR \"$psdir\"
 config_add_def LIBDIR \"$libdir\"
 config_add_def LOCALEDIR \"$localedir\"
 config_add_def MANDIR \"$mandir\"
-config_add_def SINGULARITY_CONFDIR SYSCONFDIR \"/singularity\"
-config_add_def SINGULARITY_CONF_FILE SINGULARITY_CONFDIR \"/singularity.conf\"
-config_add_def CAPABILITY_FILE SINGULARITY_CONFDIR \"/capability.json\"
-config_add_def ECL_FILE SINGULARITY_CONFDIR \"/ecl.toml\"
-config_add_def NVIDIALIBS_FILE SINGULARITY_CONFDIR \"/nvliblist.conf\"
-config_add_def SESSIONDIR LOCALSTATEDIR \"/singularity/mnt/session\"
-config_add_def SINGULARITY_SUID_INSTALL $with_suid
-config_add_def PLUGIN_ROOTDIR LIBEXECDIR \"/singularity/plugin\"
+config_add_def APPTAINER_CONFDIR SYSCONFDIR \"/apptainer\"
+config_add_def APPTAINER_CONF_FILE APPTAINER_CONFDIR \"/apptainer.conf\"
+config_add_def CAPABILITY_FILE APPTAINER_CONFDIR \"/capability.json\"
+config_add_def ECL_FILE APPTAINER_CONFDIR \"/ecl.toml\"
+config_add_def NVIDIALIBS_FILE APPTAINER_CONFDIR \"/nvliblist.conf\"
+config_add_def SESSIONDIR LOCALSTATEDIR \"/apptainer/mnt/session\"
+config_add_def APPTAINER_SUID_INSTALL $with_suid
+config_add_def PLUGIN_ROOTDIR LIBEXECDIR \"/apptainer/plugin\"
 
 # engine configuration constants
 engine_config_env="ENGINE_CONFIG"
@@ -101,7 +101,7 @@ if ! printf "#define _GNU_SOURCE\n#include <sched.h>\nint main() { unshare(CLONE
 	if [ "$build_runtime" -eq 1 ]; then
 		echo
 		echo "This host does not support the CLONE_NEWNS (mount) namespace flag! You"
-		echo "really really really don't want to run Singularity containers without a"
+		echo "really really really don't want to run Apptainer containers without a"
 		echo "Separate mount name namespace!"
 		echo
 		exit 2
@@ -200,7 +200,7 @@ else
         exit 2;
     else
 	echo "yes"
-	config_add_def SINGULARITY_NO_NEW_PRIVS 1
+	config_add_def APPTAINER_NO_NEW_PRIVS 1
     fi
 fi
 
@@ -213,7 +213,7 @@ if ! printf "#include <sys/mount.h>\n#ifndef MS_SLAVE\n#error failed\n#endif\nin
 	echo "no"
 else
 	echo "yes"
-	config_add_def SINGULARITY_MS_SLAVE 1
+	config_add_def APPTAINER_MS_SLAVE 1
 fi
 
 ########################
@@ -283,7 +283,7 @@ if ! printf "#include <linux/securebits.h>\nint main() { }" | \
 	echo "no"
 else
 	echo "yes"
-	config_add_def SINGULARITY_SECUREBITS 1
+	config_add_def APPTAINER_SECUREBITS 1
 fi
 
 ########################
@@ -323,16 +323,16 @@ fi
 # Configurable external programs
 ################################
 
-# Find external programs that Singularity will call, and are configurable
-# in singularity.conf. The build-time path will be set in the installed
-# singularity.conf, and can be customized by the user.
+# Find external programs that Apptainer will call, and are configurable
+# in apptainer.conf. The build-time path will be set in the installed
+# apptainer.conf, and can be customized by the user.
 #
-# Note that Singularity will fall back to looking on PATH if the conf file
+# Note that Apptainer will fall back to looking on PATH if the conf file
 # path is empty.
 
 echo
 echo "Finding paths to external executables."
-echo "These paths are written into singularity.conf and can be overridden there."
+echo "These paths are written into apptainer.conf and can be overridden there."
 echo
 
 # PATH including sbin locations for tools expected to be there

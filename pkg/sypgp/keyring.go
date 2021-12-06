@@ -21,7 +21,7 @@ import (
 	"github.com/sylabs/scs-key-client/client"
 )
 
-// PublicKeyRing retrieves the Singularity public KeyRing.
+// PublicKeyRing retrieves the Apptainer public KeyRing.
 func PublicKeyRing() (openpgp.KeyRing, error) {
 	return NewHandle("").LoadPubKeyring()
 }

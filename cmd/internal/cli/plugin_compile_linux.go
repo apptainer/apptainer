@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/cmdline"
@@ -52,7 +52,7 @@ func init() {
 
 // PluginCompileCmd allows a user to compile a plugin.
 //
-// singularity plugin compile <path> [-o name]
+// apptainer plugin compile <path> [-o name]
 var PluginCompileCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		sourceDir, err := filepath.Abs(args[0])
@@ -77,7 +77,7 @@ var PluginCompileCmd = &cobra.Command{
 		buildTags := buildcfg.GO_BUILD_TAGS
 
 		sylog.Debugf("sourceDir: %s; sifPath: %s", sourceDir, destSif)
-		err = singularity.CompilePlugin(sourceDir, destSif, buildTags, disableMinorCheck)
+		err = apptainer.CompilePlugin(sourceDir, destSif, buildTags, disableMinorCheck)
 		if err != nil {
 			sylog.Fatalf("Plugin compile failed with error: %s", err)
 		}

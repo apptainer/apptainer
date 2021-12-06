@@ -15,8 +15,8 @@
 # We do recommend a CentOS 7.3 host to build this image.
 #
 # How to build the image:
-# sudo singularity create -s 2000 centos7-ompi_cuda.img
-# sudo singularity bootstrap centos7-ompi_cuda.img centos7-ompi_cuda.def
+# sudo apptainer create -s 2000 centos7-ompi_cuda.img
+# sudo apptainer bootstrap centos7-ompi_cuda.img centos7-ompi_cuda.def
 #
 # After image creation you do not need sudo to use the image.
 #

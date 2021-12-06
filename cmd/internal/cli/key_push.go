@@ -24,7 +24,7 @@ import (
 	"github.com/sylabs/scs-key-client/client"
 )
 
-// KeyPushCmd is `singularity key list' and lists local store OpenPGP keys
+// KeyPushCmd is `apptainer key list' and lists local store OpenPGP keys
 var KeyPushCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
@@ -51,7 +51,7 @@ func doKeyPushCmd(ctx context.Context, fingerprint string, co ...client.Option) 
 	path := ""
 
 	if keyGlobalPubKey {
-		path = buildcfg.SINGULARITY_CONFDIR
+		path = buildcfg.APPTAINER_CONFDIR
 		opts = append(opts, sypgp.GlobalHandleOpt())
 	}
 

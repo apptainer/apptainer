@@ -828,7 +828,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Cannot set timezone: %v", err)
 	}
 
-	useragent.InitValue("singularity", "3.0.0-alpha.1-303-gaed8d30-dirty")
+	useragent.InitValue("apptainer", "3.0.0-alpha.1-303-gaed8d30-dirty")
 
 	e, err := openpgp.NewEntity(testName, testComment, testEmail, nil)
 	if err != nil {

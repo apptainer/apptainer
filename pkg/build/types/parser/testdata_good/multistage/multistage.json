@@ -50,7 +50,7 @@
 				},
 				"setup": {
 					"args": "",
-					"script": "\tmkdir -p $SINGULARITY_ROOTFS/root/go/src/hello\n\n\n"
+					"script": "\tmkdir -p $APPTAINER_ROOTFS/root/go/src/hello\n\n\n"
 				},
 				"post": {
 					"args": "",

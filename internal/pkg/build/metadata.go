@@ -175,7 +175,7 @@ func insertHelpScript(b *types.Bundle) error {
 func insertDefinition(b *types.Bundle) error {
 	// if update, check for existing definition and move it to bootstrap history
 	if b.Opts.Update {
-		if _, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity")); err == nil {
+		if _, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/Apptainer")); err == nil {
 			// make bootstrap_history directory if it doesn't exist
 			if _, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history")); err != nil {
 				err = os.Mkdir(filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history"), 0o755)
@@ -190,18 +190,18 @@ func insertDefinition(b *types.Bundle) error {
 				return err
 			}
 
-			// name is "Singularity" concatenated with an index based on number of other files in bootstrap_history
+			// name is "Apptainer" concatenated with an index based on number of other files in bootstrap_history
 			len := strconv.Itoa(len(files))
-			histName := "Singularity" + len
+			histName := "Apptainer" + len
 			// move old definition into bootstrap_history
-			err = os.Rename(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity"), filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history", histName))
+			err = os.Rename(filepath.Join(b.RootfsPath, "/.singularity.d/Apptainer"), filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history", histName))
 			if err != nil {
 				return err
 			}
 		}
 	}
 
-	err := ioutil.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity"), b.Recipe.Raw, 0o644)
+	err := ioutil.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/Apptainer"), b.Recipe.Raw, 0o644)
 	if err != nil {
 		return err
 	}
@@ -217,7 +217,7 @@ func insertLabelsJSON(b *types.Bundle) (err error) {
 		return err
 	}
 
-	// get labels added through SINGULARITY_LABELS environment variables
+	// get labels added through APPTAINER_LABELS environment variables
 	buildLabels := filepath.Join(b.RootfsPath, sLabelsPath)
 	content, err := ioutil.ReadFile(buildLabels)
 	if err == nil {
@@ -268,7 +268,7 @@ func insertLabelsJSON(b *types.Bundle) (err error) {
 func insertJSONInspectMetadata(b *types.Bundle) error {
 	metadata := new(inspect.Metadata)
 
-	exe := filepath.Join(buildcfg.BINDIR, "singularity")
+	exe := filepath.Join(buildcfg.BINDIR, "apptainer")
 	cmd := exec.Command(exe, "inspect", "--all", b.RootfsPath)
 	cmd.Stderr = os.Stderr
 
@@ -326,13 +326,13 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 	timeString := currentTime.Weekday().String() + `_` + date + `_` + time + `_` + zone
 	labels["org.label-schema.build-date"] = timeString
 
-	// singularity version
-	labels["org.label-schema.usage.singularity.version"] = buildcfg.PACKAGE_VERSION
+	// apptainer version
+	labels["org.label-schema.usage.apptainer.version"] = buildcfg.PACKAGE_VERSION
 
 	// help info if help exists in the definition and is run in the build
 	if b.RunSection("help") && b.Recipe.ImageData.Help.Script != "" {
 		labels["org.label-schema.usage"] = "/.singularity.d/runscript.help"
-		labels["org.label-schema.usage.singularity.runscript.help"] = "/.singularity.d/runscript.help"
+		labels["org.label-schema.usage.apptainer.runscript.help"] = "/.singularity.d/runscript.help"
 	}
 
 	// bootstrap header info, only if this build actually bootstrapped

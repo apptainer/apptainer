@@ -21,7 +21,7 @@ import (
 	"github.com/sylabs/scs-key-client/client"
 )
 
-// KeySearchCmd is 'singularity key search' and look for public keys from a key server
+// KeySearchCmd is 'apptainer key search' and look for public keys from a key server
 var KeySearchCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,

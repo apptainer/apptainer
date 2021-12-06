@@ -1,7 +1,7 @@
 Execute a command within container (root user only)
 
 Usage:
-  singularity oci exec <container_ID> <command> <args>
+  apptainer oci exec <container_ID> <command> <args>
 
 Description:
   Exec will execute the provided command/arguments within container identified 
@@ -12,7 +12,7 @@ Options:
 
 
 Examples:
-  $ singularity oci exec mycontainer id
+  $ apptainer oci exec mycontainer id
 
 
-For additional help or support, please visit https://singularity.hpcng.org/help/
+For additional help or support, please visit https://apptainer.org/help/

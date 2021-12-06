@@ -29,7 +29,7 @@ Available Commands:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "he
 Examples:{{.Example}}{{end}}
 
 
-For additional help or support, please visit https://singularity.hpcng.org/help/
+For additional help or support, please visit https://apptainer.org/help/
 `
 
 	UseTemplate string = `Usage:

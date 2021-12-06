@@ -16,7 +16,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
-	specs "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 // RootFs is the default root path for OCI bundle

@@ -315,7 +315,7 @@ func EvaluateEnv(script []byte, args []string, envs []string) ([]string, error) 
 	// append stop builtin to the end of the script
 	b.WriteString("\n" + stopBuiltin + "\n")
 
-	shell, err := New(b, "singularity", args, nil, opts...)
+	shell, err := New(b, "apptainer", args, nil, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("while initializing shell interpreter: %s", err)
 	}

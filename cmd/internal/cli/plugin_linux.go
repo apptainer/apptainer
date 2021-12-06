@@ -33,7 +33,7 @@ func init() {
 // PluginCmd is the root command for all plugin related functionality
 // which is exposed via the CLI.
 //
-// singularity plugin [...]
+// apptainer plugin [...]
 var PluginCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return errors.New("invalid command")

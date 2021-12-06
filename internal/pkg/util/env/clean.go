@@ -18,10 +18,10 @@ import (
 const (
 	// DefaultPath defines default value for PATH environment variable.
 	DefaultPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-	// SingularityPrefix defines the environment variable prefix SINGULARITY_.
-	SingularityPrefix = "SINGULARITY_"
-	// SingularityEnvPrefix defines the environment variable prefix SINGULARITYENV_.
-	SingularityEnvPrefix = "SINGULARITYENV_"
+	// ApptainerPrefix defines the environment variable prefix APPTAINER_.
+	ApptainerPrefix = "APPTAINER_"
+	// ApptainerEnvPrefix defines the environment variable prefix APPTAINERENV_.
+	ApptainerEnvPrefix = "APPTAINERENV_"
 )
 
 var alwaysPassKeys = map[string]struct{}{
@@ -39,20 +39,20 @@ var alwaysPassKeys = map[string]struct{}{
 }
 
 // boolean value defines if the variable could be overridden
-// with the SINGULARITYENV_ variant.
+// with the APPTAINERENV_ variant.
 var alwaysOmitKeys = map[string]bool{
-	"HOME":                false,
-	"PATH":                false,
-	"SINGULARITY_SHELL":   false,
-	"SINGULARITY_APPNAME": false,
-	"LD_LIBRARY_PATH":     true,
+	"HOME":              false,
+	"PATH":              false,
+	"APPTAINER_SHELL":   false,
+	"APPTAINER_APPNAME": false,
+	"LD_LIBRARY_PATH":   true,
 }
 
 // SetContainerEnv cleans environment variables before running the container.
 func SetContainerEnv(g *generate.Generator, hostEnvs []string, cleanEnv bool, homeDest string) map[string]string {
 	singEnvKeys := make(map[string]string)
 
-	// allow override with SINGULARITYENV_LANG
+	// allow override with APPTAINERENV_LANG
 	if cleanEnv {
 		g.AddProcessEnv("LANG", "C")
 	}
@@ -63,11 +63,11 @@ func SetContainerEnv(g *generate.Generator, hostEnvs []string, cleanEnv bool, ho
 			sylog.Verbosef("Can't process environment variable %s", env)
 			continue
 		}
-		if strings.HasPrefix(e[0], SingularityPrefix) {
+		if strings.HasPrefix(e[0], ApptainerPrefix) {
 			sylog.Verbosef("Not forwarding %s environment variable", e[0])
 			continue
-		} else if strings.HasPrefix(e[0], SingularityEnvPrefix) {
-			key := e[0][len(SingularityEnvPrefix):]
+		} else if strings.HasPrefix(e[0], ApptainerEnvPrefix) {
+			key := e[0][len(ApptainerEnvPrefix):]
 			switch key {
 			case "PREPEND_PATH":
 				singEnvKeys["SING_USER_DEFINED_PREPEND_PATH"] = e[1]
@@ -88,10 +88,10 @@ func SetContainerEnv(g *generate.Generator, hostEnvs []string, cleanEnv bool, ho
 				g.RemoveProcessEnv(key)
 			}
 		} else {
-			// SINGULARITYENV_ prefixed environment variables will take
+			// APPTAINERENV_ prefixed environment variables will take
 			// precedence over the non prefixed variables
 			if _, ok := singEnvKeys[e[0]]; ok {
-				sylog.Verbosef("Skipping %[1]s environment variable, overridden by %[2]s%[1]s", e[0], SingularityEnvPrefix)
+				sylog.Verbosef("Skipping %[1]s environment variable, overridden by %[2]s%[1]s", e[0], ApptainerEnvPrefix)
 			} else if addHostEnv(e[0], cleanEnv) {
 				// transpose host env variables into config
 				sylog.Debugf("Forwarding %s environment variable", e[0])

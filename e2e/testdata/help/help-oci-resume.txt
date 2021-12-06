@@ -1,7 +1,7 @@
 Resumes all processes previously paused inside the container (root user only)
 
 Usage:
-  singularity oci resume <container_ID>
+  apptainer oci resume <container_ID>
 
 Description:
   Resume will resume all processes previously paused for the specified container 
@@ -12,7 +12,7 @@ Options:
 
 
 Examples:
-  $ singularity oci resume mycontainer
+  $ apptainer oci resume mycontainer
 
 
-For additional help or support, please visit https://singularity.hpcng.org/help/
+For additional help or support, please visit https://apptainer.org/help/
