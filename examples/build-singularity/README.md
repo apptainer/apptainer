@@ -13,7 +13,7 @@ container will have to be rebuilt with the following statement modified:
 
 ```sh
 curl -L -o singularity-${VERSION}.tar.gz
-    https://github.com/hpcng/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz
+    https://github.com/apptainer/apptainer/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz
 ```
 
 ## Usage

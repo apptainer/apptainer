@@ -63,8 +63,8 @@ Our roadmap, other documents, and user/developer meeting information can be
 found in the [apptainer community page](https://apptainer.org/help).
 
 We also welcome contributions to our [user
-guide](https://github.com/hpcng/singularity-userdocs) and [admin
-guide](https://github.com/hpcng/singularity-admindocs).
+guide](https://github.com/apptainer/apptainer-userdocs) and [admin
+guide](https://github.com/apptainer/apptainer-admindocs).
 
 ## Support
 

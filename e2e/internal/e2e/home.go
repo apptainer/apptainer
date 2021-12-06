@@ -18,8 +18,8 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/internal/pkg/util/user"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/pkg/errors"
 )
 

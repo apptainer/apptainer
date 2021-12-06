@@ -17,12 +17,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/internal/pkg/remote/credential"
-	"github.com/hpcng/singularity/internal/pkg/remote/endpoint"
-	remoteutil "github.com/hpcng/singularity/internal/pkg/remote/util"
-	"github.com/hpcng/singularity/pkg/syfs"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/remote/credential"
+	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
+	remoteutil "github.com/apptainer/apptainer/internal/pkg/remote/util"
+	"github.com/apptainer/apptainer/pkg/syfs"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	yaml "gopkg.in/yaml.v2"
 )
 

@@ -12,10 +12,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/hpcng/singularity/pkg/cmdline"
-	pluginapi "github.com/hpcng/singularity/pkg/plugin"
-	clicallback "github.com/hpcng/singularity/pkg/plugin/callback/cli"
-	"github.com/hpcng/singularity/pkg/runtime/engine/config"
+	"github.com/apptainer/apptainer/pkg/cmdline"
+	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
+	clicallback "github.com/apptainer/apptainer/pkg/plugin/callback/cli"
+	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +23,7 @@ import (
 // This symbol is accessed by the plugin framework to initialize the plugin.
 var Plugin = pluginapi.Plugin{
 	Manifest: pluginapi.Manifest{
-		Name:        "github.com/hpcng/singularity/e2e-cli-plugin",
+		Name:        "github.com/apptainer/apptainer/e2e-cli-plugin",
 		Author:      "Sylabs Team",
 		Version:     "0.1.0",
 		Description: "E2E CLI plugin",

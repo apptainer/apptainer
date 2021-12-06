@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/hpcng/singularity/pkg/util/loop"
+	"github.com/apptainer/apptainer/pkg/util/loop"
 )
 
 // MkdirArgs defines the arguments to mkdir.

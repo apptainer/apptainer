@@ -15,8 +15,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hpcng/singularity/internal/pkg/remote"
-	"github.com/hpcng/singularity/internal/pkg/remote/endpoint"
+	"github.com/apptainer/apptainer/internal/pkg/remote"
+	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 )
 
 func RemoteAddKeyserver(name, uri string, order uint32, insecure bool) error {

@@ -14,8 +14,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/hpcng/sif/v2/pkg/sif"
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/sif/v2/pkg/sif"
 )
 
 const testSquash = "./testdata/squashfs.v4"

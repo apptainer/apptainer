@@ -15,7 +15,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hpcng/singularity/pkg/util/singularityconf"
+	"github.com/apptainer/apptainer/pkg/util/singularityconf"
 	"golang.org/x/sys/unix"
 )
 

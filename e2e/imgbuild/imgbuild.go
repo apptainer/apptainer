@@ -19,11 +19,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hpcng/singularity/e2e/ecl"
-	"github.com/hpcng/singularity/e2e/internal/e2e"
-	"github.com/hpcng/singularity/e2e/internal/testhelper"
-	"github.com/hpcng/singularity/internal/pkg/test/tool/require"
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/e2e/ecl"
+	"github.com/apptainer/apptainer/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/e2e/internal/testhelper"
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 )
 
 var testFileContent = "Test file content\n"
@@ -58,7 +58,7 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 
 	// use a trailing slash in tests for sandbox intentionally to make sure
 	// `singularity build -s /tmp/sand/ docker://alpine` works,
-	// see https://github.com/hpcng/singularity/issues/4407
+	// see https://github.com/apptainer/singularity/issues/4407
 	tt := []struct {
 		name        string
 		dependency  string
@@ -1494,22 +1494,22 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"build with bind mount":           c.buildBindMount,            // build image with bind mount
 		"library host":                    c.buildLibraryHost,          // build image with hostname in library URI
 		"test with writable tmpfs":        c.testWritableTmpfs,         // build image, using writable tmpfs in the test step
-		"issue 3848":                      c.issue3848,                 // https://github.com/hpcng/singularity/issues/3848
-		"issue 4203":                      c.issue4203,                 // https://github.com/hpcng/singularity/issues/4203
-		"issue 4407":                      c.issue4407,                 // https://github.com/hpcng/singularity/issues/4407
-		"issue 4524":                      c.issue4524,                 // https://github.com/hpcng/singularity/issues/4524
-		"issue 4583":                      c.issue4583,                 // https://github.com/hpcng/singularity/issues/4583
-		"issue 4820":                      c.issue4820,                 // https://github.com/hpcng/singularity/issues/4820
-		"issue 4837":                      c.issue4837,                 // https://github.com/hpcng/singularity/issues/4837
-		"issue 4943":                      c.issue4943,                 // https://github.com/hpcng/singularity/issues/4943
-		"issue 4967":                      c.issue4967,                 // https://github.com/hpcng/singularity/issues/4967
-		"issue 4969":                      c.issue4969,                 // https://github.com/hpcng/singularity/issues/4969
-		"issue 5166":                      c.issue5166,                 // https://github.com/hpcng/singularity/issues/5166
-		"issue 5172":                      c.issue5172,                 // https://github.com/hpcng/singularity/issues/5172
-		"issue 5250":                      c.issue5250,                 // https://github.com/hpcng/singularity/issues/5250
-		"issue 5315":                      c.issue5315,                 // https://github.com/hpcng/singularity/issues/5315
-		"issue 5435":                      c.issue5435,                 // https://github.com/hpcng/singularity/issues/5435
-		"issue 5668":                      c.issue5668,                 // https://github.com/hpcng/singularity/issues/5435
-		"issue 5690":                      c.issue5690,                 // https://github.com/hpcng/singularity/issues/5690
+		"issue 3848":                      c.issue3848,                 // https://github.com/apptainer/singularity/issues/3848
+		"issue 4203":                      c.issue4203,                 // https://github.com/apptainer/singularity/issues/4203
+		"issue 4407":                      c.issue4407,                 // https://github.com/apptainer/singularity/issues/4407
+		"issue 4524":                      c.issue4524,                 // https://github.com/apptainer/singularity/issues/4524
+		"issue 4583":                      c.issue4583,                 // https://github.com/apptainer/singularity/issues/4583
+		"issue 4820":                      c.issue4820,                 // https://github.com/apptainer/singularity/issues/4820
+		"issue 4837":                      c.issue4837,                 // https://github.com/apptainer/singularity/issues/4837
+		"issue 4943":                      c.issue4943,                 // https://github.com/apptainer/singularity/issues/4943
+		"issue 4967":                      c.issue4967,                 // https://github.com/apptainer/singularity/issues/4967
+		"issue 4969":                      c.issue4969,                 // https://github.com/apptainer/singularity/issues/4969
+		"issue 5166":                      c.issue5166,                 // https://github.com/apptainer/singularity/issues/5166
+		"issue 5172":                      c.issue5172,                 // https://github.com/apptainer/singularity/issues/5172
+		"issue 5250":                      c.issue5250,                 // https://github.com/apptainer/singularity/issues/5250
+		"issue 5315":                      c.issue5315,                 // https://github.com/apptainer/singularity/issues/5315
+		"issue 5435":                      c.issue5435,                 // https://github.com/apptainer/singularity/issues/5435
+		"issue 5668":                      c.issue5668,                 // https://github.com/apptainer/singularity/issues/5435
+		"issue 5690":                      c.issue5690,                 // https://github.com/apptainer/singularity/issues/5690
 	}
 }

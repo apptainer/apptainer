@@ -31,19 +31,19 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/hpcng/singularity/internal/pkg/instance"
-	"github.com/hpcng/singularity/internal/pkg/plugin"
-	"github.com/hpcng/singularity/internal/pkg/security"
-	"github.com/hpcng/singularity/internal/pkg/util/env"
-	"github.com/hpcng/singularity/internal/pkg/util/fs/files"
-	"github.com/hpcng/singularity/internal/pkg/util/machine"
-	"github.com/hpcng/singularity/internal/pkg/util/shell"
-	"github.com/hpcng/singularity/internal/pkg/util/shell/interpreter"
-	"github.com/hpcng/singularity/internal/pkg/util/user"
-	singularitycallback "github.com/hpcng/singularity/pkg/plugin/callback/runtime/engine/singularity"
-	singularityConfig "github.com/hpcng/singularity/pkg/runtime/engine/singularity/config"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/rlimit"
+	"github.com/apptainer/apptainer/internal/pkg/instance"
+	"github.com/apptainer/apptainer/internal/pkg/plugin"
+	"github.com/apptainer/apptainer/internal/pkg/security"
+	"github.com/apptainer/apptainer/internal/pkg/util/env"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/files"
+	"github.com/apptainer/apptainer/internal/pkg/util/machine"
+	"github.com/apptainer/apptainer/internal/pkg/util/shell"
+	"github.com/apptainer/apptainer/internal/pkg/util/shell/interpreter"
+	"github.com/apptainer/apptainer/internal/pkg/util/user"
+	singularitycallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/singularity"
+	singularityConfig "github.com/apptainer/apptainer/pkg/runtime/engine/singularity/config"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/rlimit"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"golang.org/x/sys/unix"
 	"golang.org/x/term"
@@ -158,7 +158,7 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 	}
 
 	// If necessary, set the umask that was saved from the calling environment
-	// https://github.com/hpcng/singularity/issues/5214
+	// https://github.com/apptainer/singularity/issues/5214
 	if e.EngineConfig.GetRestoreUmask() {
 		sylog.Debugf("Setting umask in container to %04o", e.EngineConfig.GetUmask())
 		_ = syscall.Umask(e.EngineConfig.GetUmask())

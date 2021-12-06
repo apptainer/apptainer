@@ -15,8 +15,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/fs/lock"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/fs/lock"
 )
 
 // Device describes a loop device

@@ -12,7 +12,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/util/user"
+	"github.com/apptainer/apptainer/internal/pkg/util/user"
 )
 
 // CurrentUser returns the current user account information. Use of user.Current is

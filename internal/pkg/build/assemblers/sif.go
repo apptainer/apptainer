@@ -19,13 +19,13 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/hpcng/sif/v2/pkg/sif"
-	"github.com/hpcng/singularity/internal/pkg/image/packer"
-	"github.com/hpcng/singularity/internal/pkg/util/crypt"
-	"github.com/hpcng/singularity/internal/pkg/util/machine"
-	"github.com/hpcng/singularity/pkg/build/types"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/cryptkey"
+	"github.com/apptainer/apptainer/internal/pkg/image/packer"
+	"github.com/apptainer/apptainer/internal/pkg/util/crypt"
+	"github.com/apptainer/apptainer/internal/pkg/util/machine"
+	"github.com/apptainer/apptainer/pkg/build/types"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/cryptkey"
+	"github.com/apptainer/sif/v2/pkg/sif"
 )
 
 // SIFAssembler doesn't store anything.

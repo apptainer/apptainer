@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hpcng/singularity/internal/pkg/plugin"
+	"github.com/apptainer/apptainer/internal/pkg/plugin"
 )
 
 var errPluginNotFound = errors.New("plugin not found")

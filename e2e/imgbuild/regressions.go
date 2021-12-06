@@ -18,10 +18,10 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/apptainer/apptainer/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/google/uuid"
-	"github.com/hpcng/singularity/e2e/internal/e2e"
-	"github.com/hpcng/singularity/internal/pkg/test/tool/require"
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
 )
 
 // This test will build an image from a multi-stage definition

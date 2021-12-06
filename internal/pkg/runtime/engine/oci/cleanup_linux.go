@@ -14,9 +14,9 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/hpcng/singularity/internal/pkg/instance"
-	"github.com/hpcng/singularity/pkg/ociruntime"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/instance"
+	"github.com/apptainer/apptainer/pkg/ociruntime"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // CleanupContainer is called from master after the MonitorContainer returns.

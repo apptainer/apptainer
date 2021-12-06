@@ -12,10 +12,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hpcng/singularity/internal/pkg/security/apparmor"
-	"github.com/hpcng/singularity/internal/pkg/security/seccomp"
-	"github.com/hpcng/singularity/internal/pkg/security/selinux"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/security/apparmor"
+	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
+	"github.com/apptainer/apptainer/internal/pkg/security/selinux"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 

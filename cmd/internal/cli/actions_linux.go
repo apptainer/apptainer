@@ -19,32 +19,32 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/internal/pkg/image/unpacker"
-	"github.com/hpcng/singularity/internal/pkg/instance"
-	"github.com/hpcng/singularity/internal/pkg/plugin"
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/config/oci"
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/config/oci/generate"
-	"github.com/hpcng/singularity/internal/pkg/security"
-	"github.com/hpcng/singularity/internal/pkg/util/bin"
-	"github.com/hpcng/singularity/internal/pkg/util/env"
-	"github.com/hpcng/singularity/internal/pkg/util/fs"
-	"github.com/hpcng/singularity/internal/pkg/util/gpu"
-	"github.com/hpcng/singularity/internal/pkg/util/shell/interpreter"
-	"github.com/hpcng/singularity/internal/pkg/util/starter"
-	"github.com/hpcng/singularity/internal/pkg/util/user"
-	imgutil "github.com/hpcng/singularity/pkg/image"
-	clicallback "github.com/hpcng/singularity/pkg/plugin/callback/cli"
-	singularitycallback "github.com/hpcng/singularity/pkg/plugin/callback/runtime/engine/singularity"
-	"github.com/hpcng/singularity/pkg/runtime/engine/config"
-	singularityConfig "github.com/hpcng/singularity/pkg/runtime/engine/singularity/config"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/capabilities"
-	"github.com/hpcng/singularity/pkg/util/cryptkey"
-	"github.com/hpcng/singularity/pkg/util/fs/proc"
-	"github.com/hpcng/singularity/pkg/util/namespaces"
-	"github.com/hpcng/singularity/pkg/util/rlimit"
-	"github.com/hpcng/singularity/pkg/util/singularityconf"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/image/unpacker"
+	"github.com/apptainer/apptainer/internal/pkg/instance"
+	"github.com/apptainer/apptainer/internal/pkg/plugin"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
+	"github.com/apptainer/apptainer/internal/pkg/security"
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/internal/pkg/util/env"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/gpu"
+	"github.com/apptainer/apptainer/internal/pkg/util/shell/interpreter"
+	"github.com/apptainer/apptainer/internal/pkg/util/starter"
+	"github.com/apptainer/apptainer/internal/pkg/util/user"
+	imgutil "github.com/apptainer/apptainer/pkg/image"
+	clicallback "github.com/apptainer/apptainer/pkg/plugin/callback/cli"
+	singularitycallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/singularity"
+	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
+	singularityConfig "github.com/apptainer/apptainer/pkg/runtime/engine/singularity/config"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/capabilities"
+	"github.com/apptainer/apptainer/pkg/util/cryptkey"
+	"github.com/apptainer/apptainer/pkg/util/fs/proc"
+	"github.com/apptainer/apptainer/pkg/util/namespaces"
+	"github.com/apptainer/apptainer/pkg/util/rlimit"
+	"github.com/apptainer/apptainer/pkg/util/singularityconf"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
 )
@@ -216,7 +216,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	currMask := syscall.Umask(0o022)
 	if !NoUmask {
 		// Save the current umask, to be set for the process run in the container
-		// https://github.com/hpcng/singularity/issues/5214
+		// https://github.com/apptainer/singularity/issues/5214
 		sylog.Debugf("Saving umask %04o for propagation into container", currMask)
 		engineConfig.SetUmask(currMask)
 		engineConfig.SetRestoreUmask(true)
@@ -434,7 +434,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	// This doesn't count as a SetCustomHome(true), as we are mounting from the real
 	// user's standard $HOME -> /root and we want to respect --contain not mounting
 	// the $HOME in this case.
-	// See https://github.com/hpcng/singularity/pull/5227
+	// See https://github.com/apptainer/apptainer/pull/5227
 	if !homeFlag.Changed && IsFakeroot {
 		HomePath = fmt.Sprintf("%s:/root", HomePath)
 	}

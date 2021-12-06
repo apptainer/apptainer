@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/apptainer/apptainer/pkg/sylog"
 	cgroupsv2 "github.com/containerd/cgroups/v2"
-	"github.com/hpcng/singularity/pkg/sylog"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 

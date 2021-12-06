@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hpcng/singularity/internal/pkg/test/tool/require"
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 	"github.com/pkg/errors"
 )
 

@@ -12,9 +12,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hpcng/singularity/internal/pkg/image/unpacker"
-	"github.com/hpcng/singularity/pkg/build/types"
-	"github.com/hpcng/singularity/pkg/image"
+	"github.com/apptainer/apptainer/internal/pkg/image/unpacker"
+	"github.com/apptainer/apptainer/pkg/build/types"
+	"github.com/apptainer/apptainer/pkg/image"
 )
 
 // SquashfsPacker holds the locations of where to pack from and to, as well as image offset info

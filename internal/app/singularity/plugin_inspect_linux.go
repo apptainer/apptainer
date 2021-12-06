@@ -11,7 +11,7 @@ package singularity
 import (
 	"fmt"
 
-	"github.com/hpcng/singularity/internal/pkg/plugin"
+	"github.com/apptainer/apptainer/internal/pkg/plugin"
 )
 
 // InspectPlugin inspects the named plugin.

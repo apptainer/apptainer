@@ -12,9 +12,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/hpcng/singularity/internal/pkg/cache"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/slice"
+	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/slice"
 )
 
 var errInvalidCacheHandle = errors.New("invalid cache handle")

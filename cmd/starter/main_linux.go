@@ -20,14 +20,14 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/hpcng/singularity/internal/app/starter"
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine"
-	starterConfig "github.com/hpcng/singularity/internal/pkg/runtime/engine/config/starter"
-	"github.com/hpcng/singularity/internal/pkg/util/mainthread"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/app/starter"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
+	starterConfig "github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/starter"
+	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
+	"github.com/apptainer/apptainer/pkg/sylog"
 
 	// register engines
-	_ "github.com/hpcng/singularity/cmd/starter/engines"
+	_ "github.com/apptainer/apptainer/cmd/starter/engines"
 )
 
 func getEngine(jsonConfig []byte) *engine.Engine {

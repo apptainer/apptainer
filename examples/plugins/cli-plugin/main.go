@@ -12,10 +12,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/hpcng/singularity/pkg/cmdline"
-	pluginapi "github.com/hpcng/singularity/pkg/plugin"
-	clicallback "github.com/hpcng/singularity/pkg/plugin/callback/cli"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/cmdline"
+	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
+	clicallback "github.com/apptainer/apptainer/pkg/plugin/callback/cli"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +23,7 @@ import (
 // This symbol is accessed by the plugin framework to initialize the plugin.
 var Plugin = pluginapi.Plugin{
 	Manifest: pluginapi.Manifest{
-		Name:        "github.com/hpcng/singularity/cli-example-plugin",
+		Name:        "github.com/apptainer/apptainer/cli-example-plugin",
 		Author:      "Sylabs Team",
 		Version:     "0.1.0",
 		Description: "This is a short example CLI plugin for Singularity",

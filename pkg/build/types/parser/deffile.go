@@ -21,7 +21,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hpcng/singularity/pkg/build/types"
+	"github.com/apptainer/apptainer/pkg/build/types"
 )
 
 var (

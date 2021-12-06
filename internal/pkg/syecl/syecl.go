@@ -23,8 +23,8 @@ import (
 	"strings"
 
 	"github.com/ProtonMail/go-crypto/openpgp"
-	"github.com/hpcng/sif/v2/pkg/integrity"
-	"github.com/hpcng/sif/v2/pkg/sif"
+	"github.com/apptainer/sif/v2/pkg/integrity"
+	"github.com/apptainer/sif/v2/pkg/sif"
 	toml "github.com/pelletier/go-toml"
 )
 

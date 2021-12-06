@@ -17,15 +17,15 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hpcng/singularity/internal/pkg/instance"
-	fakerootConfig "github.com/hpcng/singularity/internal/pkg/runtime/engine/fakeroot/config"
-	"github.com/hpcng/singularity/internal/pkg/util/bin"
-	"github.com/hpcng/singularity/internal/pkg/util/crypt"
-	"github.com/hpcng/singularity/internal/pkg/util/priv"
-	"github.com/hpcng/singularity/internal/pkg/util/starter"
-	"github.com/hpcng/singularity/pkg/runtime/engine/config"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/capabilities"
+	"github.com/apptainer/apptainer/internal/pkg/instance"
+	fakerootConfig "github.com/apptainer/apptainer/internal/pkg/runtime/engine/fakeroot/config"
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/internal/pkg/util/crypt"
+	"github.com/apptainer/apptainer/internal/pkg/util/priv"
+	"github.com/apptainer/apptainer/internal/pkg/util/starter"
+	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/capabilities"
 )
 
 // CleanupContainer is called from master after the MonitorContainer returns.

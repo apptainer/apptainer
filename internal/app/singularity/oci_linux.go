@@ -14,11 +14,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hpcng/singularity/internal/pkg/instance"
-	"github.com/hpcng/singularity/internal/pkg/runtime/engine/oci"
-	"github.com/hpcng/singularity/pkg/ociruntime"
-	"github.com/hpcng/singularity/pkg/runtime/engine/config"
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/internal/pkg/instance"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/oci"
+	"github.com/apptainer/apptainer/pkg/ociruntime"
+	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // OciArgs contains CLI arguments

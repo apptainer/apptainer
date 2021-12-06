@@ -13,7 +13,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/hpcng/singularity/pkg/util/loop"
+	"github.com/apptainer/apptainer/pkg/util/loop"
 )
 
 // CreateLoop associates a file to loop device and returns

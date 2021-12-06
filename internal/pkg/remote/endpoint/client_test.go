@@ -11,7 +11,7 @@ package endpoint
 import (
 	"testing"
 
-	useragent "github.com/hpcng/singularity/pkg/util/user-agent"
+	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 )
 
 func init() {

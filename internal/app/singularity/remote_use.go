@@ -14,7 +14,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/hpcng/singularity/internal/pkg/remote"
+	"github.com/apptainer/apptainer/internal/pkg/remote"
 )
 
 func syncSysConfig(cUsr *remote.Config) error {

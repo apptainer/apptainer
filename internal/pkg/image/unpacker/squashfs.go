@@ -18,9 +18,9 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/hpcng/singularity/internal/pkg/util/bin"
-	"github.com/hpcng/singularity/pkg/sylog"
-	"github.com/hpcng/singularity/pkg/util/namespaces"
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	"golang.org/x/sys/unix"
 )
 

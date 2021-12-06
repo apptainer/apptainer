@@ -19,11 +19,11 @@ import (
 	"syscall"
 	"testing"
 
+	"github.com/apptainer/apptainer/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/e2e/internal/testhelper"
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
+	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/google/uuid"
-	"github.com/hpcng/singularity/e2e/internal/e2e"
-	"github.com/hpcng/singularity/e2e/internal/testhelper"
-	"github.com/hpcng/singularity/internal/pkg/test/tool/require"
-	"github.com/hpcng/singularity/pkg/util/fs/proc"
 	"github.com/pkg/errors"
 )
 
@@ -392,6 +392,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 				})
 			}
 		},
-		"issue 5033": c.issue5033, // https://github.com/hpcng/singularity/issues/4836
+		"issue 5033": c.issue5033, // https://github.com/apptainer/singularity/issues/4836
 	}
 }

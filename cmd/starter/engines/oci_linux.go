@@ -13,5 +13,5 @@ package engines
 
 import (
 	// register the oci runtime engine
-	_ "github.com/hpcng/singularity/internal/pkg/runtime/engine/oci"
+	_ "github.com/apptainer/apptainer/internal/pkg/runtime/engine/oci"
 )

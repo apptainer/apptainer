@@ -25,9 +25,9 @@ import (
 	"syscall"
 	"testing"
 
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/test"
 	"github.com/containernetworking/cni/libcni"
-	"github.com/hpcng/singularity/internal/pkg/buildcfg"
-	"github.com/hpcng/singularity/internal/pkg/test"
 )
 
 var confFiles = []struct {

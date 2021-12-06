@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hpcng/singularity/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/pflag"
 )
 

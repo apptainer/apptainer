@@ -13,15 +13,15 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/hpcng/singularity/pkg/image"
-	pluginapi "github.com/hpcng/singularity/pkg/plugin"
-	singularitycallback "github.com/hpcng/singularity/pkg/plugin/callback/runtime/engine/singularity"
+	"github.com/apptainer/apptainer/pkg/image"
+	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
+	singularitycallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/singularity"
 )
 
 // Allow to use overlay with user namespace on Ubuntu flavors.
 var Plugin = pluginapi.Plugin{
 	Manifest: pluginapi.Manifest{
-		Name:        "github.com/hpcng/singularity/ubuntu-userns-overlay-plugin",
+		Name:        "github.com/apptainer/apptainer/ubuntu-userns-overlay-plugin",
 		Author:      "Sylabs Team",
 		Version:     "0.1.0",
 		Description: "Overlay ubuntu driver with user namespace",

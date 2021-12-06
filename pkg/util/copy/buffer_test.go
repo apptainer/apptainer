@@ -11,7 +11,7 @@ package copy
 import (
 	"testing"
 
-	"github.com/hpcng/singularity/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/test"
 )
 
 func TestNewTerminalBuffer(t *testing.T) {

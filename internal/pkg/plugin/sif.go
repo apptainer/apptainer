@@ -13,9 +13,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/hpcng/sif/v2/pkg/sif"
-	"github.com/hpcng/singularity/pkg/image"
-	pluginapi "github.com/hpcng/singularity/pkg/plugin"
+	"github.com/apptainer/apptainer/pkg/image"
+	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
+	"github.com/apptainer/sif/v2/pkg/sif"
 )
 
 const (
