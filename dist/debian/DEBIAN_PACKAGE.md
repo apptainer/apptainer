@@ -60,7 +60,7 @@ export DEB_SC_BUILDDIR=builddir
 
 ### debchange
 
-One way to update the changelog would be that the developer of singularity
+One way to update the changelog would be that the developer of apptainer
 update the Debian changelog on every commit. As this is double work, because
 of the CHANGELOG.md in the top directory, the changelog is automatically
 updated with the version of the source which is currently checked out.

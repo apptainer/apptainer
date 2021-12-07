@@ -1,6 +1,6 @@
 # Examples
 
-The example bootstrap definition files, each called `Singularity`, are located
+The example bootstrap definition files, each called `Apptainer`, are located
 in their respectively named folders in this directory. These files can be used
 to create new container images on a variety of Linux distributions or become the
 basis for customization to build reproducible containers for a specific purpose.
@@ -37,4 +37,4 @@ examples/contrib/debian84-tensorflow-0.10.def
 
 If your contribution is more appropriate for one of the base or template
 distributions, then please make a respective folder in the [examples](.)
-directory, and name the definition file `Singularity`.
+directory, and name the definition file `Apptainer`.

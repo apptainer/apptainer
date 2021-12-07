@@ -36,7 +36,7 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 	ext3DirImage := filepath.Join(tmpDir, "imagedir.ext3")
 
 	// signed SIF image
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -44,7 +44,7 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("key import"),
@@ -53,7 +53,7 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("sign"),
@@ -63,7 +63,7 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 	)
 
 	// unsigned SIF image
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -148,11 +148,11 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 	err := e2e.CheckCryptsetupVersion()
 	if err == nil {
 		// encrypted SIF image
-		passphraseEnvVar := fmt.Sprintf("%s=%s", "SINGULARITY_ENCRYPTION_PASSPHRASE", e2e.Passphrase)
+		passphraseEnvVar := fmt.Sprintf("%s=%s", "APPTAINER_ENCRYPTION_PASSPHRASE", e2e.Passphrase)
 
 		sifEncryptedImage := filepath.Join(tmpDir, "encrypted.sif")
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.RootProfile),
 			e2e.WithCommand("build"),
@@ -171,7 +171,7 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),

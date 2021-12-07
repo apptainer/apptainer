@@ -1,11 +1,11 @@
 # This file contains rules for building CNI plugins which can enable
 #   different networking functions between container(s) and the host
 
-singularity_REPO := github.com/apptainer/apptainer
+apptainer_REPO := github.com/apptainer/apptainer
 
 cni_builddir := $(BUILDDIR_ABSPATH)/cni
-cni_install_DIR := $(DESTDIR)$(LIBEXECDIR)/singularity/cni
-cni_plugins := $(shell grep '^	_' $(SOURCEDIR)/internal/pkg/runtime/engine/singularity/plugins_linux.go | cut -d\" -f2)
+cni_install_DIR := $(DESTDIR)$(LIBEXECDIR)/apptainer/cni
+cni_plugins := $(shell grep '^	_' $(SOURCEDIR)/internal/pkg/runtime/engine/apptainer/plugins_linux.go | cut -d\" -f2)
 cni_plugins_EXECUTABLES := $(addprefix $(cni_builddir)/, $(notdir $(cni_plugins)))
 cni_plugins_INSTALL := $(addprefix $(cni_install_DIR)/, $(notdir $(cni_plugins)))
 cni_config_LIST := $(SOURCEDIR)/etc/network/00_bridge.conflist \
@@ -13,7 +13,7 @@ cni_config_LIST := $(SOURCEDIR)/etc/network/00_bridge.conflist \
                    $(SOURCEDIR)/etc/network/20_ipvlan.conflist \
                    $(SOURCEDIR)/etc/network/30_macvlan.conflist \
                    $(SOURCEDIR)/etc/network/40_fakeroot.conflist
-cni_config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/network
+cni_config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/network
 
 .PHONY: cniplugins
 cniplugins:

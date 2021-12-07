@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// KeyRemoveCmd is `singularity key remove <fingerprint>' command
+// KeyRemoveCmd is `apptainer key remove <fingerprint>' command
 var KeyRemoveCmd = &cobra.Command{
 	PreRun:                checkGlobal,
 	Args:                  cobra.ExactArgs(1),
@@ -27,7 +27,7 @@ var KeyRemoveCmd = &cobra.Command{
 		path := ""
 
 		if keyGlobalPubKey {
-			path = buildcfg.SINGULARITY_CONFDIR
+			path = buildcfg.APPTAINER_CONFDIR
 			opts = append(opts, sypgp.GlobalHandleOpt())
 		}
 

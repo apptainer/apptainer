@@ -48,7 +48,7 @@ func getCacheHandle(cfg cache.Config) *cache.Handle {
 func actionPreRun(cmd *cobra.Command, args []string) {
 	// For compatibility - we still set USER_PATH so it will be visible in the
 	// container, and can be used there if needed. USER_PATH is not used by
-	// singularity itself in 3.9+
+	// apptainer itself in 3.9+
 	userPath := strings.Join([]string{os.Getenv("PATH"), defaultPath}, ":")
 	os.Setenv("USER_PATH", userPath)
 
@@ -57,7 +57,7 @@ func actionPreRun(cmd *cobra.Command, args []string) {
 	replaceURIWithImage(cmd.Context(), cmd, args)
 
 	// --compat infers other options that give increased OCI / Docker compatibility
-	// Excludes uts/user/net namespaces as these are restrictive for many Singularity
+	// Excludes uts/user/net namespaces as these are restrictive for many Apptainer
 	// installs.
 	if IsCompat {
 		IsContainAll = true

@@ -10,7 +10,7 @@ package cli
 
 import (
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
@@ -34,7 +34,7 @@ var instanceStartPidFileFlag = cmdline.Flag{
 	EnvKeys:      []string{"PID_FILE"},
 }
 
-// singularity instance start
+// apptainer instance start
 var instanceStartCmd = &cobra.Command{
 	Args:                  cobra.MinimumNArgs(2),
 	PreRun:                actionPreRun,
@@ -52,7 +52,7 @@ var instanceStartCmd = &cobra.Command{
 		execStarter(cmd, image, a, name)
 
 		if instanceStartPidFile != "" {
-			err := singularity.WriteInstancePidFile(name, instanceStartPidFile)
+			err := apptainer.WriteInstancePidFile(name, instanceStartPidFile)
 			if err != nil {
 				sylog.Warningf("Failed to write pid file: %v", err)
 			}

@@ -38,7 +38,7 @@ func prepTest(t *testing.T, testEnv e2e.TestEnv, testName string, cacheParentDir
 	}
 
 	testEnv.ImgCacheDir = cacheParentDir
-	testEnv.RunSingularity(
+	testEnv.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
@@ -85,14 +85,14 @@ func (c cacheTests) testNoninteractiveCacheCmds(t *testing.T) {
 		{
 			name:           "clean help",
 			options:        []string{"clean", "--help"},
-			expectedOutput: "Clean your local Singularity cache",
+			expectedOutput: "Clean your local Apptainer cache",
 			needImage:      false,
 			exit:           0,
 		},
 		{
 			name:           "list help",
 			options:        []string{"list", "--help"},
-			expectedOutput: "List your local Singularity cache",
+			expectedOutput: "List your local Apptainer cache",
 			needImage:      false,
 			exit:           0,
 		},
@@ -132,7 +132,7 @@ func (c cacheTests) testNoninteractiveCacheCmds(t *testing.T) {
 		}
 
 		c.env.ImgCacheDir = cacheDir
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -235,7 +235,7 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 		c.env.ImgCacheDir = cacheDir
 		prepTest(t, c.env, tc.name, cacheDir, imagePath)
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tc.name),
 			e2e.WithProfile(e2e.UserProfile),

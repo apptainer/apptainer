@@ -3,7 +3,7 @@
 
 # starter suid
 starter_suid := $(BUILDDIR)/cmd/starter/c/starter-suid
-starter_suid_INSTALL := $(DESTDIR)$(LIBEXECDIR)/singularity/bin/starter-suid
+starter_suid_INSTALL := $(DESTDIR)$(LIBEXECDIR)/apptainer/bin/starter-suid
 
 $(starter_suid): $(starter)
 	@echo " GO" $@; echo "    [+] GO_TAGS" \"$(GO_TAGS_SUID)\"

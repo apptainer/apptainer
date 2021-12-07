@@ -45,9 +45,9 @@ func TestNewDefinitionFromJSON(t *testing.T) {
 		{JSON: `{"Key1": "Value1", "Key2": "Value2."}`, shouldPass: true},
 	}
 
-	const singularityJSON = "parser/testdata_good/docker/docker.json"
+	const apptainerJSON = "parser/testdata_good/docker/docker.json"
 	// We do not have a valid example file that we can use to reach the corner cases, so we define a fake JSON
-	const validSingularityJSON = `
+	const validApptainerJSON = `
 {
   "header": {
     "bootstrap": "yum",
@@ -123,7 +123,7 @@ func TestNewDefinitionFromJSON(t *testing.T) {
 	}
 
 	// Testing with a valid JSON file
-	f, err := os.Open(singularityJSON)
+	f, err := os.Open(apptainerJSON)
 	if err != nil {
 		t.Fatal("cannot open test file", err)
 	}
@@ -138,9 +138,9 @@ func TestNewDefinitionFromJSON(t *testing.T) {
 
 	// Testing with a valid JSON with raw section
 	var def2 Definition
-	def2, def2Err := NewDefinitionFromJSON(strings.NewReader(validSingularityJSON))
+	def2, def2Err := NewDefinitionFromJSON(strings.NewReader(validApptainerJSON))
 	if def2Err != nil {
-		t.Fatal("NewDefinitionFromJSON() failed with a Singularity JSON", def2Err)
+		t.Fatal("NewDefinitionFromJSON() failed with a Apptainer JSON", def2Err)
 	}
 	if len(def2.ImageData.Labels) != 1 {
 		t.Fatal("Invalid number of labels")

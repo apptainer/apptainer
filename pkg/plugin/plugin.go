@@ -52,9 +52,9 @@ type Plugin struct {
 	// basic information about the plugin.
 	Manifest
 	// Callbacks contains plugin callbacks to be called
-	// by Singularity.
+	// by Apptainer.
 	Callbacks []Callback
-	// Install is a function called during singularity
+	// Install is a function called during apptainer
 	// plugin install, the function take the directory
 	// where plugin object will reside and can be used
 	// to store configuration files/data needed by a

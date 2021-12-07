@@ -42,11 +42,11 @@
 #include <sys/sysmacros.h>
 #include <linux/magic.h>
 
-#ifdef SINGULARITY_SECUREBITS
+#ifdef APPTAINER_SECUREBITS
 #  include <linux/securebits.h>
 #else
 #  include "include/securebits.h"
-#endif /* SINGULARITY_SECUREBITS */
+#endif /* APPTAINER_SECUREBITS */
 
 #include "include/capability.h"
 #include "include/message.h"
@@ -500,7 +500,7 @@ static char *nserror(int err, int nstype) {
         }
     } else if ( err == EPERM ) {
         if ( nstype != CLONE_NEWUSER ) {
-            snprintf(msg, MSG_SIZE-1, "%s namespace requires privileges, check Singularity installation", name);
+            snprintf(msg, MSG_SIZE-1, "%s namespace requires privileges, check Apptainer installation", name);
         } else {
             snprintf(path, MAX_PATH_SIZE-1, "/proc/sys/kernel/unprivileged_userns_clone");
             if ( access(path, 0) == 0 ) {
@@ -1156,7 +1156,7 @@ static void cleanenv(void) {
     }
 
     /*
-     * keep only SINGULARITY_MESSAGELEVEL for GO runtime, set others to empty
+     * keep only APPTAINER_MESSAGELEVEL for GO runtime, set others to empty
      * string and not NULL (see issue #3703 for why)
      */
     for (e = environ; *e != NULL; e++) {
@@ -1259,7 +1259,7 @@ __attribute__((constructor)) static void init(void) {
 
     verbosef("Starter initialization\n");
 
-#ifndef SINGULARITY_NO_NEW_PRIVS
+#ifndef APPTAINER_NO_NEW_PRIVS
     fatalf("Host kernel is outdated and does not support PR_SET_NO_NEW_PRIVS!\n");
 #endif
 
@@ -1305,7 +1305,7 @@ __attribute__((constructor)) static void init(void) {
     process = fork_ns(CLONE_FILES);
     if ( process == 0 ) {
         /*
-         *  stage1 is responsible for singularity configuration file parsing,
+         *  stage1 is responsible for apptainer configuration file parsing,
          *  handling user input, reading capabilities, and checking what
          *  namespaces are required
          */
@@ -1651,7 +1651,7 @@ __attribute__((constructor)) static void init(void) {
                 } else {
                     warningf("Running inside a weak chrooted environment, prefer pivot_root instead of chroot\n");
                 }
-                fatalf("Aborting as Singularity cannot run correctly without modifications to your environment\n");
+                fatalf("Aborting as Apptainer cannot run correctly without modifications to your environment\n");
             }
 
             send_event(master_socket[0]);

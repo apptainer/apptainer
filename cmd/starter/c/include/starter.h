@@ -9,18 +9,18 @@
   your rights to use or distribute this software.
 */
 
-#ifndef _SINGULARITY_STARTER_H
-#define _SINGULARITY_STARTER_H
+#ifndef _APPTAINER_STARTER_H
+#define _APPTAINER_STARTER_H
 
 #include <limits.h>
 #include <sys/user.h>
 
-#define fatalf(b...)     singularity_message(ERROR, b); \
+#define fatalf(b...)     apptainer_message(ERROR, b); \
                          exit(1)
-#define debugf(b...)     singularity_message(DEBUG, b)
-#define verbosef(b...)   singularity_message(VERBOSE, b)
-#define warningf(b...)   singularity_message(WARNING, b)
-#define errorf(b...)     singularity_message(ERROR, b)
+#define debugf(b...)     apptainer_message(DEBUG, b)
+#define verbosef(b...)   apptainer_message(VERBOSE, b)
+#define warningf(b...)   apptainer_message(WARNING, b)
+#define errorf(b...)     apptainer_message(ERROR, b)
 
 #define MAX_MAP_SIZE        4096
 #define MAX_PATH_SIZE       PATH_MAX
@@ -176,4 +176,4 @@ struct starterConfig {
     struct engine engine;
 };
 
-#endif /* _SINGULARITY_STARTER_H */
+#endif /* _APPTAINER_STARTER_H */

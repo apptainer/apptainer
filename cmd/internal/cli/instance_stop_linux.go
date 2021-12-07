@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/util/signal"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -98,7 +98,7 @@ var instanceStopTimeoutFlag = cmdline.Flag{
 	Usage:        "force kill non stopped instances after X seconds",
 }
 
-// singularity instance stop
+// apptainer instance stop
 var instanceStopCmd = &cobra.Command{
 	Args:                  cobra.RangeArgs(0, 1),
 	DisableFlagsInUseLine: true,
@@ -130,7 +130,7 @@ var instanceStopCmd = &cobra.Command{
 		}
 
 		timeout := time.Duration(instanceStopTimeout) * time.Second
-		return singularity.StopInstance(name, instanceStopUser, sig, timeout)
+		return apptainer.StopInstance(name, instanceStopUser, sig, timeout)
 	},
 
 	Use:     docs.InstanceStopUse,

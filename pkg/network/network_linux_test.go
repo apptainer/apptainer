@@ -117,7 +117,7 @@ var confFiles = []struct {
 var defaultCNIConfPath = ""
 
 // defaultCNIPluginPath is the default directory to CNI plugins executables
-var defaultCNIPluginPath = filepath.Join(buildcfg.LIBEXECDIR, "singularity", "cni")
+var defaultCNIPluginPath = filepath.Join(buildcfg.LIBEXECDIR, "apptainer", "cni")
 
 // testNetworks will contains configured network
 var testNetworks []string

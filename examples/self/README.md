@@ -31,6 +31,6 @@ Exclude: /var/lib/docker /home/vanessa /opt/*
 so we could do the following with the specification build file in this folder:
 
 ```sh
-singularity create --size 8000 container.img
-sudo singularity bootstrap container.img Singularity
+apptainer create --size 8000 container.img
+sudo apptainer bootstrap container.img Apptainer
 ```

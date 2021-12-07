@@ -1,14 +1,14 @@
-# Installing Singularity
+# Installing Apptainer
 
-Since you are reading this from the Singularity source code, it will be assumed
+Since you are reading this from the Apptainer source code, it will be assumed
 that you are building/compiling from source.
 
-Singularity packages are available for various Linux distributions, but may not
+Apptainer packages are available for various Linux distributions, but may not
 always be up-to-date with the latest source release version.
 
 For full instructions on installation, including building RPMs,
 installing pre-built EPEL packages etc. please check the
-[installation section of the admin guide](https://singularity.hpcng.org/admin-docs/master/installation.html).
+[installation section of the admin guide](https://apptainer.org/admin-docs/master/installation.html).
 
 ## Install system dependencies
 
@@ -46,7 +46,7 @@ sudo yum install -y \
 
 ## Install Go
 
-Singularity is written in Go, and may require a newer version of Go than is
+Apptainer is written in Go, and may require a newer version of Go than is
 available in the repositories of your distribution. We recommend installing the
 latest version of Go from the [official binaries](https://golang.org/dl/).
 
@@ -74,12 +74,12 @@ source ~/.bashrc
 ## Install golangci-lint
 
 If you will be making changes to the source code, and submitting PRs, you should
-install `golangci-lint`, which is the linting tool used in the Singularity
+install `golangci-lint`, which is the linting tool used in the Apptainer
 project to ensure code consistency.
 
 Every pull request must pass the `golangci-lint` checks, and these will be run
 automatically before attempting to merge the code. If you are modifying
-Singularity and contributing your changes to the repository, it's faster to run
+Apptainer and contributing your changes to the repository, it's faster to run
 these checks locally before uploading your pull request.
 
 In order to download and install the latest version of `golangci-lint`, you can
@@ -102,7 +102,7 @@ source ~/.bashrc
 
 ## Clone the repo
 
-With the adoption of Go modules you no longer need to clone the Singularity
+With the adoption of Go modules you no longer need to clone the Apptainer
 repository to a specific location.
 
 Clone the repository with `git` in a location of your choice:
@@ -113,8 +113,8 @@ cd apptainer
 ```
 
 By default your clone will be on the `master` branch which is where development
-of Singularity happens.
-To build a specific version of Singularity, check out a
+of Apptainer happens.
+To build a specific version of Apptainer, check out a
 [release tag](https://github.com/apptainer/apptainer/tags) before compiling,
 for example:
 
@@ -122,9 +122,9 @@ for example:
 git checkout v3.8.5
 ```
 
-## Compiling Singularity
+## Compiling Apptainer
 
-You can configure, build, and install Singularity using the following commands:
+You can configure, build, and install Apptainer using the following commands:
 
 ```sh
 ./mconfig
@@ -133,14 +133,14 @@ make
 sudo make install
 ```
 
-And that's it! Now you can check your Singularity version by running:
+And that's it! Now you can check your Apptainer version by running:
 
 ```sh
 singularity --version
 ```
 
 The `mconfig` command accepts options that can modify the build and installation
-of Singularity. For example, to build in a different folder and to set the
+of Apptainer. For example, to build in a different folder and to set the
 install prefix to a different path:
 
 ```sh
@@ -151,9 +151,9 @@ See the output of `./mconfig -h` for available options.
 
 ## Building & Installing from an RPM
 
-On a RHEL / CentOS / Fedora machine you can build a Singularity into an rpm
+On a RHEL / CentOS / Fedora machine you can build a Apptainer into an rpm
 package, and install it from the rpm. This is useful if you need to install
-Singularity across multiple machines, or wish to manage all software via
+Apptainer across multiple machines, or wish to manage all software via
 `yum/dnf`.
 
 To build the rpm, in addition to the
@@ -166,7 +166,7 @@ sudo yum install -y rpm-build wget golang
 
 The rpm build can use the distribution or EPEL version of Go, even
 though as of this writing that version is older than the default
-minimum version of Go that Singularity requires.
+minimum version of Go that Apptainer requires.
 This is because the rpm applies a source code patch to lower the minimum
 required.
 
@@ -181,7 +181,7 @@ export VERSION=3.8.5  # this is the singularity version, change as you need
 wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz
 # Build the rpm from the source tar.gz
 rpmbuild -tb singularity-${VERSION}.tar.gz
-# Install Singularity using the resulting rpm
+# Install Apptainer using the resulting rpm
 sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/singularity-${VERSION}-1.el7.x86_64.rpm
 # (Optionally) Remove the build tree and source to save space
 rm -rf ~/rpmbuild singularity-${VERSION}*.tar.gz
@@ -194,7 +194,7 @@ Alternatively, to build an RPM from the latest master you can
 Create the build configuration using the `--only-rpm` option of
 `mconfig` if you're using the system's too-old golang installation,
 to lower the minimum required version.
-Then use the `rpm` make target to build Singularity as an rpm package:
+Then use the `rpm` make target to build Apptainer as an rpm package:
 
 <!-- markdownlint-disable MD013 -->
 
@@ -206,7 +206,7 @@ sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/singularity-3.8.5*.x86_64.rpm # or whatever
 
 <!-- markdownlint-enable MD013 -->
 
-By default, the rpm will be built so that Singularity is installed under
+By default, the rpm will be built so that Apptainer is installed under
 `/usr/local`.
 
 To build an rpm with an alternative install prefix set RPMPREFIX on the make
@@ -217,7 +217,7 @@ make -C builddir rpm RPMPREFIX=/opt/singularity
 ```
 
 For more information on installing/updating/uninstalling the RPM, check out our
-[admin docs](https://singularity.hpcng.org/admin-docs/master/admin_quickstart.html).
+[admin docs](https://apptainer.org/admin-docs/master/admin_quickstart.html).
 
 ## Debian Package
 

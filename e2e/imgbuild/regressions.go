@@ -32,11 +32,11 @@ import (
 // load the bad NSS library from container image.
 // Most if not all NSS services point to the bad NSS library in
 // order to catch all the potential calls which could occur from
-// Go code inside the build engine, singularity engine is also tested.
+// Go code inside the build engine, apptainer engine is also tested.
 func (c imgBuildTests) issue4203(t *testing.T) {
 	image := filepath.Join(c.env.TestDir, "issue_4203.sif")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -48,10 +48,10 @@ func (c imgBuildTests) issue4203(t *testing.T) {
 				return
 			}
 
-			// also execute the image to check that singularity
+			// also execute the image to check that apptainer
 			// engine doesn't try to load a NSS library from
 			// container image
-			c.env.RunSingularity(
+			c.env.RunApptainer(
 				t,
 				e2e.WithProfile(e2e.UserProfile),
 				e2e.WithCommand("exec"),
@@ -94,7 +94,7 @@ func (c *imgBuildTests) issue4407(t *testing.T) {
 			c.env.ImagePath,
 		}
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(name),
 			e2e.WithProfile(e2e.RootProfile),
@@ -122,7 +122,7 @@ func (c *imgBuildTests) issue4407(t *testing.T) {
 func (c *imgBuildTests) issue4524(t *testing.T) {
 	sandbox := filepath.Join(c.env.TestDir, "issue_4524")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -161,7 +161,7 @@ func (c *imgBuildTests) issue4524(t *testing.T) {
 func (c *imgBuildTests) issue4583(t *testing.T) {
 	image := filepath.Join(c.env.TestDir, "issue_4583.sif")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -186,12 +186,12 @@ func (c imgBuildTests) issue4837(t *testing.T) {
 
 	u := e2e.FakerootProfile.HostUser(t)
 
-	def, err := filepath.Abs("testdata/Singularity")
+	def, err := filepath.Abs("testdata/Apptainer")
 	if err != nil {
-		t.Fatalf("failed to retrieve absolute path for testdata/Singularity: %s", err)
+		t.Fatalf("failed to retrieve absolute path for testdata/Apptainer: %s", err)
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithDir(u.Dir),
@@ -213,7 +213,7 @@ func (c *imgBuildTests) issue4943(t *testing.T) {
 		image = "docker://gitlab-registry.cern.ch/linuxsupport/cc7-base:20191107"
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -226,7 +226,7 @@ func (c *imgBuildTests) issue4943(t *testing.T) {
 func (c *imgBuildTests) issue4967(t *testing.T) {
 	image := filepath.Join(c.env.TestDir, "issue_4967.sif")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -246,7 +246,7 @@ func (c *imgBuildTests) issue4967(t *testing.T) {
 func (c *imgBuildTests) issue4969(t *testing.T) {
 	image := filepath.Join(c.env.TestDir, "issue_4969.sif")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -274,7 +274,7 @@ func (c *imgBuildTests) issue5166(t *testing.T) {
 
 	e2e.EnsureImage(t, c.env)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -282,7 +282,7 @@ func (c *imgBuildTests) issue5166(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -297,7 +297,7 @@ func (c *imgBuildTests) issue5166(t *testing.T) {
 	)
 
 	// finally force overwrite
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -334,7 +334,7 @@ func (c *imgBuildTests) issue5172(t *testing.T) {
 	}
 	defer os.RemoveAll(regDir)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -347,7 +347,7 @@ func (c *imgBuildTests) issue5172(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
@@ -366,7 +366,7 @@ func (c *imgBuildTests) issue5172(t *testing.T) {
 func (c *imgBuildTests) issue4820(t *testing.T) {
 	image := filepath.Join(c.env.TestDir, "issue_4820.sif")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -385,7 +385,7 @@ func (c *imgBuildTests) issue4820(t *testing.T) {
 func (c *imgBuildTests) issue5315(t *testing.T) {
 	image := filepath.Join(c.env.TestDir, "issue_5315.sif")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("build"),
@@ -411,7 +411,7 @@ func (c *imgBuildTests) issue5435(t *testing.T) {
 		}
 	}(t)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -442,7 +442,7 @@ func (c *imgBuildTests) issue5435(t *testing.T) {
 func (c *imgBuildTests) issue5250(t *testing.T) {
 	image := filepath.Join(c.env.TestDir, "issue_5250.sif")
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
@@ -467,7 +467,7 @@ func (c *imgBuildTests) issue5668(t *testing.T) {
 	}
 	sbDir, sbCleanup := e2e.MakeTempDir(t, home, "issue-5668-", "")
 	defer e2e.Privileged(sbCleanup)(t)
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -484,7 +484,7 @@ func (c *imgBuildTests) issue5690(t *testing.T) {
 	sandbox, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "issue-5690-", "")
 	defer e2e.Privileged(cleanup)(t)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -492,7 +492,7 @@ func (c *imgBuildTests) issue5690(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("build"),
@@ -546,7 +546,7 @@ From: alpine:latest
 	}
 
 	image := path.Join(tmpDir, "image.sif")
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),

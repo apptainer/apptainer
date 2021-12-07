@@ -34,7 +34,7 @@ func TestCgroupsV2(t *testing.T) {
 
 	pid := cmd.Process.Pid
 	strPid := strconv.Itoa(pid)
-	group := filepath.Join("/singularity", strPid)
+	group := filepath.Join("/apptainer", strPid)
 
 	manager := &ManagerV2{pid: pid, group: group}
 
@@ -104,7 +104,7 @@ func TestPauseResumeV2(t *testing.T) {
 	defer cmd.Process.Kill()
 
 	manager.pid = cmd.Process.Pid
-	manager.group = filepath.Join("/singularity", strconv.Itoa(manager.pid))
+	manager.group = filepath.Join("/apptainer", strconv.Itoa(manager.pid))
 
 	if err := manager.ApplyFromFile("example/cgroups.toml"); err != nil {
 		t.Fatal(err)

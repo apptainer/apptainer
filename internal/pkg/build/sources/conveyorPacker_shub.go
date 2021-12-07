@@ -12,7 +12,7 @@ import (
 	"context"
 	"fmt"
 
-	shub "github.com/apptainer/apptainer/internal/pkg/client/shub"
+	"github.com/apptainer/apptainer/internal/pkg/client/shub"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
@@ -24,7 +24,7 @@ type ShubConveyorPacker struct {
 	LocalPacker
 }
 
-// Get downloads container from Singularityhub.
+// Get downloads container from Apptainerhub.
 func (cp *ShubConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err error) {
 	sylog.Debugf("Getting container from Shub")
 

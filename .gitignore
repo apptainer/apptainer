@@ -1,7 +1,7 @@
 *~
 #*
 *#
-singularity-*.tar.gz
+apptainer-*.tar.gz
 *.m4
 *.pyc
 *.swp
@@ -10,20 +10,21 @@ generate_docs
 .vscode
 .DS_store
 .idea/
+vendor/**
 builddir/
 vendor/**
 internal/pkg/buildcfg/config.go
-singularity.spec
+apptainer.spec
 trash.lock
 Makefile.in
 autom4te.cache/
 bin/Makefile
 bin/Makefile.in
-bin/singularity
+bin/apptainer
 compile
 configure
 depcomp
-etc/singularity.conf
+etc/apptainer.conf
 etc/Makefile
 etc/Makefile.in
 examples/plugins/test-plugin/*.so
@@ -43,7 +44,7 @@ missing
 src/util/config_defaults.h
 secbuildimg.sh
 
-docs/man/singularity*
+docs/man/apptainer*
 
 src/pkg/buildcfg
 src/action
@@ -71,7 +72,7 @@ src/.libs/
 src/lib*.la
 src/*.o
 src/*.lo
-src/slurm/singularity_spank.la
+src/slurm/apptainer_spank.la
 
 src/*/.deps/
 src/*/.libs/

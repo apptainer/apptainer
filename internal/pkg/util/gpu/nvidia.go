@@ -73,7 +73,7 @@ var nVCLIAmbientCaps = []uintptr{
 // any privilege escalation when calling out to `nvidia-container-cli`.
 //
 // When userNS is false, we are not running in a user namespace, but are in
-// setuid mode or directly called as `sudo singularity` etc. In this case we
+// setuid mode or directly called as `sudo apptainer` etc. In this case we
 // exec `nvidia-container-cli` as root via SysProcAttr, having first ensured
 // that it and `ldconfig` are root-owned.
 func NVCLIConfigure(nvidiaEnv []string, rootfs string, userNS bool) error {

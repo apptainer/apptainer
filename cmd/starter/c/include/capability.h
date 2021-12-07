@@ -12,8 +12,8 @@
  */
 
 
-#ifndef __SINGULARITY_CAPABILITY_H_
-#define __SINGULARITY_CAPABILITY_H_
+#ifndef __APPTAINER_CAPABILITY_H_
+#define __APPTAINER_CAPABILITY_H_
 
 #include <linux/capability.h>
 
@@ -34,4 +34,4 @@
 int capget(cap_user_header_t, cap_user_data_t);
 int capset(cap_user_header_t, const cap_user_data_t);
 
-#endif /* __SINGULARITY_CAPABILITY_H_ */
+#endif /* __APPTAINER_CAPABILITY_H_ */

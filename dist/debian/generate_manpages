@@ -38,10 +38,10 @@ trap "rm -rf \"$tbindir\"" TERM INT EXIT
 
 mkdir -p ${PKGDIR}/usr/share/man/man1
 declare -A desc
-desc[singularity]="Singularity containers command line interface"
-desc[run-singularity]="launch a Singularity containers with a runscript"
+desc[apptainer]="Apptainer containers command line interface"
+desc[run-singularity]="launch a Singularity container with a runscript"
 
-for b in singularity run-singularity; do
+for b in apptainer run-singularity; do
     cp -p ${PKGDIR}/usr/bin/$b "$tbindir/"
     sed -i -e "s,^prefix=.*,prefix=${PKGDIR}/usr,g" "$tbindir/$b"
     manpage=${PKGDIR}/usr/share/man/man1/$b.1

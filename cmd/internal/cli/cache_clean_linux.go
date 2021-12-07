@@ -15,7 +15,7 @@ import (
 	"strings"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -77,7 +77,7 @@ var (
 		Usage:        "suppress any prompts and clean the cache",
 	}
 
-	// cacheCleanCmd is 'singularity cache clean' and will clear your local singularity cache
+	// cacheCleanCmd is 'apptainer cache clean' and will clear your local apptainer cache
 	cacheCleanCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -110,7 +110,7 @@ func cleanCache() error {
 
 	// create a handle to access the current image cache
 	imgCache := getCacheHandle(cache.Config{})
-	err := singularity.CleanSingularityCache(imgCache, cacheCleanDry, cacheCleanTypes, cacheCleanDays)
+	err := apptainer.CleanApptainerCache(imgCache, cacheCleanDry, cacheCleanTypes, cacheCleanDays)
 	if err != nil {
 		return fmt.Errorf("could not clean cache: %v", err)
 	}

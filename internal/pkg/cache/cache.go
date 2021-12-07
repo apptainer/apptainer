@@ -29,12 +29,12 @@ var errInvalidCacheType = errors.New("invalid cache type")
 const (
 	// DirEnv specifies the environment variable which can set the directory
 	// for image downloads to be cached in
-	DirEnv = "SINGULARITY_CACHEDIR"
+	DirEnv = "APPTAINER_CACHEDIR"
 	// DisableEnv specifies whether the image should be used
-	DisableEnv = "SINGULARITY_DISABLE_CACHE"
+	DisableEnv = "APPTAINER_DISABLE_CACHE"
 	// SubDirName specifies the name of the directory relative to the
 	// ParentDir specified when the cache is created.
-	// By default the cache will be placed at "~/.singularity/cache" which
+	// By default the cache will be placed at "~/.apptainer/cache" which
 	// will not clash with any 2.x cache directory.
 	SubDirName = "cache"
 
@@ -82,7 +82,7 @@ type Handle struct {
 	// when initializing the cache
 	parentDir string
 	// rootDir is the cache root directory, and is inside parentDir. This is the
-	// directory Singularity actually manages, i.e., that can safely be
+	// directory Apptainer actually manages, i.e., that can safely be
 	// deleted as opposed to the parent directory that is potentially managed
 	// (passed in) by the user.
 	rootDir string
@@ -119,7 +119,7 @@ func (h *Handle) GetEntry(cacheType string, hash string) (e *Entry, err error) {
 
 	e.Path = filepath.Join(cacheDir, hash)
 
-	// If there is a directory it's from an older version of Singularity
+	// If there is a directory it's from an older version of Apptainer
 	// We need to remove it as we work with single files per hash only now
 	if fs.IsDir(e.Path) {
 		sylog.Debugf("Removing old cache directory: %s", e.Path)
@@ -182,7 +182,7 @@ func (h *Handle) CleanCache(cacheType string, dryRun bool, days int) (err error)
 
 		sylog.Infof("Removing %s cache entry: %s", cacheType, f.Name())
 		if !dryRun {
-			// We RemoveAll in case the entry is a directory from Singularity <3.6
+			// We RemoveAll in case the entry is a directory from Apptainer <3.6
 			err := os.RemoveAll(path.Join(dir, f.Name()))
 			if err != nil {
 				sylog.Errorf("Could not remove cache entry '%s': %v", f.Name(), err)
@@ -293,12 +293,12 @@ func New(cfg Config) (h *Handle, err error) {
 
 // getCacheParentDir figures out where the parent directory of the cache is.
 //
-// Singularity makes the following assumptions:
+// Apptainer makes the following assumptions:
 // - the default location for caches is specified by RootDefault
 // - a user can specify the environment variable specified by DirEnv to
 //   change the location
 // - a user can change the location of a cache at any time
-// - but in the context of a Singularity command, the cache location
+// - but in the context of a Apptainer command, the cache location
 //   cannot change once the command starts executing
 func getCacheParentDir() string {
 	// If the user defined the special environment variable, we use its value

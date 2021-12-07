@@ -12,8 +12,8 @@ fixing or enhancing.
 
 #### Before submitting a PR, make sure you have done the following:
 
-- Read the [Guidelines for Contributing](https://github.com/apptainer/apptainer/blob/master/CONTRIBUTING.md), and this PR conforms to the stated requirements.
-- Added changes to the [CHANGELOG](https://github.com/apptainer/apptainer/blob/master/CHANGELOG.md) if necessary according to the [Contribution Guidelines](https://github.com/apptainer/apptainer/blob/master/CONTRIBUTING.md)
+- Read the [Guidelines for Contributing](https://github.com/apptainer/apptainer/blob/main/CONTRIBUTING.md), and this PR conforms to the stated requirements.
+- Added changes to the [CHANGELOG](https://github.com/apptainer/apptainer/blob/main/CHANGELOG.md) if necessary according to the [Contribution Guidelines](https://github.com/apptainer/apptainer/blob/main/CONTRIBUTING.md)
 - Added tests to validate this PR, linted with `make check`  and tested this PR locally with a `make test`, and `make testall` if possible (see CONTRIBUTING.md).
-- Based this PR against the appropriate branch according to the [Contribution Guidelines](https://github.com/apptainer/apptainer/blob/master/CONTRIBUTING.md)
-- Added myself as a contributor to the [Contributors File](https://github.com/apptainer/apptainer/blob/master/CONTRIBUTORS.md)
+- Based this PR against the appropriate branch according to the [Contribution Guidelines](https://github.com/apptainer/apptainer/blob/main/CONTRIBUTING.md)
+- Added myself as a contributor to the [Contributors File](https://github.com/apptainer/apptainer/blob/main/CONTRIBUTORS.md)

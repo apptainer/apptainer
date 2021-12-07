@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/client/library"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/pkg/cmdline"
@@ -137,7 +137,7 @@ var deleteImageCmd = &cobra.Command{
 		ctx, cancel := context.WithTimeout(cmd.Context(), time.Duration(deleteImageTimeout)*time.Second)
 		defer cancel()
 
-		if err := singularity.DeleteImage(ctx, libraryConfig, r, deleteImageArch); err != nil {
+		if err := apptainer.DeleteImage(ctx, libraryConfig, r, deleteImageArch); err != nil {
 			sylog.Fatalf("Unable to delete image from library: %s\n", err)
 		}
 

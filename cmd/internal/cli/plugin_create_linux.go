@@ -10,7 +10,7 @@ package cli
 
 import (
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
 )
@@ -18,13 +18,13 @@ import (
 // PluginCreateCmd creates a plugin skeleton directory
 // structure to start developing a new plugin.
 //
-// singularity plugin create <directory> <name>
+// apptainer plugin create <directory> <name>
 var PluginCreateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[1]
 		dir := args[0]
 
-		err := singularity.CreatePlugin(dir, name)
+		err := apptainer.CreatePlugin(dir, name)
 		if err != nil {
 			sylog.Fatalf("Failed to create plugin directory %s: %s.", dir, err)
 		}

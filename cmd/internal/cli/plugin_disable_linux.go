@@ -12,7 +12,7 @@ import (
 	"os"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
@@ -20,11 +20,11 @@ import (
 
 // PluginDisableCmd disables the named plugin.
 //
-// singularity plugin disable <name>
+// apptainer plugin disable <name>
 var PluginDisableCmd = &cobra.Command{
 	PreRun: CheckRootOrUnpriv,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := singularity.DisablePlugin(args[0], buildcfg.LIBEXECDIR)
+		err := apptainer.DisablePlugin(args[0], buildcfg.LIBEXECDIR)
 		if err != nil {
 			if os.IsNotExist(err) {
 				sylog.Fatalf("Failed to disable plugin %q: plugin not found.", args[0])

@@ -20,7 +20,7 @@ type AppAttributes struct {
 	Helpfile    string            `json:"helpfile,omitempty"`
 }
 
-// Attributes describes metadata attributes of Singularity containers.
+// Attributes describes metadata attributes of Apptainer containers.
 type Attributes struct {
 	Apps        map[string]*AppAttributes `json:"apps,omitempty"`
 	Environment map[string]string         `json:"environment,omitempty"`
@@ -37,7 +37,7 @@ type Data struct {
 	Attributes Attributes `json:"attributes"`
 }
 
-// Metadata describes the JSON format of Singularity container metadata.
+// Metadata describes the JSON format of Apptainer container metadata.
 type Metadata struct {
 	Data `json:"data"`
 	Type string `json:"type"`

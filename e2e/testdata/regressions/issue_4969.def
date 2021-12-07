@@ -2,7 +2,7 @@ bootstrap: docker
 from: busybox
 
 %setup
-    root=$SINGULARITY_ROOTFS
+    root=$APPTAINER_ROOTFS
     rm ${root}/etc/hosts
     rm ${root}/etc/resolv.conf
     ln -s /a/fake/path ${root}/etc/resolv.conf

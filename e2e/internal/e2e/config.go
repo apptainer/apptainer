@@ -13,14 +13,14 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
-	"github.com/apptainer/apptainer/pkg/util/singularityconf"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"golang.org/x/sys/unix"
 )
 
 func SetupDefaultConfig(t *testing.T, path string) {
-	c, err := singularityconf.Parse("")
+	c, err := apptainerconf.Parse("")
 	if err != nil {
-		t.Fatalf("while generating singularity configuration: %s", err)
+		t.Fatalf("while generating apptainer configuration: %s", err)
 	}
 
 	// e2e tests should call the specific external binaries found/coonfigured in the build.
@@ -35,17 +35,17 @@ func SetupDefaultConfig(t *testing.T, path string) {
 	Privileged(func(t *testing.T) {
 		f, err := os.Create(path)
 		if err != nil {
-			t.Fatalf("while creating singularity configuration: %s", err)
+			t.Fatalf("while creating apptainer configuration: %s", err)
 		}
 
-		if err := singularityconf.Generate(f, "", c); err != nil {
-			t.Fatalf("while generating singularity configuration: %s", err)
+		if err := apptainerconf.Generate(f, "", c); err != nil {
+			t.Fatalf("while generating apptainer configuration: %s", err)
 		}
 
 		f.Close()
 
-		if err := unix.Mount(path, buildcfg.SINGULARITY_CONF_FILE, "", unix.MS_BIND, ""); err != nil {
-			t.Fatalf("while mounting %s to %s: %s", path, buildcfg.SINGULARITY_CONF_FILE, err)
+		if err := unix.Mount(path, buildcfg.APPTAINER_CONF_FILE, "", unix.MS_BIND, ""); err != nil {
+			t.Fatalf("while mounting %s to %s: %s", path, buildcfg.APPTAINER_CONF_FILE, err)
 		}
 	})(t)
 }

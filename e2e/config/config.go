@@ -50,7 +50,7 @@ func (c *configTests) prepImages(t *testing.T) (cleanup func(t *testing.T)) {
 	// An encrypted SIF
 	c.pemPublic, c.pemPrivate = e2e.GeneratePemFiles(t, tmpDir)
 	c.encryptedImage = filepath.Join(tmpDir, "encrypted.sif")
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("PrepareEncryptedSIF"),
 		e2e.WithProfile(e2e.RootProfile),
@@ -61,7 +61,7 @@ func (c *configTests) prepImages(t *testing.T) (cleanup func(t *testing.T)) {
 
 	// A sandbox directory
 	c.sandboxImage = filepath.Join(tmpDir, "sandbox")
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("PrepareSandbox"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -103,7 +103,7 @@ func (c configTests) configGlobal(t *testing.T) {
 	defer cleanup(t)
 
 	setDirective := func(t *testing.T, directive, value string) {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.RootProfile),
 			e2e.WithCommand("config global"),
@@ -112,7 +112,7 @@ func (c configTests) configGlobal(t *testing.T) {
 		)
 	}
 	resetDirective := func(t *testing.T, directive string) {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.RootProfile),
 			e2e.WithCommand("config global"),
@@ -136,7 +136,7 @@ func (c configTests) configGlobal(t *testing.T) {
 		directive         string
 		directiveValue    string
 		exit              int
-		resultOp          e2e.SingularityCmdResultOp
+		resultOp          e2e.ApptainerCmdResultOp
 	}{
 		{
 			name: "AllowSetuid",
@@ -505,7 +505,7 @@ func (c configTests) configGlobal(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -532,7 +532,7 @@ func (c configTests) configGlobalCombination(t *testing.T) {
 
 	setDirective := func(t *testing.T, directives map[string]string) {
 		for k, v := range directives {
-			c.env.RunSingularity(
+			c.env.RunApptainer(
 				t,
 				e2e.WithProfile(e2e.RootProfile),
 				e2e.WithCommand("config global"),
@@ -543,7 +543,7 @@ func (c configTests) configGlobalCombination(t *testing.T) {
 	}
 	resetDirective := func(t *testing.T, directives map[string]string) {
 		for k := range directives {
-			c.env.RunSingularity(
+			c.env.RunApptainer(
 				t,
 				e2e.WithProfile(e2e.RootProfile),
 				e2e.WithCommand("config global"),
@@ -567,7 +567,7 @@ func (c configTests) configGlobalCombination(t *testing.T) {
 		cwd               string
 		directives        map[string]string
 		exit              int
-		resultOp          e2e.SingularityCmdResultOp
+		resultOp          e2e.ApptainerCmdResultOp
 	}{
 		{
 			name:    "AllowNetUsersNobody",
@@ -709,7 +709,7 @@ func (c configTests) configGlobalCombination(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
@@ -773,7 +773,7 @@ func (c configTests) configFile(t *testing.T) {
 	f.Close()
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithGlobalOptions("--config", configFile),

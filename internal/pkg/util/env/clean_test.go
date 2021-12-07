@@ -23,29 +23,29 @@ func TestSetContainerEnv(t *testing.T) {
 	defer test.ResetPrivilege(t)
 
 	tt := []struct {
-		name           string
-		cleanEnv       bool
-		homeDest       string
-		env            []string
-		resultEnv      []string
-		singularityEnv map[string]string
+		name         string
+		cleanEnv     bool
+		homeDest     string
+		env          []string
+		resultEnv    []string
+		apptainerEnv map[string]string
 	}{
 		{
-			name:     "no SINGULARITYENV_",
+			name:     "no APPTAINERENV_",
 			homeDest: "/home/tester",
 			env: []string{
 				"LD_LIBRARY_PATH=/.singularity.d/libs",
 				"HOME=/home/john",
 				"SOME_INVALID_VAR:test",
-				"SINGULARITYENV_=invalid",
+				"APPTAINERENV_=invalid",
 				"PS1=test",
 				"TERM=xterm-256color",
 				"PATH=/usr/games:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 				"LANG=C",
-				"SINGULARITY_CONTAINER=/tmp/lolcow.sif",
+				"APPTAINER_CONTAINER=/tmp/lolcow.sif",
 				"PWD=/tmp",
 				"LC_ALL=C",
-				"SINGULARITY_NAME=lolcow.sif",
+				"APPTAINER_NAME=lolcow.sif",
 			},
 			resultEnv: []string{
 				"PS1=test",
@@ -68,11 +68,11 @@ func TestSetContainerEnv(t *testing.T) {
 				"TERM=xterm-256color",
 				"PATH=/usr/games:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 				"LANG=C",
-				"SINGULARITYENV_LD_LIBRARY_PATH=/my/custom/libs",
-				"SINGULARITY_CONTAINER=/tmp/lolcow.sif",
+				"APPTAINERENV_LD_LIBRARY_PATH=/my/custom/libs",
+				"APPTAINER_CONTAINER=/tmp/lolcow.sif",
 				"PWD=/tmp",
 				"LC_ALL=C",
-				"SINGULARITY_NAME=lolcow.sif",
+				"APPTAINER_NAME=lolcow.sif",
 			},
 			resultEnv: []string{
 				"PS1=test",
@@ -84,7 +84,7 @@ func TestSetContainerEnv(t *testing.T) {
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
 			},
-			singularityEnv: map[string]string{
+			apptainerEnv: map[string]string{
 				"LD_LIBRARY_PATH": "/my/custom/libs",
 			},
 		},
@@ -94,17 +94,17 @@ func TestSetContainerEnv(t *testing.T) {
 			env: []string{
 				"LD_LIBRARY_PATH=/.singularity.d/libs",
 				"HOME=/home/john",
-				"SINGULARITYENV_APPEND_PATH=/sylabs/container",
+				"APPTAINERENV_APPEND_PATH=/sylabs/container",
 				"PS1=test",
 				"TERM=xterm-256color",
-				"SINGULARITYENV_PATH=/my/path",
+				"APPTAINERENV_PATH=/my/path",
 				"PATH=/usr/games:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 				"LANG=C",
-				"SINGULARITY_CONTAINER=/tmp/lolcow.sif",
+				"APPTAINER_CONTAINER=/tmp/lolcow.sif",
 				"PWD=/tmp",
 				"LC_ALL=C",
-				"SINGULARITYENV_PREPEND_PATH=/foo/bar",
-				"SINGULARITY_NAME=lolcow.sif",
+				"APPTAINERENV_PREPEND_PATH=/foo/bar",
+				"APPTAINER_NAME=lolcow.sif",
 			},
 			resultEnv: []string{
 				"PS1=test",
@@ -115,7 +115,7 @@ func TestSetContainerEnv(t *testing.T) {
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
 			},
-			singularityEnv: map[string]string{
+			apptainerEnv: map[string]string{
 				"SING_USER_DEFINED_PREPEND_PATH": "/foo/bar",
 				"SING_USER_DEFINED_PATH":         "/my/path",
 				"SING_USER_DEFINED_APPEND_PATH":  "/sylabs/container",
@@ -132,11 +132,11 @@ func TestSetContainerEnv(t *testing.T) {
 				"TERM=xterm-256color",
 				"PATH=/usr/games:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 				"LANG=C",
-				"SINGULARITY_CONTAINER=/tmp/lolcow.sif",
+				"APPTAINER_CONTAINER=/tmp/lolcow.sif",
 				"PWD=/tmp",
 				"LC_ALL=C",
-				"SINGULARITY_NAME=lolcow.sif",
-				"SINGULARITYENV_FOO=VAR",
+				"APPTAINER_NAME=lolcow.sif",
+				"APPTAINERENV_FOO=VAR",
 				"CLEANENV=TRUE",
 			},
 			resultEnv: []string{
@@ -145,7 +145,7 @@ func TestSetContainerEnv(t *testing.T) {
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
 			},
-			singularityEnv: map[string]string{
+			apptainerEnv: map[string]string{
 				"FOO": "VAR",
 			},
 		},
@@ -160,7 +160,7 @@ func TestSetContainerEnv(t *testing.T) {
 				"TERM=xterm-256color",
 				"PATH=/usr/games:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 				"LANG=C",
-				"SINGULARITY_CONTAINER=/tmp/lolcow.sif",
+				"APPTAINER_CONTAINER=/tmp/lolcow.sif",
 				"PWD=/tmp",
 				"LC_ALL=C",
 				"http_proxy=http_proxy",
@@ -173,8 +173,8 @@ func TestSetContainerEnv(t *testing.T) {
 				"NO_PROXY=no_proxy",
 				"ALL_PROXY=all_proxy",
 				"FTP_PROXY=ftp_proxy",
-				"SINGULARITY_NAME=lolcow.sif",
-				"SINGULARITYENV_FOO=VAR",
+				"APPTAINER_NAME=lolcow.sif",
+				"APPTAINERENV_FOO=VAR",
 				"CLEANENV=TRUE",
 			},
 			resultEnv: []string{
@@ -193,113 +193,113 @@ func TestSetContainerEnv(t *testing.T) {
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
 			},
-			singularityEnv: map[string]string{
+			apptainerEnv: map[string]string{
 				"FOO": "VAR",
 			},
 		},
 		{
-			name:     "SINGULARITYENV_PATH",
+			name:     "APPTAINERENV_PATH",
 			cleanEnv: false,
 			homeDest: "/home/tester",
 			env: []string{
-				"SINGULARITYENV_PATH=/my/path",
+				"APPTAINERENV_PATH=/my/path",
 			},
 			resultEnv: []string{
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
 			},
-			singularityEnv: map[string]string{
+			apptainerEnv: map[string]string{
 				"SING_USER_DEFINED_PATH": "/my/path",
 			},
 		},
 		{
-			name:     "SINGULARITYENV_LANG with cleanenv",
+			name:     "APPTAINERENV_LANG with cleanenv",
 			cleanEnv: true,
 			homeDest: "/home/tester",
 			env: []string{
-				"SINGULARITYENV_LANG=en",
+				"APPTAINERENV_LANG=en",
 			},
 			resultEnv: []string{
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
 			},
-			singularityEnv: map[string]string{
+			apptainerEnv: map[string]string{
 				"LANG": "en",
 			},
 		},
 		{
-			name:     "SINGULARITYENV_HOME",
+			name:     "APPTAINERENV_HOME",
 			cleanEnv: false,
 			homeDest: "/home/tester",
 			env: []string{
-				"SINGULARITYENV_HOME=/my/home",
+				"APPTAINERENV_HOME=/my/home",
 			},
 			resultEnv: []string{
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
 			},
-			singularityEnv: map[string]string{},
+			apptainerEnv: map[string]string{},
 		},
 		{
-			name:     "SINGULARITYENV_LD_LIBRARY_PATH",
+			name:     "APPTAINERENV_LD_LIBRARY_PATH",
 			cleanEnv: false,
 			homeDest: "/home/tester",
 			env: []string{
-				"SINGULARITYENV_LD_LIBRARY_PATH=/my/libs",
+				"APPTAINERENV_LD_LIBRARY_PATH=/my/libs",
 			},
 			resultEnv: []string{
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
 			},
-			singularityEnv: map[string]string{
+			apptainerEnv: map[string]string{
 				"LD_LIBRARY_PATH": "/my/libs",
 			},
 		},
 		{
-			name:     "SINGULARITYENV_LD_LIBRARY_PATH with cleanenv",
+			name:     "APPTAINERENV_LD_LIBRARY_PATH with cleanenv",
 			cleanEnv: true,
 			homeDest: "/home/tester",
 			env: []string{
-				"SINGULARITYENV_LD_LIBRARY_PATH=/my/libs",
+				"APPTAINERENV_LD_LIBRARY_PATH=/my/libs",
 			},
 			resultEnv: []string{
 				"LANG=C",
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
 			},
-			singularityEnv: map[string]string{
+			apptainerEnv: map[string]string{
 				"LD_LIBRARY_PATH": "/my/libs",
 			},
 		},
 		{
-			name:     "SINGULARITYENV_HOST after HOST",
+			name:     "APPTAINERENV_HOST after HOST",
 			cleanEnv: false,
 			homeDest: "/home/tester",
 			env: []string{
 				"HOST=myhost",
-				"SINGULARITYENV_HOST=myhostenv",
+				"APPTAINERENV_HOST=myhostenv",
 			},
 			resultEnv: []string{
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
 			},
-			singularityEnv: map[string]string{
+			apptainerEnv: map[string]string{
 				"HOST": "myhostenv",
 			},
 		},
 		{
-			name:     "SINGULARITYENV_HOST before HOST",
+			name:     "APPTAINERENV_HOST before HOST",
 			cleanEnv: false,
 			homeDest: "/home/tester",
 			env: []string{
-				"SINGULARITYENV_HOST=myhostenv",
+				"APPTAINERENV_HOST=myhostenv",
 				"HOST=myhost",
 			},
 			resultEnv: []string{
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
 			},
-			singularityEnv: map[string]string{
+			apptainerEnv: map[string]string{
 				"HOST": "myhostenv",
 			},
 		},
@@ -313,8 +313,8 @@ func TestSetContainerEnv(t *testing.T) {
 			if !equal(t, ociConfig.Process.Env, tc.resultEnv) {
 				t.Fatalf("unexpected envs:\n want: %v\ngot: %v", tc.resultEnv, ociConfig.Process.Env)
 			}
-			if tc.singularityEnv != nil && !reflect.DeepEqual(senv, tc.singularityEnv) {
-				t.Fatalf("unexpected singularity env:\n want: %v\ngot: %v", tc.singularityEnv, senv)
+			if tc.apptainerEnv != nil && !reflect.DeepEqual(senv, tc.apptainerEnv) {
+				t.Fatalf("unexpected apptainer env:\n want: %v\ngot: %v", tc.apptainerEnv, senv)
 			}
 		})
 	}

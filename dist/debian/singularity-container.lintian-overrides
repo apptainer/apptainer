@@ -1,3 +1,0 @@
-# Singularity requires root suid for operation
-singularity-container: setuid-binary usr/libexec/singularity/bin/starter-suid 4755 root/root
-

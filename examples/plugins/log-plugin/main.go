@@ -40,8 +40,8 @@ func logCommand(manager *cmdline.CommandManager) {
 	// Keep track of an existing PreRunE so we can call it
 	f := rootCmd.PersistentPreRunE
 
-	// The log action is added as a PreRunE on the main `singularity` root command
-	// so we can log anything a user does with `singularity`.
+	// The log action is added as a PreRunE on the main `apptainer` root command
+	// so we can log anything a user does with `apptainer`.
 	rootCmd.PersistentPreRunE = func(c *cobra.Command, args []string) error {
 		uid := os.Getuid()
 		gid := os.Getgid()
@@ -49,7 +49,7 @@ func logCommand(manager *cmdline.CommandManager) {
 		msg := fmt.Sprintf("UID=%d GID=%d COMMAND=%s ARGS=%v", uid, gid, command, args)
 
 		// This logger never errors, only warns, if it fails to write to syslog
-		w, err := syslog.New(syslog.LOG_INFO, "singularity")
+		w, err := syslog.New(syslog.LOG_INFO, "apptainer")
 		if err != nil {
 			sylog.Warningf("Could not create syslog: %v", err)
 		} else {

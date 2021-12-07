@@ -15,7 +15,7 @@ import (
 	"fmt"
 
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
-	specs "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 // Enabled returns whether seccomp is enabled.

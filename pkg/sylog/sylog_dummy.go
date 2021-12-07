@@ -52,7 +52,7 @@ func GetLevel() int {
 // GetEnvVar is a dummy function returning environment variable
 // with lowest message level.
 func GetEnvVar() string {
-	return "SINGULARITY_MESSAGELEVEL=-1"
+	return "APPTAINER_MESSAGELEVEL=-1"
 }
 
 // Writer is a dummy function returning ioutil.Discard writer.

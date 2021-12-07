@@ -1,4 +1,7 @@
 #!/bin/sh
+# Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+#   For website terms of use, trademark policy, privacy policy and other
+#   project policies see https://lfprojects.org/policies
 
 if test ! -e scripts/go-test ; then
 	echo 'E: Cannot find scripts/go-test. Abort.'
@@ -31,5 +34,5 @@ fi
 proxy_vars="HTTP_PROXY=$HTTP_PROXY HTTPS_PROXY=$HTTPS_PROXY ALL_PROXY=$ALL_PROXY NO_PROXY=$NO_PROXY"
 cred_vars="E2E_DOCKER_USERNAME=$E2E_DOCKER_USERNAME E2E_DOCKER_PASSWORD=$E2E_DOCKER_PASSWORD"
 docker_mirror_vars="E2E_DOCKER_MIRROR=$E2E_DOCKER_MIRROR E2E_DOCKER_MIRROR_INSECURE=$E2E_DOCKER_MIRROR_INSECURE"
-export sudo_args="env -i PATH=$PATH HOME=$HOME $proxy_vars $docker_mirror_vars $cred_vars SINGULARITY_E2E_COVERAGE=$SINGULARITY_E2E_COVERAGE"
+export sudo_args="env -i PATH=$PATH HOME=$HOME $proxy_vars $docker_mirror_vars $cred_vars APPTAINER_E2E_COVERAGE=$APPTAINER_E2E_COVERAGE"
 exec scripts/go-test -sudo -parallel $procs -tags "e2e_test" "$@" ./e2e

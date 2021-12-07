@@ -49,7 +49,7 @@ endif
 MAKEPARALLEL = $(shell nproc --ignore=2 || echo 1 )
 override pkgdir = debian/$(pkgsrc)
 
-export SINGULARITY_CACHEDIR=$(pkgdir)/var/lib/singularity/cache
+export APPTAINER_CACHEDIR=$(pkgdir)/var/lib/apptainer/cache
 
 %:
 	dh $@  --with=autoreconf
@@ -79,7 +79,7 @@ override_dh_auto_test:
 
 override_dh_fixperms:
 	@dh_fixperms
-	@chmod 4755 $(pkgdir)/usr/libexec/singularity/bin/*-suid
+	@chmod 4755 $(pkgdir)/usr/libexec/apptainer/bin/*-suid
 
 override_dh_clean:
 	@rm -rf -- $(DEB_SC_BUILDDIR)

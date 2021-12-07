@@ -26,7 +26,7 @@ func (c ctx) testDeleteCmd(t *testing.T) {
 		args       []string
 		agree      string
 		expectExit int
-		expect     e2e.SingularityCmdResultOp
+		expect     e2e.ApptainerCmdResultOp
 	}{
 		{
 			name:       "delete unauthorized arch",
@@ -80,7 +80,7 @@ func (c ctx) testDeleteCmd(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),

@@ -17,7 +17,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
@@ -144,7 +144,7 @@ func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pull
 		}
 	}
 
-	if err := singularity.Verify(ctx, pullTo, singularity.OptVerifyUseKeyServer(co...)); err != nil {
+	if err := apptainer.Verify(ctx, pullTo, apptainer.OptVerifyUseKeyServer(co...)); err != nil {
 		sylog.Warningf("%v", err)
 		return pullTo, ErrLibraryPullUnsigned
 	}

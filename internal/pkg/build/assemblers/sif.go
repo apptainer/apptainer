@@ -222,9 +222,9 @@ func (a *SIFAssembler) Assemble(b *types.Bundle, path string) error {
 }
 
 // changeOwner check the command being called with sudo with the environment
-// variable SUDO_COMMAND. Pattern match that for the singularity bin.
+// variable SUDO_COMMAND. Pattern match that for the apptainer bin.
 func changeOwner() (int, int, bool) {
-	r := regexp.MustCompile("(singularity)")
+	r := regexp.MustCompile("(apptainer)")
 	sudoCmd := os.Getenv("SUDO_COMMAND")
 	if !r.MatchString(sudoCmd) {
 		return 0, 0, false

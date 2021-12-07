@@ -17,7 +17,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 const testToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.TCYt5XsITJX1CxPCT8yAV-TVkIEq_PbChOMqsLfRoPsnsgw5WEuts01mq-pQy7UJiN5mgRxD-WUcX16dUEMGlv50aqzpqh4Qktb3rk-BuQy72IFLOqV0G_zS245-kronKb78cPN25DGlcTwLtjPAYuNzVBAh4vGHSrQyHUdBBPM"
@@ -33,7 +33,7 @@ func TestVerifyToken(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	useragent.InitValue("singularity", "3.0.0-alpha.1-303-gaed8d30-dirty")
+	useragent.InitValue("apptainer", "3.0.0-alpha.1-303-gaed8d30-dirty")
 
 	os.Exit(m.Run())
 }

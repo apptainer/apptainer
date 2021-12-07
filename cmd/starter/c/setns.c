@@ -6,12 +6,12 @@
  * Copyright (c) 2017, SingularityWare, LLC. All rights reserved.
  * 
  * See the COPYRIGHT.md file at the top-level directory of this distribution and at
- * https://github.com/apptainer/apptainer/blob/master/COPYRIGHT.md.
- * 
- * This file is part of the Singularity Linux container project. It is subject to the license
+ * https://github.com/apptainer/apptainer/blob/main/COPYRIGHT.md.
+ *
+ * This file is part of the Apptainer Linux container project. It is subject to the license
  * terms in the LICENSE.md file found in the top-level directory of this distribution and
- * at https://github.com/apptainer/apptainer/blob/master/LICENSE.md. No part
- * of Singularity, including this file, may be copied, modified, propagated, or distributed
+ * at https://github.com/apptainer/apptainer/blob/main/LICENSE.md. No part
+ * of Apptainer, including this file, may be copied, modified, propagated, or distributed
  * except according to the terms contained in the LICENSE.md file.
  * 
 */
@@ -36,7 +36,7 @@ int xsetns(int fd, int nstype) {
 int xsetns(int fd, int nstype) {
     (void)fd;
     (void)nstype;
-    singularity_message(WARNING, "setns() not supported at compile time by kernel at time of building\n");
+    apptainer_message(WARNING, "setns() not supported at compile time by kernel at time of building\n");
     errno = ENOSYS;
     return -1;
 }

@@ -68,7 +68,7 @@ func Install(sifPath string) error {
 	return nil
 }
 
-// Uninstall removes the plugin matching "name" from the singularity
+// Uninstall removes the plugin matching "name" from the apptainer
 // plugin installation directory.
 func Uninstall(name string) error {
 	sylog.Debugf("Uninstalling plugin %q from %q", name, rootDir)
@@ -83,7 +83,7 @@ func Uninstall(name string) error {
 	return meta.uninstall()
 }
 
-// List returns all the singularity plugins installed in
+// List returns all the apptainer plugins installed in
 // rootDir in the form of a list of Meta information.
 func List() ([]*Meta, error) {
 	pattern := filepath.Join(rootDir, "*.meta")

@@ -10,7 +10,7 @@ package cli
 
 import (
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
 )
@@ -18,7 +18,7 @@ import (
 // PluginListCmd lists the plugins installed in the system.
 var PluginListCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
-		err := singularity.ListPlugins()
+		err := apptainer.ListPlugins()
 		if err != nil {
 			sylog.Fatalf("Failed to get a list of installed plugins: %s.", err)
 		}

@@ -6,7 +6,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package singularityenv
+package apptainerenv
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ func (c ctx) issue5426(t *testing.T) {
 	defer cleanup(t)
 
 	// Build a current sandbox
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
@@ -50,7 +50,7 @@ func (c ctx) issue5426(t *testing.T) {
 		t.Fatalf("Could not add legacy /environment to sandbox: %s", err)
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -85,7 +85,7 @@ func (c ctx) issue5057(t *testing.T) {
 		bigEnv[i] = fmt.Sprintf("B%d=%s", i, string(big))
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -94,7 +94,7 @@ func (c ctx) issue5057(t *testing.T) {
 		e2e.ExpectExit(255),
 	)
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -104,16 +104,16 @@ func (c ctx) issue5057(t *testing.T) {
 	)
 }
 
-// If a $ in a SINGULARITYENV_ env var is escaped, it should become a
+// If a $ in a APPTAINERENV_ env var is escaped, it should become a
 // literal $ in the container env var.
 // This allows setting e.g. LD_PRELOAD=/foo/bar/$LIB/baz.so
 func (c ctx) issue43(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
-	env := []string{`SINGULARITYENV_LD_PRELOAD=/foo/bar/\$LIB/baz.so`}
+	env := []string{`APPTAINERENV_LD_PRELOAD=/foo/bar/\$LIB/baz.so`}
 	args := []string{c.env.ImagePath, "/bin/sh", "-c", "echo \"${LD_PRELOAD}\""}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("exec"),
@@ -158,7 +158,7 @@ From: continuumio/miniconda3:latest
 		t.Fatalf("Unable to create test definition file: %v", err)
 	}
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("build"),
 		e2e.WithProfile(e2e.RootProfile),
@@ -168,7 +168,7 @@ From: continuumio/miniconda3:latest
 	)
 	// An exec of `conda info` in the container should show environment active, no errors.
 	// I.E. the `%environment` section should have worked.
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("exec"),
 		e2e.WithProfile(e2e.UserProfile),

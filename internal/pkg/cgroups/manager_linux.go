@@ -53,10 +53,10 @@ type Manager interface {
 
 // NewManagerFromFile creates a Manager, applies the configuration at specPath, and adds pid to the cgroup.
 // If a group name is supplied, it will be used by the manager.
-// If group = "" then "/singularity/<pid>" is used as a default.
+// If group = "" then "/apptainer/<pid>" is used as a default.
 func NewManagerFromFile(specPath string, pid int, group string) (manager Manager, err error) {
 	if group == "" {
-		group = filepath.Join("/singularity", strconv.Itoa(pid))
+		group = filepath.Join("/apptainer", strconv.Itoa(pid))
 	}
 	if cgroups.Mode() == cgroups.Unified {
 		sylog.Debugf("Applying cgroups v2 configuration")
@@ -71,10 +71,10 @@ func NewManagerFromFile(specPath string, pid int, group string) (manager Manager
 
 // NewManagerFromFile creates a Manager, applies the configuration in spec, and adds pid to the cgroup.
 // If a group name is supplied, it will be used by the manager.
-// If group = "" then "/singularity/<pid>" is used as a default.
+// If group = "" then "/apptainer/<pid>" is used as a default.
 func NewManagerFromSpec(spec *specs.LinuxResources, pid int, group string) (manager Manager, err error) {
 	if group == "" {
-		group = filepath.Join("/singularity", strconv.Itoa(pid))
+		group = filepath.Join("/apptainer", strconv.Itoa(pid))
 	}
 
 	if cgroups.Mode() == cgroups.Unified {

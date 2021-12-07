@@ -21,7 +21,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/build/types/parser"
 )
 
-const busyBoxDef = "../../../../examples/busybox/Singularity"
+const busyBoxDef = "../../../../examples/busybox/Apptainer"
 
 func TestBusyBoxConveyor(t *testing.T) {
 	// 2021-09-07 - Always skip due to frequent download failures

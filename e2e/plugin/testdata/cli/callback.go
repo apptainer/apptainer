@@ -30,7 +30,7 @@ var Plugin = pluginapi.Plugin{
 	},
 	Callbacks: []pluginapi.Callback{
 		(clicallback.Command)(callbackExitCmd),
-		(clicallback.SingularityEngineConfig)(callbackSingularity),
+		(clicallback.ApptainerEngineConfig)(callbackApptainer),
 	},
 }
 
@@ -41,7 +41,7 @@ func callbackExitCmd(manager *cmdline.CommandManager) {
 		Use:                   "exit <code>",
 		Short:                 "Exit with code",
 		Long:                  "Exit with code",
-		Example:               "singularity exit 42",
+		Example:               "apptainer exit 42",
 		Run: func(cmd *cobra.Command, args []string) {
 			code, err := strconv.Atoi(args[0])
 			if err != nil {
@@ -53,6 +53,6 @@ func callbackExitCmd(manager *cmdline.CommandManager) {
 	})
 }
 
-func callbackSingularity(_ *config.Common) {
+func callbackApptainer(_ *config.Common) {
 	os.Exit(43)
 }

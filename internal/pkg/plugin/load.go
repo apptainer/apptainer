@@ -15,7 +15,7 @@ import (
 	"strings"
 	"sync"
 
-	callback "github.com/apptainer/apptainer/internal/pkg/plugin/callback"
+	"github.com/apptainer/apptainer/internal/pkg/plugin/callback"
 	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
 )
 

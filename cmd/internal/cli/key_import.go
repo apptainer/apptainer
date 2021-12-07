@@ -20,7 +20,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// KeyImportCmd is `singularity key (or keys) import` and imports a local key into the singularity keyring.
+// KeyImportCmd is `apptainer key (or keys) import` and imports a local key into the apptainer keyring.
 var KeyImportCmd = &cobra.Command{
 	PreRun:                checkGlobal,
 	Args:                  cobra.ExactArgs(1),
@@ -49,7 +49,7 @@ func importRun(cmd *cobra.Command, args []string) {
 	path := ""
 
 	if keyGlobalPubKey {
-		path = buildcfg.SINGULARITY_CONFDIR
+		path = buildcfg.APPTAINER_CONFDIR
 		opts = append(opts, sypgp.GlobalHandleOpt())
 	}
 

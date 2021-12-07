@@ -22,7 +22,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/build/types/parser"
 )
 
-const archDef = "../../../../examples/arch/Singularity"
+const archDef = "../../../../examples/arch/Apptainer"
 
 func TestArchConveyor(t *testing.T) {
 	if testing.Short() {

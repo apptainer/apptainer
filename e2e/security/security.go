@@ -24,7 +24,7 @@ type ctx struct {
 	env e2e.TestEnv
 }
 
-// testSecurityUnpriv tests the security flag fuctionality for singularity exec without elevated privileges
+// testSecurityUnpriv tests the security flag fuctionality for apptainer exec without elevated privileges
 func (c ctx) testSecurityUnpriv(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -32,7 +32,7 @@ func (c ctx) testSecurityUnpriv(t *testing.T) {
 		argv       []string
 		opts       []string
 		preFn      func(*testing.T)
-		expectOp   e2e.SingularityCmdResultOp
+		expectOp   e2e.ApptainerCmdResultOp
 		expectExit int
 	}{
 		// target UID/GID
@@ -70,7 +70,7 @@ func (c ctx) testSecurityUnpriv(t *testing.T) {
 			name:       "capabilities_keep_true",
 			argv:       []string{"grep", "^CapEff:", "/proc/self/status"},
 			opts:       []string{"--keep-privs"},
-			expectExit: 255, // singularity errors out, --keep-privs needs root
+			expectExit: 255, // apptainer errors out, --keep-privs needs root
 		},
 		{
 			// we start without any capabilities, the
@@ -98,7 +98,7 @@ func (c ctx) testSecurityUnpriv(t *testing.T) {
 		optArgs = append(optArgs, c.env.ImagePath)
 		optArgs = append(optArgs, tt.argv...)
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -111,7 +111,7 @@ func (c ctx) testSecurityUnpriv(t *testing.T) {
 	}
 }
 
-// testSecurityPriv tests security flag fuctionality for singularity exec with elevated privileges
+// testSecurityPriv tests security flag fuctionality for apptainer exec with elevated privileges
 func (c ctx) testSecurityPriv(t *testing.T) {
 	var caps uint64
 	var err error
@@ -133,7 +133,7 @@ func (c ctx) testSecurityPriv(t *testing.T) {
 		argv       []string
 		opts       []string
 		preFn      func(*testing.T)
-		expectOp   e2e.SingularityCmdResultOp
+		expectOp   e2e.ApptainerCmdResultOp
 		expectExit int
 	}{
 		// target UID/GID
@@ -189,7 +189,7 @@ func (c ctx) testSecurityPriv(t *testing.T) {
 		optArgs = append(optArgs, c.env.ImagePath)
 		optArgs = append(optArgs, tt.argv...)
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.RootProfile),
@@ -206,9 +206,9 @@ func (c ctx) testSecurityPriv(t *testing.T) {
 func (c ctx) testSecurityConfOwnership(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
-	configFile := buildcfg.SINGULARITY_CONF_FILE
+	configFile := buildcfg.APPTAINER_CONF_FILE
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("non root config"),
 		e2e.WithProfile(e2e.UserProfile),
@@ -245,8 +245,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	np := testhelper.NoParallel
 
 	return testhelper.Tests{
-		"singularitySecurityUnpriv": c.testSecurityUnpriv,
-		"singularitySecurityPriv":   c.testSecurityPriv,
+		"apptainerSecurityUnpriv":   c.testSecurityUnpriv,
+		"apptainerSecurityPriv":     c.testSecurityPriv,
 		"testSecurityConfOwnership": np(c.testSecurityConfOwnership),
 	}
 }

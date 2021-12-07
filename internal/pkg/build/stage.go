@@ -36,8 +36,8 @@ type stage struct {
 
 const (
 	sLabelsPath  = "/.build.labels"
-	sEnvironment = "SINGULARITY_ENVIRONMENT=/.singularity.d/env/91-environment.sh"
-	sLabels      = "SINGULARITY_LABELS=" + sLabelsPath
+	sEnvironment = "APPTAINER_ENVIRONMENT=/.singularity.d/env/91-environment.sh"
+	sLabels      = "APPTAINER_LABELS=" + sLabelsPath
 )
 
 // Assemble assembles the bundle to the specified path.
@@ -52,7 +52,7 @@ func (s *stage) runSectionScript(name string, script types.Script) error {
 			return fmt.Errorf("attempted to build with scripts as non-root user or without --fakeroot")
 		}
 
-		sRootfs := "SINGULARITY_ROOTFS=" + s.b.RootfsPath
+		sRootfs := "APPTAINER_ROOTFS=" + s.b.RootfsPath
 
 		scriptPath := filepath.Join(s.b.TmpDir, name)
 		if err := createScript(scriptPath, []byte(script.Script)); err != nil {
@@ -104,7 +104,7 @@ func (s *stage) runPostScript(configFile, sessionResolv, sessionHosts string) er
 			return fmt.Errorf("while processing section %%post arguments: %s", err)
 		}
 
-		exe := filepath.Join(buildcfg.BINDIR, "singularity")
+		exe := filepath.Join(buildcfg.BINDIR, "apptainer")
 
 		cmdArgs = append(cmdArgs, s.b.RootfsPath)
 		cmdArgs = append(cmdArgs, args...)
@@ -112,7 +112,7 @@ func (s *stage) runPostScript(configFile, sessionResolv, sessionHosts string) er
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Dir = "/"
-		cmd.Env = currentEnvNoSingularity([]string{"NV", "NVCCLI", "ROCM", "BINDPATH", "MOUNT"})
+		cmd.Env = currentEnvNoApptainer([]string{"NV", "NVCCLI", "ROCM", "BINDPATH", "MOUNT"})
 
 		sylog.Infof("Running post scriptlet")
 		return cmd.Run()
@@ -131,14 +131,14 @@ func (s *stage) runTestScript(configFile, sessionResolv, sessionHosts string) er
 			cmdArgs = append(cmdArgs, "-B", sessionHosts+":/etc/hosts")
 		}
 
-		exe := filepath.Join(buildcfg.BINDIR, "singularity")
+		exe := filepath.Join(buildcfg.BINDIR, "apptainer")
 
 		cmdArgs = append(cmdArgs, s.b.RootfsPath)
 		cmd := exec.Command(exe, cmdArgs...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Dir = "/"
-		cmd.Env = currentEnvNoSingularity([]string{"NV", "NVCCLI", "ROCM", "BINDPATH", "MOUNT", "WRITABLE_TMPFS"})
+		cmd.Env = currentEnvNoApptainer([]string{"NV", "NVCCLI", "ROCM", "BINDPATH", "MOUNT", "WRITABLE_TMPFS"})
 
 		sylog.Infof("Running testscript")
 		return cmd.Run()

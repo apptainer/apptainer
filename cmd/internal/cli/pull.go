@@ -155,7 +155,7 @@ func init() {
 	})
 }
 
-// PullCmd singularity pull
+// PullCmd apptainer pull
 var PullCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Args:                  cobra.RangeArgs(1, 2),

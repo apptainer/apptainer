@@ -30,7 +30,7 @@ import (
 	"github.com/apptainer/apptainer/e2e/delete"
 	"github.com/apptainer/apptainer/e2e/docker"
 	"github.com/apptainer/apptainer/e2e/ecl"
-	singularityenv "github.com/apptainer/apptainer/e2e/env"
+	apptainerenv "github.com/apptainer/apptainer/e2e/env"
 	"github.com/apptainer/apptainer/e2e/gpu"
 	"github.com/apptainer/apptainer/e2e/help"
 	"github.com/apptainer/apptainer/e2e/imgbuild"
@@ -72,15 +72,15 @@ func Run(t *testing.T) {
 	useragent.InitValue(buildcfg.PACKAGE_NAME, buildcfg.PACKAGE_VERSION)
 
 	// Ensure binary is in $PATH
-	cmdPath := filepath.Join(buildcfg.BINDIR, "singularity")
+	cmdPath := filepath.Join(buildcfg.BINDIR, "apptainer")
 	if _, err := exec.LookPath(cmdPath); err != nil {
-		log.Fatalf("singularity is not installed on this system: %v", err)
+		log.Fatalf("apptainer is not installed on this system: %v", err)
 	}
 
 	testenv.CmdPath = cmdPath
 
 	sysconfdir := func(fn string) string {
-		return filepath.Join(buildcfg.SYSCONFDIR, "singularity", fn)
+		return filepath.Join(buildcfg.SYSCONFDIR, "apptainer", fn)
 	}
 
 	// Make temp dir for tests
@@ -108,8 +108,8 @@ func Run(t *testing.T) {
 	// PGP keys
 	e2e.SetupHomeDirectories(t)
 
-	// generate singularity.conf with default values
-	e2e.SetupDefaultConfig(t, filepath.Join(testenv.TestDir, "singularity.conf"))
+	// generate apptainer.conf with default values
+	e2e.SetupDefaultConfig(t, filepath.Join(testenv.TestDir, "apptainer.conf"))
 
 	// create an empty plugin directory
 	e2e.SetupPluginDir(t, testenv.TestDir)
@@ -124,7 +124,7 @@ func Run(t *testing.T) {
 
 	// Ensure config files are installed
 	configFiles := []string{
-		sysconfdir("singularity.conf"),
+		sysconfdir("apptainer.conf"),
 		sysconfdir("ecl.toml"),
 		sysconfdir("capability.json"),
 		sysconfdir("nvliblist.conf"),
@@ -154,7 +154,7 @@ func Run(t *testing.T) {
 	testenv.OrasTestImage = fmt.Sprintf("oras://%s/oras_test_sif:latest", testenv.TestRegistry)
 
 	// Because tests are parallelized, and PrepRegistry temporarily masks
-	// the Singularity instance directory we *must* now call it before we
+	// the Apptainer instance directory we *must* now call it before we
 	// start running tests which could use instance and oci functionality.
 	// See: https://github.com/apptainer/singularity/issues/5744
 	t.Run("PrepRegistry", func(t *testing.T) {
@@ -178,7 +178,7 @@ func Run(t *testing.T) {
 	suite.AddGroup("DELETE", delete.E2ETests)
 	suite.AddGroup("DOCKER", docker.E2ETests)
 	suite.AddGroup("ECL", ecl.E2ETests)
-	suite.AddGroup("ENV", singularityenv.E2ETests)
+	suite.AddGroup("ENV", apptainerenv.E2ETests)
 	suite.AddGroup("GPU", gpu.E2ETests)
 	suite.AddGroup("HELP", help.E2ETests)
 	suite.AddGroup("INSPECT", inspect.E2ETests)

@@ -12,7 +12,7 @@ import (
 	"os"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
@@ -66,7 +66,7 @@ var instanceListLogsFlag = cmdline.Flag{
 	EnvKeys:      []string{"LOGS"},
 }
 
-// singularity instance list
+// apptainer instance list
 var instanceListCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -80,7 +80,7 @@ var instanceListCmd = &cobra.Command{
 			sylog.Fatalf("Only root user can list user's instances")
 		}
 
-		err := singularity.PrintInstanceList(os.Stdout, name, instanceListUser, instanceListJSON, instanceListLogs)
+		err := apptainer.PrintInstanceList(os.Stdout, name, instanceListUser, instanceListJSON, instanceListLogs)
 		if err != nil {
 			sylog.Fatalf("Could not list instances: %v", err)
 		}

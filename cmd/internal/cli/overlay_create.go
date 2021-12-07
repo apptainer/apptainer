@@ -5,7 +5,7 @@ package cli
 
 import (
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/singularity"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
@@ -39,7 +39,7 @@ var overlayCreateDirFlag = cmdline.Flag{
 var OverlayCreateCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := singularity.OverlayCreate(overlaySize, args[0], overlayDirs...); err != nil {
+		if err := apptainer.OverlayCreate(overlaySize, args[0], overlayDirs...); err != nil {
 			sylog.Fatalf(err.Error())
 		}
 		return nil

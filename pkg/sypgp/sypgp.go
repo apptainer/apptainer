@@ -7,7 +7,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-// Package sypgp implements the openpgp integration into the singularity project.
+// Package sypgp implements the openpgp integration into the apptainer project.
 package sypgp
 
 import (
@@ -41,11 +41,11 @@ import (
 
 const (
 	helpAuth = `Access token is expired or missing. To update or obtain a token:
-  1) View configured remotes using "singularity remote list"
+  1) View configured remotes using "apptainer remote list"
   2) Identify default remote. It will be listed with square brackets.
-  3) Login to default remote with "singularity remote login <RemoteName>"
+  3) Login to default remote with "apptainer remote login <RemoteName>"
 `
-	helpPush = `  4) Push key using "singularity key push %[1]X"
+	helpPush = `  4) Push key using "apptainer key push %[1]X"
 `
 )
 
@@ -112,7 +112,7 @@ func GetTokenFile() string {
 
 // dirPath returns a string describing the path to the sypgp home folder
 func dirPath() string {
-	sypgpDir := os.Getenv("SINGULARITY_SYPGPDIR")
+	sypgpDir := os.Getenv("APPTAINER_SYPGPDIR")
 	if sypgpDir == "" {
 		return filepath.Join(syfs.ConfigDir(), "sypgp")
 	}

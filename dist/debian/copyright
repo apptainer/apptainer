@@ -1,5 +1,5 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: singularity
+Upstream-Name: apptainer
 Upstream-Contact: Gregory M. Kurtzer <g@sylabs.io>
 Source: https://github.com/apptainer/apptainer
 Files-Excluded: debian

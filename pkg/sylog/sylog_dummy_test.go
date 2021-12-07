@@ -18,7 +18,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/test"
 )
 
-const envStr = "SINGULARITY_MESSAGELEVEL=-1"
+const envStr = "APPTAINER_MESSAGELEVEL=-1"
 
 func TestGetLevel(t *testing.T) {
 	test.DropPrivilege(t)

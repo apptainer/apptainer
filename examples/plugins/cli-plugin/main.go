@@ -26,7 +26,7 @@ var Plugin = pluginapi.Plugin{
 		Name:        "github.com/apptainer/apptainer/cli-example-plugin",
 		Author:      "Sylabs Team",
 		Version:     "0.1.0",
-		Description: "This is a short example CLI plugin for Singularity",
+		Description: "This is a short example CLI plugin for Apptainer",
 	},
 	Callbacks: []pluginapi.Callback{
 		(clicallback.Command)(callbackVersion),
@@ -97,7 +97,7 @@ func callbackTestCmd(manager *cmdline.CommandManager) {
 		Use:                   "test-cmd [args ...]",
 		Short:                 "Test test test",
 		Long:                  "Long test long test long test",
-		Example:               "singularity test-cmd my test",
+		Example:               "apptainer test-cmd my test",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("test-cmd is printing args:", args)
 		},

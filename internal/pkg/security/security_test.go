@@ -17,7 +17,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/security/selinux"
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
-	specs "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 func TestGetParam(t *testing.T) {

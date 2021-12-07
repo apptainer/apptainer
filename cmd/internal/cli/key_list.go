@@ -39,7 +39,7 @@ func init() {
 	})
 }
 
-// KeyListCmd is `singularity key list' and lists local store OpenPGP keys
+// KeyListCmd is `apptainer key list' and lists local store OpenPGP keys
 var KeyListCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(0),
 	DisableFlagsInUseLine: true,
@@ -60,7 +60,7 @@ func doKeyListCmd(secret bool) error {
 	path := ""
 
 	if keyGlobalPubKey {
-		path = buildcfg.SINGULARITY_CONFDIR
+		path = buildcfg.APPTAINER_CONFDIR
 		opts = append(opts, sypgp.GlobalHandleOpt())
 	}
 

@@ -157,7 +157,7 @@ var statusChan = make(chan string, 1)
 // setup (e.g. mount operations) where privileges may be required is performed
 // by calling RPC server methods (see internal/app/starter/rpc_linux.go for details).
 //
-// However, most likely this still will be executed as root since `singularity oci`
+// However, most likely this still will be executed as root since `apptainer oci`
 // command set requires privileged execution.
 func (e *EngineOperations) CreateContainer(ctx context.Context, pid int, rpcConn net.Conn) error {
 	var err error
@@ -489,7 +489,7 @@ func (c *container) addCgroups(pid int, system *mount.System) error {
 
 	if !filepath.IsAbs(cgroupsPath) {
 		if cgroupsPath == "" {
-			cgroupsPath = filepath.Join("/singularity-oci", name)
+			cgroupsPath = filepath.Join("/apptainer-oci", name)
 		} else {
 			cgroupsPath = filepath.Join("/", cgroupsPath)
 		}

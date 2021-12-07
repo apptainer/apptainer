@@ -73,7 +73,7 @@ func TestSandboxAssemblerDocker(t *testing.T) {
 	defer os.RemoveAll(assemblerDockerDestDir)
 }
 
-// TestSandboxAssemblerShub sees if we can build a sandbox from an image from a Singularity registry
+// TestSandboxAssemblerShub sees if we can build a sandbox from an image from a Apptainer registry
 func TestSandboxAssemblerShub(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()

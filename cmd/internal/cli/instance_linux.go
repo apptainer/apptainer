@@ -25,7 +25,7 @@ func init() {
 	})
 }
 
-// singularity instance
+// apptainer instance
 var instanceCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return errors.New("invalid command")

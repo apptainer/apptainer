@@ -6,7 +6,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-// This file has been migrated from cmd/singularity/pull_test.go
+// This file has been migrated from cmd/apptainer/pull_test.go
 
 package pull
 
@@ -116,7 +116,7 @@ var tests = []testStruct{
 	},
 	{
 		// XXX(mem): this specific test is passing both --path and an image path to
-		// singularity pull. The current behavior is that the code is joining both paths and
+		// apptainer pull. The current behavior is that the code is joining both paths and
 		// failing to find the image in the expected location indicated by image path
 		// because image path is absolute, so after joining /tmp/a/b/c and
 		// /tmp/a/b/image.sif, the code expects to find /tmp/a/b/c/tmp/a/b/image.sif. Since
@@ -250,7 +250,7 @@ func (c *ctx) imagePull(t *testing.T, tt testStruct) {
 
 	argv += tt.srcURI
 
-	c.env.RunSingularity(
+	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest(tt.desc),
 		e2e.WithProfile(e2e.UserProfile),
@@ -507,7 +507,7 @@ func (c ctx) testPullDisableCacheCmd(t *testing.T) {
 
 	for _, tt := range disableCacheTests {
 		cmdArgs := []string{"--disable-cache", tt.imagePath, tt.imageSrc}
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
@@ -610,7 +610,7 @@ func (c ctx) testPullUmask(t *testing.T) {
 		}
 		cmdArgs = append(cmdArgs, tc.imagePath, "library://alpine")
 
-		c.env.RunSingularity(
+		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(e2e.UserProfile),
 			e2e.PreRun(func(t *testing.T) {

@@ -23,7 +23,7 @@ import (
 )
 
 // gpuliblist returns libraries/binaries listed in a gpu lib list config file, typically
-// located in buildcfg.SINGULARITY_CONFDIR
+// located in buildcfg.APPTAINER_CONFDIR
 func gpuliblist(configFilePath string) ([]string, error) {
 	file, err := os.Open(configFilePath)
 	if err != nil {
