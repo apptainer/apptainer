@@ -288,8 +288,8 @@ func TestGetLevel(t *testing.T) {
 func TestGetenv(t *testing.T) {
 	str := GetEnvVar()
 	expectedResult := "APPTAINER_MESSAGELEVEL="
-	if str[:23] != expectedResult {
-		t.Fatalf("Test returned %s instead of %s", str[:25], expectedResult)
+	if str[:len(expectedResult)] != expectedResult {
+		t.Fatalf("Test returned %s instead of %s", str[:len(expectedResult)], expectedResult)
 	}
 }
 
