@@ -298,7 +298,7 @@ func New(cfg Config) (h *Handle, err error) {
 // - a user can specify the environment variable specified by DirEnv to
 //   change the location
 // - a user can change the location of a cache at any time
-// - but in the context of a Apptainer command, the cache location
+// - but in the context of an Apptainer command, the cache location
 //   cannot change once the command starts executing
 func getCacheParentDir() string {
 	// If the user defined the special environment variable, we use its value

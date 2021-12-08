@@ -10,7 +10,7 @@
 Package image provides underlying data types for Apptainer image
 formats. Additionally, all image types will satisfy the ImageFormat{}
 interface. This interface will expose all things necessary to use
-a Apptainer image, whether through OCI or directly.
+an Apptainer image, whether through OCI or directly.
 
 type ImageFormat interface {
     Root() *spec.Root - Root() returns the OCI compliant root of the

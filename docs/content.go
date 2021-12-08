@@ -34,7 +34,7 @@ Enterprise Performance Computing (EPC)`
 	// build
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	BuildUse   string = `build [local options...] <IMAGE PATH> <BUILD SPEC>`
-	BuildShort string = `Build a Apptainer image`
+	BuildShort string = `Build an Apptainer image`
 	BuildLong  string = `
 
   IMAGE PATH:
@@ -51,7 +51,7 @@ Enterprise Performance Computing (EPC)`
   BUILD SPEC:
 
   The build spec target is a definition (def) file, local image, or URI that can 
-  be used to create a Apptainer container. Several different local target
+  be used to create an Apptainer container. Several different local target
   formats exist:
 
       def file  : This is a recipe for building a container (examples below)
@@ -63,7 +63,7 @@ Enterprise Performance Computing (EPC)`
 
       library://  an image library (default https://cloud.sylabs.io/library)
       docker://   a Docker/OCI registry (default Docker Hub)
-      shub://     a Apptainer registry (default Singularity Hub)
+      shub://     an Apptainer registry (default Singularity Hub)
       oras://     an OCI registry that holds SIF files using ORAS`
 
 	BuildExample string = `
@@ -149,7 +149,7 @@ Enterprise Performance Computing (EPC)`
 
   COMMANDS:
 
-      Build a sif file from a Apptainer recipe file:
+      Build a sif file from an Apptainer recipe file:
           $ apptainer build /tmp/debian0.sif /path/to/debian.def
 
       Build a sif image from the Library:
@@ -661,7 +661,7 @@ Enterprise Performance Computing (EPC)`
 	RunUse   string = `run [run options...] <container>`
 	RunShort string = `Run the user-defined default command within a container`
 	RunLong  string = `
-  This command will launch a Apptainer container and execute a runscript
+  This command will launch an Apptainer container and execute a runscript
   if one is defined for that container. The runscript is a metadata file within
   the container that contains shell commands. If the file is present (and
   executable) then this command will execute that file within the container

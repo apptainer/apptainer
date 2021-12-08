@@ -15,7 +15,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 )
 
-// EngineOperations is a Apptainer runtime engine that implements engine.Operations.
+// EngineOperations is an Apptainer runtime engine that implements engine.Operations.
 // Basically, this is the core of `apptainer run/exec/shell/instance` commands.
 type EngineOperations struct {
 	CommonConfig *config.Common                `json:"-"`
@@ -30,7 +30,7 @@ func (e *EngineOperations) InitConfig(cfg *config.Common) {
 	e.CommonConfig = cfg
 }
 
-// Config returns a pointer to a apptainerConfig.EngineConfig
+// Config returns a pointer to an apptainerConfig.EngineConfig
 // literal as a config.EngineConfig interface. This pointer
 // gets stored in the engine.Engine.Common field.
 //

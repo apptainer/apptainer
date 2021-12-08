@@ -140,7 +140,7 @@ func TestNewDefinitionFromJSON(t *testing.T) {
 	var def2 Definition
 	def2, def2Err := NewDefinitionFromJSON(strings.NewReader(validApptainerJSON))
 	if def2Err != nil {
-		t.Fatal("NewDefinitionFromJSON() failed with a Apptainer JSON", def2Err)
+		t.Fatal("NewDefinitionFromJSON() failed with an Apptainer JSON", def2Err)
 	}
 	if len(def2.ImageData.Labels) != 1 {
 		t.Fatal("Invalid number of labels")

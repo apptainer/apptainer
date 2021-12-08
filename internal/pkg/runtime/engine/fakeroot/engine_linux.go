@@ -33,7 +33,7 @@ import (
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 
-// EngineOperations is a Apptainer fakeroot runtime engine that implements engine.Operations.
+// EngineOperations is an Apptainer fakeroot runtime engine that implements engine.Operations.
 type EngineOperations struct {
 	CommonConfig *config.Common               `json:"-"`
 	EngineConfig *fakerootConfig.EngineConfig `json:"engineConfig"`

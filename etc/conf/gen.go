@@ -32,7 +32,7 @@ func main() {
 	}
 }
 
-// genConf produces a apptainer.conf file at out. It retains set configurations from in (leave blank for default)
+// genConf produces an apptainer.conf file at out. It retains set configurations from in (leave blank for default)
 func genConf(tmpl, in, out string) {
 	inFile := in
 	// Parse current apptainer.conf file into c

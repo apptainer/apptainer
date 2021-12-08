@@ -2,7 +2,7 @@
 #   For website terms of use, trademark policy, privacy policy and other
 #   project policies see https://lfprojects.org/policies
 #
-# Defines a Apptainer container with TensorFlow pre-installed
+# Defines an Apptainer container with TensorFlow pre-installed
 #
 
 #
