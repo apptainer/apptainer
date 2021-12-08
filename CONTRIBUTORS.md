@@ -1,22 +1,5 @@
 # Contributors to Apptainer
 
-## Project Lead
-
-```text
-- Gregory M. Kurtzer <gmk@resf.org>, <gmkurtzer@gmail.com>, <gmk@ctrliq.com>
-```
-
-## Maintainers
-
-```text
-- Cedric Clerget <cedric@ctrliq.com>, <cedric.clerget@univ-fcomte.fr>
-- Ian Kaneshiro <ian@ctrliq.com>, <iankane@umich.edu>
-- Krishna Muriki <kmuriki@lbl.gov>, <kmuriki@gmail.com>
-- Dave Dykstra <dwd@fnal.gov>
-```
-
-## Contributors
-
 ```text
 - Adam Hughes <adam@sylabs.io>, <stickmanica@gmail.com>
 - Adam Simpson <asimpson@nvidia.com>, <adambsimpson@gmail.com>
