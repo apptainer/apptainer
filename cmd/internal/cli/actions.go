@@ -48,7 +48,7 @@ func getCacheHandle(cfg cache.Config) *cache.Handle {
 func actionPreRun(cmd *cobra.Command, args []string) {
 	// For compatibility - we still set USER_PATH so it will be visible in the
 	// container, and can be used there if needed. USER_PATH is not used by
-	// apptainer itself in 3.9+
+	// apptainer itself in 1.0.0+
 	userPath := strings.Join([]string{os.Getenv("PATH"), defaultPath}, ":")
 	os.Setenv("USER_PATH", userPath)
 

@@ -18,7 +18,7 @@ var value string
 
 // Value contains the Apptainer user agent.
 //
-// For example, "Apptainer/3.0.0 (linux amd64) Go/1.10.3".
+// For example, "Apptainer/1.0.0 (linux amd64) Go/1.10.3".
 func Value() string {
 	if value == "" {
 		panic("useragent.InitValue() must be called before calling useragent.Value()")

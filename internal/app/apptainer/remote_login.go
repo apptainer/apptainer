@@ -62,7 +62,7 @@ func RemoteLogin(usrConfigFile string, args *LoginArgs) (err error) {
 	}
 
 	if r != nil {
-		// endpoints (sylabs cloud, apptainer enterprise etc.)
+		// endpoints (sylabs cloud, Singularity enterprise etc.)
 		err := endPointLogin(r, args)
 		if err == ErrLoginAborted {
 			return nil

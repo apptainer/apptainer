@@ -31,7 +31,7 @@ const (
 )
 
 func TestMain(m *testing.M) {
-	useragent.InitValue("apptainer", "3.0.0-alpha.1-303-gaed8d30-dirty")
+	useragent.InitValue("apptainer", "v0.1.0-30-g67692d50f-dirty")
 
 	os.Exit(m.Run())
 }

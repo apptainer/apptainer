@@ -14,9 +14,9 @@ import (
 )
 
 func TestApptainerVersion(t *testing.T) {
-	InitValue("apptainer", "3.0.0-alpha.1-303-gaed8d30-dirty")
+	InitValue("apptainer", "v0.1.0-30-g67692d50f-dirty")
 
-	re := regexp.MustCompile(`Apptainer/[[:digit:]]+(.[[:digit:]]+){2} \(Linux [[:alnum:]]+\) Go/[[:digit:]]+(.[[:digit:]]+){1,2}`)
+	re := regexp.MustCompile(`Apptainer/v[[:digit:]]+(.[[:digit:]]+){2} \(Linux [[:alnum:]]+\) Go/[[:digit:]]+(.[[:digit:]]+){1,2}`)
 	if !re.MatchString(Value()) {
 		t.Fatalf("user agent did not match regexp")
 	}

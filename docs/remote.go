@@ -21,7 +21,7 @@ const (
   standalone keyservers and OCI/Docker registry credentials through its
   subcommands.
 
-  A 'remote endpoint' is the Sylabs Cloud, an Apptainer Enterprise installation,
+  A 'remote endpoint' is the Sylabs Cloud, a Singularity Enterprise installation,
   or a compatible group of services. The remote endpoint is a single address,
   e.g. 'cloud.sylabs.io' through which linked library, builder and keystore
   sevices will be automatically discovered.

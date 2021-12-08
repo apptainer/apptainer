@@ -420,7 +420,7 @@ func (c ctx) testDockerLabels(t *testing.T) {
 	imagePath := filepath.Join(imageDir, "container")
 
 	// Test container & set labels
-	// See: https://github.com/sylabs/apptainer-test-containers/pull/1
+	// See: https://github.com/sylabs/singularity-test-containers/pull/1
 	imgSrc := "docker://sylabsio/labels"
 	label1 := "LABEL1: 1"
 	label2 := "LABEL2: TWO"

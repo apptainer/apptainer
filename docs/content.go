@@ -452,11 +452,11 @@ Enterprise Performance Computing (EPC)`
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	formats string = `
 
-  *.sif               Apptainer Image Format (SIF). Native to Apptainer 3.0+
+  *.sif               Singularity Image Format (SIF). Native to Singularity (3.0+) and Apptainer (v1.0.0+)
   
-  *.sqsh              SquashFS format.  Native to Apptainer 2.4+
+  *.sqsh              SquashFS format.  Native to Singularity 2.4+
 
-  *.img               ext3 format. Native to Apptainer versions < 2.4.
+  *.img               ext3 format. Native to Singularity versions < 2.4.
 
   directory/          sandbox format. Directory containing a valid root file 
                       system and optionally Apptainer meta-data.

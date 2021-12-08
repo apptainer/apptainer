@@ -34,21 +34,21 @@ and steps 1-2 should be skipped.
 
 1. From a repository that is up-to-date with master, create a release
    branch e.g. `git checkout upstream/master -b release-3.8`.
-1. Push the release branch to GitHub via `git push upstream release-3.8`.
-1. Examine the GitHub branch protection rules, to extend them to the
+2. Push the release branch to GitHub via `git push upstream release-3.8`.
+3. Examine the GitHub branch protection rules, to extend them to the
    new release branch if needed.
-1. Modify the `README.md`, `INSTALL.md`, `CHANGELOG.md` via PR against
+4. Modify the `README.md`, `INSTALL.md`, `CHANGELOG.md` via PR against
    the release branch, so that they reflect the version to be released.
-1. Apply an annotated tag via `git tag -a -m "Apptainer v3.8.0
-   Release Candidate 1" v3.8.0-rc.1`.
-1. Push the tag via `git push upstream v3.8.0-rc.1`.
-1. Create a tarball via `./mconfig --only-rpm -v && make dist`.
-1. Test intallation from the tarball.
-1. Compute the sha256sum of the tarball e.g. `sha256sum *.tar.gz > sha256sums`.
-1. Create a GitHub release, marked as a 'pre-release', incorporating
+   1. Apply an annotated tag via `git tag -a -m "Apptainer v1.0.0
+      Release Candidate 1" v1.0.0-rc.1`.
+5. Push the tag via `git push upstream v1.0.0-rc.1`.
+6. Create a tarball via `./mconfig --only-rpm -v && make dist`.
+7. Test intallation from the tarball.
+8. Compute the sha256sum of the tarball e.g. `sha256sum *.tar.gz > sha256sums`.
+9. Create a GitHub release, marked as a 'pre-release', incorporating
    `CHANGELOG.md` information, and attaching the tarball and
    `sha256sums`.
-1. Notify the community about the RC via the Google Group and Slack.
+10. Notify the community about the RC via the Google Group and Slack.
 
 There will often be multiple release candidates issued prior to the final
 release of a new 3.Y.0 minor version.
@@ -69,8 +69,8 @@ covered by tests.
    apptainer.org website.
 1. Modify the `README.md`, `INSTALL.md`, `CHANGELOG.md` via PR against
    the release branch, so that they reflect the version to be released.
-1. Apply an annotated tag via `git tag -a -m "Apptainer v3.8.0" v3.8.0`.
-1. Push the tag via `git push upstream v3.8.0-rc.1`.
+1. Apply an annotated tag via `git tag -a -m "Apptainer v1.0.0" v1.0.0`.
+1. Push the tag via `git push upstream v1.0.0-rc.1`.
 1. Create a tarball via `./mconfig -v && make dist`.
 1. Test intallation from the tarball.
 1. Compute the sha256sum of the tarball e.g. `sha256sum *.tar.gz > sha256sums`.
@@ -80,10 +80,10 @@ covered by tests.
 
 ## After the Release
 
-1. Create and merge a PR from the `release-3.x` branch into `master`, so that
+1. Create and merge a PR from the `release-1.x` branch into `master`, so that
    history from the RC process etc. is captured on `master`.
-1. If the release is a new major/minor version, move the prior `release-3.x`
-   branch to `vault/release-3.x`.
+1. If the release is a new major/minor version, move the prior `release-1.x`
+   branch to `vault/release-1.x`.
 1. If the release is a new major/minor version, update the
    `.github/dependabot.yml` configuration so that dependabot is tracking the new
    stable release branch.
