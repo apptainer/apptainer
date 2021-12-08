@@ -223,7 +223,7 @@ type keyList struct {
 	SignerKeys []*key
 }
 
-// getJSONCallback returns a apptainer.VerifyCallback that appends to kl.
+// getJSONCallback returns an apptainer.VerifyCallback that appends to kl.
 func getJSONCallback(kl *keyList) apptainer.VerifyCallback {
 	return func(f *sif.FileImage, r integrity.VerifyResult) bool {
 		name, fp := "unknown", ""

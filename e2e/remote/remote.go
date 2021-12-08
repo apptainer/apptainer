@@ -425,7 +425,7 @@ func (c ctx) remoteTestFlag(t *testing.T) {
 		{
 			name:           "login help",
 			cmdArgs:        []string{"login", "--help"},
-			expectedOutput: "Login to a apptainer remote endpoint, an OCI/Docker registry or a keyserver using credentials",
+			expectedOutput: "Login to an Apptainer remote endpoint, an OCI/Docker registry or a keyserver using credentials",
 		},
 		{
 			name:           "remove help",
@@ -440,7 +440,7 @@ func (c ctx) remoteTestFlag(t *testing.T) {
 		{
 			name:           "use help",
 			cmdArgs:        []string{"use", "--help"},
-			expectedOutput: "Set a apptainer remote endpoint to be actively used",
+			expectedOutput: "Set an Apptainer remote endpoint to be actively used",
 		},
 	}
 

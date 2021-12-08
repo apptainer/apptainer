@@ -25,9 +25,9 @@ const (
 // Plugin compile command usage.
 const (
 	PluginCompileUse   string = `compile [compile options...] <host_path>`
-	PluginCompileShort string = `Compile a Apptainer plugin`
+	PluginCompileShort string = `Compile an Apptainer plugin`
 	PluginCompileLong  string = `
-  The 'plugin compile' command allows a developer to compile a Apptainer
+  The 'plugin compile' command allows a developer to compile an Apptainer
   plugin in the expected environment. The provided host directory is the 
   location of the plugin's source code. A compiled plugin is packed into a SIF file.`
 	PluginCompileExample string = `
@@ -92,7 +92,7 @@ const (
 // Plugin inspect command usage.
 const (
 	PluginInspectUse   string = `inspect (<name>|<image>)`
-	PluginInspectShort string = `Inspect a apptainer plugin (either an installed one or an image)`
+	PluginInspectShort string = `Inspect an Apptainer plugin (either an installed one or an image)`
 	PluginInspectLong  string = `
   The 'plugin inspect' command allows a user to inspect a plugin that is already
   installed in the system or an image containing a plugin that is yet to be installed.`

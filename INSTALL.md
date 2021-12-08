@@ -151,7 +151,7 @@ See the output of `./mconfig -h` for available options.
 
 ## Building & Installing from an RPM
 
-On a RHEL / CentOS / Fedora machine you can build a Apptainer into an rpm
+On a RHEL / CentOS / Fedora machine you can build an Apptainer into an rpm
 package, and install it from the rpm. This is useful if you need to install
 Apptainer across multiple machines, or wish to manage all software via
 `yum/dnf`.

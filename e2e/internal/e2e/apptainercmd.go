@@ -31,7 +31,7 @@ import (
 // by ExpectExit to process and test execution result.
 type ApptainerCmdResultOp func(*testing.T, *ApptainerCmdResult)
 
-// ApptainerCmdResult holds the result for a Apptainer command
+// ApptainerCmdResult holds the result for an Apptainer command
 // execution test.
 type ApptainerCmdResult struct {
 	Stdout  []byte
@@ -274,7 +274,7 @@ func ConsoleSendLine(s string) ApptainerConsoleOp {
 // used to define the test execution context.
 type ApptainerCmdOp func(*apptainerCmd)
 
-// apptainerCmd defines a Apptainer command execution test.
+// apptainerCmd defines an Apptainer command execution test.
 type apptainerCmd struct {
 	globalOptions []string
 	cmd           []string
@@ -462,7 +462,7 @@ func ExpectExit(code int, resultOps ...ApptainerCmdResultOp) ApptainerCmdOp {
 	}
 }
 
-// RunApptainer executes a apptainer command within a test execution
+// RunApptainer executes an Apptainer command within a test execution
 // context.
 //
 // cmdPath specifies the path to the apptainer binary and cmdOps

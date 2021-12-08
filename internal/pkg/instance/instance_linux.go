@@ -32,7 +32,7 @@ const (
 )
 
 const (
-	// ProgPrefix is the prefix used by a apptainer instance process
+	// ProgPrefix is the prefix used by an Apptainer instance process
 	ProgPrefix      = "Apptainer instance"
 	instancePath    = "instances"
 	authorizedChars = `^[a-zA-Z0-9._-]+$`

@@ -21,7 +21,7 @@ const (
   standalone keyservers and OCI/Docker registry credentials through its
   subcommands.
 
-  A 'remote endpoint' is the Sylabs Cloud, a Apptainer Enterprise installation,
+  A 'remote endpoint' is the Sylabs Cloud, an Apptainer Enterprise installation,
   or a compatible group of services. The remote endpoint is a single address,
   e.g. 'cloud.sylabs.io' through which linked library, builder and keystore
   sevices will be automatically discovered.
@@ -70,7 +70,7 @@ const (
 	// remote use command
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	RemoteUseUse   string = `use [use options...] <remote_name>`
-	RemoteUseShort string = `Set a apptainer remote endpoint to be actively used`
+	RemoteUseShort string = `Set an Apptainer remote endpoint to be actively used`
 	RemoteUseLong  string = `
   The 'remote use' command sets the remote to be used by default by any command
   that interacts with Apptainer services.`
@@ -93,7 +93,7 @@ const (
 	// remote login command
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	RemoteLoginUse   string = `login [login options...] <remote_name|registry_uri>`
-	RemoteLoginShort string = `Login to a apptainer remote endpoint, an OCI/Docker registry or a keyserver using credentials`
+	RemoteLoginShort string = `Login to an Apptainer remote endpoint, an OCI/Docker registry or a keyserver using credentials`
 	RemoteLoginLong  string = `
   The 'remote login' command allows you to set credentials for a specific endpoint,
   an OCI/Docker registry or a keyserver.
@@ -117,9 +117,9 @@ const (
 	// remote logout command
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	RemoteLogoutUse   string = `logout <remote_name|registry_uri>`
-	RemoteLogoutShort string = `Log out from a apptainer remote endpoint, an OCI/Docker registry or a keyserver`
+	RemoteLogoutShort string = `Log out from an Apptainer remote endpoint, an OCI/Docker registry or a keyserver`
 	RemoteLogoutLong  string = `
-  The 'remote logout' command allows you to log out from a apptainer specific endpoint,
+  The 'remote logout' command allows you to log out from an Apptainer specific endpoint,
   an OCI/Docker registry or a keyserver. If no endpoint or service is specified, it will
   logout from the current active remote endpoint.
   `

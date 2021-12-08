@@ -24,7 +24,7 @@ type ctx struct {
 }
 
 // testRun555Cache tests the specific case where the cache directory is
-// 0555 for access rights, and we try to run a apptainer run command
+// 0555 for access rights, and we try to run an Apptainer run command
 // using that directory as cache. This reflects a problem that is important
 // for the grid use case.
 func (c ctx) testRun555Cache(t *testing.T) {

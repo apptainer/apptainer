@@ -15,7 +15,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 )
 
-// EngineOperations is a Apptainer OCI runtime engine that implements engine.Operations.
+// EngineOperations is an Apptainer OCI runtime engine that implements engine.Operations.
 // Basically, this is the core of `apptainer oci` commands.
 type EngineOperations struct {
 	CommonConfig *config.Common `json:"-"`

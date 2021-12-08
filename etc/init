@@ -1,4 +1,4 @@
-# This will be sourced before launching a Apptainer container.
+# This will be sourced before launching an Apptainer container.
 # Any variables prefixed with "APPTAINERENV_" will be transposed
 # properly into the container. For example:
 # APPTAINERENV_LD_LIBRARY_PATH -> LD_LIBRARY_PATH
