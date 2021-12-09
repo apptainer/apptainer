@@ -108,7 +108,7 @@ if test -d "/.singularity.d/env"; then
                 ;;
             /.singularity.d/env/99-base.sh)
                 # this file is the common denominator in image built since
-                # Apptainer 2.3, inject forwarded variables right after
+                # Singularity 2.3, inject forwarded variables right after
                 source "${__script__}"
                 source "/.inject-apptainer-env.sh"
                 ;;
@@ -119,7 +119,7 @@ if test -d "/.singularity.d/env"; then
         fi
     done
 else
-    # this is for old images built with Apptainer version prior to 2.3
+    # this is for old images built with Singularity version prior to 2.3
     if test -f "/environment"; then
         source "/environment"
         export PATH="$(fixpath)"

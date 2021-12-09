@@ -176,7 +176,7 @@ func checkPerms(rootfs string) (err error) {
 		}
 		// Warn on any directory not `rwX` - technically other combinations may
 		// be traversable / removable... but are confusing to the user vs
-		// the Apptainer 3.4 behavior.
+		// the Singularity 3.4 behavior.
 		if f.Mode().IsDir() && f.Mode().Perm()&0o700 != 0o700 {
 			sylog.Debugf("Path %q has restrictive permissions", path)
 			return errRestrictivePerm

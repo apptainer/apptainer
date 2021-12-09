@@ -11,20 +11,20 @@ apptainer binary by running:
 
 ```console
 $ apptainer version
-3.1.1-723.g7998470e7
+1.0.0-23.g-00d15ea5e
 ```
 
-this means this version of apptainer is _post_ 3.1.1 (but before the
+this means this version of apptainer is _post_ 1.0.0 by 23 commits (but before the
 next version after that one). The suffix .gXXXXXXXXX indicates the exact
 commit in github.com/apptainer/apptainer used to build this binary
-(7998470e7 in this example).
+(00d15ea5e in this example).
 
 Obtain a copy of the source code by running:
 
 ```sh
 git clone https://github.com/apptainer/apptainer.git
 cd apptainer
-git checkout 7998470e7
+git checkout 00d15ea5e
 ```
 
 Still from within that directory, run:

@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	useragent.InitValue("apptainer", "3.0.0")
+	useragent.InitValue("apptainer", "1.0.0")
 }
 
 func TestKeyserverClientOpts(t *testing.T) {

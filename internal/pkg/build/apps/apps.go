@@ -7,7 +7,7 @@
 // rights to use or distribute this software.
 
 // Package apps [apps-plugin] provides the functions which are necessary for adding SCI-F apps support
-// to Apptainer 3.0.0. In 3.1.0+, this package will be able to be built standalone as
+// to Singularity 3.0.0. In 3.1.0+, this package will be able to be built standalone as
 // a plugin so it will be maintainable separately from the core Apptainer functionality
 package apps
 

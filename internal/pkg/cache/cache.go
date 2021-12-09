@@ -182,7 +182,7 @@ func (h *Handle) CleanCache(cacheType string, dryRun bool, days int) (err error)
 
 		sylog.Infof("Removing %s cache entry: %s", cacheType, f.Name())
 		if !dryRun {
-			// We RemoveAll in case the entry is a directory from Apptainer <3.6
+			// We RemoveAll in case the entry is a directory from Singularity (prior to 3.6)
 			err := os.RemoveAll(path.Join(dir, f.Name()))
 			if err != nil {
 				sylog.Errorf("Could not remove cache entry '%s': %v", f.Name(), err)
