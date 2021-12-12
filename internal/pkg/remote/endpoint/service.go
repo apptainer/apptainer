@@ -30,7 +30,6 @@ const (
 	SCSDefaultCloudURI     = "cloud.sylabs.io"
 	SCSDefaultLibraryURI   = "https://library.sylabs.io"
 	SCSDefaultKeyserverURI = "https://keys.sylabs.io"
-	SCSDefaultBuilderURI   = "https://build.sylabs.io"
 )
 
 // SCS cloud services
@@ -197,8 +196,6 @@ func (ep *Config) GetServiceURI(service string) (string, error) {
 		switch service {
 		case Library:
 			return SCSDefaultLibraryURI, nil
-		case Builder:
-			return SCSDefaultBuilderURI, nil
 		case Keyserver:
 			return SCSDefaultKeyserverURI, nil
 		}

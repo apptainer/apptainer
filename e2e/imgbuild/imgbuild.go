@@ -1326,14 +1326,6 @@ func (c imgBuildTests) buildBindMount(t *testing.T) {
 			exit: 255,
 		},
 		{
-			name: "Bind test dir with remote",
-			buildOption: []string{
-				"--bind", dir + ":/mnt",
-				"--remote",
-			},
-			exit: 255,
-		},
-		{
 			name: "Mount test dir to /mnt",
 			buildOption: []string{
 				"--mount", "type=bind,source=" + dir + ",destination=/mnt",
@@ -1379,14 +1371,6 @@ func (c imgBuildTests) buildBindMount(t *testing.T) {
 			},
 			buildPost: []string{
 				"cat /mnt/canary",
-			},
-			exit: 255,
-		},
-		{
-			name: "Mount test dir with remote",
-			buildOption: []string{
-				"--mount", "type=bind,source=" + dir + ",destination=/mnt",
-				"--remote",
 			},
 			exit: 255,
 		},

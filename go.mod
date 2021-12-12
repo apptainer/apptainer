@@ -20,7 +20,6 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/go-log/log v0.2.0
 	github.com/google/uuid v1.3.0
-	github.com/gorilla/websocket v1.4.2
 	github.com/kr/pty v1.1.8
 	github.com/moby/sys/mount v0.3.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0
@@ -37,7 +36,6 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
 	github.com/sylabs/json-resp v0.8.0
-	github.com/sylabs/scs-build-client v0.2.1
 	github.com/sylabs/scs-key-client v0.7.1
 	github.com/sylabs/scs-library-client v1.2.0
 	github.com/urfave/cli v1.22.5 // indirect
