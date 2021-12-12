@@ -10,15 +10,12 @@ package endpoint
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
-	"time"
 
 	remoteutil "github.com/apptainer/apptainer/internal/pkg/remote/util"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	golog "github.com/go-log/log"
-	buildclient "github.com/sylabs/scs-build-client/client"
 	keyclient "github.com/sylabs/scs-key-client/client"
 	libclient "github.com/sylabs/scs-library-client/client"
 )
@@ -124,42 +121,6 @@ func (ep *Config) LibraryClientConfig(uri string) (*libclient.Config, error) {
 			return nil, fmt.Errorf(
 				"endpoint is set as exclusive by the system administrator: only %q can be used",
 				libURI,
-			)
-		}
-	}
-
-	return config, nil
-}
-
-func (ep *Config) BuilderClientConfig(uri string) (*buildclient.Config, error) {
-	// empty uri means to use the default endpoint
-	isDefault := uri == ""
-
-	config := &buildclient.Config{
-		BaseURL:   uri,
-		UserAgent: useragent.Value(),
-		Logger:    (golog.Logger)(sylog.DebugLogger{}),
-		HTTPClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
-	}
-
-	if isDefault {
-		buildURI, err := ep.GetServiceURI(Builder)
-		if err != nil {
-			return nil, fmt.Errorf("unable to get builder service URI: %v", err)
-		}
-		config.AuthToken = ep.Token
-		config.BaseURL = buildURI
-	} else if ep.Exclusive {
-		buildURI, err := ep.GetServiceURI(Builder)
-		if err != nil {
-			return nil, fmt.Errorf("unable to get builder service URI: %v", err)
-		}
-		if !remoteutil.SameURI(uri, buildURI) {
-			return nil, fmt.Errorf(
-				"endpoint is set as exclusive by the system administrator: only %q can be used",
-				buildURI,
 			)
 		}
 	}
