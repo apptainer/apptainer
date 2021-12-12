@@ -40,7 +40,7 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs(sifSignedImage, "library://busybox:1.31.1"),
+		e2e.WithArgs(sifSignedImage, "oras://ghcr.io/apptainer/busybox:1.31.1"),
 		e2e.ExpectExit(0),
 	)
 
@@ -67,7 +67,7 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs(sifImage, "library://busybox:1.31.1"),
+		e2e.WithArgs(sifImage, "oras://ghcr.io/apptainer/busybox:1.31.1"),
 		e2e.ExpectExit(0),
 	)
 
@@ -156,7 +156,7 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 			t,
 			e2e.WithProfile(e2e.RootProfile),
 			e2e.WithCommand("build"),
-			e2e.WithArgs("--encrypt", sifEncryptedImage, "library://busybox:1.31.1"),
+			e2e.WithArgs("--encrypt", sifEncryptedImage, "oras://ghcr.io/apptainer/busybox:1.31.1"),
 			e2e.WithEnv(append(os.Environ(), passphraseEnvVar)),
 			e2e.ExpectExit(0),
 		)

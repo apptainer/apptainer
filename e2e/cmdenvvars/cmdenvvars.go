@@ -16,7 +16,7 @@ import (
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
-	"github.com/sylabs/scs-library-client/client"
+	client "github.com/apptainer/apptainer/internal/pkg/client/oras"
 )
 
 type ctx struct {
@@ -75,7 +75,7 @@ func (c ctx) pullTestImage(t *testing.T) string {
 
 	imgPath := filepath.Join(tmpdir, "testImg.sif")
 
-	cmdArgs := []string{imgPath, "library://alpine:latest"}
+	cmdArgs := []string{imgPath, "oras://ghcr.io/apptainer/alpine:latest"}
 
 	// Pull the specified image to the temporary location
 	c.env.RunApptainer(
@@ -96,7 +96,7 @@ func (c ctx) assertLibraryCacheEntryExists(t *testing.T, imgPath, imgName string
 		t.Fatalf("Cannot get the shasum for image %s: %s", imgPath, err)
 	}
 
-	cacheEntryPath := filepath.Join(c.env.ImgCacheDir, "cache", "library", shasum, imgName)
+	cacheEntryPath := filepath.Join(c.env.ImgCacheDir, "cache", "oras", shasum)
 	if _, err := os.Stat(cacheEntryPath); os.IsNotExist(err) {
 		ls(t, c.env.TestDir)
 		ls(t, c.env.ImgCacheDir)

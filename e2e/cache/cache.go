@@ -16,8 +16,8 @@ import (
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
+	client "github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
-	"github.com/sylabs/scs-library-client/client"
 )
 
 type cacheTests struct {
@@ -26,7 +26,7 @@ type cacheTests struct {
 
 const (
 	imgName = "alpine_latest.sif"
-	imgURL  = "library://alpine:latest"
+	imgURL  = "oras://ghcr.io/apptainer/alpine:latest"
 )
 
 func prepTest(t *testing.T, testEnv e2e.TestEnv, testName string, cacheParentDir string, imagePath string) {
@@ -186,7 +186,7 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 		},
 		{
 			name:               "clean type confirmed",
-			options:            []string{"clean", "--type", "library"},
+			options:            []string{"clean", "--type", "oras"},
 			expect:             "Do you want to continue? [N/y]",
 			send:               "y",
 			expectedEmptyCache: true,
@@ -194,7 +194,7 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 		},
 		{
 			name:               "clean type not confirmed",
-			options:            []string{"clean", "--type", "library"},
+			options:            []string{"clean", "--type", "oras"},
 			expect:             "Do you want to continue? [N/y]",
 			send:               "n",
 			expectedEmptyCache: false,
@@ -265,7 +265,7 @@ func ensureNotCached(t *testing.T, testName string, imagePath string, cacheParen
 	}
 
 	// Where the cached image should be
-	cacheImagePath := path.Join(cacheParentDir, "cache", "library", shasum)
+	cacheImagePath := path.Join(cacheParentDir, "cache", "oras", shasum)
 
 	// The image file shouldn't be present
 	if e2e.PathExists(t, cacheImagePath) {
@@ -281,7 +281,7 @@ func ensureCached(t *testing.T, testName string, imagePath string, cacheParentDi
 	}
 
 	// Where the cached image should be
-	cacheImagePath := path.Join(cacheParentDir, "cache", "library", shasum)
+	cacheImagePath := path.Join(cacheParentDir, "cache", "oras", shasum)
 
 	// The image file shouldn't be present
 	if !e2e.PathExists(t, cacheImagePath) {

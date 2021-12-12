@@ -34,5 +34,5 @@ su testuser -c '
   export GOPATH=$BLD/gopath
   PATH=$GOPATH/bin:$PATH
 
-  apptainer exec library://alpine:3.11.5 /bin/true
+  apptainer exec oras://ghcr.io/apptainer/alpine:3.15.0 /bin/true
 '
