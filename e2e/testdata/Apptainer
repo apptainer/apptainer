@@ -1,5 +1,5 @@
-bootstrap: library
-from: alpine:3.11.5
+bootstrap: oras
+from: ghcr.io/apptainer/alpine:3.15.0
 
 %labels
     maintainer "Sylabs Team <support@sylabs.io>"

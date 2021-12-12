@@ -88,7 +88,7 @@ func TestLoadProfileFromFile(t *testing.T) {
 	gen := generate.New(nil)
 
 	if err := LoadProfileFromFile("test_profile/fake.json", gen); err == nil {
-		t.Errorf("should have failed with inexistent file")
+		t.Errorf("should have failed with nonexistent file")
 	}
 
 	if err := LoadProfileFromFile("test_profile/test.json", gen); err != nil {

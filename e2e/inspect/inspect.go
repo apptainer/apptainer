@@ -30,7 +30,7 @@ type ctx struct {
 }
 
 const (
-	containerTesterDEF = "testdata/inspecter_container.def"
+	containerTesterDEF = "testdata/inspector_container.def"
 )
 
 func (c ctx) apptainerInspect(t *testing.T) {
@@ -85,14 +85,14 @@ func (c ctx) apptainerInspect(t *testing.T) {
 		}
 	}
 
-	compareLabel := func(label, out string, appName string) func(*testing.T, *inspect.Metadata) {
+	compareLabel := func(label, expected string, appName string) func(*testing.T, *inspect.Metadata) {
 		return func(t *testing.T, meta *inspect.Metadata) {
 			v := meta.Attributes.Labels[label]
 			if appName != "" && meta.Attributes.Apps[appName] != nil {
 				v = meta.Attributes.Apps[appName].Labels[label]
 			}
-			if v != out {
-				t.Errorf("unexpected %s label value, got %s instead of %s", label, out, v)
+			if v != expected {
+				t.Errorf("unexpected %s label value, got %s instead of %s", label, v, expected)
 			}
 		}
 	}
@@ -146,12 +146,12 @@ func (c ctx) apptainerInspect(t *testing.T) {
 		{
 			name:      "label_org.label-schema.usage.singularity.deffile.bootstrap",
 			insType:   "--labels",
-			compareFn: compareLabel("org.label-schema.usage.singularity.deffile.bootstrap", "library", ""),
+			compareFn: compareLabel("org.label-schema.usage.singularity.deffile.bootstrap", "oras", ""),
 		},
 		{
 			name:      "label_org.label-schema.usage.singularity.deffile.from",
 			insType:   "--labels",
-			compareFn: compareLabel("org.label-schema.usage.singularity.deffile.from", "alpine:3.11.5", ""),
+			compareFn: compareLabel("org.label-schema.usage.singularity.deffile.from", "ghcr.io/apptainer/alpine:3.15.0", ""),
 		},
 		{
 			name:      "label_org.label-schema.usage.apptainer.runscript.help",
