@@ -194,11 +194,11 @@ func (c imgBuildTests) nonRootBuild(t *testing.T) {
 		},
 		{
 			name:      "library sif",
-			buildSpec: "library://busybox:1.31.1",
+			buildSpec: "oras://ghcr.io/apptainer/busybox:1.31.1",
 		},
 		{
 			name:      "library sif sandbox",
-			buildSpec: "library://busybox:1.31.1",
+			buildSpec: "oras://ghcr.io/apptainer/busybox:1.31.1",
 			args:      []string{"--sandbox"},
 		},
 		// TODO: uncomment when shub is working
@@ -880,7 +880,7 @@ func (c imgBuildTests) buildEncryptPemFile(t *testing.T) {
 
 	// First with the command line argument
 	imgPath1 := filepath.Join(dn, "encrypted_cmdline_option.sif")
-	cmdArgs := []string{"--encrypt", "--pem-path", pemFile, imgPath1, "library://alpine:latest"}
+	cmdArgs := []string{"--encrypt", "--pem-path", pemFile, imgPath1, "oras://ghcr.io/apptainer/alpine:latest"}
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
@@ -899,7 +899,7 @@ func (c imgBuildTests) buildEncryptPemFile(t *testing.T) {
 	// Second with the environment variable
 	pemEnvVar := fmt.Sprintf("%s=%s", "APPTAINER_ENCRYPTION_PEM_PATH", pemFile)
 	imgPath2 := filepath.Join(dn, "encrypted_env_var.sif")
-	cmdArgs = []string{"--encrypt", imgPath2, "library://alpine:latest"}
+	cmdArgs = []string{"--encrypt", imgPath2, "oras://ghcr.io/apptainer/alpine:latest"}
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
@@ -944,7 +944,7 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 	}
 	cmdlineTestImgPath := filepath.Join(dn, "encrypted_cmdline_option.sif")
 	// The image is deleted during cleanup of the temporary directory
-	cmdArgs := []string{"--passphrase", cmdlineTestImgPath, "library://alpine:latest"}
+	cmdArgs := []string{"--passphrase", cmdlineTestImgPath, "oras://ghcr.io/apptainer/alpine:latest"}
 	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("passphrase flag"),
@@ -964,7 +964,7 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 
 	// With the command line argument, using --encrypt and --passphrase
 	cmdlineTest2ImgPath := filepath.Join(dn, "encrypted_cmdline2_option.sif")
-	cmdArgs = []string{"--encrypt", "--passphrase", cmdlineTest2ImgPath, "library://alpine:latest"}
+	cmdArgs = []string{"--encrypt", "--passphrase", cmdlineTest2ImgPath, "oras://ghcr.io/apptainer/alpine:latest"}
 	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("encrypt and passphrase flags"),
@@ -985,7 +985,7 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 	// With the environment variable
 	passphraseEnvVar := fmt.Sprintf("%s=%s", "APPTAINER_ENCRYPTION_PASSPHRASE", e2e.Passphrase)
 	envvarImgPath := filepath.Join(dn, "encrypted_env_var.sif")
-	cmdArgs = []string{"--encrypt", envvarImgPath, "library://alpine:latest"}
+	cmdArgs = []string{"--encrypt", envvarImgPath, "oras://ghcr.io/apptainer/alpine:latest"}
 	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("passphrase env var"),
@@ -1005,7 +1005,7 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 
 	// Finally a test that must fail: try to specify the passphrase on the command line
 	dummyImgPath := filepath.Join(dn, "dummy_encrypted_env_var.sif")
-	cmdArgs = []string{"--encrypt", "--passphrase", e2e.Passphrase, dummyImgPath, "library://alpine:latest"}
+	cmdArgs = []string{"--encrypt", "--passphrase", e2e.Passphrase, dummyImgPath, "oras://ghcr.io/apptainer/alpine:latest"}
 	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("passphrase on cmdline"),
@@ -1114,7 +1114,7 @@ func (c imgBuildTests) buildWithFingerprint(t *testing.T) {
 		{
 			name:    "build single signed source image",
 			command: "build",
-			args:    []string{singleSigned, "library://busybox"},
+			args:    []string{singleSigned, "oras://ghcr.io/apptainer/busybox:1.31.1"},
 		},
 		{
 			name:    "build double signed source image",

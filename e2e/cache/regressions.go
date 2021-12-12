@@ -15,8 +15,8 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
+	client "github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
-	"github.com/sylabs/scs-library-client/client"
 )
 
 // issue5097 - need to handle an existing directory entry present in the cache
@@ -45,7 +45,7 @@ func (c cacheTests) issue5097(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not calculate hash of test image: %v", err)
 	}
-	cachePath := path.Join(imgCacheDir, "cache", "library", hash)
+	cachePath := path.Join(imgCacheDir, "cache", "oras", hash)
 	err = os.Remove(cachePath)
 	if err != nil {
 		t.Fatalf("Could not remove cached image '%s': %v", cachePath, err)
@@ -95,7 +95,7 @@ func (c cacheTests) issue5350(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs([]string{"--force", "-s", sandboxDir, "library://alpine:3.11.5"}...),
+		e2e.WithArgs([]string{"--force", "-s", sandboxDir, "oras://ghcr.io/apptainer/alpine:3.15.0"}...),
 		e2e.ExpectExit(0),
 	)
 

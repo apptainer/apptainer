@@ -214,7 +214,7 @@ func (c *ctx) testInstanceFromURI(t *testing.T) {
 		},
 		{
 			name: "test_from_library",
-			uri:  "library://busybox:1.31.1",
+			uri:  "oras://ghcr.io/apptainer/busybox:1.31.1",
 		},
 		// TODO(mem): reenable this; disabled while shub is down
 		// {

@@ -49,7 +49,7 @@ func (c ctx) testConcurrencyConfig(t *testing.T) {
 }
 
 func (c ctx) testConcurrentPulls(t *testing.T) {
-	const srcURI = "library://alpine:3.11.5"
+	const srcURI = "oras://ghcr.io/apptainer/alpine:3.15.0"
 
 	tests := []struct {
 		name             string

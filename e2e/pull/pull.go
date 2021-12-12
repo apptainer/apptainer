@@ -53,14 +53,14 @@ type testStruct struct {
 var tests = []testStruct{
 	{
 		desc:             "non existent image",
-		srcURI:           "library://sylabs/tests/does_not_exist:0",
+		srcURI:           "oras://image/does/not:exist",
 		expectedExitCode: 255,
 	},
 
 	// --allow-unauthenticated tests
 	{
 		desc:             "unsigned image allow unauthenticated",
-		srcURI:           "library://sylabs/tests/unsigned:1.0.0",
+		srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
 		unauthenticated:  true,
 		expectedExitCode: 0,
 	},
@@ -68,7 +68,7 @@ var tests = []testStruct{
 	// --force tests
 	{
 		desc:             "force existing file",
-		srcURI:           "library://alpine:3.11.5",
+		srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
 		force:            true,
 		createDst:        true,
 		unauthenticated:  true,
@@ -76,7 +76,7 @@ var tests = []testStruct{
 	},
 	{
 		desc:             "force non-existing file",
-		srcURI:           "library://alpine:3.11.5",
+		srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
 		force:            true,
 		createDst:        false,
 		unauthenticated:  true,
@@ -85,7 +85,7 @@ var tests = []testStruct{
 	{
 		// --force should not have an effect on --allow-unauthenticated=false
 		desc:             "unsigned image force require authenticated",
-		srcURI:           "library://sylabs/tests/unsigned:1.0.0",
+		srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
 		force:            true,
 		unauthenticated:  false,
 		expectedExitCode: 0,
@@ -94,13 +94,13 @@ var tests = []testStruct{
 	// test version specifications
 	{
 		desc:             "image with specific hash",
-		srcURI:           "library://alpine:sha256.03883ca565b32e58fa0a496316d69de35741f2ef34b5b4658a6fec04ed8149a8",
+		srcURI:           "oras://ghcr.io/apptainer/alpine@sha256:aef2a1baf177ee2e6f21da40bdb7025f58466d39116507837f74c2ab4abf5606",
 		unauthenticated:  true,
 		expectedExitCode: 0,
 	},
 	{
 		desc:             "latest tag",
-		srcURI:           "library://alpine:latest",
+		srcURI:           "oras://ghcr.io/apptainer/alpine:latest",
 		unauthenticated:  true,
 		expectedExitCode: 0,
 	},
@@ -108,7 +108,7 @@ var tests = []testStruct{
 	// --dir tests
 	{
 		desc:             "dir no image path",
-		srcURI:           "library://alpine:3.11.5",
+		srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
 		unauthenticated:  true,
 		setPullDir:       true,
 		setImagePath:     false,
@@ -123,7 +123,7 @@ var tests = []testStruct{
 		// the directory /tmp/a/b/c/tmp/a/b does not exist, it fails to create the file
 		// image.sif in there.
 		desc:             "dir image path",
-		srcURI:           "library://alpine:3.11.5",
+		srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
 		unauthenticated:  true,
 		setPullDir:       true,
 		setImagePath:     true,
@@ -188,35 +188,14 @@ var tests = []testStruct{
 	// pulling with library URI argument
 	{
 		desc:             "bad library URI",
-		srcURI:           "library://busybox:1.31.1",
+		srcURI:           "oras://ghcr.io/apptainer/bad/busybox:1.31.1",
 		library:          "https://bad-library.sylabs.io",
 		expectedExitCode: 255,
 	},
 	{
 		desc:             "default library URI",
-		srcURI:           "library://busybox:1.31.1",
+		srcURI:           "oras://ghcr.io/apptainer/busybox:1.31.1",
 		library:          "https://library.sylabs.io",
-		force:            true,
-		expectedExitCode: 0,
-	},
-
-	// pulling with library URI containing host name and library argument
-	{
-		desc:             "library URI containing host name and library argument",
-		srcURI:           "library://notlibrary.sylabs.io/library/default/busybox:1.31.1",
-		library:          "https://notlibrary.sylabs.io",
-		expectedExitCode: 255,
-	},
-
-	// pulling with library URI containing host name
-	{
-		desc:             "library URI containing bad host name",
-		srcURI:           "library://notlibrary.sylabs.io/library/default/busybox:1.31.1",
-		expectedExitCode: 255,
-	},
-	{
-		desc:             "library URI containing host name",
-		srcURI:           "library://library.sylabs.io/library/default/busybox:1.31.1",
 		force:            true,
 		expectedExitCode: 0,
 	},
@@ -491,7 +470,7 @@ func (c ctx) testPullDisableCacheCmd(t *testing.T) {
 		{
 			name:      "library",
 			imagePath: filepath.Join(c.env.TestDir, "library.sif"),
-			imageSrc:  "library://alpine:latest",
+			imageSrc:  "oras://ghcr.io/apptainer/alpine:latest",
 		},
 		{
 			name:      "docker",
@@ -608,7 +587,7 @@ func (c ctx) testPullUmask(t *testing.T) {
 		if tc.force {
 			cmdArgs = append(cmdArgs, "--force")
 		}
-		cmdArgs = append(cmdArgs, tc.imagePath, "library://alpine")
+		cmdArgs = append(cmdArgs, tc.imagePath, "oras://ghcr.io/apptainer/alpine:latest")
 
 		c.env.RunApptainer(
 			t,

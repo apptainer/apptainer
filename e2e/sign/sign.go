@@ -26,7 +26,7 @@ type ctx struct {
 }
 
 const (
-	imgURL  = "library://sylabs/tests/unsigned:1.0.0"
+	imgURL  = "oras://ghcr.io/apptainer/alpine:3.15.0"
 	imgName = "testImage.sif"
 )
 
@@ -80,8 +80,8 @@ func (c ctx) apptainerSignIDOption(t *testing.T) {
 			expectExit: 0,
 		},
 		{
-			name:       "sign non-exsistent ID",
-			args:       []string{"--sif-id", "5", imgPath},
+			name:       "sign non-existent ID",
+			args:       []string{"--sif-id", "99", imgPath},
 			expectOp:   e2e.ExpectError(e2e.ContainMatch, "integrity: object not found"),
 			expectExit: 255,
 		},

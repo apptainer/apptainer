@@ -35,7 +35,7 @@ type verifyOutput struct {
 }
 
 const (
-	successURL   = "library://sylabs/tests/verify_success:1.0.2"
+	successURL   = "oras://ghcr.io/apptainer/verify_success:1.0.2"
 	corruptedURL = "library://sylabs/tests/verify_corrupted:1.0.1"
 )
 
