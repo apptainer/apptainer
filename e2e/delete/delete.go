@@ -27,59 +27,66 @@ func (c ctx) testDeleteCmd(t *testing.T) {
 		agree      string
 		expectExit int
 		expect     e2e.ApptainerCmdResultOp
+		disabled   bool
 	}{
 		{
 			name:       "delete unauthorized arch",
-			args:       []string{"--arch=amd64", "library://test/default/test:v0.0.3"},
+			args:       []string{"--arch=amd64", "oras://ghcr.io/apptainer/test:v0.0.3"},
 			agree:      "y",
 			expectExit: 255,
 		},
 		{
 			name:       "delete unauthorized no arch",
-			args:       []string{"library://test/default/test:v0.0.3"},
+			args:       []string{"oras://ghcr.io/apptainer/test:v0.0.3"},
 			agree:      "y",
 			expectExit: 255,
 		},
 		{
 			name:       "delete disagree arch",
-			args:       []string{"--arch=amd64", "library://test/default/test:v0.0.3"},
+			args:       []string{"--arch=amd64", "oras://ghcr.io/apptainer/test:v0.0.3"},
 			agree:      "n",
 			expectExit: 0,
+			disabled:   true,
 		},
 		{
 			name:       "delete disagree noarch",
-			args:       []string{"library://test/default/test:v0.0.3"},
+			args:       []string{"oras://ghcr.io/apptainer/test:v0.0.3"},
 			agree:      "n",
 			expectExit: 0,
+			disabled:   true,
 		},
 		{
 			name:       "delete unauthorized force arch",
-			args:       []string{"--force", "--arch=amd64", "library://test/default/test:v0.0.3"},
+			args:       []string{"--force", "--arch=amd64", "oras://ghcr.io/apptainer/test:v0.0.3"},
 			agree:      "",
 			expectExit: 255,
 		},
 		{
 			name:       "delete unauthorized force noarch",
-			args:       []string{"--force", "library://test/default/test:v0.0.3"},
+			args:       []string{"--force", "oras://ghcr.io/apptainer/test:v0.0.3"},
 			agree:      "",
 			expectExit: 255,
 		},
 		{
 			name:       "delete unauthorized custom library",
-			args:       []string{"--library=https://cloud.staging.sylabs.io", "library://test/default/test:v0.0.3"},
+			args:       []string{"--library=https://ghcr.io", "oras://ghcr.io/apptainer/test:v0.0.3"},
 			agree:      "y",
 			expectExit: 255,
 		},
 		{
 			name:       "delete host in uri",
-			args:       []string{"library://library.example.com/test/default/test:v0.0.3"},
+			args:       []string{"oras://oras.example.com/test/default/test:v0.0.3"},
 			agree:      "y",
 			expectExit: 255,
-			expect:     e2e.ExpectError(e2e.ContainMatch, "dial tcp: lookup library.example.com: no such host"),
+			expect:     e2e.ExpectError(e2e.ContainMatch, "dial tcp: lookup oras.example.com: no such host"),
+			disabled:   true,
 		},
 	}
 
 	for _, tt := range tests {
+		if tt.disabled {
+			continue
+		}
 		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),

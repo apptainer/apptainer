@@ -1,5 +1,5 @@
-bootstrap: library
-from: alpine:3.11.5
+bootstrap: oras
+from: ghcr.io/apptainer/alpine:3.15.0
 stage: one
 
 %post
@@ -7,8 +7,8 @@ stage: one
     touch /original/a_file
     ln -s /original/a_file /copy/a_file
 
-bootstrap: library
-from: alpine
+bootstrap: oras
+from: ghcr.io/apptainer/alpine:3.15.0
 stage: two
 
 %files from one

@@ -34,8 +34,8 @@ EOF
 # Second Stage
 #
 # Install go application into image without golang installed
-Bootstrap: library
-From: alpine:3.11.5
+Bootstrap: oras
+From: ghcr.io/apptainer/alpine:3.15.0
 Stage: two
 
 

@@ -48,6 +48,7 @@ type testStruct struct {
 	imagePath        string
 	expectedImage    string
 	envVars          []string
+	disabled         bool
 }
 
 var tests = []testStruct{
@@ -133,10 +134,11 @@ var tests = []testStruct{
 	// transport tests
 	{
 		desc:             "bare image name",
-		srcURI:           "alpine:3.11.5",
+		srcURI:           "alpine:3.15.0",
 		force:            true,
 		unauthenticated:  true,
 		expectedExitCode: 0,
+		disabled:         true,
 	},
 
 	{
@@ -147,13 +149,14 @@ var tests = []testStruct{
 		expectedExitCode: 0,
 	},
 	// TODO(mem): reenable this; disabled while shub is down
-	// {
-	// 	desc:            "image from shub",
-	// 	srcURI:          "shub://GodloveD/busybox",
-	// 	force:           true,
-	// 	unauthenticated: false,
-	// 	expectSuccess:   true,
-	// },
+	{
+		desc:             "image from shub",
+		srcURI:           "shub://GodloveD/busybox",
+		force:            true,
+		unauthenticated:  false,
+		expectedExitCode: 0,
+		disabled:         true,
+	},
 	// Finalized v1 layer mediaType (3.7 and onward)
 	{
 		desc:             "oras transport for SIF from registry",
@@ -248,7 +251,7 @@ func getImageNameFromURI(imgURI string) string {
 		return "" // Invalid URI
 
 	case transport == "":
-		imgURI = "library://" + imgURI
+		imgURI = "oras://" + imgURI
 	}
 
 	return uri.GetName(imgURI)
@@ -309,6 +312,9 @@ func (c *ctx) setup(t *testing.T) {
 
 func (c ctx) testPullCmd(t *testing.T) {
 	for _, tt := range tests {
+		if tt.disabled {
+			continue
+		}
 		t.Run(tt.desc, func(t *testing.T) {
 			tmpdir, err := ioutil.TempDir(c.env.TestDir, "pull_test.")
 			if err != nil {
