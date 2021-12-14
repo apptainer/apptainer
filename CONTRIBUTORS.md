@@ -13,6 +13,7 @@
 - Brian Bockelman <bbockelm@cse.unl.edu>
 - Carl Madison <carl@sylabs.io>
 - Chris Burr <christopher.burr@cern.ch>
+- Christian Goll <cgoll@suse.com>
 - Chris Hollowell <hollowec@bnl.gov>
 - Christian Neyers <foss@neyers.org>
 - Daniele Tamino <daniele.tamino@gmail.com>

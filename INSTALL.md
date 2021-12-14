@@ -44,6 +44,18 @@ sudo yum install -y \
     wget git
 ```
 
+On SLE/openSUSE
+
+```sh
+# Install RPM packages for dependencies
+sudo zypper install -y \
+  libseccomp-devel \
+  libuuid-devel \
+  openssl-devel \
+  cryptsetup sysuser-tools \
+  gcc go
+```
+
 ## Install Go
 
 Apptainer is written in Go, and may require a newer version of Go than is
