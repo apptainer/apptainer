@@ -10,6 +10,7 @@
 package loop
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"syscall"
@@ -81,33 +82,25 @@ type Info64 struct {
 	Init           [2]uint64
 }
 
-// Error returned when attachFromFile failed to find a valid loop device,
-// but EAGAIN or EBUSY was returned. Will be used in AttachFromFile to determine
-// whether we should abort or continue to try finding a loop device.
-type TransientAttachError struct {
-	message string
-}
-
-func (tae *TransientAttachError) Error() string {
-	return tae.message
-}
+var errTransientAttach = errors.New("failed to successfully allocate a loop device (please retry)")
 
 func (loop *Device) AttachFromFile(image *os.File, mode int, number *int) error {
 	maxRetries := 5
+	var err error
 
 	for i := 0; i < maxRetries; i++ {
 		err := loop.attachFromFile(image, mode, number)
 		if err != nil {
-			_, transient := err.(*TransientAttachError)
-			if !transient {
+			if !errors.Is(err, errTransientAttach) {
 				return err
 			}
+			sylog.Debugf("Transient error detected: %s", err)
 			time.Sleep(250 * time.Millisecond)
 		} else {
 			return nil
 		}
 	}
-	return fmt.Errorf("failed to attach to loop device")
+	return fmt.Errorf("failed to set loop flags: %s", err)
 }
 
 // attachFromFile finds a free loop device, opens it, and stores file descriptor
@@ -150,7 +143,7 @@ func (loop *Device) attachFromFile(image *os.File, mode int, number *int) error 
 				}
 			}
 			if transientErrorFound {
-				return &TransientAttachError{"failed to successfully allocate a loop device (please retry)"}
+				return fmt.Errorf("%w", errTransientAttach)
 			}
 			return fmt.Errorf("no loop devices available")
 		}
