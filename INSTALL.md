@@ -45,6 +45,7 @@ sudo yum install -y \
 ```
 
 On SLE/openSUSE
+
 ```sh
 # Install RPM packages for dependencies
 sudo zypper install -y \
@@ -54,6 +55,7 @@ sudo zypper install -y \
   cryptsetup sysuser-tools \
   gcc go
 ```
+
 ## Install Go
 
 Apptainer is written in Go, and may require a newer version of Go than is
