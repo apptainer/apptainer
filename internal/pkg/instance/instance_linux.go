@@ -53,6 +53,7 @@ type File struct {
 	IP         string `json:"ip"`
 	LogErrPath string `json:"logErrPath"`
 	LogOutPath string `json:"logOutPath"`
+	Checkpoint string `json:"checkpoint"`
 }
 
 // ProcName returns processus name based on instance name

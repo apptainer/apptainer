@@ -39,6 +39,8 @@ var (
 	ApptainerEnv     []string
 	ApptainerEnvFile string
 	NoMount          []string
+	DMTCPLaunch      string
+	DMTCPRestart     string
 
 	IsBoot          bool
 	IsFakeroot      bool
@@ -644,6 +646,26 @@ var actionNoUmaskFlag = cmdline.Flag{
 	Name:         "no-umask",
 	Usage:        "do not propagate umask to the container, set default 0022 umask",
 	EnvKeys:      []string{"NO_UMASK"},
+}
+
+// --dmtcp-launch
+var actionDMTCPLaunchFlag = cmdline.Flag{
+	ID:           "actionDMTCPLaunchFlag",
+	Value:        &DMTCPLaunch,
+	DefaultValue: "",
+	Name:         "dmtcp-launch",
+	Usage:        "checkpoint for dmtcp to save container process state to",
+	EnvKeys:      []string{"DMTCP_LAUNCH"},
+}
+
+// --dmtcp-restart
+var actionDMTCPRestartFlag = cmdline.Flag{
+	ID:           "actionDMTCPrestartFlag",
+	Value:        &DMTCPRestart,
+	DefaultValue: "",
+	Name:         "dmtcp-restart",
+	Usage:        "checkpoint for dmtcp to use to restart container process",
+	EnvKeys:      []string{"DMTCP_RESTART"},
 }
 
 func init() {

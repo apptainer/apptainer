@@ -31,6 +31,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/apptainer/apptainer/internal/pkg/checkpoint/dmtcp"
 	"github.com/apptainer/apptainer/internal/pkg/instance"
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
 	"github.com/apptainer/apptainer/internal/pkg/security"
@@ -364,6 +365,7 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 		file.Image = e.EngineConfig.GetImage()
 		file.LogErrPath = logErrPath
 		file.LogOutPath = logOutPath
+		file.Checkpoint = e.EngineConfig.GetDMTCPConfig().Checkpoint
 
 		ip, err := e.getIP()
 		if err != nil {
@@ -813,6 +815,12 @@ func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []st
 	}
 
 	execBuiltin := func(ctx context.Context, argv []string) error {
+		dmtcpConfig := engineConfig.GetDMTCPConfig()
+		if dmtcpConfig.Enabled {
+			argv = dmtcp.InjectArgs(dmtcpConfig, argv)
+			sylog.Debugf("Injected DMTCP args %+q", argv)
+		}
+
 		cmd, err := shell.LookPath(ctx, argv[0])
 		if err != nil {
 			return err

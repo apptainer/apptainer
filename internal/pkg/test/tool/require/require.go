@@ -204,6 +204,14 @@ func Rocm(t *testing.T) {
 	}
 }
 
+// DMTCP checks that a DMTCP stack is available
+func DMTCP(t *testing.T) {
+	_, err := exec.LookPath("dmtcp_launch")
+	if err != nil {
+		t.Skipf("dmtcp_launch not found on PATH: %v", err)
+	}
+}
+
 // Filesystem checks that the current test could use the
 // corresponding filesystem, if the filesystem is not
 // listed in /proc/filesystems, the current test is skipped

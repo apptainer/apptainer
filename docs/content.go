@@ -1063,6 +1063,51 @@ Enterprise Performance Computing (EPC)`
 
   To create a single EXT3 writable overlay image:
   $ apptainer overlay create --size 1024 /tmp/my_overlay.img`
+
+	CheckpointUse   string = `checkpoint`
+	CheckpointShort string = `Manage container checkpoint state`
+	CheckpointLong  string = `
+  The checkpoint command allows for the creation and management of container checkpoint state.`
+	CheckpointExample string = `
+  All checkpoint commands have their own help output:
+
+  $ apptainer help checkpoint create
+  $ apptainer checkpoint create --help`
+
+	CheckpointListUse   string = `list`
+	CheckpointListShort string = `List local checkpoints`
+	CheckpointListLong  string = `
+  The checkpoint list command will list the checkpoints stored at $HOME/.apptainer/checkpoints
+  for use with container instances.`
+	CheckpointListExample string = `
+  To list checkpoints:
+  $ apptainer checkpoint list`
+
+	CheckpointCreateUse   string = `create <name>`
+	CheckpointCreateShort string = `Create empty checkpoint storage`
+	CheckpointCreateLong  string = `
+  The checkpoint create command will initialize a location to store checkpoint data once used
+  by a container`
+	CheckpointCreateExample string = `
+  To create an initially empty checkpoint:
+  $ apptainer checkpoint create example-checkpoint`
+
+	CheckpointDeleteUse   string = `delete <name>`
+	CheckpointDeleteShort string = `Delete a checkpoint`
+	CheckpointDeleteLong  string = `
+  The checkpoint delete command will remove all state for the given checkpoint.`
+	CheckpointDeleteExample string = `
+  To delete a checkpoint:
+  $ apptainer checkpoint delete example-checkpoint`
+
+	CheckpointInstanceUse   string = `instance <instance-name>`
+	CheckpointInstanceShort string = `Checkpoint the state of a running instance`
+	CheckpointInstanceLong  string = `
+  The checkpoint instance command checkpoints an active instance by name. The instance must
+  have been started with either --dmtcp-launch or --dmtcp-restart.`
+	CheckpointInstanceExample string = `
+  To checkpoint an instnace:
+  $ apptainer checkpoint instance example-instance`
 )
 
 // Documentation for sif/siftool command.

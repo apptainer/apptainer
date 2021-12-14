@@ -1,0 +1,38 @@
+Bootstrap: docker
+From: python:3.10-buster
+
+%post
+    mkdir /app
+    cat > /app/server.py <<EOF
+import argparse
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+state = "0"
+
+parser = argparse.ArgumentParser(description='Optional app description')
+parser.add_argument('port', type=int, help='A required integer port argument')
+args = parser.parse_args()
+
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type','text/plain')
+        self.end_headers()
+
+        self.wfile.write(bytes(state, "utf8"))
+    def do_POST(self):
+        self.send_response(200)
+        self.send_header('Content-type','text/plain')
+        self.end_headers()
+
+        global state
+        state = self.rfile.read(1).decode("utf8")
+        self.wfile.write(bytes(state, "utf8"))
+
+
+with HTTPServer(('', args.port), handler) as server:
+    server.serve_forever()
+EOF
+
+%startscript
+    python3 /app/server.py $@

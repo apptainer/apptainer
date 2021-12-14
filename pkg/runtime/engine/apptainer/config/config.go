@@ -62,6 +62,15 @@ type FuseMount struct {
 	Cmd           *exec.Cmd `json:"-"`                       // holds the process exec command when FUSE driver run in foreground mode
 }
 
+// DMTCPConfig stores the DMTCP-related information required for
+// container process checkpoint/restart behvaior.
+type DMTCPConfig struct {
+	Enabled    bool     `json:"enabled,omitempty"`
+	Restart    bool     `json:"restart,omitempty"`
+	Checkpoint string   `json:"checkpoint,omitempty"`
+	Args       []string `json:"args,omitempty"`
+}
+
 // JSONConfig stores engine specific configuration that is allowed to be set by the user.
 type JSONConfig struct {
 	ScratchDir        []string          `json:"scratchdir,omitempty"`
@@ -125,6 +134,7 @@ type JSONConfig struct {
 	RestoreUmask      bool              `json:"restoreUmask,omitempty"`
 	DeleteTempDir     string            `json:"deleteTempDir,omitempty"`
 	Umask             int               `json:"umask,omitempty"`
+	DMTCPConfig       DMTCPConfig       `json:"dmtcpConfig,omitempty"`
 }
 
 // SetImage sets the container image path to be used by EngineConfig.JSON.
@@ -795,4 +805,14 @@ func (e *EngineConfig) SetUmask(umask int) {
 // GetUmask returns the umask to be used in the container launched process.
 func (e *EngineConfig) GetUmask() int {
 	return e.JSON.Umask
+}
+
+// SetDMTCPConfig sets the dmtcp configuration for the engine to used for the container process.
+func (e *EngineConfig) SetDMTCPConfig(config DMTCPConfig) {
+	e.JSON.DMTCPConfig = config
+}
+
+// GetDMTCPConfig returns the dmtcp configuration to be used for the container process.
+func (e *EngineConfig) GetDMTCPConfig() DMTCPConfig {
+	return e.JSON.DMTCPConfig
 }

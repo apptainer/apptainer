@@ -375,6 +375,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 				{"StopAll", c.testStopAll},
 				{"GhostInstance", c.testGhostInstance},
 				{"ApplyCgroupsInstance", c.applyCgroupsInstance},
+				{"CheckpointInstance", c.testCheckpointInstance},
 			}
 
 			profiles := []e2e.Profile{
