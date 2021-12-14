@@ -73,18 +73,6 @@ func ResetPrivilege(t *testing.T) {
 	runtime.UnlockOSThread()
 }
 
-// WithPrivilege wraps the supplied test function with calls to ensure
-// the test is run with elevated privileges.
-func WithPrivilege(f func(t *testing.T)) func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Helper()
-
-		EnsurePrivilege(t)
-
-		f(t)
-	}
-}
-
 // WithoutPrivilege wraps the supplied test function with calls to ensure
 // the test is run without elevated privileges.
 func WithoutPrivilege(f func(t *testing.T)) func(t *testing.T) {

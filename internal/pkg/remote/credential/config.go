@@ -9,8 +9,7 @@
 package credential
 
 const (
-	// BasicPrefix is the prefix for the HTTP basic authentication.
-	BasicPrefix = "Basic "
+
 	// TokenPrefix is the prefix for the HTTP token/bearer authentication.
 	TokenPrefix = "Bearer "
 )

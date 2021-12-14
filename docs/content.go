@@ -222,9 +222,6 @@ Enterprise Performance Computing (EPC)`
   $ apptainer help key newpair
   $ apptainer key list --help`
 
-	// keys is for the hidden 'keys' command
-	KeysUse string = `keys [keys options...]`
-
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// key import
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

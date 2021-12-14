@@ -105,11 +105,6 @@ func (e *KeyExistsError) Error() string {
 	return fmt.Sprintf("the key with fingerprint %X already belongs to the keyring", e.fingerprint)
 }
 
-// GetTokenFile returns a string describing the path to the stored token file
-func GetTokenFile() string {
-	return filepath.Join(syfs.ConfigDir(), "sylabs-token")
-}
-
 // dirPath returns a string describing the path to the sypgp home folder
 func dirPath() string {
 	sypgpDir := os.Getenv("APPTAINER_SYPGPDIR")
@@ -313,11 +308,6 @@ func printEntities(w io.Writer, entities openpgp.EntityList) {
 		printEntity(w, i, e)
 		fmt.Fprint(w, "   --------\n")
 	}
-}
-
-// PrintEntity pretty prints an entity entry
-func PrintEntity(index int, e *openpgp.Entity) {
-	printEntity(os.Stdout, index, e)
 }
 
 // PrintPubKeyring prints the public keyring read from the public local store
@@ -543,20 +533,6 @@ func (keyring *Handle) GenKeyPair(opts GenKeyPairOptions) (*openpgp.Entity, erro
 	}
 
 	return entity, nil
-}
-
-// DecryptKey decrypts a private key provided a pass phrase.
-func DecryptKey(k *openpgp.Entity, message string) error {
-	if message == "" {
-		message = "Enter key passphrase : "
-	}
-
-	pass, err := interactive.AskQuestionNoEcho(message)
-	if err != nil {
-		return err
-	}
-
-	return k.PrivateKey.Decrypt([]byte(pass))
 }
 
 // EncryptKey encrypts a private key using a pass phrase

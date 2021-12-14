@@ -24,8 +24,6 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-const OCIConfigJSON = "oci-config"
-
 // Bundle is the temporary environment used during the image building process.
 type Bundle struct {
 	JSONObjects map[string][]byte `json:"jsonObjects"`

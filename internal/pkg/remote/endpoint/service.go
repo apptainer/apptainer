@@ -35,7 +35,6 @@ const (
 
 // SCS cloud services
 const (
-	Consent   = "consent"
 	Token     = "token"
 	Registry  = "registry"
 	Keystore  = "keystore" // alias for keyserver

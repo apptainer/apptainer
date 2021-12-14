@@ -42,13 +42,6 @@ const (
 	// SifDefaultTag is the tag to use when a tag is not specified
 	SifDefaultTag = "latest"
 
-	// SifConfigMediaTypeV1 is the config descriptor mediaType
-	// Since we only ever send a null config this should not have the
-	// format extension appended:
-	//   https://github.com/deislabs/oras/#pushing-artifacts-with-single-files
-	//   If a null config is passed, the config extension must be removed.
-	SifConfigMediaTypeV1 = "application/vnd.sylabs.sif.config.v1"
-
 	// SifLayerMediaTypeV1 is the mediaType for the "layer" which contains the actual SIF file
 	SifLayerMediaTypeV1 = "application/vnd.sylabs.sif.layer.v1.sif"
 

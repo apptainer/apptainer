@@ -41,9 +41,6 @@ func Debugf(format string, a ...interface{}) {}
 // SetLevel is a dummy function doing nothing.
 func SetLevel(l int, color bool) {}
 
-// DisableColor for the logger
-func DisableColor() {}
-
 // GetLevel is a dummy function returning lowest message level.
 func GetLevel() int {
 	return int(-1)
