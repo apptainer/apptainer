@@ -2,6 +2,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2021, Genomics plc.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -80,11 +81,41 @@ type Info64 struct {
 	Init           [2]uint64
 }
 
-// AttachFromFile finds a free loop device, opens it, and stores file descriptor
-// provided by image file pointer
+// Error returned when attachFromFile failed to find a valid loop device,
+// but EAGAIN or EBUSY was returned. Will be used in AttachFromFile to determine
+// whether we should abort or continue to try finding a loop device.
+type TransientAttachError struct {
+	message string
+}
+
+func (tae *TransientAttachError) Error() string {
+	return tae.message
+}
+
 func (loop *Device) AttachFromFile(image *os.File, mode int, number *int) error {
+	maxRetries := 5
+
+	for i := 0; i < maxRetries; i++ {
+		err := loop.attachFromFile(image, mode, number)
+		if err != nil {
+			_, transient := err.(*TransientAttachError)
+			if !transient {
+				return err
+			}
+			time.Sleep(250 * time.Millisecond)
+		} else {
+			return nil
+		}
+	}
+	return fmt.Errorf("failed to attach to loop device")
+}
+
+// attachFromFile finds a free loop device, opens it, and stores file descriptor
+// provided by image file pointer
+func (loop *Device) attachFromFile(image *os.File, mode int, number *int) error {
 	var path string
 	var loopFd int
+	var transientErrorFound bool
 
 	if image == nil {
 		return fmt.Errorf("empty file pointer")
@@ -117,6 +148,9 @@ func (loop *Device) AttachFromFile(image *os.File, mode int, number *int) error 
 					device = freeDevice
 					continue
 				}
+			}
+			if transientErrorFound {
+				return &TransientAttachError{"failed to successfully allocate a loop device (please retry)"}
 			}
 			return fmt.Errorf("no loop devices available")
 		}
@@ -163,41 +197,34 @@ func (loop *Device) AttachFromFile(image *os.File, mode int, number *int) error 
 				return nil
 			}
 			syscall.Close(loopFd)
-		} else {
-			_, _, esys := syscall.Syscall(syscall.SYS_IOCTL, uintptr(loopFd), CmdSetFd, image.Fd())
-			if esys != 0 {
-				syscall.Close(loopFd)
-				continue
-			}
-			break
+			continue
 		}
-	}
 
-	if _, _, err := syscall.Syscall(syscall.SYS_FCNTL, uintptr(loopFd), syscall.F_SETFD, syscall.FD_CLOEXEC); err != 0 {
-		return fmt.Errorf("failed to set close-on-exec on loop device %s: %s", path, err.Error())
-	}
+		_, _, esys := syscall.Syscall(syscall.SYS_IOCTL, uintptr(loopFd), CmdSetFd, image.Fd())
+		if esys != 0 {
+			syscall.Close(loopFd)
+			continue
+		}
 
-	maxRetries := 5
-	for i := 0; i < maxRetries; i++ {
+		if _, _, err := syscall.Syscall(syscall.SYS_FCNTL, uintptr(loopFd), syscall.F_SETFD, syscall.FD_CLOEXEC); err != 0 {
+			return fmt.Errorf("failed to set close-on-exec on loop device %s: %s", path, err.Error())
+		}
+
 		if _, _, err := syscall.Syscall(syscall.SYS_IOCTL, uintptr(loopFd), CmdSetStatus64, uintptr(unsafe.Pointer(loop.Info))); err != 0 {
-			if err == syscall.EAGAIN && i < maxRetries-1 {
-				// with changes introduces in https://github.com/torvalds/linux/commit/5db470e229e22b7eda6e23b5566e532c96fb5bc3
-				// loop_set_status() can temporarily fail with EAGAIN -> sleep and try again
-				// (cf. https://github.com/karelzak/util-linux/blob/dab1303287b7ebe30b57ccc78591070dad0a85ea/lib/loopdev.c#L1355)
-				time.Sleep(250 * time.Millisecond)
+			// clear associated file descriptor to release the loop device
+			syscall.Syscall(syscall.SYS_IOCTL, uintptr(loopFd), CmdClrFd, 0)
+			if err == syscall.EAGAIN || err == syscall.EBUSY {
+				transientErrorFound = true
 				continue
 			}
-			// clear associated file descriptor to release the loop device,
-			// best-effort here without error checking because we need the
-			// error from previous ioctl call
-			syscall.Syscall(syscall.SYS_IOCTL, uintptr(loopFd), CmdClrFd, 0)
 			return fmt.Errorf("failed to set loop flags on loop device: %s", syscall.Errno(err))
 		}
-		break
+
+		loop.fd = new(int)
+		*loop.fd = loopFd
+		return nil
 	}
 
-	loop.fd = new(int)
-	*loop.fd = loopFd
 	return nil
 }
 
