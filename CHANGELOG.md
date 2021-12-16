@@ -106,10 +106,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - `--no-https` now applies to connections made to library services specified
   in `library://<hostname>/...` URIs.
 - Correct documentation for sign command r.e. source of key index.
-- Restructure loop device discovery to address an issue where a transient `EBUSY`
-  error could lead to failure under Arvados. Also greedily try for a working
-  loop device, rather than perform delayed retries on encountering `EAGAIN`,
-  since we hold an exclusive lock which can block other processes.
+- Restructure loop device discovery to address `EAGAIN` issue, sleep/retry
+  approach is replaced by a call to the sync syscall to commit cached pages
+  to the underyling filesystem.
 
 ### Changes for Testing / Development
 
