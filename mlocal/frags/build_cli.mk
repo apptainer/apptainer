@@ -31,8 +31,13 @@ $(apptainer_INSTALL): $(apptainer)
 	$(V)umask 0022 && mkdir -p $(@D)
 	$(V)install -m 0755 $(apptainer) $(apptainer_INSTALL) # set cp to install
 
+singularity_INSTALL := $(DESTDIR)$(BINDIR)/singularity
+$(singularity_INSTALL):
+	@echo " INSTALL" $@
+	$(V)ln -sf apptainer $(singularity_INSTALL)
+
 CLEANFILES += $(apptainer)
-INSTALLFILES += $(apptainer_INSTALL)
+INSTALLFILES += $(apptainer_INSTALL) $(singularity_INSTALL)
 ALL += $(apptainer)
 
 
