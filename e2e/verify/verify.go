@@ -36,7 +36,7 @@ type verifyOutput struct {
 
 const (
 	successURL   = "oras://ghcr.io/apptainer/verify_success:1.0.2"
-	corruptedURL = "library://sylabs/tests/verify_corrupted:1.0.1"
+	corruptedURL = "oras://ghcr.io/apptainer/verify_corrupted:1.0.2"
 )
 
 func getNameJSON(keyNum int) []string {

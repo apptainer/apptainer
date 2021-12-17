@@ -165,8 +165,7 @@ func Writer() io.Writer {
 }
 
 // DebugLogger is an implementation of the go-log/log Logger interface that will
-// output log messages via sylog.debug when required by external packages such
-// as the scs-library-client
+// output log messages via sylog.debug when required by external packages
 type DebugLogger struct{}
 
 // Log outputs a log message via sylog.Debugf

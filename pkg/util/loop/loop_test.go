@@ -29,10 +29,12 @@ func TestLoop(t *testing.T) {
 		MaxLoopDevices: GetMaxLoopDevices(),
 		Info:           info,
 	}
+	defer loopDevOne.Close()
 	loopDevTwo := &Device{
 		MaxLoopDevices: GetMaxLoopDevices(),
 		Info:           info,
 	}
+	defer loopDevTwo.Close()
 
 	loopOne := -1
 	loopTwo := -1
@@ -49,7 +51,6 @@ func TestLoop(t *testing.T) {
 	if err := loopDevOne.AttachFromPath("/etc/passwd", os.O_RDONLY, &loopOne); err != nil {
 		t.Error(err)
 	}
-	defer loopDevOne.Close()
 
 	f, err := os.Open("/etc/passwd")
 	if err != nil {

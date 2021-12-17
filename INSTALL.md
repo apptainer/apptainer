@@ -44,6 +44,18 @@ sudo yum install -y \
     wget git
 ```
 
+On SLE/openSUSE
+
+```sh
+# Install RPM packages for dependencies
+sudo zypper install -y \
+  libseccomp-devel \
+  libuuid-devel \
+  openssl-devel \
+  cryptsetup sysuser-tools \
+  gcc go
+```
+
 ## Install Go
 
 Apptainer is written in Go, and may require a newer version of Go than is
@@ -57,7 +69,7 @@ _**NOTE:** if you are updating Go from a older version, make sure you remove
 `/usr/local/go` before reinstalling it._
 
 ```sh
-export GOVERSION=1.17.3 OS=linux ARCH=amd64  # change this as you need
+export GOVERSION=1.17.5 OS=linux ARCH=amd64  # change this as you need
 
 wget -O /tmp/go${GOVERSION}.${OS}-${ARCH}.tar.gz \
   https://dl.google.com/go/go${GOVERSION}.${OS}-${ARCH}.tar.gz

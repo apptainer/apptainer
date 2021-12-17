@@ -32,7 +32,7 @@ func (c ctx) issue5426(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--sandbox", sandboxDir, "library://alpine:3.11.5"),
+		e2e.WithArgs("--force", "--sandbox", sandboxDir, "oras://ghcr.io/apptainer/alpine:3.15.0"),
 		e2e.ExpectExit(0),
 	)
 

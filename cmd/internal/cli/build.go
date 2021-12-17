@@ -16,19 +16,12 @@ import (
 	"runtime"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
-	"github.com/apptainer/apptainer/pkg/build/types"
-	"github.com/apptainer/apptainer/pkg/build/types/parser"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/image"
-	"github.com/apptainer/apptainer/pkg/sylog"
 	ocitypes "github.com/containers/image/v5/types"
 	"github.com/spf13/cobra"
-	scsbuildclient "github.com/sylabs/scs-build-client/client"
-	scskeyclient "github.com/sylabs/scs-key-client/client"
-	scslibclient "github.com/sylabs/scs-library-client/client"
 )
 
 var buildArgs struct {
@@ -36,18 +29,15 @@ var buildArgs struct {
 	bindPaths     []string
 	mounts        []string
 	arch          string
-	builderURL    string
 	libraryURL    string
 	keyServerURL  string
 	webURL        string
-	detached      bool
 	encrypt       bool
 	fakeroot      bool
 	fixPerms      bool
 	isJSON        bool
 	noCleanUp     bool
 	noTest        bool
-	remote        bool
 	sandbox       bool
 	update        bool
 	nvidia        bool
@@ -109,17 +99,6 @@ var buildNoTestFlag = cmdline.Flag{
 	EnvKeys:      []string{"NOTEST"},
 }
 
-// -r|--remote
-var buildRemoteFlag = cmdline.Flag{
-	ID:           "buildRemoteFlag",
-	Value:        &buildArgs.remote,
-	DefaultValue: false,
-	Name:         "remote",
-	ShortHand:    "r",
-	Usage:        "build image remotely (does not require root)",
-	EnvKeys:      []string{"REMOTE"},
-}
-
 // --arch
 var buildArchFlag = cmdline.Flag{
 	ID:           "buildArchFlag",
@@ -128,27 +107,6 @@ var buildArchFlag = cmdline.Flag{
 	Name:         "arch",
 	Usage:        "architecture for remote build",
 	EnvKeys:      []string{"BUILD_ARCH"},
-}
-
-// -d|--detached
-var buildDetachedFlag = cmdline.Flag{
-	ID:           "buildDetachedFlag",
-	Value:        &buildArgs.detached,
-	DefaultValue: false,
-	Name:         "detached",
-	ShortHand:    "d",
-	Usage:        "submit build job and print build ID (no real-time logs and requires --remote)",
-	EnvKeys:      []string{"DETACHED"},
-}
-
-// --builder
-var buildBuilderFlag = cmdline.Flag{
-	ID:           "buildBuilderFlag",
-	Value:        &buildArgs.builderURL,
-	DefaultValue: "",
-	Name:         "builder",
-	Usage:        "remote Build Service URL, setting this implies --remote",
-	EnvKeys:      []string{"BUILDER"},
 }
 
 // --library
@@ -282,8 +240,6 @@ func init() {
 		cmdManager.RegisterCmd(buildCmd)
 
 		cmdManager.RegisterFlagForCmd(&buildArchFlag, buildCmd)
-		cmdManager.RegisterFlagForCmd(&buildBuilderFlag, buildCmd)
-		cmdManager.RegisterFlagForCmd(&buildDetachedFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildDisableCacheFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildEncryptFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildFakerootFlag, buildCmd)
@@ -292,7 +248,6 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildLibraryFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildNoCleanupFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildNoTestFlag, buildCmd)
-		cmdManager.RegisterFlagForCmd(&buildRemoteFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildSandboxFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildSectionFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildUpdateFlag, buildCmd)
@@ -331,13 +286,8 @@ var buildCmd = &cobra.Command{
 }
 
 func preRun(cmd *cobra.Command, args []string) {
-	if buildArgs.fakeroot && !buildArgs.remote {
+	if buildArgs.fakeroot {
 		fakerootExec(args)
-	}
-
-	// Always perform remote build when builder flag is set
-	if cmd.Flags().Lookup("builder").Changed {
-		cmd.Flags().Lookup("remote").Value.Set("true")
 	}
 }
 
@@ -406,48 +356,6 @@ func checkBuildTarget(path string) error {
 	return nil
 }
 
-// definitionFromSpec is specifically for parsing specs for the remote builder
-// it uses a different version the the definition struct and parser
-func definitionFromSpec(spec string) (types.Definition, error) {
-	// Try spec as URI first
-	def, err := types.NewDefinitionFromURI(spec)
-	if err == nil {
-		return def, nil
-	}
-
-	// Try spec as local file
-	var isValid bool
-	isValid, err = parser.IsValidDefinition(spec)
-	if err != nil {
-		return types.Definition{}, err
-	}
-
-	if isValid {
-		sylog.Debugf("Found valid definition: %s\n", spec)
-		// File exists and contains valid definition
-		var defFile *os.File
-		defFile, err = os.Open(spec)
-		if err != nil {
-			return types.Definition{}, err
-		}
-
-		defer defFile.Close()
-
-		return parser.ParseDefinitionFile(defFile)
-	}
-
-	// File exists and does NOT contain a valid definition
-	// local image or sandbox
-	def = types.Definition{
-		Header: map[string]string{
-			"bootstrap": "localimage",
-			"from":      spec,
-		},
-	}
-
-	return def, nil
-}
-
 // makeDockerCredentials creates an *ocitypes.DockerAuthConfig to use for
 // OCI/Docker registry operation configuration. Note that if we don't have a
 // username or password set it will return a nil pointer, as containers/image
@@ -482,21 +390,4 @@ func makeDockerCredentials(cmd *cobra.Command) (authConf *ocitypes.DockerAuthCon
 	// pointer, which will mean containers/image falls back to looking for
 	// .docker/config.json
 	return nil, nil
-}
-
-// get configuration for remote library, builder, keyserver that may be used in the build
-func getServiceConfigs(buildURI, libraryURI, keyserverURI string) (*scsbuildclient.Config, *scslibclient.Config, []scskeyclient.Option, error) {
-	lc, err := getLibraryClientConfig(libraryURI)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	bc, err := getBuilderClientConfig(buildURI)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	co, err := getKeyserverClientOpts(keyserverURI, endpoint.KeyserverVerifyOp)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	return bc, lc, co, nil
 }

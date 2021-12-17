@@ -35,9 +35,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	ocitypes "github.com/containers/image/v5/types"
 	"github.com/spf13/cobra"
-	scsbuildclient "github.com/sylabs/scs-build-client/client"
 	scskeyclient "github.com/sylabs/scs-key-client/client"
-	scslibclient "github.com/sylabs/scs-library-client/client"
 	"golang.org/x/term"
 )
 
@@ -618,50 +616,4 @@ func getKeyserverClientOpts(uri string, op endpoint.KeyserverOp) ([]scskeyclient
 	}
 
 	return currentRemoteEndpoint.KeyserverClientOpts(uri, op)
-}
-
-// getLibraryClientConfig returns client config for library server access.
-// A "" value for uri will return client config for the current endpoint.
-// A specified uri will return client options for that library server.
-func getLibraryClientConfig(uri string) (*scslibclient.Config, error) {
-	if currentRemoteEndpoint == nil {
-		var err error
-
-		// if we can load config and if default endpoint is set, use that
-		// otherwise fall back on regular authtoken and URI behavior
-		currentRemoteEndpoint, err = sylabsRemote()
-		if err != nil {
-			return nil, fmt.Errorf("unable to load remote configuration: %v", err)
-		}
-	}
-	if currentRemoteEndpoint == endpoint.DefaultEndpointConfig {
-		sylog.Warningf("No default remote in use, falling back to default library: %s", endpoint.SCSDefaultLibraryURI)
-	}
-
-	return currentRemoteEndpoint.LibraryClientConfig(uri)
-}
-
-// getBuilderClientConfig returns client config for build server access.
-// A "" value for uri will return client config for the current endpoint.
-// A specified uri will return client options for that build server.
-func getBuilderClientConfig(uri string) (*scsbuildclient.Config, error) {
-	if currentRemoteEndpoint == nil {
-		var err error
-
-		// if we can load config and if default endpoint is set, use that
-		// otherwise fall back on regular authtoken and URI behavior
-		currentRemoteEndpoint, err = sylabsRemote()
-		if err != nil {
-			return nil, fmt.Errorf("unable to load remote configuration: %v", err)
-		}
-	}
-	if currentRemoteEndpoint == endpoint.DefaultEndpointConfig {
-		sylog.Warningf("No default remote in use, falling back to default builder: %s", endpoint.SCSDefaultBuilderURI)
-	}
-
-	return currentRemoteEndpoint.BuilderClientConfig(uri)
-}
-
-func URI() string {
-	return "https://" + strings.TrimSuffix(currentRemoteEndpoint.URI, "/")
 }
