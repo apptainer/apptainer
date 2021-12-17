@@ -34,6 +34,17 @@ type actionTests struct {
 	env e2e.TestEnv
 }
 
+// run tests min fuctionality for singularity symlink using actionRun
+func (c actionTests) singularityLink(t *testing.T) {
+	saveCmdPath := c.env.CmdPath
+	i := strings.LastIndex(saveCmdPath, "apptainer")
+	c.env.CmdPath = saveCmdPath[:i] + "singularity"
+
+	c.actionRun(t)
+
+	c.env.CmdPath = saveCmdPath
+}
+
 // run tests min fuctionality for apptainer run
 func (c actionTests) actionRun(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
@@ -2359,6 +2370,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 
 	return testhelper.Tests{
 		"action URI":            c.RunFromURI,          // action_URI
+		"singularity link":      c.singularityLink,     // singularity symlink
 		"exec":                  c.actionExec,          // apptainer exec
 		"persistent overlay":    c.PersistentOverlay,   // Persistent Overlay
 		"run":                   c.actionRun,           // apptainer run

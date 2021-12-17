@@ -41,6 +41,9 @@ License: BSD-3-Clause-LBNL
 URL: https://apptainer.org
 Source: %{name}-%{package_version}.tar.gz
 ExclusiveOS: linux
+Provides: singularity
+Obsoletes: singularity < 3.9
+Conflicts: singularity
 
 %if "%{_target_vendor}" == "suse"
 %if "%{sles_version}" != "11"
@@ -132,27 +135,29 @@ mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 make -C builddir DESTDIR=$RPM_BUILD_ROOT install man
 
 %files
-%attr(4755, root, root) %{_libexecdir}/apptainer/bin/starter-suid
-%{_bindir}/apptainer
+%attr(4755, root, root) %{_libexecdir}/%{name}/bin/starter-suid
+%{_bindir}/%{name}
+%{_bindir}/singularity
 %{_bindir}/run-singularity
-%dir %{_libexecdir}/apptainer
-%{_libexecdir}/apptainer/bin/starter
-%{_libexecdir}/apptainer/cni/*
-%dir %{_sysconfdir}/apptainer
-%config(noreplace) %{_sysconfdir}/apptainer/*.conf
-%config(noreplace) %{_sysconfdir}/apptainer/*.toml
-%config(noreplace) %{_sysconfdir}/apptainer/*.json
-%config(noreplace) %{_sysconfdir}/apptainer/*.yaml
-%config(noreplace) %{_sysconfdir}/apptainer/global-pgp-public
-%config(noreplace) %{_sysconfdir}/apptainer/cgroups/*
-%config(noreplace) %{_sysconfdir}/apptainer/network/*
-%config(noreplace) %{_sysconfdir}/apptainer/seccomp-profiles/*
+%dir %{_libexecdir}/%{name}
+%{_libexecdir}/%{name}/bin/starter
+%{_libexecdir}/%{name}/cni/*
+%dir %{_sysconfdir}/%{name}
+%config(noreplace) %{_sysconfdir}/%{name}/*.conf
+%config(noreplace) %{_sysconfdir}/%{name}/*.toml
+%config(noreplace) %{_sysconfdir}/%{name}/*.json
+%config(noreplace) %{_sysconfdir}/%{name}/*.yaml
+%config(noreplace) %{_sysconfdir}/%{name}/global-pgp-public
+%config(noreplace) %{_sysconfdir}/%{name}/cgroups/*
+%config(noreplace) %{_sysconfdir}/%{name}/network/*
+%config(noreplace) %{_sysconfdir}/%{name}/seccomp-profiles/*
 %dir %{_sysconfdir}/bash_completion.d
 %{_sysconfdir}/bash_completion.d/*
-%dir %{_localstatedir}/apptainer
-%dir %{_localstatedir}/apptainer/mnt
-%dir %{_localstatedir}/apptainer/mnt/session
-%{_mandir}/man1/apptainer*
+%dir %{_localstatedir}/%{name}
+%dir %{_localstatedir}/%{name}/mnt
+%dir %{_localstatedir}/%{name}/mnt/session
+%{_mandir}/man1/%{name}*
+%{_mandir}/man1/singularity*
 
 
 %changelog
