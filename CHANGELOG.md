@@ -105,6 +105,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   configuration file being written.
 - `--no-https` now applies to connections made to library services specified
   in `library://<hostname>/...` URIs.
+- Ensure `gengodep` in build uses vendor dir when present.
 - Correct documentation for sign command r.e. source of key index.
 - Restructure loop device discovery to address `EAGAIN` issue, sleep/retry
   approach is replaced by a call to the sync syscall to commit cached pages

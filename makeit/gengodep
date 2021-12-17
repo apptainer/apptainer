@@ -28,15 +28,9 @@ shift 4
 # get propagated down to go list.
 export GOPROXY
 
-if test -e "${srcdir}/vendor/modules.txt" ; then
-	mod_mode=vendor
-else
-	mod_mode=readonly
-fi
-
 template='{{ with $d := . }}{{ if not $d.Standard }}{{ range $d.GoFiles }}{{ printf "%s/%s\n" $d.Dir . }}{{ end }}{{ range $d.CgoFiles }}{{ printf "%s/%s\n" $d.Dir . }}{{ end }}{{ end }}{{ end }}'
 
-godeps=`${go} list -mod=${mod_mode} -deps -f "${template}" -tags "${gotags}" "$@" | sort -u`
+godeps=`${go} list -deps -f "${template}" -tags "${gotags}" "$@" | sort -u`
 
 for m in ${godeps}; do
     echo "$var += $m" >> ${depfile}
