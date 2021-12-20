@@ -148,7 +148,7 @@ sudo make install
 And that's it! Now you can check your Apptainer version by running:
 
 ```sh
-singularity --version
+apptainer --version
 ```
 
 The `mconfig` command accepts options that can modify the build and installation
@@ -176,44 +176,58 @@ install `rpm-build`, `wget`, and `golang`:
 sudo yum install -y rpm-build wget golang
 ```
 
-The rpm build can use the distribution or EPEL version of Go, even
-though as of this writing that version is older than the default
-minimum version of Go that Apptainer requires.
-This is because the rpm applies a source code patch to lower the minimum
-required.
+The rpm build will use the OS distribution or EPEL version of Go,
+or it will use a different installation of Go, whichever is first in $PATH.
+If the first `go` found in $PATH is too old (as it currently is for
+example on RHEL7 / CentOS7),
+then the rpm build uses that older version to compile the newer go
+toolchain from source.
+This mechanism is necessary for rpm build systems that do not allow
+downloading anything from the internet.
+In order to make use of this mechanism, use the `mconfig --only-rpm` option
+to skip the minimum version check.
+`mconfig` will then create a `.spec` file that looks for a go source
+tarball in the rpm build's current directory.
+Download the tarball like this:
 
-To build from a release source tarball do these commands:
+```sh
+eval `grep ^hstgo_preferred_version mconfig`
+wget https://dl.google.com/go/go${hstgo_preferred_version}.src.tar.gz
+```
+
+Download the latest
+[release tarball](https://github.com/apptainer/apptainer/releases)
+and use it to install the RPM like this:
 
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-export VERSION=3.8.5  # this is the singularity version, change as you need
-
+VERSION=0.1.2  # this is the apptainer version, change as you need
 # Fetch the source
-wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz
+wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
 # Build the rpm from the source tar.gz
-rpmbuild -tb singularity-${VERSION}.tar.gz
+rpmbuild -tb apptainer-${VERSION}.tar.gz
 # Install Apptainer using the resulting rpm
-sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/singularity-${VERSION}-1.el7.x86_64.rpm
+sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-${VERSION}-1.el7.x86_64.rpm
 # (Optionally) Remove the build tree and source to save space
-rm -rf ~/rpmbuild singularity-${VERSION}*.tar.gz
+rm -rf ~/rpmbuild apptainer-${VERSION}*.tar.gz
 ```
 
 <!-- markdownlint-enable MD013 -->
 
 Alternatively, to build an RPM from the latest master you can
 [clone the repo as detailed above](#clone-the-repo).
-Create the build configuration using the `--only-rpm` option of
-`mconfig` if you're using the system's too-old golang installation,
-to lower the minimum required version.
-Then use the `rpm` make target to build Apptainer as an rpm package:
+Then use the `rpm` make target to build Apptainer as an rpm package,
+for example like this if you already have a new enough golang first
+in your PATH:
 
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-./mconfig --only-rpm
+VERSION=0.1.2  # this is the apptainer version, change as you need
+./mconfig
 make -C builddir rpm
-sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/singularity-3.8.5*.x86_64.rpm # or whatever version you built
+sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-${VERSION}*.x86_64.rpm 
 ```
 
 <!-- markdownlint-enable MD013 -->
@@ -225,7 +239,7 @@ To build an rpm with an alternative install prefix set RPMPREFIX on the make
 step, for example:
 
 ```sh
-make -C builddir rpm RPMPREFIX=/opt/singularity
+make -C builddir rpm RPMPREFIX=/opt/apptainer
 ```
 
 For more information on installing/updating/uninstalling the RPM, check out our
@@ -256,7 +270,7 @@ The most straightforward way to run it is to run in a terminal:
 
 ```sh
 mkdir -p $HOME/.cache/registry
-singularity run --env REGISTRY_HTTP_ADDR=127.0.0.1:5001 \
+apptainer run --env REGISTRY_HTTP_ADDR=127.0.0.1:5001 \
                 --env REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
                 --bind $HOME/.cache/registry:/var/lib/registry \
                 docker://registry:2.7
