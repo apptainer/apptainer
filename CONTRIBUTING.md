@@ -98,8 +98,8 @@ using the contents of the `CHANGELOG.md` file as reference.
    documentation must update this file. This should be a document which can be
    used to explain what the new features of each version of Apptainer are,
    and should **not** read like a commit log. Once a release is tagged (*e.g.
-   v3.0.0*), a new top level section will be made titled **Changes Since
-   vX.Y.Z** (*e.g. Changes Since v3.0.0*) where new changes will now be
+   v1.0.0*), a new top level section will be made titled **Changes Since
+   vX.Y.Z** (*e.g. Changes Since v1.0.0*) where new changes will now be
    documented, leaving the previous section immutable.
 1. The [README](README.md) is a place to document critical information for new
    users of Apptainer. It should typically not change, but in the case where
