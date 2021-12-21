@@ -101,6 +101,8 @@ jobs:
         env:
           OS_TYPE: centos
           OS_VERSION: 7
+          # setting GO_ARCH speeds things by using binaries instead of source
+          GO_ARCH: linux-amd64
         run: ./scripts/ci-docker-run
 
   rpmbuild-rocky8:
@@ -113,6 +115,7 @@ jobs:
         env:
           OS_TYPE: rockylinux/rockylinux
           OS_VERSION: 8
+          GO_ARCH: linux-amd64
         run: ./scripts/ci-docker-run
 
   short_unit_tests:
