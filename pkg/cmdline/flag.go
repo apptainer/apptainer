@@ -12,6 +12,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/apptainer/apptainer/internal/pkg/util/env"
+	"github.com/apptainer/apptainer/pkg/sylog"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -169,8 +172,12 @@ func (m *flagManager) registerUint32Var(flag *Flag, cmds []*cobra.Command) error
 	return nil
 }
 
-func (m *flagManager) updateCmdFlagFromEnv(cmd *cobra.Command, prefix string) error {
+func (m *flagManager) updateCmdFlagFromEnv(cmd *cobra.Command, prefixIndex int) error {
 	var errs []error
+	var prefix string
+	if prefixIndex >= 0 {
+		prefix = env.ApptainerPrefixes[prefixIndex]
+	}
 
 	fn := func(flag *pflag.Flag) {
 		envKeys, ok := flag.Annotations["envkey"]
@@ -189,6 +196,9 @@ func (m *flagManager) updateCmdFlagFromEnv(cmd *cobra.Command, prefix string) er
 			val, set := os.LookupEnv(prefix + key)
 			if !set {
 				continue
+			}
+			if prefixIndex > 0 {
+				sylog.Warningf("Environment Prefix [%s] has been deprecated in favor of [%s] for [%s]", prefix, env.ApptainerPrefixes[0], prefix+key)
 			}
 			if mflag.EnvHandler != nil {
 				if err := mflag.EnvHandler(flag, val); err != nil {

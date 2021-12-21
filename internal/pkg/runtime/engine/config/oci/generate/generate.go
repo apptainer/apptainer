@@ -93,8 +93,8 @@ func (g *Generator) initLinuxNamespaces() {
 	g.Config.Linux.Namespaces = make([]specs.LinuxNamespace, 0)
 }
 
-// AddProcessEnv adds or replaces a container process environment variable.
-func (g *Generator) AddProcessEnv(env, value string) {
+// SetProcessEnv adds or replaces a container process environment variable.
+func (g *Generator) SetProcessEnv(env, value string) {
 	g.initProcess()
 
 	kenv := fmt.Sprintf("%s=", env)
@@ -108,6 +108,14 @@ func (g *Generator) AddProcessEnv(env, value string) {
 	}
 
 	g.Config.Process.Env = append(g.Config.Process.Env, kenv+value)
+}
+
+// SetProcessEnvWithPrefixes adds or replaces a container process environment variable
+// for each provided prefix.  All but the first prefix are deemed deprecated
+func (g *Generator) SetProcessEnvWithPrefixes(prefixes []string, variable, value string) {
+	for _, p := range prefixes {
+		g.SetProcessEnv(p+variable, value)
+	}
 }
 
 // RemoveProcessEnv removes a container process environment variable.

@@ -148,13 +148,16 @@ func currentEnvNoApptainer(permitted []string) []string {
 	envs := make([]string, 0)
 
 	for _, e := range os.Environ() {
-		if !strings.HasPrefix(e, env.ApptainerPrefix) {
-			envs = append(envs, e)
-		} else {
+		for _, prefix := range env.ApptainerPrefixes {
+			if !strings.HasPrefix(e, prefix) {
+				envs = append(envs, e)
+				break
+			}
 			envKey := strings.SplitN(e, "=", 2)
-			if slice.ContainsString(permitted, strings.TrimPrefix(envKey[0], env.ApptainerPrefix)) {
+			if slice.ContainsString(permitted, strings.TrimPrefix(envKey[0], prefix)) {
 				sylog.Debugf("Passing through env var %s to apptainer", e)
 				envs = append(envs, e)
+				break
 			}
 		}
 	}

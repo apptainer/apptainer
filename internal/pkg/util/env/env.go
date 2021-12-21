@@ -14,6 +14,22 @@ import (
 	"strings"
 )
 
+const (
+	// DefaultPath defines default value for PATH environment variable.
+	DefaultPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+)
+
+// the following prefixes are for settings looked at by Apptainer command
+// ApptainerPrefixes defines the e2nvironment variable prefixes
+var ApptainerPrefixes = []string{"APPTAINER_", "SINGULARITY_"}
+
+// the following prefixes are for pass-through to containers
+//
+
+// ApptainerEnvPrefixes defines the environment variable prefixes for passthru
+// variables
+var ApptainerEnvPrefixes = []string{"APPTAINERENV_", "SINGULARITYENV_"}
+
 // SetFromList sets environment variables from environ argument list.
 func SetFromList(environ []string) error {
 	for _, env := range environ {

@@ -68,7 +68,7 @@ func (s *sifBundle) writeConfig(img *image.Image, g *generate.Generator) error {
 			}
 		}
 		if !found {
-			g.AddProcessEnv(k[0], k[1])
+			g.SetProcessEnv(k[0], k[1])
 		}
 	}
 

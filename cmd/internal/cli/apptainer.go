@@ -22,6 +22,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/apptainer/apptainer/internal/pkg/util/env"
+
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
@@ -58,10 +60,6 @@ var (
 	forceOverwrite      bool
 	noHTTPS             bool
 	tmpDir              string
-)
-
-const (
-	envPrefix = "APPTAINER_"
 )
 
 // apptainer command flags
@@ -344,7 +342,14 @@ func Init(loadPlugins bool) {
 	// set persistent pre run function here to avoid initialization loop error
 	apptainerCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		persistentPreRun(cmd, args)
-		return cmdManager.UpdateCmdFlagFromEnv(cmd, envPrefix)
+		var err error
+		for prefixIndex := range env.ApptainerPrefixes {
+			err = cmdManager.UpdateCmdFlagFromEnv(cmd, prefixIndex)
+			if nil != err {
+				break
+			}
+		}
+		return err
 	}
 
 	cmdManager.RegisterFlagForCmd(&singDebugFlag, apptainerCmd)

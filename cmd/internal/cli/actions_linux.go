@@ -263,18 +263,14 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			sylog.Fatalf("%s", err)
 		}
 		UserNamespace = file.UserNs
-		generator.AddProcessEnv("APPTAINER_CONTAINER", file.Image)
-		generator.AddProcessEnv("SINGULARITY_CONTAINER", file.Image)
-		generator.AddProcessEnv("APPTAINER_NAME", filepath.Base(file.Image))
-		generator.AddProcessEnv("SINGULARITY_NAME", filepath.Base(file.Image))
+		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "CONTAINER", file.Image)
+		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "NAME", filepath.Base(file.Image))
 		engineConfig.SetImage(image)
 		engineConfig.SetInstanceJoin(true)
 	} else {
 		abspath, err := filepath.Abs(image)
-		generator.AddProcessEnv("APPTAINER_CONTAINER", abspath)
-		generator.AddProcessEnv("SINGULARITY_CONTAINER", abspath)
-		generator.AddProcessEnv("APPTAINER_NAME", filepath.Base(abspath))
-		generator.AddProcessEnv("SINGULARITY_NAME", filepath.Base(abspath))
+		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "CONTAINER", abspath)
+		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "NAME", filepath.Base(abspath))
 		if err != nil {
 			sylog.Fatalf("Failed to determine image absolute path for %s: %s", image, err)
 		}
@@ -374,8 +370,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	}
 
 	engineConfig.SetBindPath(binds)
-	generator.AddProcessEnv("APPTAINER_BIND", strings.Join(BindPaths, ","))
-	generator.AddProcessEnv("SINGULARITY_BIND", strings.Join(BindPaths, ","))
+	generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "BIND", strings.Join(BindPaths, ","))
 
 	if len(FuseMount) > 0 {
 		/* If --fusemount is given, imply --pid */
@@ -417,8 +412,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	engineConfig.SetFakeroot(IsFakeroot)
 
 	if ShellPath != "" {
-		generator.AddProcessEnv("APPTAINER_SHELL", ShellPath)
-		generator.AddProcessEnv("SINGULARITY_SHELL", ShellPath)
+		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "SHELL", ShellPath)
 	}
 
 	checkPrivileges(CgroupsPath != "", "--apply-cgroups", func() {
@@ -587,25 +581,28 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			sylog.Fatalf("Could not read %q environment file: %s", ApptainerEnvFile, err)
 		}
 
-		env, err := interpreter.EvaluateEnv(content, args, currentEnv)
+		envvars, err := interpreter.EvaluateEnv(content, args, currentEnv)
 		if err != nil {
 			sylog.Fatalf("While processing %s: %s", ApptainerEnvFile, err)
 		}
 		// --env variables will take precedence over variables
 		// defined by the environment file
 		sylog.Debugf("Setting environment variables from file %s", ApptainerEnvFile)
-		ApptainerEnv = append(env, ApptainerEnv...)
+		ApptainerEnv = append(envvars, ApptainerEnv...)
 	}
 
 	// process --env and --env-file variables for injection
 	// into the environment by prefixing them with APPTAINERENV_
-	for _, env := range ApptainerEnv {
-		e := strings.SplitN(env, "=", 2)
+	// and prefixing them with SINGULARITYENV_ for backward compatibility
+	for _, envvar := range ApptainerEnv {
+		e := strings.SplitN(envvar, "=", 2)
 		if len(e) != 2 {
-			sylog.Warningf("Ignore environment variable %q: '=' is missing", env)
+			sylog.Warningf("Ignore environment variable %q: '=' is missing", envvar)
 			continue
 		}
-		os.Setenv("APPTAINERENV_"+e[0], e[1])
+		for _, prefix := range env.ApptainerEnvPrefixes {
+			os.Setenv(prefix+e[0], e[1])
+		}
 	}
 
 	// Copy and cache environment
@@ -636,8 +633,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		loadOverlay = true
 	}
 
-	generator.AddProcessEnv("APPTAINER_APPNAME", AppName)
-	generator.AddProcessEnv("SINGULARITY_APPNAME", AppName)
+	generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "APPNAME", AppName)
 
 	// convert image file to sandbox if we are using user
 	// namespace or if we are currently running inside a
@@ -679,8 +675,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			}
 			engineConfig.SetImage(imageDir)
 			engineConfig.SetDeleteTempDir(tempDir)
-			generator.AddProcessEnv("APPTAINER_CONTAINER", imageDir)
-			generator.AddProcessEnv("SINGULARITY_CONTAINER", imageDir)
+			generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "CONTAINER", imageDir)
 
 			// if '--disable-cache' flag, then remove original SIF after converting to sandbox
 			if disableCache {
