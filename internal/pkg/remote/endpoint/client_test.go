@@ -11,8 +11,6 @@ package endpoint
 import (
 	"testing"
 
-	"github.com/apptainer/apptainer/internal/pkg/registry"
-
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 )
 
@@ -112,7 +110,7 @@ func TestKeyserverClientOpts(t *testing.T) {
 		{
 			name: "Fake cloud",
 			endpoint: &Config{
-				URI: "cloud.nonexistent-xxxx-domain.io",
+				URI: "cloud.inexistent-xxxx-domain.io",
 			},
 			expectSuccess: false,
 		},
@@ -136,7 +134,7 @@ func TestKeyserverClientOpts(t *testing.T) {
 }
 
 //nolint:dupl
-func TestRegistryClientConfig(t *testing.T) {
+func TestLibraryClientConfig(t *testing.T) {
 	tests := []struct {
 		name          string
 		endpoint      *Config
@@ -144,35 +142,35 @@ func TestRegistryClientConfig(t *testing.T) {
 		expectSuccess bool
 	}{
 		{
-			name: "GitHub Container Registry",
+			name: "Sylabs cloud",
 			endpoint: &Config{
-				URI: DefaultApptainerHost,
+				URI: SCSDefaultCloudURI,
 			},
-			uri:           DefaultRegistryURI,
+			uri:           SCSDefaultLibraryURI,
 			expectSuccess: true,
 		},
 		{
-			name: "GitHub Container Registry exclusive KO",
+			name: "Sylabs cloud exclusive KO",
 			endpoint: &Config{
-				URI:       DefaultApptainerHost,
+				URI:       SCSDefaultCloudURI,
 				Exclusive: true,
 			},
 			uri:           "https://custom.library",
 			expectSuccess: false,
 		},
 		{
-			name: "GitHub Container Registry exclusive OK",
+			name: "Sylabs cloud exclusive OK",
 			endpoint: &Config{
-				URI:       DefaultApptainerHost,
+				URI:       SCSDefaultCloudURI,
 				Exclusive: true,
 			},
-			uri:           DefaultRegistryURI,
+			uri:           SCSDefaultLibraryURI,
 			expectSuccess: true,
 		},
 		{
 			name: "Custom library",
 			endpoint: &Config{
-				URI: DefaultApptainerHost,
+				URI: SCSDefaultCloudURI,
 			},
 			uri:           "https://custom.library",
 			expectSuccess: true,
@@ -180,7 +178,7 @@ func TestRegistryClientConfig(t *testing.T) {
 		{
 			name: "Fake cloud",
 			endpoint: &Config{
-				URI: "cloud.nonexistent-xxxx-domain.io",
+				URI: "cloud.inexistent-xxxx-domain.io",
 			},
 			expectSuccess: false,
 		},
@@ -188,22 +186,16 @@ func TestRegistryClientConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			config, err := tt.endpoint.RegistryClientConfig(tt.uri)
-			if nil == config {
-				config = &registry.Config{}
-			}
+			config, err := tt.endpoint.LibraryClientConfig(tt.uri)
 			if err != nil && tt.expectSuccess {
 				t.Errorf("unexpected error: %s", err)
-				t.Errorf(" --- for %s with %v __ %v @ config %v", tt.name, tt, tt.endpoint, config)
 			} else if err == nil && !tt.expectSuccess {
-				t.Errorf("unexpected success")
-				t.Errorf(" --- for %s with %v __ %v @ config %v", tt.name, tt, tt.endpoint, config)
+				t.Errorf("unexpected success for %s", tt.name)
 			} else if err != nil && !tt.expectSuccess {
 				return
 			}
 			if config.BaseURL != tt.uri {
 				t.Errorf("unexpected uri returned: %s instead of %s", config.BaseURL, tt.uri)
-				t.Errorf(" --- for %s with %v __ %v @ config %v", tt.name, tt, tt.endpoint, config)
 			} else if config.AuthToken != "" {
 				t.Errorf("unexpected token returned: %s", config.AuthToken)
 			}

@@ -13,10 +13,12 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/client/library"
 	"github.com/apptainer/apptainer/internal/pkg/client/net"
 	"github.com/apptainer/apptainer/internal/pkg/client/oci"
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
@@ -81,6 +83,29 @@ func handleOras(ctx context.Context, imgCache *cache.Handle, cmd *cobra.Command,
 	return oras.Pull(ctx, imgCache, pullFrom, tmpDir, ociAuth)
 }
 
+func handleLibrary(ctx context.Context, imgCache *cache.Handle, pullFrom string) (string, error) {
+	r, err := library.NormalizeLibraryRef(pullFrom)
+	if err != nil {
+		return "", err
+	}
+
+	// Default "" = use current remote endpoint
+	var libraryURI string
+	if r.Host != "" {
+		if noHTTPS {
+			libraryURI = "http://" + r.Host
+		} else {
+			libraryURI = "https://" + r.Host
+		}
+	}
+
+	c, err := getLibraryClientConfig(libraryURI)
+	if err != nil {
+		return "", err
+	}
+	return library.Pull(ctx, imgCache, r, runtime.GOARCH, tmpDir, c)
+}
+
 func handleShub(ctx context.Context, imgCache *cache.Handle, pullFrom string) (string, error) {
 	return shub.Pull(ctx, imgCache, pullFrom, tmpDir, noHTTPS)
 }
@@ -106,6 +131,8 @@ func replaceURIWithImage(ctx context.Context, cmd *cobra.Command, args []string)
 	}
 
 	switch t {
+	case uri.Library:
+		image, err = handleLibrary(ctx, imgCache, args[0])
 	case uri.Oras:
 		image, err = handleOras(ctx, imgCache, cmd, args[0])
 	case uri.Shub:

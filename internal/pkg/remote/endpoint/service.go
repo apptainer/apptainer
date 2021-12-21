@@ -28,8 +28,7 @@ const defaultTimeout = 10 * time.Second
 // Default Sylabs cloud service endpoints.
 const (
 	SCSDefaultCloudURI     = "cloud.sylabs.io"
-	DefaultApptainerHost   = "ghcr.io"
-	DefaultRegistryURI     = "https://ghcr.io"
+	SCSDefaultLibraryURI   = "https://library.sylabs.io"
 	SCSDefaultKeyserverURI = "https://keys.sylabs.io"
 )
 
@@ -37,9 +36,10 @@ const (
 const (
 	Consent   = "consent"
 	Token     = "token"
-	Registry  = "registry"
+	Library   = "library"
 	Keystore  = "keystore" // alias for keyserver
 	Keyserver = "keyserver"
+	Builder   = "builder"
 )
 
 var errorCodeMap = map[int]string{
@@ -188,20 +188,16 @@ func (ep *Config) GetAllServices() (map[string][]Service, error) {
 }
 
 // GetServiceURI returns the URI for the service at the specified SCS endpoint
-// Examples of services: consent, registry, key, token
+// Examples of services: consent, build, library, key, token
 func (ep *Config) GetServiceURI(service string) (string, error) {
 	// don't grab remote URI if the endpoint is the
 	// default public Sylabs Cloud Service
 	if ep.URI == SCSDefaultCloudURI {
 		switch service {
+		case Library:
+			return SCSDefaultLibraryURI, nil
 		case Keyserver:
 			return SCSDefaultKeyserverURI, nil
-		}
-	}
-	if ep.URI == DefaultApptainerHost {
-		switch service {
-		case Registry:
-			return DefaultRegistryURI, nil
 		}
 	}
 

@@ -36,6 +36,8 @@ type ConveyorPacker interface {
 // conveyorPacker returns a valid ConveyorPacker for the given image definition.
 func conveyorPacker(def types.Definition) (ConveyorPacker, error) {
 	switch def.Header["bootstrap"] {
+	case "library":
+		return &sources.LibraryConveyorPacker{}, nil
 	case "oras":
 		return &sources.OrasConveyorPacker{}, nil
 	case "shub":

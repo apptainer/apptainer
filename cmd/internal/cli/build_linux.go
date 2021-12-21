@@ -179,7 +179,26 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string) {
 		sylog.Fatalf("Unable to build from %s: %v", spec, err)
 	}
 
+	hasLibrary := false
+
+	// only resolve remote endpoints if library is a build source
+	for _, d := range defs {
+		if d.Header["bootstrap"] == "library" {
+			hasLibrary = true
+			break
+		}
+	}
+
 	authToken := ""
+
+	if hasLibrary {
+		lc, err := getLibraryClientConfig(buildArgs.libraryURL)
+		if err != nil {
+			sylog.Fatalf("Unable to get library client configuration: %v", err)
+		}
+		buildArgs.libraryURL = lc.BaseURL
+		authToken = lc.AuthToken
+	}
 
 	co, err := getKeyserverClientOpts(buildArgs.keyServerURL, endpoint.KeyserverVerifyOp)
 	if err != nil {

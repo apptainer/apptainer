@@ -18,22 +18,22 @@ import (
 	"strings"
 	"time"
 
-	registryclient "github.com/apptainer/apptainer/internal/pkg/registry"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	keyClient "github.com/apptainer/container-key-client/client"
 	"github.com/apptainer/sif/v2/pkg/sif"
+	"github.com/sylabs/scs-library-client/client"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
 	"golang.org/x/term"
 )
 
-// ErrRegistryUnsigned indicated that the image intended to be used is
+// ErrLibraryUnsigned indicated that the image intended to be used is
 // not signed, nor has an override for requiring a signature been provided
-var ErrRegistryUnsigned = errors.New("image is not signed")
+var ErrLibraryUnsigned = errors.New("image is not signed")
 
-// RegistryPushSpec describes how a source image file should be pushed to a library server
-type RegistryPushSpec struct {
+// LibraryPushSpec describes how a source image file should be pushed to a library server
+type LibraryPushSpec struct {
 	// SourceFile is the path to the container image to be pushed to the library
 	SourceFile string
 	// DestRef is the destination reference that the container image will be pushed to in the library
@@ -81,9 +81,9 @@ func (c *progressCallback) Finish() {
 	c.progress.Wait()
 }
 
-// RegistryPush will upload an image file according to the provided RegistryPushSpec
+// LibraryPush will upload an image file according to the provided LibraryPushSpec
 // Before uploading, the image will be checked for a valid signature unless AllowUnsigned is true
-func RegistryPush(ctx context.Context, pushSpec RegistryPushSpec, registryConfig *registryclient.Config, co []keyClient.Option) error {
+func LibraryPush(ctx context.Context, pushSpec LibraryPushSpec, libraryConfig *client.Config, co []keyClient.Option) error {
 	fi, err := os.Stat(pushSpec.SourceFile)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -101,19 +101,19 @@ func RegistryPush(ctx context.Context, pushSpec RegistryPushSpec, registryConfig
 		// Check if the container has a valid signature.
 		if err := Verify(ctx, pushSpec.SourceFile, OptVerifyUseKeyServer(co...)); err != nil {
 			sylog.Warningf("%v", err)
-			return ErrRegistryUnsigned
+			return ErrLibraryUnsigned
 		}
 	} else {
 		sylog.Warningf("Skipping container verification")
 	}
 
-	registryClient, err := registryclient.NewClient(registryConfig)
+	libraryClient, err := client.NewClient(libraryConfig)
 	if err != nil {
 		return fmt.Errorf("error initializing library client: %v", err)
 	}
 
 	// split library ref into components
-	r, err := registryClient.Parse(pushSpec.DestRef)
+	r, err := client.Parse(pushSpec.DestRef)
 	if err != nil {
 		return fmt.Errorf("error parsing destination: %v", err)
 	}
@@ -125,14 +125,14 @@ func RegistryPush(ctx context.Context, pushSpec RegistryPushSpec, registryConfig
 	}
 	defer f.Close()
 
-	var progressBar registryclient.UploadCallback
+	var progressBar client.UploadCallback
 	if !term.IsTerminal(2) {
 		sylog.Infof("Uploading %d bytes\n", fi.Size())
 	} else {
 		progressBar = &progressCallback{}
 	}
 
-	var resp *registryclient.UploadImageComplete
+	var resp *client.UploadImageComplete
 
 	defer func(t time.Time) {
 		if err == nil && resp != nil && progressBar == nil {
@@ -140,7 +140,7 @@ func RegistryPush(ctx context.Context, pushSpec RegistryPushSpec, registryConfig
 		}
 	}(time.Now())
 
-	if resp, err = registryClient.UploadImage(ctx, f, r.Host+r.Path, arch, r.Tags, pushSpec.Description, progressBar); err != nil {
+	if resp, err = libraryClient.UploadImage(ctx, f, r.Host+r.Path, arch, r.Tags, pushSpec.Description, progressBar); err != nil {
 		return err
 	}
 

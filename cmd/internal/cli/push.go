@@ -10,8 +10,12 @@
 package cli
 
 import (
+	"fmt"
+
 	"github.com/apptainer/apptainer/docs"
+	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
+	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -86,6 +90,38 @@ var PushCmd = &cobra.Command{
 		}
 
 		switch transport {
+		case LibraryProtocol, "": // Handle pushing to a library
+			lc, err := getLibraryClientConfig(PushLibraryURI)
+			if err != nil {
+				sylog.Fatalf("Unable to get library client configuration: %v", err)
+			}
+
+			// Push to library requires a valid authToken
+			if lc.AuthToken == "" {
+				sylog.Fatalf("Cannot push image to library: %v", remoteWarning)
+			}
+
+			co, err := getKeyserverClientOpts("", endpoint.KeyserverVerifyOp)
+			if err != nil {
+				sylog.Fatalf("Unable to get keyserver client configuration: %v", err)
+			}
+
+			pushSpec := apptainer.LibraryPushSpec{
+				SourceFile:    file,
+				DestRef:       dest,
+				Description:   pushDescription,
+				AllowUnsigned: unsignedPush,
+				FrontendURI:   URI(),
+			}
+
+			err = apptainer.LibraryPush(cmd.Context(), pushSpec, lc, co)
+			if err == apptainer.ErrLibraryUnsigned {
+				fmt.Printf("TIP: You can push unsigned images with 'apptainer push -U %s'.\n", file)
+				fmt.Printf("TIP: Learn how to sign your own containers by using 'apptainer help sign'\n\n")
+				sylog.Fatalf("Unable to upload container: unable to verify signature")
+			} else if err != nil {
+				sylog.Fatalf("Unable to push image to library: %v", err)
+			}
 		case OrasProtocol:
 			if cmd.Flag(pushDescriptionFlag.Name).Changed {
 				sylog.Warningf("Description is not supported for push to oras. Ignoring it.")

@@ -1415,10 +1415,10 @@ func (c imgBuildTests) buildLibraryHost(t *testing.T) {
 
 	// Library hostname in the From URI
 	// The hostname is invalid, and we should get an error to that effect.
-	definition := "Bootstrap: oras\nFrom: oras.example.com/test/test/test:latest\n"
+	definition := "Bootstrap: library\nFrom: library.example.com/test/test/test:latest\n"
 
 	defFile := e2e.RawDefFile(t, tmpdir, strings.NewReader(definition))
-	imagePath := filepath.Join(tmpdir, "image-orashost")
+	imagePath := filepath.Join(tmpdir, "image-libaryhost")
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
@@ -1428,7 +1428,7 @@ func (c imgBuildTests) buildLibraryHost(t *testing.T) {
 			os.Remove(defFile)
 		}),
 		e2e.ExpectExit(255,
-			e2e.ExpectError(e2e.ContainMatch, "dial tcp: lookup oras.example.com: no such host"),
+			e2e.ExpectError(e2e.ContainMatch, "dial tcp: lookup library.example.com: no such host"),
 		),
 	)
 }

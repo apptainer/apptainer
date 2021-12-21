@@ -97,7 +97,7 @@ func CopyWithContext(ctx context.Context, dst io.Writer, src io.Reader) error {
 	return err
 }
 
-// DownloadProgressBar is used for chunked library downloads.
+// DownloadProgressBar is used for chunked scs-library-client downloads.
 type DownloadProgressBar struct {
 	bar *mpb.Bar
 	p   *mpb.Progress

@@ -38,6 +38,8 @@ const (
 	// will not clash with any 2.x cache directory.
 	SubDirName = "cache"
 
+	// LibraryCacheType specifies the cache holds SIF images pulled from the library
+	LibraryCacheType = "library"
 	// OciTempCacheType specifies the cache holds SIF images created from OCI sources
 	OciTempCacheType = "oci-tmp"
 	// OciBlobCacheType specifies the cache holds OCI blobs (layers) pulled from OCI sources
@@ -53,6 +55,7 @@ const (
 var (
 	// FileCacheTypes specifies the file cache types.
 	FileCacheTypes = []string{
+		LibraryCacheType,
 		OciTempCacheType,
 		ShubCacheType,
 		OrasCacheType,
