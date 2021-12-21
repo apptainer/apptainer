@@ -258,7 +258,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			sylog.Fatalf("Starting an instance from another is not allowed")
 		}
 		instanceName := instance.ExtractName(image)
-		file, err := instance.Get(instanceName, instance.SingSubDir)
+		file, err := instance.Get(instanceName, instance.AppSubDir)
 		if err != nil {
 			sylog.Fatalf("%s", err)
 		}
@@ -511,7 +511,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			sylog.Fatalf("hidepid option set on /proc mount, require 'hidepid=0' to start instance with setuid workflow")
 		}
 
-		_, err := instance.Get(name, instance.SingSubDir)
+		_, err := instance.Get(name, instance.AppSubDir)
 		if err == nil {
 			sylog.Fatalf("instance %s already exists", name)
 		}

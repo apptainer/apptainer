@@ -25,8 +25,8 @@ import (
 const (
 	// OciSubDir represents directory where OCI instance files are stored
 	OciSubDir = "oci"
-	// SingSubDir represents directory where Apptainer instance files are stored
-	SingSubDir = "sing"
+	// AppSubDir represents directory where Apptainer instance files are stored
+	AppSubDir = "app"
 	// LogSubDir represents directory where Apptainer instance log files are stored
 	LogSubDir = "logs"
 )
@@ -182,7 +182,7 @@ func List(username string, name string, subDir string) ([]*File, error) {
 		r.Close()
 		f.Path = file
 		// delete ghost apptainer instance files
-		if subDir == SingSubDir && f.isExited() {
+		if subDir == AppSubDir && f.isExited() {
 			f.Delete()
 			continue
 		}

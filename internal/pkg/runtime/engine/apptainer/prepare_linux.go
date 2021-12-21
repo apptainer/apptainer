@@ -655,7 +655,7 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 // applying configuration to join a running instance.
 func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Config) error {
 	name := instance.ExtractName(e.EngineConfig.GetImage())
-	file, err := instance.Get(name, instance.SingSubDir)
+	file, err := instance.Get(name, instance.AppSubDir)
 	if err != nil {
 		return err
 	}
