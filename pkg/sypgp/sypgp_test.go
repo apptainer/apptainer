@@ -24,9 +24,9 @@ import (
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/ProtonMail/go-crypto/openpgp/armor"
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
+	"github.com/apptainer/apptainer/internal/pkg/keymanager"
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
-	"github.com/sylabs/scs-key-client/client"
 )
 
 const (
@@ -87,10 +87,10 @@ func TestSearchPubkey(t *testing.T) {
 			ms.code = tt.code
 			ms.el = tt.el
 
-			opts := []client.Option{
-				client.OptBaseURL(tt.uri),
-				client.OptBearerToken(tt.authToken),
-				client.OptHTTPClient(srv.Client()),
+			opts := []keymanager.Option{
+				keymanager.OptBaseURL(tt.uri),
+				keymanager.OptBearerToken(tt.authToken),
+				keymanager.OptHTTPClient(srv.Client()),
 			}
 
 			if err := SearchPubkey(context.Background(), tt.search, false, opts...); (err != nil) != tt.wantErr {
@@ -130,10 +130,10 @@ func TestFetchPubkey(t *testing.T) {
 			ms.code = tt.code
 			ms.el = tt.el
 
-			opts := []client.Option{
-				client.OptBaseURL(tt.uri),
-				client.OptBearerToken(tt.authToken),
-				client.OptHTTPClient(srv.Client()),
+			opts := []keymanager.Option{
+				keymanager.OptBaseURL(tt.uri),
+				keymanager.OptBearerToken(tt.authToken),
+				keymanager.OptHTTPClient(srv.Client()),
 			}
 
 			el, err := FetchPubkey(context.Background(), tt.fingerprint, false, opts...)
@@ -211,10 +211,10 @@ func TestPushPubkey(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ms.code = tt.code
 
-			opts := []client.Option{
-				client.OptBaseURL(tt.uri),
-				client.OptBearerToken(tt.authToken),
-				client.OptHTTPClient(srv.Client()),
+			opts := []keymanager.Option{
+				keymanager.OptBaseURL(tt.uri),
+				keymanager.OptBearerToken(tt.authToken),
+				keymanager.OptHTTPClient(srv.Client()),
 			}
 
 			if err := PushPubkey(context.Background(), testEntity, opts...); (err != nil) != tt.wantErr {

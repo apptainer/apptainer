@@ -12,15 +12,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/apptainer/apptainer/internal/pkg/keymanager"
 	registryclient "github.com/apptainer/apptainer/internal/pkg/registry"
 	remoteutil "github.com/apptainer/apptainer/internal/pkg/remote/util"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	golog "github.com/go-log/log"
-	keyclient "github.com/sylabs/scs-key-client/client"
 )
 
-func (ep *Config) KeyserverClientOpts(uri string, op KeyserverOp) ([]keyclient.Option, error) {
+func (ep *Config) KeyserverClientOpts(uri string, op KeyserverOp) ([]keymanager.Option, error) {
 	// empty uri means to use the default endpoint
 	isDefault := uri == ""
 
@@ -87,10 +87,10 @@ func (ep *Config) KeyserverClientOpts(uri string, op KeyserverOp) ([]keyclient.O
 		}
 	}
 
-	co := []keyclient.Option{
-		keyclient.OptBaseURL(uri),
-		keyclient.OptUserAgent(useragent.Value()),
-		keyclient.OptHTTPClient(newClient(keyservers, op)),
+	co := []keymanager.Option{
+		keymanager.OptBaseURL(uri),
+		keymanager.OptUserAgent(useragent.Value()),
+		keymanager.OptHTTPClient(newClient(keyservers, op)),
 	}
 	return co, nil
 }

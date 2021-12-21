@@ -17,11 +17,11 @@ import (
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/keymanager"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/sypgp"
 	"github.com/spf13/cobra"
-	"github.com/sylabs/scs-key-client/client"
 )
 
 // KeyPushCmd is `apptainer key list' and lists local store OpenPGP keys
@@ -46,7 +46,7 @@ var KeyPushCmd = &cobra.Command{
 	Example: docs.KeyPushExample,
 }
 
-func doKeyPushCmd(ctx context.Context, fingerprint string, co ...client.Option) error {
+func doKeyPushCmd(ctx context.Context, fingerprint string, co ...keymanager.Option) error {
 	var opts []sypgp.HandleOpt
 	path := ""
 

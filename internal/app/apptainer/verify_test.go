@@ -20,9 +20,9 @@ import (
 
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/ProtonMail/go-crypto/openpgp/armor"
+	"github.com/apptainer/apptainer/internal/pkg/keymanager"
 	"github.com/apptainer/sif/v2/pkg/integrity"
 	"github.com/apptainer/sif/v2/pkg/sif"
-	"github.com/sylabs/scs-key-client/client"
 )
 
 const (
@@ -71,7 +71,7 @@ func (m mockHKP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func Test_newVerifier(t *testing.T) {
-	opts := []client.Option{client.OptBearerToken("token")}
+	opts := []keymanager.Option{keymanager.OptBearerToken("token")}
 
 	tests := []struct {
 		name         string
@@ -156,12 +156,12 @@ func Test_verifier_getOpts(t *testing.T) {
 			name: "TLSRequired",
 			f:    emptyImage,
 			v: verifier{
-				opts: []client.Option{
-					client.OptBaseURL("hkp://pool.sks-keyservers.net"),
-					client.OptBearerToken("blah"),
+				opts: []keymanager.Option{
+					keymanager.OptBaseURL("hkp://pool.sks-keyservers.net"),
+					keymanager.OptBearerToken("blah"),
 				},
 			},
-			wantErr: client.ErrTLSRequired,
+			wantErr: keymanager.ErrTLSRequired,
 		},
 		{
 			name:    "NoObjects",
@@ -177,8 +177,8 @@ func Test_verifier_getOpts(t *testing.T) {
 		{
 			name: "ClientConfig",
 			v: verifier{
-				opts: []client.Option{
-					client.OptBearerToken("token"),
+				opts: []keymanager.Option{
+					keymanager.OptBearerToken("token"),
 				},
 			},
 			f:        oneGroupImage,
@@ -257,7 +257,7 @@ func TestVerify(t *testing.T) {
 	defer s.Close()
 
 	// Create an option that points to the mock HKP server.
-	keyServerOpt := OptVerifyUseKeyServer(client.OptBaseURL(s.URL))
+	keyServerOpt := OptVerifyUseKeyServer(keymanager.OptBaseURL(s.URL))
 
 	tests := []struct {
 		name         string
@@ -398,7 +398,7 @@ func TestVerifyFingerPrint(t *testing.T) {
 	defer s.Close()
 
 	// Create an option that points to the mock HKP server.
-	keyServerOpt := OptVerifyUseKeyServer(client.OptBaseURL(s.URL))
+	keyServerOpt := OptVerifyUseKeyServer(keymanager.OptBaseURL(s.URL))
 
 	tests := []struct {
 		name         string

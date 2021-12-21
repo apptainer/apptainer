@@ -16,11 +16,11 @@ import (
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/keymanager"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/sypgp"
 	"github.com/spf13/cobra"
-	"github.com/sylabs/scs-key-client/client"
 )
 
 // KeyPullCmd is `apptainer key pull' and fetches public keys from a key server
@@ -46,7 +46,7 @@ var KeyPullCmd = &cobra.Command{
 	Example: docs.KeyPullExample,
 }
 
-func doKeyPullCmd(ctx context.Context, fingerprint string, co ...client.Option) error {
+func doKeyPullCmd(ctx context.Context, fingerprint string, co ...keymanager.Option) error {
 	var count int
 	var opts []sypgp.HandleOpt
 	path := ""

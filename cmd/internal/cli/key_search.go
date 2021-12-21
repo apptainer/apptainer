@@ -14,11 +14,11 @@ import (
 	"os"
 
 	"github.com/apptainer/apptainer/docs"
+	"github.com/apptainer/apptainer/internal/pkg/keymanager"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/sypgp"
 	"github.com/spf13/cobra"
-	"github.com/sylabs/scs-key-client/client"
 )
 
 // KeySearchCmd is 'apptainer key search' and look for public keys from a key server
@@ -43,7 +43,7 @@ var KeySearchCmd = &cobra.Command{
 	Example: docs.KeySearchExample,
 }
 
-func doKeySearchCmd(ctx context.Context, search string, co ...client.Option) error {
+func doKeySearchCmd(ctx context.Context, search string, co ...keymanager.Option) error {
 	// get keyring with matching search string
 	return sypgp.SearchPubkey(ctx, search, keySearchLongList, co...)
 }

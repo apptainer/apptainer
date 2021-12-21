@@ -32,11 +32,11 @@ import (
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/ProtonMail/go-crypto/openpgp/armor"
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
+	"github.com/apptainer/apptainer/internal/pkg/keymanager"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/sylabs/scs-key-client/client"
 )
 
 const (
@@ -648,7 +648,7 @@ func formatMROutput(mrString string) (int, []byte, error) {
 }
 
 // SearchPubkey connects to a key server and searches for a specific key
-func SearchPubkey(ctx context.Context, search string, longOutput bool, opts ...client.Option) error {
+func SearchPubkey(ctx context.Context, search string, longOutput bool, opts ...keymanager.Option) error {
 	// If the search term is 8+ hex chars then it's a fingerprint, and
 	// we need to prefix with 0x for the search.
 	IsFingerprint := regexp.MustCompile(`^[0-9A-F]{8,}$`).MatchString
@@ -656,24 +656,24 @@ func SearchPubkey(ctx context.Context, search string, longOutput bool, opts ...c
 		search = "0x" + search
 	}
 
-	// Get a Key Service client.
-	c, err := client.NewClient(opts...)
+	// Get a Key Service keymanager.
+	c, err := keymanager.NewClient(opts...)
 	if err != nil {
 		return err
 	}
 
 	// the max entities to print.
-	pd := client.PageDetails{
+	pd := keymanager.PageDetails{
 		// still will only print 100 entities
 		Size: 256,
 	}
 
 	// set the machine readable output on
-	options := []string{client.OptionMachineReadable}
+	options := []string{keymanager.OptionMachineReadable}
 	// Retrieve first page of search results from Key Service.
-	keyText, err := c.PKSLookup(ctx, &pd, search, client.OperationIndex, true, false, options)
+	keyText, err := c.PKSLookup(ctx, &pd, search, keymanager.OperationIndex, true, false, options)
 	if err != nil {
-		var httpError *client.HTTPError
+		var httpError *keymanager.HTTPError
 		if ok := errors.As(err, &httpError); ok && httpError.Code() == http.StatusUnauthorized {
 			// The request failed with HTTP code unauthorized. Guide user to fix that.
 			sylog.Infof(helpAuth)
@@ -845,7 +845,7 @@ func formatMROutputLongList(mrString string) (int, []byte, error) {
 }
 
 // FetchPubkey pulls a public key from the Key Service.
-func FetchPubkey(ctx context.Context, fingerprint string, noPrompt bool, opts ...client.Option) (openpgp.EntityList, error) {
+func FetchPubkey(ctx context.Context, fingerprint string, noPrompt bool, opts ...keymanager.Option) (openpgp.EntityList, error) {
 	// Decode fingerprint and ensure proper length.
 	var fp []byte
 	fp, err := hex.DecodeString(fingerprint)
@@ -858,8 +858,8 @@ func FetchPubkey(ctx context.Context, fingerprint string, noPrompt bool, opts ..
 		return nil, fmt.Errorf("not a valid key lenth: only accepts 8, or 40 chars")
 	}
 
-	// Get a Key Service client.
-	c, err := client.NewClient(opts...)
+	// Get a Key Service keymanager.
+	c, err := keymanager.NewClient(opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -867,7 +867,7 @@ func FetchPubkey(ctx context.Context, fingerprint string, noPrompt bool, opts ..
 	// Pull key from Key Service.
 	keyText, err := c.GetKey(ctx, fp)
 	if err != nil {
-		var httpError *client.HTTPError
+		var httpError *keymanager.HTTPError
 		if ok := errors.As(err, &httpError); ok && httpError.Code() == http.StatusUnauthorized {
 			// The request failed with HTTP code unauthorized. Guide user to fix that.
 			sylog.Infof(helpAuth)
@@ -1147,21 +1147,21 @@ func (keyring *Handle) ImportKey(kpath string, setNewPassword bool) error {
 }
 
 // PushPubkey pushes a public key to the Key Service.
-func PushPubkey(ctx context.Context, e *openpgp.Entity, opts ...client.Option) error {
+func PushPubkey(ctx context.Context, e *openpgp.Entity, opts ...keymanager.Option) error {
 	keyText, err := serializeEntity(e, openpgp.PublicKeyType)
 	if err != nil {
 		return err
 	}
 
-	// Get a Key Service client.
-	c, err := client.NewClient(opts...)
+	// Get a Key Service keymanager.
+	c, err := keymanager.NewClient(opts...)
 	if err != nil {
 		return err
 	}
 
 	// Push key to Key Service.
 	if err := c.PKSAdd(ctx, keyText); err != nil {
-		var httpError *client.HTTPError
+		var httpError *keymanager.HTTPError
 		if errors.As(err, &httpError) && httpError.Code() == http.StatusUnauthorized {
 			// The request failed with HTTP code unauthorized. Guide user to fix that.
 			sylog.Infof(helpAuth+helpPush, e.PrimaryKey.Fingerprint)

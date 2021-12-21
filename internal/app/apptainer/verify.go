@@ -18,10 +18,10 @@ import (
 
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/keymanager"
 	"github.com/apptainer/apptainer/pkg/sypgp"
 	"github.com/apptainer/sif/v2/pkg/integrity"
 	"github.com/apptainer/sif/v2/pkg/sif"
-	"github.com/sylabs/scs-key-client/client"
 )
 
 // TODO - error overlaps with ECL - should probably become part of a common errors package at some point.
@@ -30,7 +30,7 @@ var errNotSignedByRequired = errors.New("image not signed by required entities")
 type VerifyCallback func(*sif.FileImage, integrity.VerifyResult) bool
 
 type verifier struct {
-	opts      []client.Option
+	opts      []keymanager.Option
 	groupIDs  []uint32
 	objectIDs []uint32
 	all       bool
@@ -43,7 +43,7 @@ type VerifyOpt func(v *verifier) error
 
 // OptVerifyUseKeyServer specifies that the keyserver specified by opts be used as a source of key
 // material, in addition to the local public keyring.
-func OptVerifyUseKeyServer(opts ...client.Option) VerifyOpt {
+func OptVerifyUseKeyServer(opts ...keymanager.Option) VerifyOpt {
 	return func(v *verifier) error {
 		v.opts = opts
 		return nil

@@ -17,8 +17,8 @@ import (
 	"strings"
 
 	"github.com/ProtonMail/go-crypto/openpgp"
+	"github.com/apptainer/apptainer/internal/pkg/keymanager"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/sylabs/scs-key-client/client"
 )
 
 // PublicKeyRing retrieves the Apptainer public KeyRing.
@@ -29,14 +29,14 @@ func PublicKeyRing() (openpgp.KeyRing, error) {
 // hybridKeyRing is keyring made up of a local keyring as well as a keyserver. The type satisfies
 // the openpgp.KeyRing interface.
 type hybridKeyRing struct {
-	local openpgp.KeyRing // Local keyring.
-	ctx   context.Context // Context, for use when retrieving keys remotely.
-	c     *client.Client  // Keyserver client.
+	local openpgp.KeyRing    // Local keyring.
+	ctx   context.Context    // Context, for use when retrieving keys remotely.
+	c     *keymanager.Client // Keyserver keymanager.
 }
 
 // NewHybridKeyRing returns a keyring backed by both the local public keyring and the configured
 // keyserver.
-func NewHybridKeyRing(ctx context.Context, opts ...client.Option) (openpgp.KeyRing, error) {
+func NewHybridKeyRing(ctx context.Context, opts ...keymanager.Option) (openpgp.KeyRing, error) {
 	// Get local keyring.
 	kr, err := PublicKeyRing()
 	if err != nil {
@@ -44,7 +44,7 @@ func NewHybridKeyRing(ctx context.Context, opts ...client.Option) (openpgp.KeyRi
 	}
 
 	// Set up client to retrieve keys from keyserver.
-	c, err := client.NewClient(opts...)
+	c, err := keymanager.NewClient(opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -96,10 +96,10 @@ func (kr *hybridKeyRing) DecryptionKeys() []openpgp.Key {
 
 // remoteEntitiesByID returns the set of entities from the keyserver that have the given key id.
 func (kr *hybridKeyRing) remoteEntitiesByID(id uint64) (openpgp.EntityList, error) {
-	kt, err := kr.c.PKSLookup(kr.ctx, nil, fmt.Sprintf("%#x", id), client.OperationGet, false, true, nil)
+	kt, err := kr.c.PKSLookup(kr.ctx, nil, fmt.Sprintf("%#x", id), keymanager.OperationGet, false, true, nil)
 	if err != nil {
 		// If the request failed with HTTP status code unauthorized, guide the user to fix that.
-		var httpError *client.HTTPError
+		var httpError *keymanager.HTTPError
 		if errors.As(err, &httpError) && httpError.Code() == http.StatusUnauthorized {
 			sylog.Infof(helpAuth)
 		}
