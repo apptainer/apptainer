@@ -43,7 +43,7 @@ func PrintInstanceList(w io.Writer, name, user string, formatJSON bool, showLogs
 	tabWriter := tabwriter.NewWriter(w, 0, 8, 4, ' ', 0)
 	defer tabWriter.Flush()
 
-	ii, err := instance.List(user, name, instance.SingSubDir)
+	ii, err := instance.List(user, name, instance.AppSubDir)
 	if err != nil {
 		return fmt.Errorf("could not retrieve instance list: %v", err)
 	}
@@ -104,7 +104,7 @@ func PrintInstanceList(w io.Writer, name, user string, formatJSON bool, showLogs
 // truncating it if it already exists. Note that the name should not be a glob,
 // i.e. name should identify a single instance only, otherwise an error is returned.
 func WriteInstancePidFile(name, pidFile string) error {
-	inst, err := instance.List("", name, instance.SingSubDir)
+	inst, err := instance.List("", name, instance.AppSubDir)
 	if err != nil {
 		return fmt.Errorf("could not retrieve instance list: %v", err)
 	}
@@ -130,7 +130,7 @@ func WriteInstancePidFile(name, pidFile string) error {
 // is still running after a grace period defined by timeout is expired,
 // it will be forcibly killed.
 func StopInstance(name, user string, sig syscall.Signal, timeout time.Duration) error {
-	ii, err := instance.List(user, name, instance.SingSubDir)
+	ii, err := instance.List(user, name, instance.AppSubDir)
 	if err != nil {
 		return fmt.Errorf("could not retrieve instance list: %v", err)
 	}

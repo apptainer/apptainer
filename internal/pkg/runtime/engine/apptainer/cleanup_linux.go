@@ -105,7 +105,7 @@ func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, st
 	}
 
 	if e.EngineConfig.GetInstance() {
-		file, err := instance.Get(e.CommonConfig.ContainerID, instance.SingSubDir)
+		file, err := instance.Get(e.CommonConfig.ContainerID, instance.AppSubDir)
 		if err != nil {
 			return err
 		}

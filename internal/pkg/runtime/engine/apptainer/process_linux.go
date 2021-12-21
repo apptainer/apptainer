@@ -343,7 +343,7 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 			return fmt.Errorf("failed to change directory to /: %s", err)
 		}
 
-		file, err := instance.Add(name, instance.SingSubDir)
+		file, err := instance.Add(name, instance.AppSubDir)
 		if err != nil {
 			return err
 		}
