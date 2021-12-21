@@ -29,7 +29,7 @@ const (
   To configure a remote endpoint you must 'remote add' it. You can 'remote login' if
   you will be performing actions needing authentication. Switch between
   configured remote endpoints with the 'remote use' command. The active remote
-  endpoint will be used for remote builds, key operations, and 'library://' pull
+  endpoint will be used for key operations, and 'library://' pull
   and push. You can also 'remote logout' from and 'remote remove' an endpoint that
   is no longer required.
 

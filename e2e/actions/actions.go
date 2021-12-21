@@ -789,7 +789,7 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	tests := []struct {
+	testsPass1 := []struct {
 		name    string
 		argv    []string
 		dir     string
@@ -802,6 +802,26 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 			exit:    0,
 			profile: e2e.RootProfile,
 		},
+		{
+			name:    "overlay_ext3_create",
+			argv:    []string{"--overlay", ext3Img, c.env.ImagePath, "touch", "/ext3_overlay"},
+			exit:    0,
+			profile: e2e.RootProfile,
+		},
+		{
+			name:    "overlay_multiple_create",
+			argv:    []string{"--overlay", ext3Img, "--overlay", squashfsImage + ":ro", c.env.ImagePath, "touch", "/multiple_overlay_fs"},
+			exit:    0,
+			profile: e2e.RootProfile,
+		},
+	}
+	testsPass2 := []struct {
+		name    string
+		argv    []string
+		dir     string
+		exit    int
+		profile e2e.Profile
+	}{
 		{
 			name:    "overlay_find",
 			argv:    []string{"--overlay", dir, c.env.ImagePath, "test", "-f", "/dir_overlay"},
@@ -827,12 +847,6 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 			profile: e2e.RootProfile,
 		},
 		{
-			name:    "overlay_ext3_create",
-			argv:    []string{"--overlay", ext3Img, c.env.ImagePath, "touch", "/ext3_overlay"},
-			exit:    0,
-			profile: e2e.RootProfile,
-		},
-		{
 			name:    "overlay_ext3_find",
 			argv:    []string{"--overlay", ext3Img, c.env.ImagePath, "test", "-f", "/ext3_overlay"},
 			exit:    0,
@@ -853,12 +867,6 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 		{
 			name:    "overlay_squashFS_find_without_ro",
 			argv:    []string{"--overlay", squashfsImage, c.env.ImagePath, "test", "-f", fmt.Sprintf("/%s", squashMarkerFile)},
-			exit:    0,
-			profile: e2e.RootProfile,
-		},
-		{
-			name:    "overlay_multiple_create",
-			argv:    []string{"--overlay", ext3Img, "--overlay", squashfsImage + ":ro", c.env.ImagePath, "touch", "/multiple_overlay_fs"},
 			exit:    0,
 			profile: e2e.RootProfile,
 		},
@@ -903,7 +911,18 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for _, tt := range testsPass1 {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(tt.profile),
+			e2e.WithDir(tt.dir),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(tt.argv...),
+			e2e.ExpectExit(tt.exit),
+		)
+	}
+	for _, tt := range testsPass2 {
 		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),

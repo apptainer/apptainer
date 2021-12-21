@@ -533,7 +533,7 @@ func sylabsRemote() (*endpoint.Config, error) {
 	if err == remote.ErrNoDefault {
 		// all remotes have been deleted, fix that by returning
 		// the default remote endpoint to avoid side effects when
-		// pulling from library or with remote build
+		// pulling from library
 		if len(c.Remotes) == 0 {
 			return endpoint.DefaultEndpointConfig, nil
 		}
