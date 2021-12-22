@@ -18,6 +18,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"testing"
 	"time"
@@ -911,7 +912,9 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 		},
 	}
 
+	var wg sync.WaitGroup
 	for _, tt := range testsPass1 {
+		wg.Add(1)
 		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
@@ -920,8 +923,12 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 			e2e.WithCommand("exec"),
 			e2e.WithArgs(tt.argv...),
 			e2e.ExpectExit(tt.exit),
+			e2e.PostRun(func(t *testing.T) {
+				wg.Done()
+			}),
 		)
 	}
+	wg.Wait()
 	for _, tt := range testsPass2 {
 		c.env.RunApptainer(
 			t,
@@ -1943,7 +1950,44 @@ func (c actionTests) bindImage(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	tests := []struct {
+	testsPass1 := []struct {
+		name    string
+		profile e2e.Profile
+		args    []string
+		exit    int
+	}{
+		{
+			name:    "Ext3Write",
+			profile: e2e.RootProfile,
+			args: []string{
+				"--bind", ext3Img + ":/bind:image-src=/",
+				c.env.ImagePath,
+				"touch", "/bind/ext3_marker",
+			},
+			exit: 0,
+		},
+		{
+			name:    "Ext3WriteKO",
+			profile: e2e.RootProfile,
+			args: []string{
+				"--bind", ext3Img + ":/bind:image-src=/,ro",
+				c.env.ImagePath,
+				"touch", "/bind/ext3_marker",
+			},
+			exit: 1,
+		},
+		{
+			name:    "SifDataExt3Write",
+			profile: e2e.RootProfile,
+			args: []string{
+				"--bind", sifExt3Image + ":/bind:image-src=/",
+				c.env.ImagePath,
+				"touch", "/bind/ext3_marker",
+			},
+			exit: 0,
+		},
+	}
+	testsPass2 := []struct {
 		name    string
 		profile e2e.Profile
 		args    []string
@@ -2028,26 +2072,6 @@ func (c actionTests) bindImage(t *testing.T) {
 			exit: 0,
 		},
 		{
-			name:    "Ext3Write",
-			profile: e2e.RootProfile,
-			args: []string{
-				"--bind", ext3Img + ":/bind:image-src=/",
-				c.env.ImagePath,
-				"touch", "/bind/ext3_marker",
-			},
-			exit: 0,
-		},
-		{
-			name:    "Ext3WriteKO",
-			profile: e2e.RootProfile,
-			args: []string{
-				"--bind", ext3Img + ":/bind:image-src=/,ro",
-				c.env.ImagePath,
-				"touch", "/bind/ext3_marker",
-			},
-			exit: 1,
-		},
-		{
 			name:    "Ext3Read",
 			profile: e2e.UserProfile,
 			args: []string{
@@ -2075,16 +2099,6 @@ func (c actionTests) bindImage(t *testing.T) {
 				"--bind", sifSquashImage + ":/bind:image-src=/",
 				c.env.ImagePath,
 				"test", "-f", filepath.Join("/bind", squashMarkerFile),
-			},
-			exit: 0,
-		},
-		{
-			name:    "SifDataExt3Write",
-			profile: e2e.RootProfile,
-			args: []string{
-				"--bind", sifExt3Image + ":/bind:image-src=/",
-				c.env.ImagePath,
-				"touch", "/bind/ext3_marker",
 			},
 			exit: 0,
 		},
@@ -2160,7 +2174,23 @@ func (c actionTests) bindImage(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	var wg sync.WaitGroup
+	for _, tt := range testsPass1 {
+		wg.Add(1)
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(tt.profile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(tt.args...),
+			e2e.ExpectExit(tt.exit),
+			e2e.PostRun(func(t *testing.T) {
+				wg.Done()
+			}),
+		)
+	}
+	wg.Wait()
+	for _, tt := range testsPass2 {
 		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
