@@ -16,11 +16,11 @@ import (
 	remoteutil "github.com/apptainer/apptainer/internal/pkg/remote/util"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
+	keyClient "github.com/apptainer/container-key-client/client"
 	golog "github.com/go-log/log"
-	keyclient "github.com/sylabs/scs-key-client/client"
 )
 
-func (ep *Config) KeyserverClientOpts(uri string, op KeyserverOp) ([]keyclient.Option, error) {
+func (ep *Config) KeyserverClientOpts(uri string, op KeyserverOp) ([]keyClient.Option, error) {
 	// empty uri means to use the default endpoint
 	isDefault := uri == ""
 
@@ -87,10 +87,10 @@ func (ep *Config) KeyserverClientOpts(uri string, op KeyserverOp) ([]keyclient.O
 		}
 	}
 
-	co := []keyclient.Option{
-		keyclient.OptBaseURL(uri),
-		keyclient.OptUserAgent(useragent.Value()),
-		keyclient.OptHTTPClient(newClient(keyservers, op)),
+	co := []keyClient.Option{
+		keyClient.OptBaseURL(uri),
+		keyClient.OptUserAgent(useragent.Value()),
+		keyClient.OptHTTPClient(newClient(keyservers, op)),
 	}
 	return co, nil
 }

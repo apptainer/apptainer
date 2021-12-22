@@ -19,8 +19,8 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
+	keyClient "github.com/apptainer/container-key-client/client"
 	ocitypes "github.com/containers/image/v5/types"
-	scskeyclient "github.com/sylabs/scs-key-client/client"
 	"golang.org/x/sys/unix"
 )
 
@@ -49,7 +49,7 @@ type Options struct {
 	// LibraryAuthToken contains authentication token to access specified library.
 	LibraryAuthToken string `json:"libraryAuthToken"`
 	// KeyServerOpts contains options for keyserver used for SIF fingerprint verification in builds.
-	KeyServerOpts []scskeyclient.Option
+	KeyServerOpts []keyClient.Option
 	// contains docker credentials if specified.
 	DockerAuthConfig *ocitypes.DockerAuthConfig
 	// EncryptionKeyInfo specifies the key used for filesystem

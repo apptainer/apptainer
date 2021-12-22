@@ -26,7 +26,7 @@ import (
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
-	"github.com/sylabs/scs-key-client/client"
+	"github.com/apptainer/container-key-client/client"
 )
 
 const (

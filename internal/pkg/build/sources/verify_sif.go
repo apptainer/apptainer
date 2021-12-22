@@ -13,17 +13,17 @@ import (
 
 	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	scskeyclient "github.com/sylabs/scs-key-client/client"
+	keyClient "github.com/apptainer/container-key-client/client"
 )
 
 // checkSIFFingerprint checks whether a bootstrap SIF image verifies, and was signed with a specified fingerprint
-func checkSIFFingerprint(ctx context.Context, imagePath string, fingerprints []string, co ...scskeyclient.Option) error {
+func checkSIFFingerprint(ctx context.Context, imagePath string, fingerprints []string, co ...keyClient.Option) error {
 	sylog.Infof("Checking bootstrap image verifies with fingerprint(s): %v", fingerprints)
 	return apptainer.VerifyFingerprints(ctx, imagePath, fingerprints, apptainer.OptVerifyUseKeyServer(co...))
 }
 
 // verifySIF checks whether a bootstrap SIF image verifies
-func verifySIF(ctx context.Context, imagePath string, co ...scskeyclient.Option) error {
+func verifySIF(ctx context.Context, imagePath string, co ...keyClient.Option) error {
 	sylog.Infof("Verifying bootstrap image %s", imagePath)
 	return apptainer.Verify(ctx, imagePath, apptainer.OptVerifyUseKeyServer(co...))
 }

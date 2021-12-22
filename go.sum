@@ -134,6 +134,8 @@ github.com/apex/logs v0.0.7/go.mod h1:XzxuLZ5myVHDy9SAmYpamKKRNApGj54PfYLcFrXqDw
 github.com/apex/logs v1.0.0/go.mod h1:XzxuLZ5myVHDy9SAmYpamKKRNApGj54PfYLcFrXqDwo=
 github.com/aphistic/golf v0.0.0-20180712155816-02c07f170c5a/go.mod h1:3NqKYiepwy8kCu4PNA+aP7WUV72eXWJeP9/r3/K9aLE=
 github.com/aphistic/sweet v0.2.0/go.mod h1:fWDlIh/isSE9n6EPsRmC0det+whmX6dJid3stzu0Xys=
+github.com/apptainer/container-key-client v0.7.2 h1:lfKlKgONO8CvlZ11bbWE0vwJtMx/IE2Tg01g1/YCY+4=
+github.com/apptainer/container-key-client v0.7.2/go.mod h1:hLHrJBfdMb8SHy1pbCTNRQ7bxqcSh4GPiMV4ajEnAqk=
 github.com/apptainer/sif/v2 v2.2.3 h1:L+PCzSgWcB0ta5T9wpqZ2rWk0cn9yiypG4LmX2kERpg=
 github.com/apptainer/sif/v2 v2.2.3/go.mod h1:FbdvfevquJjRsaFK0lSetw3aw/HxVxRVoAFw7OYottg=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
@@ -973,8 +975,6 @@ github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/sylabs/json-resp v0.8.0 h1:bZ932uaF220aPqT0+x/vakoaGCGNbpLCjUFm1f+JKlY=
 github.com/sylabs/json-resp v0.8.0/go.mod h1:bUGV9cqShOyxz7RxBq03Yt9raKGfELKrfN6Yac3lfiw=
-github.com/sylabs/scs-key-client v0.7.1 h1:m8w1fK5Ja/ahdgDRiAaFJ8CMOIOm8m37gKgSCwOgoeY=
-github.com/sylabs/scs-key-client v0.7.1/go.mod h1:/5RJxsW7iIKDD9FU2qfGvlCs+MfjigV7InUDE1SIR30=
 github.com/syndtr/gocapability v0.0.0-20170704070218-db04d3cc01c8/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635 h1:kdXcSzyDtseVEc4yCz2qF8ZrQvIDBJLl4S1c3GCXmoI=

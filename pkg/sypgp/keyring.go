@@ -18,7 +18,7 @@ import (
 
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/sylabs/scs-key-client/client"
+	"github.com/apptainer/container-key-client/client"
 )
 
 // PublicKeyRing retrieves the Apptainer public KeyRing.
