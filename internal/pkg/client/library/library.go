@@ -19,8 +19,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
-
-	scslibrary "github.com/sylabs/scs-library-client/client"
+	libClient "github.com/apptainer/container-library-client/client"
 )
 
 const defaultTag = "latest"
@@ -43,7 +42,7 @@ func splitHostNameAndPath(ref string) (string, string) {
 }
 
 // NormalizeLibraryRef parses library ref and sets default tag, if necessary.
-func NormalizeLibraryRef(ref string) (*scslibrary.Ref, error) {
+func NormalizeLibraryRef(ref string) (*libClient.Ref, error) {
 	host, pathref := splitHostNameAndPath(ref)
 
 	elem := strings.SplitN(pathref, ":", 2)
@@ -55,7 +54,7 @@ func NormalizeLibraryRef(ref string) (*scslibrary.Ref, error) {
 		tags = []string{defaultTag}
 	}
 
-	return &scslibrary.Ref{Host: host, Path: elem[0], Tags: tags}, nil
+	return &libClient.Ref{Host: host, Path: elem[0], Tags: tags}, nil
 }
 
 func getEnvInt(key string, defval int64) int64 {
@@ -68,7 +67,7 @@ func getEnvInt(key string, defval int64) int64 {
 	return defval
 }
 
-func getDownloadConfig() (scslibrary.Downloader, error) {
+func getDownloadConfig() (libClient.Downloader, error) {
 	// get downloader parameters from config
 	conf := apptainerconf.GetCurrentConfig()
 	if conf == nil {
@@ -85,16 +84,16 @@ func getDownloadConfig() (scslibrary.Downloader, error) {
 	bufferSize := int64(getEnvInt("APPTAINER_DOWNLOAD_BUFFER_SIZE", int64(conf.DownloadBufferSize)))
 
 	if concurrency < 1 {
-		return scslibrary.Downloader{}, fmt.Errorf("invalid download concurrency value (%v)", concurrency)
+		return libClient.Downloader{}, fmt.Errorf("invalid download concurrency value (%v)", concurrency)
 	}
 	if partSize < 1 {
-		return scslibrary.Downloader{}, fmt.Errorf("invalid concurrent download part size (%v)", partSize)
+		return libClient.Downloader{}, fmt.Errorf("invalid concurrent download part size (%v)", partSize)
 	}
 	if bufferSize < 1 {
-		return scslibrary.Downloader{}, fmt.Errorf("invalid concurrent download buffer size (%v)", bufferSize)
+		return libClient.Downloader{}, fmt.Errorf("invalid concurrent download buffer size (%v)", bufferSize)
 	}
 
-	return scslibrary.Downloader{
+	return libClient.Downloader{
 		Concurrency: uint(concurrency),
 		PartSize:    partSize,
 		BufferSize:  bufferSize,
@@ -102,7 +101,7 @@ func getDownloadConfig() (scslibrary.Downloader, error) {
 }
 
 // DownloadImage is a helper function to wrap library image download operation
-func DownloadImage(ctx context.Context, c *scslibrary.Client, imagePath, arch string, libraryRef *scslibrary.Ref, pb scslibrary.ProgressBar) error {
+func DownloadImage(ctx context.Context, c *libClient.Client, imagePath, arch string, libraryRef *libClient.Ref, pb libClient.ProgressBar) error {
 	// open destination file for writing
 	f, err := os.OpenFile(imagePath, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o777)
 	if err != nil {
@@ -137,12 +136,12 @@ func DownloadImage(ctx context.Context, c *scslibrary.Client, imagePath, arch st
 
 // DownloadImageNoProgress downloads an image from the library without
 // displaying a progress bar while doing so
-func DownloadImageNoProgress(ctx context.Context, c *scslibrary.Client, imagePath, arch string, libraryRef *scslibrary.Ref) error {
+func DownloadImageNoProgress(ctx context.Context, c *libClient.Client, imagePath, arch string, libraryRef *libClient.Ref) error {
 	return DownloadImage(ctx, c, imagePath, arch, libraryRef, nil)
 }
 
 // SearchLibrary searches the library and outputs results to stdout
-func SearchLibrary(ctx context.Context, c *scslibrary.Client, value, arch string, signed bool) error {
+func SearchLibrary(ctx context.Context, c *libClient.Client, value, arch string, signed bool) error {
 	if len(value) < 3 {
 		return fmt.Errorf("bad query '%s'. You must search for at least 3 characters", value)
 	}

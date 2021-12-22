@@ -23,8 +23,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	keyClient "github.com/apptainer/container-key-client/client"
-	libclient "github.com/sylabs/scs-library-client/client"
-	scslibrary "github.com/sylabs/scs-library-client/client"
+	libClient "github.com/apptainer/container-library-client/client"
 	"golang.org/x/term"
 )
 
@@ -32,8 +31,8 @@ import (
 var ErrLibraryPullUnsigned = errors.New("failed to verify container")
 
 // pull will pull a library image into the cache if directTo="", or a specific file if directTo is set.
-func pull(ctx context.Context, imgCache *cache.Handle, directTo string, imageRef *libclient.Ref, arch string, libraryConfig *libclient.Config) (string, error) {
-	c, err := libclient.NewClient(libraryConfig)
+func pull(ctx context.Context, imgCache *cache.Handle, directTo string, imageRef *libClient.Ref, arch string, libraryConfig *libClient.Config) (string, error) {
+	c, err := libClient.NewClient(libraryConfig)
 	if err != nil {
 		return "", fmt.Errorf("unable to initialize client library: %v", err)
 	}
@@ -42,13 +41,13 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo string, imageRef
 
 	libraryImage, err := c.GetImage(ctx, arch, ref)
 	if err != nil {
-		if errors.Is(err, libclient.ErrNotFound) {
+		if errors.Is(err, libClient.ErrNotFound) {
 			return "", fmt.Errorf("image does not exist in the library: %s (%s)", ref, arch)
 		}
 		return "", err
 	}
 
-	var progressBar scslibrary.ProgressBar
+	var progressBar libClient.ProgressBar
 	if term.IsTerminal(2) {
 		progressBar = &client.DownloadProgressBar{}
 	}
@@ -72,7 +71,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo string, imageRef
 			return "", fmt.Errorf("unable to download image: %v", err)
 		}
 
-		if cacheFileHash, err := libclient.ImageHash(cacheEntry.TmpPath); err != nil {
+		if cacheFileHash, err := libClient.ImageHash(cacheEntry.TmpPath); err != nil {
 			return "", fmt.Errorf("error getting image hash: %v", err)
 		} else if cacheFileHash != libraryImage.Hash {
 			return "", fmt.Errorf("cached file hash(%s) and expected hash(%s) does not match", cacheFileHash, libraryImage.Hash)
@@ -89,7 +88,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo string, imageRef
 }
 
 // downloadWrapper calls DownloadImage() and outputs download summary if progressBar not specified.
-func downloadWrapper(ctx context.Context, c *scslibrary.Client, imagePath, arch string, libraryRef *scslibrary.Ref, pb scslibrary.ProgressBar) error {
+func downloadWrapper(ctx context.Context, c *libClient.Client, imagePath, arch string, libraryRef *libClient.Ref, pb libClient.ProgressBar) error {
 	sylog.Infof("Downloading library image")
 
 	defer func(t time.Time) {
@@ -108,7 +107,7 @@ func downloadWrapper(ctx context.Context, c *scslibrary.Client, imagePath, arch 
 }
 
 // Pull will pull a library image to the cache or direct to a temporary file if cache is disabled
-func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom *libclient.Ref, arch string, tmpDir string, libraryConfig *libclient.Config) (imagePath string, err error) {
+func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom *libClient.Ref, arch string, tmpDir string, libraryConfig *libClient.Config) (imagePath string, err error) {
 	directTo := ""
 
 	if imgCache.IsDisabled() {
@@ -124,7 +123,7 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom *libclient.Ref, 
 }
 
 // PullToFile will pull a library image to the specified location, through the cache, or directly if cache is disabled
-func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pullFrom *libclient.Ref, arch string, tmpDir string, libraryConfig *libclient.Config, co []keyClient.Option) (imagePath string, err error) {
+func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pullFrom *libClient.Ref, arch string, tmpDir string, libraryConfig *libClient.Config, co []keyClient.Option) (imagePath string, err error) {
 	directTo := ""
 	if imgCache.IsDisabled() {
 		directTo = pullTo

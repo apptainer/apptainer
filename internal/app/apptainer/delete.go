@@ -11,14 +11,13 @@ package apptainer
 import (
 	"context"
 
+	"github.com/apptainer/container-library-client/client"
 	"github.com/pkg/errors"
-	"github.com/sylabs/scs-library-client/client"
-	scs "github.com/sylabs/scs-library-client/client"
 )
 
 // DeleteImage deletes an image from a remote library.
-func DeleteImage(ctx context.Context, scsConfig *scs.Config, imageRef, arch string) error {
-	libraryClient, err := client.NewClient(scsConfig)
+func DeleteImage(ctx context.Context, clientConfig *client.Config, imageRef, arch string) error {
+	libraryClient, err := client.NewClient(clientConfig)
 	if err != nil {
 		return errors.Wrap(err, "couldn't create a new client")
 	}

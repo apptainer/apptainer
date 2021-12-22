@@ -16,8 +16,8 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/client/library"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/container-library-client/client"
 	"github.com/spf13/cobra"
-	"github.com/sylabs/scs-library-client/client"
 )
 
 var (

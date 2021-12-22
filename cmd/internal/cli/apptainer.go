@@ -34,9 +34,9 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	keyClient "github.com/apptainer/container-key-client/client"
+	libClient "github.com/apptainer/container-library-client/client"
 	ocitypes "github.com/containers/image/v5/types"
 	"github.com/spf13/cobra"
-	scslibclient "github.com/sylabs/scs-library-client/client"
 	"golang.org/x/term"
 )
 
@@ -622,7 +622,7 @@ func getKeyserverClientOpts(uri string, op endpoint.KeyserverOp) ([]keyClient.Op
 // getLibraryClientConfig returns client config for library server access.
 // A "" value for uri will return client config for the current endpoint.
 // A specified uri will return client options for that library server.
-func getLibraryClientConfig(uri string) (*scslibclient.Config, error) {
+func getLibraryClientConfig(uri string) (*libClient.Config, error) {
 	if currentRemoteEndpoint == nil {
 		var err error
 

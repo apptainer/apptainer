@@ -16,8 +16,8 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	keyClient "github.com/apptainer/container-key-client/client"
+	libClient "github.com/apptainer/container-library-client/client"
 	golog "github.com/go-log/log"
-	libclient "github.com/sylabs/scs-library-client/client"
 )
 
 func (ep *Config) KeyserverClientOpts(uri string, op KeyserverOp) ([]keyClient.Option, error) {
@@ -95,11 +95,11 @@ func (ep *Config) KeyserverClientOpts(uri string, op KeyserverOp) ([]keyClient.O
 	return co, nil
 }
 
-func (ep *Config) LibraryClientConfig(uri string) (*libclient.Config, error) {
+func (ep *Config) LibraryClientConfig(uri string) (*libClient.Config, error) {
 	// empty uri means to use the default endpoint
 	isDefault := uri == ""
 
-	config := &libclient.Config{
+	config := &libClient.Config{
 		BaseURL:   uri,
 		UserAgent: useragent.Value(),
 		Logger:    (golog.Logger)(sylog.DebugLogger{}),
