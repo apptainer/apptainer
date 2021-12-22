@@ -21,8 +21,8 @@ import (
 	registryclient "github.com/apptainer/apptainer/internal/pkg/registry"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	keyClient "github.com/apptainer/container-key-client/client"
 	"github.com/apptainer/sif/v2/pkg/sif"
-	keyclient "github.com/sylabs/scs-key-client/client"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
 	"golang.org/x/term"
@@ -83,7 +83,7 @@ func (c *progressCallback) Finish() {
 
 // RegistryPush will upload an image file according to the provided RegistryPushSpec
 // Before uploading, the image will be checked for a valid signature unless AllowUnsigned is true
-func RegistryPush(ctx context.Context, pushSpec RegistryPushSpec, registryConfig *registryclient.Config, co []keyclient.Option) error {
+func RegistryPush(ctx context.Context, pushSpec RegistryPushSpec, registryConfig *registryclient.Config, co []keyClient.Option) error {
 	fi, err := os.Stat(pushSpec.SourceFile)
 	if err != nil {
 		if os.IsNotExist(err) {

@@ -33,9 +33,9 @@ import (
 	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
+	keyClient "github.com/apptainer/container-key-client/client"
 	ocitypes "github.com/containers/image/v5/types"
 	"github.com/spf13/cobra"
-	scskeyclient "github.com/sylabs/scs-key-client/client"
 	"golang.org/x/term"
 )
 
@@ -600,7 +600,7 @@ func CheckRootOrUnpriv(cmd *cobra.Command, args []string) {
 // getKeyServerClientOpts returns client options for keyserver access.
 // A "" value for uri will return client options for the current endpoint.
 // A specified uri will return client options for that keyserver.
-func getKeyserverClientOpts(uri string, op endpoint.KeyserverOp) ([]scskeyclient.Option, error) {
+func getKeyserverClientOpts(uri string, op endpoint.KeyserverOp) ([]keyClient.Option, error) {
 	if currentRemoteEndpoint == nil {
 		var err error
 
