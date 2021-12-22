@@ -14,7 +14,6 @@ import (
 	"fmt"
 	"os"
 	osExec "os/exec"
-	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -121,10 +120,6 @@ func runBuild(cmd *cobra.Command, args []string) {
 			sylog.Fatalf("--writable-tmpfs option is not supported for fakeroot build")
 		}
 		os.Setenv("APPTAINER_WRITABLE_TMPFS", "1")
-	}
-
-	if buildArgs.arch != runtime.GOARCH {
-		sylog.Fatalf("Requested architecture (%s) does not match host (%s). Cannot build locally.", buildArgs.arch, runtime.GOARCH)
 	}
 
 	dest := args[0]

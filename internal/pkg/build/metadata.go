@@ -344,8 +344,6 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 
 	// Architecture of build
 	// Local builds currently always use the host architecture.
-	// In remote builds this label will be applied on the builder... where the
-	// architecture should match the remote build --arch flag.
 	labels["org.label-schema.build-arch"] = runtime.GOARCH
 
 	return nil

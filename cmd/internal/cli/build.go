@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"runtime"
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
@@ -28,7 +27,6 @@ var buildArgs struct {
 	sections      []string
 	bindPaths     []string
 	mounts        []string
-	arch          string
 	libraryURL    string
 	keyServerURL  string
 	webURL        string
@@ -99,16 +97,6 @@ var buildNoTestFlag = cmdline.Flag{
 	EnvKeys:      []string{"NOTEST"},
 }
 
-// --arch
-var buildArchFlag = cmdline.Flag{
-	ID:           "buildArchFlag",
-	Value:        &buildArgs.arch,
-	DefaultValue: runtime.GOARCH,
-	Name:         "arch",
-	Usage:        "architecture for remote build",
-	EnvKeys:      []string{"BUILD_ARCH"},
-}
-
 // --library
 var buildLibraryFlag = cmdline.Flag{
 	ID:           "buildLibraryFlag",
@@ -177,7 +165,7 @@ var buildNvFlag = cmdline.Flag{
 	Value:        &buildArgs.nvidia,
 	DefaultValue: false,
 	Name:         "nv",
-	Usage:        "inject host Nvidia libraries during build for post and test sections (not supported with remote build)",
+	Usage:        "inject host Nvidia libraries during build for post and test sections",
 }
 
 // --nvccli
@@ -196,7 +184,7 @@ var buildRocmFlag = cmdline.Flag{
 	Value:        &buildArgs.rocm,
 	DefaultValue: false,
 	Name:         "rocm",
-	Usage:        "inject host Rocm libraries during build for post and test sections (not supported with remote build)",
+	Usage:        "inject host Rocm libraries during build for post and test sections",
 }
 
 // -B|--bind
@@ -210,7 +198,7 @@ var buildBindFlag = cmdline.Flag{
 		"where src and dest are outside and inside paths. If dest is not given," +
 		"it is set equal to src. Mount options ('opts') may be specified as 'ro'" +
 		"(read-only) or 'rw' (read/write, which is the default)." +
-		"Multiple bind paths can be given by a comma separated list. (not supported with remote build)",
+		"Multiple bind paths can be given by a comma separated list.",
 }
 
 // --mount
@@ -239,7 +227,6 @@ func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(buildCmd)
 
-		cmdManager.RegisterFlagForCmd(&buildArchFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildDisableCacheFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildEncryptFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildFakerootFlag, buildCmd)
