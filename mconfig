@@ -805,6 +805,7 @@ case $profile in
 		if [ $lang_go -eq 1 ]; then
 			drawline $makeit_fragsdir/go_normal_opts.mk
 			cat $makeit_fragsdir/go_normal_opts.mk >> $makeit_makefile
+			cat $makeit_fragsdir/go_debug_opts.mk >> $makeit_makefile
 		fi
 		;;
 esac
