@@ -88,20 +88,6 @@ type GenKeyPairOptions struct {
 	KeyLength int
 }
 
-// mrKeyList contains all the key info, used for decoding
-// the MR output from 'key search'
-type mrKeyList struct {
-	keyFingerprint string
-	keyBit         string
-	keyName        string
-	keyType        string
-	keyDateCreated string
-	keyDateExpired string
-	keyStatus      string
-	keyCount       int
-	keyReady       bool
-}
-
 func (e *KeyExistsError) Error() string {
 	return fmt.Sprintf("the key with fingerprint %X already belongs to the keyring", e.fingerprint)
 }
@@ -598,17 +584,27 @@ func SelectPrivKey(el openpgp.EntityList) (*openpgp.Entity, error) {
 	return el[n], nil
 }
 
-// formatMROutput will take a machine readable input, and convert it to fit
-// on a 80x24 terminal. Returns the number of keys(int), the formated string
-// in []bytes, and a error if one occurs.
-func formatMROutput(mrString string) (int, []byte, error) {
+// formatMROutput formats the key search output that is in machine readable
+// format into something readable by people.  If longOutput is set, more
+// detail is included.  See the input format in:
+// https://tools.ietf.org/html/draft-shaw-openpgp-hkp-00#section-5.2
+// Returns the number of keys(int), the formated string
+// in []bytes, and an error if one occurs.
+func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 	count := 0
 	numKeys := 0
-	listLine := "%s\t%s\t%s\n"
+	longFmt := "%s\t%s\t%s\t%s\t%s\t%s\t"
+	shortFmt := "%s\t%s\t"
+	nameFmt := "%s\n"
 
 	retList := bytes.NewBuffer(nil)
 	tw := tabwriter.NewWriter(retList, 0, 0, 2, ' ', 0)
-	fmt.Fprintf(tw, listLine, "KEY ID", "BITS", "NAME/EMAIL")
+	if longOutput {
+		fmt.Fprintf(tw, longFmt, "FINGERPRINT", "ALGORITHM", "BITS", "CREATION DATE", "EXPIRATION DATE", "STATUS")
+	} else {
+		fmt.Fprintf(tw, shortFmt, "KEY ID", "BITS")
+	}
+	fmt.Fprintf(tw, nameFmt, "NAME/EMAIL")
 
 	lines := strings.Split(mrString, "\n")
 
@@ -633,10 +629,34 @@ func formatMROutput(mrString string) (int, []byte, error) {
 			}
 			first = false
 			gotName = false
-			// The fingerprint is located at fields[1], and we only want the last 8 chars
-			fmt.Fprintf(tw, "%s\t", fields[1][len(fields[1])-8:])
-			// The key size (bits) is located at fields[3]
-			fmt.Fprintf(tw, "%s\t", fields[3])
+			keyFingerprint := fields[1]
+			keyBits := fields[3]
+			if longOutput {
+				keyType, err := getEncryptionAlgorithmName(fields[2])
+				if err != nil {
+					return -1, nil, err
+				}
+				keyDateCreated := date(fields[4])
+				keyDateExpired := date(fields[5])
+
+				keyStatus := ""
+				if fields[6] == "r" {
+					keyStatus = "[revoked]"
+				} else if fields[6] == "d" {
+					keyStatus = "[disabled]"
+				} else if fields[6] == "e" {
+					keyStatus = "[expired]"
+				} else {
+					keyStatus = "[enabled]"
+				}
+
+				fmt.Fprintf(tw, longFmt, keyFingerprint, keyType, keyBits, keyDateCreated, keyDateExpired, keyStatus)
+
+			} else {
+				// Short output
+				// take only last 8 chars of fingerprint
+				fmt.Fprintf(tw, shortFmt, keyFingerprint[len(fields[1])-8:], keyBits)
+			}
 			count++
 		} else if fields[0] == "uid" {
 			// And the key name/email is on fields[1]
@@ -645,11 +665,18 @@ func formatMROutput(mrString string) (int, []byte, error) {
 				gotName = true
 			} else {
 				// indent as far as the pub line
-				fmt.Fprintf(tw, "%s\t%s\t", "", "")
+				if longOutput {
+					fmt.Fprintf(tw, longFmt, "", "", "", "", "", "")
+				} else {
+					fmt.Fprintf(tw, shortFmt, "", "")
+				}
 			}
-			name := fields[1]
-			name, _ = url.QueryUnescape(name)
-			fmt.Fprintf(tw, "%s\t\n", name)
+			name, err := url.QueryUnescape(fields[1])
+			if err != nil {
+				sylog.Debugf("using undecoded name because url decode didn't work: %v", err)
+				name = fields[1]
+			}
+			fmt.Fprintf(tw, nameFmt, name)
 		}
 	}
 	if numKeys > 0 && !gotName {
@@ -707,18 +734,10 @@ func SearchPubkey(ctx context.Context, search string, longOutput bool, opts ...c
 		}
 	}
 
-	if longOutput {
-		kcount, keyList, err := formatMROutputLongList(keyText)
-		fmt.Printf("Showing %d results\n\n%s", kcount, keyList)
-		if err != nil {
-			return fmt.Errorf("could not reformat key output")
-		}
-	} else {
-		kcount, keyList, err := formatMROutput(keyText)
-		fmt.Printf("Showing %d results\n\n%s", kcount, keyList)
-		if err != nil {
-			return err
-		}
+	kcount, keyList, err := formatMROutput(keyText, longOutput)
+	fmt.Printf("Showing %d results\n\n%s", kcount, keyList)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -766,126 +785,6 @@ func date(s string) string {
 	ret := time.Unix(c, 0).String()
 
 	return ret
-}
-
-// getKeyInfoFromLine extracts information from the fields coming from each
-// line of output from a key search.  Returns a error if one occurs.
-func getKeyInfoFromLine(keyList *mrKeyList, fields []string) error {
-	var errRet error
-
-	if fields[0] == "pub" {
-		// Get the fingerprint for the key
-		keyList.keyFingerprint = fields[1]
-
-		// Get the bit length for the key
-		keyList.keyBit = fields[3]
-
-		var err error
-		// Get the key type
-		keyList.keyType, err = getEncryptionAlgorithmName(fields[2])
-		if err != nil {
-			errRet = err
-		}
-
-		// Get the date created for the key
-		keyList.keyDateCreated = date(fields[4])
-
-		// Get the expiration date for the key
-		keyList.keyDateExpired = date(fields[5])
-
-		// Get the key status
-		if fields[6] == "r" {
-			keyList.keyStatus = "[revoked]"
-		} else if fields[6] == "d" {
-			keyList.keyStatus = "[disabled]"
-		} else if fields[6] == "e" {
-			keyList.keyStatus = "[expired]"
-		} else {
-			keyList.keyStatus = "[enabled]"
-		}
-
-		// Only count the key if it has a fingerprint. Otherwise
-		// dont count it.
-		keyList.keyCount++
-	} else if fields[0] == "uid" {
-		// Note that there can be more than one of these for each pub
-
-		// Get the name of the key
-		keyList.keyName = fields[1]
-		keyList.keyName, _ = url.QueryUnescape(keyList.keyName)
-	}
-
-	return errRet
-}
-
-// formatMROutputLongList reformats the key search output that is in machine readable format
-// see the output format in: https://tools.ietf.org/html/draft-shaw-openpgp-hkp-00#section-5.2
-func formatMROutputLongList(mrString string) (int, []byte, error) {
-	pubFmt := "%s\t%s\t%s\t%s\t%s\t%s\t"
-	nameFmt := "%s\n"
-
-	retList := bytes.NewBuffer(nil)
-	tw := tabwriter.NewWriter(retList, 0, 0, 2, ' ', 0)
-	fmt.Fprintf(tw, pubFmt+nameFmt, "FINGERPRINT", "ALGORITHM", "BITS", "CREATION DATE", "EXPIRATION DATE", "STATUS", "NAME/EMAIL")
-
-	numKeys := 0
-	lines := strings.Split(mrString, "\n")
-	var keyList mrKeyList
-
-	first := true
-	gotName := false
-	for _, l := range lines {
-		fields := strings.Split(strings.TrimSpace(l), ":")
-		if fields[0] == "info" {
-			var err error
-			numKeys, err = strconv.Atoi(fields[2])
-			if err != nil {
-				return -1, nil, fmt.Errorf("unable to check key number")
-			}
-		} else {
-			err := getKeyInfoFromLine(&keyList, fields)
-			if err != nil {
-				return -1, nil, fmt.Errorf("failed to get key entity from line: %s", err)
-			}
-			if fields[0] == "pub" {
-				if !first {
-					if !gotName {
-						// there was a pub without uid; end line
-						fmt.Fprintf(tw, "\n")
-					}
-					// put blank line between each key
-					fmt.Fprintf(tw, "\n")
-				}
-				first = false
-				gotName = false
-				fmt.Fprintf(tw, pubFmt, keyList.keyFingerprint, keyList.keyType, keyList.keyBit, keyList.keyDateCreated, keyList.keyDateExpired, keyList.keyStatus)
-			}
-			if fields[0] == "uid" {
-				if gotName {
-					// an extra name, indent it
-					fmt.Fprintf(tw, pubFmt, "", "", "", "", "", "")
-				} else {
-					gotName = true
-				}
-				fmt.Fprintf(tw, nameFmt, keyList.keyName)
-			}
-		}
-	}
-	if numKeys > 0 && !gotName {
-		// no name was printed with last key
-		fmt.Fprintf(tw, "\n")
-	}
-	tw.Flush()
-
-	sylog.Debugf("key count=%d; expect=%d\n", keyList.keyCount, numKeys)
-
-	// Simple check to ensure the conversion was successful
-	if keyList.keyCount != numKeys {
-		sylog.Debugf("expecting %d, got %d\n", numKeys, keyList.keyCount)
-		return -1, retList.Bytes(), fmt.Errorf("failed to convert machine readable to human readable output correctly")
-	}
-
-	return keyList.keyCount, retList.Bytes(), nil
 }
 
 // FetchPubkey pulls a public key from the Key Service.
