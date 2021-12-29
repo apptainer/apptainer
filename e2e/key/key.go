@@ -91,13 +91,14 @@ func (c *ctx) apptainerKeySearch(t *testing.T) {
 			stdout: "^Search for keys on a key server",
 		},
 		{
+			// keys.openpgp.org does not support short id searches, use sylabs
 			name:   "key search 0x<key id>",
-			args:   []string{"search", "0x8BD91BEE"},
+			args:   []string{"search", "-u", "https://keys.sylabs.io", "0x8BD91BEE"},
 			stdout: "^Showing 1 results",
 		},
 		{
 			name:   "key search <key id>",
-			args:   []string{"search", "8BD91BEE"},
+			args:   []string{"search", "-u", "https://keys.sylabs.io", "8BD91BEE"},
 			stdout: "^Showing 1 results",
 		},
 		{
@@ -111,8 +112,28 @@ func (c *ctx) apptainerKeySearch(t *testing.T) {
 			stdout: "^Showing 1 results",
 		},
 		{
+			name:   "key search -u https://keys.openpgp.org 0x<key fingerprint>",
+			args:   []string{"search", "-u", "https://keys.openpgp.org", "0x7605BC2716168DF057D6C600ACEEC62C8BD91BEE"},
+			stdout: "^Showing 1 results",
+		},
+		{
+			name:   "key search -u https://keys.openpgp.org <key fingerprint>",
+			args:   []string{"search", "-u", "https://keys.openpgp.org", "7605BC2716168DF057D6C600ACEEC62C8BD91BEE"},
+			stdout: "^Showing 1 results",
+		},
+		{
+			name:   "key search <key with at least two emails>",
+			args:   []string{"search", "-u", "https://keys.openpgp.org", "dwd@fnal.gov"},
+			stdout: "\n  .*@",
+		},
+		{
+			name:   "key search -l <key with at least two emails>",
+			args:   []string{"search", "-u", "https://keys.openpgp.org", "-l", "dwd@fnal.gov"},
+			stdout: "\n  .*@",
+		},
+		{
 			name:   "key search <name>",
-			args:   []string{"search", "westley"},
+			args:   []string{"search", "-u", "https://keys.sylabs.io", "westley"},
 			stdout: "^Showing",
 		},
 		{
