@@ -106,7 +106,7 @@ func (ep *Config) RemoveKeyserver(uri string) error {
 			if kc.External {
 				ep.Keyservers = append(ep.Keyservers[:i], ep.Keyservers[i+1:]...)
 			} else {
-				// SCS keyserver is just marked as skipped
+				// Default keyserver is just marked as skipped
 				kc.Skip = true
 			}
 			return nil
@@ -138,7 +138,7 @@ func (ep *Config) UpdateKeyserversConfig() error {
 		if kc.credential != nil {
 			continue
 		} else if !kc.External {
-			// associated current endpoint token to the SCS key service
+			// associated current endpoint token to the default key service
 			kc.credential = &credential.Config{
 				URI:  kc.URI,
 				Auth: credential.TokenPrefix + ep.Token,

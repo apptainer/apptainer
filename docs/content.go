@@ -61,7 +61,7 @@ Enterprise Performance Computing (EPC)`
 
   Targets can also be remote and defined by a URI of the following formats:
 
-      library://  an image library (default https://cloud.sylabs.io/library)
+      library://  an image library (no default)
       docker://   a Docker/OCI registry (default Docker Hub)
       shub://     an Apptainer registry (default Singularity Hub)
       oras://     an OCI registry that holds SIF files using ORAS`
@@ -293,7 +293,7 @@ Enterprise Performance Computing (EPC)`
   public keys matching the argument passed to the command line. You can  
   search by name, email, or fingerprint / key ID. (Maximum 100 search entities)`
 	KeySearchExample string = `
-  $ apptainer key search sylabs.io
+  $ apptainer key search apptainer.org
 
   # search by fingerprint:
   $ apptainer key search 8883491F4268F173C6E5DC49EDECE4F3F38D871E
@@ -464,8 +464,7 @@ Enterprise Performance Computing (EPC)`
   instance://*        A local running instance of a container. (See the instance
                       command group.)
 
-  library://*         A SIF container hosted on a Library
-                      (default https://cloud.sylabs.io/library)
+  library://*         A SIF container hosted on a Library (no default)
 
   docker://*          A Docker/OCI container hosted on Docker Hub or another
                       OCI registry.
@@ -603,7 +602,7 @@ Enterprise Performance Computing (EPC)`
   http, https: Pull an image using the http(s?) protocol
       https://library.sylabs.io/v1/imagefile/library/default/alpine:latest`
 	PullExample string = `
-  From Sylabs cloud library
+  From a library
   $ apptainer pull alpine.sif library://alpine:latest
 
   From Docker
@@ -648,7 +647,7 @@ Enterprise Performance Computing (EPC)`
 	SearchShort string = `Search a Container Library for images`
 	SearchLong  string = `
   Search a Container Library for container images matching the search query.
-  (default cloud.sylabs.io). You can specify an alternate architecture, and/or limit
+  You can specify an alternate architecture, and/or limit
   the results to only signed images.`
 	SearchExample string = `
   $ apptainer search lolcow

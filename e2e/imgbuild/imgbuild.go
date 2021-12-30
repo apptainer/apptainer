@@ -1415,7 +1415,7 @@ func (c imgBuildTests) buildLibraryHost(t *testing.T) {
 
 	// Library hostname in the From URI
 	// The hostname is invalid, and we should get an error to that effect.
-	definition := "Bootstrap: library\nFrom: library.example.com/test/test/test:latest\n"
+	definition := "Bootstrap: library\nLibrary: https://library.example.com\nFrom: test/test/test:latest\n"
 
 	defFile := e2e.RawDefFile(t, tmpdir, strings.NewReader(definition))
 	imagePath := filepath.Join(tmpdir, "image-libaryhost")

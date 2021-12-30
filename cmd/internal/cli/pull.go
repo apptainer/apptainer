@@ -29,11 +29,9 @@ import (
 )
 
 const (
-	// LibraryProtocol holds the sylabs cloud library base URI,
-	// for more info refer to https://cloud.sylabs.io/library.
+	// LibraryProtocol holds the library base URI.
 	LibraryProtocol = "library"
-	// ShubProtocol holds singularity hub base URI,
-	// for more info refer to https://singularity-hub.org/
+	// ShubProtocol holds the singularity hub base URI.
 	ShubProtocol = "shub"
 	// HTTPProtocol holds the remote http base URI.
 	HTTPProtocol = "http"
@@ -185,10 +183,9 @@ func pullRun(cmd *cobra.Command, args []string) {
 		pullTo = args[0]
 		if len(args) == 1 {
 			if transport == "" {
-				pullTo = uri.GetName("library://" + pullFrom)
-			} else {
-				pullTo = uri.GetName(pullFrom) // TODO: If not library/shub & no name specified, simply put to cache
+				sylog.Fatalf("No transport type URI supplied")
 			}
+			pullTo = uri.GetName(pullFrom) // TODO: If not library/shub & no name specified, simply put to cache
 		}
 	}
 
@@ -205,7 +202,7 @@ func pullRun(cmd *cobra.Command, args []string) {
 	}
 
 	switch transport {
-	case LibraryProtocol, "":
+	case LibraryProtocol:
 		ref, err := library.NormalizeLibraryRef(pullFrom)
 		if err != nil {
 			sylog.Fatalf("Malformed library reference: %v", err)
@@ -273,6 +270,8 @@ func pullRun(cmd *cobra.Command, args []string) {
 		if err != nil {
 			sylog.Fatalf("While making image from oci registry: %v", err)
 		}
+	case "":
+		sylog.Fatalf("No transport type URI supplied")
 	default:
 		sylog.Fatalf("Unsupported transport type: %s", transport)
 	}

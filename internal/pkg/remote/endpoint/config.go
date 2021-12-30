@@ -24,7 +24,7 @@ var cacheDuration = 720 * time.Hour
 
 // DefaultEndpointConfig is the default remote configuration.
 var DefaultEndpointConfig = &Config{
-	URI:    SCSDefaultCloudURI,
+	URI:    DefaultCloudURI,
 	System: true,
 }
 

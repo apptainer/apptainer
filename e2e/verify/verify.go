@@ -11,6 +11,7 @@ package verify
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -35,7 +36,7 @@ type verifyOutput struct {
 }
 
 const (
-	successURL   = "oras://ghcr.io/apptainer/verify_success:1.0.2"
+	successURL   = "oras://ghcr.io/apptainer/verify_success:1.1.0"
 	corruptedURL = "oras://ghcr.io/apptainer/verify_corrupted:1.0.2"
 )
 
@@ -152,8 +153,8 @@ func (c ctx) apptainerVerifySigner(t *testing.T) {
 			expectExit:  0,
 			expectOutput: []verifyOutput{
 				{
-					name:        "WestleyK (Testing key; used for signing test containers) \u003cwestley@sylabs.io\u003e",
-					fingerprint: "7605bc2716168df057d6c600aceec62c8bd91bee",
+					name:        "Dave Dykstra",
+					fingerprint: "1b0f8f770b92a4672059ff8234a4a0a7189c0e94",
 					local:       false,
 					keyCheck:    true,
 					dataCheck:   true,
@@ -180,8 +181,8 @@ func (c ctx) apptainerVerifySigner(t *testing.T) {
 					err = errors.Wrap(err, "getting string from JSON")
 					t.Fatalf("unable to get expected output from json: %+v", err)
 				}
-				if eName != vo.name {
-					t.Fatalf("unexpected failure: got: '%s', expecting: '%s'", eName, vo.name)
+				if !strings.HasPrefix(eName, vo.name) {
+					t.Fatalf("unexpected failure: got: '%s', expecting to start with: '%s'", eName, vo.name)
 				}
 
 				// Get the Fingerprint and compare it

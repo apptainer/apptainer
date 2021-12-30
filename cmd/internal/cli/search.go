@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	// SearchLibraryURI holds the base URI to a Sylabs library API instance
+	// SearchLibraryURI holds the base URI to a library API instance
 	SearchLibraryURI string
 	// SearchArch holds the architecture for images to display in search results
 	SearchArch string

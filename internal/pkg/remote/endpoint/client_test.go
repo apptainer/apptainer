@@ -18,6 +18,12 @@ func init() {
 	useragent.InitValue("apptainer", "0.1.0")
 }
 
+const (
+	testCloudURI     = "cloud.sylabs.io"
+	testLibraryURI   = "https://library.sylabs.io"
+	testKeyserverURI = "https://keys.sylabs.io"
+)
+
 func TestKeyserverClientOpts(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -30,9 +36,9 @@ func TestKeyserverClientOpts(t *testing.T) {
 		{
 			name: "Sylabs cloud",
 			endpoint: &Config{
-				URI: SCSDefaultCloudURI,
+				URI: testCloudURI,
 			},
-			uri:           SCSDefaultKeyserverURI,
+			uri:           testKeyserverURI,
 			expectedOpts:  3,
 			expectSuccess: true,
 			op:            KeyserverSearchOp,
@@ -40,7 +46,7 @@ func TestKeyserverClientOpts(t *testing.T) {
 		{
 			name: "Sylabs cloud exclusive KO",
 			endpoint: &Config{
-				URI:       SCSDefaultCloudURI,
+				URI:       testCloudURI,
 				Exclusive: true,
 			},
 			uri:           "https://custom.keys",
@@ -50,10 +56,10 @@ func TestKeyserverClientOpts(t *testing.T) {
 		{
 			name: "Sylabs cloud exclusive OK",
 			endpoint: &Config{
-				URI:       SCSDefaultCloudURI,
+				URI:       testCloudURI,
 				Exclusive: true,
 			},
-			uri:           SCSDefaultKeyserverURI,
+			uri:           testKeyserverURI,
 			expectedOpts:  3,
 			expectSuccess: true,
 			op:            KeyserverSearchOp,
@@ -61,10 +67,10 @@ func TestKeyserverClientOpts(t *testing.T) {
 		{
 			name: "Sylabs cloud verify",
 			endpoint: &Config{
-				URI: SCSDefaultCloudURI,
+				URI: testCloudURI,
 				Keyservers: []*ServiceConfig{
 					{
-						URI:  SCSDefaultKeyserverURI,
+						URI:  testKeyserverURI,
 						Skip: true,
 					},
 					{
@@ -81,10 +87,10 @@ func TestKeyserverClientOpts(t *testing.T) {
 		{
 			name: "Sylabs cloud search",
 			endpoint: &Config{
-				URI: SCSDefaultCloudURI,
+				URI: testCloudURI,
 				Keyservers: []*ServiceConfig{
 					{
-						URI: SCSDefaultKeyserverURI,
+						URI: testKeyserverURI,
 					},
 					{
 						URI:      "http://localhost:11371",
@@ -100,7 +106,7 @@ func TestKeyserverClientOpts(t *testing.T) {
 		{
 			name: "Custom library",
 			endpoint: &Config{
-				URI: SCSDefaultCloudURI,
+				URI: testCloudURI,
 			},
 			uri:           "https://custom.keys",
 			expectedOpts:  3,
@@ -144,15 +150,15 @@ func TestLibraryClientConfig(t *testing.T) {
 		{
 			name: "Sylabs cloud",
 			endpoint: &Config{
-				URI: SCSDefaultCloudURI,
+				URI: testCloudURI,
 			},
-			uri:           SCSDefaultLibraryURI,
+			uri:           testLibraryURI,
 			expectSuccess: true,
 		},
 		{
 			name: "Sylabs cloud exclusive KO",
 			endpoint: &Config{
-				URI:       SCSDefaultCloudURI,
+				URI:       testCloudURI,
 				Exclusive: true,
 			},
 			uri:           "https://custom.library",
@@ -161,16 +167,16 @@ func TestLibraryClientConfig(t *testing.T) {
 		{
 			name: "Sylabs cloud exclusive OK",
 			endpoint: &Config{
-				URI:       SCSDefaultCloudURI,
+				URI:       testCloudURI,
 				Exclusive: true,
 			},
-			uri:           SCSDefaultLibraryURI,
+			uri:           testLibraryURI,
 			expectSuccess: true,
 		},
 		{
 			name: "Custom library",
 			endpoint: &Config{
-				URI: SCSDefaultCloudURI,
+				URI: testCloudURI,
 			},
 			uri:           "https://custom.library",
 			expectSuccess: true,
@@ -178,7 +184,7 @@ func TestLibraryClientConfig(t *testing.T) {
 		{
 			name: "Fake cloud",
 			endpoint: &Config{
-				URI: "cloud.inexistent-xxxx-domain.io",
+				URI: "cloud.example.com",
 			},
 			expectSuccess: false,
 		},

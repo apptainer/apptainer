@@ -1,6 +1,6 @@
-Active: SylabsCloud
+Active: DefaultRemote
 Remotes:
-  SylabsCloud:
-    URI: cloud.sylabs.io
+  DefaultRemote:
+    URI: cloud.apptainer.org
     System: true
     Exclusive: false

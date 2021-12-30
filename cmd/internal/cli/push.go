@@ -90,7 +90,7 @@ var PushCmd = &cobra.Command{
 		}
 
 		switch transport {
-		case LibraryProtocol, "": // Handle pushing to a library
+		case LibraryProtocol: // Handle pushing to a library
 			lc, err := getLibraryClientConfig(PushLibraryURI)
 			if err != nil {
 				sylog.Fatalf("Unable to get library client configuration: %v", err)
@@ -135,6 +135,8 @@ var PushCmd = &cobra.Command{
 				sylog.Fatalf("Unable to push image to oci registry: %v", err)
 			}
 			sylog.Infof("Upload complete")
+		case "":
+			sylog.Fatalf("Transport type URI required but not supplied")
 		default:
 			sylog.Fatalf("Unsupported transport type: %s", transport)
 		}
