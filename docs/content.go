@@ -341,7 +341,7 @@ Enterprise Performance Computing (EPC)`
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// delete
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	DeleteUse   string = `delete [arch] <imageRef>`
+	DeleteUse   string = `delete [delete options...] <imageRef>`
 	DeleteShort string = `Deletes requested image from the library`
 	DeleteLong  string = `
   The 'delete' command allows you to delete an image from a remote library.`

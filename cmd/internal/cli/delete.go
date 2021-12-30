@@ -19,6 +19,7 @@ import (
 	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/client/library"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
+	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
@@ -94,7 +95,16 @@ var deleteImageCmd = &cobra.Command{
 	Example: docs.DeleteExample,
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		imageRef, err := library.NormalizeLibraryRef(args[0])
+		image := args[0]
+		proto, ref := uri.Split(image)
+		if ref == "" {
+			sylog.Fatalf("Bad URI %s", image)
+		}
+		if proto != "" && proto != LibraryProtocol {
+			sylog.Fatalf("unsupported protocol scheme \"%s\" for delete", proto)
+		}
+
+		imageRef, err := library.NormalizeLibraryRef(image)
 		if err != nil {
 			sylog.Fatalf("Error parsing library ref: %v", err)
 		}

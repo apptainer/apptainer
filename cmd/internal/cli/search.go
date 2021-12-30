@@ -14,6 +14,7 @@ import (
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/client/library"
+	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/container-library-client/client"
@@ -55,7 +56,7 @@ var searchSignedFlag = cmdline.Flag{
 	Value:        &SearchSigned,
 	DefaultValue: false,
 	Name:         "signed",
-	Usage:        "architecture to search for",
+	Usage:        "search for only signed images",
 	EnvKeys:      []string{"SEARCH_SIGNED"},
 }
 
@@ -74,6 +75,11 @@ var SearchCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Args:                  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		proto, _ := uri.Split(args[0])
+		if proto != "" {
+			sylog.Fatalf("URI protocols not supported in search query")
+		}
+
 		config, err := getLibraryClientConfig(SearchLibraryURI)
 		if err != nil {
 			sylog.Fatalf("Error while getting library client config: %v", err)
