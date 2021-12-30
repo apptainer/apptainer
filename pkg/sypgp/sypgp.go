@@ -612,13 +612,15 @@ func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 	gotName := false
 	for _, l := range lines {
 		fields := strings.Split(strings.TrimSpace(l), ":")
-		if fields[0] == "info" {
+		switch fields[0] {
+
+		case "info":
 			var err error
 			numKeys, err = strconv.Atoi(fields[2])
 			if err != nil {
 				return -1, nil, fmt.Errorf("unable to check number of keys")
 			}
-		} else if fields[0] == "pub" {
+		case "pub":
 			if !first {
 				if !gotName {
 					// there was a pub without uid; end line
@@ -636,17 +638,32 @@ func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 				if err != nil {
 					return -1, nil, err
 				}
-				keyDateCreated := date(fields[4])
-				keyDateExpired := date(fields[5])
+				// fields 4 through 6 are optional;
+				// they may be missing or empty
+				keyDateCreated := ""
+				if len(fields) >= 4 && fields[4] != "" {
+					keyDateCreated = date(fields[4])
+				}
+
+				keyDateExpired := ""
+				if len(fields) >= 5 && fields[5] != "" {
+					keyDateExpired = date(fields[5])
+				}
 
 				keyStatus := ""
-				if fields[6] == "r" {
-					keyStatus = "[revoked]"
-				} else if fields[6] == "d" {
-					keyStatus = "[disabled]"
-				} else if fields[6] == "e" {
-					keyStatus = "[expired]"
-				} else {
+				if len(fields) >= 6 {
+					flags := fields[6]
+					if strings.Contains(flags, "r") {
+						keyStatus += "[revoked]"
+					}
+					if strings.Contains(flags, "d") {
+						keyStatus += "[disabled]"
+					}
+					if strings.Contains(flags, "e") {
+						keyStatus += "[expired]"
+					}
+				}
+				if keyStatus == "" {
 					keyStatus = "[enabled]"
 				}
 
@@ -658,7 +675,7 @@ func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 				fmt.Fprintf(tw, shortFmt, keyFingerprint[len(fields[1])-8:], keyBits)
 			}
 			count++
-		} else if fields[0] == "uid" {
+		case "uid":
 			// And the key name/email is on fields[1]
 			// There may be more than one of these for each pub
 			if !gotName {
@@ -679,7 +696,7 @@ func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 			fmt.Fprintf(tw, nameFmt, name)
 		}
 	}
-	if numKeys > 0 && !gotName {
+	if count > 0 && !gotName {
 		// no name was printed with last key
 		fmt.Fprintf(tw, "\n")
 	}
@@ -688,7 +705,7 @@ func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 	sylog.Debugf("key count=%d; expect=%d\n", count, numKeys)
 
 	// Simple check to ensure the conversion was successful
-	if count != numKeys {
+	if numKeys > 0 && count != numKeys {
 		sylog.Debugf("expecting %d, got %d\n", numKeys, count)
 		return -1, retList.Bytes(), fmt.Errorf("failed to convert machine readable to human readable output correctly")
 	}
