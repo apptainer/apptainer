@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/apptainer/apptainer/internal/pkg/util/paths"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
@@ -24,7 +25,7 @@ func NvidiaPaths(configFilePath string) ([]string, []string, error) {
 		return nil, nil, fmt.Errorf("could not read %s: %v", filepath.Base(configFilePath), err)
 	}
 
-	return paths(nvidiaFiles)
+	return paths.Resolve(nvidiaFiles)
 }
 
 // NvidiaIpcsPath returns a list of nvidia driver ipcs.
