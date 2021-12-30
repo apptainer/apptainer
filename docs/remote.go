@@ -21,10 +21,10 @@ const (
   standalone keyservers and OCI/Docker registry credentials through its
   subcommands.
 
-  A 'remote endpoint' is the Sylabs Cloud, a Singularity Enterprise installation,
-  or a compatible group of services. The remote endpoint is a single address,
-  e.g. 'cloud.sylabs.io' through which linked library, builder and keystore
-  sevices will be automatically discovered.
+  A 'remote endpoint' is a group of services that is compatible with the
+  container library API.  The remote endpoint is a single address,
+  e.g. 'cloud.example.com' through which library and/or keystore services
+  will be automatically discovered.
 
   To configure a remote endpoint you must 'remote add' it. You can 'remote login' if
   you will be performing actions needing authentication. Switch between
@@ -55,7 +55,7 @@ const (
   be used for apptainer remote services. Authentication with a newly created
   endpoint will occur automatically.`
 	RemoteAddExample string = `
-  $ apptainer remote add SylabsCloud cloud.sylabs.io`
+  $ apptainer remote add ExampleCloud cloud.example.com`
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// remote remove command
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -65,7 +65,7 @@ const (
   The 'remote remove' command allows you to remove an existing remote endpoint 
   from the list of potential endpoints to use.`
 	RemoteRemoveExample string = `
-  $ apptainer remote remove SylabsCloud`
+  $ apptainer remote remove ExampleCloud`
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// remote use command
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,7 +75,7 @@ const (
   The 'remote use' command sets the remote to be used by default by any command
   that interacts with Apptainer services.`
 	RemoteUseExample string = `
-  $ apptainer remote use SylabsCloud`
+  $ apptainer remote use ExampleCloud`
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// remote list command
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -99,10 +99,10 @@ const (
   an OCI/Docker registry or a keyserver.
 
   If no endpoint or registry is specified, the command will login to the currently
-  active remote endpoint. This is cloud.sylabs.io by default.`
+  active remote endpoint.`
 	RemoteLoginExample string = `
   To log in to an endpoint:
-  $ apptainer remote login SylabsCloud
+  $ apptainer remote login
 
   To login in to a docker/OCI registry:
   $ apptainer remote login --username foo docker://docker.io
@@ -125,7 +125,7 @@ const (
   `
 	RemoteLogoutExample string = `
   To log out from an endpoint
-  $ apptainer remote logout SylabsCloud
+  $ apptainer remote logout
 
   To log out from a docker/OCI registry
   $ apptainer remote logout docker://docker.io`
@@ -137,11 +137,11 @@ const (
 	RemoteStatusLong  string = `
   The 'remote status' command checks the status of the specified remote endpoint
   and reports the availability of services and their versions. If no endpoint is
-  specified, it will check the status of the default remote (SylabsCloud). If you
+  specified, it will check the status of the default remote. If you
   have logged in with an authentication token the validity of that token will be
   checked.`
 	RemoteStatusExample string = `
-  $ apptainer remote status SylabsCloud`
+  $ apptainer remote status`
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// remote add-keyserver command
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -151,7 +151,7 @@ const (
   The 'remote add-keyserver' command allows to define additional keyserver. The --order
   option can define the order of the keyserver for all related key operations, therefore
   when specifying '--order 1' the keyserver is becoming the primary keyserver. If no endpoint
-  is specified, it will use the default remote endpoint (SylabsCloud).`
+  is specified, it will use the default remote endpoint.`
 	RemoteAddKeyserverExample string = `
   $ apptainer remote add-keyserver https://keys.example.com
 
@@ -164,7 +164,7 @@ const (
 	RemoteRemoveKeyserverShort string = `Remove a keyserver (root user only)`
 	RemoteRemoveKeyserverLong  string = `
   The 'remote remove-keyserver' command allows to remove a defined keyserver from a specific
-  endpoint. If no endpoint is specified, it will use the default remote endpoint (SylabsCloud).`
+  endpoint. If no endpoint is specified, it will use the default remote endpoint.`
 	RemoteRemoveKeyserverExample string = `
   $ apptainer remote remove-keyserver https://keys.example.com`
 )

@@ -659,10 +659,10 @@ func (c ctx) remoteLoginRepeated(t *testing.T) {
 
 func (c ctx) remoteKeyserver(t *testing.T) {
 	var (
-		sylabsKeyserver = "https://keys.sylabs.io"
-		testKeyserver   = "http://localhost:11371"
-		addKeyserver    = "remote add-keyserver"
-		removeKeyserver = "remote remove-keyserver"
+		defaultKeyserver = "https://keys.openpgp.org"
+		testKeyserver    = "http://localhost:11371"
+		addKeyserver     = "remote add-keyserver"
+		removeKeyserver  = "remote remove-keyserver"
 	)
 
 	tests := []struct {
@@ -685,9 +685,9 @@ func (c ctx) remoteKeyserver(t *testing.T) {
 			command: addKeyserver,
 			args:    []string{"--insecure", testKeyserver},
 			listLines: []string{
-				"URI                     GLOBAL  INSECURE  ORDER",
-				sylabsKeyserver + "  YES     NO        1*",
-				testKeyserver + "  YES     YES       2",
+				"URI                       GLOBAL  INSECURE  ORDER",
+				defaultKeyserver + "  YES     NO        1*",
+				testKeyserver + "    YES     YES       2",
 			},
 			expectExit: 0,
 			profile:    e2e.RootProfile,
@@ -718,9 +718,9 @@ func (c ctx) remoteKeyserver(t *testing.T) {
 			command: addKeyserver,
 			args:    []string{"--order", "1", testKeyserver},
 			listLines: []string{
-				"URI                     GLOBAL  INSECURE  ORDER",
-				testKeyserver + "  YES     NO        1",
-				sylabsKeyserver + "  YES     NO        2*",
+				"URI                       GLOBAL  INSECURE  ORDER",
+				testKeyserver + "    YES     NO        1",
+				defaultKeyserver + "  YES     NO        2*",
 			},
 			expectExit: 0,
 			profile:    e2e.RootProfile,
@@ -733,9 +733,9 @@ func (c ctx) remoteKeyserver(t *testing.T) {
 			profile:    e2e.RootProfile,
 		},
 		{
-			name:    "remove-keyserver sylabs",
+			name:    "remove-keyserver default",
 			command: removeKeyserver,
-			args:    []string{sylabsKeyserver},
+			args:    []string{defaultKeyserver},
 			listLines: []string{
 				"URI                     GLOBAL  INSECURE  ORDER",
 				testKeyserver + "  YES     NO        1",
@@ -751,13 +751,13 @@ func (c ctx) remoteKeyserver(t *testing.T) {
 			profile:    e2e.RootProfile,
 		},
 		{
-			name:    "add-keyserver restore sylabs",
+			name:    "add-keyserver restore default",
 			command: addKeyserver,
-			args:    []string{sylabsKeyserver},
+			args:    []string{defaultKeyserver},
 			listLines: []string{
-				"URI                     GLOBAL  INSECURE  ORDER",
-				testKeyserver + "  YES     NO        1",
-				sylabsKeyserver + "  YES     NO        2*",
+				"URI                       GLOBAL  INSECURE  ORDER",
+				testKeyserver + "    YES     NO        1",
+				defaultKeyserver + "  YES     NO        2*",
 			},
 			expectExit: 0,
 			profile:    e2e.RootProfile,
@@ -767,8 +767,8 @@ func (c ctx) remoteKeyserver(t *testing.T) {
 			command: removeKeyserver,
 			args:    []string{testKeyserver},
 			listLines: []string{
-				"URI                     GLOBAL  INSECURE  ORDER",
-				sylabsKeyserver + "  YES     NO        1*",
+				"URI                       GLOBAL  INSECURE  ORDER",
+				defaultKeyserver + "  YES     NO        1*",
 			},
 			expectExit: 0,
 			profile:    e2e.RootProfile,
@@ -813,8 +813,8 @@ func (c ctx) remoteKeyserver(t *testing.T) {
 
 func (c ctx) remoteUseExclusive(t *testing.T) {
 	var (
-		sylabsRemote = "SylabsCloud"
-		testRemote   = "e2e"
+		defaultRemote = "DefaultRemote"
+		testRemote    = "e2e"
 	)
 
 	tests := []struct {
@@ -846,9 +846,9 @@ func (c ctx) remoteUseExclusive(t *testing.T) {
 			profile:    e2e.RootProfile,
 		},
 		{
-			name:       "use remote SylabsCloud as user KO",
+			name:       "use remote DefaultCloud as user KO",
 			command:    "remote use",
-			args:       []string{sylabsRemote},
+			args:       []string{defaultRemote},
 			expectExit: 255,
 			profile:    e2e.UserProfile,
 		},
@@ -860,9 +860,9 @@ func (c ctx) remoteUseExclusive(t *testing.T) {
 			profile:    e2e.RootProfile,
 		},
 		{
-			name:       "use remote SylabsCloud as user OK",
+			name:       "use remote DefaultCloud as user OK",
 			command:    "remote use",
-			args:       []string{sylabsRemote},
+			args:       []string{defaultRemote},
 			expectExit: 0,
 			profile:    e2e.UserProfile,
 		},
@@ -881,9 +881,9 @@ func (c ctx) remoteUseExclusive(t *testing.T) {
 			profile:    e2e.RootProfile,
 		},
 		{
-			name:       "use remote SylabsCloud as exclusive",
+			name:       "use remote DefaultCloud as exclusive",
 			command:    "remote use",
-			args:       []string{"--exclusive", sylabsRemote},
+			args:       []string{"--exclusive", defaultRemote},
 			expectExit: 0,
 			profile:    e2e.RootProfile,
 		},
@@ -895,9 +895,9 @@ func (c ctx) remoteUseExclusive(t *testing.T) {
 			profile:    e2e.RootProfile,
 		},
 		{
-			name:       "use remote SylabsCloud as user KO",
+			name:       "use remote DefaultCloud as user KO",
 			command:    "remote use",
-			args:       []string{sylabsRemote},
+			args:       []string{defaultRemote},
 			expectExit: 255,
 			profile:    e2e.UserProfile,
 		},
@@ -916,9 +916,9 @@ func (c ctx) remoteUseExclusive(t *testing.T) {
 			profile:    e2e.RootProfile,
 		},
 		{
-			name:       "use remote SylabsCloud global",
+			name:       "use remote DefaultCloud global",
 			command:    "remote use",
-			args:       []string{"--global", sylabsRemote},
+			args:       []string{"--global", defaultRemote},
 			expectExit: 0,
 			profile:    e2e.RootProfile,
 		},

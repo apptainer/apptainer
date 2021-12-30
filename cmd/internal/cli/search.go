@@ -12,18 +12,18 @@ package cli
 import (
 	"runtime"
 
-	"github.com/apptainer/apptainer/internal/pkg/client/oci"
-	"github.com/apptainer/apptainer/internal/pkg/util/uri"
-
 	"github.com/apptainer/apptainer/docs"
+	"github.com/apptainer/apptainer/internal/pkg/client/library"
+	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/container-library-client/client"
 	"github.com/spf13/cobra"
 )
 
 var (
-	// SearchRegistryURI holds the base URI to a Registry API instance
-	SearchRegistryURI string
+	// SearchLibraryURI holds the base URI to a library API instance
+	SearchLibraryURI string
 	// SearchArch holds the architecture for images to display in search results
 	SearchArch string
 	// SearchSigned is set true to only search for signed containers
@@ -31,9 +31,9 @@ var (
 )
 
 // --library
-var searchRegistryFlag = cmdline.Flag{
-	ID:           "searchRegistryFlag",
-	Value:        &SearchRegistryURI,
+var searchLibraryFlag = cmdline.Flag{
+	ID:           "searchLibraryFlag",
+	Value:        &SearchLibraryURI,
 	DefaultValue: "",
 	Name:         "library",
 	Usage:        "URI for library to search",
@@ -56,7 +56,7 @@ var searchSignedFlag = cmdline.Flag{
 	Value:        &SearchSigned,
 	DefaultValue: false,
 	Name:         "signed",
-	Usage:        "architecture to search for",
+	Usage:        "search for only signed images",
 	EnvKeys:      []string{"SEARCH_SIGNED"},
 }
 
@@ -64,7 +64,7 @@ func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(SearchCmd)
 
-		cmdManager.RegisterFlagForCmd(&searchRegistryFlag, SearchCmd)
+		cmdManager.RegisterFlagForCmd(&searchLibraryFlag, SearchCmd)
 		cmdManager.RegisterFlagForCmd(&searchArchFlag, SearchCmd)
 		cmdManager.RegisterFlagForCmd(&searchSignedFlag, SearchCmd)
 	})
@@ -75,15 +75,23 @@ var SearchCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Args:                  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		searchFor := args[len(args)-1]
-		transport, _ := uri.Split(SearchRegistryURI)
-		switch transport {
-		case oci.IsSupported(transport):
-			fallthrough
-		case ShubProtocol, OrasProtocol, HTTPProtocol, HTTPSProtocol:
-			fallthrough
-		default:
-			sylog.Fatalf("Unsupported transport type: %s for image [%s]", transport, searchFor)
+		proto, _ := uri.Split(args[0])
+		if proto != "" {
+			sylog.Fatalf("URI protocols not supported in search query")
+		}
+
+		config, err := getLibraryClientConfig(SearchLibraryURI)
+		if err != nil {
+			sylog.Fatalf("Error while getting library client config: %v", err)
+		}
+
+		libraryClient, err := client.NewClient(config)
+		if err != nil {
+			sylog.Fatalf("Error initializing library client: %v", err)
+		}
+
+		if err := library.SearchLibrary(cmd.Context(), libraryClient, args[0], SearchArch, SearchSigned); err != nil {
+			sylog.Fatalf("Couldn't search library: %v", err)
 		}
 	},
 

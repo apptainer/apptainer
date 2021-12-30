@@ -12,11 +12,11 @@ import (
 	"fmt"
 	"strings"
 
-	registryclient "github.com/apptainer/apptainer/internal/pkg/registry"
 	remoteutil "github.com/apptainer/apptainer/internal/pkg/remote/util"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	keyClient "github.com/apptainer/container-key-client/client"
+	libClient "github.com/apptainer/container-library-client/client"
 	golog "github.com/go-log/log"
 )
 
@@ -95,32 +95,32 @@ func (ep *Config) KeyserverClientOpts(uri string, op KeyserverOp) ([]keyClient.O
 	return co, nil
 }
 
-func (ep *Config) RegistryClientConfig(uri string) (*registryclient.Config, error) {
+func (ep *Config) LibraryClientConfig(uri string) (*libClient.Config, error) {
 	// empty uri means to use the default endpoint
 	isDefault := uri == ""
 
-	config := &registryclient.Config{
+	config := &libClient.Config{
 		BaseURL:   uri,
 		UserAgent: useragent.Value(),
 		Logger:    (golog.Logger)(sylog.DebugLogger{}),
 	}
 
 	if isDefault {
-		registryURI, err := ep.GetServiceURI(Registry)
+		libURI, err := ep.GetServiceURI(Library)
 		if err != nil {
-			return nil, fmt.Errorf("unable to get registry service URI: %v", err)
+			return nil, fmt.Errorf("unable to get library service URI: %v", err)
 		}
 		config.AuthToken = ep.Token
-		config.BaseURL = registryURI
+		config.BaseURL = libURI
 	} else if ep.Exclusive {
-		registryURI, err := ep.GetServiceURI(Registry)
+		libURI, err := ep.GetServiceURI(Library)
 		if err != nil {
-			return nil, fmt.Errorf("unable to get registry service URI: %v", err)
+			return nil, fmt.Errorf("unable to get library service URI: %v", err)
 		}
-		if !remoteutil.SameURI(uri, registryURI) {
+		if !remoteutil.SameURI(uri, libURI) {
 			return nil, fmt.Errorf(
 				"endpoint is set as exclusive by the system administrator: only %q can be used",
-				registryURI,
+				libURI,
 			)
 		}
 	}

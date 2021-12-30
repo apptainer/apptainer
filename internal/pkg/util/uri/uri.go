@@ -14,6 +14,8 @@ import (
 )
 
 const (
+	// Library is the keyword for a library ref
+	Library = "library"
 	// Shub is the keyword for a shub ref
 	Shub = "shub"
 	// HTTP is the keyword for http ref
@@ -26,6 +28,7 @@ const (
 
 // validURIs contains a list of known uris
 var validURIs = map[string]bool{
+	"library":        true,
 	"shub":           true,
 	"docker":         true,
 	"docker-archive": true,
@@ -53,7 +56,7 @@ func IsValid(source string) (valid bool, err error) {
 }
 
 // GetName turns a transport:ref URI into a name containing the top-level identifier
-// of the image. For example, docker://sylabs.io/lolcow returns lolcow
+// of the image. For example, docker://sylabsio/lolcow returns lolcow
 //
 // Returns "" when not in transport:ref format
 func GetName(uri string) string {

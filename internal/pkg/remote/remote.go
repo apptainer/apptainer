@@ -31,7 +31,7 @@ var ErrNoDefault = errors.New("no default remote")
 
 const (
 	// DefaultRemoteName is the default remote name
-	DefaultRemoteName = "SylabsCloud"
+	DefaultRemoteName = "DefaultRemote"
 )
 
 // DefaultRemoteConfig holds the default remote configuration

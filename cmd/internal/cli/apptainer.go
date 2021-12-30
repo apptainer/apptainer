@@ -34,6 +34,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	keyClient "github.com/apptainer/container-key-client/client"
+	libClient "github.com/apptainer/container-library-client/client"
 	ocitypes "github.com/containers/image/v5/types"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
@@ -507,8 +508,8 @@ func loadRemoteConf(filepath string) (*remote.Config, error) {
 	return c, nil
 }
 
-// sylabsRemote returns the remote in use or an error
-func sylabsRemote() (*endpoint.Config, error) {
+// getRemote returns the remote in use or an error
+func getRemote() (*endpoint.Config, error) {
 	var c *remote.Config
 
 	// try to load both remotes, check for errors, sync if both exist,
@@ -606,14 +607,50 @@ func getKeyserverClientOpts(uri string, op endpoint.KeyserverOp) ([]keyClient.Op
 
 		// if we can load config and if default endpoint is set, use that
 		// otherwise fall back on regular authtoken and URI behavior
-		currentRemoteEndpoint, err = sylabsRemote()
+		currentRemoteEndpoint, err = getRemote()
 		if err != nil {
 			return nil, fmt.Errorf("unable to load remote configuration: %v", err)
 		}
 	}
 	if currentRemoteEndpoint == endpoint.DefaultEndpointConfig {
-		sylog.Warningf("No default remote in use, falling back to default keyserver: %s", endpoint.SCSDefaultKeyserverURI)
+		sylog.Warningf("No default remote in use, falling back to default keyserver: %s", endpoint.DefaultKeyserverURI)
 	}
 
 	return currentRemoteEndpoint.KeyserverClientOpts(uri, op)
+}
+
+// getLibraryClientConfig returns client config for library server access.
+// A "" value for uri will return client config for the current endpoint.
+// A specified uri will return client options for that library server.
+func getLibraryClientConfig(uri string) (*libClient.Config, error) {
+	if currentRemoteEndpoint == nil {
+		var err error
+
+		// if we can load config and if default endpoint is set, use that
+		// otherwise fall back on regular authtoken and URI behavior
+		currentRemoteEndpoint, err = getRemote()
+		if err != nil {
+			return nil, fmt.Errorf("unable to load remote configuration: %v", err)
+		}
+	}
+	if currentRemoteEndpoint == endpoint.DefaultEndpointConfig {
+		if endpoint.DefaultLibraryURI != "" {
+			sylog.Warningf("no default remote in use, falling back to default library: %s", endpoint.DefaultLibraryURI)
+		} else {
+			return nil, fmt.Errorf("no default remote with library client in use")
+		}
+	}
+
+	libClientConfig, err := currentRemoteEndpoint.LibraryClientConfig(uri)
+	if err != nil {
+		return nil, err
+	}
+	if libClientConfig.BaseURL == "" {
+		return nil, fmt.Errorf("remote has no library client")
+	}
+	return libClientConfig, nil
+}
+
+func URI() string {
+	return "https://" + strings.TrimSuffix(currentRemoteEndpoint.URI, "/")
 }

@@ -25,21 +25,21 @@ import (
 
 const defaultTimeout = 10 * time.Second
 
-// Default Sylabs cloud service endpoints.
+// Default cloud service endpoints.
 const (
-	SCSDefaultCloudURI     = "cloud.sylabs.io"
-	DefaultApptainerHost   = "ghcr.io"
-	DefaultRegistryURI     = "https://ghcr.io"
-	SCSDefaultKeyserverURI = "https://keys.sylabs.io"
+	DefaultCloudURI     = "cloud.apptainer.org"
+	DefaultLibraryURI   = ""
+	DefaultKeyserverURI = "https://keys.openpgp.org"
 )
 
-// SCS cloud services
+// cloud services
 const (
 	Consent   = "consent"
 	Token     = "token"
-	Registry  = "registry"
+	Library   = "library"
 	Keystore  = "keystore" // alias for keyserver
 	Keyserver = "keyserver"
+	Builder   = "builder"
 )
 
 var errorCodeMap = map[int]string{
@@ -48,7 +48,7 @@ var errorCodeMap = map[int]string{
 }
 
 // ErrStatusNotSupported represents the error returned by
-// a service which doesn't support SCS status check.
+// a service which doesn't support cloud status check.
 var ErrStatusNotSupported = errors.New("status not supported")
 
 // Service defines a simple service interface which can be exposed
@@ -187,21 +187,17 @@ func (ep *Config) GetAllServices() (map[string][]Service, error) {
 	return ep.services, nil
 }
 
-// GetServiceURI returns the URI for the service at the specified SCS endpoint
-// Examples of services: consent, registry, key, token
+// GetServiceURI returns the URI for the service at the specified endpoint
+// Examples of services: consent, library, key, token
 func (ep *Config) GetServiceURI(service string) (string, error) {
 	// don't grab remote URI if the endpoint is the
-	// default public Sylabs Cloud Service
-	if ep.URI == SCSDefaultCloudURI {
+	// default cloud service
+	if ep.URI == DefaultCloudURI {
 		switch service {
+		case Library:
+			return DefaultLibraryURI, nil
 		case Keyserver:
-			return SCSDefaultKeyserverURI, nil
-		}
-	}
-	if ep.URI == DefaultApptainerHost {
-		switch service {
-		case Registry:
-			return DefaultRegistryURI, nil
+			return DefaultKeyserverURI, nil
 		}
 	}
 

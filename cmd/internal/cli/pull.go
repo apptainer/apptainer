@@ -16,10 +16,12 @@ import (
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/client/library"
 	"github.com/apptainer/apptainer/internal/pkg/client/net"
 	"github.com/apptainer/apptainer/internal/pkg/client/oci"
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/client/shub"
+	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -27,8 +29,9 @@ import (
 )
 
 const (
-	// ShubProtocol holds singularity hub base URI,
-	// for more info refer to https://singularity-hub.org/
+	// LibraryProtocol holds the library base URI.
+	LibraryProtocol = "library"
+	// ShubProtocol holds the singularity hub base URI.
 	ShubProtocol = "shub"
 	// HTTPProtocol holds the remote http base URI.
 	HTTPProtocol = "http"
@@ -180,10 +183,9 @@ func pullRun(cmd *cobra.Command, args []string) {
 		pullTo = args[0]
 		if len(args) == 1 {
 			if transport == "" {
-				pullTo = uri.GetName("oras://" + pullFrom)
-			} else {
-				pullTo = uri.GetName(pullFrom) // TODO: If not shub & no name specified, simply put to cache
+				sylog.Fatalf("No transport type URI supplied")
 			}
+			pullTo = uri.GetName(pullFrom) // TODO: If not library/shub & no name specified, simply put to cache
 		}
 	}
 
@@ -200,6 +202,44 @@ func pullRun(cmd *cobra.Command, args []string) {
 	}
 
 	switch transport {
+	case LibraryProtocol:
+		ref, err := library.NormalizeLibraryRef(pullFrom)
+		if err != nil {
+			sylog.Fatalf("Malformed library reference: %v", err)
+		}
+
+		if pullLibraryURI != "" && ref.Host != "" {
+			sylog.Fatalf("Conflicting arguments; do not use --library with a library URI containing host name")
+		}
+
+		var libraryURI string
+		if pullLibraryURI != "" {
+			libraryURI = pullLibraryURI
+		} else if ref.Host != "" {
+			// override libraryURI if ref contains host name
+			if noHTTPS {
+				libraryURI = "http://" + ref.Host
+			} else {
+				libraryURI = "https://" + ref.Host
+			}
+		}
+
+		lc, err := getLibraryClientConfig(libraryURI)
+		if err != nil {
+			sylog.Fatalf("Unable to get library client configuration: %v", err)
+		}
+		co, err := getKeyserverClientOpts("", endpoint.KeyserverVerifyOp)
+		if err != nil {
+			sylog.Fatalf("Unable to get keyserver client configuration: %v", err)
+		}
+
+		_, err = library.PullToFile(ctx, imgCache, pullTo, ref, pullArch, tmpDir, lc, co)
+		if err != nil && err != library.ErrLibraryPullUnsigned {
+			sylog.Fatalf("While pulling library image: %v", err)
+		}
+		if err == library.ErrLibraryPullUnsigned {
+			sylog.Warningf("Skipping container verification")
+		}
 	case ShubProtocol:
 		_, err := shub.PullToFile(ctx, imgCache, pullTo, pullFrom, tmpDir, noHTTPS)
 		if err != nil {
@@ -230,6 +270,8 @@ func pullRun(cmd *cobra.Command, args []string) {
 		if err != nil {
 			sylog.Fatalf("While making image from oci registry: %v", err)
 		}
+	case "":
+		sylog.Fatalf("No transport type URI supplied")
 	default:
 		sylog.Fatalf("Unsupported transport type: %s", transport)
 	}

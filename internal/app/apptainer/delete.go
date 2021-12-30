@@ -11,18 +11,18 @@ package apptainer
 import (
 	"context"
 
-	registryclient "github.com/apptainer/apptainer/internal/pkg/registry"
+	"github.com/apptainer/container-library-client/client"
 	"github.com/pkg/errors"
 )
 
-// DeleteImage deletes an image from a remote registry.
-func DeleteImage(ctx context.Context, registryConfig *registryclient.Config, imageRef, arch string) error {
-	registryClient, err := registryclient.NewClient(registryConfig)
+// DeleteImage deletes an image from a remote library.
+func DeleteImage(ctx context.Context, clientConfig *client.Config, imageRef, arch string) error {
+	libraryClient, err := client.NewClient(clientConfig)
 	if err != nil {
 		return errors.Wrap(err, "couldn't create a new client")
 	}
 
-	err = registryClient.DeleteImage(ctx, imageRef, arch)
+	err = libraryClient.DeleteImage(ctx, imageRef, arch)
 	if err != nil {
 		return errors.Wrap(err, "couldn't delete requested image")
 	}

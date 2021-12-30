@@ -1,5 +1,6 @@
-Bootstrap: oras
-From: ghcr.io/apptainer/alpine:3.15.0
+Bootstrap: library
+Library: https://library.sylabs.io
+From: alpine:3.11.5
 
 %runscript
     echo "$@"

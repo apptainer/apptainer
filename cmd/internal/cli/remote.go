@@ -23,6 +23,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	remoteWarning = "no authentication token, log in with `apptainer remote login`"
+)
+
 var (
 	loginTokenFile          string
 	loginUsername           string
