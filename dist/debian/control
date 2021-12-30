@@ -1,4 +1,4 @@
-Source: apptainer-container
+Source: apptainer
 Section: admin
 Priority: optional
 Maintainer: Gregory M. Kurtzer <gmkurtzer@gmail.com>
@@ -20,12 +20,12 @@ Build-Depends:
  cryptsetup,
  golang-go (>= 2:1.13~~)
 Standards-Version: 3.9.8
-Homepage: http://gmkurtzer.github.io/singularity
+Homepage: http://apptainer.org
 Vcs-Git: https://github.com/apptainer/apptainer.git
 Vcs-Browser: https://github.com/apptainer/apptainer
 
 # "apptainer" is a packaged game (but the contents don't clash)
-Package: apptainer-container
+Package: apptainer
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, python, squashfs-tools
 Description: container platform focused on supporting "Mobility of Compute"

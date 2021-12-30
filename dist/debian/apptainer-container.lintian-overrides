@@ -1,3 +1,0 @@
-# Apptainer requires root suid for operation
-apptainer-container: setuid-binary usr/libexec/apptainer/bin/starter-suid 4755 root/root
-

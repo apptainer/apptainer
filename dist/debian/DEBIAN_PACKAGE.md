@@ -2,8 +2,8 @@
 
 ## Preparation
 
-As long as the debian directory is in the sub-directory you need to link
-or copy it in the top directory.
+First, as long as the debian directory is in the `dist` sub-directory
+you need to link or copy it into the top directory.
 
 In the top directory do this:
 
@@ -12,8 +12,31 @@ rm -rf debian
 cp -r dist/debian .
 ```
 
-Make sure all the dependencies are met. See the `INSTALL.md` for this.
-Otherwise `debuild` will complain and quit.
+Next, make sure all the dependencies are met. See
+[INSTALL.md](../../INSTALL.md#install-system-dependencies)
+for the basic apt-get install list.
+Also install these additional dependencies for the packaging:
+
+```sh
+sudo apt-get install \
+    devscripts \
+    help2man \
+    libarchive-dev \
+    libssl-dev \
+    python \
+    uuid-dev \
+    golang-go
+```
+
+If the golang-go version isn't at least the minimum shown in
+`scripts/get-min-go-version` (which is the case on Debian 11)
+then download a copy of the corresponding go source tarball into the
+debian directory like this:
+
+```sh
+TARBALL=go$(scripts/get-min-go-version).src.tar.gz
+wget -O debian/$TARBALL https://dl.google.com/go/$TARBALL
+```
 
 ## Configuration
 
@@ -35,18 +58,14 @@ See `mconfig --help` for details about the configuration options.
 
 `export DEB_NOALL=1`     adds all of the above
 
-To select a specific profile for `mconfig`.
-
-__REMINDER:__
-to build with seccomp you need to install `libseccomp-dev` package !
-
-For real production environment us this configuration:
+To select a specific profile for `mconfig` set `DEB_SC_PROFILE`.
+For real production environment use this configuration:
 
 ```sh
 export DEB_SC_PROFILE=release-stripped
 ```
 
-or if debugging is needed use this.
+or if debugging is needed use this:
 
 ```sh
 export DEB_SC_PROFILE=debug
@@ -70,18 +89,19 @@ version.
 
 Be aware, that `debchange` will complain about a lower version as the top in
 the current changelog. Which means you have to cleanup the changelog if needed.
-If you did not change anything in the debian directory manually, it might be easiest
-to [start from scratch](#Preparation).
-Be aware, that the Debian install directory as you see it now, might not be available
-in older versions (branches, tags). Make sure you have a clean copy of the debian
-directory before you switch to (checkout) an older version.
+If you did not change anything in the debian directory manually, it might
+be easiest to [start from scratch](#Preparation).
+Be aware, that the Debian install directory as you see it now might not
+be available in older versions (branches, tags). Make sure you have a
+clean copy of the debian directory before you switch to (checkout) an
+older version.
 
 Usually `debchange` is configured by the environment variables
 `DEBFULLNAME` and `EMAIL`. As `debuild` creates a clean environment it
 filters out most of the environment variables. To set `DEBFULLNAME` for
 the `debchange` command in the makefile, you have to set `DEB_FULLNAME`.
 If these variables are not set, `debchange` will try to find appropriate
-values from the system configuration. Usually by using the login name
+values from the system configuration, usually by using the login name
 and the domain-name.
 
 ```sh
@@ -126,7 +146,7 @@ For details on Debian package building see the man-page of `debuild` and
 
 ## Debian Repository
 
-In the current version this is by far not ready for using it in official
+In the current version this is not ready for use in official
 Debian Repositories.
 
 This might change in future. I updated the old debian directory to make
