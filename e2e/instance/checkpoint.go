@@ -19,9 +19,31 @@ import (
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
+	"github.com/cenkalti/backoff/v4"
 )
 
 const checkpointStateServerPort = 11000
+
+func pollServer(t *testing.T, address string) {
+	op := func() error {
+		resp, err := http.Get(address)
+		if err != nil {
+			return err
+		}
+		resp.Body.Close()
+		return nil
+	}
+
+	b := backoff.WithMaxRetries(
+		backoff.NewConstantBackOff(1*time.Second), // Ping every second.
+		30, // Ping for a total of 30 seconds.
+	)
+
+	err := backoff.Retry(op, b)
+	if err != nil {
+		t.Fatalf("Unable to reach server after 30s: %v", err)
+	}
+}
 
 func getServerState(t *testing.T, address, expected string) {
 	resp, err := http.Get(address)
@@ -33,7 +55,7 @@ func getServerState(t *testing.T, address, expected string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	resp.Body.Close()
 
 	if string(body) != expected {
 		t.Fatalf("Expected %q, got %q", expected, string(body))
@@ -99,7 +121,8 @@ func (c *ctx) testCheckpointInstance(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	time.Sleep(1 * time.Second)
+	// Wait for server to come up
+	pollServer(t, instanceAddress)
 
 	// Check that server state is initialized to what we expect
 	getServerState(t, instanceAddress, "0")
@@ -116,7 +139,8 @@ func (c *ctx) testCheckpointInstance(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	time.Sleep(30 * time.Second)
+	// Give the checkpoint command some time to save state
+	time.Sleep(5 * time.Second)
 
 	// Stop instance
 	c.env.RunApptainer(
@@ -127,7 +151,8 @@ func (c *ctx) testCheckpointInstance(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	time.Sleep(30 * time.Second)
+	// Wait for socket to completely drain before restarting.
+	time.Sleep(1 * time.Minute)
 
 	// Start instance using the checkpoint with "--dmtcp-restart"
 	c.env.RunApptainer(
@@ -138,7 +163,8 @@ func (c *ctx) testCheckpointInstance(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	time.Sleep(30 * time.Second)
+	// Wait for server to come up
+	pollServer(t, instanceAddress)
 
 	// Ensure server state after restart is what we set it to before checkpoint
 	getServerState(t, instanceAddress, "1")

@@ -20,6 +20,8 @@ import (
 
 const (
 	containerStatepath = "/.checkpoint"
+	portFile           = "coord.port"
+	logFile            = "coord.log"
 )
 
 const (

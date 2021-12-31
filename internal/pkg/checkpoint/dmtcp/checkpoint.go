@@ -8,6 +8,7 @@
 package dmtcp
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -18,6 +19,23 @@ import (
 
 type Entry struct {
 	path string
+}
+
+func (e *Entry) CoordinatorPort() (string, error) {
+	f, err := os.Open(filepath.Join(e.Path(), portFile))
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	// scan first line of file for port
+	s := bufio.NewScanner(f)
+	s.Scan()
+	if s.Text() == "" {
+		return "", fmt.Errorf("unable to scan port from checkpoint data")
+	}
+
+	return s.Text(), nil
 }
 
 func (e *Entry) BindPath() apptainerConfig.BindPath {

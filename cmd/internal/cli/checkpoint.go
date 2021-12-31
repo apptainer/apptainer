@@ -150,9 +150,14 @@ var CheckpointInstanceCmd = &cobra.Command{
 			sylog.Fatalf("Failed to get checkpoint entry: %v", err)
 		}
 
+		port, err := e.CoordinatorPort()
+		if err != nil {
+			sylog.Fatalf("Failed to parse port file for coordinator pord: %s", err)
+		}
+
 		sylog.Infof("Using checkpoint %q", e.Name())
 
-		a := append([]string{"/.singularity.d/actions/exec"}, dmtcp.CheckpointArgs()...)
+		a := append([]string{"/.singularity.d/actions/exec"}, dmtcp.CheckpointArgs(port)...)
 		execStarter(cmd, "instance://"+args[0], a, "")
 	},
 

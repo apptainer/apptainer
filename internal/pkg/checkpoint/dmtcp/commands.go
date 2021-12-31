@@ -27,6 +27,12 @@ func InjectArgs(config apptainerConfig.DMTCPConfig, argv []string) []string {
 func LaunchArgs() []string {
 	return []string{
 		"dmtcp_launch",
+		"--coord-port",
+		"0",
+		"--coord-logfile",
+		filepath.Join(containerStatepath, logFile),
+		"--port-file",
+		filepath.Join(containerStatepath, portFile),
 		"--ckptdir",
 		containerStatepath,
 		"--no-gzip",
@@ -40,9 +46,11 @@ func RestartArgs() []string {
 	}
 }
 
-func CheckpointArgs() []string {
+func CheckpointArgs(coordinatorPort string) []string {
 	return []string{
 		"dmtcp_command",
+		"--coord-port",
+		coordinatorPort,
 		"-c",
 	}
 }
