@@ -39,7 +39,7 @@ type ApptainerCmdResult struct {
 	FullCmd string
 }
 
-// MatchType defines the type of match for ExpectOuput and ExpectError
+// MatchType defines the type of match for ExpectOutput and ExpectError
 // functions
 type MatchType uint8
 

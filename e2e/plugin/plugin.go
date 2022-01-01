@@ -167,14 +167,16 @@ func (c ctx) testPluginBasic(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		var stderr, stdout string
 		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
 			e2e.WithCommand(tt.command),
 			e2e.WithArgs(tt.args...),
-			e2e.ExpectExit(tt.expectExit, tt.expectOp),
+			e2e.ExpectExit(tt.expectExit, tt.expectOp, e2e.GetStreams(&stdout, &stderr)),
 		)
+		t.Logf("stdout:\n%s\n\nstderr:\n%s\n\n", stdout, stderr)
 	}
 }
 
@@ -231,14 +233,17 @@ func (c ctx) testCLICallbacks(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		var stderr, stdout string
 		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
+			e2e.WithGlobalOptions("--debug"),
 			e2e.WithProfile(tt.profile),
 			e2e.WithCommand(tt.command),
 			e2e.WithArgs(tt.args...),
-			e2e.ExpectExit(tt.expectExit),
+			e2e.ExpectExit(tt.expectExit, e2e.GetStreams(&stdout, &stderr)),
 		)
+		t.Logf("stdout:\n%s\n\nstderr:\n%s\n\n", stdout, stderr)
 	}
 }
 
@@ -297,14 +302,17 @@ func (c ctx) testApptainerCallbacks(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		var stderr, stdout string
 		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
+			e2e.WithGlobalOptions("--debug"),
 			e2e.WithProfile(tt.profile),
 			e2e.WithCommand(tt.command),
 			e2e.WithArgs(tt.args...),
-			e2e.ExpectExit(tt.expectExit),
+			e2e.ExpectExit(tt.expectExit, e2e.GetStreams(&stdout, &stderr)),
 		)
+		t.Logf("stdout:\n%s\n\nstderr:\n%s\n\n", stdout, stderr)
 	}
 }
 
