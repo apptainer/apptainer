@@ -13,10 +13,12 @@ import (
 	"fmt"
 	"os"
 	"syscall"
+	"time"
 	"unsafe"
 
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/fs/lock"
+	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"golang.org/x/sys/unix"
 )
 
@@ -81,6 +83,16 @@ type Info64 struct {
 	Init           [2]uint64
 }
 
+// loop status retry related constants
+const (
+	sleepRetries      = 5
+	sleepInterval     = 200 * time.Millisecond
+	flushGracePeriod  = 1 * time.Second
+	errStatusTryAgain = syscall.EAGAIN
+)
+
+type retryStatusFn func(string, int) error
+
 // AttachFromFile attempts to find a suitable loop device to use for the specified image.
 // It runs through /dev/loopXX, up to MaxLoopDevices to find a free loop device, or
 // to share a loop device already associated to file (if shared loop devices are enabled).
@@ -88,8 +100,6 @@ type Info64 struct {
 // If a usable loop device is not found, and this is due to a transient EAGAIN / EBUSY error,
 // then it will retry up to maxRetries times, retryInterval apart, before returning an error.
 func (loop *Device) AttachFromFile(image *os.File, mode int, number *int) error {
-	var err error
-
 	if image == nil {
 		return fmt.Errorf("empty file pointer")
 	}
@@ -97,22 +107,18 @@ func (loop *Device) AttachFromFile(image *os.File, mode int, number *int) error 
 	if err != nil {
 		return err
 	}
-	st := fi.Sys().(*syscall.Stat_t)
-	imageIno := st.Ino
-	// cast to uint64 as st.Dev is uint32 on MIPS
-	imageDev := uint64(st.Dev)
+	imageInfo := fi.Sys().(*syscall.Stat_t)
 
 	if loop.Shared {
-		if ok, err := loop.shareLoop(imageIno, imageDev, mode, number); err != nil {
+		if ok, err := loop.shareLoop(imageInfo, mode, number); err != nil {
 			return err
 		} else if ok {
 			// We found a shared loop device, and loop.Fd was set
 			return nil
 		}
-		loop.Shared = false
 	}
 
-	if err := loop.attachLoop(image, mode, number); err != nil {
+	if err := loop.attachLoop(image.Fd(), imageInfo, mode, number); err != nil {
 		return fmt.Errorf("failed to attach loop device: %s", err)
 	}
 
@@ -122,29 +128,25 @@ func (loop *Device) AttachFromFile(image *os.File, mode int, number *int) error 
 // shareLoop runs over /dev/loopXX devices, looking for one that already has our image attached.
 // If a loop device can be shared, loop.Fd is set, and ok will be true.
 // If no loop device can be shared, ok will be false.
-func (loop *Device) shareLoop(imageIno, imageDev uint64, mode int, number *int) (ok bool, err error) {
-	// Because we hold a lock on /dev here, avoid delayed retries inside this function,
-	// as it could impact parallel startup of many instances of Singularity or
-	// other programs.
-	fd, err := lock.Exclusive("/dev")
-	if err != nil {
-		return false, err
-	}
-	defer lock.Release(fd)
+func (loop *Device) shareLoop(imageInfo *syscall.Stat_t, mode int, number *int) (ok bool, err error) {
+	imageIno := imageInfo.Ino
+	// cast to uint64 as st.Dev is uint32 on MIPS
+	imageDev := uint64(imageInfo.Dev)
 
 	for device := 0; device < loop.MaxLoopDevices; device++ {
 		*number = device
 
 		// Try to open an existing loop device, but don't create a new one
-		loopFd, err := openLoopDev(device, mode, false)
+		loopFd, releaseLock, err := openLoopDev(device, mode, false, true)
 		if err != nil {
 			if !os.IsNotExist(err) {
-				sylog.Debugf("Couldn't open loop device %d: %v\n", device, err)
+				sylog.Debugf("Couldn't open loop device %d: %s\n", device, err)
 			}
 			continue
 		}
 
 		status, err := GetStatusFromFd(uintptr(loopFd))
+		releaseLock()
 		if err != nil {
 			sylog.Debugf("Couldn't get status from loop device %d: %v\n", device, err)
 		} else if status.Inode == imageIno && status.Device == imageDev &&
@@ -154,8 +156,7 @@ func (loop *Device) shareLoop(imageIno, imageDev uint64, mode int, number *int) 
 			// be sure that the loop device won't be released between this
 			// check and the mount of the filesystem
 			sylog.Debugf("Sharing loop device %d", device)
-			loop.fd = new(int)
-			*loop.fd = loopFd
+			loop.fd = &loopFd
 			return true, nil
 		}
 		syscall.Close(loopFd)
@@ -168,16 +169,7 @@ func (loop *Device) shareLoop(imageIno, imageDev uint64, mode int, number *int) 
 // For most failures with loopN, it will try loopN+1, continuing up to loop.MaxLoopDevices.
 // When setting loop device status, some kernel may return EAGAIN, this function would sync
 // workaround this error.
-func (loop *Device) attachLoop(image *os.File, mode int, number *int) error {
-	// Because we hold a lock on /dev here, avoid delayed retries inside this function,
-	// as it could impact parallel startup of many instances of Singularity or
-	// other programs.
-	fd, err := lock.Exclusive("/dev")
-	if err != nil {
-		return err
-	}
-	defer lock.Release(fd)
-
+func (loop *Device) attachLoop(imageFd uintptr, imageInfo *syscall.Stat_t, mode int, number *int) error {
 	releaseDevice := func(fd int, clear bool) {
 		if clear {
 			syscall.Syscall(syscall.SYS_IOCTL, uintptr(fd), CmdClrFd, 0)
@@ -185,65 +177,40 @@ func (loop *Device) attachLoop(image *os.File, mode int, number *int) error {
 		syscall.Close(fd)
 	}
 
+	retryFn := getRetryStatusFn(imageFd, imageInfo)
+
 	for device := 0; device < loop.MaxLoopDevices; device++ {
 		*number = device
-		clearDevice := false
 
 		// Try to open the loop device, creating the device node if needed
-		loopFd, err := openLoopDev(device, mode, true)
+		loopFd, releaseLock, err := openLoopDev(device, mode, true, loop.Shared)
 		if err != nil {
-			sylog.Debugf("couldn't openLoopDev loop device %d: %v", device, err)
+			sylog.Debugf("Couldn't open loop device %d: %v", device, err)
 			return err
 		}
 
 		// On error, we'll move on to try the next loop device
-		_, _, esys := syscall.Syscall(syscall.SYS_IOCTL, uintptr(loopFd), CmdSetFd, image.Fd())
+		_, _, esys := syscall.Syscall(syscall.SYS_IOCTL, uintptr(loopFd), CmdSetFd, imageFd)
 		if esys != 0 {
-			releaseDevice(loopFd, clearDevice)
+			releaseDevice(loopFd, false)
+			releaseLock()
 			continue
 		}
-		clearDevice = true
 
 		if _, _, esys := syscall.Syscall(syscall.SYS_FCNTL, uintptr(loopFd), syscall.F_SETFD, syscall.FD_CLOEXEC); esys != 0 {
-			releaseDevice(loopFd, clearDevice)
+			releaseDevice(loopFd, true)
+			releaseLock()
 			return fmt.Errorf("failed to set close-on-exec on loop device %s: %s", getLoopPath(device), err.Error())
 		}
 
-		if _, _, esys := syscall.Syscall(syscall.SYS_IOCTL, uintptr(loopFd), CmdSetStatus64, uintptr(unsafe.Pointer(loop.Info))); esys != 0 {
-			if esys != syscall.EAGAIN {
-				releaseDevice(loopFd, clearDevice)
-				return fmt.Errorf("failed to set loop device status: %s", syscall.Errno(esys))
-			}
-
-			// With changes introduces in https://github.com/torvalds/linux/commit/5db470e229e22b7eda6e23b5566e532c96fb5bc3
-			// loop device is invalidating its cache when offset/sizelimit are modified while issuing the set status command,
-			// as there is no synchronization between the invalidation and the check for cached dirty pages, some kernel may
-			// return an EAGAIN error here. Note that this error is occurring very frequently with small images.
-			// An approach would be to sleep and retry, the problem is that the underlying filesystem backing the image file
-			// may be slow, so setting a time interval and number of retries may be hazardous, and trying other loop devices
-			// just deport the issue to the next devices as falsely stated here https://dev.arvados.org/issues/18489.
-			// The rough approach is to trigger a sync to commit cached pages to devices, the kernel is not providing a way
-			// to flush and wait for the loop devices (syncfs can't be used for loop devices), all methods seems to be
-			// asynchronous leading to sleep usage, sync syscall is meeting those criteria but at some costs.
-			//
-			// Dear reader, if you are not satisfied by the approach, you are invited to reproduce the issue first by using
-			// an Ubuntu 18.04 distribution containing the fix/bug above and build a small image like:
-			//
-			// $ apptainer build /tmp/busy.sif docker://busybox
-			// $ for i in $(seq 1 100); do apptainer exec /tmp/busy.sif true; done
-			//
-			// And search a more elegant solution
-			unix.Sync()
-
-			_, _, esys := syscall.Syscall(syscall.SYS_IOCTL, uintptr(loopFd), CmdSetStatus64, uintptr(unsafe.Pointer(loop.Info)))
-			if esys != 0 {
-				releaseDevice(loopFd, clearDevice)
-				return fmt.Errorf("failed to set loop device status: %s", syscall.Errno(esys))
-			}
+		if err := setLoopStatus(loopFd, loop.Info, getLoopPath(device), retryFn); err != nil {
+			releaseDevice(loopFd, true)
+			releaseLock()
+			return fmt.Errorf("loop device status: %s", err)
 		}
 
-		loop.fd = new(int)
-		*loop.fd = loopFd
+		releaseLock()
+		loop.fd = &loopFd
 		return nil
 	}
 
@@ -253,39 +220,157 @@ func (loop *Device) attachLoop(image *os.File, mode int, number *int) error {
 // openLoopDev will attempt to open the specified loop device number, with specified mode.
 // If it is not present in /dev, and create is true, a mknod call will be used to create it.
 // Returns the fd for the opened device, or -1 if it was not possible to openLoopDev it.
-func openLoopDev(device, mode int, create bool) (loopFd int, err error) {
+func openLoopDev(device, mode int, create, sharedLoop bool) (int, func(), error) {
 	path := getLoopPath(device)
 	fi, err := os.Stat(path)
 
 	// If it doesn't exist, and create is false.. we're done..
 	if os.IsNotExist(err) && !create {
-		return -1, err
-	}
-	// If there's another stat error that's likely fatal.. we're done..
-	if err != nil && !os.IsNotExist(err) {
-		return -1, fmt.Errorf("could not stat %s: %w", path, err)
-	}
-
-	// Create the device node if we need to
-	if os.IsNotExist(err) {
-		dev := int((7 << 8) | (device & 0xff) | ((device & 0xfff00) << 12))
+		return -1, nil, err
+	} else if err != nil && !os.IsNotExist(err) {
+		// If there's another stat error that's likely fatal.. we're done..
+		return -1, nil, fmt.Errorf("could not stat %s: %w", path, err)
+	} else if os.IsNotExist(err) {
+		// Create the device node if we need to
+		dev := int(unix.Mkdev(uint32(7), uint32(device)))
 		esys := syscall.Mknod(path, syscall.S_IFBLK|0o660, dev)
 		if errno, ok := esys.(syscall.Errno); ok {
 			if errno != syscall.EEXIST {
-				return -1, fmt.Errorf("could not mknod %s: %w", path, esys)
+				return -1, nil, fmt.Errorf("could not mknod %s: %w", path, esys)
 			}
 		}
 	} else if fi.Mode()&os.ModeDevice == 0 {
-		return -1, fmt.Errorf("%s is not a block device", path)
+		return -1, nil, fmt.Errorf("%s is not a block device", path)
+	}
+
+	releaseLock := func() {}
+
+	if sharedLoop {
+		// there is an exclusive lock set on the opened loop device
+		// when shared loop devices is in-use, this lock is intended
+		// to be hold until the loop device status is set for the
+		// opened loop device
+		loopLock, err := lock.Exclusive(path)
+		if err != nil {
+			return -1, nil, fmt.Errorf("while acquiring exclusive lock on %s: %s", path, err)
+		}
+		releaseLock = func() {
+			_ = lock.Release(loopLock)
+		}
 	}
 
 	// Now open the loop device
-	loopFd, err = syscall.Open(path, mode, 0o600)
+	loopFd, err := syscall.Open(path, mode, 0o600)
 	if err != nil {
-		return -1, fmt.Errorf("could not open %s: %w", path, err)
+		releaseLock()
+		return -1, nil, fmt.Errorf("could not open %s: %w", path, err)
 	}
 
-	return loopFd, nil
+	return loopFd, releaseLock, nil
+}
+
+func setLoopStatus(loopFd int, info *Info64, loopDevice string, retryFn retryStatusFn) error {
+	for retryCount := 0; ; retryCount++ {
+		_, _, esys := syscall.Syscall(
+			syscall.SYS_IOCTL,
+			uintptr(loopFd),
+			CmdSetStatus64,
+			uintptr(unsafe.Pointer(info)),
+		)
+		if esys == 0 {
+			return nil
+		} else if esys != syscall.EAGAIN {
+			return fmt.Errorf("failed to set loop device status (%s): %s", loopDevice, syscall.Errno(esys))
+		}
+
+		if err := retryFn(loopDevice, retryCount); err != errStatusTryAgain {
+			return err
+		}
+	}
+}
+
+func getRetryStatusFn(imageFd uintptr, imageInfo *syscall.Stat_t) retryStatusFn {
+	return func(loopDevice string, retryCount int) error {
+		// With changes introduced in https://github.com/torvalds/linux/commit/5db470e229e22b7eda6e23b5566e532c96fb5bc3
+		// loop device is invalidating its cache when offset/sizelimit are modified while issuing the set status command,
+		// as there is no synchronization between the invalidation and the check for cached dirty pages, some kernel may
+		// return an EAGAIN error here. Note that this error is occurring very frequently with small images.
+		// The first approach is to sleep and retry, the problem is that the underlying filesystem backing the image file
+		// may be slow, so setting a time interval and number of retries may be hazardous, and trying other loop devices
+		// just deport the issue to the next devices as falsely stated here https://dev.arvados.org/issues/18489.
+		// So retry 5 times with a sleep period of 200ms between each attempt.
+		if retryCount < sleepRetries {
+			time.Sleep(sleepInterval)
+			return errStatusTryAgain
+		} else if retryCount == sleepRetries {
+			// The sleeping period is over and there is remaining dirty pages in cache for the corresponding image,
+			// let's use the rough approach to flush cached pages to filesystem, the kernel is not providing a way to
+			// flush and wait, syncfs/fsync/sync_file_range are not working as expected here, so we call flushCache
+			// which will try to issue a block device flush command when the image is located on a block device, if the
+			// image is on a shared storage, a ramfs or anything else which isn't a block device, a sync syscall is
+			// issued with the costs it involved.
+			//
+			// Dear reader, if you are not satisfied by the approach, you are invited to reproduce the issue first by using
+			// an Ubuntu 18.04 distribution containing the fix/bug above and build a small image like:
+			//
+			// $ apptainer build /tmp/busy.sif docker://busybox
+			// $ for i in $(seq 1 100); do apptainer exec /tmp/busy.sif true; done
+			//
+			// And search a more elegant solution
+			if err := flushCache(imageFd, imageInfo); err != nil {
+				return fmt.Errorf("while syncing/flushing image cache: %s", err)
+			}
+			return errStatusTryAgain
+		} else if retryCount == sleepRetries+1 {
+			// e2e tests have shown that the sync approach is not sufficient under high load
+			// circumstances, therefore we are giving an additional grace period, after that
+			// we are over and return a cache invalidate too slow error
+			time.Sleep(flushGracePeriod)
+			return errStatusTryAgain
+		}
+
+		return fmt.Errorf("failed to set loop device status (%s): cache invalidate too slow", loopDevice)
+	}
+}
+
+func flushCache(imageFd uintptr, imageInfo *syscall.Stat_t) error {
+	devStr := fmt.Sprintf("%d:%d", unix.Major(imageInfo.Dev), unix.Minor(imageInfo.Dev))
+	entries, err := proc.GetMountInfoEntry("/proc/self/mountinfo")
+	if err != nil {
+		return fmt.Errorf("while getting mountinfo: %s", err)
+	}
+	for _, e := range entries {
+		if e.Dev != devStr {
+			continue
+		}
+		fi, err := os.Stat(e.Source)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return fmt.Errorf("while getting information for %s: %s", e.Source, err)
+		}
+		// not a block device
+		if fi.Mode()&os.ModeDevice == 0 {
+			continue
+		}
+		// trigger block device flush command
+		f, err := os.Open(e.Source)
+		if err != nil {
+			return fmt.Errorf("while opening %s: %s", e.Source, err)
+		}
+		defer f.Close()
+
+		_, _, esys := syscall.Syscall(syscall.SYS_IOCTL, f.Fd(), unix.BLKFLSBUF, 0)
+		if esys != 0 {
+			return fmt.Errorf("while flushing block device %s: %s", e.Source, syscall.Errno(esys))
+		}
+
+		return nil
+	}
+	// use sync as a last resort
+	unix.Sync()
+	return nil
 }
 
 // AttachFromPath finds a free loop device, opens it, and stores file descriptor
