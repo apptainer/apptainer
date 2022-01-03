@@ -91,17 +91,6 @@ func (c *ctx) apptainerKeySearch(t *testing.T) {
 			stdout: "^Search for keys on a key server",
 		},
 		{
-			// keys.openpgp.org does not support short id searches, use sylabs
-			name:   "key search 0x<key id>",
-			args:   []string{"search", "-u", "https://keys.sylabs.io", "0x8BD91BEE"},
-			stdout: "^Showing 1 results",
-		},
-		{
-			name:   "key search <key id>",
-			args:   []string{"search", "-u", "https://keys.sylabs.io", "8BD91BEE"},
-			stdout: "^Showing 1 results",
-		},
-		{
 			name:   "key search 0x<key fingerprint>",
 			args:   []string{"search", "-u", "https://keys.sylabs.io", "0x7605BC2716168DF057D6C600ACEEC62C8BD91BEE"},
 			stdout: "^Showing 1 results",
@@ -130,11 +119,6 @@ func (c *ctx) apptainerKeySearch(t *testing.T) {
 			name:   "key search -l <key with at least two emails>",
 			args:   []string{"search", "-u", "https://keys.openpgp.org", "-l", "dwd@fnal.gov"},
 			stdout: "\n  .*@",
-		},
-		{
-			name:   "key search <name>",
-			args:   []string{"search", "-u", "https://keys.sylabs.io", "westley"},
-			stdout: "^Showing",
 		},
 		{
 			name:   "key search --url <open key server> <name>",
@@ -183,7 +167,7 @@ func (c *ctx) apptainerKeyNewpair(t *testing.T) {
 			args: []string{"newpair"},
 			consoleOps: []string{
 				"e2e test key",
-				"westley@sylabs.io",
+				"westley@apptainer.org",
 				"for e2e tests",
 				"e2etests",
 				"e2etests",
@@ -458,7 +442,7 @@ func (c ctx) apptainerKeyNewpairWithLen(t *testing.T) {
 			args: []string{"newpair", "--bit-length", "1024"},
 			consoleOps: []string{
 				"e2e test key",
-				"jdoe@sylabs.io",
+				"jdoe@apptainer.org",
 				" for e2e tests",
 				"e2etests",
 				"e2etests",
@@ -471,7 +455,7 @@ func (c ctx) apptainerKeyNewpairWithLen(t *testing.T) {
 			args: []string{"newpair", "--bit-length", "0"},
 			consoleOps: []string{
 				"e2e test key",
-				"jdoe@sylabs.io",
+				"jdoe@apptainer.org",
 				" for e2e tests",
 				"e2etests",
 				"e2etests",
