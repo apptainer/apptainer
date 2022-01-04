@@ -584,6 +584,62 @@ func SelectPrivKey(el openpgp.EntityList) (*openpgp.Entity, error) {
 	return el[n], nil
 }
 
+// declare field offsets for parsed records from HKP server
+const (
+	tagField = iota
+)
+
+//nolint
+const (
+	// info:<version>:<count>
+
+	infoTagField     = iota
+	infoVersionField = iota
+	infoCountField   = iota
+
+	infoFieldsCount = iota
+)
+
+//nolint
+const (
+	// pub:<keyid>:<algo>:<keylen>:<creationdate>:<expirationdate>:<flags>
+
+	pubTagField            = iota
+	pubKeyIDField          = iota
+	pubAlgoField           = iota
+	pubKeyLenField         = iota
+	pubCreationDateField   = iota
+	pubExpirationDateField = iota
+	pubFlagField           = iota
+
+	pubFieldsCount = iota
+)
+
+//nolint
+const (
+	// uid:<escaped uid string>:<creationdate>:<expirationdate>:<flags>
+
+	uidTagField            = iota
+	uidIDField             = iota
+	uidCreationDateField   = iota
+	uidExpirationDatefield = iota
+
+	uidFieldsCount = iota
+)
+
+func max(parts []int) (maxVal int) {
+	maxVal = 0
+	if len(parts) > 0 {
+		maxVal = parts[0]
+		for _, v := range parts {
+			if v > maxVal {
+				maxVal = v
+			}
+		}
+	}
+	return maxVal
+}
+
 // formatMROutput formats the key search output that is in machine readable
 // format into something readable by people.  If longOutput is set, more
 // detail is included.  See the input format in:
@@ -611,14 +667,20 @@ func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 	first := true
 	gotName := false
 	for _, l := range lines {
+		l = strings.TrimSpace(l)
+		// the spec allows the server to strip trailing field separators, add enough
+		// separators to prevent invalid index during remaining parse operations
+		l = l + strings.Repeat(":", max([]int{infoFieldsCount, pubFieldsCount, uidFieldsCount}))
+
 		fields := strings.Split(strings.TrimSpace(l), ":")
-		if fields[0] == "info" {
+		switch fields[tagField] {
+		case "info":
 			var err error
 			numKeys, err = strconv.Atoi(fields[2])
 			if err != nil {
 				return -1, nil, fmt.Errorf("unable to check number of keys")
 			}
-		} else if fields[0] == "pub" {
+		case "pub":
 			if !first {
 				if !gotName {
 					// there was a pub without uid; end line
@@ -629,36 +691,45 @@ func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 			}
 			first = false
 			gotName = false
-			keyFingerprint := fields[1]
-			keyBits := fields[3]
+			keyFingerprint := fields[pubKeyIDField]
+			keyBits := fields[pubKeyLenField]
 			if longOutput {
-				keyType, err := getEncryptionAlgorithmName(fields[2])
+				keyType, err := getEncryptionAlgorithmName(fields[pubAlgoField])
 				if err != nil {
 					return -1, nil, err
 				}
-				keyDateCreated := date(fields[4])
-				keyDateExpired := date(fields[5])
+				keyDateCreated := ""
+				if "" != fields[pubCreationDateField] {
+					keyDateCreated = date(fields[pubCreationDateField])
+				}
+				keyDateExpired := ""
+				if "" != fields[pubExpirationDateField] {
+					keyDateExpired = date(fields[pubExpirationDateField])
+				}
 
 				keyStatus := ""
-				if fields[6] == "r" {
-					keyStatus = "[revoked]"
-				} else if fields[6] == "d" {
-					keyStatus = "[disabled]"
-				} else if fields[6] == "e" {
-					keyStatus = "[expired]"
-				} else {
+				if strings.Contains(fields[pubFlagField], "r") {
+					keyStatus += "[revoked]"
+				} else if strings.Contains(fields[pubFlagField], "d") {
+					keyStatus += "[disabled]"
+				} else if strings.Contains(fields[pubFlagField], "e") {
+					keyStatus += "[expired]"
+				}
+				if "" == keyStatus {
 					keyStatus = "[enabled]"
 				}
 
 				fmt.Fprintf(tw, longFmt, keyFingerprint, keyType, keyBits, keyDateCreated, keyDateExpired, keyStatus)
-
 			} else {
+				if len(keyFingerprint) > 8 {
+					keyFingerprint = keyFingerprint[len(keyFingerprint)-8:]
+				}
 				// Short output
 				// take only last 8 chars of fingerprint
-				fmt.Fprintf(tw, shortFmt, keyFingerprint[len(fields[1])-8:], keyBits)
+				fmt.Fprintf(tw, shortFmt, keyFingerprint, keyBits)
 			}
 			count++
-		} else if fields[0] == "uid" {
+		case "uid":
 			// And the key name/email is on fields[1]
 			// There may be more than one of these for each pub
 			if !gotName {
@@ -671,15 +742,15 @@ func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 					fmt.Fprintf(tw, shortFmt, "", "")
 				}
 			}
-			name, err := url.QueryUnescape(fields[1])
+			name, err := url.QueryUnescape(fields[uidIDField])
 			if err != nil {
 				sylog.Debugf("using undecoded name because url decode didn't work: %v", err)
-				name = fields[1]
+				name = fields[uidIDField]
 			}
 			fmt.Fprintf(tw, nameFmt, name)
 		}
 	}
-	if numKeys > 0 && !gotName {
+	if count > 0 && !gotName {
 		// no name was printed with last key
 		fmt.Fprintf(tw, "\n")
 	}
@@ -688,7 +759,7 @@ func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 	sylog.Debugf("key count=%d; expect=%d\n", count, numKeys)
 
 	// Simple check to ensure the conversion was successful
-	if count != numKeys {
+	if numKeys > 0 && count != numKeys {
 		sylog.Debugf("expecting %d, got %d\n", numKeys, count)
 		return -1, retList.Bytes(), fmt.Errorf("failed to convert machine readable to human readable output correctly")
 	}
