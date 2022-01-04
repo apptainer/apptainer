@@ -237,7 +237,7 @@ func TestCmdFlag(t *testing.T) {
 	}
 
 	for cmd := range cmds {
-		if err := cm.UpdateCmdFlagFromEnv(cmd, ""); err != nil {
+		if err := cm.UpdateCmdFlagFromEnv(cmd, -1); err != nil {
 			t.Error(err)
 		}
 	}

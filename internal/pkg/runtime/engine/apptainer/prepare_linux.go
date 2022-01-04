@@ -873,7 +873,7 @@ func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Conf
 
 	// restore HOME environment variable to match the
 	// one set during instance start
-	e.EngineConfig.OciConfig.AddProcessEnv("HOME", instanceEngineConfig.GetHomeDest())
+	e.EngineConfig.OciConfig.SetProcessEnv("HOME", instanceEngineConfig.GetHomeDest())
 
 	// restore apparmor profile or apply a new one if provided
 	param := security.GetParam(e.EngineConfig.GetSecurity(), "apparmor")

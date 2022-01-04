@@ -121,21 +121,21 @@ func TestGenerate(t *testing.T) {
 		t.Fatalf("wrong OCI mount entry: %v", mount)
 	}
 
-	g.AddProcessEnv("FOO", "bar")
+	g.SetProcessEnv("FOO", "bar")
 	if len(config.Process.Env) != 1 {
 		t.Fatalf("wrong OCI process environment size: %d instead of 1", len(config.Process.Env))
 	} else if config.Process.Env[0] != "FOO=bar" {
 		t.Fatalf("wrong OCI process environment FOO value: %v instead of FOO=bar", config.Process.Env[0])
 	}
 
-	g.AddProcessEnv("FOO", "foo")
+	g.SetProcessEnv("FOO", "foo")
 	if len(config.Process.Env) != 1 {
 		t.Fatalf("wrong OCI process environment size: %d instead of 1", len(config.Process.Env))
 	} else if config.Process.Env[0] != "FOO=foo" {
 		t.Fatalf("wrong OCI process environment FOO value: %v instead of FOO=foo", config.Process.Env[0])
 	}
 
-	g.AddProcessEnv("FOO2", "bar2")
+	g.SetProcessEnv("FOO2", "bar2")
 	if len(config.Process.Env) != 2 {
 		t.Fatalf("wrong OCI process environment size: %d instead of 2", len(config.Process.Env))
 	}
