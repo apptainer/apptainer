@@ -175,7 +175,7 @@ func insertHelpScript(b *types.Bundle) error {
 func insertDefinition(b *types.Bundle) error {
 	// if update, check for existing definition and move it to bootstrap history
 	if b.Opts.Update {
-		if _, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/Apptainer")); err == nil {
+		if _, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity")); err == nil {
 			// make bootstrap_history directory if it doesn't exist
 			if _, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history")); err != nil {
 				err = os.Mkdir(filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history"), 0o755)
@@ -194,14 +194,14 @@ func insertDefinition(b *types.Bundle) error {
 			len := strconv.Itoa(len(files))
 			histName := "Apptainer" + len
 			// move old definition into bootstrap_history
-			err = os.Rename(filepath.Join(b.RootfsPath, "/.singularity.d/Apptainer"), filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history", histName))
+			err = os.Rename(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity"), filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history", histName))
 			if err != nil {
 				return err
 			}
 		}
 	}
 
-	err := ioutil.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/Apptainer"), b.Recipe.Raw, 0o644)
+	err := ioutil.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity"), b.Recipe.Raw, 0o644)
 	if err != nil {
 		return err
 	}

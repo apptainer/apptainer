@@ -366,32 +366,32 @@ done
 # ENTRYPOINT only - run entrypoint plus args
 if [ -z "$OCI_CMD" ] && [ -n "$OCI_ENTRYPOINT" ]; then
     if [ $# -gt 0 ]; then
-        APPTAINER_OCI_RUN="${OCI_ENTRYPOINT} ${CMDLINE_ARGS}"
+        SINGULARITY_OCI_RUN="${OCI_ENTRYPOINT} ${CMDLINE_ARGS}"
     else
-        APPTAINER_OCI_RUN="${OCI_ENTRYPOINT}"
+        SINGULARITY_OCI_RUN="${OCI_ENTRYPOINT}"
     fi
 fi
 
 # CMD only - run CMD or override with args
 if [ -n "$OCI_CMD" ] && [ -z "$OCI_ENTRYPOINT" ]; then
     if [ $# -gt 0 ]; then
-        APPTAINER_OCI_RUN="${CMDLINE_ARGS}"
+        SINGULARITY_OCI_RUN="${CMDLINE_ARGS}"
     else
-        APPTAINER_OCI_RUN="${OCI_CMD}"
+        SINGULARITY_OCI_RUN="${OCI_CMD}"
     fi
 fi
 
 # ENTRYPOINT and CMD - run ENTRYPOINT with CMD as default args
 # override with user provided args
 if [ $# -gt 0 ]; then
-    APPTAINER_OCI_RUN="${OCI_ENTRYPOINT} ${CMDLINE_ARGS}"
+    SINGULARITY_OCI_RUN="${OCI_ENTRYPOINT} ${CMDLINE_ARGS}"
 else
-    APPTAINER_OCI_RUN="${OCI_ENTRYPOINT} ${OCI_CMD}"
+    SINGULARITY_OCI_RUN="${OCI_ENTRYPOINT} ${OCI_CMD}"
 fi
 
 # Evaluate shell expressions first and set arguments accordingly,
 # then execute final command as first container process
-eval "set ${APPTAINER_OCI_RUN}"
+eval "set ${SINGULARITY_OCI_RUN}"
 exec "$@"
 
 `)

@@ -65,8 +65,8 @@ func (env TestEnv) ImageVerify(t *testing.T, imagePath string, profile Profile) 
 			exit: 0,
 		},
 		{
-			name: "Apptainer",
-			argv: []string{imagePath, "test", "-L", "/apptainer"},
+			name: "Singularity",
+			argv: []string{imagePath, "test", "-L", "/singularity"},
 			exit: 0,
 		},
 	}
