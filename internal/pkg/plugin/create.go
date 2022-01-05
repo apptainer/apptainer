@@ -9,7 +9,9 @@
 package plugin
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -20,7 +22,7 @@ import (
 
 const goMod = `module %s
 
-go 1.13
+go 1.16
 
 require github.com/apptainer/apptainer v0.0.0
 
@@ -96,18 +98,25 @@ func Create(path, name string) error {
 	}
 
 	// create symlink to apptainer source directory
-	source := filepath.Join(dir, ApptainerSource)
+	sourceLink := filepath.Join(dir, ApptainerSource)
 
 	if _, err := os.Stat(buildcfg.SOURCEDIR); os.IsNotExist(err) {
-		ls := fmt.Sprintf("ln -s /path/to/apptainer/source %s", source)
+		ls := fmt.Sprintf("ln -s /path/to/apptainer/source %s", sourceLink)
 		sylog.Warningf("Apptainer source %s doesn't exist, you would have to execute manually %q", buildcfg.SOURCEDIR, ls)
 		return nil
 	} else if err != nil {
-		return fmt.Errorf("while getting %s information: %s", source, err)
+		return fmt.Errorf("while getting %s information: %s", sourceLink, err)
 	}
 
-	if err := os.Symlink(buildcfg.SOURCEDIR, source); err != nil {
-		return fmt.Errorf("while creating symlink %s: %s", source, err)
+	// delete it first if already present
+	if err := os.Remove(sourceLink); err != nil {
+		if !errors.Is(err, fs.ErrNotExist) {
+			return fmt.Errorf("while removing %s symlink: %s", sourceLink, err)
+		}
+	}
+
+	if err := os.Symlink(buildcfg.SOURCEDIR, sourceLink); err != nil {
+		return fmt.Errorf("while creating symlink %s: %s", sourceLink, err)
 	}
 
 	return nil

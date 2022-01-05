@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -155,14 +156,22 @@ func CompilePlugin(sourceDir, destSif, buildTags string, disableMinorCheck bool)
 
 	err = archive.CopyWithTar(sourceDir, pluginDir)
 	if err != nil {
-		return err
+		return fmt.Errorf("while copying with tar: %v", err)
 	}
 
 	sourceLink := filepath.Join(pluginDir, plugin.ApptainerSource)
 	// delete it first if already present
-	os.Remove(sourceLink)
+	sylog.Debugf("removing symlink: %s", sourceLink)
+	if err := os.Remove(sourceLink); err != nil {
+		sylog.Warningf("removing symlink: error %s", err.Error())
+		if !errors.Is(err, fs.ErrNotExist) {
+			return fmt.Errorf("while removing symlink named %s: %v", sourceLink, err)
+		}
+	}
 
+	sylog.Warningf("adding new symlink: %s", sourceLink)
 	if err := os.Symlink(apptainerSrcDir, sourceLink); err != nil {
+		sylog.Warningf("adding new symlink: error %s", err.Error())
 		return fmt.Errorf("while creating %s symlink: %s", sourceLink, err)
 	}
 
