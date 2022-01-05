@@ -891,7 +891,7 @@ func getDockerRunscript(path string) (io.Reader, error) {
 	scanner := bufio.NewScanner(&b)
 
 	for scanner.Scan() {
-		if scanner.Text() == "eval \"set ${APPTAINER_OCI_RUN}\"" {
+		if scanner.Text() == "eval \"set ${SINGULARITY_OCI_RUN}\"" {
 			b.Reset()
 			if _, err := b.Write(r); err != nil {
 				return nil, err

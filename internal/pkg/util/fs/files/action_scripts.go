@@ -14,8 +14,8 @@ var ActionScript = `#!/bin/sh
 declare -r __exported_env__=$(getallenv)
 declare -r __apptainer_cmd__=${APPTAINER_COMMAND:-}
 
-if test -n "${APPTAINER_APPNAME:-}"; then
-    readonly APPTAINER_APPNAME
+if test -n "${SINGULARITY_APPNAME:-}"; then
+    readonly SINGULARITY_APPNAME
 fi
 
 export PWD
@@ -43,7 +43,7 @@ clear_env() {
     for e in ${__exported_env__}; do
         key=$(getenvkey "${e}")
         case "${key}" in
-        PWD|HOME|OPTIND|UID|GID|APPTAINER_APPNAME|APPTAINER_SHELL)
+        PWD|HOME|OPTIND|UID|GID|SINGULARITY_APPNAME|SINGULARITY_SHELL)
             ;;
         APPTAINER_NAME|APPTAINER_CONTAINER)
             readonly "${key}"
@@ -162,8 +162,8 @@ case "${__apptainer_cmd__}" in
 exec)
     exec "$@" ;;
 shell)
-    if test -n "${APPTAINER_SHELL:-}" -a -x "${APPTAINER_SHELL:-}"; then
-        exec "${APPTAINER_SHELL:-}" "$@"
+    if test -n "${SINGULARITY_SHELL:-}" -a -x "${SINGULARITY_SHELL:-}"; then
+        exec "${SINGULARITY_SHELL:-}" "$@"
     elif test -x "/bin/bash"; then
         export SHELL=/bin/bash
         exec "/bin/bash" --norc "$@"
@@ -175,13 +175,13 @@ shell)
     sylog error "/bin/sh does not exist in container"
     exit 1 ;;
 run)
-    if test -n "${APPTAINER_APPNAME:-}"; then
-        if test -x "/scif/apps/${APPTAINER_APPNAME:-}/scif/runscript"; then
-            exec "/scif/apps/${APPTAINER_APPNAME:-}/scif/runscript" "$@"
+    if test -n "${SINGULARITY_APPNAME:-}"; then
+        if test -x "/scif/apps/${SINGULARITY_APPNAME:-}/scif/runscript"; then
+            exec "/scif/apps/${SINGULARITY_APPNAME:-}/scif/runscript" "$@"
 		elif test -x "/scif/apps/singularity/scif/test"; then
             exec "/scif/apps/singularity/scif/test" "$@"
         fi
-        sylog error "no runscript for contained app: ${APPTAINER_APPNAME:-}"
+        sylog error "no runscript for contained app: ${SINGULARITY_APPNAME:-}"
         exit 1
     elif test -x "/.singularity.d/runscript"; then
         exec "/.singularity.d/runscript" "$@"
@@ -195,13 +195,13 @@ run)
     sylog error "No runscript and no /bin/sh executable found in container, aborting"
     exit 1 ;;
 test)
-    if test -n "${APPTAINER_APPNAME:-}"; then
-        if test -x "/scif/apps/${APPTAINER_APPNAME:-}/scif/test"; then
-            exec "/scif/apps/${APPTAINER_APPNAME:-}/scif/test" "$@"
+    if test -n "${SINGULARITY_APPNAME:-}"; then
+        if test -x "/scif/apps/${SINGULARITY_APPNAME:-}/scif/test"; then
+            exec "/scif/apps/${SINGULARITY_APPNAME:-}/scif/test" "$@"
 		elif test -x "/scif/apps/singularity/scif/test"; then
             exec "/scif/apps/singularity/scif/test" "$@"
         fi
-        sylog error "No tests for contained app: ${APPTAINER_APPNAME:-}"
+        sylog error "No tests for contained app: ${SINGULARITY_APPNAME:-}"
         exit 1
     elif test -x "/.singularity.d/test"; then
         exec "/.singularity.d/test" "$@"
