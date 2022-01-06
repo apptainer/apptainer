@@ -50,6 +50,12 @@ const (
 `
 )
 
+const (
+	Directory  = "sypgp"
+	PublicFile = "pgp-public"
+	SecretFile = "pgp-secret"
+)
+
 var (
 	errNotEncrypted = errors.New("key is not encrypted")
 
@@ -101,7 +107,7 @@ func GetTokenFile() string {
 func dirPath() string {
 	sypgpDir := os.Getenv("APPTAINER_SYPGPDIR")
 	if sypgpDir == "" {
-		return filepath.Join(syfs.ConfigDir(), "sypgp")
+		return filepath.Join(syfs.ConfigDir(), Directory)
 	}
 	return sypgpDir
 }
@@ -127,7 +133,7 @@ func NewHandle(path string, opts ...HandleOpt) *Handle {
 
 // SecretPath returns a string describing the path to the private keys store
 func (keyring *Handle) SecretPath() string {
-	return filepath.Join(keyring.path, "pgp-secret")
+	return filepath.Join(keyring.path, SecretFile)
 }
 
 // PublicPath returns a string describing the path to the public keys store
@@ -135,7 +141,7 @@ func (keyring *Handle) PublicPath() string {
 	if keyring.global {
 		return filepath.Join(keyring.path, "global-pgp-public")
 	}
-	return filepath.Join(keyring.path, "pgp-public")
+	return filepath.Join(keyring.path, PublicFile)
 }
 
 // ensureDirPrivate makes sure that the file system mode for the named

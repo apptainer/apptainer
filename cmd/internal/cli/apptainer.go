@@ -34,6 +34,7 @@ import (
 	clicallback "github.com/apptainer/apptainer/pkg/plugin/callback/cli"
 	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/sypgp"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	keyClient "github.com/apptainer/container-key-client/client"
 	libClient "github.com/apptainer/container-library-client/client"
@@ -275,27 +276,146 @@ func handleRemoteConf(remoteConfFile string) {
 
 // handleConfDir tries to create the user's configuration directory and handles
 // messages and/or errors.
-func handleConfDir(confDir string) {
-	if err := fs.Mkdir(confDir, 0o700); err != nil {
-		if os.IsExist(err) {
-			sylog.Debugf("%s already exists. Not creating.", confDir)
-			fi, err := os.Stat(confDir)
-			if err != nil {
-				sylog.Fatalf("Failed to retrieve information for %s: %s", confDir, err)
-			}
-			if fi.Mode().Perm() != 0o700 {
-				sylog.Debugf("Enforce permission 0700 on %s", confDir)
-				// enforce permission on user configuration directory
-				if err := os.Chmod(confDir, 0o700); err != nil {
-					// best effort as chmod could fail for various reasons (eg: readonly FS)
-					sylog.Warningf("Couldn't enforce permission 0700 on %s: %s", confDir, err)
-				}
-			}
-		} else {
-			sylog.Debugf("Could not create %s: %s", confDir, err)
+func handleConfDir(confDir, legacyConfigDir string) {
+	ok, err := fs.PathExists(confDir)
+	if err != nil {
+		sylog.Fatalf("Failed to retrieve information for %s: %s", confDir, err)
+	}
+
+	// apptainer user config directory exists, run perm check and return
+	if ok {
+		sylog.Debugf("%s already exists. Not creating.", confDir)
+		fi, err := os.Stat(confDir)
+		if err != nil {
+			sylog.Fatalf("Failed to retrieve information for %s: %s", confDir, err)
 		}
-	} else {
-		sylog.Debugf("Created %s", confDir)
+		if fi.Mode().Perm() != 0o700 {
+			sylog.Debugf("Enforce permission 0700 on %s", confDir)
+			// enforce permission on user configuration directory
+			if err := os.Chmod(confDir, 0o700); err != nil {
+				// best effort as chmod could fail for various reasons (eg: readonly FS)
+				sylog.Warningf("Couldn't enforce permission 0700 on %s: %s", confDir, err)
+			}
+		}
+		return
+	}
+
+	// apptainer user config directory doesnt exist, create it.
+	err = fs.Mkdir(confDir, 0o700)
+	if err != nil {
+		sylog.Debugf("Could not create %s: %s", confDir, err)
+		return
+	}
+
+	sylog.Debugf("Created %s", confDir)
+
+	// check if singularity user config directory exists, use it to populate configs of
+	// apptainer user config directory if it does.
+	ok, err = fs.PathExists(legacyConfigDir)
+	if err != nil {
+		sylog.Warningf("Failed to retrieve information for %s: %s", legacyConfigDir, err)
+		return
+	}
+
+	// singularity user config directory doesnt exist, return
+	if !ok {
+		return
+	}
+
+	sylog.Infof("Detected Singularity user configuration directory")
+
+	migrateRemoteConf(confDir, legacyConfigDir)
+	migrateDockerConf(confDir, legacyConfigDir)
+	migrateSypgp(confDir, legacyConfigDir)
+}
+
+func migrateRemoteConf(confDir, legacyConfigDir string) {
+	// migrate remote config
+	ok, err := fs.PathExists(syfs.LegacyRemoteConf())
+	if err != nil {
+		sylog.Warningf("Failed to retrieve information for %s: %s", syfs.LegacyRemoteConf(), err)
+		return
+	} else if !ok {
+		return
+	}
+
+	sylog.Infof("Detected Singularity remote configuration, migrating...")
+	err = fs.CopyFile(syfs.LegacyRemoteConf(), syfs.RemoteConf(), 0o600)
+	if err != nil {
+		sylog.Warningf("Failed to migrate %s to %s: %s", syfs.LegacyRemoteConf(), syfs.RemoteConf(), err)
+	}
+}
+
+func migrateDockerConf(confDir, legacyConfigDir string) {
+	ok, err := fs.PathExists(syfs.LegacyDockerConf())
+	if err != nil {
+		sylog.Warningf("Failed to retrieve information for %s: %s", syfs.LegacyDockerConf(), err)
+		return
+	} else if !ok {
+		return
+	}
+
+	sylog.Infof("Detected Singularity docker configuration, migrating...")
+	err = fs.CopyFile(syfs.LegacyDockerConf(), syfs.DockerConf(), 0o600)
+	if err != nil {
+		sylog.Warningf("Failed to migrate %s to %s: %s", syfs.LegacyDockerConf(), syfs.DockerConf(), err)
+	}
+}
+
+func migrateSypgp(confDir, legacyConfigDir string) {
+	legacySypgpDir := filepath.Join(syfs.LegacyConfigDir(), sypgp.Directory)
+	ok, err := fs.PathExists(legacySypgpDir)
+	if err != nil {
+		sylog.Warningf("Failed to retrieve information for %s: %s", legacySypgpDir, err)
+		return
+	} else if !ok {
+		return
+	}
+
+	sypgpDir := filepath.Join(syfs.ConfigDir(), sypgp.Directory)
+	err = fs.Mkdir(sypgpDir, 0o700)
+	if err != nil {
+		sylog.Debugf("Could not create %s: %s", sypgpDir, err)
+		return
+	}
+
+	migrateSypgpPublic(sypgpDir, legacySypgpDir)
+	migrateSypgpPrivate(sypgpDir, legacySypgpDir)
+}
+
+func migrateSypgpPublic(sypgpDir, legacySypgpDir string) {
+	legacyPublicPath := filepath.Join(legacySypgpDir, sypgp.PublicFile)
+	publicPath := filepath.Join(sypgpDir, sypgp.PublicFile)
+	ok, err := fs.PathExists(legacyPublicPath)
+	if err != nil {
+		sylog.Warningf("Failed to retrieve information for %s: %s", legacyPublicPath, err)
+		return
+	} else if !ok {
+		return
+	}
+
+	sylog.Infof("Detected public Singularity pgp keyring, migrating...")
+	err = fs.CopyFile(legacyPublicPath, publicPath, 0o600)
+	if err != nil {
+		sylog.Warningf("Failed to migrate %s to %s: %s", legacyPublicPath, publicPath, err)
+	}
+}
+
+func migrateSypgpPrivate(sypgpDir, legacySypgpDir string) {
+	legacyPrivatePath := filepath.Join(legacySypgpDir, sypgp.SecretFile)
+	privatePath := filepath.Join(sypgpDir, sypgp.SecretFile)
+	ok, err := fs.PathExists(legacyPrivatePath)
+	if err != nil {
+		sylog.Warningf("Failed to retrieve information for %s: %s", legacyPrivatePath, err)
+		return
+	} else if !ok {
+		return
+	}
+
+	sylog.Infof("Detected private Singularity pgp keyring, migrating...")
+	err = fs.CopyFile(legacyPrivatePath, privatePath, 0o600)
+	if err != nil {
+		sylog.Warningf("Failed to migrate %s to %s: %s", legacyPrivatePath, privatePath, err)
 	}
 }
 
@@ -318,7 +438,7 @@ func persistentPreRun(*cobra.Command, []string) {
 
 	// Handle the config dir (~/.apptainer),
 	// then check the remove conf file permission.
-	handleConfDir(syfs.ConfigDir())
+	handleConfDir(syfs.ConfigDir(), syfs.LegacyConfigDir())
 	handleRemoteConf(syfs.RemoteConf())
 }
 

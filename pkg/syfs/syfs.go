@@ -29,6 +29,7 @@ const (
 	RemoteCache    = "remote-cache"
 	DockerConfFile = "docker-config.json"
 	apptainerDir   = ".apptainer"
+	legacyDir      = ".singularity"
 )
 
 // cache contains the information for the current user
@@ -41,14 +42,14 @@ var cache struct {
 // configuration and data is located.
 func ConfigDir() string {
 	cache.Do(func() {
-		cache.configDir = configDir()
+		cache.configDir = configDir(apptainerDir)
 		sylog.Debugf("Using apptainer directory %q", cache.configDir)
 	})
 
 	return cache.configDir
 }
 
-func configDir() string {
+func configDir(dir string) string {
 	user, err := user.Current()
 	if err != nil {
 		sylog.Warningf("Could not lookup the current user's information: %s", err)
@@ -56,13 +57,13 @@ func configDir() string {
 		cwd, err := os.Getwd()
 		if err != nil {
 			sylog.Warningf("Could not get current working directory: %s", err)
-			return apptainerDir
+			return dir
 		}
 
-		return filepath.Join(cwd, apptainerDir)
+		return filepath.Join(cwd, dir)
 	}
 
-	return filepath.Join(user.HomeDir, apptainerDir)
+	return filepath.Join(user.HomeDir, dir)
 }
 
 func RemoteConf() string {
@@ -90,4 +91,25 @@ func ConfigDirForUsername(username string) (string, error) {
 	}
 
 	return filepath.Join(u.HomeDir, apptainerDir), nil
+}
+
+// LegacyConfigDir returns where singularity stores user configuration.
+// NOTE: this location should only be used for migration/compatibility and
+// never written to by apptainer.
+func LegacyConfigDir() string {
+	return configDir(legacyDir)
+}
+
+// LegacyRemoteConf returns where singularity stores user remote configuration.
+// NOTE: this location should only be used for migration/compatibility and
+// never written to by apptainer.
+func LegacyRemoteConf() string {
+	return filepath.Join(LegacyConfigDir(), RemoteConfFile)
+}
+
+// LegacyDockerConf reutrns where singularity stores user oci registry configuration.
+// NOTE: this location should only be used for migration/compatibility and
+// never written to by apptainer.
+func LegacyDockerConf() string {
+	return filepath.Join(LegacyConfigDir(), DockerConfFile)
 }
