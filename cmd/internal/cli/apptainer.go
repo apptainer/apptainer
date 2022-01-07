@@ -330,7 +330,6 @@ func handleConfDir(confDir, legacyConfigDir string) {
 }
 
 func migrateRemoteConf(confDir, legacyConfigDir string) {
-	// migrate remote config
 	ok, err := fs.PathExists(syfs.LegacyRemoteConf())
 	if err != nil {
 		sylog.Warningf("Failed to retrieve information for %s: %s", syfs.LegacyRemoteConf(), err)
@@ -341,6 +340,15 @@ func migrateRemoteConf(confDir, legacyConfigDir string) {
 	}
 
 	sylog.Infof("Detected Singularity remote configuration, migrating...")
+
+	// Try to load legacy remote config to check version compatibility
+	_, err = loadRemoteConf(syfs.LegacyRemoteConf())
+	if err != nil {
+		sylog.Warningf("Migration failed, unable to read legacy remote configuration: %s", err)
+		sylog.Warningf("It may be of an incompatible format and needs to be reconstructed manually with the \"apptainer remote\" command group.")
+		return
+	}
+
 	err = fs.CopyFile(syfs.LegacyRemoteConf(), syfs.RemoteConf(), 0o600)
 	if err != nil {
 		sylog.Warningf("Failed to migrate %s to %s: %s", syfs.LegacyRemoteConf(), syfs.RemoteConf(), err)
