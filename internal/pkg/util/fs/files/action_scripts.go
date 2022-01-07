@@ -155,6 +155,7 @@ else
 fi
 
 export APPTAINER_ENVIRONMENT="${APPTAINER_ENVIRONMENT:-/.singularity.d/env/91-environment.sh}"
+export SINGULARITY_ENVIRONMENT=${APPTAINER_ENVIRONMENT}
 
 sylog debug "Running action command ${__apptainer_cmd__}"
 
