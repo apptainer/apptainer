@@ -36,7 +36,8 @@ type stage struct {
 
 const (
 	sLabelsPath  = "/.build.labels"
-	sEnvironment = "APPTAINER_ENVIRONMENT=/.singularity.d/env/91-environment.sh"
+	aEnvironment = "APPTAINER_ENVIRONMENT=/.singularity.d/env/91-environment.sh"
+	sEnvironment = "SINGULARITY_ENVIRONMENT=/.singularity.d/env/91-environment.sh"
 	sLabels      = "APPTAINER_LABELS=" + sLabelsPath
 )
 
@@ -52,7 +53,8 @@ func (s *stage) runSectionScript(name string, script types.Script) error {
 			return fmt.Errorf("attempted to build with scripts as non-root user or without --fakeroot")
 		}
 
-		sRootfs := "APPTAINER_ROOTFS=" + s.b.RootfsPath
+		aRootfs := "APPTAINER_ROOTFS=" + s.b.RootfsPath
+		sRootfs := "SINGULARITY_ROOTFS=" + s.b.RootfsPath
 
 		scriptPath := filepath.Join(s.b.TmpDir, name)
 		if err := createScript(scriptPath, []byte(script.Script)); err != nil {
@@ -70,7 +72,7 @@ func (s *stage) runSectionScript(name string, script types.Script) error {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Env = os.Environ()
-		cmd.Env = append(cmd.Env, sEnvironment, sRootfs)
+		cmd.Env = append(cmd.Env, aEnvironment, sEnvironment, aRootfs, sRootfs)
 
 		sylog.Infof("Running %s scriptlet", name)
 		if err := cmd.Run(); err != nil {
@@ -83,7 +85,7 @@ func (s *stage) runSectionScript(name string, script types.Script) error {
 func (s *stage) runPostScript(configFile, sessionResolv, sessionHosts string) error {
 	if s.b.Recipe.BuildData.Post.Script != "" {
 		cmdArgs := []string{"-s", "-c", configFile, "exec", "--pwd", "/", "--writable"}
-		cmdArgs = append(cmdArgs, "--cleanenv", "--env", sEnvironment, "--env", sLabels)
+		cmdArgs = append(cmdArgs, "--cleanenv", "--env", aEnvironment, "--env", sEnvironment, "--env", sLabels)
 
 		if sessionResolv != "" {
 			cmdArgs = append(cmdArgs, "-B", sessionResolv+":/etc/resolv.conf")
