@@ -50,6 +50,36 @@ func EnsureImage(t *testing.T, env TestEnv) {
 	)
 }
 
+// EnsureSingularityImage checks if e2e test singularity image is already
+// built or built it otherwise.
+func EnsureSingularityImage(t *testing.T, env TestEnv) {
+	ensureMutex.Lock()
+	defer ensureMutex.Unlock()
+
+	switch _, err := os.Stat(env.SingularityImagePath); {
+	case err == nil:
+		// OK: file exists, return
+		return
+
+	case os.IsNotExist(err):
+		// OK: file does not exist, continue
+
+	default:
+		// FATAL: something else is wrong
+		t.Fatalf("Failed when checking image %q: %+v\n",
+			env.SingularityImagePath,
+			err)
+	}
+
+	env.RunApptainer(
+		t,
+		WithProfile(RootProfile),
+		WithCommand("build"),
+		WithArgs("--force", env.SingularityImagePath, "testdata/Singularity_legacy.def"),
+		ExpectExit(0),
+	)
+}
+
 // PullImage will pull a test image.
 func PullImage(t *testing.T, env TestEnv, imageURL string, arch string, path string) {
 	pullMutex.Lock()

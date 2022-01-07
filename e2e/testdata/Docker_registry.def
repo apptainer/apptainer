@@ -3,7 +3,7 @@ from: registry:2.7.1
 
 %environment
     export REGISTRY_AUTH=token
-    export REGISTRY_AUTH_TOKEN_REALM=http://localhost:5001/auth
+    # REGISTRY_AUTH_TOKEN_REALM is set from e2e framework as it runs the docker auth server
     export REGISTRY_AUTH_TOKEN_SERVICE=Authentication
     export REGISTRY_AUTH_TOKEN_ISSUER=E2E
     export REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE=/certs/root.crt

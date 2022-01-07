@@ -11,6 +11,7 @@ package e2e
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -78,7 +79,7 @@ func (a *authnz) Authorize(req *registry.AuthorizationRequest) ([]string, error)
 	return []string{"pull", "push"}, nil
 }
 
-func startAuthServer(crt, key string) error {
+func startAuthServer(ln net.Listener, crt, key string) error {
 	authnz := new(authnz)
 
 	opt := &registry.Option{
@@ -96,7 +97,7 @@ func startAuthServer(crt, key string) error {
 	}
 
 	http.Handle("/auth", &dockerAuthHandler{srv: srv})
-	return http.ListenAndServe(":5001", nil)
+	return http.Serve(ln, nil)
 }
 
 func (d *dockerAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

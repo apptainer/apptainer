@@ -36,12 +36,12 @@ var rpmMacrosContent = `
 // a local pull through cache registry.
 var registriesTemplate = `[[registry]]
 prefix = "docker.io"
-{{- if .MirrorInsecure -}}insecure = true{{- end -}}
+{{ if .MirrorInsecure }}insecure = true{{ end }}
 location = "{{.MirrorURL}}"
 
 [[registry]]
 prefix = "index.docker.io"
-{{- if .MirrorInsecure -}}insecure = true{{- end -}}
+{{ if .MirrorInsecure }}insecure = true{{ end }}
 location = "{{.MirrorURL}}"
 `
 
