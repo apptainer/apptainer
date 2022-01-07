@@ -334,6 +334,7 @@ func migrateRemoteConf(confDir, legacyConfigDir string) {
 	ok, err := fs.PathExists(syfs.LegacyRemoteConf())
 	if err != nil {
 		sylog.Warningf("Failed to retrieve information for %s: %s", syfs.LegacyRemoteConf(), err)
+		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", syfs.LegacyRemoteConf(), syfs.RemoteConf())
 		return
 	} else if !ok {
 		return
@@ -343,6 +344,7 @@ func migrateRemoteConf(confDir, legacyConfigDir string) {
 	err = fs.CopyFile(syfs.LegacyRemoteConf(), syfs.RemoteConf(), 0o600)
 	if err != nil {
 		sylog.Warningf("Failed to migrate %s to %s: %s", syfs.LegacyRemoteConf(), syfs.RemoteConf(), err)
+		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", syfs.LegacyRemoteConf(), syfs.RemoteConf())
 	}
 }
 
@@ -350,6 +352,7 @@ func migrateDockerConf(confDir, legacyConfigDir string) {
 	ok, err := fs.PathExists(syfs.LegacyDockerConf())
 	if err != nil {
 		sylog.Warningf("Failed to retrieve information for %s: %s", syfs.LegacyDockerConf(), err)
+		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", syfs.LegacyDockerConf(), syfs.DockerConf())
 		return
 	} else if !ok {
 		return
@@ -359,23 +362,26 @@ func migrateDockerConf(confDir, legacyConfigDir string) {
 	err = fs.CopyFile(syfs.LegacyDockerConf(), syfs.DockerConf(), 0o600)
 	if err != nil {
 		sylog.Warningf("Failed to migrate %s to %s: %s", syfs.LegacyDockerConf(), syfs.DockerConf(), err)
+		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", syfs.LegacyDockerConf(), syfs.DockerConf())
 	}
 }
 
 func migrateSypgp(confDir, legacyConfigDir string) {
 	legacySypgpDir := filepath.Join(syfs.LegacyConfigDir(), sypgp.Directory)
+	sypgpDir := filepath.Join(syfs.ConfigDir(), sypgp.Directory)
 	ok, err := fs.PathExists(legacySypgpDir)
 	if err != nil {
 		sylog.Warningf("Failed to retrieve information for %s: %s", legacySypgpDir, err)
+		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", legacySypgpDir, sypgpDir)
 		return
 	} else if !ok {
 		return
 	}
 
-	sypgpDir := filepath.Join(syfs.ConfigDir(), sypgp.Directory)
 	err = fs.Mkdir(sypgpDir, 0o700)
 	if err != nil {
 		sylog.Debugf("Could not create %s: %s", sypgpDir, err)
+		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", legacySypgpDir, sypgpDir)
 		return
 	}
 
@@ -389,6 +395,7 @@ func migrateSypgpPublic(sypgpDir, legacySypgpDir string) {
 	ok, err := fs.PathExists(legacyPublicPath)
 	if err != nil {
 		sylog.Warningf("Failed to retrieve information for %s: %s", legacyPublicPath, err)
+		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", legacyPublicPath, publicPath)
 		return
 	} else if !ok {
 		return
@@ -398,6 +405,7 @@ func migrateSypgpPublic(sypgpDir, legacySypgpDir string) {
 	err = fs.CopyFile(legacyPublicPath, publicPath, 0o600)
 	if err != nil {
 		sylog.Warningf("Failed to migrate %s to %s: %s", legacyPublicPath, publicPath, err)
+		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", legacyPublicPath, publicPath)
 	}
 }
 
@@ -407,6 +415,7 @@ func migrateSypgpPrivate(sypgpDir, legacySypgpDir string) {
 	ok, err := fs.PathExists(legacyPrivatePath)
 	if err != nil {
 		sylog.Warningf("Failed to retrieve information for %s: %s", legacyPrivatePath, err)
+		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", legacyPrivatePath, privatePath)
 		return
 	} else if !ok {
 		return
@@ -416,6 +425,7 @@ func migrateSypgpPrivate(sypgpDir, legacySypgpDir string) {
 	err = fs.CopyFile(legacyPrivatePath, privatePath, 0o600)
 	if err != nil {
 		sylog.Warningf("Failed to migrate %s to %s: %s", legacyPrivatePath, privatePath, err)
+		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", legacyPrivatePath, privatePath)
 	}
 }
 
