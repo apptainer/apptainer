@@ -1,7 +1,0 @@
-DistType "busybox"
-MirrorURL "https://www.busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64"
-
-Setup
-Bootstrap
-
-Cleanup
