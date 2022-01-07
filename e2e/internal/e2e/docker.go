@@ -10,8 +10,10 @@
 package e2e
 
 import (
+	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sync"
 	"sync/atomic"
@@ -19,6 +21,7 @@ import (
 	"time"
 
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/pkg/errors"
 )
 
@@ -64,21 +67,40 @@ func PrepRegistry(t *testing.T, env TestEnv) {
 		crt := filepath.Join(dockerImage, "certs/root.crt")
 		key := filepath.Join(dockerImage, "certs/root.key")
 
+		ln, err := net.Listen("tcp", "127.0.0.1:0")
+		if err != nil {
+			t.Fatalf("could not setup listener for docker auth server: %s", err)
+		}
+
 		go func() {
 			// for simplicity let this be brutally stopped once test finished
-			if err := startAuthServer(crt, key); err != http.ErrServerClosed {
+			if err := startAuthServer(ln, crt, key); err != http.ErrServerClosed {
 				t.Errorf("docker auth server error: %s", err)
 			}
 		}()
 
 		var umountFn func(*testing.T)
 
+		registryAuthRealmEnv := fmt.Sprintf("REGISTRY_AUTH_TOKEN_REALM=http://%s/auth", ln.Addr().String())
+
 		env.RunApptainer(
 			t,
 			WithProfile(RootProfile),
 			WithCommand("instance start"),
 			WithArgs("-w", dockerImage, dockerInstanceName),
+			WithEnv([]string{registryAuthRealmEnv}),
 			PreRun(func(t *testing.T) {
+				if os.Getenv("E2E_DOCKER_MIRROR") != "" {
+					from := "/root/.config/containers/registries.conf"
+					to := filepath.Join(dockerImage, from)
+
+					if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
+						t.Fatalf("while creating %s: %s", filepath.Dir(to), err)
+					}
+					if err := fs.CopyFile(from, to, 0o644); err != nil {
+						t.Fatalf("while copying %s to %s: %s", from, to, err)
+					}
+				}
 				umountFn = shadowInstanceDirectory(t, env)
 			}),
 			PostRun(func(t *testing.T) {

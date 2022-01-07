@@ -1,0 +1,8 @@
+bootstrap: docker
+from: ubuntu:focal
+
+%post
+    cd /
+    apt-get update -y && apt-get install -y wget cryptsetup-bin squashfs-tools
+    wget https://github.com/sylabs/singularity/releases/download/v3.9.2/singularity-ce_3.9.2-focal_amd64.deb
+    dpkg -i singularity-ce_3.9.2-focal_amd64.deb && rm singularity-ce_3.9.2-focal_amd64.deb

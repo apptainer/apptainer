@@ -3,7 +3,7 @@ module github.com/apptainer/apptainer
 go 1.16
 
 require (
-	github.com/Netflix/go-expect v0.0.0-20190729225929-0e00d9168667
+	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2
 	github.com/ProtonMail/go-crypto v0.0.0-20210707164159-52430bf6b52c
 	github.com/adigunhammedolalekan/registry-auth v0.0.0-20200730122110-8cde180a3a60
 	github.com/apex/log v1.9.0
