@@ -593,16 +593,13 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 
 	// process --env and --env-file variables for injection
 	// into the environment by prefixing them with APPTAINERENV_
-	// and prefixing them with SINGULARITYENV_ for backward compatibility
 	for _, envvar := range ApptainerEnv {
 		e := strings.SplitN(envvar, "=", 2)
 		if len(e) != 2 {
 			sylog.Warningf("Ignore environment variable %q: '=' is missing", envvar)
 			continue
 		}
-		for _, prefix := range env.ApptainerEnvPrefixes {
-			os.Setenv(prefix+e[0], e[1])
-		}
+		os.Setenv(env.ApptainerEnvPrefix+e[0], e[1])
 	}
 
 	// Copy and cache environment
