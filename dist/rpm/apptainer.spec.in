@@ -148,6 +148,10 @@ cd %{name}-%{package_version}
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 make -C builddir DESTDIR=$RPM_BUILD_ROOT install man
 
+%posttrans
+# clean out empty directories under /etc/singularity
+rmdir %{_sysconfdir}/singularity/* %{_sysconfdir}/singularity 2>/dev/null || true
+
 %files
 %attr(4755, root, root) %{_libexecdir}/%{name}/bin/starter-suid
 %{_bindir}/%{name}
