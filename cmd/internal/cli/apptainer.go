@@ -488,8 +488,9 @@ func Init(loadPlugins bool) {
 	apptainerCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		persistentPreRun(cmd, args)
 		var err error
-		for prefixIndex := range env.ApptainerPrefixes {
-			err = cmdManager.UpdateCmdFlagFromEnv(cmd, prefixIndex)
+		foundKeys := make(map[string]string)
+		for precedence := range env.ApptainerPrefixes {
+			err = cmdManager.UpdateCmdFlagFromEnv(cmd, precedence, foundKeys)
 			if nil != err {
 				break
 			}

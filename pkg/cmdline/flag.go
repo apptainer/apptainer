@@ -172,11 +172,11 @@ func (m *flagManager) registerUint32Var(flag *Flag, cmds []*cobra.Command) error
 	return nil
 }
 
-func (m *flagManager) updateCmdFlagFromEnv(cmd *cobra.Command, prefixIndex int) error {
+func (m *flagManager) updateCmdFlagFromEnv(cmd *cobra.Command, precedence int, foundKeys map[string]string) error {
 	var errs []error
 	var prefix string
-	if prefixIndex >= 0 {
-		prefix = env.ApptainerPrefixes[prefixIndex]
+	if precedence >= 0 {
+		prefix = env.ApptainerPrefixes[precedence]
 	}
 
 	fn := func(flag *pflag.Flag) {
@@ -197,9 +197,20 @@ func (m *flagManager) updateCmdFlagFromEnv(cmd *cobra.Command, prefixIndex int) 
 			if !set {
 				continue
 			}
-			if prefixIndex > 0 {
-				sylog.Warningf("Environment Prefix [%s] has been deprecated in favor of [%s] for [%s]", prefix, env.ApptainerPrefixes[0], prefix+key)
+			if precedence > 0 {
+				deprecationFormat := "DEPRECATED USAGE: Environment Prefix [%s] for environment variable will not be supported in the future, use [%s] instead for [%s],"
+				if foundVal, ok := foundKeys[key]; ok {
+					if foundVal == val {
+						sylog.Debugf(deprecationFormat+" will not override duplicate value [%s]", prefix, env.ApptainerPrefixes[0]+key, prefix+key, val)
+					} else {
+						sylog.Warningf(deprecationFormat+" will not override with value [%s]", prefix, env.ApptainerPrefixes[0]+key, prefix+key, val)
+					}
+					continue
+				} else {
+					sylog.Warningf(deprecationFormat+" using deprecated value [%s]", prefix, env.ApptainerPrefixes[0]+key, prefix+key, val)
+				}
 			}
+			foundKeys[key] = val
 			if mflag.EnvHandler != nil {
 				if err := mflag.EnvHandler(flag, val); err != nil {
 					errs = append(errs, err)
