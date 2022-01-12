@@ -44,10 +44,17 @@ var alwaysOmitKeys = map[string]bool{
 type envKeyMap = map[string]string
 
 // setKeyIfNotAlreadyOverridden sets a value for key if not already overridden
-func setKeyIfNotAlreadyOverridden(g *generate.Generator, envKeys envKeyMap, prefixedKey, key, value string) {
+func setKeyIfNotAlreadyOverridden(g *generate.Generator, envKeys envKeyMap, precedence int, prefixedKey, key, value string) {
 	if oldValue, ok := envKeys[key]; ok {
-		sylog.Warningf("Skipping environment variable [%s=%s], %s is already overridden with [%s]", prefixedKey, value, key, oldValue)
+		if oldValue != value {
+			sylog.Warningf("Skipping environment variable [%s=%s], %s is already overridden with [%s]", prefixedKey, value, key, oldValue)
+		} else {
+			sylog.Debugf("Skipping environment variable [%s=%s], %s is already overridden", prefixedKey, value, key)
+		}
 	} else {
+		if precedence != 0 {
+			sylog.Warningf("DEPRECATED USAGE: forwarding %s as environment variable will not be supported in the future, use %s%s instead", prefixedKey, ApptainerEnvPrefix, key)
+		}
 		sylog.Verbosef("Forwarding %s as %s environment variable", prefixedKey, key)
 		envKeys[key] = value
 		g.RemoveProcessEnv(key)
@@ -57,7 +64,7 @@ func setKeyIfNotAlreadyOverridden(g *generate.Generator, envKeys envKeyMap, pref
 // overridesForContainerEnv sets all environment variables which have overrides.
 func overridesForContainerEnv(g *generate.Generator, hostEnvs []string) envKeyMap {
 	envKeys := make(envKeyMap)
-	for _, prefix := range ApptainerEnvPrefixes {
+	for precedence, prefix := range ApptainerEnvPrefixes {
 		for _, env := range hostEnvs {
 			if strings.HasPrefix(env, prefix) {
 				e := strings.SplitN(env, "=", 2)
@@ -68,17 +75,17 @@ func overridesForContainerEnv(g *generate.Generator, hostEnvs []string) envKeyMa
 					if key != "" {
 						switch key {
 						case "PREPEND_PATH":
-							setKeyIfNotAlreadyOverridden(g, envKeys, e[0], "SING_USER_DEFINED_PREPEND_PATH", e[1])
+							setKeyIfNotAlreadyOverridden(g, envKeys, precedence, e[0], "SING_USER_DEFINED_PREPEND_PATH", e[1])
 						case "APPEND_PATH":
-							setKeyIfNotAlreadyOverridden(g, envKeys, e[0], "SING_USER_DEFINED_APPEND_PATH", e[1])
+							setKeyIfNotAlreadyOverridden(g, envKeys, precedence, e[0], "SING_USER_DEFINED_APPEND_PATH", e[1])
 						case "PATH":
-							setKeyIfNotAlreadyOverridden(g, envKeys, e[0], "SING_USER_DEFINED_PATH", e[1])
+							setKeyIfNotAlreadyOverridden(g, envKeys, precedence, e[0], "SING_USER_DEFINED_PATH", e[1])
 						default:
 							if permitted, ok := alwaysOmitKeys[key]; ok && !permitted {
 								sylog.Warningf("Overriding %s environment variable with %s is not permitted", key, e[0])
 								continue
 							}
-							setKeyIfNotAlreadyOverridden(g, envKeys, e[0], key, e[1])
+							setKeyIfNotAlreadyOverridden(g, envKeys, precedence, e[0], key, e[1])
 						}
 					}
 				}
@@ -125,12 +132,18 @@ EnvKeys:
 		}
 
 		// non prefixed environment variables
-		if value, ok := envKeys[e[0]]; ok {
-			sylog.Verbosef("Environment variable [%s] already has value [%s], will not forward value [%s] from parent process environment", e[0], value, e[1])
-		} else if mustAddToHostEnv(e[0], cleanEnv) {
-			// transpose host env variables into config
-			sylog.Debugf("Forwarding %s environment variable", e[0])
-			g.SetProcessEnv(e[0], e[1])
+		if mustAddToHostEnv(e[0], cleanEnv) {
+			if value, ok := envKeys[e[0]]; ok {
+				if value != e[1] {
+					sylog.Warningf("Environment variable [%s] already has value [%s], will not forward new value [%s] from parent process environment", e[0], value, e[1])
+				} else {
+					sylog.Debugf("Environment variable [%s] already has duplicate value [%s], will not forward from parent process environment", e[0], value)
+				}
+			} else {
+				// transpose host env variables into config
+				sylog.Debugf("Forwarding %s environment variable", e[0])
+				g.SetProcessEnv(e[0], e[1])
+			}
 		}
 	}
 

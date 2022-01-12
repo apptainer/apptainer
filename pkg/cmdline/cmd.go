@@ -183,6 +183,6 @@ func (m *CommandManager) RegisterFlagForCmd(flag *Flag, cmds ...*cobra.Command) 
 
 // UpdateCmdFlagFromEnv updates flag's values based on environment variables
 // associated with all flags belonging to command provided as argument
-func (m *CommandManager) UpdateCmdFlagFromEnv(cmd *cobra.Command, prefixIndex int) error {
-	return m.fm.updateCmdFlagFromEnv(cmd, prefixIndex)
+func (m *CommandManager) UpdateCmdFlagFromEnv(cmd *cobra.Command, precedence int, foundKeys map[string]string) error {
+	return m.fm.updateCmdFlagFromEnv(cmd, precedence, foundKeys)
 }
