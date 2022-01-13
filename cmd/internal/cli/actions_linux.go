@@ -806,11 +806,18 @@ func setNvCCLIConfig(engineConfig *apptainerConfig.EngineConfig) (err error) {
 	sylog.Debugf("Using nvidia-container-cli for GPU setup")
 	engineConfig.SetNvCCLI(true)
 
-	// When we use --contain we don't mount the NV devices by default in the nvidia-container-cli flow,
-	// they must be mounted via specifying with`NVIDIA_VISIBLE_DEVICES`. This differs from the legacy
-	// flow which mounts all GPU devices, always.
-	if (IsContained || IsContainAll) && os.Getenv("NVIDIA_VISIBLE_DEVICES") == "" {
-		sylog.Warningf("When using nvidia-container-cli with --contain NVIDIA_VISIBLE_DEVICES must be set or no GPUs will be available in container.")
+	if os.Getenv("NVIDIA_VISIBLE_DEVICES") == "" {
+		if IsContained || IsContainAll {
+			// When we use --contain we don't mount the NV devices by default in the nvidia-container-cli flow,
+			// they must be mounted via specifying with`NVIDIA_VISIBLE_DEVICES`. This differs from the legacy
+			// flow which mounts all GPU devices, always... so warn the user.
+			sylog.Warningf("When using nvidia-container-cli with --contain NVIDIA_VISIBLE_DEVICES must be set or no GPUs will be available in container.")
+		} else {
+			// In non-contained mode set NVIDIA_VISIBLE_DEVICES="all" by default, so MIGs are available.
+			// Otherwise there is a difference vs legacy GPU binding. See Issue sylabs/singularity#471.
+			sylog.Infof("Setting 'NVIDIA_VISIBLE_DEVICES=all' to emulate legacy GPU binding.")
+			os.Setenv("NVIDIA_VISIBLE_DEVICES", "all")
+		}
 	}
 
 	// Pass NVIDIA_ env vars that will be converted to nvidia-container-cli options
