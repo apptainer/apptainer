@@ -44,12 +44,12 @@ require (
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
 	github.com/yvasiyarov/gorelic v0.0.6 // indirect
 	github.com/yvasiyarov/newrelic_platform_go v0.0.0-20160601141957-9c099fbc30e9 // indirect
-	golang.org/x/sys v0.0.0-20211214234402-4825e8c3871d
+	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
 	golang.org/x/term v0.0.0-20210916214954-140adaaadfaf
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools/v3 v3.0.3
 	mvdan.cc/sh/v3 v3.4.2
-	oras.land/oras-go v1.0.0
+	oras.land/oras-go v1.1.0
 )
 
 // Temporarily force an image-spec that has the main branch commits not in 1.0.2 which is being brought in by oras-go
