@@ -99,7 +99,7 @@ func insertEnvScript(b *types.Bundle) error {
 	return nil
 }
 
-// runscript and starscript should use this function to properly handle args and shebangs
+// runscript and startscript should use this function to properly handle args and shebangs
 func handleShebangScript(s types.Script) (string, string) {
 	shebang := "#!/bin/sh"
 	script := ""
