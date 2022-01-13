@@ -84,10 +84,10 @@ func CopyFromHost(src, dstRel, dstRootfs string) error {
 		if err != nil {
 			return err
 		}
-		copy := exec.Command(cp, args...)
-		copy.Stdout = &output
-		copy.Stderr = &stderr
-		if err := copy.Run(); err != nil {
+		copyCmd := exec.Command(cp, args...)
+		copyCmd.Stdout = &output
+		copyCmd.Stderr = &stderr
+		if err := copyCmd.Run(); err != nil {
 			return fmt.Errorf("while copying %s to %s: %v: %s", paths, dstResolved, args, stderr.String())
 		}
 

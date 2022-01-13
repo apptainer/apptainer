@@ -191,8 +191,8 @@ func insertDefinition(b *types.Bundle) error {
 			}
 
 			// name is "Apptainer" concatenated with an index based on number of other files in bootstrap_history
-			len := strconv.Itoa(len(files))
-			histName := "Apptainer" + len
+			length := strconv.Itoa(len(files))
+			histName := "Apptainer" + length
 			// move old definition into bootstrap_history
 			err = os.Rename(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity"), filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history", histName))
 			if err != nil {

@@ -357,7 +357,7 @@ func copyFiles(b *types.Bundle, a *App) error {
 		trimLine := strings.Split(strings.TrimSpace(line), "#")[0]
 		splitLine := strings.SplitN(strings.TrimSpace(trimLine), " ", 2)
 
-		// copy to dst of same name in app if no dst is specified
+		// copyFile to dst of same name in app if no dst is specified
 		var src, dst string
 		if len(splitLine) < 2 {
 			src = splitLine[0]
@@ -367,7 +367,7 @@ func copyFiles(b *types.Bundle, a *App) error {
 			dst = splitLine[1]
 		}
 
-		if err := copy(src, filepath.Join(appBase, dst)); err != nil {
+		if err := copyFile(src, filepath.Join(appBase, dst)); err != nil {
 			return err
 		}
 	}
@@ -427,17 +427,17 @@ func appData(b *types.Bundle, a *App) string {
 	return filepath.Join(b.RootfsPath, "/scif/data/", a.Name)
 }
 
-func copy(src, dst string) error {
+func copyFile(src, dst string) error {
 	cp, err := bin.FindBin("cp")
 	if err != nil {
 		return err
 	}
 
 	var stderr bytes.Buffer
-	copy := exec.Command(cp, "-fLr", src, dst)
-	copy.Stderr = &stderr
+	copyCommand := exec.Command(cp, "-fLr", src, dst)
+	copyCommand.Stderr = &stderr
 	sylog.Debugf("Copying %v to %v", src, dst)
-	if err := copy.Run(); err != nil {
+	if err := copyCommand.Run(); err != nil {
 		return fmt.Errorf("while copying %v to %v: %v: %v", src, dst, err, stderr.String())
 	}
 

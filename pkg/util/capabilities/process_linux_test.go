@@ -46,8 +46,8 @@ func TestGetProcess(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error while getting process %s capabilities: %s", tt.name, err)
 		}
-		cap := Map[tt.cap]
-		if tt.cap != "" && caps&uint64(1<<cap.Value) == 0 {
+		capability := Map[tt.cap]
+		if tt.cap != "" && caps&uint64(1<<capability.Value) == 0 {
 			t.Fatalf("%s capability %s missing", tt.name, tt.cap)
 		}
 	}

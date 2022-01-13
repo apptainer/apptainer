@@ -293,10 +293,10 @@ func (e *EngineOperations) prepareUserCaps(enforced bool) error {
 	if len(ignoredCaps) > 0 {
 		sylog.Warningf("won't drop unknown capability: %s", strings.Join(ignoredCaps, ","))
 	}
-	for _, cap := range caps {
+	for _, capability := range caps {
 		for i, c := range commonCaps {
-			if c == cap {
-				sylog.Debugf("Capability %s dropped", cap)
+			if c == capability {
+				sylog.Debugf("Capability %s dropped", capability)
 				commonCaps = append(commonCaps[:i], commonCaps[i+1:]...)
 				break
 			}
@@ -378,17 +378,17 @@ func (e *EngineOperations) prepareRootCaps() error {
 	if len(ignoredCaps) > 0 {
 		sylog.Warningf("won't add unknown capability: %s", strings.Join(ignoredCaps, ","))
 	}
-	for _, cap := range caps {
+	for _, capability := range caps {
 		found := false
 		for _, c := range commonCaps {
-			if c == cap {
+			if c == capability {
 				found = true
 				break
 			}
 		}
 		if !found {
-			sylog.Debugf("Root capability %s added", cap)
-			commonCaps = append(commonCaps, cap)
+			sylog.Debugf("Root capability %s added", capability)
+			commonCaps = append(commonCaps, capability)
 		}
 	}
 
@@ -398,10 +398,10 @@ func (e *EngineOperations) prepareRootCaps() error {
 	if len(ignoredCaps) > 0 {
 		sylog.Warningf("won't add unknown capability: %s", strings.Join(ignoredCaps, ","))
 	}
-	for _, cap := range caps {
+	for _, capability := range caps {
 		for i, c := range commonCaps {
-			if c == cap {
-				sylog.Debugf("Root capability %s dropped", cap)
+			if c == capability {
+				sylog.Debugf("Root capability %s dropped", capability)
 				commonCaps = append(commonCaps[:i], commonCaps[i+1:]...)
 				break
 			}

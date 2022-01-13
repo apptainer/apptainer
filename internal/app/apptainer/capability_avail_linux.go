@@ -29,8 +29,8 @@ func CapabilityAvail(c CapAvailConfig) error {
 	}
 
 	if len(caps) > 0 {
-		for _, cap := range caps {
-			fmt.Printf("%-22s %s\n\n", cap+":", capabilities.Map[cap].Description)
+		for _, capability := range caps {
+			fmt.Printf("%-22s %s\n\n", capability+":", capabilities.Map[capability].Description)
 		}
 		return nil
 	}

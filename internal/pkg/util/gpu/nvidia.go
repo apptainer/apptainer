@@ -177,11 +177,11 @@ func NVCLIEnvToFlags(nvidiaEnv []string) (flags []string, err error) {
 			defaultDriverCaps = false
 			caps := strings.Split(pair[1], ",")
 
-			for _, cap := range caps {
-				if slice.ContainsString(nVDriverCapabilities, cap) {
-					flags = append(flags, "--"+cap)
+			for _, capability := range caps {
+				if slice.ContainsString(nVDriverCapabilities, capability) {
+					flags = append(flags, "--"+capability)
 				} else {
-					return nil, fmt.Errorf("unknown NVIDIA_DRIVER_CAPABILITIES value: %s", cap)
+					return nil, fmt.Errorf("unknown NVIDIA_DRIVER_CAPABILITIES value: %s", capability)
 				}
 			}
 		}
@@ -199,8 +199,8 @@ func NVCLIEnvToFlags(nvidiaEnv []string) (flags []string, err error) {
 	}
 
 	if defaultDriverCaps {
-		for _, cap := range nVDriverDefaultCapabilities {
-			flags = append(flags, "--"+cap)
+		for _, capability := range nVDriverDefaultCapabilities {
+			flags = append(flags, "--"+capability)
 		}
 	}
 

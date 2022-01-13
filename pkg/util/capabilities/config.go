@@ -89,19 +89,19 @@ func (c *Config) AddUserCaps(user string, caps []string) error {
 	if err := c.checkCaps(caps); err != nil {
 		return err
 	}
-	for _, cap := range caps {
+	for _, capability := range caps {
 		present := false
 		for _, c := range c.Users[user] {
-			if c == cap {
+			if c == capability {
 				present = true
 			}
 		}
 		if !present {
-			c.Users[user] = append(c.Users[user], cap)
-			sylog.Warningf("Adding '%s' capability will likely allow user %s to escalate privilege on the host", cap, user)
-			sylog.Warningf("Use 'apptainer capability drop --user %s %s' to reverse this action if necessary", user, cap)
+			c.Users[user] = append(c.Users[user], capability)
+			sylog.Warningf("Adding '%s' capability will likely allow user %s to escalate privilege on the host", capability, user)
+			sylog.Warningf("Use 'apptainer capability drop --user %s %s' to reverse this action if necessary", user, capability)
 		} else {
-			sylog.Warningf("Won't add capability '%s', already assigned to user %s", cap, user)
+			sylog.Warningf("Won't add capability '%s', already assigned to user %s", capability, user)
 		}
 	}
 	return nil
@@ -112,17 +112,17 @@ func (c *Config) AddGroupCaps(group string, caps []string) error {
 	if err := c.checkCaps(caps); err != nil {
 		return err
 	}
-	for _, cap := range caps {
+	for _, capability := range caps {
 		present := false
 		for _, c := range c.Groups[group] {
-			if c == cap {
+			if c == capability {
 				present = true
 			}
 		}
 		if !present {
-			c.Groups[group] = append(c.Groups[group], cap)
+			c.Groups[group] = append(c.Groups[group], capability)
 		} else {
-			sylog.Warningf("Won't add capability '%s', already assigned to group %s", cap, group)
+			sylog.Warningf("Won't add capability '%s', already assigned to group %s", capability, group)
 		}
 	}
 	return nil
@@ -137,17 +137,17 @@ func (c *Config) DropUserCaps(user string, caps []string) error {
 	if _, ok := c.Users[user]; !ok {
 		return fmt.Errorf("user '%s' doesn't have any capability assigned", user)
 	}
-	for _, cap := range caps {
+	for _, capability := range caps {
 		dropped := false
 		for i := len(c.Users[user]) - 1; i >= 0; i-- {
-			if c.Users[user][i] == cap {
+			if c.Users[user][i] == capability {
 				c.Users[user] = append(c.Users[user][:i], c.Users[user][i+1:]...)
 				dropped = true
 				break
 			}
 		}
 		if !dropped {
-			sylog.Warningf("Won't drop capability '%s', not assigned to user %s", cap, user)
+			sylog.Warningf("Won't drop capability '%s', not assigned to user %s", capability, user)
 		}
 	}
 	if len(c.Users[user]) == 0 {
@@ -165,17 +165,17 @@ func (c *Config) DropGroupCaps(group string, caps []string) error {
 	if _, ok := c.Groups[group]; !ok {
 		return fmt.Errorf("group '%s' doesn't have any capability assigned", group)
 	}
-	for _, cap := range caps {
+	for _, capability := range caps {
 		dropped := false
 		for i := len(c.Groups[group]) - 1; i >= 0; i-- {
-			if c.Groups[group][i] == cap {
+			if c.Groups[group][i] == capability {
 				c.Groups[group] = append(c.Groups[group][:i], c.Groups[group][i+1:]...)
 				dropped = true
 				break
 			}
 		}
 		if !dropped {
-			sylog.Warningf("Won't drop capability '%s', not assigned to group %s", cap, group)
+			sylog.Warningf("Won't drop capability '%s', not assigned to group %s", capability, group)
 		}
 	}
 	if len(c.Groups[group]) == 0 {

@@ -227,29 +227,29 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 }
 
 func (e *EngineOperations) checkCapabilities() error {
-	for _, cap := range e.EngineConfig.OciConfig.Process.Capabilities.Permitted {
-		if _, ok := capabilities.Map[cap]; !ok {
-			return fmt.Errorf("unrecognized capabilities %s", cap)
+	for _, capability := range e.EngineConfig.OciConfig.Process.Capabilities.Permitted {
+		if _, ok := capabilities.Map[capability]; !ok {
+			return fmt.Errorf("unrecognized capabilities %s", capability)
 		}
 	}
-	for _, cap := range e.EngineConfig.OciConfig.Process.Capabilities.Effective {
-		if _, ok := capabilities.Map[cap]; !ok {
-			return fmt.Errorf("unrecognized capabilities %s", cap)
+	for _, capability := range e.EngineConfig.OciConfig.Process.Capabilities.Effective {
+		if _, ok := capabilities.Map[capability]; !ok {
+			return fmt.Errorf("unrecognized capabilities %s", capability)
 		}
 	}
-	for _, cap := range e.EngineConfig.OciConfig.Process.Capabilities.Inheritable {
-		if _, ok := capabilities.Map[cap]; !ok {
-			return fmt.Errorf("unrecognized capabilities %s", cap)
+	for _, capability := range e.EngineConfig.OciConfig.Process.Capabilities.Inheritable {
+		if _, ok := capabilities.Map[capability]; !ok {
+			return fmt.Errorf("unrecognized capabilities %s", capability)
 		}
 	}
-	for _, cap := range e.EngineConfig.OciConfig.Process.Capabilities.Bounding {
-		if _, ok := capabilities.Map[cap]; !ok {
-			return fmt.Errorf("unrecognized capabilities %s", cap)
+	for _, capability := range e.EngineConfig.OciConfig.Process.Capabilities.Bounding {
+		if _, ok := capabilities.Map[capability]; !ok {
+			return fmt.Errorf("unrecognized capabilities %s", capability)
 		}
 	}
-	for _, cap := range e.EngineConfig.OciConfig.Process.Capabilities.Ambient {
-		if _, ok := capabilities.Map[cap]; !ok {
-			return fmt.Errorf("unrecognized capabilities %s", cap)
+	for _, capability := range e.EngineConfig.OciConfig.Process.Capabilities.Ambient {
+		if _, ok := capabilities.Map[capability]; !ok {
+			return fmt.Errorf("unrecognized capabilities %s", capability)
 		}
 	}
 	return nil
