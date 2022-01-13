@@ -16,10 +16,13 @@ import (
 	"net/url"
 	"time"
 
+	"oras.land/oras-go/pkg/auth"
+
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/pkg/syfs"
+
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
-	auth "oras.land/oras-go/pkg/auth/docker"
+	"oras.land/oras-go/pkg/auth/docker"
 )
 
 // loginHandlers contains the registered handlers by scheme.
@@ -71,12 +74,31 @@ func (h *ociHandler) login(u *url.URL, username, password string, insecure bool)
 	if err != nil {
 		return nil, err
 	}
-	cli, err := auth.NewClient(syfs.DockerConf())
+	cli, err := docker.NewClient(syfs.DockerConf())
 	if err != nil {
 		return nil, err
 	}
-	if err := cli.Login(context.TODO(), u.Host+u.Path, username, pass, insecure); err != nil {
-		return nil, err
+
+	switch insecure {
+	case true:
+		if err := cli.LoginWithOpts(
+			auth.WithLoginContext(context.TODO()),
+			auth.WithLoginHostname(u.Host+u.Path),
+			auth.WithLoginUsername(username),
+			auth.WithLoginSecret(pass),
+			auth.WithLoginInsecure(),
+		); err != nil {
+			return nil, err
+		}
+	case false:
+		if err := cli.LoginWithOpts(
+			auth.WithLoginContext(context.TODO()),
+			auth.WithLoginHostname(u.Host+u.Path),
+			auth.WithLoginUsername(username),
+			auth.WithLoginSecret(pass),
+		); err != nil {
+			return nil, err
+		}
 	}
 	return &Config{
 		URI:      u.String(),
@@ -85,7 +107,7 @@ func (h *ociHandler) login(u *url.URL, username, password string, insecure bool)
 }
 
 func (h *ociHandler) logout(u *url.URL) error {
-	cli, err := auth.NewClient(syfs.DockerConf())
+	cli, err := docker.NewClient(syfs.DockerConf())
 	if err != nil {
 		return err
 	}

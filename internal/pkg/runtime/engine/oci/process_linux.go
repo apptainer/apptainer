@@ -31,7 +31,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/copy"
 	"github.com/apptainer/apptainer/pkg/util/rlimit"
 	"github.com/apptainer/apptainer/pkg/util/unix"
-	"github.com/kr/pty"
+	"github.com/creack/pty"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 

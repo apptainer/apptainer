@@ -16,7 +16,8 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/syfs"
-	auth "oras.land/oras-go/pkg/auth/docker"
+	"oras.land/oras-go/pkg/auth"
+	"oras.land/oras-go/pkg/auth/docker"
 )
 
 const dockerHub = "docker.io"
@@ -42,11 +43,16 @@ func SetupDockerHubCredentials(t *testing.T) {
 
 func writeDockerHubCredentials(t *testing.T, dir, username, pass string) {
 	configPath := filepath.Join(dir, ".apptainer", syfs.DockerConfFile)
-	cli, err := auth.NewClient(configPath)
+	cli, err := docker.NewClient(configPath)
 	if err != nil {
 		t.Fatalf("failed to get docker auth client: %v", err)
 	}
-	if err := cli.Login(context.Background(), dockerHub, username, pass, false); err != nil {
+	if err := cli.LoginWithOpts(
+		auth.WithLoginContext(context.Background()),
+		auth.WithLoginHostname(dockerHub),
+		auth.WithLoginUsername(username),
+		auth.WithLoginSecret(pass),
+	); err != nil {
 		t.Fatalf("failed to login to dockerhub: %v", err)
 	}
 }

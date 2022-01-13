@@ -20,7 +20,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/kr/pty"
+	"github.com/creack/pty"
 
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/oci"
 	"github.com/apptainer/apptainer/pkg/ociruntime"

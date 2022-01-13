@@ -17,7 +17,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/ociruntime"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
-	"github.com/kr/pty"
+	"github.com/creack/pty"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 

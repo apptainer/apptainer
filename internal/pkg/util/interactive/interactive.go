@@ -44,7 +44,7 @@ func askQuestionUsingGenericDescr(f *os.File) (string, error) {
 	// Note that we do not check for errirs since some cases (e.g., pipes) will
 	// actually not allow to perform a seek. This is intended and basically a
 	// no-op in that context.
-	pos, _ := f.Seek(0, os.SEEK_CUR)
+	pos, _ := f.Seek(0, io.SeekCurrent)
 	// Get the data
 	scanner := bufio.NewScanner(f)
 	tok := scanner.Scan()
