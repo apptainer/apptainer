@@ -32,6 +32,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
+	keyClient "github.com/apptainer/container-key-client/client"
 	"github.com/spf13/cobra"
 )
 
@@ -179,21 +180,28 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string) {
 		sylog.Fatalf("Unable to build from %s: %v", spec, err)
 	}
 
+	authToken := ""
 	hasLibrary := false
 	libraryURL := ""
+	hasSIF := false
 
-	// only resolve remote endpoints if library is a build source
 	for _, d := range defs {
+		// If there's a library source we need the library client, and it'll be a SIF
 		if d.Header["bootstrap"] == "library" {
 			hasLibrary = true
+			hasSIF = true
 		}
 		if val, ok := d.Header["library"]; ok {
 			libraryURL = val
 		}
+		// Certain other bootstrap sources may result in a SIF image source
+		if d.Header["bootstrap"] == "localimage" || d.Header["bootstrap"] == "oras" || d.Header["bootstrap"] == "shub" {
+			hasSIF = true
+		}
 	}
 
-	authToken := ""
-
+	// We only need to initialize the library client if we have a library source
+	// in our definition file.
 	if hasLibrary {
 		if buildArgs.libraryURL == "" && libraryURL != "" {
 			buildArgs.libraryURL = libraryURL
@@ -206,9 +214,16 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string) {
 		authToken = lc.AuthToken
 	}
 
-	co, err := getKeyserverClientOpts(buildArgs.keyServerURL, endpoint.KeyserverVerifyOp)
-	if err != nil {
-		sylog.Fatalf("Unable to get key server client configuration: %v", err)
+	// We only need to initialize the key server client if we have a source
+	// in our definition file that could provide a SIF. Only SIFs verify in the build.
+	var ko []keyClient.Option
+	if hasSIF {
+		ko, err = getKeyserverClientOpts(buildArgs.keyServerURL, endpoint.KeyserverVerifyOp)
+		if err != nil {
+			// Do not hard fail if we can't get a keyserver config.
+			// Verification can use the local keyring still.
+			sylog.Warningf("Unable to get key server client configuration: %v", err)
+		}
 	}
 
 	buildFormat := "sif"
@@ -236,7 +251,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string) {
 				NoHTTPS:           noHTTPS,
 				LibraryURL:        buildArgs.libraryURL,
 				LibraryAuthToken:  authToken,
-				KeyServerOpts:     co,
+				KeyServerOpts:     ko,
 				DockerAuthConfig:  authConf,
 				EncryptionKeyInfo: keyInfo,
 				FixPerms:          buildArgs.fixPerms,

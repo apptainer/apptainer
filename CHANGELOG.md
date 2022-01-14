@@ -110,6 +110,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Restructure loop device discovery to address `EAGAIN` issue, sleep/retry
   approach is replaced by a call to the sync syscall to commit cached pages
   to the underyling filesystem.
+- Ensure a local build does not fail unnecessarily if a keyserver
+  config cannot be retrieved from the remote endpoint.
 
 ### Changes for Testing / Development
 
