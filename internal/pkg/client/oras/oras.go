@@ -32,7 +32,8 @@ import (
 	ocitypes "github.com/containers/image/v5/types"
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
-	auth "oras.land/oras-go/pkg/auth/docker"
+	"oras.land/oras-go/pkg/auth"
+	oras_docker "oras.land/oras-go/pkg/auth/docker"
 	"oras.land/oras-go/pkg/content"
 	orasctx "oras.land/oras-go/pkg/context"
 	"oras.land/oras-go/pkg/oras"
@@ -66,13 +67,15 @@ func getResolver(ctx context.Context, ociAuth *ocitypes.DockerAuthConfig) (remot
 		return docker.NewResolver(opts), nil
 	}
 
-	cli, err := auth.NewClient(syfs.DockerConf())
+	cli, err := oras_docker.NewClient(syfs.DockerConf())
 	if err != nil {
 		sylog.Warningf("Couldn't load auth credential file: %s", err)
 		return docker.NewResolver(opts), nil
 	}
 
-	return cli.Resolver(ctx, &http.Client{}, false)
+	return cli.ResolverWithOpts(
+		auth.WithResolverClient(&http.Client{}),
+	)
 }
 
 // DownloadImage downloads a SIF image specified by an oci reference to a file using the included credentials
