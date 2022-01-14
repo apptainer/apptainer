@@ -33,7 +33,7 @@ var (
 	// ErrNoEncryptedKeyData indicates there is no encrypted key data.
 	ErrNoEncryptedKeyData = errors.New("no encrypted key data")
 	// ErrNoPEMData indicates there is no PEM data.
-	ErrNoPEMData = errors.New("No PEM data")
+	ErrNoPEMData = errors.New("no PEM data")
 )
 
 const (

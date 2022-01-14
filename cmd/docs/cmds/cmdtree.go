@@ -59,7 +59,7 @@ func checkCmd(sCmd string, e2eCmds string, resultFile *os.File, verbose bool) er
 	if strings.Index(sCmd, "--") > 0 {
 		cmdElts := strings.Split(sCmd, "--")
 		if len(cmdElts) != 2 {
-			return fmt.Errorf("Wrong number of options: %d", len(cmdElts))
+			return fmt.Errorf("wrong number of options: %d", len(cmdElts))
 		}
 		currentCmd = strings.Trim(cmdElts[0], " ")
 		currentOpt = strings.Trim("--"+cmdElts[1], " ")

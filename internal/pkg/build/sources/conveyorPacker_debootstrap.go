@@ -168,7 +168,7 @@ func (cp *DebootstrapConveyorPacker) Get(ctx context.Context, b *types.Bundle) (
 	// Debian port arch values do not always match GOARCH values, so we need to look it up.
 	debArch, ok := debootstrapArchs[runtime.GOARCH]
 	if !ok {
-		return fmt.Errorf("Debian arch not known for GOARCH %s", runtime.GOARCH)
+		return fmt.Errorf("debian arch not known for GOARCH %s", runtime.GOARCH)
 	}
 
 	insideUserNs, setgroupsAllowed := namespaces.IsInsideUserNamespace(os.Getpid())

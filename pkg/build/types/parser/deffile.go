@@ -26,7 +26,7 @@ import (
 
 var (
 	errInvalidSection  = errors.New("invalid section(s) specified")
-	errEmptyDefinition = errors.New("Empty definition file")
+	errEmptyDefinition = errors.New("empty definition file")
 	// Match space but not within double quotes
 	fileSplitter = regexp.MustCompile(`[^\s"']+|"([^"]*)"|'([^']*)`)
 )
