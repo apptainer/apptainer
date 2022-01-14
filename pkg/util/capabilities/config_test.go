@@ -49,13 +49,13 @@ func TestReadFromWriteTo(t *testing.T) {
 
 			test.c.WriteTo(&r)
 
-			new, err := ReadFrom(&r)
+			item, err := ReadFrom(&r)
 			if err != nil {
 				t.Errorf("unexpected failure running %s test: %s", test.name, err)
 			}
 
-			if !reflect.DeepEqual(test.c, *new) {
-				t.Errorf("failed to read/write config:\n\thave: %v\n\twant: %v", test.c, *new)
+			if !reflect.DeepEqual(test.c, *item) {
+				t.Errorf("failed to read/write config:\n\thave: %v\n\twant: %v", test.c, *item)
 			}
 		})
 	}

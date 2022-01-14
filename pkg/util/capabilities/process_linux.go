@@ -86,9 +86,9 @@ func SetProcessEffective(caps uint64) (uint64, error) {
 				continue
 			}
 			strCap := "UNKNOWN"
-			for _, cap := range Map {
-				if uint(i) == cap.Value {
-					strCap = cap.Name
+			for _, capability := range Map {
+				if uint(i) == capability.Value {
+					strCap = capability.Name
 					break
 				}
 			}

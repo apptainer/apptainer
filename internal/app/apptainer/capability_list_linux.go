@@ -50,16 +50,16 @@ func CapabilityList(capFile string, c CapListConfig) error {
 	if c.All {
 		users, groups := capConfig.ListAllCaps()
 
-		for user, cap := range users {
-			if len(cap) > 0 {
-				fmt.Printf("%s [user]: %s\n", user, strings.Join(cap, ","))
+		for user, capability := range users {
+			if len(capability) > 0 {
+				fmt.Printf("%s [user]: %s\n", user, strings.Join(capability, ","))
 				outputCaps++
 			}
 		}
 
-		for group, cap := range groups {
-			if len(cap) > 0 {
-				fmt.Printf("%s [group]: %s\n", group, strings.Join(cap, ","))
+		for group, capability := range groups {
+			if len(capability) > 0 {
+				fmt.Printf("%s [group]: %s\n", group, strings.Join(capability, ","))
 				outputCaps++
 			}
 		}
