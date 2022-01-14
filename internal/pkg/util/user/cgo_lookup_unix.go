@@ -1,6 +1,15 @@
-// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+// Copyright (c) 2021-2022 Apptainer a Series of LF Projects LLC
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
+// Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
+// This software is licensed under a 3-clause BSD license. Please consult the
+// LICENSE.md file distributed with the sources of this project regarding your
+// rights to use or distribute this software.
+//
+// This is a slightly patched version of Go's os/user/cgo_lookup_unix.go file.
+// We need full gecos content so the only way to do so is to call C ourselves.
+// User and Group types are taken from this package rather then from os/user.
+//
 // Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -10,19 +19,9 @@
 // +build cgo
 // +build !osusergo
 
-// Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
-// This software is licensed under a 3-clause BSD license. Please consult the
-// LICENSE.md file distributed with the sources of this project regarding your
-// rights to use or distribute this software.
-
-// This is a slightly patched version of Go's os/user/cgo_lookup_unix.go file.
-// We need full gecos content so the only way to do so is to call C ourselves.
-// User and Group types are taken from this package rather then from os/user.
-
 // Do not lint this file in order to keep it as close as possible to the
 // original, even if the original has linter issues.
 
-//nolint
 package user
 
 import (
@@ -96,6 +95,7 @@ func lookupUser(username string) (*User, error) {
 	return buildUser(&pwd), err
 }
 
+//nolint
 func lookupUserId(uid string) (*User, error) {
 	i, e := strconv.Atoi(uid)
 	if e != nil {
@@ -169,6 +169,7 @@ func lookupGroup(groupname string) (*Group, error) {
 	return buildGroup(&grp), nil
 }
 
+//nolint
 func lookupGroupId(gid string) (*Group, error) {
 	i, e := strconv.Atoi(gid)
 	if e != nil {
@@ -280,6 +281,7 @@ func isSizeReasonable(sz int64) bool {
 }
 
 // Because we can't use cgo in tests:
+//nolint
 func structPasswdForNegativeTest() C.struct_passwd {
 	sp := C.struct_passwd{}
 	sp.pw_uid = 1<<32 - 2

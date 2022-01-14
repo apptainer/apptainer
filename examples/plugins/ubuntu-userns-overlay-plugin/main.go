@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+// Copyright (c) 2021-2022 Apptainer a Series of LF Projects LLC
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Sylabs Inc. All rights reserved.
@@ -18,7 +18,7 @@ import (
 	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
 )
 
-// Allow to use overlay with user namespace on Ubuntu flavors.
+// Plugin allows usage of overlay with user namespace on Ubuntu flavors.
 var Plugin = pluginapi.Plugin{
 	Manifest: pluginapi.Manifest{
 		Name:        "github.com/apptainer/apptainer/ubuntu-userns-overlay-plugin",

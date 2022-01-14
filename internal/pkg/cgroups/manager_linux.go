@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+// Copyright (c) 2021-2022 Apptainer a Series of LF Projects LLC
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2021, Sylabs Inc. All rights reserved.
@@ -69,7 +69,7 @@ func NewManagerFromFile(specPath string, pid int, group string) (manager Manager
 	return &mgrv1, mgrv1.ApplyFromFile(specPath)
 }
 
-// NewManagerFromFile creates a Manager, applies the configuration in spec, and adds pid to the cgroup.
+// NewManagerFromSpec creates a Manager, applies the configuration in spec, and adds pid to the cgroup.
 // If a group name is supplied, it will be used by the manager.
 // If group = "" then "/apptainer/<pid>" is used as a default.
 func NewManagerFromSpec(spec *specs.LinuxResources, pid int, group string) (manager Manager, err error) {

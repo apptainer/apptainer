@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+// Copyright (c) 2021-2022 Apptainer a Series of LF Projects LLC
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2018, Sylabs Inc. All rights reserved.
@@ -17,20 +17,19 @@ import (
 const (
 	// DefaultPath defines default value for PATH environment variable.
 	DefaultPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-	// Apptainer environment variable recognized prefixes.
-	ApptainerPrefix    = "APPTAINER_"
+
+	// ApptainerPrefix Apptainer environment variable recognized prefixes for Apptainer CLI
+	ApptainerPrefix = "APPTAINER_"
+
+	// ApptainerEnvPrefix Apptainer environment variables recognized prefixes for passthru to container
 	ApptainerEnvPrefix = "APPTAINERENV_"
 )
 
-// the following prefixes are for settings looked at by Apptainer command
-// ApptainerPrefixes defines the e2nvironment variable prefixes
+// ApptainerPrefixes the following prefixes are for settings looked at by Apptainer command
 var ApptainerPrefixes = []string{ApptainerPrefix, "SINGULARITY_"}
 
-// the following prefixes are for pass-through to containers
-//
-
 // ApptainerEnvPrefixes defines the environment variable prefixes for passthru
-// variables
+// to container
 var ApptainerEnvPrefixes = []string{ApptainerEnvPrefix, "SINGULARITYENV_"}
 
 // SetFromList sets environment variables from environ argument list.
