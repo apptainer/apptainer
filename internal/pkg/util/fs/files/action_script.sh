@@ -82,7 +82,7 @@ clear_env
 shopt -s expand_aliases
 
 if test -d "/.singularity.d/env"; then
-    for __script__ in /.singularity.d/env/*.sh; do
+    for __script__ in $(ls /.singularity.d/env/*.sh | sort -n); do
         if test -f "${__script__}"; then
             sylog debug "Sourcing ${__script__}"
 

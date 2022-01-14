@@ -7,7 +7,7 @@
 # LICENSE.md file distributed with the sources of this project regarding your
 # rights to use or distribute this software.
 
-for script in /.singularity.d/env/*.sh; do
+for script in $(ls /.singularity.d/env/*.sh | sort -n); do
     if [ -f "$script" ]; then
         . "$script"
     fi

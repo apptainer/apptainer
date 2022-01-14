@@ -11,7 +11,7 @@
 # DON'T REMOVE
 kill -CONT 1
 
-for script in /.singularity.d/env/*.sh; do
+for script in $(ls /.singularity.d/env/*.sh | sort -n); do
     if [ -f "$script" ]; then
         . "$script"
     fi
