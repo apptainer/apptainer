@@ -111,18 +111,18 @@ func (s *service) Status() (version string, err error) {
 	return vRes.Version, nil
 }
 
-func (ep *Config) GetAllServices() (map[string][]Service, error) {
-	if ep.services != nil {
-		return ep.services, nil
+func (config *Config) GetAllServices() (map[string][]Service, error) {
+	if config.services != nil {
+		return config.services, nil
 	}
 
-	ep.services = make(map[string][]Service)
+	config.services = make(map[string][]Service)
 
 	client := &http.Client{
 		Timeout: defaultTimeout,
 	}
 
-	url := "https://" + ep.URI + "/assets/config/config.prod.json"
+	url := "https://" + config.URI + "/assets/config/config.prod.json"
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -131,7 +131,7 @@ func (ep *Config) GetAllServices() (map[string][]Service, error) {
 
 	req.Header.Set("User-Agent", useragent.Value())
 
-	cacheReader := getCachedConfig(ep.URI)
+	cacheReader := getCachedConfig(config.URI)
 	reader := cacheReader
 
 	if cacheReader == nil {
@@ -157,7 +157,7 @@ func (ep *Config) GetAllServices() (map[string][]Service, error) {
 	}
 
 	if reader != cacheReader {
-		updateCachedConfig(ep.URI, b)
+		updateCachedConfig(config.URI, b)
 	}
 
 	for k, v := range a {
@@ -171,7 +171,7 @@ func (ep *Config) GetAllServices() (map[string][]Service, error) {
 			URI: uri,
 			credential: &credential.Config{
 				URI:  uri,
-				Auth: credential.TokenPrefix + ep.Token,
+				Auth: credential.TokenPrefix + config.Token,
 			},
 		}
 
@@ -179,20 +179,20 @@ func (ep *Config) GetAllServices() (map[string][]Service, error) {
 			s = Keyserver
 		}
 
-		ep.services[s] = []Service{
+		config.services[s] = []Service{
 			newService(serviceConfig),
 		}
 	}
 
-	return ep.services, nil
+	return config.services, nil
 }
 
 // GetServiceURI returns the URI for the service at the specified endpoint
 // Examples of services: consent, library, key, token
-func (ep *Config) GetServiceURI(service string) (string, error) {
+func (config *Config) GetServiceURI(service string) (string, error) {
 	// don't grab remote URI if the endpoint is the
 	// default cloud service
-	if ep.URI == DefaultCloudURI {
+	if config.URI == DefaultCloudURI {
 		switch service {
 		case Library:
 			return DefaultLibraryURI, nil
@@ -201,7 +201,7 @@ func (ep *Config) GetServiceURI(service string) (string, error) {
 		}
 	}
 
-	services, err := ep.GetAllServices()
+	services, err := config.GetAllServices()
 	if err != nil {
 		return "", err
 	}
