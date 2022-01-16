@@ -146,7 +146,7 @@ var CapabilityListCmd = &cobra.Command{
 // CapabilityCmd is the capability command
 var CapabilityCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return errors.New("Invalid command")
+		return errors.New("invalid command")
 	},
 	DisableFlagsInUseLine: true,
 

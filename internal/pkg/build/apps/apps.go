@@ -210,7 +210,7 @@ func (pl *BuildApp) createAllApps(b *types.Bundle) error {
 	for _, name := range b.Recipe.AppOrder {
 		app, ok := pl.Apps[name]
 		if !ok {
-			return fmt.Errorf("No BuildApp record for app %s", name)
+			return fmt.Errorf("no BuildApp record for app %s", name)
 		}
 
 		sylog.Debugf("Creating %s app in bundle", name)
@@ -451,7 +451,7 @@ func (pl *BuildApp) HandlePost(b *types.Bundle) (string, error) {
 		sylog.Debugf("Fetching app[%s] post script section", name)
 		app, ok := pl.Apps[name]
 		if !ok {
-			return "", fmt.Errorf("No BuildApp record for app %s", name)
+			return "", fmt.Errorf("no BuildApp record for app %s", name)
 		}
 
 		sylog.Debugf("Building app[%s] post script section", name)

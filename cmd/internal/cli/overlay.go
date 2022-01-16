@@ -24,7 +24,7 @@ func init() {
 // OverlayCmd is the 'overlay' command that allows to manage writable overlay.
 var OverlayCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return errors.New("Invalid command")
+		return errors.New("invalid command")
 	},
 	DisableFlagsInUseLine: true,
 

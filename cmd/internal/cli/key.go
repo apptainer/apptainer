@@ -111,7 +111,7 @@ func checkGlobal(cmd *cobra.Command, args []string) {
 // KeyCmd is the 'key' command that allows management of keyrings
 var KeyCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return errors.New("Invalid command")
+		return errors.New("invalid command")
 	},
 	DisableFlagsInUseLine: true,
 	Aliases:               []string{"keys"},
