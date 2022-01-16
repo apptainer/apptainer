@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+// Copyright (c) 2021-2022 Apptainer a Series of LF Projects LLC
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
@@ -207,12 +207,12 @@ func (e *EngineConfig) GetNvCCLI() bool {
 	return e.JSON.NvCCLI
 }
 
-// SetNVCCLIEnv sets env vars holding options for nvidia-container-cli GPU setup
+// SetNvCCLIEnv sets env vars holding options for nvidia-container-cli GPU setup
 func (e *EngineConfig) SetNvCCLIEnv(NvCCLIEnv []string) {
 	e.JSON.NvCCLIEnv = NvCCLIEnv
 }
 
-// GetNVCCLIEnv returns env vars holding options for nvidia-container-cli GPU setup
+// GetNvCCLIEnv returns env vars holding options for nvidia-container-cli GPU setup
 func (e *EngineConfig) GetNvCCLIEnv() []string {
 	return e.JSON.NvCCLIEnv
 }

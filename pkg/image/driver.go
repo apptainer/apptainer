@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+// Copyright (c) 2021-2022 Apptainer a Series of LF Projects LLC
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Sylabs Inc. All rights reserved.
@@ -59,7 +59,7 @@ type Driver interface {
 	Start(*DriverParams) error
 	// Stop the driver for cleanup.
 	Stop() error
-	// Feature returns supported features.
+	// Features Feature returns supported features.
 	Features() DriverFeature
 }
 
