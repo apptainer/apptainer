@@ -21,8 +21,8 @@ import (
 // VerifyToken returns an error if a token is not valid against an endpoint.
 // If token is provided as an argument, it will verify the provided token.
 // If token is "", it will attempt to verify the configured token for the endpoint.
-func (ep *Config) VerifyToken(token string) (err error) {
-	if ep.URI == "" {
+func (config *Config) VerifyToken(token string) (err error) {
+	if config.URI == "" {
 		return fmt.Errorf("no endpoint URI")
 	}
 
@@ -33,10 +33,10 @@ func (ep *Config) VerifyToken(token string) (err error) {
 	}()
 
 	if token == "" {
-		token = ep.Token
+		token = config.Token
 	}
 
-	sp, err := ep.GetAllServices()
+	sp, err := config.GetAllServices()
 	if err != nil {
 		return err
 	}

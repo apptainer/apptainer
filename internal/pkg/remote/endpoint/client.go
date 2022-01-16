@@ -20,17 +20,17 @@ import (
 	golog "github.com/go-log/log"
 )
 
-func (ep *Config) KeyserverClientOpts(uri string, op KeyserverOp) ([]keyClient.Option, error) {
+func (config *Config) KeyserverClientOpts(uri string, op KeyserverOp) ([]keyClient.Option, error) {
 	// empty uri means to use the default endpoint
 	isDefault := uri == ""
 
-	if err := ep.UpdateKeyserversConfig(); err != nil {
+	if err := config.UpdateKeyserversConfig(); err != nil {
 		return nil, err
 	}
 
 	var primaryKeyserver *ServiceConfig
 
-	for _, kc := range ep.Keyservers {
+	for _, kc := range config.Keyservers {
 		if kc.Skip {
 			continue
 		}
@@ -51,17 +51,17 @@ func (ep *Config) KeyserverClientOpts(uri string, op KeyserverOp) ([]keyClient.O
 		if op == KeyserverVerifyOp {
 			// verify operation can query multiple keyserver, the token
 			// is automatically set by the custom client
-			keyservers = ep.Keyservers
+			keyservers = config.Keyservers
 		} else {
 			// use the primary keyserver
 			keyservers = []*ServiceConfig{
 				primaryKeyserver,
 			}
 		}
-	} else if ep.Exclusive {
+	} else if config.Exclusive {
 		available := make([]string, 0)
 		found := false
-		for _, kc := range ep.Keyservers {
+		for _, kc := range config.Keyservers {
 			if kc.Skip {
 				continue
 			}
@@ -95,25 +95,25 @@ func (ep *Config) KeyserverClientOpts(uri string, op KeyserverOp) ([]keyClient.O
 	return co, nil
 }
 
-func (ep *Config) LibraryClientConfig(uri string) (*libClient.Config, error) {
+func (config *Config) LibraryClientConfig(uri string) (*libClient.Config, error) {
 	// empty uri means to use the default endpoint
 	isDefault := uri == ""
 
-	config := &libClient.Config{
+	libraryConfig := &libClient.Config{
 		BaseURL:   uri,
 		UserAgent: useragent.Value(),
 		Logger:    (golog.Logger)(sylog.DebugLogger{}),
 	}
 
 	if isDefault {
-		libURI, err := ep.GetServiceURI(Library)
+		libURI, err := config.GetServiceURI(Library)
 		if err != nil {
 			return nil, fmt.Errorf("unable to get library service URI: %v", err)
 		}
-		config.AuthToken = ep.Token
-		config.BaseURL = libURI
-	} else if ep.Exclusive {
-		libURI, err := ep.GetServiceURI(Library)
+		libraryConfig.AuthToken = config.Token
+		libraryConfig.BaseURL = libURI
+	} else if config.Exclusive {
+		libURI, err := config.GetServiceURI(Library)
 		if err != nil {
 			return nil, fmt.Errorf("unable to get library service URI: %v", err)
 		}
@@ -125,5 +125,5 @@ func (ep *Config) LibraryClientConfig(uri string) (*libClient.Config, error) {
 		}
 	}
 
-	return config, nil
+	return libraryConfig, nil
 }

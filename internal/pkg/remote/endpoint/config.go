@@ -41,8 +41,8 @@ type Config struct {
 	services    map[string][]Service
 }
 
-func (e *Config) SetCredentials(creds []*credential.Config) {
-	e.credentials = creds
+func (config *Config) SetCredentials(creds []*credential.Config) {
+	config.credentials = creds
 }
 
 type ServiceConfig struct {

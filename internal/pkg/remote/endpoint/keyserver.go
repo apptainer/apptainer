@@ -35,15 +35,15 @@ const (
 )
 
 // AddKeyserver adds a keyserver for the corresponding remote endpoint.
-func (ep *Config) AddKeyserver(uri string, order uint32, insecure bool) error {
-	if err := ep.UpdateKeyserversConfig(); err != nil {
+func (config *Config) AddKeyserver(uri string, order uint32, insecure bool) error {
+	if err := config.UpdateKeyserversConfig(); err != nil {
 		return err
 	}
 
 	matchIndex := -1
 	maxOrder := uint32(1)
 
-	for i, kc := range ep.Keyservers {
+	for i, kc := range config.Keyservers {
 		if remoteutil.SameKeyserver(kc.URI, uri) {
 			matchIndex = i
 		}
@@ -62,14 +62,14 @@ func (ep *Config) AddKeyserver(uri string, order uint32, insecure bool) error {
 	var kc *ServiceConfig
 
 	if matchIndex >= 0 {
-		kc = ep.Keyservers[matchIndex]
+		kc = config.Keyservers[matchIndex]
 		if !kc.External && kc.Skip {
 			kc.Skip = false
 		} else {
 			return fmt.Errorf("%s is already configured", uri)
 		}
 		// remove it first
-		ep.Keyservers = append(ep.Keyservers[:matchIndex], ep.Keyservers[matchIndex+1:]...)
+		config.Keyservers = append(config.Keyservers[:matchIndex], config.Keyservers[matchIndex+1:]...)
 	} else {
 		kc = &ServiceConfig{
 			External: true,
@@ -79,32 +79,32 @@ func (ep *Config) AddKeyserver(uri string, order uint32, insecure bool) error {
 	}
 
 	// insert it as specified by the order
-	ep.Keyservers = append(ep.Keyservers[:order-1], append([]*ServiceConfig{kc}, ep.Keyservers[order-1:]...)...)
+	config.Keyservers = append(config.Keyservers[:order-1], append([]*ServiceConfig{kc}, config.Keyservers[order-1:]...)...)
 
 	return nil
 }
 
 // RemoveKeyserver removes a previously added keyserver.
-func (ep *Config) RemoveKeyserver(uri string) error {
-	if err := ep.UpdateKeyserversConfig(); err != nil {
+func (config *Config) RemoveKeyserver(uri string) error {
+	if err := config.UpdateKeyserversConfig(); err != nil {
 		return err
 	}
 
 	total := 0
-	for _, kc := range ep.Keyservers {
+	for _, kc := range config.Keyservers {
 		if kc.Skip {
 			continue
 		}
 		total++
 	}
 
-	for i, kc := range ep.Keyservers {
+	for i, kc := range config.Keyservers {
 		if remoteutil.SameKeyserver(kc.URI, uri) && !kc.Skip {
 			if total == 1 {
 				return fmt.Errorf("the primary keyserver %s can't be removed", uri)
 			}
 			if kc.External {
-				ep.Keyservers = append(ep.Keyservers[:i], ep.Keyservers[i+1:]...)
+				config.Keyservers = append(config.Keyservers[:i], config.Keyservers[i+1:]...)
 			} else {
 				// Default keyserver is just marked as skipped
 				kc.Skip = true
@@ -118,34 +118,34 @@ func (ep *Config) RemoveKeyserver(uri string) error {
 
 // UpdateKeyserversConfig updates the keyserver configuration for the
 // corresponding remote endpoint.
-func (ep *Config) UpdateKeyserversConfig() error {
-	if len(ep.Keyservers) == 0 {
+func (config *Config) UpdateKeyserversConfig() error {
+	if len(config.Keyservers) == 0 {
 		// current remote keyserver
-		uri, err := ep.GetServiceURI(Keyserver)
+		uri, err := config.GetServiceURI(Keyserver)
 		if err != nil {
 			return err
 		}
-		ep.Keyservers = append(ep.Keyservers, &ServiceConfig{
+		config.Keyservers = append(config.Keyservers, &ServiceConfig{
 			URI: uri,
 			credential: &credential.Config{
 				URI:  uri,
-				Auth: credential.TokenPrefix + ep.Token,
+				Auth: credential.TokenPrefix + config.Token,
 			},
 		})
 		return nil
 	}
-	for _, kc := range ep.Keyservers {
+	for _, kc := range config.Keyservers {
 		if kc.credential != nil {
 			continue
 		} else if !kc.External {
 			// associated current endpoint token to the default key service
 			kc.credential = &credential.Config{
 				URI:  kc.URI,
-				Auth: credential.TokenPrefix + ep.Token,
+				Auth: credential.TokenPrefix + config.Token,
 			}
 		} else {
 			// attempt to find credentials in the credential store
-			for _, cred := range ep.credentials {
+			for _, cred := range config.credentials {
 				if remoteutil.SameKeyserver(cred.URI, kc.URI) {
 					kc.credential = cred
 					break
