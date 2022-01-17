@@ -11,6 +11,8 @@ package gpu
 import (
 	"fmt"
 	"path/filepath"
+
+	"github.com/apptainer/apptainer/internal/pkg/util/paths"
 )
 
 // RocmPaths returns a list of rocm libraries/binaries that should be
@@ -21,7 +23,7 @@ func RocmPaths(configFilePath string) ([]string, []string, error) {
 		return nil, nil, fmt.Errorf("could not read %s: %v", filepath.Base(configFilePath), err)
 	}
 
-	return paths(rocmFiles)
+	return paths.Resolve(rocmFiles)
 }
 
 // RocmDevices return list of all non-GPU rocm devices present on host. If withGPU

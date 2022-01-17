@@ -1,0 +1,35 @@
+# dmtcp-config.yaml
+# This configuration file determines which DMTCP binaries and libraries to search 
+# for on the host system when the --dmtcp option is invoked.  You can edit it if
+# you have different binaries and libraries on your host system. 
+
+# List binaries to bind into the container here
+# In shared environments you should ensure that permissions on these files 
+# exclude writing by non-privileged users.  
+bins:
+  - "dmtcp_command"
+  - "dmtcp_discover_rm"
+  - "dmtcp_launch"
+  - "dmtcp_restart"
+  - "dmtcp_srun_helper"
+  - "dmtcp_sshd"
+  - "dmtcp_coordinator"
+  - "dmtcp_get_libc_offset"
+  - "dmtcp_nocheckpoint"
+  - "dmtcp_rm_loclaunch"
+  - "dmtcp_ssh"
+  - "mtcp_restart"
+
+# List libraries to bind into the container here. Library names must end in ".so"
+libs:
+  - "libdmtcp_alloc.so"
+  - "libdmtcp_dl.so"
+  - "libdmtcp_modify-env.so"
+  - "libdmtcp_pid.so"
+  - "libdmtcp_svipc.so"
+  - "libdmtcp_unique-ckpt.so"
+  - "libdmtcp_batch-queue.so"
+  - "libdmtcp_ipc.so"
+  - "libdmtcp_pathvirt.so"
+  - "libdmtcp.so"
+  - "libdmtcp_timer.so"

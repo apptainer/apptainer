@@ -140,3 +140,13 @@ $(global_keyring_INSTALL): $(global_keyring)
 
 INSTALLFILES += $(global_keyring_INSTALL)
 
+# dmtcp  config file
+dmtcp_conf := $(SOURCEDIR)/etc/dmtcp-conf.yaml
+
+dmtcp_conf_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/dmtcp-conf.yaml
+$(dmtcp_conf_INSTALL): $(dmtcp_conf)
+	@echo " INSTALL" $@
+	$(V)umask 0022 && mkdir -p $(@D)
+	$(V)install -m 0644 $< $@
+
+INSTALLFILES += $(dmtcp_conf_INSTALL)

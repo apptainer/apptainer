@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/checkpoint/dmtcp"
 	"github.com/apptainer/apptainer/internal/pkg/image/unpacker"
 	"github.com/apptainer/apptainer/internal/pkg/instance"
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
@@ -391,6 +392,10 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		// We must fatal on error, as we are checking for correct ownership of nvidia-container-cli,
 		// which is important to maintain security.
 		sylog.Fatalf("while setting GPU configuration: %s", err)
+	}
+
+	if err := SetCheckpointConfig(engineConfig); err != nil {
+		sylog.Fatalf("while setting checkpoint configuration: %s", err)
 	}
 
 	engineConfig.SetAddCaps(AddCaps)
@@ -894,4 +899,54 @@ func setGPUBinds(engineConfig *apptainerConfig.EngineConfig, libs, bins, ipcs []
 	} else {
 		engineConfig.SetLibrariesPath(libs)
 	}
+}
+
+// SetCheckpointConfig sets EngineConfig entries to bind the provided list of libs and bins.
+func SetCheckpointConfig(engineConfig *apptainerConfig.EngineConfig) error {
+	if DMTCPLaunch == "" && DMTCPRestart == "" {
+		return nil
+	}
+
+	return injectDMTCPConfig(engineConfig)
+}
+
+func injectDMTCPConfig(engineConfig *apptainerConfig.EngineConfig) error {
+	sylog.Debugf("Injecting DMTCP configuration")
+	dmtcp.QuickInstallationCheck()
+
+	bins, libs, err := dmtcp.GetPaths()
+	if err != nil {
+		return err
+	}
+
+	var config apptainerConfig.DMTCPConfig
+	if DMTCPRestart != "" {
+		config = apptainerConfig.DMTCPConfig{
+			Enabled:    true,
+			Restart:    true,
+			Checkpoint: DMTCPRestart,
+			Args:       dmtcp.RestartArgs(),
+		}
+	} else {
+		config = apptainerConfig.DMTCPConfig{
+			Enabled:    true,
+			Restart:    false,
+			Checkpoint: DMTCPLaunch,
+			Args:       dmtcp.LaunchArgs(),
+		}
+	}
+
+	m := dmtcp.NewManager()
+	e, err := m.Get(config.Checkpoint)
+	if err != nil {
+		return err
+	}
+
+	sylog.Debugf("Injecting checkpoint state bind: %q", config.Checkpoint)
+	engineConfig.SetBindPath(append(engineConfig.GetBindPath(), e.BindPath()))
+	engineConfig.AppendFilesPath(bins...)
+	engineConfig.AppendLibrariesPath(libs...)
+	engineConfig.SetDMTCPConfig(config)
+
+	return nil
 }

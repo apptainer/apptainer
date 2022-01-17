@@ -19,6 +19,8 @@ import (
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterFlagForCmd(&instanceStartPidFileFlag, instanceStartCmd)
+		cmdManager.RegisterFlagForCmd(&actionDMTCPLaunchFlag, instanceStartCmd)
+		cmdManager.RegisterFlagForCmd(&actionDMTCPRestartFlag, instanceStartCmd)
 	})
 }
 
@@ -49,6 +51,7 @@ var instanceStartCmd = &cobra.Command{
 			execVM(cmd, image, a)
 			return
 		}
+
 		execStarter(cmd, image, a, name)
 
 		if instanceStartPidFile != "" {
