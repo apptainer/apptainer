@@ -9,12 +9,14 @@ package dmtcp
 
 import (
 	"io/ioutil"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/checkpoint"
 	"github.com/apptainer/apptainer/internal/pkg/util/paths"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"gopkg.in/yaml.v2"
 )
 
@@ -71,4 +73,16 @@ func GetPaths() ([]string, []string, error) {
 	}
 
 	return usrBins, libs, nil
+}
+
+// QuickInstallationCheck is a quick smoke test to see if dmtcp is installed
+// on the host for injection by checking for one of the well known dmtcp
+// executables in the PATH. If not found a warning is emitted.
+func QuickInstallationCheck() {
+	_, err := exec.LookPath("dmtcp_launch")
+	if err == nil {
+		return
+	}
+
+	sylog.Warningf("Unable to locate a dmtcp installation, some functionality may not work as expected. Please ensure a dmtcp installation exists or install it following instructions here: https://github.com/dmtcp/dmtcp/blob/master/INSTALL.md")
 }

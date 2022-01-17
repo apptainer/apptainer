@@ -912,6 +912,7 @@ func SetCheckpointConfig(engineConfig *apptainerConfig.EngineConfig) error {
 
 func injectDMTCPConfig(engineConfig *apptainerConfig.EngineConfig) error {
 	sylog.Debugf("Injecting DMTCP configuration")
+	dmtcp.QuickInstallationCheck()
 
 	bins, libs, err := dmtcp.GetPaths()
 	if err != nil {

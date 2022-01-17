@@ -35,6 +35,10 @@ func init() {
 	})
 }
 
+func checkpointPreRun(cmd *cobra.Command, args []string) {
+	dmtcp.QuickInstallationCheck()
+}
+
 // CheckpointCmd represents the checkpoint command.
 var CheckpointCmd = &cobra.Command{
 	Run: nil,
@@ -48,7 +52,8 @@ var CheckpointCmd = &cobra.Command{
 
 // CheckpointListCmd apptainer checkpoint list
 var CheckpointListCmd = &cobra.Command{
-	Args: cobra.ExactArgs(0),
+	Args:   cobra.ExactArgs(0),
+	PreRun: checkpointPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
 		m := dmtcp.NewManager()
 
@@ -79,7 +84,8 @@ var CheckpointListCmd = &cobra.Command{
 
 // CheckpointCreateCmd apptainer checkpoint create
 var CheckpointCreateCmd = &cobra.Command{
-	Args: cobra.ExactArgs(1),
+	Args:   cobra.ExactArgs(1),
+	PreRun: checkpointPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
 		m := dmtcp.NewManager()
@@ -107,7 +113,8 @@ var CheckpointCreateCmd = &cobra.Command{
 
 // CheckpointDeleteCmd apptainer checkpoint delete
 var CheckpointDeleteCmd = &cobra.Command{
-	Args: cobra.ExactArgs(1),
+	Args:   cobra.ExactArgs(1),
+	PreRun: checkpointPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
 		m := dmtcp.NewManager()
@@ -129,8 +136,11 @@ var CheckpointDeleteCmd = &cobra.Command{
 }
 
 var CheckpointInstanceCmd = &cobra.Command{
-	Args:   cobra.ExactArgs(1),
-	PreRun: actionPreRun,
+	Args: cobra.ExactArgs(1),
+	PreRun: func(cmd *cobra.Command, args []string) {
+		checkpointPreRun(cmd, args)
+		actionPreRun(cmd, args)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		instanceName := args[0]
 
