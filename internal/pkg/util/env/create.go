@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+// Copyright (c) 2021-2022 Apptainer a Series of LF Projects LLC
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2018-2020, Sylabs Inc. All rights reserved.
@@ -47,13 +47,13 @@ type envKeyMap = map[string]string
 func setKeyIfNotAlreadyOverridden(g *generate.Generator, envKeys envKeyMap, precedence int, prefixedKey, key, value string) {
 	if oldValue, ok := envKeys[key]; ok {
 		if oldValue != value {
-			sylog.Warningf("Skipping environment variable [%s=%s], %s is already overridden with [%s]", prefixedKey, value, key, oldValue)
+			sylog.Warningf("Skipping environment variable [%s=%s], %s is already overridden with different value [%s]", prefixedKey, value, key, oldValue)
 		} else {
-			sylog.Debugf("Skipping environment variable [%s=%s], %s is already overridden", prefixedKey, value, key)
+			sylog.Debugf("Skipping environment variable [%s=%s], %s is already overridden with the same value", prefixedKey, value, key)
 		}
 	} else {
 		if precedence != 0 {
-			sylog.Warningf("DEPRECATED USAGE: forwarding %s as environment variable will not be supported in the future, use %s%s instead", prefixedKey, ApptainerEnvPrefix, key)
+			sylog.Warningf("DEPRECATED USAGE: Forwarding %s as environment variable will not be supported in the future, use %s%s instead", prefixedKey, ApptainerEnvPrefix, key)
 		}
 		sylog.Verbosef("Forwarding %s as %s environment variable", prefixedKey, key)
 		envKeys[key] = value
@@ -135,9 +135,9 @@ EnvKeys:
 		if mustAddToHostEnv(e[0], cleanEnv) {
 			if value, ok := envKeys[e[0]]; ok {
 				if value != e[1] {
-					sylog.Warningf("Environment variable [%s] already has value [%s], will not forward new value [%s] from parent process environment", e[0], value, e[1])
+					sylog.Warningf("Environment variable %s already has value [%s], will not forward new value [%s] from parent process environment", e[0], value, e[1])
 				} else {
-					sylog.Debugf("Environment variable [%s] already has duplicate value [%s], will not forward from parent process environment", e[0], value)
+					sylog.Debugf("Environment variable %s already has duplicate value [%s], will not forward from parent process environment", e[0], value)
 				}
 			} else {
 				// transpose host env variables into config

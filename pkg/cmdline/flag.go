@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Apptainer a Series of LF Projects LLC
+// Copyright (c) 2021-2022 Apptainer a Series of LF Projects LLC
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
@@ -198,16 +198,15 @@ func (m *flagManager) updateCmdFlagFromEnv(cmd *cobra.Command, precedence int, f
 				continue
 			}
 			if precedence > 0 {
-				deprecationFormat := "DEPRECATED USAGE: Environment Prefix [%s] for environment variable will not be supported in the future, use [%s] instead for [%s],"
 				if foundVal, ok := foundKeys[key]; ok {
 					if foundVal == val {
-						sylog.Debugf(deprecationFormat+" will not override duplicate value [%s]", prefix, env.ApptainerPrefixes[0]+key, prefix+key, val)
+						sylog.Debugf("%s and %s have the same value [%s]", prefix+key, env.ApptainerPrefixes[0]+key, val)
 					} else {
-						sylog.Warningf(deprecationFormat+" will not override with value [%s]", prefix, env.ApptainerPrefixes[0]+key, prefix+key, val)
+						sylog.Warningf("%s and %s have different values, using the latter", prefix+key, env.ApptainerPrefixes[0]+key)
 					}
 					continue
 				} else {
-					sylog.Warningf(deprecationFormat+" using deprecated value [%s]", prefix, env.ApptainerPrefixes[0]+key, prefix+key, val)
+					sylog.Warningf("DEPRECATED USAGE: Environment variable %s will not be supported in the future, use %s instead", prefix+key, env.ApptainerPrefixes[0]+key)
 				}
 			}
 			foundKeys[key] = val
