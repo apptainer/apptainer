@@ -60,6 +60,14 @@ contents:
       owner: root
       group: root
 
+  - src: ./etc/dmtcp-conf.yaml
+    dst: {{ .ConfDir }}/dmtcp-conf.yaml
+    type: config|noreplace
+    file_info:
+      mode: 0644
+      owner: root
+      group: root
+
   - src: ./etc/remote.yaml
     dst: {{ .ConfDir }}/remote.yaml
     type: config|noreplace
