@@ -654,7 +654,7 @@ var actionDMTCPLaunchFlag = cmdline.Flag{
 	Value:        &DMTCPLaunch,
 	DefaultValue: "",
 	Name:         "dmtcp-launch",
-	Usage:        "checkpoint for dmtcp to save container process state to",
+	Usage:        "checkpoint for dmtcp to save container process state to (experimental)",
 	EnvKeys:      []string{"DMTCP_LAUNCH"},
 }
 
@@ -664,7 +664,7 @@ var actionDMTCPRestartFlag = cmdline.Flag{
 	Value:        &DMTCPRestart,
 	DefaultValue: "",
 	Name:         "dmtcp-restart",
-	Usage:        "checkpoint for dmtcp to use to restart container process",
+	Usage:        "checkpoint for dmtcp to use to restart container process (experimental)",
 	EnvKeys:      []string{"DMTCP_RESTART"},
 }
 

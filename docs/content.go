@@ -1065,7 +1065,7 @@ Enterprise Performance Computing (EPC)`
   $ apptainer overlay create --size 1024 /tmp/my_overlay.img`
 
 	CheckpointUse   string = `checkpoint`
-	CheckpointShort string = `Manage container checkpoint state`
+	CheckpointShort string = `Manage container checkpoint state (experimental)`
 	CheckpointLong  string = `
   The checkpoint command allows for the creation and management of container checkpoint state.`
 	CheckpointExample string = `
@@ -1075,7 +1075,7 @@ Enterprise Performance Computing (EPC)`
   $ apptainer checkpoint create --help`
 
 	CheckpointListUse   string = `list`
-	CheckpointListShort string = `List local checkpoints`
+	CheckpointListShort string = `List local checkpoints (experimental)`
 	CheckpointListLong  string = `
   The checkpoint list command will list the checkpoints stored at $HOME/.apptainer/checkpoints
   for use with container instances.`
@@ -1084,7 +1084,7 @@ Enterprise Performance Computing (EPC)`
   $ apptainer checkpoint list`
 
 	CheckpointCreateUse   string = `create <name>`
-	CheckpointCreateShort string = `Create empty checkpoint storage`
+	CheckpointCreateShort string = `Create empty checkpoint storage (experimental)`
 	CheckpointCreateLong  string = `
   The checkpoint create command will initialize a location to store checkpoint data once used
   by a container`
@@ -1093,7 +1093,7 @@ Enterprise Performance Computing (EPC)`
   $ apptainer checkpoint create example-checkpoint`
 
 	CheckpointDeleteUse   string = `delete <name>`
-	CheckpointDeleteShort string = `Delete a checkpoint`
+	CheckpointDeleteShort string = `Delete a checkpoint (experimental)`
 	CheckpointDeleteLong  string = `
   The checkpoint delete command will remove all state for the given checkpoint.`
 	CheckpointDeleteExample string = `
@@ -1101,7 +1101,7 @@ Enterprise Performance Computing (EPC)`
   $ apptainer checkpoint delete example-checkpoint`
 
 	CheckpointInstanceUse   string = `instance <instance-name>`
-	CheckpointInstanceShort string = `Checkpoint the state of a running instance`
+	CheckpointInstanceShort string = `Checkpoint the state of a running instance (experimental)`
 	CheckpointInstanceLong  string = `
   The checkpoint instance command checkpoints an active instance by name. The instance must
   have been started with either --dmtcp-launch or --dmtcp-restart.`
