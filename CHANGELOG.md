@@ -14,13 +14,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
   to the `apptainer` command.  The contents of containers are unchanged
   and continue to use the singularity name for startup scripts, etc.
 - The configuration directory has changed from `/etc/singularity` to
-  `/etc/apptainer` within packages, and the primary configuration 
-  file name has changed from `singularity.conf` to `apptainer.conf.
+  `/etc/apptainer` within packages, and the primary configuration
+  file name has changed from `singularity.conf` to `apptainer.conf`.
   As long as a `singularity` directory still exists next to an
   `apptainer` directory, running the `apptainer` command will print
   a warning saying that migration is not complete.  If no changes had
-  been made to the configuration then an rpm package upgrade should 
-  automatically remove the old directory, otherwise the system 
+  been made to the configuration then an rpm package upgrade should
+  automatically remove the old directory, otherwise the system
   administrator needs to take care of migrating the configuration
   and removing the old directory.  Old configuration can be removed
   for a Debian package with `apt-get purge singularity` or
@@ -46,7 +46,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   users can add it to their own configuration with the commands
   `apptainer remote add SylabsCloud cloud.sylabs.io` and
   `apptainer remote use SylabsCloud`.
-- The DefaultRemote's key server is `https://keys.openpgp.org` 
+- The DefaultRemote's key server is `https://keys.openpgp.org`
   instead of the Sylabs key server.
 - The `apptainer build --remote` option has been removed because there
   is no standard protocol or non-commercial service that supports it.
@@ -166,3 +166,5 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - `E2E_DOCKER_MIRROR` and `E2E_DOCKER_MIRROR_INSECURE` were added to allow
   to use a registry mirror (or a pull through cache).
+- A `tools` source directory was added with a Dockerfile for doing local
+  e2e testing.
