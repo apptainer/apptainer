@@ -140,8 +140,8 @@ github.com/aphistic/golf v0.0.0-20180712155816-02c07f170c5a/go.mod h1:3NqKYiepwy
 github.com/aphistic/sweet v0.2.0/go.mod h1:fWDlIh/isSE9n6EPsRmC0det+whmX6dJid3stzu0Xys=
 github.com/apptainer/container-key-client v0.7.2 h1:lfKlKgONO8CvlZ11bbWE0vwJtMx/IE2Tg01g1/YCY+4=
 github.com/apptainer/container-key-client v0.7.2/go.mod h1:hLHrJBfdMb8SHy1pbCTNRQ7bxqcSh4GPiMV4ajEnAqk=
-github.com/apptainer/container-library-client v1.2.1 h1:NCFZvMPO2qE9EkQD8xt0uIX3nhp03rXOVxa2uVjqqyY=
-github.com/apptainer/container-library-client v1.2.1/go.mod h1:1lAVGneLEzW68ecuWY02a2LljuShndSp4USOKyzG0ds=
+github.com/apptainer/container-library-client v1.2.2 h1:a9FKNnxOcb5wk6bZBoOZ26D/XNYAIwiDcyup2GGnpGA=
+github.com/apptainer/container-library-client v1.2.2/go.mod h1:1lAVGneLEzW68ecuWY02a2LljuShndSp4USOKyzG0ds=
 github.com/apptainer/sif/v2 v2.3.1 h1:P4Rx+EM5Tws9CMFGIOuIOdsR5BinzHQ5XfgDSD11FeM=
 github.com/apptainer/sif/v2 v2.3.1/go.mod h1:fIlbFhn3s729X+KPx8tNA4setL9aXP/VmAgMyLV5r7E=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
