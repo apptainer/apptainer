@@ -112,7 +112,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   added.  Additional flags `--dmtcp-launch` and `--dmtcp-restart` has
   been added to the `apptainer instance start` command, and a `checkpoint`
   command group has been added to manage the checkpoint state.  A new
-  `~/.apptainer/dmtcp-config.yaml` configuration file is also added.
+  `/etc/apptainer/dmtcp-conf.yaml` configuration file is also added.
   Limitations are that it can only work with dynamically linked
   applications and the container has to be based on `glibc`.
 - `--writable-tmpfs` can be used with `apptainer build` to run the `%test`
