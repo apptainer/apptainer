@@ -1,4 +1,4 @@
-FROM --platform=$TARGETPLATFORM golang:1.16.10-buster AS build-base
+FROM --platform=$TARGETPLATFORM golang:1.17-buster AS build-base
 ARG TARGETPLATFORM
 RUN apt-get update -y && apt-get install -y pkg-config libseccomp-dev libseccomp2
 RUN GOBIN=/bin go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.10.0
