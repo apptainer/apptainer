@@ -8,7 +8,7 @@ always be up-to-date with the latest source release version.
 
 For full instructions on installation, including building RPMs,
 installing pre-built EPEL packages etc. please check the
-[installation section of the admin guide](https://apptainer.org/admin-docs/master/installation.html).
+[installation section of the admin guide](https://apptainer.org/docs/admin/main/installation.html).
 
 ## Install system dependencies
 
@@ -124,7 +124,7 @@ git clone https://github.com/apptainer/apptainer.git
 cd apptainer
 ```
 
-By default your clone will be on the `master` branch which is where development
+By default your clone will be on the `main` branch which is where development
 of Apptainer happens.
 To build a specific version of Apptainer, check out a
 [release tag](https://github.com/apptainer/apptainer/tags) before compiling,
@@ -201,20 +201,20 @@ and use it to install the RPM like this:
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-VERSION=0.1.2  # this is the apptainer version, change as you need
+VERSION=1.0.0-rc.1  # this is the apptainer version, change as you need
 # Fetch the source
 wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
 # Build the rpm from the source tar.gz
 rpmbuild -tb apptainer-${VERSION}.tar.gz
 # Install Apptainer using the resulting rpm
-sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-${VERSION}-1.el7.x86_64.rpm
+sudo rpm -Uvh ~/rpmbuild/RPMS/x86_64/apptainer-$(echo $VERSION|tr - \~)-1.el7.x86_64.rpm
 # (Optionally) Remove the build tree and source to save space
 rm -rf ~/rpmbuild apptainer-${VERSION}*.tar.gz
 ```
 
 <!-- markdownlint-enable MD013 -->
 
-Alternatively, to build an RPM from the latest master you can
+Alternatively, to build an RPM from the latest main you can
 [clone the repo as detailed above](#clone-the-repo).
 Then use the `rpm` make target to build Apptainer as an rpm package,
 for example like this if you already have a new enough golang first
@@ -223,10 +223,10 @@ in your PATH:
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-VERSION=0.1.2  # this is the apptainer version, change as you need
+VERSION=1.0.0-rc.1  # this is the latest apptainer version, change as you need
 ./mconfig
 make -C builddir rpm
-sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-${VERSION}*.x86_64.rpm 
+sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-$(echo $VERSION|tr - \~)*.x86_64.rpm 
 ```
 
 <!-- markdownlint-enable MD013 -->
@@ -242,7 +242,7 @@ make -C builddir rpm RPMPREFIX=/opt/apptainer
 ```
 
 For more information on installing/updating/uninstalling the RPM, check out our
-[admin docs](https://apptainer.org/admin-docs/master/admin_quickstart.html).
+[admin docs](https://apptainer.org/docs/admin/main/admin_quickstart.html).
 
 ## Debian Package
 
