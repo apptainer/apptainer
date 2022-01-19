@@ -9,9 +9,14 @@
 package env
 
 import (
+	"bytes"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/opencontainers/runtime-spec/specs-go"
+
+	"github.com/apptainer/apptainer/pkg/sylog"
 
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
@@ -27,8 +32,10 @@ func TestSetContainerEnv(t *testing.T) {
 		cleanEnv     bool
 		homeDest     string
 		env          []string
+		processEnv   map[string]string
 		resultEnv    []string
 		apptainerEnv map[string]string
+		disabled     bool
 	}{
 		{
 			name:     "no APPTAINERENV_",
@@ -303,13 +310,274 @@ func TestSetContainerEnv(t *testing.T) {
 				"HOST": "myhostenv",
 			},
 		},
+		// test permutations of named environment variable with
+		// differing and no prefix -- confirm precedence
+
+		{
+			name:     "ENV precedence - first - with conflicts - different values",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env: []string{
+				"APPTAINERENV_PRECEDENCE=first",
+				"SINGULARITYENV_PRECEDENCE=second",
+				// third precedence is environment variables initialized via --env, or --env-file
+				// fourth precedence is result of "clean env" flag option
+				"PRECEDENCE=fifth",
+			},
+			processEnv: map[string]string{
+				"PRECEDENCE": "third",
+			},
+			resultEnv: []string{
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			apptainerEnv: map[string]string{
+				"PRECEDENCE": "first",
+			},
+		},
+		{
+			name:     "ENV precedence - second - with conflicts - different values",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env: []string{
+				"SINGULARITYENV_PRECEDENCE=second",
+				// third precedence is environment variables initialized via --env, or --env-file
+				// fourth precedence is result of "clean env" flag option
+				"PRECEDENCE=fifth",
+			},
+			processEnv: map[string]string{
+				"PRECEDENCE": "third",
+			},
+			resultEnv: []string{
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			apptainerEnv: map[string]string{
+				"PRECEDENCE": "second",
+			},
+		},
+		{
+			disabled: true,
+			name:     "ENV precedence - third - with conflicts - different values",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env: []string{
+				// third precedence is environment variables initialized via --env, or --env-file
+				// fourth precedence is result of "clean env" flag option
+				"PRECEDENCE=fifth",
+			},
+			processEnv: map[string]string{
+				"PRECEDENCE": "third",
+			},
+			resultEnv: []string{
+				"PRECEDENCE=third",
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+		},
+		{
+			name:     "ENV precedence - fourth - with conflicts - different values",
+			cleanEnv: true,
+			homeDest: "/home/tester",
+			env: []string{
+				// third precedence is environment variables initialized via --env, or --env-file
+				// fourth precedence is result of "clean env" flag option
+				"PRECEDENCE=fifth",
+			},
+			resultEnv: []string{
+				"LANG=C",
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			apptainerEnv: map[string]string{},
+		},
+		{
+			name:     "ENV precedence - first - with conflicts - same values",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env: []string{
+				"APPTAINERENV_PRECEDENCE=precedence",
+				"SINGULARITYENV_PRECEDENCE=precedence",
+				// third precedence is environment variables initialized via --env, or --env-file
+				// fourth precedence is result of "clean env" flag option
+				"PRECEDENCE=precedence",
+			},
+			processEnv: map[string]string{
+				"PRECEDENCE": "precedence",
+			},
+			resultEnv: []string{
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			apptainerEnv: map[string]string{
+				"PRECEDENCE": "precedence",
+			},
+		},
+		{
+			name:     "ENV precedence - second - with conflicts - same values",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env: []string{
+				"SINGULARITYENV_PRECEDENCE=precedence",
+				// third precedence is environment variables initialized via --env, or --env-file
+				// fourth precedence is result of "clean env" flag option
+				"PRECEDENCE=precedence",
+			},
+			processEnv: map[string]string{
+				"PRECEDENCE": "precedence",
+			},
+			resultEnv: []string{
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			apptainerEnv: map[string]string{
+				"PRECEDENCE": "precedence",
+			},
+		},
+		{
+			name:     "ENV precedence - third - with conflicts - same values",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env: []string{
+				// third precedence is environment variables initialized via --env, or --env-file
+				// fourth precedence is result of "clean env" flag option
+				"PRECEDENCE=precedence",
+			},
+			processEnv: map[string]string{
+				"PRECEDENCE": "precedence",
+			},
+			resultEnv: []string{
+				"PRECEDENCE=precedence",
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+		},
+		{
+			name:     "ENV precedence - fourth - with conflicts - same values",
+			cleanEnv: true,
+			homeDest: "/home/tester",
+			env: []string{
+				// third precedence is environment variables initialized via --env, or --env-file
+				// fourth precedence is result of "clean env" flag option
+				"PRECEDENCE=precedence",
+			},
+			resultEnv: []string{
+				"LANG=C",
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			apptainerEnv: map[string]string{},
+		},
+		{
+			name:     "ENV precedence - first - with no conflicts",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env: []string{
+				"APPTAINERENV_PRECEDENCE=first",
+				// third precedence is environment variables initialized via --env, or --env-file
+				// fourth precedence is result of "clean env" flag option
+			},
+			resultEnv: []string{
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			apptainerEnv: map[string]string{
+				"PRECEDENCE": "first",
+			},
+		},
+		{
+			name:     "ENV precedence - second - with no conflicts",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env: []string{
+				"SINGULARITYENV_PRECEDENCE=second",
+				// third precedence is environment variables initialized via --env, or --env-file
+				// fourth precedence is result of "clean env" flag option
+			},
+			resultEnv: []string{
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			apptainerEnv: map[string]string{
+				"PRECEDENCE": "second",
+			},
+		},
+		{
+			name:     "ENV precedence - third - with no conflicts",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env:      []string{
+				// third precedence is environment variables initialized via --env, or --env-file
+				// fourth precedence is result of "clean env" flag option
+			},
+			processEnv: map[string]string{
+				"PRECEDENCE": "third",
+			},
+			resultEnv: []string{
+				"PRECEDENCE=third",
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			apptainerEnv: map[string]string{},
+		},
+		{
+			name:     "ENV precedence - fourth - with no conflicts",
+			cleanEnv: true,
+			homeDest: "/home/tester",
+			env:      []string{
+				// third precedence is environment variables initialized via --env, or --env-file
+				// fourth precedence is result of "clean env" flag option
+			},
+			resultEnv: []string{
+				"LANG=C",
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			apptainerEnv: map[string]string{},
+		},
+		{
+			name:     "ENV precedence - fifth/last - with no conflicts",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env: []string{
+				// third precedence is environment variables initialized via --env, or --env-file
+				// fourth precedence is result of "clean env" flag option
+				"PRECEDENCE=fifth",
+			},
+			resultEnv: []string{
+				"PRECEDENCE=fifth",
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+		},
 	}
 	for _, tc := range tt {
+		if tc.disabled {
+			continue
+		}
 		t.Run(tc.name, func(t *testing.T) {
 			ociConfig := &oci.Config{}
 			generator := generate.New(&ociConfig.Spec)
-
-			senv := SetContainerEnv(generator, tc.env, tc.cleanEnv, tc.homeDest)
+			if nil != tc.processEnv {
+				// add vars for --env or --env-file
+				generator.Config.Process = &specs.Process{}
+				for k, v := range tc.processEnv {
+					generator.SetProcessEnv(k, v)
+				}
+			}
+			output := bytes.Buffer{}
+			var senv map[string]string
+			func() {
+				oldWriter := sylog.SetWriter(&output)
+				oldLevel := sylog.GetLevel()
+				sylog.SetLevel(int(sylog.DebugLevel), true)
+				defer func() {
+					oldWriter.Write(output.Bytes())
+					sylog.SetWriter(oldWriter)
+					sylog.SetLevel(oldLevel, true)
+				}()
+				senv = SetContainerEnv(generator, tc.env, tc.cleanEnv, tc.homeDest)
+			}()
 			if !equal(t, ociConfig.Process.Env, tc.resultEnv) {
 				t.Fatalf("unexpected envs:\n want: %v\ngot: %v", tc.resultEnv, ociConfig.Process.Env)
 			}

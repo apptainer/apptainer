@@ -177,3 +177,14 @@ func (t DebugLogger) Log(v ...interface{}) {
 func (t DebugLogger) Logf(format string, v ...interface{}) {
 	writef(DebugLevel, format, v...)
 }
+
+// SetWriter sets a new io.Writer for subsequent logging
+// returns the previous writer so that it may be restored by the caller
+// useful to capture log output during unit tests
+func SetWriter(writer io.Writer) io.Writer {
+	oldWriter := logWriter
+	if nil != writer {
+		logWriter = writer
+	}
+	return oldWriter
+}
