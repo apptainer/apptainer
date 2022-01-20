@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/apptainer/apptainer/actions/workflows/ci.yml/badge.svg)](https://github.com/apptainer/apptainer/actions/workflows/ci.yml)
 
-> *NOTE*: The apptainer repo is currently working towards a v1.0.0 release and
+> *NOTE*: The apptainer repo is currently up to a v1.0.0 release candidate and
   not ready for production in its current state. Until then, use the
   [Singularity Repo](https://github.com/apptainer/singularity) for a production
   ready version.
