@@ -38,7 +38,8 @@ const (
 	sLabelsPath  = "/.build.labels"
 	aEnvironment = "APPTAINER_ENVIRONMENT=/.singularity.d/env/91-environment.sh"
 	sEnvironment = "SINGULARITY_ENVIRONMENT=/.singularity.d/env/91-environment.sh"
-	sLabels      = "APPTAINER_LABELS=" + sLabelsPath
+	aLabels      = "APPTAINER_LABELS=" + sLabelsPath
+	sLabels      = "SINGULARITY_LABELS=" + sLabelsPath
 )
 
 // Assemble assembles the bundle to the specified path.
@@ -85,7 +86,7 @@ func (s *stage) runSectionScript(name string, script types.Script) error {
 func (s *stage) runPostScript(configFile, sessionResolv, sessionHosts string) error {
 	if s.b.Recipe.BuildData.Post.Script != "" {
 		cmdArgs := []string{"-s", "-c", configFile, "exec", "--pwd", "/", "--writable"}
-		cmdArgs = append(cmdArgs, "--cleanenv", "--env", aEnvironment, "--env", sEnvironment, "--env", sLabels)
+		cmdArgs = append(cmdArgs, "--cleanenv", "--env", aEnvironment, "--env", sEnvironment, "--env", aLabels, "--env", sLabels)
 
 		if sessionResolv != "" {
 			cmdArgs = append(cmdArgs, "-B", sessionResolv+":/etc/resolv.conf")
