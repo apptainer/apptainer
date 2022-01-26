@@ -36,7 +36,8 @@ and steps 1-2 should be skipped.
    branch e.g. `git checkout upstream/main -b release-1.0`.
 2. Push the release branch to GitHub via `git push upstream release-1.0`.
 3. Examine the GitHub branch protection rules, to extend them to the
-   new release branch if needed.
+   new release branch if needed.  Also examine `.github/dependabot.yml`
+   to see if the new branch should be added there.
 4. Modify the `README.md`, `INSTALL.md`, `CHANGELOG.md` via PR against
    the release-1.Y branch, so that they reflect the version to be released.
    1. Apply an annotated tag via `git tag -a -m "Apptainer v1.0.0
