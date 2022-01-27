@@ -15,7 +15,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
-	"github.com/containerd/cgroups"
+	"github.com/opencontainers/runc/libcontainer/cgroups"
 	"github.com/opencontainers/runtime-spec/specs-go"
 	cseccomp "github.com/seccomp/containers-golang"
 )
@@ -43,7 +43,7 @@ func (c *Config) UnmarshalJSON(b []byte) error {
 // DefaultConfig returns an OCI config generator with a
 // default OCI configuration for cgroups v1 or v2 dependent on the current host.
 func DefaultConfig() (*generate.Generator, error) {
-	if cgroups.Mode() == cgroups.Unified {
+	if cgroups.IsCgroup2HybridMode() {
 		return DefaultConfigV2()
 	}
 	return DefaultConfigV1()

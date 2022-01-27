@@ -25,7 +25,8 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
 	"github.com/apptainer/apptainer/pkg/network"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
-	"github.com/containerd/cgroups"
+	"github.com/apptainer/apptainer/pkg/util/slice"
+	"github.com/opencontainers/runc/libcontainer/cgroups"
 )
 
 var (
@@ -129,26 +130,25 @@ func Network(t *testing.T) {
 // Cgroups checks that any cgroups version is enabled, if not the
 // current test is skipped with a message.
 func Cgroups(t *testing.T) {
-	mode := cgroups.Mode()
-	if mode == cgroups.Unavailable {
+	subsystems, err := cgroups.GetAllSubsystems()
+	if err != nil || len(subsystems) == 0 {
 		t.Skipf("cgroups not available")
 	}
 }
 
-// CgroupsV1 checks that cgroups v1 is enabled, if not the
+// CgroupsV1 checks that legacy cgroups is enabled, if not the
 // current test is skipped with a message.
 func CgroupsV1(t *testing.T) {
-	mode := cgroups.Mode()
-	if mode != cgroups.Legacy && mode != cgroups.Hybrid {
-		t.Skipf("cgroups v1 not available")
+	Cgroups(t)
+	if cgroups.IsCgroup2UnifiedMode() || cgroups.IsCgroup2HybridMode() {
+		t.Skipf("cgroups v1 legacy mode not available")
 	}
 }
 
-// CgroupsV2 checks that cgroups v2 is enabled, if not the
+// CgroupsV2 checks that cgroups v2 unified mode is enabled, if not the
 // current test is skipped with a message.
-func CgroupsV2(t *testing.T) {
-	mode := cgroups.Mode()
-	if mode != cgroups.Unified {
+func CgroupsV2Unified(t *testing.T) {
+	if !cgroups.IsCgroup2UnifiedMode() {
 		t.Skipf("cgroups v2 unified mode not available")
 	}
 }
@@ -157,20 +157,13 @@ func CgroupsV2(t *testing.T) {
 // available, if not the current test is skipped with a
 // message
 func CgroupsFreezer(t *testing.T) {
-	if cgroups.Mode() == cgroups.Unified {
-		return
-	}
-
-	subSys, err := cgroups.V1()
+	subsystems, err := cgroups.GetAllSubsystems()
 	if err != nil {
-		t.Skipf("cgroups disabled")
+		t.Skipf("couldn't get cgroups subsystems: %v", err)
 	}
-	for _, s := range subSys {
-		if s.Name() == "freezer" {
-			return
-		}
+	if !slice.ContainsString(subsystems, "freezer") {
+		t.Skipf("no cgroups freezer subsystem available")
 	}
-	t.Skipf("no cgroups freezer subsystem available")
 }
 
 // Nvidia checks that an NVIDIA stack is available

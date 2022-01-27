@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -21,6 +21,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 )
 
+//nolint:dupl
 func TestCgroupsV1(t *testing.T) {
 	test.EnsurePrivilege(t)
 	require.CgroupsV1(t)
@@ -29,13 +30,18 @@ func TestCgroupsV1(t *testing.T) {
 	if err := cmd.Start(); err != nil {
 		t.Fatal(err)
 	}
-	defer cmd.Process.Kill()
 
 	pid := cmd.Process.Pid
 	strPid := strconv.Itoa(pid)
 	path := filepath.Join("/apptainer", strPid)
 
-	manager := &ManagerV1{pid: pid, path: path}
+	manager := &ManagerLC{pid: pid, group: path}
+
+	defer func() {
+		cmd.Process.Kill()
+		cmd.Process.Wait()
+		manager.Remove()
+	}()
 
 	cgroupsToml := "example/cgroups.toml"
 	// Some systems, e.g. ppc64le may not have a 2MB page size, so don't
@@ -49,7 +55,6 @@ func TestCgroupsV1(t *testing.T) {
 	if err := manager.ApplyFromFile(cgroupsToml); err != nil {
 		t.Fatal(err)
 	}
-	defer manager.Remove()
 
 	rootPath := manager.GetCgroupRootPath()
 	if rootPath == "" {
@@ -73,7 +78,7 @@ func TestCgroupsV1(t *testing.T) {
 	}
 
 	// test update/load from PID
-	manager = &ManagerV1{pid: pid}
+	manager = &ManagerLC{pid: pid}
 
 	if err := manager.UpdateFromFile(tmpfile.Name()); err != nil {
 		t.Fatal(err)
@@ -81,11 +86,12 @@ func TestCgroupsV1(t *testing.T) {
 	ensureIntInFile(t, cpuShares, 512)
 }
 
+//nolint:dupl
 func TestPauseResumeV1(t *testing.T) {
 	test.EnsurePrivilege(t)
 	require.CgroupsV1(t)
 
-	manager := &ManagerV1{}
+	manager := &ManagerLC{}
 	if err := manager.Pause(); err == nil {
 		t.Errorf("unexpected success with PID 0")
 	}
@@ -97,15 +103,19 @@ func TestPauseResumeV1(t *testing.T) {
 	if err := cmd.Start(); err != nil {
 		t.Fatal(err)
 	}
-	defer cmd.Process.Kill()
 
 	manager.pid = cmd.Process.Pid
-	manager.path = filepath.Join("/apptainer", strconv.Itoa(manager.pid))
+	manager.group = filepath.Join("/apptainer", strconv.Itoa(manager.pid))
+
+	defer func() {
+		cmd.Process.Kill()
+		cmd.Process.Wait()
+		manager.Remove()
+	}()
 
 	if err := manager.ApplyFromFile("example/cgroups.toml"); err != nil {
 		t.Fatal(err)
 	}
-	defer manager.Remove()
 
 	manager.Pause()
 	// cgroups v1 freeze is to uninterruptible sleep

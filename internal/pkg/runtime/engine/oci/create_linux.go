@@ -810,9 +810,6 @@ func (c *container) addDevices(system *mount.System) error {
 		}
 
 		// cgroupDevices are essential for operation, so must be allowed *prior* to a configured wildcard deny.
-		// containerd/cgroups/v2 device filtering via eBPF is written such that it stops at the wildcard.
-		// See: https://github.com/containerd/cgroups/blob/ddda8a174e9ae86b31366812ae2d0f9f9570a7f1/v2/devicefilter.go#L93
-		//      https://github.com/containerd/cgroups/blob/ddda8a174e9ae86b31366812ae2d0f9f9570a7f1/v2/devicefilter.go#L164
 		c.engine.EngineConfig.OciConfig.Linux.Resources.Devices = append(cgroupDevices, c.engine.EngineConfig.OciConfig.Linux.Resources.Devices...)
 	}
 
