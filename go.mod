@@ -39,8 +39,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/sylabs/json-resp v0.8.0
 	github.com/urfave/cli v1.22.5 // indirect
-	github.com/vbauerster/mpb/v4 v4.12.2
-	github.com/vbauerster/mpb/v6 v6.0.4
+	github.com/vbauerster/mpb/v7 v7.3.2
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
 	github.com/yvasiyarov/gorelic v0.0.6 // indirect
