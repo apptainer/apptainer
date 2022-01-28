@@ -26,6 +26,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
 	"github.com/apptainer/sif/v2/pkg/sif"
+	"github.com/google/uuid"
 )
 
 // SIFAssembler doesn't store anything.
@@ -121,8 +122,17 @@ func createSIF(path string, b *types.Bundle, squashfile string, encOpts *encrypt
 	// remove anything that may exist at the build destination at last moment
 	os.RemoveAll(path)
 
-	// test container creation with two partition input descriptors
-	f, err := sif.CreateContainerAtPath(path, sif.OptCreateWithDescriptors(dis...))
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return fmt.Errorf("sif id generation failed: %v", err)
+	}
+
+	f, err := sif.CreateContainerAtPath(
+		path,
+		sif.OptCreateWithDescriptors(dis...),
+		sif.OptCreateWithID(id.String()),
+		sif.OptCreateWithLaunchScript("#!/usr/bin/env run-singularity\n"),
+	)
 	if err != nil {
 		return fmt.Errorf("while creating container: %w", err)
 	}
