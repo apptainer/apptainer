@@ -291,10 +291,6 @@ func (cp *DebootstrapConveyorPacker) insertRunScript(b *types.Bundle) (err error
 		return
 	}
 
-	if err != nil {
-		return
-	}
-
 	f.Sync()
 
 	err = os.Chmod(b.RootfsPath+"/.singularity.d/runscript", 0o755)

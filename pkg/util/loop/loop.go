@@ -201,7 +201,7 @@ func (loop *Device) attachLoop(imageFd uintptr, imageInfo *syscall.Stat_t, mode 
 		if _, _, esys := syscall.Syscall(syscall.SYS_FCNTL, uintptr(loopFd), syscall.F_SETFD, syscall.FD_CLOEXEC); esys != 0 {
 			releaseDevice(loopFd, true)
 			releaseLock()
-			return fmt.Errorf("failed to set close-on-exec on loop device %s: %s", getLoopPath(device), err.Error())
+			return fmt.Errorf("failed to set close-on-exec on loop device %s: error message=%s", getLoopPath(device), esys.Error())
 		}
 
 		if err := setLoopStatus(loopFd, loop.Info, getLoopPath(device), retryFn); err != nil {

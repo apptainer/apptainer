@@ -60,9 +60,7 @@ var CheckpointListCmd = &cobra.Command{
 
 		entries, err := m.List()
 		if err != nil {
-			if err != nil {
-				sylog.Fatalf("Failed to get checkpoint entries: %v", err)
-			}
+			sylog.Fatalf("Failed to get checkpoint entries: %v", err)
 		}
 
 		tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)

@@ -219,6 +219,9 @@ func (s *Squashfs) ExtractFiles(files []string, reader io.Reader, dest string) e
 // TestUserXattr tries to set a user xattr on PATH to ensure they are supported on this fs
 func TestUserXattr(path string) (ok bool, err error) {
 	tmp, err := ioutil.TempFile(path, "uxattr-")
+	if err != nil {
+		return false, err
+	}
 	defer os.Remove(tmp.Name())
 	tmp.Close()
 	err = unix.Setxattr(tmp.Name(), "user.apptainer", []byte{}, 0)

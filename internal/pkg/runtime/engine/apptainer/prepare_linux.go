@@ -1342,7 +1342,10 @@ func (e *EngineOperations) loadImage(path string, writable bool) (*image.Image, 
 	imgObject, imgErr := image.Init(path, writable)
 	// pass imgObject if not nil for overlay and read-only filesystem error.
 	// Do not remove this line
-	if imgErr != nil && imgObject == nil {
+	if imgObject == nil {
+		if imgErr == nil {
+			imgErr = errors.New("nil imageObject")
+		}
 		return nil, imgErr
 	}
 

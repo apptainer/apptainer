@@ -498,6 +498,10 @@ func All(r io.Reader) ([]types.Definition, error) {
 		stages = append(stages, d)
 	}
 
+	if len(stages) == 0 {
+		return nil, errors.New("no stages found in definition file")
+	}
+
 	// set raw of last stage to be entire specification
 	stages[len(stages)-1].Raw = raw
 

@@ -477,16 +477,14 @@ func testEditEntry(t *testing.T, config *Config) {
 	e, err := config.GetUserEntry("valid_11")
 	if err != nil {
 		t.Errorf("unexpected error for valid_11 user")
-	}
-	if !e.disabled {
+	} else if !e.disabled {
 		t.Errorf("valid_11 user entry should be disabled")
 	}
 	// this entry was enabled
 	e, err = config.GetUserEntry("disabled_40")
 	if err != nil {
 		t.Errorf("unexpected error for disabled_40 user")
-	}
-	if e.disabled {
+	} else if e.disabled {
 		t.Errorf("disabled_40 user entry should be enabled")
 	}
 	// this entry was added and range start should be
@@ -494,8 +492,7 @@ func testEditEntry(t *testing.T, config *Config) {
 	e, err = config.GetUserEntry("valid_21")
 	if err != nil {
 		t.Errorf("unexpected error for valid_21 user")
-	}
-	if e.Start != startMax {
+	} else if e.Start != startMax {
 		t.Errorf("valid_21 user entry start range should be %d, got %d", startMax, e.Start)
 	}
 }
