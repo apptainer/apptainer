@@ -13,13 +13,38 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 )
 
-// ensureIntInFile asserts that the content of path is the integer wantInt
-func ensureIntInFile(t *testing.T, path string, wantInt int64) {
+// This file contains tests that will run under cgroups v1 & v2, and test utility functions.
+
+func TestGetFromPid(t *testing.T) {
+	test.EnsurePrivilege(t)
+	require.Cgroups(t)
+
+	pid, manager, cleanup := testManager(t)
+	defer cleanup()
+
+	// Covers GetManagerForPath indirectly
+	pidMgr, err := GetManagerForPid(pid)
+	if err != nil {
+		t.Fatalf("While getting cgroup manager for pid: %v", err)
+	}
+
+	if pidMgr.group != manager.group {
+		t.Errorf("Expected %s for cgroup from pid, got %s", manager.group, pidMgr.cgroup)
+	}
+}
+
+// ensureInt asserts that the content of path is the integer wantInt
+func ensureInt(t *testing.T, path string, wantInt int64) {
 	file, err := os.Open(path)
 	if err != nil {
 		t.Errorf("while opening %q: %v", path, err)
@@ -41,6 +66,30 @@ func ensureIntInFile(t *testing.T, path string, wantInt int64) {
 	if val != wantInt {
 		t.Errorf("found %d in %q, expected %d", val, path, wantInt)
 	}
+}
+
+// ensureContainsInt asserts that the content of path contains the integer wantInt
+func ensureContainsInt(t *testing.T, path string, wantInt int64) {
+	file, err := os.Open(path)
+	if err != nil {
+		t.Errorf("while opening %q: %v", path, err)
+		return
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		val, err := strconv.ParseInt(scanner.Text(), 10, 64)
+		if err != nil {
+			t.Errorf("could not parse %q: %v", path, err)
+		}
+		if val == wantInt {
+			return
+		}
+	}
+
+	t.Fatalf("%s did not contain expected value %d", path, wantInt)
 }
 
 // ensureState asserts that a process pid has the required state
@@ -68,4 +117,40 @@ func ensureState(t *testing.T, pid int, wantStates string) {
 	if !strings.ContainsAny(procState, wantStates) {
 		t.Errorf("Process %d had state %q, expected state %q", pid, procState, wantStates)
 	}
+}
+
+// testManager returns a cgroup manager, that has created a cgroup with a `cat /dev/zero` process,
+// and example resource config.
+func testManager(t *testing.T) (pid int, manager *Manager, cleanup func()) {
+	// Create process to put into a cgroup
+	t.Log("Creating test process")
+	cmd := exec.Command("/bin/cat", "/dev/zero")
+	if err := cmd.Start(); err != nil {
+		t.Fatalf("While starting test process: %v", err)
+	}
+	pid = cmd.Process.Pid
+	strPid := strconv.Itoa(pid)
+	group := filepath.Join("/apptainer", strPid)
+
+	cgroupsToml := "example/cgroups.toml"
+	// Some systems, e.g. ppc64le may not have a 2MB page size, so don't
+	// apply a 2MB hugetlb limit if that's the case.
+	_, err := os.Stat("/sys/fs/cgroup/dev-hugepages.mount/hugetlb.2MB.max")
+	if os.IsNotExist(err) {
+		t.Log("No hugetlb.2MB.max - using alternate cgroups test file")
+		cgroupsToml = "example/cgroups-no-hugetlb.toml"
+	}
+
+	manager, err = NewManagerWithFile(cgroupsToml, pid, group)
+	if err != nil {
+		t.Fatalf("While creating new cgroup: %v", err)
+	}
+
+	cleanup = func() {
+		cmd.Process.Kill()
+		cmd.Process.Wait()
+		manager.Destroy()
+	}
+
+	return pid, manager, cleanup
 }
