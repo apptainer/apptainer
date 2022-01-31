@@ -1832,6 +1832,11 @@ func (c actionTests) bindImage(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	scratchDir := filepath.Join(testdir, "scratch")
+	if err := os.MkdirAll(filepath.Join(scratchDir, "bin"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+
 	cleanup := func(t *testing.T) {
 		if t.Failed() {
 			t.Logf("Not removing directory %s for test %s", testdir, t.Name())
@@ -2109,6 +2114,29 @@ func (c actionTests) bindImage(t *testing.T) {
 				"--bind", c.env.ImagePath + ":/rootfs:id=4",
 				c.env.ImagePath,
 				"test", "-d", "/rootfs/etc",
+			},
+			exit: 0,
+		},
+		// check ordering between image and user bind
+		{
+			name:    "SquashfsBeforeScratch",
+			profile: e2e.UserProfile,
+			args: []string{
+				"--bind", sifSquashImage + ":/scratch/bin:image-src=/",
+				"--bind", scratchDir + ":/scratch",
+				c.env.ImagePath,
+				"test", "-f", filepath.Join("/scratch/bin", squashMarkerFile),
+			},
+			exit: 1,
+		},
+		{
+			name:    "ScratchBeforeSquashfs",
+			profile: e2e.UserProfile,
+			args: []string{
+				"--bind", scratchDir + ":/scratch",
+				"--bind", sifSquashImage + ":/scratch/bin:image-src=/",
+				c.env.ImagePath,
+				"test", "-f", filepath.Join("/scratch/bin", squashMarkerFile),
 			},
 			exit: 0,
 		},
