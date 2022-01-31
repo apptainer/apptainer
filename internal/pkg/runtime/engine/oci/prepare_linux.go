@@ -216,7 +216,7 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		ppid := os.Getppid()
 
 		sylog.Debugf("Adding process %d to instance cgroup %q", ppid, cPath)
-		manager, err := cgroups.GetManager(cPath)
+		manager, err := cgroups.GetManagerForGroup(cPath)
 		if err != nil {
 			return fmt.Errorf("couldn't create cgroup manager: %v", err)
 		}

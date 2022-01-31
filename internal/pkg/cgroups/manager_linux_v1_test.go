@@ -21,11 +21,14 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 )
 
+// This file contains tests that will run under cgroups v1 only.
+
 //nolint:dupl
 func TestCgroupsV1(t *testing.T) {
 	test.EnsurePrivilege(t)
 	require.CgroupsV1(t)
 
+	// Create process to put into a cgroup
 	cmd := exec.Command("/bin/cat", "/dev/zero")
 	if err := cmd.Start(); err != nil {
 		t.Fatal(err)
@@ -33,15 +36,7 @@ func TestCgroupsV1(t *testing.T) {
 
 	pid := cmd.Process.Pid
 	strPid := strconv.Itoa(pid)
-	path := filepath.Join("/apptainer", strPid)
-
-	manager := &ManagerLC{pid: pid, group: path}
-
-	defer func() {
-		cmd.Process.Kill()
-		cmd.Process.Wait()
-		manager.Remove()
-	}()
+	group := filepath.Join("/apptainer", strPid)
 
 	cgroupsToml := "example/cgroups.toml"
 	// Some systems, e.g. ppc64le may not have a 2MB page size, so don't
@@ -52,16 +47,23 @@ func TestCgroupsV1(t *testing.T) {
 		cgroupsToml = "example/cgroups-no-hugetlb.toml"
 	}
 
-	if err := manager.ApplyFromFile(cgroupsToml); err != nil {
+	manager, err := NewManagerWithFile(cgroupsToml, pid, group)
+	if err != nil {
 		t.Fatal(err)
 	}
 
-	rootPath := manager.GetCgroupRootPath()
-	if rootPath == "" {
+	defer func() {
+		cmd.Process.Kill()
+		cmd.Process.Wait()
+		manager.Destroy()
+	}()
+
+	rootPath, err := manager.GetCgroupRootPath()
+	if err != nil {
 		t.Fatalf("can't determine cgroups root path, is cgroups enabled ?")
 	}
 
-	cpuShares := filepath.Join(rootPath, "cpu", path, "cpu.shares")
+	cpuShares := filepath.Join(rootPath, "cpu", group, "cpu.shares")
 	ensureIntInFile(t, cpuShares, 1024)
 
 	content := []byte("[cpu]\nshares = 512")
@@ -77,9 +79,12 @@ func TestCgroupsV1(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// test update/load from PID
-	manager = &ManagerLC{pid: pid}
+	manager, err = GetManagerForPid(pid)
+	if err != nil {
+		t.Fatal(err)
+	}
 
+	// Update existing cgroup from new config
 	if err := manager.UpdateFromFile(tmpfile.Name()); err != nil {
 		t.Fatal(err)
 	}
@@ -91,11 +96,11 @@ func TestPauseResumeV1(t *testing.T) {
 	test.EnsurePrivilege(t)
 	require.CgroupsV1(t)
 
-	manager := &ManagerLC{}
-	if err := manager.Pause(); err == nil {
+	manager := &Manager{}
+	if err := manager.Freeze(); err == nil {
 		t.Errorf("unexpected success with PID 0")
 	}
-	if err := manager.Resume(); err == nil {
+	if err := manager.Thaw(); err == nil {
 		t.Errorf("unexpected success with PID 0")
 	}
 
@@ -104,23 +109,22 @@ func TestPauseResumeV1(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	manager.pid = cmd.Process.Pid
-	manager.group = filepath.Join("/apptainer", strconv.Itoa(manager.pid))
+	group := filepath.Join("/apptainer", strconv.Itoa(cmd.Process.Pid))
+	manager, err := NewManagerWithFile("example/cgroups.toml", cmd.Process.Pid, group)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	defer func() {
 		cmd.Process.Kill()
 		cmd.Process.Wait()
-		manager.Remove()
+		manager.Destroy()
 	}()
 
-	if err := manager.ApplyFromFile("example/cgroups.toml"); err != nil {
-		t.Fatal(err)
-	}
-
-	manager.Pause()
+	manager.Freeze()
 	// cgroups v1 freeze is to uninterruptible sleep
-	ensureState(t, manager.pid, "D")
+	ensureState(t, cmd.Process.Pid, "D")
 
-	manager.Resume()
-	ensureState(t, manager.pid, "RS")
+	manager.Thaw()
+	ensureState(t, cmd.Process.Pid, "RS")
 }

@@ -18,7 +18,7 @@ import (
 	"testing"
 )
 
-// ensureIntInFile asserts that the content of path is the inteeger wantInt
+// ensureIntInFile asserts that the content of path is the integer wantInt
 func ensureIntInFile(t *testing.T, path string, wantInt int64) {
 	file, err := os.Open(path)
 	if err != nil {

@@ -473,7 +473,7 @@ func (e *EngineOperations) handleControl(masterConn net.Conn, attach, control ne
 			}
 		}
 		if ctrl.Pause {
-			if err := e.EngineConfig.Cgroups.Pause(); err != nil {
+			if err := e.EngineConfig.Cgroups.Freeze(); err != nil {
 				fatalChan <- err
 				return
 			}
@@ -487,7 +487,7 @@ func (e *EngineOperations) handleControl(masterConn net.Conn, attach, control ne
 				fatalChan <- err
 				return
 			}
-			if err := e.EngineConfig.Cgroups.Resume(); err != nil {
+			if err := e.EngineConfig.Cgroups.Thaw(); err != nil {
 				fatalChan <- err
 				return
 			}
