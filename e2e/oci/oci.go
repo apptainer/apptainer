@@ -12,13 +12,10 @@ package oci
 import (
 	"encoding/json"
 	"io/ioutil"
-	"path/filepath"
-	"runtime"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
-	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci"
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 	"github.com/apptainer/apptainer/pkg/ociruntime"
 	"github.com/google/uuid"
@@ -71,31 +68,11 @@ func genericOciMount(t *testing.T, c *ctx) (string, func()) {
 		err = errors.Wrapf(err, "creating temporary bundle directory at %q", c.env.TestDir)
 		t.Fatalf("failed to create bundle directory: %+v", err)
 	}
-	ociConfig := filepath.Join(bundleDir, "config.json")
-
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("oci mount"),
 		e2e.WithArgs(c.env.ImagePath, bundleDir),
-		e2e.PostRun(func(t *testing.T) {
-			if t.Failed() {
-				t.Fatalf("failed to mount OCI bundle image")
-			}
-
-			g, err := oci.DefaultConfig()
-			if err != nil {
-				err = errors.Wrapf(err, "generating default OCI config for %q", runtime.GOOS)
-				t.Fatalf("failed to generate default OCI config: %+v", err)
-			}
-			g.SetProcessTerminal(true)
-
-			err = g.SaveToFile(ociConfig)
-			if err != nil {
-				err = errors.Wrapf(err, "saving OCI config at %q", ociConfig)
-				t.Fatalf("failed to save OCI config: %+v", err)
-			}
-		}),
 		e2e.ExpectExit(0),
 	)
 
@@ -129,7 +106,7 @@ func (c ctx) testOciRun(t *testing.T) {
 		e2e.WithArgs("-b", bundleDir, containerID),
 		e2e.ConsoleRun(
 			e2e.ConsoleSendLine("hostname"),
-			e2e.ConsoleExpect("mrsdalloway"),
+			e2e.ConsoleExpect("apptainer"),
 			e2e.ConsoleSendLine("id -un"),
 			e2e.ConsoleExpect("root"),
 			e2e.ConsoleSendLine("exit"),
@@ -194,7 +171,7 @@ func (c ctx) testOciAttach(t *testing.T) {
 		e2e.WithArgs(containerID),
 		e2e.ConsoleRun(
 			e2e.ConsoleSendLine("hostname"),
-			e2e.ConsoleExpect("mrsdalloway"),
+			e2e.ConsoleExpect("apptainer"),
 			e2e.ConsoleSendLine("exit"),
 		),
 		e2e.PostRun(func(t *testing.T) {
