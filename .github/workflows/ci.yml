@@ -44,6 +44,16 @@ jobs:
           ./mconfig -v -p /usr/local
           make -C ./builddir check
 
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-20.04
+    container: koalaman/shellcheck-alpine
+    steps:
+      - uses: actions/checkout@v2
+      - name: shellcheck files that appear to be sh or bash scripts (or some cousin thereof)
+        run: |
+          shellcheck $( ./scripts/get-shell-files.sh )
+
   alpine:
     name: alpine
     runs-on: ubuntu-20.04
@@ -267,6 +277,7 @@ jobs:
       - integration_tests
       - e2e_tests
       - check_pkg_no_buildcfg
+      - shellcheck
 
     steps:
       - uses: actions/checkout@v2
