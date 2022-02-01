@@ -140,7 +140,7 @@ func Cgroups(t *testing.T) {
 // current test is skipped with a message.
 func CgroupsV1(t *testing.T) {
 	Cgroups(t)
-	if cgroups.IsCgroup2UnifiedMode() || cgroups.IsCgroup2HybridMode() {
+	if cgroups.IsCgroup2UnifiedMode() {
 		t.Skipf("cgroups v1 legacy mode not available")
 	}
 }

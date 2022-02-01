@@ -13,6 +13,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   so that `oci run` provides expected interactive behavior by default.
 - Default hostname for `oci mount` containers is now `apptainer` instead of
   `mrsdalloway`.
+- systemd is now supported and used as the default cgroups manager. Set
+  `systemd cgroups = no` in `apptainer.conf` to manage cgroups directly via
+  the cgroupfs.
 
 ### New features / functionalities
 

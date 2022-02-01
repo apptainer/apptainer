@@ -25,20 +25,66 @@ import (
 
 // This file contains tests that will run under cgroups v1 & v2, and test utility functions.
 
-func TestGetFromPid(t *testing.T) {
+type (
+	CgroupTestFunc func(t *testing.T, systemd bool)
+	CgroupTest     struct {
+		name     string
+		testFunc CgroupTestFunc
+	}
+)
+type CgroupTests []CgroupTest
+
+func TestCgroups(t *testing.T) {
+	tests := CgroupTests{
+		{
+			name:     "GetFromPid",
+			testFunc: testGetFromPid,
+		},
+	}
+	runCgroupfsTests(t, tests)
+	runSystemdTests(t, tests)
+}
+
+func runCgroupfsTests(t *testing.T, tests CgroupTests) {
+	t.Run("cgroupfs", func(t *testing.T) {
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				tt.testFunc(t, false)
+			})
+		}
+	})
+}
+
+func runSystemdTests(t *testing.T, tests CgroupTests) {
+	t.Run("systemd", func(t *testing.T) {
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				tt.testFunc(t, true)
+			})
+		}
+	})
+}
+
+func testGetFromPid(t *testing.T, systemd bool) {
 	test.EnsurePrivilege(t)
 	require.Cgroups(t)
 
-	pid, manager, cleanup := testManager(t)
+	// We create either a cgroupfs or systemd cgroup initially
+	pid, manager, cleanup := testManager(t, systemd)
 	defer cleanup()
 
-	// Covers GetManagerForPath indirectly
+	// We can only retrieve a cgroupfs managed cgroup from pid
 	pidMgr, err := GetManagerForPid(pid)
 	if err != nil {
 		t.Fatalf("While getting cgroup manager for pid: %v", err)
 	}
 
-	if pidMgr.group != manager.group {
+	relPath, err := manager.GetCgroupRelPath()
+	if err != nil {
+		t.Fatalf("While getting manager cgroup relative path")
+	}
+
+	if pidMgr.group != relPath {
 		t.Errorf("Expected %s for cgroup from pid, got %s", manager.group, pidMgr.cgroup)
 	}
 }
@@ -121,7 +167,7 @@ func ensureState(t *testing.T, pid int, wantStates string) {
 
 // testManager returns a cgroup manager, that has created a cgroup with a `cat /dev/zero` process,
 // and example resource config.
-func testManager(t *testing.T) (pid int, manager *Manager, cleanup func()) {
+func testManager(t *testing.T, systemd bool) (pid int, manager *Manager, cleanup func()) {
 	// Create process to put into a cgroup
 	t.Log("Creating test process")
 	cmd := exec.Command("/bin/cat", "/dev/zero")
@@ -131,6 +177,9 @@ func testManager(t *testing.T) (pid int, manager *Manager, cleanup func()) {
 	pid = cmd.Process.Pid
 	strPid := strconv.Itoa(pid)
 	group := filepath.Join("/apptainer", strPid)
+	if systemd {
+		group = "system.slice:apptainer:" + strPid
+	}
 
 	cgroupsToml := "example/cgroups.toml"
 	// Some systems, e.g. ppc64le may not have a 2MB page size, so don't
@@ -141,7 +190,7 @@ func testManager(t *testing.T) (pid int, manager *Manager, cleanup func()) {
 		cgroupsToml = "example/cgroups-no-hugetlb.toml"
 	}
 
-	manager, err = NewManagerWithFile(cgroupsToml, pid, group)
+	manager, err = NewManagerWithFile(cgroupsToml, pid, group, systemd)
 	if err != nil {
 		t.Fatalf("While creating new cgroup: %v", err)
 	}

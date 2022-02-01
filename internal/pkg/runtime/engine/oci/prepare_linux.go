@@ -13,10 +13,13 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/cgroups"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/starter"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/ociruntime"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
 	"github.com/creack/pty"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
@@ -58,6 +61,16 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	if e.EngineConfig.OciConfig.Linux == nil {
 		return fmt.Errorf("empty OCI linux configuration")
 	}
+
+	// TODO - investigate whether this is the highest place to pull this value from apptainer.conf
+	if !fs.IsOwner(buildcfg.APPTAINER_CONF_FILE, 0) {
+		return fmt.Errorf("%s must be owned by root", buildcfg.APPTAINER_CONF_FILE)
+	}
+	sConf, err := apptainerconf.Parse(buildcfg.APPTAINER_CONF_FILE)
+	if err != nil {
+		return fmt.Errorf("unable to parse apptainer.conf file: %s", err)
+	}
+	e.EngineConfig.SystemdCgroups = sConf.SystemdCgroups
 
 	// reset state config that could be passed to engine
 	e.EngineConfig.State = ociruntime.State{}

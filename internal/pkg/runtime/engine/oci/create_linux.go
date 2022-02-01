@@ -487,9 +487,11 @@ func (e *EngineOperations) waitStatusUpdate() {
 
 func (c *container) addCgroups(pid int, system *mount.System) error {
 	name := c.engine.CommonConfig.ContainerID
+	resources := c.engine.EngineConfig.OciConfig.Linux.Resources
+	systemd := c.engine.EngineConfig.GetSystemdCgroups()
 	cgroupsPath := c.engine.EngineConfig.OciConfig.Linux.CgroupsPath
 
-	if !filepath.IsAbs(cgroupsPath) {
+	if !systemd && !filepath.IsAbs(cgroupsPath) {
 		if cgroupsPath == "" {
 			cgroupsPath = filepath.Join("/apptainer-oci", name)
 		} else {
@@ -497,9 +499,13 @@ func (c *container) addCgroups(pid int, system *mount.System) error {
 		}
 	}
 
+	if systemd && cgroupsPath == "" {
+		cgroupsPath = "system.slice:apptainer-oci:" + name
+	}
+
 	c.engine.EngineConfig.OciConfig.Linux.CgroupsPath = cgroupsPath
 
-	manager, err := cgroups.NewManagerWithSpec(c.engine.EngineConfig.OciConfig.Linux.Resources, pid, cgroupsPath)
+	manager, err := cgroups.NewManagerWithSpec(resources, pid, cgroupsPath, systemd)
 	if err != nil {
 		return fmt.Errorf("failed to apply cgroups resources restriction: %s", err)
 	}

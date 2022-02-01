@@ -504,6 +504,27 @@ func (c configTests) configGlobal(t *testing.T) {
 			directiveValue: "yes",
 			exit:           0,
 		},
+		// FIXME
+		// The e2e tests currently run inside a PID namespace.
+		//   (see internal/init/init_linux.go)
+		// We can't instruct systemd to manage our cgroups as the PIDs in our test namespace
+		// won't match what systemd sees.
+		// {
+		// 	name:           "SystemdCgroupsYes",
+		// 	argv:           []string{"--apply-cgroups", "testdata/cgroups/pids_limit.toml", c.sandboxImage, "true"},
+		// 	profile:        e2e.RootProfile,
+		// 	directive:      "systemd cgroups",
+		// 	directiveValue: "yes",
+		// 	exit:           0,
+		// },
+		{
+			name:           "SystemdCgroupNo",
+			argv:           []string{"--apply-cgroups", "testdata/cgroups/pids_limit.toml", c.sandboxImage, "true"},
+			profile:        e2e.RootProfile,
+			directive:      "systemd cgroups",
+			directiveValue: "no",
+			exit:           0,
+		},
 	}
 
 	for _, tt := range tests {
