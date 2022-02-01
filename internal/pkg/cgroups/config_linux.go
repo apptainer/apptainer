@@ -171,8 +171,8 @@ type Config struct {
 	// Limits are a set of key value pairs that define RDMA resource limits,
 	// where the key is device name and value is resource limits.
 	Rdma map[string]LinuxRdma `toml:"rdma" json:"rdma,omitempty"`
-	// TODO: Enable support for native cgroup v2 resource specifications
-	// Unified map[string]string `toml:"unified" json:"unified,omitempty"`
+	// Native cgroups v2 unified hierarchy resource limits.
+	Unified map[string]string `toml:"unified" json:"unified,omitempty"`
 }
 
 // LoadConfig loads a cgroups config file into our native cgroups.Config struct
