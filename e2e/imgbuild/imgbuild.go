@@ -1081,7 +1081,7 @@ func (c imgBuildTests) buildWithFingerprint(t *testing.T) {
 		remove(t)
 	}()
 
-	pgpDir, _ := e2e.MakeSyPGPDir(t, tmpDir)
+	pgpDir, _ := e2e.MakeKeysDir(t, tmpDir)
 	c.env.KeyringDir = pgpDir
 	invalidFingerPrint := "0000000000000000000000000000000000000000"
 	singleSigned := filepath.Join(tmpDir, "singleSigned.sif")

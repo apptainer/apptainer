@@ -552,17 +552,17 @@ func (env TestEnv) RunApptainer(t *testing.T, cmdOps ...ApptainerCmdOp) {
 		// the developer's responsibility to ensure that the directory is
 		// correctly deleted upon successful or unsuccessful completion of the
 		// test.
-		sypgpDir := env.KeyringDir
+		keysDir := env.KeyringDir
 
-		if sypgpDir == "" {
+		if keysDir == "" {
 			// cleanKeyring is a function that will delete the temporary
 			// PGP keyring and fail the test if it cannot be deleted.
-			keyringDir, cleanSyPGPDir := MakeSyPGPDir(t, env.TestDir)
-			sypgpDir = keyringDir
-			defer cleanSyPGPDir(t)
+			keyringDir, cleanKeysDir := MakeKeysDir(t, env.TestDir)
+			keysDir = keyringDir
+			defer cleanKeysDir(t)
 		}
-		sypgpDirEnv := fmt.Sprintf("%s=%s", "APPTAINER_SYPGPDIR", sypgpDir)
-		cmd.Env = append(cmd.Env, sypgpDirEnv)
+		keysDirEnv := fmt.Sprintf("%s=%s", "APPTAINER_KEYSDIR", keysDir)
+		cmd.Env = append(cmd.Env, keysDirEnv)
 
 		// We check if we need to disable the cache
 		if env.DisableCache {

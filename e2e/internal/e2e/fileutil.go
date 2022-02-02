@@ -67,13 +67,13 @@ func MakeCacheDir(t *testing.T, baseDir string) (string, func(t *testing.T)) {
 	return MakeTempDir(t, baseDir, "e2e-imgcache-", "image cache directory")
 }
 
-// MakeSyPGPDir creates a temporary directory that will be used to store the PGP
+// MakeKeysDir creates a temporary directory that will be used to store the PGP
 // keyring for the execution of a e2e test.
 //
 // This function shall not set the environment variable to specify the
-// SYPGP directory since it would create thread safety problems.
-func MakeSyPGPDir(t *testing.T, baseDir string) (string, func(t *testing.T)) {
-	return MakeTempDir(t, baseDir, "e2e-sypgp-", "SyPGP directory")
+// keys directory since it would create thread safety problems.
+func MakeKeysDir(t *testing.T, baseDir string) (string, func(t *testing.T)) {
+	return MakeTempDir(t, baseDir, "e2e-keys-", "Keys directory")
 }
 
 // PathExists return true if the path (file or directory) exists, false otherwise.

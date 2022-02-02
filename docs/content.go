@@ -215,7 +215,7 @@ Enterprise Performance Computing (EPC)`
 	KeyShort string = `Manage OpenPGP keys`
 	KeyLong  string = `
   Manage your trusted, public and private keys in your local or in the global keyring
-  (local keyring: '~/.apptainer/sypgp' if 'APPTAINER_SYPGPDIR' is not set,
+  (local keyring: '~/.apptainer/keys' if 'APPTAINER_KEYSDIR' is not set,
   global keyring: '%[1]s/apptainer/global-pgp-public')`
 	KeyExample string = `
   All group commands have their own help output:
@@ -264,7 +264,7 @@ Enterprise Performance Computing (EPC)`
 	KeyNewPairLong  string = `
   The 'key newpair' command allows you to create a new key or public/private
   keys to be stored in the default user local keyring location (e.g., 
-  $HOME/.apptainer/sypgp).`
+  $HOME/.apptainer/keys).`
 	KeyNewPairExample string = `
   $ apptainer key newpair
   $ apptainer key newpair --password=psk --name=your-name --comment="key comment" --email=mail@email.com --push=false`
