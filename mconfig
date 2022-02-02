@@ -863,7 +863,7 @@ if [ "$host" = "unix" ]; then
 	# See if we need to include golang source tarball
 	package_golang_source=""
 	if ! $makeit_scriptsdir/check-min-go-version go $hstgo_version >/dev/null; then
-	    package_golang_source="Source1: go${hstgo_preferred_version}.src.tar.gz"
+	    package_golang_source="Source1: https://dl.google.com/go/go${hstgo_preferred_version}.src.tar.gz"
 	fi
 
 	# Transform version numbers so that rpm accepts them:
@@ -876,7 +876,7 @@ if [ "$host" = "unix" ]; then
 	sed -e "s/@PACKAGE_VERSION@/${package_version}/" \
 	    -e "s/@PACKAGE_RPM_VERSION@/${package_rpm_version}/" \
 	    -e "s/@PACKAGE_RELEASE@/${release_info}/" \
-	    -e "s/@PACKAGE_GOLANG_SOURCE@/${package_golang_source}/" \
+	    -e "s,@PACKAGE_GOLANG_SOURCE@,${package_golang_source}," \
 		$sourcedir/dist/rpm/$RPMSPEC.in >$sourcedir/$RPMSPEC
 fi
 
