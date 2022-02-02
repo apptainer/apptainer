@@ -327,7 +327,7 @@ func handleConfDir(confDir, legacyConfigDir string) {
 
 	migrateRemoteConf(confDir, legacyConfigDir)
 	migrateDockerConf(confDir, legacyConfigDir)
-	migrateSypgp(confDir, legacyConfigDir)
+	migrateKeys(confDir, legacyConfigDir)
 }
 
 func migrateRemoteConf(confDir, legacyConfigDir string) {
@@ -375,30 +375,30 @@ func migrateDockerConf(confDir, legacyConfigDir string) {
 	}
 }
 
-func migrateSypgp(confDir, legacyConfigDir string) {
-	legacySypgpDir := filepath.Join(syfs.LegacyConfigDir(), sypgp.Directory)
-	sypgpDir := filepath.Join(syfs.ConfigDir(), sypgp.Directory)
+func migrateKeys(confDir, legacyConfigDir string) {
+	legacySypgpDir := filepath.Join(syfs.LegacyConfigDir(), sypgp.LegacyDirectory)
+	keysDir := filepath.Join(syfs.ConfigDir(), sypgp.Directory)
 	ok, err := fs.PathExists(legacySypgpDir)
 	if err != nil {
 		sylog.Warningf("Failed to retrieve information for %s: %s", legacySypgpDir, err)
-		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", legacySypgpDir, sypgpDir)
+		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", legacySypgpDir, keysDir)
 		return
 	} else if !ok {
 		return
 	}
 
-	err = fs.Mkdir(sypgpDir, 0o700)
+	err = fs.Mkdir(keysDir, 0o700)
 	if err != nil {
-		sylog.Debugf("Could not create %s: %s", sypgpDir, err)
-		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", legacySypgpDir, sypgpDir)
+		sylog.Debugf("Could not create %s: %s", keysDir, err)
+		sylog.Warningf("Migration failed, you can migrate manually with \"cp -a %s %s\"", legacySypgpDir, keysDir)
 		return
 	}
 
-	migrateSypgpPublic(sypgpDir, legacySypgpDir)
-	migrateSypgpPrivate(sypgpDir, legacySypgpDir)
+	migrateGPGPublic(keysDir, legacySypgpDir)
+	migrateGPGPrivate(keysDir, legacySypgpDir)
 }
 
-func migrateSypgpPublic(sypgpDir, legacySypgpDir string) {
+func migrateGPGPublic(sypgpDir, legacySypgpDir string) {
 	legacyPublicPath := filepath.Join(legacySypgpDir, sypgp.PublicFile)
 	publicPath := filepath.Join(sypgpDir, sypgp.PublicFile)
 	ok, err := fs.PathExists(legacyPublicPath)
@@ -418,7 +418,7 @@ func migrateSypgpPublic(sypgpDir, legacySypgpDir string) {
 	}
 }
 
-func migrateSypgpPrivate(sypgpDir, legacySypgpDir string) {
+func migrateGPGPrivate(sypgpDir, legacySypgpDir string) {
 	legacyPrivatePath := filepath.Join(legacySypgpDir, sypgp.SecretFile)
 	privatePath := filepath.Join(sypgpDir, sypgp.SecretFile)
 	ok, err := fs.PathExists(legacyPrivatePath)
