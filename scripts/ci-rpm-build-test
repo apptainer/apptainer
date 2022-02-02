@@ -25,9 +25,10 @@ su testuser -c '
   set -x
   set -e
   ./mconfig --only-rpm
-  GOSRC="$(sed -n "s/^Source1: //p" apptainer.spec)"
-  if [ -n "$GOSRC" ]; then
-    curl -f -L -sS -o $GOSRC https://golang.org/dl/$GOSRC
+  GOURL="$(sed -n "s/^Source1: //p" apptainer.spec)"
+  if [ -n "$GOURL" ]; then
+    GOSRC="$(basename $GOURL)"
+    curl -f -L -sS -o $GOSRC $GOURL
     if [ -n "'$GO_ARCH'" ]; then
       # Download and install binary too to avoid rpm having to compile the
       #  go toolchain from source
