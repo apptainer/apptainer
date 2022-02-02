@@ -38,14 +38,21 @@ Name: apptainer
 Version: @PACKAGE_RPM_VERSION@
 Release: @PACKAGE_RELEASE@%{?dist}
 # https://spdx.org/licenses/BSD-3-Clause-LBNL.html
-License: BSD-3-Clause-LBNL
+License: BSD-3-Clause-LBNL and LICENSE-APACHE-2.0
 URL: https://apptainer.org
 Source: %{name}-%{package_version}.tar.gz
 @PACKAGE_GOLANG_SOURCE@
 ExclusiveOS: linux
-Provides: singularity
-Obsoletes: singularity < 3.9
-Conflicts: singularity
+# The singularity package was renamed to apptainer after version 3.8.x.
+# The apptainer package reset numbering at 1.0.0, so Provide corresponding
+#  singularity versions in the next epoch.
+Provides: singularity = 1:%{version}-%{release}
+Obsoletes: singularity < 4.0
+# In the singularity 2.x series there was a singularity-runtime package
+#  that could have been installed independently, but starting in 3.x
+#  there was only one package
+Provides: singularity-runtime = 1:%{version}-%{release}
+Obsoletes: singularity-runtime < 3.0
 
 %if "%{_target_vendor}" == "suse"
 %if "%{sles_version}" != "11"
@@ -67,9 +74,6 @@ BuildRequires: cryptsetup
 
 # there's no golang for ppc64, just ppc64le
 ExcludeArch: ppc64
-
-Provides: %{name}-runtime
-Obsoletes: %{name}-runtime
 
 %description
 Apptainer provides functionality to make portable
