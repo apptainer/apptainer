@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 const (
@@ -45,4 +47,30 @@ func SetFromList(environ []string) error {
 		}
 	}
 	return nil
+}
+
+// GetenvLegacy retrieves environment variables value from both
+// APPTAINER_ and SINGULARITY_ and display warning accordingly
+// if the old SINGULARITY_ prefix is used. APPTAINER_ prefixed
+// variable always take precedence if not empty.
+func GetenvLegacy(key, legacyKey string) string {
+	keyEnv := ApptainerPrefixes[0] + key
+	legacyKeyEnv := ApptainerPrefixes[1] + legacyKey
+
+	val := os.Getenv(keyEnv)
+	if val == "" {
+		val = os.Getenv(legacyKeyEnv)
+		if val != "" {
+			sylog.Warningf("DEPRECATED USAGE: Environment variable %s will not be supported in the future, use %s instead", legacyKeyEnv, keyEnv)
+		}
+	} else if os.Getenv(legacyKeyEnv) != val {
+		sylog.Warningf("%s and %s have different values, using the latter", legacyKeyEnv, keyEnv)
+	}
+
+	return val
+}
+
+// TrimApptainerKey returns the key without APPTAINER_ prefix.
+func TrimApptainerKey(key string) string {
+	return strings.TrimPrefix(key, ApptainerPrefixes[0])
 }

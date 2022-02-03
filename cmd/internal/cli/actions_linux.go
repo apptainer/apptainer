@@ -53,8 +53,8 @@ import (
 
 // convertImage extracts the image found at filename to directory dir within a temporary directory
 // tempDir. If the unsquashfs binary is not located, the binary at unsquashfsPath is used. It is
-// the caller's responsibility to remove tempDir when no longer needed.
-func convertImage(filename string, unsquashfsPath string) (tempDir, imageDir string, err error) {
+// the caller's responsibility to remove rootfsDir when no longer needed.
+func convertImage(filename string, unsquashfsPath string, tmpDir string) (rootfsDir, imageDir string, err error) {
 	img, err := imgutil.Init(filename, false)
 	if err != nil {
 		return "", "", fmt.Errorf("could not open image %s: %s", filename, err)
@@ -89,28 +89,19 @@ func convertImage(filename string, unsquashfsPath string) (tempDir, imageDir str
 		s.UnsquashfsPath = unsquashfsPath
 	}
 
-	// keep compatibility with v2
-	tmpdir := os.Getenv("APPTAINER_TMPDIR")
-	if tmpdir == "" {
-		tmpdir = os.Getenv("APPTAINER_LOCALCACHEDIR")
-		if tmpdir == "" {
-			tmpdir = os.Getenv("APPTAINER_CACHEDIR")
-		}
-	}
-
 	// create temporary sandbox
-	tempDir, err = ioutil.TempDir(tmpdir, "rootfs-")
+	rootfsDir, err = ioutil.TempDir(tmpDir, "rootfs-")
 	if err != nil {
 		return "", "", fmt.Errorf("could not create temporary sandbox: %s", err)
 	}
 	defer func() {
 		if err != nil {
-			os.RemoveAll(tempDir)
+			os.RemoveAll(rootfsDir)
 		}
 	}()
 
 	// create an inner dir to extract to, so we don't clobber the secure permissions on the tmpDir.
-	imageDir = filepath.Join(tempDir, "root")
+	imageDir = filepath.Join(rootfsDir, "root")
 	if err := os.Mkdir(imageDir, 0o755); err != nil {
 		return "", "", fmt.Errorf("could not create root directory: %s", err)
 	}
@@ -120,7 +111,7 @@ func convertImage(filename string, unsquashfsPath string) (tempDir, imageDir str
 		return "", "", fmt.Errorf("root filesystem extraction failed: %s", err)
 	}
 
-	return tempDir, imageDir, err
+	return rootfsDir, imageDir, err
 }
 
 // checkHidepid checks if hidepid is set on /proc mount point, when this
@@ -672,12 +663,12 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			}
 			sylog.Verbosef("User namespace requested, convert image %s to sandbox", image)
 			sylog.Infof("Converting SIF file to temporary sandbox...")
-			tempDir, imageDir, err := convertImage(image, unsquashfsPath)
+			rootfsDir, imageDir, err := convertImage(image, unsquashfsPath, tmpDir)
 			if err != nil {
 				sylog.Fatalf("while extracting %s: %s", image, err)
 			}
 			engineConfig.SetImage(imageDir)
-			engineConfig.SetDeleteTempDir(tempDir)
+			engineConfig.SetDeleteTempDir(rootfsDir)
 			generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "CONTAINER", imageDir)
 
 			// if '--disable-cache' flag, then remove original SIF after converting to sandbox
