@@ -265,42 +265,56 @@ jobs:
             exit 1
           fi
 
-  release_packages:
-    name: Release packages
+  release_assets:
+    name: release_assets
     runs-on: ubuntu-20.04
     if: startsWith(github.ref, 'refs/tags/')
-    needs:
-      - check_go_mod
-      - lint_markdown
-      - check_source
-      - short_unit_tests
-      - integration_tests
-      - e2e_tests
-      - check_pkg_no_buildcfg
-      - shellcheck
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build packages
+      - name: Make dist tarball and rpm packages
         env:
-          DOCKERFILE: ./dist/nfpm/Dockerfile
-          DOCKER_CLI_EXPERIMENTAL: enabled
+          OS_TYPE: centos
+          OS_VERSION: 7
+          GO_ARCH: linux-amd64
           GITHUB_REF: ${{github.ref}}
         run: |
-          docker buildx create --use
-          docker buildx build --platform linux/amd64 \
-          --target build-packages \
-          --build-arg VERSION=${GITHUB_REF#refs/tags/v*} \
-          --build-arg NAME=apptainer \
-          --build-arg PREFIX=/usr/local \
-          --output type=local,dest=./builddir/packages \
-          -f $DOCKERFILE \
-          .
+          # Move the source directory down a level to separate it
+          #  from later builds; the docker build runs privileged and
+          #  changes the ownership of the files.
+          set -x
+          mkdir rpmdir
+          shopt -s extglob
+          mv .??* !(rpmdir) rpmdir
+          cd rpmdir
+          echo ${GITHUB_REF#refs/tags/v*} >VERSION
+          ./scripts/ci-docker-run
+          cp *.tar.gz *.rpm ..
+          cd ..
+          sha256sum *.tar.gz *.rpm > sha256sums
+
+      - name: Make deb packages
+        env:
+          OS_TYPE: debian
+          OS_VERSION: 11
+          GO_ARCH: linux-amd64
+          GITHUB_REF: ${{github.ref}}
+        run: |
+          # Make a new copy of the source files for this build
+          set -x
+          tar xf apptainer-*.tar.gz
+          cd apptainer-${GITHUB_REF#refs/tags/v*}
+          ./scripts/ci-docker-run
+          cp *.deb ..
+          cd ..
+          sha256sum *.deb >> sha256sums
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ./builddir/packages/*.deb
-            ./builddir/packages/*.rpm
+            *.tar.gz
+            *.rpm
+            *.deb
+            sha256sums
