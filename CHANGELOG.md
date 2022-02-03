@@ -12,6 +12,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix mount ordering between image bind and user binds.
 - Auto-generate release assets including the distribution tarball and
   rpm (built on CentOS 7) and deb (built on Debian 11) x86_64 packages.
+- Update dependency to correctly unset variables in container startup
+  environment processing. Fixes regression introduced in singularity-3.8.5.
 
 ## v1.0.0 Release Candidate 1 - \[22-01-19\]
 
