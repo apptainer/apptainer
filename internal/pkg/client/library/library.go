@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	libClient "github.com/apptainer/container-library-client/client"
@@ -59,7 +60,8 @@ func NormalizeLibraryRef(ref string) (*libClient.Ref, error) {
 }
 
 func getEnvInt(key string, defval int64) int64 {
-	if env := os.Getenv(key); env != "" {
+	envKey := env.TrimApptainerKey(key)
+	if env := env.GetenvLegacy(envKey, envKey); env != "" {
 		if n, err := strconv.ParseInt(env, 10, 0); err == nil {
 			return n
 		}
