@@ -34,6 +34,7 @@ import (
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/ProtonMail/go-crypto/openpgp/armor"
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
+	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/pkg/syfs"
@@ -107,27 +108,10 @@ func GetTokenFile() string {
 
 // dirPath returns a string describing the path to the sypgp home folder
 func dirPath() string {
-	const (
-		keysDirEnv        = "APPTAINER_KEYSDIR"
-		legacySypgpDirEnv = "SINGULARITY_SYPGPDIR"
-	)
-
-	keysEnvVal := os.Getenv(keysDirEnv)
-	legacyEnvVal := os.Getenv(legacySypgpDirEnv)
-
-	if keysEnvVal != "" {
-		if keysEnvVal == legacyEnvVal {
-			sylog.Debugf("%s and %s have the same value [%s]", legacySypgpDirEnv, keysDirEnv, keysEnvVal)
-		} else {
-			sylog.Warningf("%s and %s have different values, using the latter", legacySypgpDirEnv, keysDirEnv)
-		}
-
-		return keysEnvVal
-	} else if legacyEnvVal != "" {
-		sylog.Warningf("DEPRECATED USAGE: Environment variable %s will not be supported in the future, use %s instead", legacySypgpDirEnv, keysDirEnv)
-		return legacyEnvVal
+	// read this as: look for APPTAINER_KEYSDIR and/or SINGULARITY_SYPGPDIR
+	if dir := env.GetenvLegacy("KEYSDIR", "SYPGPDIR"); dir != "" {
+		return dir
 	}
-
 	return filepath.Join(syfs.ConfigDir(), Directory)
 }
 

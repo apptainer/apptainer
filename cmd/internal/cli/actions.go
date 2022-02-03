@@ -24,6 +24,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/client/oci"
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/client/shub"
+	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
@@ -34,8 +35,9 @@ const (
 )
 
 func getCacheHandle(cfg cache.Config) *cache.Handle {
+	envKey := env.TrimApptainerKey(cache.DirEnv)
 	h, err := cache.New(cache.Config{
-		ParentDir: os.Getenv(cache.DirEnv),
+		ParentDir: env.GetenvLegacy(envKey, envKey),
 		Disable:   cfg.Disable,
 	})
 	if err != nil {

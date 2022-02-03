@@ -20,6 +20,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -230,7 +231,8 @@ func New(cfg Config) (h *Handle, err error) {
 
 	// Check whether the cache is disabled by the user.
 	// strconv.ParseBool("") raises an error so we cannot directly use strconv.ParseBool(os.Getenv(DisableEnv))
-	envCacheDisabled := os.Getenv(DisableEnv)
+	envKey := env.TrimApptainerKey(DisableEnv)
+	envCacheDisabled := env.GetenvLegacy(envKey, envKey)
 	if envCacheDisabled == "" {
 		envCacheDisabled = "0"
 	}
@@ -304,7 +306,8 @@ func New(cfg Config) (h *Handle, err error) {
 func getCacheParentDir() string {
 	// If the user defined the special environment variable, we use its value
 	// as base directory.
-	parentDir := os.Getenv(DirEnv)
+	envKey := env.TrimApptainerKey(DirEnv)
+	parentDir := env.GetenvLegacy(envKey, envKey)
 	if parentDir != "" {
 		return parentDir
 	}
