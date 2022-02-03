@@ -34,21 +34,19 @@ and steps 1-2 should be skipped.
 
 1. From a repository that is up-to-date with main, create a release
    branch e.g. `git checkout upstream/main -b release-1.0`.
-2. Push the release branch to GitHub via `git push upstream release-1.0`.
-3. Examine the GitHub branch protection rules, to extend them to the
-   new release branch if needed.
-4. Modify the `README.md`, `INSTALL.md`, `CHANGELOG.md` via PR against
+1. Push the release branch to GitHub via `git push upstream release-1.0`.
+1. Examine the GitHub branch protection rules, to extend them to the
+   new release branch if needed.  Also examine `.github/dependabot.yml`
+   to see if the new branch should be added there.
+1. Modify the `README.md`, `INSTALL.md`, `CHANGELOG.md` via PR against
    the release-1.Y branch, so that they reflect the version to be released.
    1. Apply an annotated tag via `git tag -a -m "Apptainer v1.0.0
       Release Candidate 1" v1.0.0-rc.1`.
-5. Push the tag via `git push upstream v1.0.0-rc.1`.
-6. Create a tarball via `./mconfig --only-rpm -v && make -C builddir dist`.
-7. Test installation from the tarball.
-8. Compute the sha256sum of the tarball e.g. `sha256sum *.tar.gz > sha256sums`.
-9. Create a GitHub release, marked as a 'pre-release', incorporating
-   `CHANGELOG.md` information, and attaching the tarball and
-   `sha256sums`.
-10. Notify the community about the RC via the Google Group and Slack.
+1. Push the tag via `git push upstream v1.0.0-rc.1`.
+1. Create a GitHub release, marked as a 'pre-release', incorporating
+   `CHANGELOG.md` information.  A tarball, rpm packages, deb packages,
+   and a `sha256sums` should get automatically attached.
+1. Notify the community about the RC via the Google Group and Slack.
 
 There will often be multiple release candidates issued prior to the final
 release of a new 1.Y.0 minor version.
@@ -71,11 +69,7 @@ covered by tests.
    the release-1.Y branch, so that they reflect the version to be released.
 1. Apply an annotated tag via `git tag -a -m "Apptainer v1.0.0" v1.0.0`.
 1. Push the tag via `git push upstream v1.0.0`.
-1. Create a tarball via `./mconfig -v && make -C builddir dist`.
-1. Test installation from the tarball.
-1. Compute the sha256sum of the tarball e.g. `sha256sum *.tar.gz > sha256sums`.
-1. Create a GitHub release, incorporating `CHANGELOG.md` information,
-   and attaching the tarball and `sha256sums`.
+1. Create a GitHub release, incorporating `CHANGELOG.md` information.
 1. Notify the community about the RC via the Google Group and Slack.
 
 ## After the Release
