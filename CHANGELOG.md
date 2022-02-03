@@ -10,6 +10,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - The `SINGULARITY_LABELS` environment variable within build definitions has
   been restored.
 - Fix mount ordering between image bind and user binds.
+- Auto-generate release assets including the distribution tarball and
+  rpm (built on CentOS 7) and deb (built on Debian 11) x86_64 packages.
 
 ## v1.0.0 Release Candidate 1 - \[22-01-19\]
 
