@@ -32,7 +32,7 @@ type ctx struct {
 
 func (c *ctx) eclConfig(t *testing.T) {
 	tmpDir, remove := e2e.MakeTempDir(t, "", "ecl-", "ECL")
-	pgpDir, _ := e2e.MakeSyPGPDir(t, tmpDir)
+	pgpDir, _ := e2e.MakeKeysDir(t, tmpDir)
 	c.env.KeyringDir = pgpDir
 
 	signed := filepath.Join(tmpDir, "signed.sif")
