@@ -5,19 +5,6 @@
 
 all: $(ALL)
 
-# install man pages
-.PHONY: man
-man: apptainer
-	@printf " MAN\n"
-	mkdir -p $(DESTDIR)$(MANDIR)/man1
-	$(V)$(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" $(GO_GCFLAGS) $(GO_ASMFLAGS) \
-		$(SOURCEDIR)/cmd/docs/docs.go man --dir $(DESTDIR)$(MANDIR)/man1
-	$(V)cd $(DESTDIR)$(MANDIR)/man1; 				\
-		for M in apptainer*; do 				\
-			S="`echo $$M|sed 's/apptainer/singularity/'`";	\
-			ln -fs $$M $$S; 				\
-		done
-
 .PHONY: collect
 collect:
 	@printf " DEPENDS\n"
@@ -135,7 +122,7 @@ clean:
 	$(V)rm -rf $(BUILDDIR)/mergeddeps cscope.* $(CLEANFILES)
 
 .PHONY: install
-install: $(INSTALLFILES) man
+install: $(INSTALLFILES)
 	@echo " DONE"
 
 -include $(BUILDDIR)/mergeddeps
