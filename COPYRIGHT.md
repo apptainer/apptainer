@@ -6,7 +6,7 @@ Copyright (c) Contributors to the Apptainer project, established as
 - For website terms of use, trademark policy, privacy policy and other
   project policies see: [LF_POLICIES](https://lfprojects.org/policies)
 
-Copyright (c) 2017-2018, Sylabs, Inc. All rights reserved.
+Copyright (c) 2017-2022, Sylabs, Inc. All rights reserved.
 
 Copyright (c) 2015-2017, Gregory M. Kurtzer. All rights reserved.
 
