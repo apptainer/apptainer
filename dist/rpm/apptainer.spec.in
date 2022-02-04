@@ -150,8 +150,7 @@ export PATH=$PWD/go/bin:$PATH
 export GOPATH=$PWD/gopath
 cd %{name}-%{package_version}
 
-mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
-make -C builddir DESTDIR=$RPM_BUILD_ROOT install man
+make -C builddir DESTDIR=$RPM_BUILD_ROOT install
 
 %posttrans
 # clean out empty directories under /etc/singularity
