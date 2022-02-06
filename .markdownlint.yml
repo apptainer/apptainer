@@ -2,4 +2,6 @@
 MD024: false
 # Allow hard tabs (go snippets in e2e)
 MD010: false
-
+# Allow mixing of asterisks and underscores for emphasis
+MD049: false
+MD050: false
