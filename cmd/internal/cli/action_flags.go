@@ -166,7 +166,7 @@ var actionDisableCacheFlag = cmdline.Flag{
 	Value:        &disableCache,
 	DefaultValue: false,
 	Name:         "disable-cache",
-	Usage:        "dont use cache, and dont create cache",
+	Usage:        "do not use or create cache",
 	EnvKeys:      []string{"DISABLE_CACHE"},
 }
 
