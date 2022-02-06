@@ -3,3 +3,7 @@
 ^pkg/.*\.go$
 ^e2e/
 ^go\.mod$
+^internal/.*\.sh$
+^cmd/.*\.sh$
+^pkg/.*\.sh$
+^scripts/

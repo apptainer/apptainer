@@ -1,7 +1,33 @@
-#!/bin/sh
+#!/usr/bin/env bash
+# usage: gengodep version go_compiler_path source_prefix go_tags dep_file go_args...
+# Copyright (c) Contributors to the Apptainer project, established as
+#   Apptainer a Series of LF Projects LLC.
+#   For website terms of use, trademark policy, privacy policy and other
+#   project policies see https://lfprojects.org/policies
 
-if [ "$1" != "-v3" ] ; then
-	cat 1>&2 <<-EOT
+# shellcheck disable=SC2311
+
+# Exit script if you try to use an uninitialized variable.
+set -o nounset
+
+# Exit script if a statement returns a non-true return value.
+set -o errexit
+
+# Use the error status of the first failure, rather than that of the last item in a pipeline.
+set -o pipefail
+
+# Environment Variables
+# ---------------------
+# this is needed so that the value we are getting from the makefile does
+# get propagated down to go list.
+declare -rx GOPROXY
+
+# Arguments
+# ---------------------
+
+function check_build_tool_version() {
+  if [[ "${1}" != "-v3" ]] ; then
+    cat 1>&2 <<-EOT
 
 ========================================================================
 A non-backwards compatible change has been added to the build system and
@@ -11,27 +37,62 @@ Please remove the build directory ("builddir" by default) and run
 mconfig again.
 ========================================================================
 
-	EOT
-	exit 1
-fi
+EOT
+    exit 1
+  fi
+}
 
-shift
+function go_dependency_template() {
+  cat <<'TEMPLATE'
+    {{ with $d := . }}
+      {{ if not $d.Standard }}
+        {{ range $d.GoFiles }}
+          {{ printf "%s/%s\n" $d.Dir . }}
+        {{ end }}
+        {{ range $d.CgoFiles }}
+          {{ printf "%s/%s\n" $d.Dir . }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+TEMPLATE
+}
 
-go=$1
-var=$2
-gotags=$3
-depfile=$4
+function find_embedded_files () {
+  local -r module_file="${1}"
+  grep "go:embed" "${module_file}" | sed -e 's|.* ||'
+}
 
-shift 4
+function report_embedded_files() {
+  local -r module_file="${1}"
+  local module_directory
+  module_directory="$(dirname "${module_file}")"
+  for embedded_file in $(find_embedded_files "${module_file}" ); do
+    printf '%s/%s\n' "${module_directory}" "${embedded_file}"
+  done
+}
 
-# this is needed so that the value we are getting from the makefile does
-# get propagated down to go list.
-export GOPROXY
+function output_deps_file() {
+  local -r go="${1}"
+  local -r source_prefix="${2}"
+  local -r gotags="${3}"
+  local -r depfile="${4}"
 
-template='{{ with $d := . }}{{ if not $d.Standard }}{{ range $d.GoFiles }}{{ printf "%s/%s\n" $d.Dir . }}{{ end }}{{ range $d.CgoFiles }}{{ printf "%s/%s\n" $d.Dir . }}{{ end }}{{ end }}{{ end }}'
+  shift 4
+  local template dependency_list
+  template="$(go_dependency_template)"
+  dependency_list=$(${go} list -deps -e -f "${template}" -tags "${gotags}" "$@" | sort -u)
+  for module_file in ${dependency_list}; do
+    printf '%s += %s\n' "${source_prefix}" "${module_file}" >> "${depfile}"
+    for embedded_file in $(report_embedded_files "${module_file}"); do
+      printf '%s += %s\n' "${source_prefix}" "${embedded_file}" >> "${depfile}"
+    done
+  done
+}
 
-godeps=`${go} list -deps -f "${template}" -tags "${gotags}" "$@" | sort -u`
+function gengodep() {
+  check_build_tool_version "${1}"
+  shift
+  output_deps_file "$@"
+}
 
-for m in ${godeps}; do
-    echo "$var += $m" >> ${depfile}
-done
+gengodep "$@"
