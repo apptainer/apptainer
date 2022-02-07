@@ -52,9 +52,10 @@ const (
 )
 
 const (
-	Directory  = "sypgp"
-	PublicFile = "pgp-public"
-	SecretFile = "pgp-secret"
+	Directory       = "keys"
+	LegacyDirectory = "sypgp"
+	PublicFile      = "pgp-public"
+	SecretFile      = "pgp-secret"
 )
 
 var (
@@ -106,11 +107,28 @@ func GetTokenFile() string {
 
 // dirPath returns a string describing the path to the sypgp home folder
 func dirPath() string {
-	sypgpDir := os.Getenv("APPTAINER_SYPGPDIR")
-	if sypgpDir == "" {
-		return filepath.Join(syfs.ConfigDir(), Directory)
+	const (
+		keysDirEnv        = "APPTAINER_KEYSDIR"
+		legacySypgpDirEnv = "SINGULARITY_SYPGPDIR"
+	)
+
+	keysEnvVal := os.Getenv(keysDirEnv)
+	legacyEnvVal := os.Getenv(legacySypgpDirEnv)
+
+	if keysEnvVal != "" {
+		if keysEnvVal == legacyEnvVal {
+			sylog.Debugf("%s and %s have the same value [%s]", legacySypgpDirEnv, keysDirEnv, keysEnvVal)
+		} else {
+			sylog.Warningf("%s and %s have different values, using the latter", legacySypgpDirEnv, keysDirEnv)
+		}
+
+		return keysEnvVal
+	} else if legacyEnvVal != "" {
+		sylog.Warningf("DEPRECATED USAGE: Environment variable %s will not be supported in the future, use %s instead", legacySypgpDirEnv, keysDirEnv)
+		return legacyEnvVal
 	}
-	return sypgpDir
+
+	return filepath.Join(syfs.ConfigDir(), Directory)
 }
 
 // NewHandle initializes a new keyring in path.

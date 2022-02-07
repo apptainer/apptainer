@@ -29,7 +29,7 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "overlay", "")
 	defer cleanup(t)
 
-	pgpDir, _ := e2e.MakeSyPGPDir(t, tmpDir)
+	pgpDir, _ := e2e.MakeKeysDir(t, tmpDir)
 	c.env.KeyringDir = pgpDir
 
 	sifSignedImage := filepath.Join(tmpDir, "signed.sif")

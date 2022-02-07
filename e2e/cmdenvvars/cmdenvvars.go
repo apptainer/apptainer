@@ -58,7 +58,7 @@ func (c *ctx) setupTemporaryCache(t *testing.T) func(*testing.T) {
 // responsible for calling the returned function when its done using the
 // temporary directory.
 func (c *ctx) setupTemporaryKeyringDir(t *testing.T) func(*testing.T) {
-	keyringDir, cleanup := setupTemporaryDir(t, c.env.TestDir, "sypgp-dir")
+	keyringDir, cleanup := setupTemporaryDir(t, c.env.TestDir, "keys-dir")
 
 	c.env.KeyringDir = keyringDir
 
@@ -228,7 +228,7 @@ func (c ctx) testApptainerReadOnlyCacheDir(t *testing.T) {
 	c.assertCacheDoesNotExist(t)
 }
 
-func (c ctx) testApptainerSypgpDir(t *testing.T) {
+func (c ctx) testApptainerKeysDir(t *testing.T) {
 	// Test plan:
 	//
 	// - create a temporary directory for the keyrings
@@ -236,7 +236,7 @@ func (c ctx) testApptainerSypgpDir(t *testing.T) {
 	// - assert that both files were created
 	//
 	// If the files are in the temporary directory, it means
-	// apptainer followed the APPTAINER_SYPGPDIR environment
+	// apptainer followed the APPTAINER_KEYSDIR environment
 	// variable (set up deep in the e2e framework) to store the
 	// keyrings.
 
@@ -273,6 +273,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"read-only cache directory": c.testApptainerReadOnlyCacheDir,
 		"APPTAINER_CACHEDIR":        c.testApptainerCacheDir,
 		"apptainer disable cache":   c.testApptainerDisableCache,
-		"APPTAINER_SYPGPDIR":        c.testApptainerSypgpDir,
+		"APPTAINER_KEYSDIR":         c.testApptainerKeysDir,
 	}
 }
