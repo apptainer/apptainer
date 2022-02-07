@@ -1,6 +1,7 @@
 # Apptainer
 
 [![CI](https://github.com/apptainer/apptainer/actions/workflows/ci.yml/badge.svg)](https://github.com/apptainer/apptainer/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/pkg.golang.dev/github.com/apptainer/apptainer.svg)](https://pkg.go.dev/github.com/apptainer/apptainer)
 
 > *NOTE*: The apptainer repo is currently up to a v1.0.0 release candidate and
   not ready for production in its current state. Until then, use the
