@@ -49,7 +49,7 @@ require (
 	golang.org/x/term v0.0.0-20210916214954-140adaaadfaf
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools/v3 v3.1.0
-	mvdan.cc/sh/v3 v3.4.2
+	mvdan.cc/sh/v3 v3.4.3-0.20220202175809-113ed667a8a7
 	oras.land/oras-go v1.1.0
 )
 
