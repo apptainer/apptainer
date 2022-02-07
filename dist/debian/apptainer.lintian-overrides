@@ -1,3 +1,4 @@
+apptainer: binary-without-manpage usr/bin/run-singularity
 # Apptainer requires root suid for operation
 apptainer: setuid-binary usr/libexec/apptainer/bin/starter-suid 4755 root/root
 
