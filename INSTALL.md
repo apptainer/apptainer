@@ -231,8 +231,8 @@ sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-$(echo $VERSION|tr - \~)*.x86_64.
 
 <!-- markdownlint-enable MD013 -->
 
-By default, the rpm will be built so that Apptainer is installed under
-`/usr/local`.
+By default, the rpm will be built so that Apptainer is installed in
+standard Linux paths under ``/``.
 
 To build an rpm with an alternative install prefix set RPMPREFIX on the make
 step, for example:
