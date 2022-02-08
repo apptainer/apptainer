@@ -2,7 +2,7 @@
 #   and installing the necessary config files.
 
 # contain starter_SOURCE variable list
-starter_deps := $(BUILDDIR_ABSPATH)/starter.d
+starter_deps := $(BUILDDIR_ABSPATH)/starter.deps
 
 -include $(starter_deps)
 
