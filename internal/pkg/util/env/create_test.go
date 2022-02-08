@@ -36,6 +36,7 @@ func TestSetContainerEnv(t *testing.T) {
 		processEnv   map[string]string
 		resultEnv    []string
 		apptainerEnv map[string]string
+		outputNeeded []string
 		disabled     bool
 	}{
 		{
@@ -63,6 +64,11 @@ func TestSetContainerEnv(t *testing.T) {
 				"LC_ALL=C",
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
+			},
+			outputNeeded: []string{
+				"Can't process environment variable SOME_INVALID_VAR:test",
+				"Not forwarding APPTAINER_CONTAINER environment variable",
+				"Not forwarding APPTAINER_NAME environment variable",
 			},
 		},
 		{
@@ -94,6 +100,10 @@ func TestSetContainerEnv(t *testing.T) {
 			},
 			apptainerEnv: map[string]string{
 				"LD_LIBRARY_PATH": "/my/custom/libs",
+			},
+			outputNeeded: []string{
+				"Not forwarding APPTAINER_CONTAINER environment variable",
+				"Not forwarding APPTAINER_NAME environment variable",
 			},
 		},
 		{
@@ -128,6 +138,13 @@ func TestSetContainerEnv(t *testing.T) {
 				"SING_USER_DEFINED_PATH":         "/my/path",
 				"SING_USER_DEFINED_APPEND_PATH":  "/sylabs/container",
 			},
+			outputNeeded: []string{
+				"Forwarding APPTAINERENV_APPEND_PATH as SING_USER_DEFINED_APPEND_PATH environment variable",
+				"Forwarding APPTAINERENV_PATH as SING_USER_DEFINED_PATH environment variable",
+				"APPTAINERENV_PREPEND_PATH as SING_USER_DEFINED_PREPEND_PATH environment variable",
+				"Not forwarding APPTAINER_CONTAINER environment variable",
+				"Not forwarding APPTAINER_NAME environment variable",
+			},
 		},
 		{
 			name:     "clean envs",
@@ -155,6 +172,11 @@ func TestSetContainerEnv(t *testing.T) {
 			},
 			apptainerEnv: map[string]string{
 				"FOO": "VAR",
+			},
+			outputNeeded: []string{
+				"Forwarding APPTAINERENV_FOO as FOO environment variable",
+				"Not forwarding APPTAINER_CONTAINER environment variable",
+				"Not forwarding APPTAINER_NAME environment variable",
 			},
 		},
 		{
@@ -204,6 +226,23 @@ func TestSetContainerEnv(t *testing.T) {
 			apptainerEnv: map[string]string{
 				"FOO": "VAR",
 			},
+			outputNeeded: []string{
+				"Forwarding APPTAINERENV_FOO as FOO environment variable",
+				"Not forwarding APPTAINER_CONTAINER environment variable",
+				"Not forwarding APPTAINER_NAME environment variable",
+				"Forwarding TERM environment variable",
+				"Forwarding http_proxy environment variable",
+				"Forwarding https_proxy environment variable",
+				"Forwarding no_proxy environment variable",
+				"Forwarding all_proxy environment variable",
+				"Forwarding ftp_proxy environment variable",
+				"Forwarding HTTP_PROXY environment variable",
+				"Forwarding HTTPS_PROXY environment variable",
+				"Forwarding NO_PROXY environment variable",
+				"Forwarding ALL_PROXY environment variable",
+				"Forwarding FTP_PROXY environment variable",
+				"Forwarding TERM environment variable",
+			},
 		},
 		{
 			name:     "APPTAINERENV_PATH",
@@ -218,6 +257,9 @@ func TestSetContainerEnv(t *testing.T) {
 			},
 			apptainerEnv: map[string]string{
 				"SING_USER_DEFINED_PATH": "/my/path",
+			},
+			outputNeeded: []string{
+				"Forwarding APPTAINERENV_PATH as SING_USER_DEFINED_PATH environment variable",
 			},
 		},
 		{
@@ -234,6 +276,9 @@ func TestSetContainerEnv(t *testing.T) {
 			apptainerEnv: map[string]string{
 				"LANG": "en",
 			},
+			outputNeeded: []string{
+				"Forwarding APPTAINERENV_LANG as LANG environment variable",
+			},
 		},
 		{
 			name:     "APPTAINERENV_HOME",
@@ -247,6 +292,9 @@ func TestSetContainerEnv(t *testing.T) {
 				"PATH=" + DefaultPath,
 			},
 			apptainerEnv: map[string]string{},
+			outputNeeded: []string{
+				"Overriding HOME environment variable with APPTAINERENV_HOME is not permitted",
+			},
 		},
 		{
 			name:     "APPTAINERENV_LD_LIBRARY_PATH",
@@ -261,6 +309,9 @@ func TestSetContainerEnv(t *testing.T) {
 			},
 			apptainerEnv: map[string]string{
 				"LD_LIBRARY_PATH": "/my/libs",
+			},
+			outputNeeded: []string{
+				"Forwarding APPTAINERENV_LD_LIBRARY_PATH as LD_LIBRARY_PATH environment variable",
 			},
 		},
 		{
@@ -278,6 +329,9 @@ func TestSetContainerEnv(t *testing.T) {
 			apptainerEnv: map[string]string{
 				"LD_LIBRARY_PATH": "/my/libs",
 			},
+			outputNeeded: []string{
+				"Forwarding APPTAINERENV_LD_LIBRARY_PATH as LD_LIBRARY_PATH environment variable",
+			},
 		},
 		{
 			name:     "APPTAINERENV_HOST after HOST",
@@ -294,6 +348,10 @@ func TestSetContainerEnv(t *testing.T) {
 			apptainerEnv: map[string]string{
 				"HOST": "myhostenv",
 			},
+			outputNeeded: []string{
+				"Forwarding APPTAINERENV_HOST as HOST environment variable",
+				"Environment variable HOST already has value [myhostenv], will not forward new value [myhost] from parent process environment",
+			},
 		},
 		{
 			name:     "APPTAINERENV_HOST before HOST",
@@ -309,6 +367,10 @@ func TestSetContainerEnv(t *testing.T) {
 			},
 			apptainerEnv: map[string]string{
 				"HOST": "myhostenv",
+			},
+			outputNeeded: []string{
+				"Forwarding APPTAINERENV_HOST as HOST environment variable",
+				"Environment variable HOST already has value [myhostenv], will not forward new value [myhost] from parent process environment",
 			},
 		},
 		// test permutations of named environment variable with
@@ -335,6 +397,11 @@ func TestSetContainerEnv(t *testing.T) {
 			apptainerEnv: map[string]string{
 				"PRECEDENCE": "first",
 			},
+			outputNeeded: []string{
+				"Forwarding APPTAINERENV_PRECEDENCE as PRECEDENCE environment variable",
+				"Skipping environment variable [SINGULARITYENV_PRECEDENCE=second], PRECEDENCE is already overridden with different value [first]",
+				"Environment variable PRECEDENCE already has value [first], will not forward new value [fifth] from parent process environment",
+			},
 		},
 		{
 			name:     "ENV precedence - second - with conflicts - different values",
@@ -356,6 +423,11 @@ func TestSetContainerEnv(t *testing.T) {
 			apptainerEnv: map[string]string{
 				"PRECEDENCE": "second",
 			},
+			outputNeeded: []string{
+				"DEPRECATED USAGE: Forwarding SINGULARITYENV_PRECEDENCE as environment variable will not be supported in the future, use APPTAINERENV_PRECEDENCE instead",
+				"Forwarding SINGULARITYENV_PRECEDENCE as PRECEDENCE environment variable",
+				"Environment variable PRECEDENCE already has value [second], will not forward new value [fifth] from parent process environment",
+			},
 		},
 		{
 			disabled: true,
@@ -375,6 +447,7 @@ func TestSetContainerEnv(t *testing.T) {
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
 			},
+			outputNeeded: []string{},
 		},
 		{
 			name:     "ENV precedence - fourth - with conflicts - different values",
@@ -391,6 +464,7 @@ func TestSetContainerEnv(t *testing.T) {
 				"PATH=" + DefaultPath,
 			},
 			apptainerEnv: map[string]string{},
+			outputNeeded: []string{},
 		},
 		{
 			name:     "ENV precedence - first - with conflicts - same values",
@@ -413,6 +487,11 @@ func TestSetContainerEnv(t *testing.T) {
 			apptainerEnv: map[string]string{
 				"PRECEDENCE": "precedence",
 			},
+			outputNeeded: []string{
+				"Forwarding APPTAINERENV_PRECEDENCE as PRECEDENCE environment variable",
+				"Skipping environment variable [SINGULARITYENV_PRECEDENCE=precedence], PRECEDENCE is already overridden with the same value",
+				"Environment variable PRECEDENCE already has duplicate value [precedence], will not forward from parent process environment",
+			},
 		},
 		{
 			name:     "ENV precedence - second - with conflicts - same values",
@@ -434,6 +513,11 @@ func TestSetContainerEnv(t *testing.T) {
 			apptainerEnv: map[string]string{
 				"PRECEDENCE": "precedence",
 			},
+			outputNeeded: []string{
+				"DEPRECATED USAGE: Forwarding SINGULARITYENV_PRECEDENCE as environment variable will not be supported in the future, use APPTAINERENV_PRECEDENCE instead",
+				"Forwarding SINGULARITYENV_PRECEDENCE as PRECEDENCE environment variable",
+				"Environment variable PRECEDENCE already has duplicate value [precedence], will not forward from parent process environment",
+			},
 		},
 		{
 			name:     "ENV precedence - third - with conflicts - same values",
@@ -452,6 +536,9 @@ func TestSetContainerEnv(t *testing.T) {
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
 			},
+			outputNeeded: []string{
+				"Forwarding PRECEDENCE environment variable",
+			},
 		},
 		{
 			name:     "ENV precedence - fourth - with conflicts - same values",
@@ -468,6 +555,7 @@ func TestSetContainerEnv(t *testing.T) {
 				"PATH=" + DefaultPath,
 			},
 			apptainerEnv: map[string]string{},
+			outputNeeded: []string{},
 		},
 		{
 			name:     "ENV precedence - first - with no conflicts",
@@ -485,6 +573,9 @@ func TestSetContainerEnv(t *testing.T) {
 			apptainerEnv: map[string]string{
 				"PRECEDENCE": "first",
 			},
+			outputNeeded: []string{
+				"Forwarding APPTAINERENV_PRECEDENCE as PRECEDENCE environment variable",
+			},
 		},
 		{
 			name:     "ENV precedence - second - with no conflicts",
@@ -501,6 +592,10 @@ func TestSetContainerEnv(t *testing.T) {
 			},
 			apptainerEnv: map[string]string{
 				"PRECEDENCE": "second",
+			},
+			outputNeeded: []string{
+				"DEPRECATED USAGE: Forwarding SINGULARITYENV_PRECEDENCE as environment variable will not be supported in the future, use APPTAINERENV_PRECEDENCE instead",
+				"Forwarding SINGULARITYENV_PRECEDENCE as PRECEDENCE environment variable",
 			},
 		},
 		{
@@ -520,6 +615,7 @@ func TestSetContainerEnv(t *testing.T) {
 				"PATH=" + DefaultPath,
 			},
 			apptainerEnv: map[string]string{},
+			outputNeeded: []string{},
 		},
 		{
 			name:     "ENV precedence - fourth - with no conflicts",
@@ -535,6 +631,7 @@ func TestSetContainerEnv(t *testing.T) {
 				"PATH=" + DefaultPath,
 			},
 			apptainerEnv: map[string]string{},
+			outputNeeded: []string{},
 		},
 		{
 			name:     "ENV precedence - fifth/last - with no conflicts",
@@ -549,6 +646,9 @@ func TestSetContainerEnv(t *testing.T) {
 				"PRECEDENCE=fifth",
 				"HOME=/home/tester",
 				"PATH=" + DefaultPath,
+			},
+			outputNeeded: []string{
+				"Forwarding PRECEDENCE environment variable",
 			},
 		},
 	}
@@ -579,6 +679,11 @@ func TestSetContainerEnv(t *testing.T) {
 				}()
 				senv = SetContainerEnv(generator, tc.env, tc.cleanEnv, tc.homeDest)
 			}()
+			for _, requiredOutput := range tc.outputNeeded {
+				if !strings.Contains(output.String(), requiredOutput) {
+					t.Errorf("Did not find required output: [%s]", requiredOutput)
+				}
+			}
 			if !equal(t, ociConfig.Process.Env, tc.resultEnv) {
 				t.Fatalf("unexpected envs:\n want: %v\ngot: %v", tc.resultEnv, ociConfig.Process.Env)
 			}
