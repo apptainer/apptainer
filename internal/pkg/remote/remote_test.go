@@ -295,7 +295,7 @@ func TestSyncFrom(t *testing.T) {
 				},
 			},
 		}, {
-			name: "sys config dont update default endpoint",
+			name: "sys config do not update default endpoint",
 			sys: Config{
 				DefaultRemote: "sylabs-global",
 				Remotes: map[string]*endpoint.Config{

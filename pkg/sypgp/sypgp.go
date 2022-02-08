@@ -878,7 +878,7 @@ func FetchPubkey(ctx context.Context, fingerprint string, noPrompt bool, opts ..
 
 	// theres probably a better way to do this
 	if len(fp) != 4 && len(fp) != 20 {
-		return nil, fmt.Errorf("not a valid key lenth: only accepts 8, or 40 chars")
+		return nil, fmt.Errorf("not a valid key length: only accepts 8, or 40 chars")
 	}
 
 	// Get a Key Service client.

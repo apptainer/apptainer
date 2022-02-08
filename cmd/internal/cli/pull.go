@@ -103,7 +103,7 @@ var pullDisableCacheFlag = cmdline.Flag{
 	Value:        &disableCache,
 	DefaultValue: false,
 	Name:         "disable-cache",
-	Usage:        "dont use cached images/blobs and dont create them",
+	Usage:        "do not use or create cached images/blobs",
 	EnvKeys:      []string{"DISABLE_CACHE"},
 }
 
