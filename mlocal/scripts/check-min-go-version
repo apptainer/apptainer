@@ -18,8 +18,9 @@ else
     GOMINOR="${GOMINOR/.*}"
 fi
 # ignore GO pre-release extensions
-if ! [[ $GOMINOR =~ ^[0-9]$ ]]; then
-    GOMINOR="$(echo $GOMINOR|sed 's/^\([0-9]*\).*/\1/')"
+if ! [[ "$GOMINOR" =~ ^[0-9]$ ]]; then
+    # shellcheck disable=SC2001
+    GOMINOR="$(echo "$GOMINOR"|sed 's/^\([0-9]*\).*/\1/')"
 fi
 
 MINVERSION="$2"
@@ -32,16 +33,16 @@ else
     MINMINOR="${MINMINOR/.*}"
 fi
 
-if [ $GOMAJOR -lt $MINMAJOR ]; then
+if [ "$GOMAJOR" -lt "$MINMAJOR" ]; then
     exit 1
 fi
-if [ $GOMAJOR -gt $MINMAJOR ]; then
+if [ "$GOMAJOR" -gt "$MINMAJOR" ]; then
     exit 0
 fi
-if [ $GOMINOR -lt $MINMINOR ]; then
+if [ "$GOMINOR" -lt "$MINMINOR" ]; then
     exit 1
 fi
-if [ $GOMINOR -gt $MINMINOR ]; then
+if [ "$GOMINOR" -gt "$MINMINOR" ]; then
     exit 0
 fi
 if [ -z "$MINPATCH" ]; then
@@ -50,7 +51,7 @@ fi
 if [ -z "$GOPATCH" ]; then
     exit 1
 fi
-if [ $GOPATCH -lt $MINPATCH ]; then
+if [ "$GOPATCH" -lt "$MINPATCH" ]; then
     exit 1
 fi
 exit 0
