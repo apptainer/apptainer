@@ -53,7 +53,7 @@ func ConvertOciToSIF(ctx context.Context, imgCache *cache.Handle, image, cachedI
 		return fmt.Errorf("unable to create new build: %v", err)
 	}
 
-	return b.Full(ctx)
+	return b.Full(ctx, false)
 }
 
 func createStageFile(source string, b *types.Bundle, warnMsg string) (string, error) {

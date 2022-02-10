@@ -49,10 +49,10 @@ func (s *stage) Assemble(path string) error {
 }
 
 // runSetupScript executes the stage's pre script on host.
-func (s *stage) runSectionScript(name string, script types.Script) error {
+func (s *stage) runSectionScript(name string, script types.Script, unprivileged bool) error {
 	if s.b.RunSection(name) && script.Script != "" {
-		if syscall.Getuid() != 0 {
-			return fmt.Errorf("attempted to build with scripts as non-root user or without --fakeroot")
+		if syscall.Getuid() != 0 && !unprivileged {
+			return fmt.Errorf("attempted to build with scripts as non-root user or without --fakeroot or --unprivileged")
 		}
 
 		aRootfs := "APPTAINER_ROOTFS=" + s.b.RootfsPath

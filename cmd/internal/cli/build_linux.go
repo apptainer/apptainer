@@ -161,8 +161,8 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string) {
 		sylog.Fatalf("Failed to create an image cache handle")
 	}
 
-	if syscall.Getuid() != 0 && !buildArgs.fakeroot && fs.IsFile(spec) && !isImage(spec) {
-		sylog.Fatalf("You must be the root user, however you can --fakeroot to build from an Apptainer recipe file")
+	if syscall.Getuid() != 0 && !buildArgs.fakeroot && !buildArgs.unprivileged && fs.IsFile(spec) && !isImage(spec) {
+		sylog.Fatalf("You must be the root user, however you can --fakeroot or --unprivileged to build from an Apptainer recipe file")
 	}
 
 	err := checkSections()
@@ -263,7 +263,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string) {
 		sylog.Fatalf("Unable to create build: %v", err)
 	}
 
-	if err = b.Full(ctx); err != nil {
+	if err = b.Full(ctx, buildArgs.unprivileged); err != nil {
 		sylog.Fatalf("While performing build: %v", err)
 	}
 }

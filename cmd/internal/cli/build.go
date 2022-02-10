@@ -43,6 +43,7 @@ var buildArgs struct {
 	nvccli        bool
 	rocm          bool
 	writableTmpfs bool // For test section only
+	unprivileged  bool
 }
 
 // -s|--sandbox
@@ -224,6 +225,16 @@ var buildWritableTmpfsFlag = cmdline.Flag{
 	EnvKeys:      []string{"WRITABLE_TMPFS"},
 }
 
+// -N|--unprivileged
+var buildUnprivilegedFlag = cmdline.Flag{
+	ID:           "buildUnprivilegedFlag",
+	Value:        &buildArgs.unprivileged,
+	DefaultValue: false,
+	Name:         "unprivileged",
+	ShortHand:    "N",
+	Usage:        "build without root-privilege examination. Conventional package managers (e.g. apt and rpm) and system tools may fail without root privileges.",
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(buildCmd)
@@ -256,6 +267,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildBindFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildMountFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildWritableTmpfsFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildUnprivilegedFlag, buildCmd)
 	})
 }
 

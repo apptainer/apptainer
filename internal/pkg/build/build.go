@@ -329,7 +329,7 @@ func (b Build) cleanUp() {
 }
 
 // Full runs a standard build from start to finish.
-func (b *Build) Full(ctx context.Context) error {
+func (b *Build) Full(ctx context.Context, unprivileged bool) error {
 	sylog.Infof("Starting build...")
 
 	// monitor build for termination signal and clean up
@@ -377,7 +377,7 @@ func (b *Build) Full(ctx context.Context) error {
 
 	// build each stage one after the other
 	for i, stage := range b.stages {
-		if err := stage.runSectionScript("pre", stage.b.Recipe.BuildData.Pre); err != nil {
+		if err := stage.runSectionScript("pre", stage.b.Recipe.BuildData.Pre, unprivileged); err != nil {
 			return err
 		}
 
@@ -430,7 +430,7 @@ func (b *Build) Full(ctx context.Context) error {
 			}
 		}
 
-		if err := stage.runSectionScript("setup", stage.b.Recipe.BuildData.Setup); err != nil {
+		if err := stage.runSectionScript("setup", stage.b.Recipe.BuildData.Setup, unprivileged); err != nil {
 			return err
 		}
 
