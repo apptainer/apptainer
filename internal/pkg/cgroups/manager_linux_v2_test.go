@@ -195,11 +195,11 @@ func testFreezeThawV2(t *testing.T, systemd bool) {
 	// cgroups v2 freeze is to interruptible sleep, which could actually occur
 	// for our cat /dev/zero while it's running, so check freeze marker as well
 	// as the process state here.
-	ensureState(t, pid, "S")
+	ensureStateBecomes(t, pid, "S")
 	freezePath := path.Join(manager.cgroup.Path(""), "cgroup.freeze")
 	ensureInt(t, freezePath, 1)
 
 	manager.Thaw()
-	ensureState(t, pid, "RS")
+	ensureStateBecomes(t, pid, "RS")
 	ensureInt(t, freezePath, 0)
 }

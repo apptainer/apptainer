@@ -195,8 +195,8 @@ func testFreezeThawV1(t *testing.T, systemd bool) {
 
 	manager.Freeze()
 	// cgroups v1 freeze is to uninterruptible sleep
-	ensureState(t, pid, "D")
+	ensureStateBecomes(t, pid, "D")
 
 	manager.Thaw()
-	ensureState(t, pid, "RS")
+	ensureStateBecomes(t, pid, "RS")
 }

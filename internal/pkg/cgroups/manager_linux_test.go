@@ -12,12 +12,14 @@ package cgroups
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
@@ -138,31 +140,49 @@ func ensureContainsInt(t *testing.T, path string, wantInt int64) {
 	t.Fatalf("%s did not contain expected value %d", path, wantInt)
 }
 
-// ensureState asserts that a process pid has the required state
-func ensureState(t *testing.T, pid int, wantStates string) {
+// ensureStateBecomes asserts that a process pid has any of the wanted
+// states, or reaches one of these states in a 5 second window.
+func ensureStateBecomes(t *testing.T, pid int, wantStates string) {
+	const retries = 5
+	const delay = time.Second
+
 	file, err := os.Open(fmt.Sprintf("/proc/%d/status", pid))
 	if err != nil {
 		t.Error(err)
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
 	procState := ""
 
-	for scanner.Scan() {
-		// State:	R (running)
-		if strings.HasPrefix(scanner.Text(), "State:\t") {
-			f := strings.Fields(scanner.Text())
-			if len(f) < 2 {
-				t.Errorf("Could not check process state - not enough fields: %s", scanner.Text())
+	for r := 0; r <= retries; r++ {
+		if r > 0 {
+			t.Logf("Process %d has state %q, need %q - retrying %d/%d", pid, procState, wantStates, r, retries)
+			time.Sleep(delay)
+		}
+
+		if _, err := file.Seek(0, io.SeekStart); err != nil {
+			t.Fatalf("Could not seek to start of /proc/%d/status", pid)
+		}
+
+		scanner := bufio.NewScanner(file)
+
+		for scanner.Scan() {
+			// State:	R (running)
+			if strings.HasPrefix(scanner.Text(), "State:\t") {
+				f := strings.Fields(scanner.Text())
+				if len(f) < 2 {
+					t.Errorf("Could not check process state - not enough fields: %s", scanner.Text())
+				}
+				procState = f[1]
 			}
-			procState = f[1]
+		}
+
+		if strings.ContainsAny(procState, wantStates) {
+			return
 		}
 	}
 
-	if !strings.ContainsAny(procState, wantStates) {
-		t.Errorf("Process %d had state %q, expected state %q", pid, procState, wantStates)
-	}
+	t.Errorf("Process %d did not reach expected state %q", pid, wantStates)
 }
 
 // testManager returns a cgroup manager, that has created a cgroup with a `cat /dev/zero` process,
