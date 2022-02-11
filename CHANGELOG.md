@@ -5,21 +5,51 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes since last release
+## v1.0.0 Release Candidate 2 - \[2022-02-08\]
 
-- The `SINGULARITY_LABELS` environment variable within build definitions has
-  been restored.
-- Fix mount ordering between image bind and user binds.
+### Changes since v1.0.0 Release Candidate 1
+
+This release candidate includes bug fixes that went into SingularityCE
+3.9.5.
+
+#### Changes related to long-standing issues
+
 - Auto-generate release assets including the distribution tarball and
   rpm (built on CentOS 7) and deb (built on Debian 11) x86_64 packages.
+- Honor image binds and user binds in the order they're given instead of
+  always doing image binds first.
 - Update dependency to correctly unset variables in container startup
   environment processing. Fixes regression introduced in singularity-3.8.5.
 - Remove subshell overhead when processing large environments on container
   startup.
 - `make install` now installs man pages. A separate `make man` is not
-  required.
+  required.  As a consequence, man pages are now included in deb packages.
 
-## v1.0.0 Release Candidate 1 - \[22-01-19\]
+#### Changes related to issues introduced in release candidate 1
+
+- Several environment variables that had been converted to start with
+  only `APPTAINER_` are now also recognizing their `SINGULARITY_` counterparts.
+- Fixed compilation of plugin examples.
+- Fixed direct exection of .sif files; the shebang header for executing
+  run-singularity was missing.
+- Changed the Apptainer Copyright to be for "Contributors to the Apptainer
+  project" and removed the year.
+- Renamed the `~/.apptainer/sypgp` directory to `~/.apptainer/keys` and change
+  the corresponding environment variable from `APPTAINER_SYPGPDIR` to
+  `APPTAINER_KEYSDIR`.
+
+## v1.0.0 Release Candidate 1 - \[2022-01-19\]
+
+### Comparision to SingularityCE
+
+This release candidate has most of the new features, bug fixes, and
+changes that went into SingularityCE up through their version 3.9.4,
+except where the maintainers of Apptainer disagreed with what went into
+SingularityCE since the project fork.  The biggest difference is that
+Apptainer does not support the --nvccli option in privileged mode.  This
+release also has the additional major feature of instance checkpointing
+which isn't in SingularityCE.  Other differences due to re-branding are
+in the next section.
 
 ### Changes due to the project re-branding
 
