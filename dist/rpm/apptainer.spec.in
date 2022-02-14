@@ -25,11 +25,11 @@
 #
 #
 
-# Disable debugsource packages; otherwise it ends up with an empty %files
+# Disable debugsource packages; otherwise it ends up with an empty %%files
 #   file in debugsourcefiles.list on Fedora
 %undefine _debugsource_packages
 
-# This can be slightly different than %{version}.
+# This can be slightly different than %%{version}.
 # For example, it has dash instead of tilde for release candidates.
 %define package_version @PACKAGE_VERSION@
 
@@ -42,7 +42,6 @@ License: BSD-3-Clause-LBNL and LICENSE-APACHE-2.0
 URL: https://apptainer.org
 Source: %{name}-%{package_version}.tar.gz
 @PACKAGE_GOLANG_SOURCE@
-ExclusiveOS: linux
 # The singularity package was renamed to apptainer after version 3.8.x.
 # The apptainer package reset numbering at 1.0.0, so Provide corresponding
 #  singularity versions in the next epoch.
@@ -71,9 +70,6 @@ Requires: squashfs
 Requires: squashfs-tools
 %endif
 BuildRequires: cryptsetup
-
-# there's no golang for ppc64, just ppc64le
-ExcludeArch: ppc64
 
 %description
 Apptainer provides functionality to make portable
