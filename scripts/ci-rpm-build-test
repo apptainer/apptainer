@@ -38,7 +38,6 @@ su testuser -c '
     fi
   fi
   go version
-  sudo yum-builddep -y apptainer.spec
   # eliminate the "dist" part in the rpm name, for the release_assets
   echo "%dist %{nil}" >$HOME/.rpmmacros
   make -C builddir rpm
