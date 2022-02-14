@@ -453,13 +453,14 @@ func TestMakeTempFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		f, err := MakeTmpFile(tt.basedir, tt.pattern, tt.mode)
-		if err != nil && tt.expectSuccess {
-			t.Errorf("%s: unexpected failure: %s", tt.name, err)
-		} else if err == nil && !tt.expectSuccess {
-			t.Errorf("%s: unexpected success", tt.name)
-		} else if err != nil && !tt.expectSuccess {
-			// no check, fail as expected
+		if err != nil {
+			if tt.expectSuccess {
+				t.Errorf("%s: unexpected failure: %s", tt.name, err)
+			}
 			continue
+		}
+		if !tt.expectSuccess {
+			t.Errorf("%s: unexpected success", tt.name)
 		}
 		defer f.Close()
 		defer os.Remove(f.Name())
@@ -695,7 +696,7 @@ func TestFirstExistingParent(t *testing.T) {
 
 	testFile, err := MakeTmpFile(testDir, "file", 0o644)
 	if err != nil {
-		t.Fatalf("failed to create temporary directory: %s: %s", testFile.Name(), err)
+		t.Fatalf("failed to create temporary file: %s", err)
 	}
 	testFile.Close()
 	defer os.RemoveAll(testFile.Name())
@@ -761,7 +762,7 @@ func TestForceRemoveAll(t *testing.T) {
 	}
 	testFile, err := MakeTmpFile(testDir, "file", 0o644)
 	if err != nil {
-		t.Fatalf("failed to create temporary directory: %s: %s", testFile.Name(), err)
+		t.Fatalf("failed to create temporary file: %s", err)
 	}
 	testFile.Close()
 	// Change the perm on testDir so that RemoveAll should fail

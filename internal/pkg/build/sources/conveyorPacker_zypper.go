@@ -375,10 +375,6 @@ func (cp *ZypperConveyorPacker) insertRunScript() (err error) {
 		return
 	}
 
-	if err != nil {
-		return
-	}
-
 	f.Sync()
 
 	err = os.Chmod(cp.b.RootfsPath+"/.singularity.d/runscript", 0o755)

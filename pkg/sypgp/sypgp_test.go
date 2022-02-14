@@ -489,14 +489,15 @@ func TestGenKeyPair(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Setup the input file that will act as stdin
 			e, err := keyring.GenKeyPair(tt.options)
-			if tt.shallPass && err != nil {
-				t.Fatalf("valid case %s failed: %s", tt.name, err)
+			if err != nil {
+				if tt.shallPass {
+					t.Fatalf("valid case %s failed: %s", tt.name, err)
+				}
+				return
 			}
-			if !tt.shallPass && err == nil {
+			if !tt.shallPass {
 				t.Fatalf("invalid case %s succeeded", tt.name)
-			}
-
-			if e.PrivateKey.Encrypted != tt.encrypted {
+			} else if e.PrivateKey.Encrypted != tt.encrypted {
 				t.Fatalf("expected encrypted: %t got: %t", tt.encrypted, e.PrivateKey.Encrypted)
 			}
 		})

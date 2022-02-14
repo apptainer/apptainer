@@ -169,11 +169,15 @@ func TestNormalizeKeyserverURI(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			uri, err := NormalizeKeyserverURI(tt.uri)
-			if err == nil && tt.wantErr {
+			if err != nil {
+				if !tt.wantErr {
+					t.Errorf("unexpected error for URI %s: %s", tt.uri, err)
+				}
+				return
+			}
+			if tt.wantErr {
 				t.Errorf("unexpected success for URI %s", tt.uri)
-			} else if err != nil && !tt.wantErr {
-				t.Errorf("unexpected error for URI %s: %s", tt.uri, err)
-			} else if !tt.wantErr && uri.String() != tt.expectedURI {
+			} else if uri.String() != tt.expectedURI {
 				t.Errorf("unexpected URI returned: got %s instead of %s", uri, tt.expectedURI)
 			}
 		})

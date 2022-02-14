@@ -194,17 +194,19 @@ func TestLibraryClientConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config, err := tt.endpoint.LibraryClientConfig(tt.uri)
-			if err != nil && tt.expectSuccess {
-				t.Errorf("unexpected error: %s", err)
-			} else if err == nil && !tt.expectSuccess {
-				t.Errorf("unexpected success for %s", tt.name)
-			} else if err != nil && !tt.expectSuccess {
-				return
-			}
-			if config.BaseURL != tt.uri {
-				t.Errorf("unexpected uri returned: %s instead of %s", config.BaseURL, tt.uri)
-			} else if config.AuthToken != "" {
-				t.Errorf("unexpected token returned: %s", config.AuthToken)
+			if err != nil {
+				if tt.expectSuccess {
+					t.Errorf("unexpected error: %s", err)
+				}
+			} else {
+				if !tt.expectSuccess {
+					t.Errorf("unexpected success for %s", tt.name)
+				}
+				if config.BaseURL != tt.uri {
+					t.Errorf("unexpected uri returned: %s instead of %s", config.BaseURL, tt.uri)
+				} else if config.AuthToken != "" {
+					t.Errorf("unexpected token returned: %s", config.AuthToken)
+				}
 			}
 		})
 	}
