@@ -5,6 +5,14 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes Since Last Release
+
+### Bug fixes
+
+- Correct library bindings for `unsquashfs` containment. Fixes errors where
+  resolved library filename does not match library filename in binary (e.g. EL8,
+  POWER9 with glibc-hwcaps).
+
 ## v1.0.0 Release Candidate 2 - \[2022-02-08\]
 
 ### Changes since v1.0.0 Release Candidate 1
