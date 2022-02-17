@@ -6,9 +6,6 @@
  * Copyright (c) 2017-2019, SyLabs, Inc. All rights reserved.
  * Copyright (c) 2017, SingularityWare, LLC. All rights reserved.
  * 
- * See the COPYRIGHT.md file at the top-level directory of this distribution and at
- * https://github.com/apptainer/apptainer/blob/main/COPYRIGHT.md.
- *
  * This file is part of the Apptainer Linux container project. It is subject to the license
  * terms in the LICENSE.md file found in the top-level directory of this distribution and
  * at https://github.com/apptainer/apptainer/blob/main/LICENSE.md. No part

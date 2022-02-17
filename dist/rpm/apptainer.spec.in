@@ -3,7 +3,7 @@
 #   Apptainer a Series of LF Projects LLC.
 #   For website terms of use, trademark policy, privacy policy and other
 #   project policies see https://lfprojects.org/policies
-# Copyright (c) 2017-2021, SyLabs, Inc. All rights reserved.
+# Copyright (c) 2017-2022, SyLabs, Inc. All rights reserved.
 # Copyright (c) 2017, SingularityWare, LLC. All rights reserved.
 #
 # Copyright (c) 2015-2017, Gregory M. Kurtzer. All rights reserved.
@@ -37,8 +37,11 @@ Summary: Application and environment virtualization
 Name: apptainer
 Version: @PACKAGE_RPM_VERSION@
 Release: @PACKAGE_RELEASE@%{?dist}
-# https://spdx.org/licenses/BSD-3-Clause-LBNL.html
-License: BSD-3-Clause-LBNL and LICENSE-APACHE-2.0
+# See LICENSE.md for first party code (BSD-3-Clause and LBNL BSD)
+# See LICENSE_THIRD_PARTY.md for incorporated code (ASL 2.0)
+# See LICENSE_DEPENDENCIES.md for dependencies
+# License identifiers taken from: https://fedoraproject.org/wiki/Licensing
+License: BSD-3-Clause and LBNL BSD and ASL 2.0
 URL: https://apptainer.org
 Source: %{name}-%{package_version}.tar.gz
 @PACKAGE_GOLANG_SOURCE@
@@ -176,7 +179,13 @@ rmdir %{_sysconfdir}/singularity/* %{_sysconfdir}/singularity 2>/dev/null || tru
 %dir %{_localstatedir}/%{name}/mnt/session
 %{_mandir}/man1/%{name}*
 %{_mandir}/man1/singularity*
-
+%license %{name}-%{version}/%{name}-%{package_version}/LICENSE.md
+%license %{name}-%{version}/%{name}-%{package_version}/LICENSE_THIRD_PARTY.md
+%license %{name}-%{version}/%{name}-%{package_version}/LICENSE_DEPENDENCIES.md
+%doc %{name}-%{version}/%{name}-%{package_version}/README.md
+%doc %{name}-%{version}/%{name}-%{package_version}/CHANGELOG.md
+%doc %{name}-%{version}/%{name}-%{package_version}/CONTRIBUTING.md
+%doc %{name}-%{version}/%{name}-%{package_version}/CONTRIBUTORS.md
 
 %changelog
 

@@ -85,6 +85,19 @@ jobs:
           ./mconfig -v -p /usr/local
           make -C ./builddir all
 
+  check_license_dependencies:
+    name: check_license_dependencies
+    runs-on: ubuntu-20.04
+    container: golang:1.17.6
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Update LICENSE_DEPENDENCIES.md
+        run: ./scripts/update-license-dependencies.sh
+
+      - name: Check License Changes
+        run: git diff --exit-code -- LICENSE_DEPENDENCIES.md
+
   debian:
     name: debian
     runs-on: ubuntu-20.04
