@@ -285,13 +285,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - run: git fetch --prune --unshallow --tags --force
 
       - name: Make dist tarball and rpm packages
         env:
           OS_TYPE: centos
           OS_VERSION: 7
           GO_ARCH: linux-amd64
-          GITHUB_REF: ${{github.ref}}
         run: |
           # Move the source directory down a level to separate it
           #  from later builds; the docker build runs privileged and
@@ -301,7 +301,6 @@ jobs:
           shopt -s extglob
           mv .??* !(rpmdir) rpmdir
           cd rpmdir
-          echo ${GITHUB_REF#refs/tags/v*} >VERSION
           ./scripts/ci-docker-run
           cp *.tar.gz *.rpm ..
           cd ..
@@ -312,12 +311,11 @@ jobs:
           OS_TYPE: debian
           OS_VERSION: 11
           GO_ARCH: linux-amd64
-          GITHUB_REF: ${{github.ref}}
         run: |
           # Make a new copy of the source files for this build
           set -x
           tar xf apptainer-*.tar.gz
-          cd apptainer-${GITHUB_REF#refs/tags/v*}
+          cd `basename apptainer-*.tar.gz .tar.gz`
           ./scripts/ci-docker-run
           cp *.deb ..
           cd ..
