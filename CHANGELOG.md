@@ -133,10 +133,10 @@ in the next section.
   namespace can be specified with the `-i|--ipc` flag.
 - The behaviour of the `allow container` directives in `apptainer.conf` has
   been modified, to support more intuitive limitations on the usage of SIF and non-SIF
-  container images. If you use these directives, _you may need to make changes
-  to apptainer.conf to preserve behaviour_.
+  container images. If you use these directives, *you may need to make changes
+  to apptainer.conf to preserve behaviour*.
   - A new `allow container sif` directive permits or denies usage of
-    _unencrypted_ SIF images, irrespective of the filesystem(s) inside the SIF.
+    *unencrypted* SIF images, irrespective of the filesystem(s) inside the SIF.
   - The `allow container encrypted` directive permits or denies usage of SIF
     images with an encrypted root filesystem.
   - The `allow container squashfs/extfs` directives in `apptainer.conf`
