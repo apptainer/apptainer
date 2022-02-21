@@ -13,6 +13,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   resolved library filename does not match library filename in binary (e.g. EL8,
   POWER9 with glibc-hwcaps).
 - Remove python as a dependency of the debian package.
+- Increased the TLS Handshake Timeout for the busybox bootstrap agent in
+  build definition files to 60 seconds.
 
 ## v1.0.0 Release Candidate 2 - \[2022-02-08\]
 
