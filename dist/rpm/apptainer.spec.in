@@ -31,7 +31,7 @@
 
 # This can be slightly different than %%{version}.
 # For example, it has dash instead of tilde for release candidates.
-%define package_version @PACKAGE_VERSION@
+%global package_version @PACKAGE_VERSION@
 
 Summary: Application and environment virtualization
 Name: apptainer
@@ -41,9 +41,9 @@ Release: @PACKAGE_RELEASE@%{?dist}
 # See LICENSE_THIRD_PARTY.md for incorporated code (ASL 2.0)
 # See LICENSE_DEPENDENCIES.md for dependencies
 # License identifiers taken from: https://fedoraproject.org/wiki/Licensing
-License: BSD-3-Clause and LBNL BSD and ASL 2.0
+License: BSD and ASL 2.0
 URL: https://apptainer.org
-Source: %{name}-%{package_version}.tar.gz
+Source: https://github.com/%{name}/%{name}/releases/download/v%{package_version}/%{name}-%{package_version}.tar.gz
 @PACKAGE_GOLANG_SOURCE@
 # The singularity package was renamed to apptainer after version 3.8.x.
 # The apptainer package reset numbering at 1.0.0, so Provide corresponding
@@ -78,34 +78,10 @@ BuildRequires: cryptsetup
 Apptainer provides functionality to make portable
 containers that can be used across host environments.
 
-%debug_package
-
 %prep
-%if "%{?buildroot}"
-export RPM_BUILD_ROOT="%{buildroot}"
-%endif
-
-if [ -d %{name}-%{version} ]; then
-    # Clean up old build root
-    # First clean go's modcache because directories are unwritable
-    GOPATH=$PWD/%{name}-%{version}/gopath go clean -modcache
-    rm -rf %{name}-%{version}
-fi
-
-# Create our build root
-mkdir %{name}-%{version}
+%autosetup -n %{name}-%{package_version}
 
 %build
-cd %{name}-%{version}
-
-# Setup an empty GOPATH for the build
-export GOPATH=$PWD/gopath
-mkdir -p "$GOPATH"
-
-# Extract the source
-tar -xf "%SOURCE0"
-cd %{name}-%{package_version}
-
 %if "%{?SOURCE1}" != ""
 GOVERSION="$(echo %SOURCE1|sed 's,.*/,,;s/go//;s/\.src.*//')"
 if ! ./mlocal/scripts/check-min-go-version go $GOVERSION; then
@@ -119,7 +95,6 @@ if ! ./mlocal/scripts/check-min-go-version go $GOVERSION; then
 	popd
 fi
 %endif
-
 
 # Not all of these parameters currently have an effect, but they might be
 #  used someday.  They are the same parameters as in the configure macro.
@@ -138,54 +113,42 @@ fi
         --mandir=%{_mandir} \
         --infodir=%{_infodir}
 
-make -C builddir old_config=
+%make_build -C builddir V= old_config=
 
 %install
-cd %{name}-%{version}
-
 %if "%{?SOURCE1}" != ""
 export PATH=$PWD/go/bin:$PATH
 %endif
-export GOPATH=$PWD/gopath
-cd %{name}-%{package_version}
 
-make -C builddir DESTDIR=$RPM_BUILD_ROOT install
+%make_install -C builddir V=
 
 %posttrans
 # clean out empty directories under /etc/singularity
 rmdir %{_sysconfdir}/singularity/* %{_sysconfdir}/singularity 2>/dev/null || true
+
+# Define `%%license` tag if not already defined.
+# This is needed for EL 7 compatibility.
+%{!?_licensedir:%global license %doc}
 
 %files
 %attr(4755, root, root) %{_libexecdir}/%{name}/bin/starter-suid
 %{_bindir}/%{name}
 %{_bindir}/singularity
 %{_bindir}/run-singularity
-%dir %{_libexecdir}/%{name}
-%{_libexecdir}/%{name}/bin/starter
-%{_libexecdir}/%{name}/cni/*
+%{_libexecdir}/%{name}
 %dir %{_sysconfdir}/%{name}
-%config(noreplace) %{_sysconfdir}/%{name}/*.conf
-%config(noreplace) %{_sysconfdir}/%{name}/*.toml
-%config(noreplace) %{_sysconfdir}/%{name}/*.json
-%config(noreplace) %{_sysconfdir}/%{name}/*.yaml
-%config(noreplace) %{_sysconfdir}/%{name}/global-pgp-public
-%config(noreplace) %{_sysconfdir}/%{name}/cgroups/*
-%config(noreplace) %{_sysconfdir}/%{name}/network/*
-%config(noreplace) %{_sysconfdir}/%{name}/seccomp-profiles/*
-%dir %{_sysconfdir}/bash_completion.d
+%config(noreplace) %{_sysconfdir}/%{name}/*
 %{_sysconfdir}/bash_completion.d/*
 %dir %{_localstatedir}/%{name}
 %dir %{_localstatedir}/%{name}/mnt
 %dir %{_localstatedir}/%{name}/mnt/session
 %{_mandir}/man1/%{name}*
 %{_mandir}/man1/singularity*
-%license %{name}-%{version}/%{name}-%{package_version}/LICENSE.md
-%license %{name}-%{version}/%{name}-%{package_version}/LICENSE_THIRD_PARTY.md
-%license %{name}-%{version}/%{name}-%{package_version}/LICENSE_DEPENDENCIES.md
-%doc %{name}-%{version}/%{name}-%{package_version}/README.md
-%doc %{name}-%{version}/%{name}-%{package_version}/CHANGELOG.md
-%doc %{name}-%{version}/%{name}-%{package_version}/CONTRIBUTING.md
-%doc %{name}-%{version}/%{name}-%{package_version}/CONTRIBUTORS.md
+%license LICENSE.md
+%license LICENSE_THIRD_PARTY.md
+%license LICENSE_DEPENDENCIES.md
+%doc README.md
+%doc CHANGELOG.md
 
 %changelog
 
