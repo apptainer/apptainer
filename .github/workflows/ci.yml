@@ -277,7 +277,21 @@ jobs:
       - uses: actions/checkout@v2
       - run: git fetch --prune --unshallow --tags --force
 
+      - name: Check if release is needed because tag matches latest annotated
+        env:
+          GITHUB_REF: ${{github.ref}}
+        run: |
+          GETVERSION="$(./scripts/get-version)"
+          GITTAG="${GITHUB_REF#refs/tags/v*}"
+          if [ "$GETVERSION" == "$GITTAG" ]
+          then
+            echo "do_release=true" >> $GITHUB_ENV
+          else
+            echo "Skipping because $GETVERSION did not match $GITTAG"
+          fi
+
       - name: Make dist tarball and rpm packages
+        if: env.do_release
         env:
           OS_TYPE: centos
           OS_VERSION: 7
@@ -297,6 +311,7 @@ jobs:
           sha256sum *.tar.gz *.rpm > sha256sums
 
       - name: Make deb packages
+        if: env.do_release
         env:
           OS_TYPE: debian
           OS_VERSION: 11
@@ -312,6 +327,7 @@ jobs:
           sha256sum *.deb >> sha256sums
 
       - name: Release
+        if: env.do_release
         uses: softprops/action-gh-release@v1
         with:
           files: |
