@@ -50,7 +50,7 @@ $(bash_completion): $(apptainer_build_config)
 	$(V)$(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" $(GO_GCFLAGS) $(GO_ASMFLAGS) \
 		$(SOURCEDIR)/cmd/bash_completion/bash_completion.go $@
 
-bash_completion_INSTALL := $(DESTDIR)$(SYSCONFDIR)/bash_completion.d/apptainer
+bash_completion_INSTALL := $(DESTDIR)$(DATADIR)/bash-completion/completions/apptainer
 $(bash_completion_INSTALL): $(bash_completion)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
