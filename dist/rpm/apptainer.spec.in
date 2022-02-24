@@ -145,7 +145,7 @@ rmdir %{_sysconfdir}/singularity/* %{_sysconfdir}/singularity 2>/dev/null || tru
 %{_libexecdir}/%{name}/cni
 %dir %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/*
-%{_datadir}/bash-completion/completions/%{name}
+%{_datadir}/bash-completion/completions/*
 %dir %{_localstatedir}/%{name}
 %dir %{_localstatedir}/%{name}/mnt
 %dir %{_localstatedir}/%{name}/mnt/session

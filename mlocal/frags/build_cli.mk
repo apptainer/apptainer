@@ -41,24 +41,33 @@ INSTALLFILES += $(apptainer_INSTALL) $(singularity_INSTALL)
 ALL += $(apptainer)
 
 
-# bash_completion file
-bash_completion :=  $(BUILDDIR)/etc/bash_completion.d/apptainer
-$(bash_completion): $(apptainer_build_config)
+# bash_completion files
+bash_completion1 :=  $(BUILDDIR)/etc/bash_completion.d/apptainer
+bash_completion2 :=  $(BUILDDIR)/etc/bash_completion.d/singularity
+bash_completions := $(bash_completion1) $(bash_completion2)
+$(bash_completions): $(apptainer_build_config)
 	@echo " GEN" $@
 	$(V)rm -f $@
 	$(V)mkdir -p $(@D)
 	$(V)$(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" $(GO_GCFLAGS) $(GO_ASMFLAGS) \
 		$(SOURCEDIR)/cmd/bash_completion/bash_completion.go $@
 
-bash_completion_INSTALL := $(DESTDIR)$(DATADIR)/bash-completion/completions/apptainer
-$(bash_completion_INSTALL): $(bash_completion)
+bash_completion1_INSTALL := $(DESTDIR)$(DATADIR)/bash-completion/completions/apptainer
+bash_completion2_INSTALL := $(DESTDIR)$(DATADIR)/bash-completion/completions/singularity
+bash_completions_INSTALL := $(bash_completion1_INSTALL) $(bash_completion2_INSTALL)
+$(bash_completion1_INSTALL): $(bash_completion1)
 	@echo " INSTALL" $@
 	$(V)umask 0022 && mkdir -p $(@D)
 	$(V)install -m 0644 $< $@
 
-CLEANFILES += $(bash_completion)
-INSTALLFILES += $(bash_completion_INSTALL)
-ALL += $(bash_completion)
+$(bash_completion2_INSTALL): $(bash_completion2)
+	@echo " INSTALL" $@
+	$(V)umask 0022 && mkdir -p $(@D)
+	$(V)install -m 0644 $< $@
+
+CLEANFILES += $(bash_completions)
+INSTALLFILES += $(bash_completions_INSTALL)
+ALL += $(bash_completions)
 
 
 # apptainer.conf file
