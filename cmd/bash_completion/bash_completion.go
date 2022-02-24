@@ -12,6 +12,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/apptainer/apptainer/cmd/internal/cli"
 )
@@ -25,7 +26,7 @@ func main() {
 
 	defer fh.Close()
 
-	if err := cli.GenBashCompletion(fh); err != nil {
+	if err := cli.GenBashCompletion(fh, path.Base(os.Args[1])); err != nil {
 		fmt.Println(err)
 		return
 	}

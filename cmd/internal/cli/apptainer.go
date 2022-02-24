@@ -619,8 +619,9 @@ func ExecuteApptainer() {
 }
 
 // GenBashCompletion writes the bash completion file to w.
-func GenBashCompletion(w io.Writer) error {
+func GenBashCompletion(w io.Writer, name string) error {
 	Init(false)
+	apptainerCmd.Use = name
 	return apptainerCmd.GenBashCompletion(w)
 }
 
