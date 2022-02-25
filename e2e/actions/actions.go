@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -1069,6 +1069,7 @@ func (c actionTests) actionNetwork(t *testing.T) {
 	}
 }
 
+//nolint:maintidx
 func (c actionTests) actionBinds(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
@@ -1821,6 +1822,7 @@ func (c actionTests) fuseMount(t *testing.T) {
 	}
 }
 
+//nolint:maintidx
 func (c actionTests) bindImage(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 

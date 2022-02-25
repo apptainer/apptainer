@@ -16,6 +16,7 @@ linters:
     - govet
     - grouper
     - ineffassign
+    - maintidx
     - misspell
     - nakedret
     - revive
