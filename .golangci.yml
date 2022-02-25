@@ -7,11 +7,13 @@ linters:
   enable:
     - contextcheck
     - deadcode
+    - decorder
     - dupl
     - gofumpt
     - goimports
     - gosimple
     - govet
+    - grouper
     - ineffassign
     - misspell
     - nakedret
