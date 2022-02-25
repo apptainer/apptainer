@@ -85,7 +85,6 @@ override_dh_auto_build:
 
 override_dh_auto_install:
 	@dh_auto_install -Smakefile -D$(DEB_SC_BUILDDIR)
-	@mv $(pkgdir)/etc/bash_completion.d $(pkgdir)/usr/share/bash-completion/completions
 
 override_dh_installman:
 	: # Very sloppy man pages for now
