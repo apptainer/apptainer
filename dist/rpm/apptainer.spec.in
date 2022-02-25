@@ -41,7 +41,7 @@ Release: @PACKAGE_RELEASE@%{?dist}
 # See LICENSE_THIRD_PARTY.md for incorporated code (ASL 2.0)
 # See LICENSE_DEPENDENCIES.md for dependencies
 # License identifiers taken from: https://fedoraproject.org/wiki/Licensing
-License: BSD and ASL 2.0
+License: BSD and LBNL BSD and ASL 2.0
 URL: https://apptainer.org
 Source: https://github.com/%{name}/%{name}/releases/download/v%{package_version}/%{name}-%{package_version}.tar.gz
 @PACKAGE_GOLANG_SOURCE@
