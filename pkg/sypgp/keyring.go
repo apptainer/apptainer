@@ -31,7 +31,7 @@ func PublicKeyRing() (openpgp.KeyRing, error) {
 // the openpgp.KeyRing interface.
 type hybridKeyRing struct {
 	local openpgp.KeyRing // Local keyring.
-	ctx   context.Context // Context, for use when retrieving keys remotely.
+	ctx   context.Context //nolint:containedctx // Context, for use when retrieving keys remotely.
 	c     *client.Client  // Keyserver client.
 }
 

@@ -5,6 +5,7 @@ linters:
   disable-all: true
   enable-all: false
   enable:
+    - containedctx
     - contextcheck
     - deadcode
     - decorder
