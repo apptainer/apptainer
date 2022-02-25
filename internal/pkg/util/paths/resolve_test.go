@@ -8,7 +8,6 @@
 // rights to use or distribute this software.
 
 //go:build linux
-// +build linux
 
 package paths
 

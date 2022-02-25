@@ -8,7 +8,6 @@
 // rights to use or distribute this software.
 
 //go:build oci_engine
-// +build oci_engine
 
 package engines
 
