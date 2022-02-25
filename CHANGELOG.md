@@ -15,6 +15,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Remove python as a dependency of the debian package.
 - Increased the TLS Handshake Timeout for the busybox bootstrap agent in
   build definition files to 60 seconds.
+- Restored bash completion for the `singularity` command alias.
 
 ## v1.0.0 Release Candidate 2 - \[2022-02-08\]
 
