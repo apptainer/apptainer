@@ -57,12 +57,9 @@ Provides: singularity-runtime = 1:%{version}-%{release}
 Obsoletes: singularity-runtime < 3.0
 
 %if "%{_target_vendor}" == "suse"
-%if "%{sles_version}" != "11"
-BuildRequires: go
+BuildRequires: binutils-gold
 %endif
-%else
 BuildRequires: golang
-%endif
 BuildRequires: git
 BuildRequires: gcc
 BuildRequires: make
