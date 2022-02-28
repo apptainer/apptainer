@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2020-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2020-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -469,6 +469,7 @@ func ExpectExit(code int, resultOps ...ApptainerCmdResultOp) ApptainerCmdOp {
 // cmdPath specifies the path to the apptainer binary and cmdOps
 // provides a list of operations to be executed before or after running
 // the command.
+//nolint:maintidx
 func (env TestEnv) RunApptainer(t *testing.T, cmdOps ...ApptainerCmdOp) {
 	t.Helper()
 

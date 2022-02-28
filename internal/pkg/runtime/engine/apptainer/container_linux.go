@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -91,6 +91,7 @@ type container struct {
 	imageBind     map[string]string
 }
 
+//nolint:maintidx
 func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, pid int) error {
 	var err error
 
@@ -1297,6 +1298,7 @@ func (c *container) addSessionDevMount(system *mount.System) error {
 	return nil
 }
 
+//nolint:maintidx
 func (c *container) addDevMount(system *mount.System) error {
 	sylog.Debugf("Checking configuration file for 'mount dev'")
 

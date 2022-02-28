@@ -5,14 +5,18 @@ linters:
   disable-all: true
   enable-all: false
   enable:
+    - containedctx
     - contextcheck
     - deadcode
+    - decorder
     - dupl
     - gofumpt
     - goimports
     - gosimple
     - govet
+    - grouper
     - ineffassign
+    - maintidx
     - misspell
     - nakedret
     - revive

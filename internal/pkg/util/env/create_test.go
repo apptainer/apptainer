@@ -24,6 +24,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/test"
 )
 
+//nolint:maintidx
 func TestSetContainerEnv(t *testing.T) {
 	test.DropPrivilege(t)
 	defer test.ResetPrivilege(t)

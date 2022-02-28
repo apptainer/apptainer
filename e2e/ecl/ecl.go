@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2021-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -30,6 +30,7 @@ type ctx struct {
 	env e2e.TestEnv
 }
 
+//nolint:maintidx
 func (c *ctx) eclConfig(t *testing.T) {
 	tmpDir, remove := e2e.MakeTempDir(t, "", "ecl-", "ECL")
 	pgpDir, _ := e2e.MakeKeysDir(t, tmpDir)
