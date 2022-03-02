@@ -31,7 +31,7 @@ var (
 	NetworkArgs      []string
 	DNS              string
 	Security         []string
-	CgroupsPath      string
+	CgroupsTOML      string
 	VMRAM            string
 	VMCPU            string
 	VMIP             string
@@ -249,7 +249,7 @@ var actionSecurityFlag = cmdline.Flag{
 // --apply-cgroups
 var actionApplyCgroupsFlag = cmdline.Flag{
 	ID:           "actionApplyCgroupsFlag",
-	Value:        &CgroupsPath,
+	Value:        &CgroupsTOML,
 	DefaultValue: "",
 	Name:         "apply-cgroups",
 	Usage:        "apply cgroups from file for container processes (root only)",

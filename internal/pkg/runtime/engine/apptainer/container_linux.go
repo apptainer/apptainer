@@ -303,14 +303,21 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 		}
 	}
 
-	if os.Geteuid() == 0 && !c.userNS {
-		path := engine.EngineConfig.GetCgroupsPath()
-		if path != "" {
-			cgroupsManager, err = cgroups.NewManagerWithFile(path, pid, "", engine.EngineConfig.File.SystemdCgroups)
-			if err != nil {
-				return fmt.Errorf("while applying cgroups config: %v", err)
-			}
+	cgTOML := engine.EngineConfig.GetCgroupsTOML()
+	if cgTOML != "" {
+		// Rootless cgroups setup interacts with systemd over D-Bus.
+		// The session bus address and XDG runtime dir must be set in the environment.
+		if os.Getuid() != 0 {
+			sylog.Debugf("Setting rootless XDG_RUNTIME_DIR / DBUS_SESSION_ADDRESS for cgroup manager")
+			os.Setenv("XDG_RUNTIME_DIR", engine.EngineConfig.GetXdgRuntimeDir())
+			os.Setenv("DBUS_SESSION_BUS_ADDRESS", engine.EngineConfig.GetDbusSessionBusAddress())
 		}
+		cgroupsManager, err = cgroups.NewManagerWithFile(cgTOML, pid, "", engine.EngineConfig.File.SystemdCgroups)
+		if err != nil {
+			return fmt.Errorf("while applying cgroups config: %v", err)
+		}
+		os.Unsetenv("XDG_RUNTIME_DIR")
+		os.Unsetenv("DBUS_SESSION_BUS_ADDRESS")
 	}
 
 	sylog.Debugf("Chdir into / to avoid errors\n")

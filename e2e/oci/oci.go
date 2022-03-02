@@ -405,7 +405,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 
 	return testhelper.Tests{
 		"ordered": testhelper.NoParallel(
-			env.WithCgroupManagers(func(t *testing.T) {
+			env.WithRootManagers(func(t *testing.T) {
 				t.Run("basic", c.testOciBasic)
 				t.Run("attach", c.testOciAttach)
 				t.Run("run", c.testOciRun)

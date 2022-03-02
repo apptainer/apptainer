@@ -74,69 +74,71 @@ type DMTCPConfig struct {
 
 // JSONConfig stores engine specific configuration that is allowed to be set by the user.
 type JSONConfig struct {
-	ScratchDir        []string          `json:"scratchdir,omitempty"`
-	OverlayImage      []string          `json:"overlayImage,omitempty"`
-	NetworkArgs       []string          `json:"networkArgs,omitempty"`
-	Security          []string          `json:"security,omitempty"`
-	FilesPath         []string          `json:"filesPath,omitempty"`
-	LibrariesPath     []string          `json:"librariesPath,omitempty"`
-	FuseMount         []FuseMount       `json:"fuseMount,omitempty"`
-	ImageList         []image.Image     `json:"imageList,omitempty"`
-	BindPath          []BindPath        `json:"bindpath,omitempty"`
-	ApptainerEnv      map[string]string `json:"apptainerEnv,omitempty"`
-	UnixSocketPair    [2]int            `json:"unixSocketPair,omitempty"`
-	OpenFd            []int             `json:"openFd,omitempty"`
-	TargetGID         []int             `json:"targetGID,omitempty"`
-	Image             string            `json:"image"`
-	ImageArg          string            `json:"imageArg"`
-	Workdir           string            `json:"workdir,omitempty"`
-	CgroupsPath       string            `json:"cgroupsPath,omitempty"`
-	HomeSource        string            `json:"homedir,omitempty"`
-	HomeDest          string            `json:"homeDest,omitempty"`
-	Command           string            `json:"command,omitempty"`
-	Shell             string            `json:"shell,omitempty"`
-	TmpDir            string            `json:"tmpdir,omitempty"`
-	AddCaps           string            `json:"addCaps,omitempty"`
-	DropCaps          string            `json:"dropCaps,omitempty"`
-	Hostname          string            `json:"hostname,omitempty"`
-	Network           string            `json:"network,omitempty"`
-	DNS               string            `json:"dns,omitempty"`
-	Cwd               string            `json:"cwd,omitempty"`
-	SessionLayer      string            `json:"sessionLayer,omitempty"`
-	ConfigurationFile string            `json:"configurationFile,omitempty"`
-	EncryptionKey     []byte            `json:"encryptionKey,omitempty"`
-	TargetUID         int               `json:"targetUID,omitempty"`
-	WritableImage     bool              `json:"writableImage,omitempty"`
-	WritableTmpfs     bool              `json:"writableTmpfs,omitempty"`
-	Contain           bool              `json:"container,omitempty"`
-	NvLegacy          bool              `json:"nvLegacy,omitempty"`
-	NvCCLI            bool              `json:"nvCCLI,omitempty"`
-	NvCCLIEnv         []string          `json:"NvCCLIEnv,omitempty"`
-	Rocm              bool              `json:"rocm,omitempty"`
-	CustomHome        bool              `json:"customHome,omitempty"`
-	Instance          bool              `json:"instance,omitempty"`
-	InstanceJoin      bool              `json:"instanceJoin,omitempty"`
-	BootInstance      bool              `json:"bootInstance,omitempty"`
-	RunPrivileged     bool              `json:"runPrivileged,omitempty"`
-	AllowSUID         bool              `json:"allowSUID,omitempty"`
-	KeepPrivs         bool              `json:"keepPrivs,omitempty"`
-	NoPrivs           bool              `json:"noPrivs,omitempty"`
-	NoProc            bool              `json:"noProc,omitempty"`
-	NoSys             bool              `json:"noSys,omitempty"`
-	NoDev             bool              `json:"noDev,omitempty"`
-	NoDevPts          bool              `json:"noDevPts,omitempty"`
-	NoHome            bool              `json:"noHome,omitempty"`
-	NoTmp             bool              `json:"noTmp,omitempty"`
-	NoHostfs          bool              `json:"noHostfs,omitempty"`
-	NoCwd             bool              `json:"noCwd,omitempty"`
-	SkipBinds         []string          `json:"skipBinds,omitempty"`
-	NoInit            bool              `json:"noInit,omitempty"`
-	Fakeroot          bool              `json:"fakeroot,omitempty"`
-	SignalPropagation bool              `json:"signalPropagation,omitempty"`
-	RestoreUmask      bool              `json:"restoreUmask,omitempty"`
-	DeleteTempDir     string            `json:"deleteTempDir,omitempty"`
-	Umask             int               `json:"umask,omitempty"`
-	DMTCPConfig       DMTCPConfig       `json:"dmtcpConfig,omitempty"`
+	ScratchDir            []string          `json:"scratchdir,omitempty"`
+	OverlayImage          []string          `json:"overlayImage,omitempty"`
+	NetworkArgs           []string          `json:"networkArgs,omitempty"`
+	Security              []string          `json:"security,omitempty"`
+	FilesPath             []string          `json:"filesPath,omitempty"`
+	LibrariesPath         []string          `json:"librariesPath,omitempty"`
+	FuseMount             []FuseMount       `json:"fuseMount,omitempty"`
+	ImageList             []image.Image     `json:"imageList,omitempty"`
+	BindPath              []BindPath        `json:"bindpath,omitempty"`
+	ApptainerEnv          map[string]string `json:"apptainerEnv,omitempty"`
+	UnixSocketPair        [2]int            `json:"unixSocketPair,omitempty"`
+	OpenFd                []int             `json:"openFd,omitempty"`
+	TargetGID             []int             `json:"targetGID,omitempty"`
+	Image                 string            `json:"image"`
+	ImageArg              string            `json:"imageArg"`
+	Workdir               string            `json:"workdir,omitempty"`
+	CgroupsTOML           string            `json:"cgroupsTOML,omitempty"`
+	HomeSource            string            `json:"homedir,omitempty"`
+	HomeDest              string            `json:"homeDest,omitempty"`
+	Command               string            `json:"command,omitempty"`
+	Shell                 string            `json:"shell,omitempty"`
+	TmpDir                string            `json:"tmpdir,omitempty"`
+	AddCaps               string            `json:"addCaps,omitempty"`
+	DropCaps              string            `json:"dropCaps,omitempty"`
+	Hostname              string            `json:"hostname,omitempty"`
+	Network               string            `json:"network,omitempty"`
+	DNS                   string            `json:"dns,omitempty"`
+	Cwd                   string            `json:"cwd,omitempty"`
+	SessionLayer          string            `json:"sessionLayer,omitempty"`
+	ConfigurationFile     string            `json:"configurationFile,omitempty"`
+	EncryptionKey         []byte            `json:"encryptionKey,omitempty"`
+	TargetUID             int               `json:"targetUID,omitempty"`
+	WritableImage         bool              `json:"writableImage,omitempty"`
+	WritableTmpfs         bool              `json:"writableTmpfs,omitempty"`
+	Contain               bool              `json:"container,omitempty"`
+	NvLegacy              bool              `json:"nvLegacy,omitempty"`
+	NvCCLI                bool              `json:"nvCCLI,omitempty"`
+	NvCCLIEnv             []string          `json:"NvCCLIEnv,omitempty"`
+	Rocm                  bool              `json:"rocm,omitempty"`
+	CustomHome            bool              `json:"customHome,omitempty"`
+	Instance              bool              `json:"instance,omitempty"`
+	InstanceJoin          bool              `json:"instanceJoin,omitempty"`
+	BootInstance          bool              `json:"bootInstance,omitempty"`
+	RunPrivileged         bool              `json:"runPrivileged,omitempty"`
+	AllowSUID             bool              `json:"allowSUID,omitempty"`
+	KeepPrivs             bool              `json:"keepPrivs,omitempty"`
+	NoPrivs               bool              `json:"noPrivs,omitempty"`
+	NoProc                bool              `json:"noProc,omitempty"`
+	NoSys                 bool              `json:"noSys,omitempty"`
+	NoDev                 bool              `json:"noDev,omitempty"`
+	NoDevPts              bool              `json:"noDevPts,omitempty"`
+	NoHome                bool              `json:"noHome,omitempty"`
+	NoTmp                 bool              `json:"noTmp,omitempty"`
+	NoHostfs              bool              `json:"noHostfs,omitempty"`
+	NoCwd                 bool              `json:"noCwd,omitempty"`
+	SkipBinds             []string          `json:"skipBinds,omitempty"`
+	NoInit                bool              `json:"noInit,omitempty"`
+	Fakeroot              bool              `json:"fakeroot,omitempty"`
+	SignalPropagation     bool              `json:"signalPropagation,omitempty"`
+	RestoreUmask          bool              `json:"restoreUmask,omitempty"`
+	DeleteTempDir         string            `json:"deleteTempDir,omitempty"`
+	Umask                 int               `json:"umask,omitempty"`
+	DMTCPConfig           DMTCPConfig       `json:"dmtcpConfig,omitempty"`
+	XdgRuntimeDir         string            `json:"xdgRuntimeDir,omitempty"`
+	DbusSessionBusAddress string            `json:"dbusSessionBusAddress,omitempty"`
 }
 
 // SetImage sets the container image path to be used by EngineConfig.JSON.
@@ -605,14 +607,14 @@ func (e *EngineConfig) GetSecurity() []string {
 	return e.JSON.Security
 }
 
-// SetCgroupsPath sets path to cgroups profile.
-func (e *EngineConfig) SetCgroupsPath(path string) {
-	e.JSON.CgroupsPath = path
+// SetCgroupsTOML sets path to cgroups TOML file to apply.
+func (e *EngineConfig) SetCgroupsTOML(path string) {
+	e.JSON.CgroupsTOML = path
 }
 
-// GetCgroupsPath returns path to cgroups profile.
-func (e *EngineConfig) GetCgroupsPath() string {
-	return e.JSON.CgroupsPath
+// GetCgroupsTOML returns path to cgroups TOML file to apply.
+func (e *EngineConfig) GetCgroupsTOML() string {
+	return e.JSON.CgroupsTOML
 }
 
 // SetTargetUID sets target UID to execute the container process as user ID.
@@ -827,4 +829,24 @@ func (e *EngineConfig) SetDMTCPConfig(config DMTCPConfig) {
 // GetDMTCPConfig returns the dmtcp configuration to be used for the container process.
 func (e *EngineConfig) GetDMTCPConfig() DMTCPConfig {
 	return e.JSON.DMTCPConfig
+}
+
+// SetXdgRuntimeDir sets a XDG_RUNTIME_DIR value for rootless operations
+func (e *EngineConfig) SetXdgRuntimeDir(path string) {
+	e.JSON.XdgRuntimeDir = path
+}
+
+// GetXdgRuntimeDir gets the XDG_RUNTIME_DIR value for rootless operations
+func (e *EngineConfig) GetXdgRuntimeDir() string {
+	return e.JSON.XdgRuntimeDir
+}
+
+// SetDbusSessionBusAddress sets a DBUS_SESSION_BUS_ADDRESS value for rootless operations
+func (e *EngineConfig) SetDbusSessionBusAddress(address string) {
+	e.JSON.DbusSessionBusAddress = address
+}
+
+// GetDbusSessionBusAddress gets the DBUS_SESSION_BUS_ADDRESS value for rootless operations
+func (e *EngineConfig) GetDbusSessionBusAddress() string {
+	return e.JSON.DbusSessionBusAddress
 }
