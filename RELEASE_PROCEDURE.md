@@ -59,10 +59,12 @@ covered by tests.
 
 1. Ensure the user and admin documentation is up-to-date for the new
    version, branched, and tagged.
-   - [User Docs](https://apptainer.org/user-docs/main/) can be
+   - [User Docs](https://apptainer.org/docs/user/main/) can be
      edited [here](https://github.com/apptainer/apptainer-userdocs)
-   - [Admin Docs](https://apptainer.org/admin-docs/main/) can be
+   - [Admin Docs](https://apptainer.org/docs/admin/main/) can be
      edited [here](https://github.com/apptainer/apptainer-admindocs)
+   - If a new branch was created, add it to the docsVersion list in the
+     [web page](https://github.com/apptainer/apptainer.org/blob/master/src/pages/docs.js)
 1. Ensure the user and admin documentation has been deployed to the
    apptainer.org website.
 1. Modify the `README.md`, `INSTALL.md`, `CHANGELOG.md` via PR against

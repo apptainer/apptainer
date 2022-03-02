@@ -5,58 +5,12 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes Since Last Release
+## v1.0.0 - \[2022-03-02\]
 
-### Bug fixes
-
-- Correct library bindings for `unsquashfs` containment. Fixes errors where
-  resolved library filename does not match library filename in binary (e.g. EL8,
-  POWER9 with glibc-hwcaps).
-- Remove python as a dependency of the debian package.
-- Increased the TLS Handshake Timeout for the busybox bootstrap agent in
-  build definition files to 60 seconds.
-- Restored bash completion for the `singularity` command alias.
-- Added binutils-gold to the build requirements on SUSE rpm builds.
-
-## v1.0.0 Release Candidate 2 - \[2022-02-08\]
-
-### Changes since v1.0.0 Release Candidate 1
-
-This release candidate includes bug fixes that went into SingularityCE
-3.9.5.
-
-#### Changes related to long-standing issues
-
-- Auto-generate release assets including the distribution tarball and
-  rpm (built on CentOS 7) and deb (built on Debian 11) x86_64 packages.
-- Honor image binds and user binds in the order they're given instead of
-  always doing image binds first.
-- Update dependency to correctly unset variables in container startup
-  environment processing. Fixes regression introduced in singularity-3.8.5.
-- Remove subshell overhead when processing large environments on container
-  startup.
-- `make install` now installs man pages. A separate `make man` is not
-  required.  As a consequence, man pages are now included in deb packages.
-
-#### Changes related to issues introduced in release candidate 1
-
-- Several environment variables that had been converted to start with
-  only `APPTAINER_` are now also recognizing their `SINGULARITY_` counterparts.
-- Fixed compilation of plugin examples.
-- Fixed direct exection of .sif files; the shebang header for executing
-  run-singularity was missing.
-- Changed the Apptainer Copyright to be for "Contributors to the Apptainer
-  project" and removed the year.
-- Renamed the `~/.apptainer/sypgp` directory to `~/.apptainer/keys` and change
-  the corresponding environment variable from `APPTAINER_SYPGPDIR` to
-  `APPTAINER_KEYSDIR`.
-
-## v1.0.0 Release Candidate 1 - \[2022-01-19\]
-
-### Comparision to SingularityCE
+### Comparison to SingularityCE
 
 This release candidate has most of the new features, bug fixes, and
-changes that went into SingularityCE up through their version 3.9.4,
+changes that went into SingularityCE up through their version 3.9.5,
 except where the maintainers of Apptainer disagreed with what went into
 SingularityCE since the project fork.  The biggest difference is that
 Apptainer does not support the --nvccli option in privileged mode.  This
@@ -97,12 +51,9 @@ in the next section.
   variable and the value is different then a warning is also printed.
 - The default SylabsCloud remote endpoint has been removed and replaced
   by one called DefaultRemote which has no defined server for the
-  `library://` URI.  System administrators may restore the old default
-  if they wish by adding it to `/etc/apptainer/remote.yaml` with a URI
-  of `cloud.sylabs.io` and setting it there as the `Active` remote, or
-  users can add it to their own configuration with the commands
-  `apptainer remote add SylabsCloud cloud.sylabs.io` and
-  `apptainer remote use SylabsCloud`.
+  `library://` URI.  The previous default can be restored by following
+  the directions in the
+  [documentation](https://apptainer.org/docs/user/1.0/endpoint.html#restoring-pre-apptainer-library-behavior).
 - The DefaultRemote's key server is `https://keys.openpgp.org`
   instead of the Sylabs key server.
 - The `apptainer build --remote` option has been removed because there
@@ -110,6 +61,8 @@ in the next section.
 
 ### Other changed defaults / behaviours since Singularity 3.8.x
 
+- Auto-generate release assets including the distribution tarball and
+  rpm (built on CentOS 7) and deb (built on Debian 11) x86_64 packages.
 - LABELs from Docker/OCI images are now inherited. This fixes a longstanding
   regression from Singularity 2.x. Note that you will now need to use `--force`
   in a build to override a label that already exists in the source Docker/OCI
@@ -162,6 +115,12 @@ in the next section.
   they must be explicitely requested via command line.
 - Build `--bind` option allows to set multiple bind mounts without specifying
   the `--bind` option for each bindings.
+- Honor image binds and user binds in the order they're given instead of
+  always doing image binds first.
+- Remove subshell overhead when processing large environments on container
+  startup.
+- `make install` now installs man pages. A separate `make man` is not
+  required.  As a consequence, man pages are now included in deb packages.
 
 ### New features / functionalities
 
@@ -218,6 +177,15 @@ in the next section.
 - Restructure loop device discovery to address `EAGAIN` issue.
 - Ensure a local build does not fail unnecessarily if a keyserver
   config cannot be retrieved from the remote endpoint.
+- Update dependency to correctly unset variables in container startup
+  environment processing. Fixes regression introduced in singularity-3.8.5.
+- Correct library bindings for `unsquashfs` containment. Fixes errors where
+  resolved library filename does not match library filename in binary
+  (e.g. EL8, POWER9 with glibc-hwcaps).
+- Remove python as a dependency of the debian package.
+- Increase the TLS Handshake Timeout for the busybox bootstrap agent in
+  build definition files to 60 seconds.
+- Add binutils-gold to the build requirements on SUSE rpm builds.
 
 ### Changes for Testing / Development
 
