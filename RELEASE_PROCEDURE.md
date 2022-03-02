@@ -60,7 +60,16 @@ covered by tests.
 1. Ensure the user and admin documentation is up-to-date for the new
    version, branched, and tagged.
    - [User Docs](https://apptainer.org/docs/user/main/) can be
-     edited [here](https://github.com/apptainer/apptainer-userdocs)
+     edited [here](https://github.com/apptainer/apptainer-userdocs).
+     Be sure that the `apptainer_source` submodule is up to date by
+     doing the following commands followed by making an update with
+     a pull request:
+      - `git submodule deinit -f .`
+      - `git submodule update --init`
+      - `cd apptainer_source`
+      - `git checkout main`
+      - `cd ..`
+      - `git add apptainer_source`
    - [Admin Docs](https://apptainer.org/docs/admin/main/) can be
      edited [here](https://github.com/apptainer/apptainer-admindocs)
    - If a new branch was created, add it to the docsVersion list in the
