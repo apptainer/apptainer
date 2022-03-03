@@ -3,11 +3,6 @@
 [![CI](https://github.com/apptainer/apptainer/actions/workflows/ci.yml/badge.svg)](https://github.com/apptainer/apptainer/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/pkg.golang.dev/github.com/apptainer/apptainer.svg)](https://pkg.go.dev/github.com/apptainer/apptainer)
 
-> *NOTE*: The apptainer repo is currently up to a v1.0.0 release candidate and
-  not ready for production in its current state. Until then, use the
-  [Singularity Repo](https://github.com/apptainer/singularity) for a production
-  ready version.
-
 - [Documentation](https://apptainer.org/docs/)
 - [Support](#support)
 - [Community Meetings / Minutes / Roadmap](https://drive.google.com/drive/u/0/folders/1npfBhIDxqeJIUHZ0tMeuHPvc_iB4T2B6)
