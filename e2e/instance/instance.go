@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -11,7 +11,6 @@ package instance
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -22,7 +21,6 @@ import (
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
-	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -314,40 +312,6 @@ func (c *ctx) testGhostInstance(t *testing.T) {
 	)
 }
 
-func (c *ctx) applyCgroupsInstance(t *testing.T) {
-	require.Cgroups(t)
-
-	if !c.profile.In(e2e.RootProfile) {
-		t.Skipf("%s requires %s profile, current profile: %s", t.Name(), e2e.RootProfile, c.profile)
-	}
-
-	// pick up a random name
-	instanceName := randomName(t)
-	joinName := fmt.Sprintf("instance://%s", instanceName)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(c.profile),
-		e2e.WithCommand("instance start"),
-		e2e.WithArgs("--apply-cgroups", "testdata/cgroups/deny_device.toml", c.env.ImagePath, instanceName),
-		e2e.ExpectExit(0),
-	)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(c.profile),
-		e2e.WithCommand("exec"),
-		e2e.WithArgs(joinName, "cat", "/dev/null"),
-		e2e.PostRun(func(t *testing.T) {
-			if t.Failed() {
-				return
-			}
-			c.stopInstance(t, instanceName)
-		}),
-		e2e.ExpectExit(1),
-	)
-}
-
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := &ctx{
@@ -375,7 +339,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 				{"CreateManyInstances", c.testCreateManyInstances},
 				{"StopAll", c.testStopAll},
 				{"GhostInstance", c.testGhostInstance},
-				{"ApplyCgroupsInstance", c.applyCgroupsInstance},
 				{"CheckpointInstance", c.testCheckpointInstance},
 			}
 
