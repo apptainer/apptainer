@@ -2304,6 +2304,27 @@ func (c actionTests) actionNoMount(t *testing.T) {
 			cwd:           "/srv",
 			exit:          0,
 		},
+		// /etc/hosts & /etc/localtime are default 'bind path' entries we should
+		// be able to disable by abs path. Although other 'bind path' entries
+		// are ignored under '--contain' these two are handled specially in
+		// addBindsMount(), so make sure that `--no-mount` applies properly
+		// under contain also.
+		{
+			name:          "/etc/hosts",
+			noMount:       "/etc/hosts",
+			noMatch:       "on /etc/hosts",
+			testDefault:   true,
+			testContained: true,
+			exit:          0,
+		},
+		{
+			name:          "/etc/localtime",
+			noMount:       "/etc/localtime",
+			noMatch:       "on /etc/localtime",
+			testDefault:   true,
+			testContained: true,
+			exit:          0,
+		},
 	}
 
 	for _, tt := range tests {

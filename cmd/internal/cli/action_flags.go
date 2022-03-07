@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -451,7 +451,7 @@ var actionNoMountFlag = cmdline.Flag{
 	Value:        &NoMount,
 	DefaultValue: []string{},
 	Name:         "no-mount",
-	Usage:        "disable one or more mount xxx options set in apptainer.conf",
+	Usage:        "disable one or more 'mount xxx' options set in apptainer.conf and/or specify absolute destination path to disable a 'bind path' entry",
 	EnvKeys:      []string{"NO_MOUNT"},
 }
 

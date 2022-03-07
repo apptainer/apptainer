@@ -1525,6 +1525,8 @@ func (c *container) addBindsMount(system *mount.System) error {
 		localtimePath = "/etc/localtime"
 	)
 
+	noBinds := c.engine.EngineConfig.GetNoBinds()
+
 	if c.engine.EngineConfig.GetContain() {
 		hosts := hostsPath
 
@@ -1544,18 +1546,22 @@ func (c *container) addBindsMount(system *mount.System) error {
 			hosts, _ = c.session.GetPath(hostsPath)
 		}
 
-		// #5465 If hosts/localtime mount fails, it should not be fatal so skip-on-error
-		if err := system.Points.AddBind(mount.BindsTag, hosts, hostsPath, flags, "skip-on-error"); err != nil {
-			return fmt.Errorf("unable to add %s to mount list: %s", hosts, err)
+		if !slice.ContainsString(noBinds, hostsPath) {
+			// #5465 If hosts/localtime mount fails, it should not be fatal so skip-on-error
+			if err := system.Points.AddBind(mount.BindsTag, hosts, hostsPath, flags, "skip-on-error"); err != nil {
+				return fmt.Errorf("unable to add %s to mount list: %s", hosts, err)
+			}
+			if err := system.Points.AddRemount(mount.BindsTag, hostsPath, flags); err != nil {
+				return fmt.Errorf("unable to add %s for remount: %s", hostsPath, err)
+			}
 		}
-		if err := system.Points.AddRemount(mount.BindsTag, hostsPath, flags); err != nil {
-			return fmt.Errorf("unable to add %s for remount: %s", hostsPath, err)
-		}
-		if err := system.Points.AddBind(mount.BindsTag, localtimePath, localtimePath, flags, "skip-on-error"); err != nil {
-			return fmt.Errorf("unable to add %s to mount list: %s", localtimePath, err)
-		}
-		if err := system.Points.AddRemount(mount.BindsTag, localtimePath, flags); err != nil {
-			return fmt.Errorf("unable to add %s for remount: %s", localtimePath, err)
+		if !slice.ContainsString(noBinds, localtimePath) {
+			if err := system.Points.AddBind(mount.BindsTag, localtimePath, localtimePath, flags, "skip-on-error"); err != nil {
+				return fmt.Errorf("unable to add %s to mount list: %s", localtimePath, err)
+			}
+			if err := system.Points.AddRemount(mount.BindsTag, localtimePath, flags); err != nil {
+				return fmt.Errorf("unable to add %s for remount: %s", localtimePath, err)
+			}
 		}
 		return nil
 	}
@@ -1571,6 +1577,11 @@ func (c *container) addBindsMount(system *mount.System) error {
 		}
 
 		sylog.Verbosef("Found 'bind path' = %s, %s", src, dst)
+
+		if slice.ContainsString(noBinds, dst) {
+			sylog.Debugf("Skipping bind to %s at user request", dst)
+			continue
+		}
 
 		// #5465 If hosts/localtime mount fails, it should not be fatal so skip-on-error
 		bindOpt := ""
