@@ -5,6 +5,13 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes Since Last Release
+
+### Bug fixes
+
+- Don't prompt for y/n to overwrite an existing file when build is
+  called from a non-interactive environment. Fail with an error.
+
 ## v1.0.0 - \[2022-03-02\]
 
 ### Comparison to SingularityCE
