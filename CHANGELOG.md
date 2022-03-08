@@ -7,6 +7,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes Since Last Release
 
+### Changed defaults / behaviours
+
+- `oci mount` sets `Process.Terminal: true` when creating an OCI `config.json`,
+  so that `oci run` provides expected interactive behavior by default.
+- Default hostname for `oci mount` containers is now `apptainer` instead of
+  `mrsdalloway`.
+
 ### Bug fixes
 
 - Don't prompt for y/n to overwrite an existing file when build is

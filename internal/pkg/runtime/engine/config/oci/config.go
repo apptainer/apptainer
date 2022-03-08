@@ -56,7 +56,7 @@ func DefaultConfigV1() (*generate.Generator, error) {
 
 	config := specs.Spec{
 		Version:  specs.Version,
-		Hostname: "mrsdalloway",
+		Hostname: "apptainer",
 	}
 
 	config.Root = &specs.Root{
@@ -64,7 +64,7 @@ func DefaultConfigV1() (*generate.Generator, error) {
 		Readonly: false,
 	}
 	config.Process = &specs.Process{
-		Terminal: false,
+		Terminal: true,
 		Args: []string{
 			"sh",
 		},
