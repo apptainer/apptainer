@@ -14,6 +14,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Default hostname for `oci mount` containers is now `apptainer` instead of
   `mrsdalloway`.
 
+### New features / functionalities
+
+- Apptainer now supports the `riscv64` architecture.
+
 ### Bug fixes
 
 - Don't prompt for y/n to overwrite an existing file when build is
