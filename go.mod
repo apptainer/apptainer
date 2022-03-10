@@ -15,7 +15,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.2
 	github.com/containerd/containerd v1.6.1
 	github.com/containernetworking/cni v1.0.1
-	github.com/containernetworking/plugins v1.1.0
+	github.com/containernetworking/plugins v1.1.1
 	github.com/containers/image/v5 v5.20.0
 	github.com/creack/pty v1.1.17
 	github.com/cyphar/filepath-securejoin v0.2.3
