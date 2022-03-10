@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2021-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -14,17 +14,12 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/containerd/cgroups"
 	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 // Manager is used to work with cgroups resource restrictions. It is an
 // interface satisfied by different implementations for v1 and v2 cgroups.
 type Manager interface {
-	// GetVersion returns the version of the cgroups interface in use by
-	// the manager.
-	GetVersion() int
 	// GetCgroupRootPath returns the path to the root of the cgroup on the
 	// filesystem.
 	GetCgroupRootPath() string
@@ -59,15 +54,11 @@ func NewManagerFromFile(specPath string, pid int, group string) (manager Manager
 	if group == "" {
 		group = filepath.Join("/apptainer", strconv.Itoa(pid))
 	}
-	if cgroups.Mode() == cgroups.Unified {
-		sylog.Debugf("Applying cgroups v2 configuration")
-		mgrv2 := ManagerV2{pid: pid, group: group}
-		return &mgrv2, mgrv2.ApplyFromFile(specPath)
+	mgr := ManagerLC{pid: pid, group: group}
+	if err := mgr.ApplyFromFile(specPath); err != nil {
+		return nil, err
 	}
-
-	sylog.Debugf("Applying cgroups v1 configuration")
-	mgrv1 := ManagerV1{pid: pid, path: group}
-	return &mgrv1, mgrv1.ApplyFromFile(specPath)
+	return &mgr, err
 }
 
 // NewManagerFromSpec creates a Manager, applies the configuration in spec, and adds pid to the cgroup.
@@ -78,53 +69,29 @@ func NewManagerFromSpec(spec *specs.LinuxResources, pid int, group string) (mana
 		group = filepath.Join("/apptainer", strconv.Itoa(pid))
 	}
 
-	if cgroups.Mode() == cgroups.Unified {
-		sylog.Debugf("Applying cgroups v2 configuration")
-		mgrv2 := ManagerV2{pid: pid, group: group}
-		return &mgrv2, mgrv2.ApplyFromSpec(spec)
+	mgr := ManagerLC{pid: pid, group: group}
+	if err := mgr.ApplyFromSpec(spec); err != nil {
+		return nil, err
 	}
-
-	sylog.Debugf("Applying cgroups v1 configuration")
-	mgrv1 := ManagerV1{pid: pid, path: group}
-	return &mgrv1, mgrv1.ApplyFromSpec(spec)
+	return &mgr, err
 }
 
 // GetManager returns a Manager for the provided cgroup name/path.
 func GetManager(group string) (manager Manager, err error) {
-	if cgroups.Mode() == cgroups.Unified {
-		sylog.Debugf("Fetching cgroups v2 configuration")
-		mgrv2 := ManagerV2{group: group}
-		if err := mgrv2.loadFromGroup(); err != nil {
-			return nil, err
-		}
-		return &mgrv2, nil
-	}
-
-	sylog.Debugf("Fetching cgroups v1 configuration")
-	mgrv1 := ManagerV1{path: group}
-	if err := mgrv1.loadFromPath(); err != nil {
+	mgr := ManagerLC{group: group}
+	if err := mgr.load(); err != nil {
 		return nil, err
 	}
-	return &mgrv1, nil
+	return &mgr, nil
 }
 
 // GetManagerFromPid returns a Manager for the cgroup that pid is a member of.
 func GetManagerFromPid(pid int) (manager Manager, err error) {
-	if cgroups.Mode() == cgroups.Unified {
-		sylog.Debugf("Fetching cgroups v2 configuration")
-		mgrv2 := ManagerV2{pid: pid}
-		if err := mgrv2.loadFromPid(); err != nil {
-			return nil, err
-		}
-		return &mgrv2, nil
-	}
-
-	sylog.Debugf("Fetching cgroups v1 configuration")
-	mgrv1 := ManagerV1{pid: pid}
-	if err := mgrv1.loadFromPid(); err != nil {
+	mgr := ManagerLC{pid: pid}
+	if err := mgr.load(); err != nil {
 		return nil, err
 	}
-	return &mgrv1, nil
+	return &mgr, nil
 }
 
 // readSpecFromFile loads a TOML file containing a specs.LinuxResources cgroups configuration.

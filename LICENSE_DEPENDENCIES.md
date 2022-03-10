@@ -17,12 +17,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/Netflix/go-expect/blob/master/LICENSE>
 
-## github.com/containerd/cgroups
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/containerd/cgroups/blob/master/LICENSE>
-
 ## github.com/containerd/containerd
 
 **License:** Apache-2.0
@@ -179,11 +173,11 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/opencontainers/image-spec/blob/master/specs-go/LICENSE>
 
-## github.com/opencontainers/runc/libcontainer/user
+## github.com/opencontainers/runc/libcontainer
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/opencontainers/runc/blob/master/libcontainer/user/LICENSE>
+**License URL:** <https://github.com/opencontainers/runc/blob/master/libcontainer/LICENSE>
 
 ## github.com/opencontainers/runtime-spec/specs-go
 
@@ -371,11 +365,11 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/cyphar/filepath-securejoin/blob/master/LICENSE>
 
-## github.com/gogo/protobuf
+## github.com/gogo/protobuf/proto
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/gogo/protobuf/blob/master/LICENSE>
+**License URL:** <https://github.com/gogo/protobuf/blob/master/proto/LICENSE>
 
 ## github.com/golang/protobuf
 

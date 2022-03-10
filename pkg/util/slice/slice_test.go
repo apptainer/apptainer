@@ -135,3 +135,58 @@ func TestContainsAnyString(t *testing.T) {
 		})
 	}
 }
+
+func TestContainsInt(t *testing.T) {
+	type args struct {
+		s     []int
+		match int
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "NoMatchSingle",
+			args: args{[]int{1}, 0},
+			want: false,
+		},
+		{
+			name: "NoMatchMulti",
+			args: args{[]int{1, 2, 3}, 0},
+			want: false,
+		},
+		{
+			name: "NoMatchEmpty",
+			args: args{[]int{}, 0},
+			want: false,
+		},
+		{
+			name: "MatchSingle",
+			args: args{[]int{1}, 1},
+			want: true,
+		},
+		{
+			name: "MatchMultiStart",
+			args: args{[]int{1, 2, 3}, 1},
+			want: true,
+		},
+		{
+			name: "MatchMultiMid",
+			args: args{[]int{1, 2, 3}, 2},
+			want: true,
+		},
+		{
+			name: "MatchMultiEnd",
+			args: args{[]int{1, 2, 3}, 2},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ContainsInt(tt.args.s, tt.args.match); got != tt.want {
+				t.Errorf("ContainsInt() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

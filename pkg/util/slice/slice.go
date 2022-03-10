@@ -30,3 +30,13 @@ func ContainsAnyString(s []string, matches []string) bool {
 	}
 	return false
 }
+
+// ContainsInt returns true if int slice s contains match
+func ContainsInt(s []int, match int) bool {
+	for _, a := range s {
+		if a == match {
+			return true
+		}
+	}
+	return false
+}
