@@ -17,6 +17,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   environment.
 - Fix race condition where newly created loop devices can sometimes not
   be opened.
+- Support nvidia-container-cli v1.8.0 and above, via fix to capability set.
 
 ## v1.0.0 - \[2022-03-02\]
 
