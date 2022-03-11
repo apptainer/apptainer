@@ -30,6 +30,13 @@ environments. It features:
 
 Apptainer is open source software, distributed under the [BSD License](LICENSE.md).
 
+Apptainer was formerly known as Singularity and is now [a part of the
+Linux Foundation](https://apptainer.org/news/community-announcement-20211130).
+When migrating from Singularity see the
+[admin migration documentation](https://apptainer.org/docs/admin/main/singularity_migration.html)
+and
+[user compatibility documentation](https://apptainer.org/docs/user/main/singularity_compatibility.html).
+
 Check out [talks about Apptainer](https://apptainer.org/talks)
 and some [use cases of Apptainer](https://apptainer.org/usecases)
 on our website.
