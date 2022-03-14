@@ -18,6 +18,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Don't prompt for y/n to overwrite an existing file when build is
   called from a non-interactive environment. Fail with an error.
+- Preload NSS libraries prior to mountspace name creation to avoid
+  circumstances that can cause loading those libraries from the
+  container image instead of the host, for example in the startup
+  environment.
+- Fix race condition where newly created loop devices can sometimes not
+  be opened.
 
 ## v1.0.0 - \[2022-03-02\]
 
