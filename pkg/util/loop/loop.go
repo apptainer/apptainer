@@ -67,6 +67,13 @@ const (
 	CmdSetDirectIO = 0x4C08
 )
 
+// Loop control device IOCTL commands
+const (
+	CmdCtlAdd     = 0x4C80
+	CmdCtlRemove  = 0x4C81
+	CmdCtlGetFree = 0x4C82
+)
+
 // Info64 contains information about a loop device.
 type Info64 struct {
 	Device         uint64
@@ -92,7 +99,15 @@ const (
 	errStatusTryAgain = syscall.EAGAIN
 )
 
+// loop status retry function.
 type retryStatusFn func(string, int) error
+
+const (
+	loopControlPath = "/dev/loop-control"
+)
+
+// create loop device function.
+type createDeviceFn func(int) error
 
 // AttachFromFile attempts to find a suitable loop device to use for the specified image.
 // It runs through /dev/loopXX, up to MaxLoopDevices to find a free loop device, or
@@ -138,7 +153,7 @@ func (loop *Device) shareLoop(imageInfo *syscall.Stat_t, mode int, number *int) 
 		*number = device
 
 		// Try to open an existing loop device, but don't create a new one
-		loopFd, releaseLock, err := openLoopDev(device, mode, false, true)
+		loopFd, releaseLock, err := openLoopDev(device, mode, true, nil)
 		if err != nil {
 			if !os.IsNotExist(err) {
 				sylog.Debugf("Couldn't open loop device %d: %s\n", device, err)
@@ -178,13 +193,14 @@ func (loop *Device) attachLoop(imageFd uintptr, imageInfo *syscall.Stat_t, mode 
 		syscall.Close(fd)
 	}
 
+	createFn := getCreateDeviceFn()
 	retryFn := getRetryStatusFn(imageFd, imageInfo)
 
 	for device := 0; device < loop.MaxLoopDevices; device++ {
 		*number = device
 
 		// Try to open the loop device, creating the device node if needed
-		loopFd, releaseLock, err := openLoopDev(device, mode, true, loop.Shared)
+		loopFd, releaseLock, err := openLoopDev(device, mode, loop.Shared, createFn)
 		if err != nil {
 			sylog.Debugf("Couldn't open loop device %d: %v", device, err)
 			return err
@@ -221,24 +237,20 @@ func (loop *Device) attachLoop(imageFd uintptr, imageInfo *syscall.Stat_t, mode 
 // openLoopDev will attempt to open the specified loop device number, with specified mode.
 // If it is not present in /dev, and create is true, a mknod call will be used to create it.
 // Returns the fd for the opened device, or -1 if it was not possible to openLoopDev it.
-func openLoopDev(device, mode int, create, sharedLoop bool) (int, func(), error) {
+func openLoopDev(device, mode int, sharedLoop bool, createFn createDeviceFn) (int, func(), error) {
 	path := getLoopPath(device)
 	fi, err := os.Stat(path)
-
-	// If it doesn't exist, and create is false.. we're done..
-	if os.IsNotExist(err) && !create {
-		return -1, nil, err
-	} else if err != nil && !os.IsNotExist(err) {
-		// If there's another stat error that's likely fatal.. we're done..
-		return -1, nil, fmt.Errorf("could not stat %s: %w", path, err)
-	} else if os.IsNotExist(err) {
-		// Create the device node if we need to
-		dev := int(unix.Mkdev(uint32(7), uint32(device)))
-		esys := syscall.Mknod(path, syscall.S_IFBLK|0o660, dev)
-		if errno, ok := esys.(syscall.Errno); ok {
-			if errno != syscall.EEXIST {
-				return -1, nil, fmt.Errorf("could not mknod %s: %w", path, esys)
-			}
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return -1, nil, fmt.Errorf("could not stat %s: %w", path, err)
+		}
+		// device doesn't exist but no create function passed ... done
+		if createFn == nil {
+			return -1, nil, err
+		}
+		// create the device node if we need to
+		if err := createFn(device); err != nil {
+			return -1, nil, fmt.Errorf("could not create %s: %w", path, err)
 		}
 	} else if fi.Mode()&os.ModeDevice == 0 {
 		return -1, nil, fmt.Errorf("%s is not a block device", path)
@@ -372,6 +384,66 @@ func flushCache(imageFd uintptr, imageInfo *syscall.Stat_t) error {
 	// use sync as a last resort
 	unix.Sync()
 	return nil
+}
+
+func getCreateDeviceFn() createDeviceFn {
+	return func(device int) error {
+		path := getLoopPath(device)
+		// use /dev/loop-control when possible
+		controlFd, err := syscall.Open(loopControlPath, syscall.O_RDWR, 0o600)
+		if err != nil {
+			// create loop device with mknod as a fallback
+			dev := int(unix.Mkdev(uint32(7), uint32(device)))
+			esys := syscall.Mknod(path, syscall.S_IFBLK|0o660, dev)
+			if errno, ok := esys.(syscall.Errno); ok {
+				if errno != syscall.EEXIST {
+					return fmt.Errorf("could not mknod %s: %w", path, esys)
+				}
+			}
+			return nil
+		}
+		defer syscall.Close(controlFd)
+
+		// use an exclusive lock on /dev/loop-control
+		// mainly to prevent race conditions with other
+		// instances while issuing LOOP_CTL_REMOVE command
+		loopControlLock, err := lock.Exclusive(loopControlPath)
+		if err != nil {
+			return fmt.Errorf("while acquiring exclusive lock on %s: %w", loopControlPath, err)
+		}
+		defer lock.Release(loopControlLock)
+
+		for try := 0; ; try++ {
+			// issue a LOOP_CTL_ADD to add the corresponding loop device
+			devNum, _, errno := syscall.Syscall(syscall.SYS_IOCTL, uintptr(controlFd), CmdCtlAdd, uintptr(device))
+			if errno > 0 && errno != syscall.EEXIST {
+				return fmt.Errorf("could not add device %s: %w", path, errno)
+			} else if int(devNum) == device {
+				break
+			}
+			// handle a corner case where the device hasn't been created,
+			// it might happen when a /dev/loopX is deleted with rm /dev/loopX
+			// without issuing a LOOP_CTL_REMOVE for the corresponding device
+			_, err := os.Stat(path)
+			if err != nil && try == 0 {
+				// issue a LOOP_CTL_REMOVE to remove the corresponding loop device in kernel
+				_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, uintptr(controlFd), CmdCtlRemove, uintptr(device))
+				if errno > 0 {
+					if errno == syscall.EBUSY {
+						break
+					}
+					return fmt.Errorf("could not remove device %s: %w", path, errno)
+				}
+				// and retry to add the loop device
+				continue
+			} else if err != nil && try == 1 {
+				return fmt.Errorf("could not add device %s: %w", path, err)
+			}
+			break
+		}
+
+		return nil
+	}
 }
 
 // AttachFromPath finds a free loop device, opens it, and stores file descriptor
