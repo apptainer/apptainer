@@ -47,36 +47,119 @@ type ctx struct {
 // e2e to be run without PID namespace
 func (c *ctx) instanceApply(t *testing.T, profile e2e.Profile) {
 	e2e.EnsureImage(t, c.env)
-	// pick up a random name
-	instanceName := randomName(t)
-	joinName := fmt.Sprintf("instance://%s", instanceName)
 
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(profile),
-		e2e.WithRootlessEnv(),
-		e2e.WithCommand("instance start"),
-		e2e.WithArgs("--apply-cgroups", "testdata/cgroups/deny_device.toml", c.env.ImagePath, instanceName),
-		e2e.ExpectExit(0),
-	)
+	tests := []struct {
+		name           string
+		createArgs     []string
+		execArgs       []string
+		startErrorCode int
+		startErrorOut  string
+		execErrorCode  int
+		execErrorOut   string
+		rootfull       bool
+		rootless       bool
+	}{
+		{
+			name:           "nonexistent toml",
+			createArgs:     []string{"--apply-cgroups", "testdata/cgroups/doesnotexist.toml", c.env.ImagePath},
+			startErrorCode: 255,
+			// e2e test currently only captures the error from the CLI process, not the error displayed by the
+			// starter process, so we check for the generic CLI error.
+			startErrorOut: "failed to start instance",
+			rootfull:      true,
+			rootless:      true,
+		},
+		{
+			name:           "invalid toml",
+			createArgs:     []string{"--apply-cgroups", "testdata/cgroups/invalid.toml", c.env.ImagePath},
+			startErrorCode: 255,
+			// e2e test currently only captures the error from the CLI process, not the error displayed by the
+			// starter process, so we check for the generic CLI error.
+			startErrorOut: "failed to start instance",
+			rootfull:      true,
+			rootless:      true,
+		},
+		{
+			name:       "memory limit",
+			createArgs: []string{"--apply-cgroups", "testdata/cgroups/memory_limit.toml", c.env.ImagePath},
+			// We get a CLI 255 error code, not the 137 that the starter receives for an OOM kill
+			startErrorCode: 255,
+			rootfull:       true,
+			rootless:       true,
+		},
+		{
+			name:           "cpu success",
+			createArgs:     []string{"--apply-cgroups", "testdata/cgroups/cpu_success.toml", c.env.ImagePath},
+			startErrorCode: 0,
+			execArgs:       []string{"/bin/true"},
+			execErrorCode:  0,
+			rootfull:       true,
+			rootless:       true,
+		},
+		{
+			name:           "device deny",
+			createArgs:     []string{"--apply-cgroups", "testdata/cgroups/deny_device.toml", c.env.ImagePath},
+			startErrorCode: 0,
+			execArgs:       []string{"cat", "/dev/null"},
+			execErrorCode:  1,
+			execErrorOut:   "Operation not permitted",
+			rootfull:       true,
+			rootless:       false,
+		},
+	}
 
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(profile),
-		e2e.WithRootlessEnv(),
-		e2e.WithCommand("exec"),
-		e2e.WithArgs(joinName, "cat", "/dev/null"),
-		e2e.ExpectExit(1, e2e.ExpectError(e2e.ContainMatch, "Operation not permitted")),
-	)
+	for _, tt := range tests {
+		if profile.Privileged() && !tt.rootfull {
+			t.Skip()
+		}
+		if !profile.Privileged() && !tt.rootless {
+			t.Skip()
+		}
 
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(profile),
-		e2e.WithRootlessEnv(),
-		e2e.WithCommand("instance stop"),
-		e2e.WithArgs(instanceName),
-		e2e.ExpectExit(0),
-	)
+		createExitFunc := []e2e.ApptainerCmdResultOp{}
+		if tt.startErrorOut != "" {
+			createExitFunc = []e2e.ApptainerCmdResultOp{e2e.ExpectError(e2e.ContainMatch, tt.startErrorOut)}
+		}
+		execExitFunc := []e2e.ApptainerCmdResultOp{}
+		if tt.execErrorOut != "" {
+			execExitFunc = []e2e.ApptainerCmdResultOp{e2e.ExpectError(e2e.ContainMatch, tt.execErrorOut)}
+		}
+		// pick up a random name
+		instanceName := randomName(t)
+		joinName := fmt.Sprintf("instance://%s", instanceName)
+
+		createArgs := append(tt.createArgs, instanceName)
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name+"/start"),
+			e2e.WithProfile(profile),
+			e2e.WithCommand("instance start"),
+			e2e.WithArgs(createArgs...),
+			e2e.ExpectExit(tt.startErrorCode, createExitFunc...),
+		)
+		if tt.startErrorCode != 0 {
+			continue
+		}
+
+		execArgs := append([]string{joinName}, tt.execArgs...)
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name+"/exec"),
+			e2e.WithProfile(profile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(execArgs...),
+			e2e.ExpectExit(tt.execErrorCode, execExitFunc...),
+		)
+
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name+"/stop"),
+			e2e.WithProfile(profile),
+			e2e.WithCommand("instance stop"),
+			e2e.WithArgs(instanceName),
+			e2e.ExpectExit(0),
+		)
+	}
 }
 
 func (c *ctx) instanceApplyRoot(t *testing.T) {
@@ -104,43 +187,86 @@ func (c *ctx) instanceApplyRootless(t *testing.T) {
 func (c *ctx) actionApply(t *testing.T, profile e2e.Profile) {
 	e2e.EnsureImage(t, c.env)
 
-	// Applies a memory limit so small that it should result in us being killed OOM (137)
-	c.env.RunApptainer(
-		t,
-		e2e.AsSubtest("memory"),
-		e2e.WithProfile(profile),
-		e2e.WithRootlessEnv(),
-		e2e.WithCommand("exec"),
-		e2e.WithArgs("--apply-cgroups", "testdata/cgroups/memory_limit.toml", c.env.ImagePath, "/bin/sleep", "5"),
-		e2e.ExpectExit(137),
-	)
-
-	// Rootfull cgroups should be able to limit access to devices
-	if profile.Privileged() {
-		c.env.RunApptainer(
-			t,
-			e2e.AsSubtest("device"),
-			e2e.WithProfile(profile),
-			e2e.WithCommand("exec"),
-			e2e.WithArgs("--apply-cgroups", "testdata/cgroups/deny_device.toml", c.env.ImagePath, "cat", "/dev/null"),
-			e2e.ExpectExit(1,
-				e2e.ExpectError(e2e.ContainMatch, "Operation not permitted")),
-		)
-		return
+	tests := []struct {
+		name            string
+		args            []string
+		expectErrorCode int
+		expectErrorOut  string
+		rootfull        bool
+		rootless        bool
+	}{
+		{
+			name:            "nonexistent toml",
+			args:            []string{"--apply-cgroups", "testdata/cgroups/doesnotexist.toml", c.env.ImagePath, "/bin/sleep", "5"},
+			expectErrorCode: 255,
+			expectErrorOut:  "no such file or directory",
+			rootfull:        true,
+			rootless:        true,
+		},
+		{
+			name:            "invalid toml",
+			args:            []string{"--apply-cgroups", "testdata/cgroups/invalid.toml", c.env.ImagePath, "/bin/sleep", "5"},
+			expectErrorCode: 255,
+			expectErrorOut:  "parsing error",
+			rootfull:        true,
+			rootless:        true,
+		},
+		{
+			name:            "memory limit",
+			args:            []string{"--apply-cgroups", "testdata/cgroups/memory_limit.toml", c.env.ImagePath, "/bin/sleep", "5"},
+			expectErrorCode: 137,
+			rootfull:        true,
+			rootless:        true,
+		},
+		{
+			name:            "cpu success",
+			args:            []string{"--apply-cgroups", "testdata/cgroups/cpu_success.toml", c.env.ImagePath, "/bin/true"},
+			expectErrorCode: 0,
+			rootfull:        true,
+			// This currently fails in the e2e scenario due to the way we are using a mount namespace.
+			// It *does* work if you test it, directly calling the apptainer CLI.
+			// Reason is believed to be: https://github.com/opencontainers/runc/issues/3026
+			rootless: false,
+		},
+		// Device limits are properly applied only in rootful mode. Rootless will ignore them with a warning.
+		{
+			name:            "device deny",
+			args:            []string{"--apply-cgroups", "testdata/cgroups/deny_device.toml", c.env.ImagePath, "cat", "/dev/null"},
+			expectErrorCode: 1,
+			expectErrorOut:  "Operation not permitted",
+			rootfull:        true,
+			rootless:        false,
+		},
+		{
+			name:            "device ignored",
+			args:            []string{"--apply-cgroups", "testdata/cgroups/deny_device.toml", c.env.ImagePath, "cat", "/dev/null"},
+			expectErrorCode: 0,
+			expectErrorOut:  "Operation not permitted",
+			rootfull:        false,
+			rootless:        true,
+		},
 	}
 
-	// Cgroups v2 device limits are via ebpf and rootless cannot apply them.
-	// Check that attempting to apply a device limit warns that it won't take effect.
-	c.env.RunApptainer(
-		t,
-		e2e.AsSubtest("device"),
-		e2e.WithProfile(profile),
-		e2e.WithRootlessEnv(),
-		e2e.WithCommand("exec"),
-		e2e.WithArgs("--apply-cgroups", "testdata/cgroups/deny_device.toml", c.env.ImagePath, "cat", "/dev/null"),
-		e2e.ExpectExit(0,
-			e2e.ExpectError(e2e.ContainMatch, "Device limits will not be applied with rootless cgroups")),
-	)
+	for _, tt := range tests {
+		if profile.Privileged() && !tt.rootfull {
+			t.Skip()
+		}
+		if !profile.Privileged() && !tt.rootless {
+			t.Skip()
+		}
+		exitFunc := []e2e.ApptainerCmdResultOp{}
+		if tt.expectErrorOut != "" {
+			exitFunc = []e2e.ApptainerCmdResultOp{e2e.ExpectError(e2e.ContainMatch, tt.expectErrorOut)}
+		}
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(profile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(tt.args...),
+			e2e.ExpectExit(tt.expectErrorCode, exitFunc...),
+		)
+	}
 }
 
 func (c *ctx) actionApplyRoot(t *testing.T) {
