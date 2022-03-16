@@ -33,7 +33,7 @@ import (
 // command set requires privileged execution.
 func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, status syscall.WaitStatus) error {
 	if e.EngineConfig.Cgroups != nil {
-		if err := e.EngineConfig.Cgroups.Remove(); err != nil {
+		if err := e.EngineConfig.Cgroups.Destroy(); err != nil {
 			sylog.Warningf("failed to remove cgroup configuration: %v", err)
 		}
 	}

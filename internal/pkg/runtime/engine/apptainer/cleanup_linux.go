@@ -94,8 +94,8 @@ func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, st
 	}
 
 	if cgroupsManager != nil {
-		if err := cgroupsManager.Remove(); err != nil {
-			sylog.Errorf("could not remove cgroups: %v", err)
+		if err := cgroupsManager.Destroy(); err != nil {
+			sylog.Warningf("failed to remove cgroup configuration: %v", err)
 		}
 	}
 

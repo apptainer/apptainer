@@ -913,7 +913,7 @@ func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Conf
 	if file.Cgroup {
 		sylog.Debugf("Adding process to instance cgroup")
 		ppid := os.Getppid()
-		manager, err := cgroups.GetManagerFromPid(file.Pid)
+		manager, err := cgroups.GetManagerForPid(file.Pid)
 		if err != nil {
 			return fmt.Errorf("couldn't create cgroup manager: %v", err)
 		}

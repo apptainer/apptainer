@@ -499,7 +499,7 @@ func (c *container) addCgroups(pid int, system *mount.System) error {
 
 	c.engine.EngineConfig.OciConfig.Linux.CgroupsPath = cgroupsPath
 
-	manager, err := cgroups.NewManagerFromSpec(c.engine.EngineConfig.OciConfig.Linux.Resources, pid, cgroupsPath)
+	manager, err := cgroups.NewManagerWithSpec(c.engine.EngineConfig.OciConfig.Linux.Resources, pid, cgroupsPath)
 	if err != nil {
 		return fmt.Errorf("failed to apply cgroups resources restriction: %s", err)
 	}
@@ -513,9 +513,9 @@ func (c *container) addCgroups(pid int, system *mount.System) error {
 			c.engine.EngineConfig.OciConfig.Config.Mounts[c.cgroupV1MountIndex+1:]...,
 		)
 
-		cgroupRootPath := manager.GetCgroupRootPath()
-		if cgroupRootPath == "" {
-			return fmt.Errorf("failed to determine cgroup root path")
+		cgroupRootPath, err := manager.GetCgroupRootPath()
+		if err != nil {
+			return fmt.Errorf("failed to determine cgroup root path: %w", err)
 		}
 
 		flags, opt := mount.ConvertOptions(m.Options)

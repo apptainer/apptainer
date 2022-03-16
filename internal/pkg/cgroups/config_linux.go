@@ -10,9 +10,11 @@
 package cgroups
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
 
+	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pelletier/go-toml"
 )
 
@@ -173,7 +175,7 @@ type Config struct {
 	// Unified map[string]string `toml:"unified" json:"unified,omitempty"`
 }
 
-// LoadConfig opens cgroups controls config file and unmarshals it into structures
+// LoadConfig loads a cgroups config file into our native cgroups.Config struct
 func LoadConfig(confPath string) (config Config, err error) {
 	path, err := filepath.Abs(confPath)
 	if err != nil {
@@ -191,12 +193,32 @@ func LoadConfig(confPath string) (config Config, err error) {
 	return
 }
 
-// PutConfig takes the content of a CgroupsConfig struct and Marshals it to file
-func PutConfig(config Config, confPath string) (err error) {
+// SaveConfig saves a native cgroups.Config struct into a TOML file at confPath
+func SaveConfig(config Config, confPath string) (err error) {
 	data, err := toml.Marshal(config)
 	if err != nil {
 		return
 	}
 
 	return ioutil.WriteFile(confPath, data, 0o600)
+}
+
+// LoadResources loads a cgroups config file into a LinuxResources struct
+func LoadResources(path string) (spec specs.LinuxResources, err error) {
+	conf, err := LoadConfig(path)
+	if err != nil {
+		return
+	}
+
+	// convert TOML structures to OCI JSON structures
+	data, err := json.Marshal(conf)
+	if err != nil {
+		return
+	}
+
+	if err = json.Unmarshal(data, &spec); err != nil {
+		return
+	}
+
+	return
 }
