@@ -37,7 +37,7 @@ require (
 	github.com/seccomp/libseccomp-golang v0.9.2-0.20210429002308-3879420cc921
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
-	github.com/sylabs/json-resp v0.8.0
+	github.com/sylabs/json-resp v0.8.1
 	github.com/urfave/cli v1.22.5 // indirect
 	github.com/vbauerster/mpb/v7 v7.4.1
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
