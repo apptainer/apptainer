@@ -29,6 +29,7 @@ func TestCgroupsV2(t *testing.T) {
 	require.CgroupsV2Unified(t)
 	t.Run("GetCgroupRootPath", testGetCgroupRootPathV2)
 	t.Run("NewUpdate", testNewUpdateV2)
+	t.Run("UpdateUnified", testUpdateUnifiedV2)
 	t.Run("AddProc", testAddProcV2)
 	t.Run("FreezeThaw", testFreezeThawV2)
 }
@@ -91,6 +92,27 @@ func testNewUpdateV2(t *testing.T) {
 	ensureInt(t, pidsMax, 512)
 }
 
+//nolint:dupl
+func testUpdateUnifiedV2(t *testing.T) {
+	test.EnsurePrivilege(t)
+	require.CgroupsV2Unified(t)
+
+	// Apply a 1024 pids.max limit using the v1 style config that sets [pids] limit
+	_, manager, cleanup := testManager(t)
+	defer cleanup()
+	pidsMax := filepath.Join("/sys/fs/cgroup", manager.group, "pids.max")
+	ensureInt(t, pidsMax, 1024)
+
+	// Update existing cgroup from unified style config setting [Unified] pids.max directly
+	if err := manager.UpdateFromFile("example/cgroups-unified.toml"); err != nil {
+		t.Fatalf("While updating cgroup: %v", err)
+	}
+
+	// Check pids.max is now 512
+	ensureInt(t, pidsMax, 512)
+}
+
+//nolint:dupl
 func testAddProcV2(t *testing.T) {
 	test.EnsurePrivilege(t)
 	require.CgroupsV2Unified(t)

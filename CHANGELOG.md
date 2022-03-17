@@ -17,6 +17,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 ### New features / functionalities
 
 - Apptainer now supports the `riscv64` architecture.
+- Native cgroups v2 resource limits can be specified using the `[unified]` key
+  in a cgroups toml file applied via `--apply-cgroups`.
 
 ### Bug fixes
 

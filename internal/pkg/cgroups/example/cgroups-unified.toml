@@ -1,0 +1,6 @@
+#
+# Cgroups configuration file example using unified key for cgroups v2 only
+#
+
+[unified]
+    "pids.max" = "512"
