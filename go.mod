@@ -8,7 +8,7 @@ require (
 	github.com/adigunhammedolalekan/registry-auth v0.0.0-20200730122110-8cde180a3a60
 	github.com/apex/log v1.9.0
 	github.com/apptainer/container-key-client v0.7.2
-	github.com/apptainer/container-library-client v1.2.2
+	github.com/apptainer/container-library-client v1.2.3
 	github.com/apptainer/sif/v2 v2.3.2
 	github.com/blang/semver/v4 v4.0.0
 	github.com/buger/jsonparser v1.1.1
@@ -37,7 +37,7 @@ require (
 	github.com/seccomp/libseccomp-golang v0.9.2-0.20210429002308-3879420cc921
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/pflag v1.0.5
-	github.com/sylabs/json-resp v0.8.0
+	github.com/sylabs/json-resp v0.8.1
 	github.com/urfave/cli v1.22.5 // indirect
 	github.com/vbauerster/mpb/v7 v7.4.1
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
