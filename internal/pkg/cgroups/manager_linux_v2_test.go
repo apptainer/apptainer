@@ -27,21 +27,45 @@ import (
 func TestCgroupsV2(t *testing.T) {
 	test.EnsurePrivilege(t)
 	require.CgroupsV2Unified(t)
-	t.Run("GetCgroupRootPath", testGetCgroupRootPathV2)
-	t.Run("NewUpdate", testNewUpdateV2)
-	t.Run("UpdateUnified", testUpdateUnifiedV2)
-	t.Run("AddProc", testAddProcV2)
-	t.Run("FreezeThaw", testFreezeThawV2)
+	tests := CgroupTests{
+		{
+			name:     "GetCGroupRootPath",
+			testFunc: testGetCgroupRootPathV2,
+		},
+		{
+			name:     "GetCGroupRelPath",
+			testFunc: testGetCgroupRelPathV2,
+		},
+		{
+			name:     "NewUpdate",
+			testFunc: testNewUpdateV2,
+		},
+		{
+			name:     "UpdateUnified",
+			testFunc: testUpdateUnifiedV2,
+		},
+		{
+			name:     "AddProc",
+			testFunc: testAddProcV2,
+		},
+		{
+			name:     "FreezeThaw",
+			testFunc: testFreezeThawV2,
+		},
+	}
+	runCgroupfsTests(t, tests)
+	runSystemdTests(t, tests)
 }
 
 //nolint:dupl
-func testGetCgroupRootPathV2(t *testing.T) {
-	test.EnsurePrivilege(t)
-	require.CgroupsV2Unified(t)
-
+func testGetCgroupRootPathV2(t *testing.T, systemd bool) {
 	// This cgroup won't be created in the fs as we don't add a PID through the manager
-	group := filepath.Join("/apptainer", "rootpathtest")
-	manager, err := newManager(&specs.LinuxResources{}, group)
+	group := filepath.Join("/apptainer/rootpathtest")
+	if systemd {
+		group = "system.slice:apptainer:rootpathtest"
+	}
+
+	manager, err := newManager(&specs.LinuxResources{}, group, systemd)
 	if err != nil {
 		t.Fatalf("While creating manager: %v", err)
 	}
@@ -56,17 +80,38 @@ func testGetCgroupRootPathV2(t *testing.T) {
 	}
 }
 
-//nolint:dupl
-func testNewUpdateV2(t *testing.T) {
-	test.EnsurePrivilege(t)
-	require.CgroupsV2Unified(t)
+func testGetCgroupRelPathV2(t *testing.T, systemd bool) {
+	// This cgroup won't be created in the fs as we don't add a PID through the manager
+	group := filepath.Join("/apptainer/rootpathtest")
+	wantPath := group
+	if systemd {
+		group = "system.slice:apptainer:rootpathtest"
+		wantPath = "/system.slice/apptainer-rootpathtest.scope"
+	}
 
-	_, manager, cleanup := testManager(t)
+	manager, err := newManager(&specs.LinuxResources{}, group, systemd)
+	if err != nil {
+		t.Fatalf("While creating manager: %v", err)
+	}
+
+	relPath, err := manager.GetCgroupRelPath()
+	if err != nil {
+		t.Errorf("While getting root path: %v", err)
+	}
+
+	if relPath != wantPath {
+		t.Errorf("Expected %s, got %s", wantPath, relPath)
+	}
+}
+
+//nolint:dupl
+func testNewUpdateV2(t *testing.T, systemd bool) {
+	_, manager, cleanup := testManager(t, systemd)
 	defer cleanup()
 
 	// For cgroups v2 [pids] limit -> pids.max
 	// Check for correct 1024 value
-	pidsMax := filepath.Join("/sys/fs/cgroup", manager.group, "pids.max")
+	pidsMax := filepath.Join(manager.cgroup.Path(""), "pids.max")
 	ensureInt(t, pidsMax, 1024)
 
 	// Write a new config with [pids] limit = 512
@@ -93,14 +138,11 @@ func testNewUpdateV2(t *testing.T) {
 }
 
 //nolint:dupl
-func testUpdateUnifiedV2(t *testing.T) {
-	test.EnsurePrivilege(t)
-	require.CgroupsV2Unified(t)
-
+func testUpdateUnifiedV2(t *testing.T, systemd bool) {
 	// Apply a 1024 pids.max limit using the v1 style config that sets [pids] limit
-	_, manager, cleanup := testManager(t)
+	_, manager, cleanup := testManager(t, systemd)
 	defer cleanup()
-	pidsMax := filepath.Join("/sys/fs/cgroup", manager.group, "pids.max")
+	pidsMax := filepath.Join(manager.cgroup.Path(""), "pids.max")
 	ensureInt(t, pidsMax, 1024)
 
 	// Update existing cgroup from unified style config setting [Unified] pids.max directly
@@ -113,11 +155,8 @@ func testUpdateUnifiedV2(t *testing.T) {
 }
 
 //nolint:dupl
-func testAddProcV2(t *testing.T) {
-	test.EnsurePrivilege(t)
-	require.CgroupsV2Unified(t)
-
-	pid, manager, cleanup := testManager(t)
+func testAddProcV2(t *testing.T, systemd bool) {
+	pid, manager, cleanup := testManager(t, systemd)
 
 	cmd := exec.Command("/bin/cat", "/dev/zero")
 	if err := cmd.Start(); err != nil {
@@ -134,16 +173,13 @@ func testAddProcV2(t *testing.T) {
 		t.Errorf("While adding proc to cgroup: %v", err)
 	}
 
-	cgroupProcs := filepath.Join("/sys/fs/cgroup", manager.group, "cgroup.procs")
+	cgroupProcs := filepath.Join(manager.cgroup.Path(""), "cgroup.procs")
 	ensureContainsInt(t, cgroupProcs, int64(pid))
 	ensureContainsInt(t, cgroupProcs, int64(newPid))
 }
 
 //nolint:dupl
-func testFreezeThawV2(t *testing.T) {
-	test.EnsurePrivilege(t)
-	require.CgroupsV2Unified(t)
-
+func testFreezeThawV2(t *testing.T, systemd bool) {
 	manager := &Manager{}
 	if err := manager.Freeze(); err == nil {
 		t.Errorf("unexpected success freezing PID 0")
@@ -152,7 +188,7 @@ func testFreezeThawV2(t *testing.T) {
 		t.Errorf("unexpected success thawing PID 0")
 	}
 
-	pid, manager, cleanup := testManager(t)
+	pid, manager, cleanup := testManager(t, systemd)
 	defer cleanup()
 
 	manager.Freeze()
@@ -160,7 +196,7 @@ func testFreezeThawV2(t *testing.T) {
 	// for our cat /dev/zero while it's running, so check freeze marker as well
 	// as the process state here.
 	ensureState(t, pid, "S")
-	freezePath := path.Join("/sys/fs/cgroup", manager.group, "cgroup.freeze")
+	freezePath := path.Join(manager.cgroup.Path(""), "cgroup.freeze")
 	ensureInt(t, freezePath, 1)
 
 	manager.Thaw()

@@ -306,7 +306,7 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 	if os.Geteuid() == 0 && !c.userNS {
 		path := engine.EngineConfig.GetCgroupsPath()
 		if path != "" {
-			cgroupsManager, err = cgroups.NewManagerWithFile(path, pid, "")
+			cgroupsManager, err = cgroups.NewManagerWithFile(path, pid, "", engine.EngineConfig.File.SystemdCgroups)
 			if err != nil {
 				return fmt.Errorf("while applying cgroups config: %v", err)
 			}

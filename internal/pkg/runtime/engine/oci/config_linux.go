@@ -22,20 +22,21 @@ const Name = "oci"
 
 // EngineConfig is the config for the OCI engine.
 type EngineConfig struct {
-	BundlePath    string           `json:"bundlePath"`
-	LogPath       string           `json:"logPath"`
-	LogFormat     string           `json:"logFormat"`
-	PidFile       string           `json:"pidFile"`
-	OciConfig     *oci.Config      `json:"ociConfig"`
-	MasterPts     int              `json:"masterPts"`
-	SlavePts      int              `json:"slavePts"`
-	OutputStreams [2]int           `json:"outputStreams"`
-	ErrorStreams  [2]int           `json:"errorStreams"`
-	InputStreams  [2]int           `json:"inputStreams"`
-	SyncSocket    string           `json:"syncSocket"`
-	EmptyProcess  bool             `json:"emptyProcess"`
-	Exec          bool             `json:"exec"`
-	Cgroups       *cgroups.Manager `json:"-"`
+	BundlePath     string           `json:"bundlePath"`
+	LogPath        string           `json:"logPath"`
+	LogFormat      string           `json:"logFormat"`
+	PidFile        string           `json:"pidFile"`
+	OciConfig      *oci.Config      `json:"ociConfig"`
+	MasterPts      int              `json:"masterPts"`
+	SlavePts       int              `json:"slavePts"`
+	OutputStreams  [2]int           `json:"outputStreams"`
+	ErrorStreams   [2]int           `json:"errorStreams"`
+	InputStreams   [2]int           `json:"inputStreams"`
+	SyncSocket     string           `json:"syncSocket"`
+	EmptyProcess   bool             `json:"emptyProcess"`
+	Exec           bool             `json:"exec"`
+	SystemdCgroups bool             `json:"systemdCgroups"`
+	Cgroups        *cgroups.Manager `json:"-"`
 
 	sync.Mutex `json:"-"`
 	State      ociruntime.State `json:"state"`
@@ -98,4 +99,14 @@ func (e *EngineConfig) SetPidFile(path string) {
 // GetPidFile gets the pid file path.
 func (e *EngineConfig) GetPidFile() string {
 	return e.PidFile
+}
+
+// SetSystemdCgroups sets whether to manage cgroups with systemd.
+func (e *EngineConfig) SetSystemdCgroups(systemd bool) {
+	e.SystemdCgroups = systemd
+}
+
+// SetSystemdCgroups gets whether to manage cgroups with systemd.
+func (e *EngineConfig) GetSystemdCgroups() bool {
+	return e.SystemdCgroups
 }

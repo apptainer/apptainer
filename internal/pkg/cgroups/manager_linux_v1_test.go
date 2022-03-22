@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"testing"
 
@@ -26,17 +27,45 @@ import (
 func TestCgroupsV1(t *testing.T) {
 	test.EnsurePrivilege(t)
 	require.CgroupsV1(t)
-	t.Run("GetCgroupRootPath", testGetCgroupRootPathV1)
-	t.Run("NewUpdate", testNewUpdateV1)
-	t.Run("AddProc", testAddProcV1)
-	t.Run("FreezeThaw", testFreezeThawV1)
+	tests := CgroupTests{
+		{
+			name:     "GetCGroupRootPath",
+			testFunc: testGetCgroupRootPathV1,
+		},
+		{
+			name:     "GetCGroupRelPath",
+			testFunc: testGetCgroupRelPathV1,
+		},
+		{
+			name:     "NewUpdate",
+			testFunc: testNewUpdateV1,
+		},
+		{
+			name:     "UpdateUnified",
+			testFunc: testUpdateUnifiedV1,
+		},
+		{
+			name:     "AddProc",
+			testFunc: testAddProcV1,
+		},
+		{
+			name:     "FreezeThaw",
+			testFunc: testFreezeThawV1,
+		},
+	}
+	runCgroupfsTests(t, tests)
+	runSystemdTests(t, tests)
 }
 
 //nolint:dupl
-func testGetCgroupRootPathV1(t *testing.T) {
+func testGetCgroupRootPathV1(t *testing.T, systemd bool) {
 	// This cgroup won't be created in the fs as we don't add a PID through the manager
-	group := filepath.Join("/apptainer", "rootpathtest")
-	manager, err := newManager(&specs.LinuxResources{}, group)
+	group := filepath.Join("/apptainer/rootpathtest")
+	if systemd {
+		group = "system.slice:apptainer:rootpathtest"
+	}
+
+	manager, err := newManager(&specs.LinuxResources{}, group, systemd)
 	if err != nil {
 		t.Fatalf("While creating manager: %v", err)
 	}
@@ -45,23 +74,54 @@ func testGetCgroupRootPathV1(t *testing.T) {
 	if err != nil {
 		t.Errorf("While getting root path: %v", err)
 	}
-	// Cgroups v2 has a fixed mount point
-	if rootPath != unifiedMountPoint {
+
+	// With v1 the mount could be somewhere odd... but we can test indirectly.
+	// The root path + '/devices' + the rel path should give us the absolute path
+	// for the cgroup with the devices controller.
+	// The rel path is tested explicitly, so we know it works.
+	relPath, err := manager.GetCgroupRelPath()
+	if err != nil {
+		t.Errorf("While getting rel path: %v", err)
+	}
+
+	absDevicePath := path.Join(rootPath, "devices", relPath)
+	if absDevicePath != manager.cgroup.Path("devices") {
 		t.Errorf("Expected %s, got %s", unifiedMountPoint, rootPath)
 	}
 }
 
 //nolint:dupl
-func testNewUpdateV1(t *testing.T) {
-	_, manager, cleanup := testManager(t)
+func testGetCgroupRelPathV1(t *testing.T, systemd bool) {
+	// This cgroup won't be created in the fs as we don't add a PID through the manager
+	group := filepath.Join("/apptainer/rootpathtest")
+	wantPath := group
+	if systemd {
+		group = "system.slice:apptainer:rootpathtest"
+		wantPath = "/system.slice/apptainer-rootpathtest.scope"
+	}
+
+	manager, err := newManager(&specs.LinuxResources{}, group, systemd)
+	if err != nil {
+		t.Fatalf("While creating manager: %v", err)
+	}
+
+	relPath, err := manager.GetCgroupRelPath()
+	if err != nil {
+		t.Errorf("While getting root path: %v", err)
+	}
+
+	if relPath != wantPath {
+		t.Errorf("Expected %s, got %s", wantPath, relPath)
+	}
+}
+
+//nolint:dupl
+func testNewUpdateV1(t *testing.T, systemd bool) {
+	_, manager, cleanup := testManager(t, systemd)
 	defer cleanup()
 
 	// Check for correct 1024 value
-	rootPath, err := manager.GetCgroupRootPath()
-	if err != nil {
-		t.Fatalf("can't determine cgroups root path, is cgroups enabled ?")
-	}
-	pidsMax := filepath.Join(rootPath, "pids", manager.group, "pids.limit")
+	pidsMax := filepath.Join(manager.cgroup.Path("pids"), "pids.max")
 	ensureInt(t, pidsMax, 1024)
 
 	// Write a new config with [pids] limit = 512
@@ -87,8 +147,19 @@ func testNewUpdateV1(t *testing.T) {
 	ensureInt(t, pidsMax, 512)
 }
 
-func testAddProcV1(t *testing.T) {
-	pid, manager, cleanup := testManager(t)
+//nolint:dupl
+func testUpdateUnifiedV1(t *testing.T, systemd bool) {
+	_, manager, cleanup := testManager(t, systemd)
+	defer cleanup()
+
+	// Try to update existing cgroup from unified style config setting [Unified] pids.max directly
+	if err := manager.UpdateFromFile("example/cgroups-unified.toml"); err == nil {
+		t.Fatalf("Unexpected success applying unified config on cgroups v1")
+	}
+}
+
+func testAddProcV1(t *testing.T, systemd bool) {
+	pid, manager, cleanup := testManager(t, systemd)
 
 	cmd := exec.Command("/bin/cat", "/dev/zero")
 	if err := cmd.Start(); err != nil {
@@ -105,16 +176,12 @@ func testAddProcV1(t *testing.T) {
 		t.Errorf("While adding proc to cgroup: %v", err)
 	}
 
-	rootPath, err := manager.GetCgroupRootPath()
-	if err != nil {
-		t.Fatalf("can't determine cgroups root path, is cgroups enabled ?")
-	}
-	cgroupProcs := filepath.Join(rootPath, "pids", manager.group, "cgroup.procs")
+	cgroupProcs := filepath.Join(manager.cgroup.Path("pids"), "cgroup.procs")
 	ensureContainsInt(t, cgroupProcs, int64(pid))
 	ensureContainsInt(t, cgroupProcs, int64(newPid))
 }
 
-func testFreezeThawV1(t *testing.T) {
+func testFreezeThawV1(t *testing.T, systemd bool) {
 	manager := &Manager{}
 	if err := manager.Freeze(); err == nil {
 		t.Errorf("unexpected success with PID 0")
@@ -123,7 +190,7 @@ func testFreezeThawV1(t *testing.T) {
 		t.Errorf("unexpected success with PID 0")
 	}
 
-	pid, manager, cleanup := testManager(t)
+	pid, manager, cleanup := testManager(t, systemd)
 	defer cleanup()
 
 	manager.Freeze()

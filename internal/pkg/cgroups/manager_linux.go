@@ -33,6 +33,8 @@ var ErrUnitialized = errors.New("cgroups manager is not initialized")
 type Manager struct {
 	// The name of the cgroup
 	group string
+	// Are we using systemd?
+	systemd bool
 	// The underlying runc/libcontainer/cgroups manager
 	cgroup lccgroups.Manager
 }
@@ -62,12 +64,46 @@ func (m *Manager) GetCgroupRootPath() (rootPath string, err error) {
 
 	// Take the piece before the first occurrence of "devices" as the root.
 	// I.E. /sys/fs/cgroup/devices/apptainer/196219 -> /sys/fs/cgroup
-	pathParts := strings.Split(devicePath, "devices")
+	pathParts := strings.SplitN(devicePath, "devices", 2)
 	if len(pathParts) != 2 {
 		return "", fmt.Errorf("could not find devices controller path")
 	}
 
 	return filepath.Clean(pathParts[0]), nil
+}
+
+// GetCgroupRelPath returns the relative path of the cgroup under the mount point
+func (m *Manager) GetCgroupRelPath() (relPath string, err error) {
+	if m.group == "" || m.cgroup == nil {
+		return "", ErrUnitialized
+	}
+
+	// v2 - has a single fixed mountpoint for the root cgroup
+	if lccgroups.IsCgroup2UnifiedMode() {
+		absPath := m.cgroup.Path("")
+		return strings.TrimPrefix(absPath, unifiedMountPoint), nil
+	}
+
+	// v1 - Get absolute paths to cgroup by subsystem
+	subPaths := m.cgroup.GetPaths()
+	// For cgroups v1 we are relying on fetching the 'devices' subsystem path.
+	// The devices subsystem is needed for our OCI engine and its presence is
+	// enforced in runc/libcontainer/cgroups/fs initialization without 'skipDevices'.
+	// This means we never explicitly put a container into a cgroup without a
+	// set 'devices' path.
+	devicePath, ok := subPaths["devices"]
+	if !ok {
+		return "", fmt.Errorf("could not find devices controller path")
+	}
+
+	// Take the piece after the first occurrence of "devices" as the relative path.
+	// I.E. /sys/fs/cgroup/devices/apptainer/196219 -> /apptainer/196219
+	pathParts := strings.SplitN(devicePath, "devices", 2)
+	if len(pathParts) != 2 {
+		return "", fmt.Errorf("could not find devices controller path")
+	}
+
+	return filepath.Clean(pathParts[1]), nil
 }
 
 // UpdateFromSpec updates the existing managed cgroup using configuration from
@@ -122,7 +158,28 @@ func (m *Manager) AddProc(pid int) (err error) {
 	if pid == 0 {
 		return fmt.Errorf("cannot add a zero pid to cgroup")
 	}
-	return m.cgroup.Apply(pid)
+
+	// If we are managing cgroupfs directly we are good to go.
+	procMgr := m.cgroup
+	// However, the systemd manager won't put another process in the cgroup...
+	// so we use an underlying cgroupfs manager for this particular operation.
+	if m.systemd {
+		relPath, err := m.GetCgroupRelPath()
+		if err != nil {
+			return err
+		}
+		lcConfig := &lcconfigs.Cgroup{
+			Path:      relPath,
+			Resources: &lcconfigs.Resources{},
+			Systemd:   false,
+		}
+		procMgr, err = lcmanager.New(lcConfig)
+		if err != nil {
+			return fmt.Errorf("while creating cgroupfs manager: %w", err)
+		}
+	}
+
+	return procMgr.Apply(pid)
 }
 
 // Freeze freezes processes in the managed cgroup.
@@ -151,7 +208,7 @@ func (m *Manager) Destroy() (err error) {
 
 // newManager creates a new Manager, with the associated resources and cgroup.
 // The Manager is ready to manage the cgroup but does not apply limits etc.
-func newManager(resources *specs.LinuxResources, group string) (manager *Manager, err error) {
+func newManager(resources *specs.LinuxResources, group string, systemd bool) (manager *Manager, err error) {
 	if resources == nil {
 		return nil, fmt.Errorf("non-nil cgroup LinuxResources definition is required")
 	}
@@ -168,7 +225,7 @@ func newManager(resources *specs.LinuxResources, group string) (manager *Manager
 
 	opts := &lcspecconv.CreateOpts{
 		CgroupName:       group,
-		UseSystemdCgroup: false,
+		UseSystemdCgroup: systemd,
 		RootlessCgroups:  false,
 		Spec:             spec,
 	}
@@ -184,8 +241,9 @@ func newManager(resources *specs.LinuxResources, group string) (manager *Manager
 	}
 
 	mgr := Manager{
-		group:  group,
-		cgroup: cgroup,
+		group:   group,
+		systemd: systemd,
+		cgroup:  cgroup,
 	}
 	return &mgr, nil
 }
@@ -193,21 +251,24 @@ func newManager(resources *specs.LinuxResources, group string) (manager *Manager
 // NewManagerWithSpec creates a Manager, applies the configuration in spec, and adds pid to the cgroup.
 // If a group name is supplied, it will be used by the manager.
 // If group = "" then "/apptainer/<pid>" is used as a default.
-func NewManagerWithSpec(spec *specs.LinuxResources, pid int, group string) (manager *Manager, err error) {
+func NewManagerWithSpec(spec *specs.LinuxResources, pid int, group string, systemd bool) (manager *Manager, err error) {
 	if pid == 0 {
 		return nil, fmt.Errorf("a pid is required to create a new cgroup")
 	}
-	if group == "" {
+	if group == "" && !systemd {
 		group = filepath.Join("/apptainer", strconv.Itoa(pid))
+	}
+	if group == "" && systemd {
+		group = "system.slice:apptainer:" + strconv.Itoa(pid)
 	}
 
 	// Create the manager
-	mgr, err := newManager(spec, group)
+	mgr, err := newManager(spec, group, systemd)
 	if err != nil {
 		return nil, err
 	}
 	// Apply the cgroup to pid (add pid to cgroup)
-	if err := mgr.AddProc(pid); err != nil {
+	if err := mgr.cgroup.Apply(pid); err != nil {
 		return nil, err
 	}
 	if err := mgr.UpdateFromSpec(spec); err != nil {
@@ -220,15 +281,17 @@ func NewManagerWithSpec(spec *specs.LinuxResources, pid int, group string) (mana
 // NewManagerWithFile creates a Manager, applies the configuration at specPath, and adds pid to the cgroup.
 // If a group name is supplied, it will be used by the manager.
 // If group = "" then "/apptainer/<pid>" is used as a default.
-func NewManagerWithFile(specPath string, pid int, group string) (manager *Manager, err error) {
+func NewManagerWithFile(specPath string, pid int, group string, systemd bool) (manager *Manager, err error) {
 	spec, err := LoadResources(specPath)
 	if err != nil {
 		return nil, fmt.Errorf("while loading cgroups spec: %w", err)
 	}
-	return NewManagerWithSpec(&spec, pid, group)
+	return NewManagerWithSpec(&spec, pid, group, systemd)
 }
 
 // GetManager returns a Manager for the provided cgroup name/path.
+// It can only return a cgroupfs manager, as we aren't wiring back up to systemd
+// through dbus etc.
 func GetManagerForGroup(group string) (manager *Manager, err error) {
 	if group == "" {
 		return nil, fmt.Errorf("cannot load cgroup - no name/path specified")
@@ -240,6 +303,7 @@ func GetManagerForGroup(group string) (manager *Manager, err error) {
 	lcConfig := &lcconfigs.Cgroup{
 		Path:      group,
 		Resources: &lcconfigs.Resources{},
+		Systemd:   false,
 	}
 	cgroup, err := lcmanager.New(lcConfig)
 	if err != nil {
@@ -247,13 +311,16 @@ func GetManagerForGroup(group string) (manager *Manager, err error) {
 	}
 
 	mgr := Manager{
-		group:  group,
-		cgroup: cgroup,
+		group:   group,
+		systemd: false,
+		cgroup:  cgroup,
 	}
 	return &mgr, nil
 }
 
 // GetManagerFromPid returns a Manager for the cgroup that pid is a member of.
+// It can only return a cgroupfs manager, as we aren't wiring back up to systemd
+// through dbus etc.
 func GetManagerForPid(pid int) (manager *Manager, err error) {
 	path, err := pidToPath(pid)
 	if err != nil {
