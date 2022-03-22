@@ -9,7 +9,7 @@ require (
 	github.com/apex/log v1.9.0
 	github.com/apptainer/container-key-client v0.7.2
 	github.com/apptainer/container-library-client v1.2.2
-	github.com/apptainer/sif/v2 v2.3.2
+	github.com/apptainer/sif/v2 v2.4.1
 	github.com/blang/semver/v4 v4.0.0
 	github.com/buger/jsonparser v1.1.1
 	github.com/cenkalti/backoff/v4 v4.1.2
@@ -35,7 +35,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/seccomp/containers-golang v0.6.0
 	github.com/seccomp/libseccomp-golang v0.9.2-0.20210429002308-3879420cc921
-	github.com/spf13/cobra v1.3.0
+	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
 	github.com/sylabs/json-resp v0.8.0
 	github.com/urfave/cli v1.22.5 // indirect
