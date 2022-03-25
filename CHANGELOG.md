@@ -23,6 +23,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Native cgroups v2 resource limits can be specified using the `[unified]` key
   in a cgroups toml file applied via `--apply-cgroups`.
 
+## v1.0.1 - \[2022-03-15\]
+
 ### Bug fixes
 
 - Don't prompt for y/n to overwrite an existing file when build is
@@ -33,6 +35,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   environment.
 - Fix race condition where newly created loop devices can sometimes not
   be opened.
+- Support nvidia-container-cli v1.8.0 and above, via fix to capability set.
 
 ## v1.0.0 - \[2022-03-02\]
 
