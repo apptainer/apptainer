@@ -45,13 +45,13 @@ on our website.
 
 To install Apptainer from source, see the [installation
 instructions](INSTALL.md). For other installation options, see [our
-guide](https://apptainer.org/admin-docs/master/installation.html).
+guide](https://apptainer.org/docs/admin/main/installation.html).
 
 System administrators can learn how to configure Apptainer, and get an
 overview of its architecture and security features in the [administrator
-guide](https://apptainer.org/admin-docs/master/).
+guide](https://apptainer.org/docs/admin/main/).
 
-For users, see the [user guide](https://apptainer.org/user-docs/master/)
+For users, see the [user guide](https://apptainer.org/docs/user/main/)
 for details on how to run and build containers with Apptainer.
 
 ## Contributing to Apptainer
