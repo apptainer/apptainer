@@ -23,14 +23,17 @@ var (
 	testStringSlice []string
 	testInt         int
 	testUint32      uint32
+	testStringMap   map[string]string
 )
 
 var ttData = []struct {
-	desc            string
-	flag            *Flag
-	cmd             *cobra.Command
-	envValue        string
-	matchValue      string
+	desc       string
+	flag       *Flag
+	cmd        *cobra.Command
+	envValue   string
+	matchValue string
+	// Alternative match to accommodate random map ordering
+	altMatchValue   string
 	expectedFailure bool
 }{
 	{
@@ -156,6 +159,21 @@ var ttData = []struct {
 		cmd: parentCmd,
 	},
 	{
+		desc: "string map flag",
+		flag: &Flag{
+			ID:           "testStringMapFlag",
+			Value:        &testStringMap,
+			DefaultValue: testStringMap,
+			Name:         "string-map",
+			Usage:        "a string map flag",
+			EnvKeys:      []string{"STRING_MAP"},
+		},
+		cmd:           parentCmd,
+		envValue:      "key1=arg1,key2=arg2",
+		matchValue:    "[key1=arg1,key2=arg2]",
+		altMatchValue: "[key2=arg2,key1=arg1]",
+	},
+	{
 		desc: "int flag",
 		flag: &Flag{
 			ID:           "testIntFlag",
@@ -249,7 +267,9 @@ func TestCmdFlag(t *testing.T) {
 		}
 		if d.envValue != "" {
 			v := d.cmd.Flags().Lookup(d.flag.Name).Value.String()
-			if v != d.matchValue {
+			// We allow matching against an optional altMatchValue, so that we can accommodate
+			// the string forms of both orderings of maps with 2 keys.
+			if v != d.matchValue && (d.altMatchValue == "" || v != d.altMatchValue) {
 				t.Errorf("unexpected value for %s, returned %s instead of %s", d.desc, v, d.matchValue)
 			}
 		}

@@ -10,6 +10,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 ### Bug fixes
 
 - The Debian package now conflicts with the singularity-container package.
+- Do not truncate environment variables with commas
 
 ## v1.0.1 - \[2022-03-15\]
 

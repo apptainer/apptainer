@@ -585,18 +585,34 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		// --env variables will take precedence over variables
 		// defined by the environment file
 		sylog.Debugf("Setting environment variables from file %s", ApptainerEnvFile)
-		ApptainerEnv = append(envvars, ApptainerEnv...)
+
+		// Update ApptainerEnv with those from file
+		for _, envar := range envvars {
+			e := strings.SplitN(envar, "=", 2)
+			if len(e) != 2 {
+				sylog.Warningf("Ignore environment variable %q: '=' is missing", envar)
+				continue
+			}
+
+			// Ensure we don't overwrite --env variables with environment file
+			if _, ok := ApptainerEnv[e[0]]; ok {
+				sylog.Warningf("Ignore environment variable %s from %s: override from --env", e[0], ApptainerEnvFile)
+			} else {
+				ApptainerEnv[e[0]] = e[1]
+			}
+		}
 	}
 
 	// process --env and --env-file variables for injection
 	// into the environment by prefixing them with APPTAINERENV_
-	for _, envvar := range ApptainerEnv {
-		e := strings.SplitN(envvar, "=", 2)
-		if len(e) != 2 {
-			sylog.Warningf("Ignore environment variable %q: '=' is missing", envvar)
+	for envName, envValue := range ApptainerEnv {
+
+		// We can allow envValue to be empty (explicit set to empty) but not name!
+		if envName == "" {
+			sylog.Warningf("Ignore environment variable %s=%s: variable name missing", envName, envValue)
 			continue
 		}
-		os.Setenv(env.ApptainerEnvPrefix+e[0], e[1])
+		os.Setenv("APPTAINERENV_"+envName, envValue)
 	}
 
 	// Copy and cache environment

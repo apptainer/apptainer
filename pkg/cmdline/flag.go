@@ -84,6 +84,8 @@ func (m *flagManager) registerFlagForCmd(flag *Flag, cmds ...*cobra.Command) err
 	switch t := flag.DefaultValue.(type) {
 	case string:
 		m.registerStringVar(flag, cmds)
+	case map[string]string:
+		m.registerStringMapVar(flag, cmds)
 	case []string:
 		m.registerStringSliceVar(flag, cmds)
 	case StringArray:
@@ -131,6 +133,19 @@ func (m *flagManager) registerStringArrayVar(flag *Flag, cmds []*cobra.Command) 
 			c.Flags().StringArrayVarP(flag.Value.(*[]string), flag.Name, flag.ShortHand, ([]string)(flag.DefaultValue.(StringArray)), flag.Usage)
 		} else {
 			c.Flags().StringArrayVar(flag.Value.(*[]string), flag.Name, ([]string)(flag.DefaultValue.(StringArray)), flag.Usage)
+		}
+		m.setFlagOptions(flag, c)
+	}
+	return nil
+}
+
+// registerStringArrayCommas uses StringToStringVarP, a variant to allow commas (and a map of string/string)
+func (m *flagManager) registerStringMapVar(flag *Flag, cmds []*cobra.Command) error {
+	for _, c := range cmds {
+		if flag.ShortHand != "" {
+			c.Flags().StringToStringVarP(flag.Value.(*map[string]string), flag.Name, flag.ShortHand, flag.DefaultValue.(map[string]string), flag.Usage)
+		} else {
+			c.Flags().StringToStringVar(flag.Value.(*map[string]string), flag.Name, flag.DefaultValue.(map[string]string), flag.Usage)
 		}
 		m.setFlagOptions(flag, c)
 	}
