@@ -18,7 +18,7 @@ require (
 	github.com/containernetworking/cni v1.0.1
 	github.com/containernetworking/plugins v1.1.0
 	github.com/containers/image/v5 v5.19.1
-	github.com/creack/pty v1.1.17
+	github.com/creack/pty v1.1.18
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/docker/docker v20.10.12+incompatible
 	github.com/fatih/color v1.13.0
