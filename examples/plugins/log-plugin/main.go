@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"log/syslog"
 	"os"
+	"os/user"
+	"strings"
 
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
@@ -47,7 +49,16 @@ func logCommand(manager *cmdline.CommandManager) {
 		uid := os.Getuid()
 		gid := os.Getgid()
 		command := c.Name()
-		msg := fmt.Sprintf("UID=%d GID=%d COMMAND=%s ARGS=%v", uid, gid, command, args)
+		var username string
+		user, err := user.Current()
+		if err == nil {
+			username = user.Username
+		}
+		var jobid string
+		if val, ok := os.LookupEnv("SLURM_JOB_ID"); ok {
+			jobid = val
+		}
+		msg := fmt.Sprintf("UID=%d USER=\"%s\" GID=%d JOBID=\"%s\" COMMAND=\"%s\" ARGS=\"%s\"", uid, username, gid, jobid, command, strings.Join(args, " "))
 
 		// This logger never errors, only warns, if it fails to write to syslog
 		w, err := syslog.New(syslog.LOG_INFO, "apptainer")
