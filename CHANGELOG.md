@@ -24,6 +24,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - systemd is now supported and used as the default cgroups manager. Set
   `systemd cgroups = no` in `apptainer.conf` to manage cgroups directly via
   the cgroupfs.
+- Plugins must be compiled from inside the Apptainer source directory,
+  and will use the main Apptainer `go.mod` file. Required for Go 1.18
+  support.
 
 ### New features / functionalities
 

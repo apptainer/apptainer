@@ -22,7 +22,7 @@ $(apptainer_deps): $(GO_MODFILES)
 apptainer := $(BUILDDIR)/apptainer
 $(apptainer): $(apptainer_build_config) $(apptainer_deps) $(apptainer_SOURCE)
 	@echo " GO" $@; echo "    [+] GO_TAGS" \"$(GO_TAGS)\"
-	$(V)$(GO) build $(GO_MODFLAGS) $(GO_BUILDMODE) -tags "$(GO_TAGS)" $(GO_LDFLAGS) $(GO_GCFLAGS) $(GO_ASMFLAGS) \
+	$(V)$(GO) build $(GO_MODFLAGS) $(GO_BUILDMODE) -tags "$(GO_TAGS)" $(GO_LDFLAGS) \
 		-o $(BUILDDIR)/apptainer $(SOURCEDIR)/cmd/apptainer
 
 apptainer_INSTALL := $(DESTDIR)$(BINDIR)/apptainer
@@ -49,7 +49,7 @@ $(bash_completions): $(apptainer_build_config)
 	@echo " GEN" $@
 	$(V)rm -f $@
 	$(V)mkdir -p $(@D)
-	$(V)$(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" $(GO_GCFLAGS) $(GO_ASMFLAGS) \
+	$(V)$(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" \
 		$(SOURCEDIR)/cmd/bash_completion/bash_completion.go $@
 
 bash_completion1_INSTALL := $(DESTDIR)$(DATADIR)/bash-completion/completions/apptainer
@@ -78,7 +78,7 @@ old_config := $(config_INSTALL)
 
 $(config): $(apptainer_build_config) $(SOURCEDIR)/etc/conf/gen.go $(SOURCEDIR)/pkg/runtime/engine/apptainer/config/config.go
 	@echo " GEN $@`if [ -n "$(old_config)" ]; then echo " from $(old_config)"; fi`"
-	$(V)$(GO) run $(GO_MODFLAGS) $(GO_GCFLAGS) $(GO_ASMFLAGS) $(SOURCEDIR)/etc/conf/gen.go \
+	$(V)$(GO) run $(GO_MODFLAGS) $(SOURCEDIR)/etc/conf/gen.go \
 		$(old_config) $(config)
 
 $(config_INSTALL): $(config)
@@ -104,7 +104,7 @@ man_pages := $(BUILDDIR)$(MANDIR)/man1
 $(man_pages): apptainer
 	@echo " MAN" $@
 	mkdir -p $@
-	$(V)$(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" $(GO_GCFLAGS) $(GO_ASMFLAGS) \
+	$(V)$(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" \
 		$(SOURCEDIR)/cmd/docs/docs.go man --dir $@
 	$(V)cd $@;							\
 		for M in apptainer*; do					\
