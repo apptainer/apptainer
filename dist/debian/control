@@ -23,7 +23,6 @@ Homepage: http://apptainer.org
 Vcs-Git: https://github.com/apptainer/apptainer.git
 Vcs-Browser: https://github.com/apptainer/apptainer
 
-# "apptainer" is a packaged game (but the contents don't clash)
 Package: apptainer
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, squashfs-tools
