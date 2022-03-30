@@ -23,6 +23,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Native cgroups v2 resource limits can be specified using the `[unified]` key
   in a cgroups toml file applied via `--apply-cgroups`.
 
+### Bug fixes
+
+- The Debian package now conflicts with the singularity-container package.
+
 ## v1.0.1 - \[2022-03-15\]
 
 ### Bug fixes
