@@ -172,19 +172,11 @@ func Run(t *testing.T) {
 
 	suite := testhelper.NewSuite(t, testenv)
 
-	if os.Getenv("APPTAINER_E2E_NO_PID_NS") != "" {
-		// e2e tests that will run in a mount namespace only
-		suite.AddGroup("CGROUPS", cgroups.E2ETests)
-		suite.AddGroup("OCI", oci.E2ETests)
-		suite.Run()
-		return
-	}
-
-	// e2e tests that will run in a mount and PID namespace
 	suite.AddGroup("ACTIONS", actions.E2ETests)
 	suite.AddGroup("BUILDCFG", e2ebuildcfg.E2ETests)
 	suite.AddGroup("BUILD", imgbuild.E2ETests)
 	suite.AddGroup("CACHE", cache.E2ETests)
+	suite.AddGroup("CGROUPS", cgroups.E2ETests)
 	suite.AddGroup("CMDENVVARS", cmdenvvars.E2ETests)
 	suite.AddGroup("CONFIG", config.E2ETests)
 	suite.AddGroup("DELETE", delete.E2ETests)
@@ -197,6 +189,7 @@ func Run(t *testing.T) {
 	suite.AddGroup("INSTANCE", instance.E2ETests)
 	suite.AddGroup("KEY", key.E2ETests)
 	suite.AddGroup("LEGACY", legacy.E2ETests)
+	suite.AddGroup("OCI", oci.E2ETests)
 	suite.AddGroup("OVERLAY", overlay.E2ETests)
 	suite.AddGroup("PLUGIN", plugin.E2ETests)
 	suite.AddGroup("PULL", pull.E2ETests)

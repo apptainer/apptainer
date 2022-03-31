@@ -23,16 +23,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-//  NOTE
-//  ----
-//  Tests in this package/topic are run in a a mount namespace only. There is
-//  no PID namespace, in order that the systemd cgroups manager functionality
-//  can be exercised.
-//
-//  You must take extra care not to leave detached process etc. that will
-//  pollute the host PID namespace.
-//
-
 func randomContainerID(t *testing.T) string {
 	t.Helper()
 

@@ -32,8 +32,11 @@ if [ -n "$ALL_PROXY" -o -n "$HTTP_PROXY" -o -n "$HTTPS_PROXY" ]; then
     fi
 fi
 
+uid=$(id -u)
+gid=$(id -g)
+id_vars="E2E_ORIG_UID=$uid E2E_ORIG_GID=$gid"
 proxy_vars="HTTP_PROXY=$HTTP_PROXY HTTPS_PROXY=$HTTPS_PROXY ALL_PROXY=$ALL_PROXY NO_PROXY=$NO_PROXY"
 cred_vars="E2E_DOCKER_USERNAME=$E2E_DOCKER_USERNAME E2E_DOCKER_PASSWORD=$E2E_DOCKER_PASSWORD"
 docker_mirror_vars="E2E_DOCKER_MIRROR=$E2E_DOCKER_MIRROR E2E_DOCKER_MIRROR_INSECURE=$E2E_DOCKER_MIRROR_INSECURE"
-export sudo_args="env -i PATH=$PATH HOME=$HOME $proxy_vars $docker_mirror_vars $cred_vars APPTAINER_E2E_COVERAGE=$APPTAINER_E2E_COVERAGE APPTAINER_E2E_NO_PID_NS=$APPTAINER_E2E_NO_PID_NS"
+export sudo_args="env -i PATH=$PATH HOME=$HOME $id_vars $proxy_vars $docker_mirror_vars $cred_vars APPTAINER_E2E_COVERAGE=$APPTAINER_E2E_COVERAGE"
 exec scripts/go-test -sudo -parallel $procs -tags "e2e_test" "$@" ./e2e
