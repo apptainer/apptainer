@@ -18,6 +18,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	args "github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc"
 	"github.com/apptainer/apptainer/internal/pkg/util/crypt"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
@@ -25,6 +26,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
 	"github.com/apptainer/apptainer/pkg/util/loop"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
@@ -40,6 +42,12 @@ func init() {
 	defaultEffective |= uint64(1 << capabilities.Map["CAP_SETUID"].Value)
 	defaultEffective |= uint64(1 << capabilities.Map["CAP_SETGID"].Value)
 	defaultEffective |= uint64(1 << capabilities.Map["CAP_SYS_ADMIN"].Value)
+
+	cfg, err := apptainerconf.Parse(buildcfg.APPTAINER_CONF_FILE)
+	if err == nil {
+		apptainerconf.SetCurrentConfig(cfg)
+		apptainerconf.SetBinaryPath("", false)
+	}
 }
 
 // Methods is a receiver type.

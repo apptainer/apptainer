@@ -9,6 +9,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Changed defaults / behaviours
 
+- Added a `binary path` configuration variable as the default path to use
+  when searching for helper executables.  May contain `$PATH:` which gets
+  substituted with the user's PATH when running unprivileged.  Defaults to
+  `$PATH:` followed by standard system paths.  Configuration variables
+  for paths to individual programs that were in apptainer.conf are still
+  supported but deprecated.
 - `oci mount` sets `Process.Terminal: true` when creating an OCI `config.json`,
   so that `oci run` provides expected interactive behavior by default.
 - Default hostname for `oci mount` containers is now `apptainer` instead of

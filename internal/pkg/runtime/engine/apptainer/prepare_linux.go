@@ -90,6 +90,7 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	if err != nil {
 		return fmt.Errorf("unable to parse apptainer.conf file: %s", err)
 	}
+	apptainerconf.SetCurrentConfig(e.EngineConfig.File)
 
 	if !e.EngineConfig.File.AllowSetuid && starterConfig.GetIsSUID() {
 		return fmt.Errorf("suid workflow disabled by administrator")
@@ -108,6 +109,15 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		if !fs.IsOwner(buildcfg.ECL_FILE, 0) {
 			return fmt.Errorf("%s must be owned by root", buildcfg.ECL_FILE)
 		}
+
+		// override the binary path without the user's $PATH
+		// this is the value used by FindBin
+		apptainerconf.SetBinaryPath("", false)
+		// this is the value used in container_linux
+		e.EngineConfig.SetBinaryPath(e.EngineConfig.File.BinaryPath)
+	} else {
+		// tell apptainerconf the binary path including the user's $PATH
+		apptainerconf.SetBinaryPath(e.EngineConfig.GetBinaryPath(), false)
 	}
 
 	// Save the current working directory if not set

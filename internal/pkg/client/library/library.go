@@ -74,11 +74,15 @@ func getDownloadConfig() (libClient.Downloader, error) {
 	// get downloader parameters from config
 	conf := apptainerconf.GetCurrentConfig()
 	if conf == nil {
-		// sylog.Fatalf("Unable to get apptainer configuration")
-		var err error
-		conf, err = apptainerconf.Parse(buildcfg.APPTAINER_CONF_FILE)
-		if err != nil {
-			sylog.Fatalf("unable to parse apptainer.conf file: %s", err)
+		if strings.HasSuffix(os.Args[0], ".test") {
+			// read config if doing unit tests
+			var err error
+			conf, err = apptainerconf.Parse(buildcfg.APPTAINER_CONF_FILE)
+			if err != nil {
+				sylog.Fatalf("unable to parse apptainer.conf file: %s", err)
+			}
+		} else {
+			sylog.Fatalf("configuration not pre-loaded in getDownloadConfig")
 		}
 	}
 

@@ -9,6 +9,13 @@
 
 package apptainerconf
 
+import (
+	"os"
+	"strings"
+
+	"github.com/apptainer/apptainer/pkg/sylog"
+)
+
 // currentConfig corresponds to the current configuration, may
 // be useful for packages requiring to share the same configuration.
 var currentConfig *File
@@ -22,6 +29,27 @@ func SetCurrentConfig(config *File) {
 // GetCurrentConfig returns the current configuration if any.
 func GetCurrentConfig() *File {
 	return currentConfig
+}
+
+// SetBinaryPath sets the value of the binary path, substituting the
+// user's $PATH plus ":" for "$PATH:" in binaryPath if subPath is true.
+// If binaryPath is empty, use the current config value of BinaryPath.
+func SetBinaryPath(binaryPath string, subPath bool) {
+	if currentConfig == nil {
+		sylog.Fatalf("apptainerconf.SetCurrentConfig() must be called before SetBinaryPath()")
+	}
+	userPath := ""
+	if subPath {
+		userPath = os.Getenv("PATH")
+		if userPath != "" {
+			userPath += ":"
+		}
+	}
+	if binaryPath == "" {
+		binaryPath = currentConfig.BinaryPath
+	}
+	currentConfig.BinaryPath = strings.Replace(binaryPath, "$PATH:", userPath, 1)
+	sylog.Debugf("Setting binary path to %v", currentConfig.BinaryPath)
 }
 
 // File describes the apptainer.conf file options
@@ -66,6 +94,7 @@ type File struct {
 	CniConfPath             string   `directive:"cni configuration path"`
 	CniPluginPath           string   `directive:"cni plugin path"`
 	CryptsetupPath          string   `directive:"cryptsetup path"`
+	BinaryPath              string   `default:"$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" directive:"binary path"`
 	GoPath                  string   `directive:"go path"`
 	LdconfigPath            string   `directive:"ldconfig path"`
 	MksquashfsPath          string   `directive:"mksquashfs path"`
@@ -360,46 +389,52 @@ memory fs type = {{ .MemoryFSType }}
 
 # CNI CONFIGURATION PATH: [STRING]
 # DEFAULT: Undefined
-# Defines path from where CNI configuration files are stored
+# Defines path where CNI configuration files are stored
 #cni configuration path =
 {{ if ne .CniConfPath "" }}cni configuration path = {{ .CniConfPath }}{{ end }}
 # CNI PLUGIN PATH: [STRING]
 # DEFAULT: Undefined
-# Defines path from where CNI executable plugins are stored
+# Defines path where CNI executable plugins are stored
 #cni plugin path =
 {{ if ne .CniPluginPath "" }}cni plugin path = {{ .CniPluginPath }}{{ end }}
 
+# BINARY PATH: [STRING]
+# DEFAULT: $PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Colon-separated list of directories to search for many binaries.  May include
+# "$PATH:", which will be replaced by the user's PATH only when not running the
+# setuid program flow.
+# binary path = 
+
 # CRYPTSETUP PATH: [STRING]
 # DEFAULT: Undefined
+# DEPRECATED
 # Path to the cryptsetup executable, used to work with encrypted containers.
-# Must be set to build or run encrypted containers.
 # Executable must be owned by root for security reasons.
+# If not set, Apptainer will search the directories set in binary path.
 # cryptsetup path =
-{{ if ne .CryptsetupPath "" }}cryptsetup path = {{ .CryptsetupPath }}{{ end }}
 
 # GO PATH: [STRING]
 # DEFAULT: Undefined
+# DEPRECATED
 # Path to the go executable, used to compile plugins.
-# If not set, Apptainer will search $PATH, /usr/local/sbin, /usr/local/bin,
-# /usr/sbin, /usr/bin, /sbin, /bin.
+# If not set, Apptainer will search the directories set in binary path.
 # go path =
-{{ if ne .GoPath "" }}go path = {{ .GoPath }}{{ end }}
 
 # LDCONFIG PATH: [STRING]
 # DEFAULT: Undefined
+# DEPRECATED
 # Path to the ldconfig executable, used to find GPU libraries.
 # Must be set to use --nv / --nvccli.
 # When run as root, executable must be owned by root for security reasons.
+# If not set, Apptainer will search the directories set in binary path.
 # ldconfig path =
-{{ if ne .LdconfigPath "" }}ldconfig path = {{ .LdconfigPath }}{{ end }}
 
 # MKSQUASHFS PATH: [STRING]
 # DEFAULT: Undefined
+# DEPRECATED
 # Path to the mksquashfs executable, used to create SIF and SquashFS containers.
-# If not set, Apptainer will search $PATH, /usr/local/sbin, /usr/local/bin,
-# /usr/sbin, /usr/bin, /sbin, /bin.
+# If not set, Apptainer will search the directories set in binary path.
 # mksquashfs path =
-{{ if ne .MksquashfsPath "" }}mksquashfs path = {{ .MksquashfsPath }}{{ end }}
 
 # MKSQUASHFS PROCS: [UINT]
 # DEFAULT: 0 (All CPUs)
@@ -421,19 +456,19 @@ mksquashfs procs = {{ .MksquashfsProcs }}
 
 # NVIDIA-CONTAINER-CLI PATH: [STRING]
 # DEFAULT: Undefined
+# DEPRECATED
 # Path to the nvidia-container-cli executable, used to find GPU libraries.
 # Must be set to use --nvccli.
 # When run as root, executable must be owned by root for security reasons
+# If not set, Apptainer will search the directories set in binary path.
 # nvidia-container-cli path =
-{{ if ne .NvidiaContainerCliPath "" }}nvidia-container-cli path = {{ .NvidiaContainerCliPath }}{{ end }}
 
 # UNSQUASHFS PATH: [STRING]
 # DEFAULT: Undefined
+# DEPRECATED
 # Path to the unsquashfs executable, used to extract SIF and SquashFS containers
-# If not set, Apptainer will search $PATH, /usr/local/sbin, /usr/local/bin,
-# /usr/sbin, /usr/bin, /sbin, /bin.
+# If not set, Apptainer will search the directories set in binary path.
 # unsquashfs path =
-{{ if ne .UnsquashfsPath "" }}unsquashfs path = {{ .UnsquashfsPath }}{{ end }}
 
 # SHARED LOOP DEVICES: [BOOL]
 # DEFAULT: no

@@ -111,6 +111,7 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 	if err != nil {
 		return fmt.Errorf("unable to parse apptainer.conf file: %s", err)
 	}
+	apptainerconf.SetCurrentConfig(engine.EngineConfig.File)
 
 	c := &container{
 		engine:        engine,
@@ -157,6 +158,9 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 	if !c.userNS {
 		c.userNS, _ = namespaces.IsInsideUserNamespace(os.Getpid())
 	}
+
+	// Tell apptainerconf the binary path
+	apptainerconf.SetBinaryPath(c.engine.EngineConfig.GetBinaryPath(), false)
 
 	// load image driver plugins
 	callbackType := (apptainercallback.RegisterImageDriver)(nil)

@@ -460,6 +460,9 @@ func persistentPreRun(*cobra.Command, []string) {
 		sylog.Fatalf("Couldn't not parse configuration file %s: %s", configurationFile, err)
 	}
 	apptainerconf.SetCurrentConfig(config)
+	// Include the user's PATH for now.
+	// It will be overridden later if using setuid flow.
+	apptainerconf.SetBinaryPath("", true)
 
 	// Handle the config dir (~/.apptainer),
 	// then check the remove conf file permission.

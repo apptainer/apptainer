@@ -104,6 +104,7 @@ type JSONConfig struct {
 	Cwd               string            `json:"cwd,omitempty"`
 	SessionLayer      string            `json:"sessionLayer,omitempty"`
 	ConfigurationFile string            `json:"configurationFile,omitempty"`
+	BinaryPath        string            `json:"binaryPath,omitempty"`
 	EncryptionKey     []byte            `json:"encryptionKey,omitempty"`
 	TargetUID         int               `json:"targetUID,omitempty"`
 	WritableImage     bool              `json:"writableImage,omitempty"`
@@ -797,6 +798,16 @@ func (e *EngineConfig) SetConfigurationFile(filename string) {
 // GetConfigurationFile returns the apptainer configuration file to use.
 func (e *EngineConfig) GetConfigurationFile() string {
 	return e.JSON.ConfigurationFile
+}
+
+// SetBinaryPath sets the path to use to search for binary programs.
+func (e *EngineConfig) SetBinaryPath(binaryPath string) {
+	e.JSON.BinaryPath = binaryPath
+}
+
+// GetBinaryPath returns the path to use to search for binary programs.
+func (e *EngineConfig) GetBinaryPath() string {
+	return e.JSON.BinaryPath
 }
 
 // SetRestoreUmask returns whether to restore Umask for the container launched process.
