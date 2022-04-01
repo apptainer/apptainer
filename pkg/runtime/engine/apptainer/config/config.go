@@ -505,7 +505,7 @@ func (e *EngineConfig) SetSkipBinds(val []string) {
 }
 
 // GetSkipBinds gets bind paths to skip
-func (e *EngineConfig) GetNoBinds() []string {
+func (e *EngineConfig) GetSkipBinds() []string {
 	return e.JSON.SkipBinds
 }
 
