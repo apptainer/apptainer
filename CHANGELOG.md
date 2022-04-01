@@ -26,6 +26,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   disable a `bind path` entry from `apptainer.conf` by specifying the
   absolute path to the destination of the bind.
 
+### Bug fixes
+
+- The Debian package now conflicts with the singularity-container package.
+
 ## v1.0.1 - \[2022-03-15\]
 
 ### Bug fixes
