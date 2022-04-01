@@ -71,6 +71,7 @@ short-integration-test:
 .PHONY: e2e-test
 e2e-test: EXTRA_FLAGS := $(if $(filter yes,$(strip $(JUNIT_OUTPUT))),-junit $(BUILDDIR_ABSPATH)/e2e-test.xml)
 e2e-test:
+	# Run the majority of e2e tests, which will use a separate pid and mount namespace
 	@echo " TEST sudo go test [e2e]"
 	$(V)rm -f $(BUILDDIR_ABSPATH)/e2e-cmd-coverage
 	$(V)cd $(SOURCEDIR) && \

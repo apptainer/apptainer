@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2019,2020 Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2022 Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -26,6 +26,7 @@ import (
 	"github.com/apptainer/apptainer/e2e/actions"
 	e2ebuildcfg "github.com/apptainer/apptainer/e2e/buildcfg"
 	"github.com/apptainer/apptainer/e2e/cache"
+	"github.com/apptainer/apptainer/e2e/cgroups"
 	"github.com/apptainer/apptainer/e2e/cmdenvvars"
 	"github.com/apptainer/apptainer/e2e/config"
 	"github.com/apptainer/apptainer/e2e/delete"
@@ -171,13 +172,11 @@ func Run(t *testing.T) {
 
 	suite := testhelper.NewSuite(t, testenv)
 
-	// RunE2ETests by functionality.
-	//
-	// Please keep this list sorted.
 	suite.AddGroup("ACTIONS", actions.E2ETests)
 	suite.AddGroup("BUILDCFG", e2ebuildcfg.E2ETests)
 	suite.AddGroup("BUILD", imgbuild.E2ETests)
 	suite.AddGroup("CACHE", cache.E2ETests)
+	suite.AddGroup("CGROUPS", cgroups.E2ETests)
 	suite.AddGroup("CMDENVVARS", cmdenvvars.E2ETests)
 	suite.AddGroup("CONFIG", config.E2ETests)
 	suite.AddGroup("DELETE", delete.E2ETests)
@@ -202,6 +201,5 @@ func Run(t *testing.T) {
 	suite.AddGroup("SIGN", sign.E2ETests)
 	suite.AddGroup("VERIFY", verify.E2ETests)
 	suite.AddGroup("VERSION", version.E2ETests)
-
 	suite.Run()
 }
