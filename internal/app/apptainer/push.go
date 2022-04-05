@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -114,9 +114,13 @@ func LibraryPush(ctx context.Context, pushSpec LibraryPushSpec, libraryConfig *c
 	}
 
 	// split library ref into components
-	r, err := client.Parse(pushSpec.DestRef)
+	r, err := client.ParseAmbiguous(pushSpec.DestRef)
 	if err != nil {
 		return fmt.Errorf("error parsing destination: %v", err)
+	}
+
+	if r.Host != "" && r.Host != libraryClient.BaseURL.Host {
+		return errors.New("push to location other than current remote is not supported")
 	}
 
 	// open image for uploading
@@ -141,7 +145,7 @@ func LibraryPush(ctx context.Context, pushSpec LibraryPushSpec, libraryConfig *c
 		}
 	}(time.Now())
 
-	if resp, err = libraryClient.UploadImage(ctx, f, r.Host+r.Path, arch, r.Tags, pushSpec.Description, progressBar); err != nil {
+	if resp, err = libraryClient.UploadImage(ctx, f, r.Path, arch, r.Tags, pushSpec.Description, progressBar); err != nil {
 		return err
 	}
 
