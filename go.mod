@@ -16,13 +16,15 @@ require (
 	github.com/containerd/containerd v1.6.2
 	github.com/containernetworking/cni v1.0.1
 	github.com/containernetworking/plugins v1.1.1
-	github.com/containers/image/v5 v5.20.0
+	github.com/containers/image/v5 v5.21.0
 	github.com/creack/pty v1.1.18
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/docker/docker v20.10.14+incompatible
 	github.com/fatih/color v1.13.0
+	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-log/log v0.2.0
 	github.com/google/uuid v1.3.0
+	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/moby/sys/mount v0.3.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.0.3-0.20211202193544-a5463b7f9c84
@@ -43,7 +45,7 @@ require (
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
 	github.com/yvasiyarov/gorelic v0.0.6 // indirect
 	github.com/yvasiyarov/newrelic_platform_go v0.0.0-20160601141957-9c099fbc30e9 // indirect
-	golang.org/x/sys v0.0.0-20220209214540-3681064d5158
+	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools/v3 v3.1.0
