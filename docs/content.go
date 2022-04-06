@@ -1107,7 +1107,7 @@ Enterprise Performance Computing (EPC)`
   The checkpoint instance command checkpoints an active instance by name. The instance must
   have been started with either --dmtcp-launch or --dmtcp-restart.`
 	CheckpointInstanceExample string = `
-  To checkpoint an instnace:
+  To checkpoint an instance:
   $ apptainer checkpoint instance example-instance`
 )
 
