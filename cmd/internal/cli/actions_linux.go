@@ -613,10 +613,6 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	apptainerEnv := env.SetContainerEnv(generator, environment, IsCleanEnv, engineConfig.GetHomeDest())
 	engineConfig.SetApptainerEnv(apptainerEnv)
 
-	// Save the BinaryPath in the engineConfig for later use in other
-	// address spaces
-	engineConfig.SetBinaryPath(engineConfig.File.BinaryPath)
-
 	if pwd, err := os.Getwd(); err == nil {
 		engineConfig.SetCwd(pwd)
 		if PwdPath != "" {

@@ -32,9 +32,8 @@ func GetCurrentConfig() *File {
 }
 
 // SetBinaryPath sets the value of the binary path, substituting the
-// user's $PATH plus ":" for "$PATH:" in binaryPath if subPath is true.
-// If binaryPath is empty, use the current config value of BinaryPath.
-func SetBinaryPath(binaryPath string, subPath bool) {
+// user's $PATH plus ":" for "$PATH:" in BinaryPath if subPath is true.
+func SetBinaryPath(subPath bool) {
 	if currentConfig == nil {
 		sylog.Fatalf("apptainerconf.SetCurrentConfig() must be called before SetBinaryPath()")
 	}
@@ -45,10 +44,7 @@ func SetBinaryPath(binaryPath string, subPath bool) {
 			userPath += ":"
 		}
 	}
-	if binaryPath == "" {
-		binaryPath = currentConfig.BinaryPath
-	}
-	currentConfig.BinaryPath = strings.Replace(binaryPath, "$PATH:", userPath, 1)
+	currentConfig.BinaryPath = strings.Replace(currentConfig.BinaryPath, "$PATH:", userPath, 1)
 	sylog.Debugf("Setting binary path to %v", currentConfig.BinaryPath)
 }
 

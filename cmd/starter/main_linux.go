@@ -31,8 +31,8 @@ import (
 	_ "github.com/apptainer/apptainer/cmd/starter/engines"
 )
 
-func getEngine(jsonConfig []byte) *engine.Engine {
-	e, err := engine.Get(jsonConfig)
+func getEngine(jsonConfig []byte, privStageOne bool) *engine.Engine {
+	e, err := engine.Get(jsonConfig, privStageOne)
 	if err != nil {
 		sylog.Fatalf("Failed to initialize runtime engine: %s\n", err)
 	}
@@ -50,7 +50,8 @@ func startup() {
 
 	// get engine operations previously registered
 	// by the above import
-	e := getEngine(jsonConfig)
+	privStageOne := C.goexecute == C.STAGE1 && sconfig.GetIsSUID()
+	e := getEngine(jsonConfig, privStageOne)
 	sylog.Debugf("%s runtime engine selected", e.EngineName)
 
 	switch C.goexecute {

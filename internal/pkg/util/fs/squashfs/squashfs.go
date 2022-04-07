@@ -10,11 +10,6 @@
 package squashfs
 
 import (
-	"fmt"
-	"os"
-	"strings"
-
-	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
@@ -25,17 +20,7 @@ func getConfig() (*apptainerconf.File, error) {
 	// otherwise parse the default configuration file
 	cfg := apptainerconf.GetCurrentConfig()
 	if cfg == nil {
-		if strings.HasSuffix(os.Args[0], ".test") {
-			// read config if doing unit tests
-			var err error
-			configFile := buildcfg.APPTAINER_CONF_FILE
-			cfg, err = apptainerconf.Parse(configFile)
-			if err != nil {
-				return nil, fmt.Errorf("unable to parse apptainer.conf file: %s", err)
-			}
-		} else {
-			sylog.Fatalf("configuration not pre-loaded in findOnPath")
-		}
+		sylog.Fatalf("configuration not pre-loaded in squashfs getConfig")
 	}
 	return cfg, nil
 }

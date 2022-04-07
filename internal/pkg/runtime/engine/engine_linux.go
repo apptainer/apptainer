@@ -42,11 +42,12 @@ type Operations interface {
 	// privileges during this call.
 	Config() config.EngineConfig
 	// InitConfig stores the parsed config.Common inside the Operations
-	// implementation.
+	// implementation and may do additional initialization depending on
+	// on the second parameter which is true only when running setuid
+	// in stage1.
 	//
-	// Since this method simply stores config.Common, it does not matter
-	// whether or not there are any elevated privileges during this call.
-	InitConfig(*config.Common)
+	// No elevated privileges are needed during this call.
+	InitConfig(*config.Common, bool)
 	// PrepareConfig is called during stage1 to validate and prepare
 	// container configuration.
 	//
@@ -106,7 +107,7 @@ func getName(b []byte) string {
 }
 
 // Get returns the engine described by the JSON []byte configuration.
-func Get(b []byte) (*Engine, error) {
+func Get(b []byte, privStageOne bool) (*Engine, error) {
 	engineName := getName(b)
 
 	// ensure engine with given name is registered
@@ -127,7 +128,7 @@ func Get(b []byte) (*Engine, error) {
 	if err := json.Unmarshal(b, e.Common); err != nil {
 		return nil, fmt.Errorf("could not parse JSON configuration: %s", err)
 	}
-	e.InitConfig(e.Common)
+	e.InitConfig(e.Common, privStageOne)
 	return e, nil
 }
 

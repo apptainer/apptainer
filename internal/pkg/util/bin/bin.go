@@ -61,7 +61,7 @@ func findOnPath(name string) (path string, err error) {
 	newPath := cfg.BinaryPath
 	if strings.Contains(newPath, "$PATH:") {
 		if strings.HasSuffix(os.Args[0], ".test") {
-			apptainerconf.SetBinaryPath("", true)
+			apptainerconf.SetBinaryPath(true)
 		} else {
 			sylog.Fatalf("SetBinaryPath has not been run before findOnPath")
 		}

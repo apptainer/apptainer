@@ -33,7 +33,7 @@ var messageColors = map[messageLevel]string{
 
 var (
 	noColorLevel messageLevel = 90
-	loggerLevel  messageLevel = InfoLevel
+	loggerLevel               = InfoLevel
 )
 
 var logWriter = (io.Writer)(os.Stderr)

@@ -42,7 +42,6 @@ import (
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/sypgp"
-	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
@@ -78,28 +77,14 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		return fmt.Errorf("bad engine configuration provided")
 	}
 
-	configurationFile := buildcfg.APPTAINER_CONF_FILE
-	if buildcfg.APPTAINER_SUID_INSTALL == 0 || os.Geteuid() == 0 {
-		configFile := e.EngineConfig.GetConfigurationFile()
-		if configFile != "" {
-			configurationFile = configFile
-		}
-	}
-
-	e.EngineConfig.File, err = apptainerconf.Parse(configurationFile)
-	if err != nil {
-		return fmt.Errorf("unable to parse apptainer.conf file: %s", err)
-	}
-	apptainerconf.SetCurrentConfig(e.EngineConfig.File)
-
 	if !e.EngineConfig.File.AllowSetuid && starterConfig.GetIsSUID() {
 		return fmt.Errorf("suid workflow disabled by administrator")
 	}
 
 	if starterConfig.GetIsSUID() {
 		// check for ownership of apptainer.conf
-		if !fs.IsOwner(configurationFile, 0) {
-			return fmt.Errorf("%s must be owned by root", configurationFile)
+		if !fs.IsOwner(buildcfg.APPTAINER_CONF_FILE, 0) {
+			return fmt.Errorf("%s must be owned by root", buildcfg.APPTAINER_CONF_FILE)
 		}
 		// check for ownership of capability.json
 		if !fs.IsOwner(buildcfg.CAPABILITY_FILE, 0) {
@@ -109,15 +94,6 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		if !fs.IsOwner(buildcfg.ECL_FILE, 0) {
 			return fmt.Errorf("%s must be owned by root", buildcfg.ECL_FILE)
 		}
-
-		// override the binary path without the user's $PATH
-		// this is the value used by FindBin
-		apptainerconf.SetBinaryPath("", false)
-		// this is the value used in container_linux
-		e.EngineConfig.SetBinaryPath(e.EngineConfig.File.BinaryPath)
-	} else {
-		// tell apptainerconf the binary path including the user's $PATH
-		apptainerconf.SetBinaryPath(e.EngineConfig.GetBinaryPath(), false)
 	}
 
 	// Save the current working directory if not set
