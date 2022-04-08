@@ -33,12 +33,9 @@ const (
 
 // EngineConfig stores the JSONConfig, the OciConfig and the File configuration.
 type EngineConfig struct {
-	JSON      *JSONConfig `json:"jsonConfig"`
-	OciConfig *oci.Config `json:"ociConfig"`
-
-	// File is not passed across stage but stay here for
-	// convenient use by runtime code and plugins.
-	File *apptainerconf.File `json:"-"`
+	JSON      *JSONConfig         `json:"jsonConfig"`
+	OciConfig *oci.Config         `json:"ociConfig"`
+	File      *apptainerconf.File `json:"fileConfig"`
 }
 
 // NewConfig returns apptainer.EngineConfig.

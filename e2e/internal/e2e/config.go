@@ -23,15 +23,8 @@ func SetupDefaultConfig(t *testing.T, path string) {
 	if err != nil {
 		t.Fatalf("while generating apptainer configuration: %s", err)
 	}
-
-	// e2e tests should call the specific external binaries found/coonfigured in the build.
-	// Set default external paths from build time values
-	c.CryptsetupPath = buildcfg.CRYPTSETUP_PATH
-	c.GoPath = buildcfg.GO_PATH
-	c.LdconfigPath = buildcfg.LDCONFIG_PATH
-	c.MksquashfsPath = buildcfg.MKSQUASHFS_PATH
-	c.NvidiaContainerCliPath = buildcfg.NVIDIA_CONTAINER_CLI_PATH
-	c.UnsquashfsPath = buildcfg.UNSQUASHFS_PATH
+	apptainerconf.SetCurrentConfig(c)
+	apptainerconf.SetBinaryPath(true)
 
 	Privileged(func(t *testing.T) {
 		f, err := os.Create(path)

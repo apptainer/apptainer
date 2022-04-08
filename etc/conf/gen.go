@@ -14,7 +14,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
 
@@ -45,14 +44,6 @@ func genConf(tmpl, in, out string) {
 		fmt.Printf("Unable to parse apptainer.conf file: %s\n", err)
 		os.Exit(1)
 	}
-
-	// Set default external paths from build time values
-	c.CryptsetupPath = buildcfg.CRYPTSETUP_PATH
-	c.GoPath = buildcfg.GO_PATH
-	c.LdconfigPath = buildcfg.LDCONFIG_PATH
-	c.MksquashfsPath = buildcfg.MKSQUASHFS_PATH
-	c.NvidiaContainerCliPath = buildcfg.NVIDIA_CONTAINER_CLI_PATH
-	c.UnsquashfsPath = buildcfg.UNSQUASHFS_PATH
 
 	newOutFile, err := os.OpenFile(out, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {

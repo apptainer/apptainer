@@ -39,7 +39,6 @@ import (
 	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
 	apptainer "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/apptainer/apptainer/pkg/util/loop"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
@@ -97,19 +96,6 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 
 	if len(engine.EngineConfig.GetImageList()) == 0 {
 		return fmt.Errorf("no root filesystem image provided")
-	}
-
-	configurationFile := buildcfg.APPTAINER_CONF_FILE
-	if buildcfg.APPTAINER_SUID_INSTALL == 0 || os.Geteuid() == 0 {
-		configFile := engine.EngineConfig.GetConfigurationFile()
-		if configFile != "" {
-			configurationFile = configFile
-		}
-	}
-
-	engine.EngineConfig.File, err = apptainerconf.Parse(configurationFile)
-	if err != nil {
-		return fmt.Errorf("unable to parse apptainer.conf file: %s", err)
 	}
 
 	c := &container{

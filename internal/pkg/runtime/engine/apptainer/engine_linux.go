@@ -10,10 +10,13 @@
 package apptainer
 
 import (
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc/server"
 	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
 
 // EngineOperations is an Apptainer runtime engine that implements engine.Operations.
@@ -24,11 +27,22 @@ type EngineOperations struct {
 }
 
 // InitConfig stores the parsed config.Common inside the engine.
-//
-// Since this method simply stores config.Common, it does not matter
-// whether or not there are any elevated privileges during this call.
-func (e *EngineOperations) InitConfig(cfg *config.Common) {
+// If privStageOne is true, re-parse the configuration file
+func (e *EngineOperations) InitConfig(cfg *config.Common, privStageOne bool) {
 	e.CommonConfig = cfg
+	if privStageOne {
+		// override the contents of File for security reasons
+		var err error
+		e.EngineConfig.File, err = apptainerconf.Parse(buildcfg.APPTAINER_CONF_FILE)
+		if err != nil {
+			sylog.Fatalf("unable to parse apptainer.conf file: %s", err)
+		}
+		apptainerconf.SetCurrentConfig(e.EngineConfig.File)
+		apptainerconf.SetBinaryPath(false)
+	} else {
+		// use the configuration passed in
+		apptainerconf.SetCurrentConfig(e.EngineConfig.File)
+	}
 }
 
 // Config returns a pointer to an apptainerConfig.EngineConfig

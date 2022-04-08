@@ -16,7 +16,6 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
@@ -66,7 +65,6 @@ func TestFindFromConfigOrPath(t *testing.T) {
 	cases := []struct {
 		name          string
 		bin           string
-		buildcfg      string
 		expectSuccess bool
 		configKey     string
 		configVal     string
@@ -75,16 +73,14 @@ func TestFindFromConfigOrPath(t *testing.T) {
 		{
 			name:          "go valid",
 			bin:           "go",
-			buildcfg:      buildcfg.GO_PATH,
 			configKey:     "go path",
-			configVal:     buildcfg.GO_PATH,
-			expectPath:    buildcfg.GO_PATH,
+			configVal:     "_LOOKPATH_",
+			expectPath:    "_LOOKPATH_",
 			expectSuccess: true,
 		},
 		{
 			name:          "go invalid",
 			bin:           "go",
-			buildcfg:      buildcfg.GO_PATH,
 			configKey:     "go path",
 			configVal:     "/invalid/dir/go",
 			expectSuccess: false,
@@ -92,7 +88,6 @@ func TestFindFromConfigOrPath(t *testing.T) {
 		{
 			name:          "go empty",
 			bin:           "go",
-			buildcfg:      buildcfg.GO_PATH,
 			configKey:     "go path",
 			configVal:     "",
 			expectPath:    "_LOOKPATH_",
@@ -101,16 +96,14 @@ func TestFindFromConfigOrPath(t *testing.T) {
 		{
 			name:          "mksquashfs valid",
 			bin:           "mksquashfs",
-			buildcfg:      buildcfg.MKSQUASHFS_PATH,
 			configKey:     "mksquashfs path",
-			configVal:     buildcfg.MKSQUASHFS_PATH,
-			expectPath:    buildcfg.MKSQUASHFS_PATH,
+			configVal:     "_LOOKPATH_",
+			expectPath:    "_LOOKPATH_",
 			expectSuccess: true,
 		},
 		{
 			name:          "mksquashfs invalid",
 			bin:           "mksquashfs",
-			buildcfg:      buildcfg.MKSQUASHFS_PATH,
 			configKey:     "mksquashfs path",
 			configVal:     "/invalid/dir/go",
 			expectSuccess: false,
@@ -118,7 +111,6 @@ func TestFindFromConfigOrPath(t *testing.T) {
 		{
 			name:          "mksquashfs empty",
 			bin:           "mksquashfs",
-			buildcfg:      buildcfg.MKSQUASHFS_PATH,
 			configKey:     "mksquashfs path",
 			configVal:     "",
 			expectPath:    "_LOOKPATH_",
@@ -127,16 +119,14 @@ func TestFindFromConfigOrPath(t *testing.T) {
 		{
 			name:          "unsquashfs valid",
 			bin:           "unsquashfs",
-			buildcfg:      buildcfg.UNSQUASHFS_PATH,
 			configKey:     "unsquashfs path",
-			configVal:     buildcfg.UNSQUASHFS_PATH,
-			expectPath:    buildcfg.UNSQUASHFS_PATH,
+			configVal:     "_LOOKPATH_",
+			expectPath:    "_LOOKPATH_",
 			expectSuccess: true,
 		},
 		{
 			name:          "unsquashfs invalid",
 			bin:           "unsquashfs",
-			buildcfg:      buildcfg.UNSQUASHFS_PATH,
 			configKey:     "unsquashfs path",
 			configVal:     "/invalid/dir/go",
 			expectSuccess: false,
@@ -144,8 +134,76 @@ func TestFindFromConfigOrPath(t *testing.T) {
 		{
 			name:          "unsquashfs empty",
 			bin:           "unsquashfs",
-			buildcfg:      buildcfg.UNSQUASHFS_PATH,
 			configKey:     "unsquashfs path",
+			configVal:     "",
+			expectPath:    "_LOOKPATH_",
+			expectSuccess: true,
+		},
+		{
+			name:          "nvidia-container-cli valid",
+			bin:           "nvidia-container-cli",
+			configKey:     "nvidia-container-cli path",
+			configVal:     "_LOOKPATH_",
+			expectPath:    "_LOOKPATH_",
+			expectSuccess: true,
+		},
+		{
+			name:          "nvidia-container-cli invalid",
+			bin:           "nvidia-container-cli",
+			configKey:     "nvidia-container-cli path",
+			configVal:     "/invalid/dir/go",
+			expectSuccess: false,
+		},
+		{
+			name:          "nvidia-container-cli empty",
+			bin:           "nvidia-container-cli",
+			configKey:     "nvidia-container-cli path",
+			configVal:     "",
+			expectPath:    "_LOOKPATH_",
+			expectSuccess: true,
+		},
+		{
+			name:          "cryptsetup valid",
+			bin:           "cryptsetup",
+			configKey:     "cryptsetup path",
+			configVal:     "_LOOKPATH_",
+			expectPath:    "_LOOKPATH_",
+			expectSuccess: true,
+		},
+		{
+			name:          "cryptsetup invalid",
+			bin:           "cryptsetup",
+			configKey:     "cryptsetup path",
+			configVal:     "/invalid/dir/cryptsetup",
+			expectSuccess: false,
+		},
+		{
+			name:          "cryptsetup empty",
+			bin:           "cryptsetup",
+			configKey:     "cryptsetup path",
+			configVal:     "",
+			expectPath:    "_LOOKPATH_",
+			expectSuccess: true,
+		},
+		{
+			name:          "ldconfig valid",
+			bin:           "ldconfig",
+			configKey:     "ldconfig path",
+			configVal:     "_LOOKPATH_",
+			expectPath:    "_LOOKPATH_",
+			expectSuccess: true,
+		},
+		{
+			name:          "ldconfig invalid",
+			bin:           "ldconfig",
+			configKey:     "ldconfig path",
+			configVal:     "/invalid/dir/go",
+			expectSuccess: false,
+		},
+		{
+			name:          "ldconfig empty",
+			bin:           "ldconfig",
+			configKey:     "ldconfig path",
 			configVal:     "",
 			expectPath:    "_LOOKPATH_",
 			expectSuccess: true,
@@ -154,16 +212,19 @@ func TestFindFromConfigOrPath(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.buildcfg == "" {
-				t.Skip("skipping - no buildcfg path known")
-			}
-			lookPath, err := exec.LookPath(tc.bin)
-			if err != nil {
-				t.Skipf("Error from exec.LookPath for %q: %v", tc.bin, err)
-			}
+			if (tc.configVal == "_LOOKPATH_") || tc.expectPath == "_LOOKPATH_" {
+				lookPath, err := findOnPath(tc.bin)
+				if err != nil {
+					t.Skipf("Error from exec.LookPath for %q: %v", tc.bin, err)
+				}
 
-			if tc.expectPath == "_LOOKPATH_" {
-				tc.expectPath = lookPath
+				if tc.configVal == "_LOOKPATH_" {
+					tc.configVal = lookPath
+				}
+
+				if tc.expectPath == "_LOOKPATH_" {
+					tc.expectPath = lookPath
+				}
 			}
 
 			f, err := ioutil.TempFile("", "test.conf")
@@ -183,141 +244,6 @@ func TestFindFromConfigOrPath(t *testing.T) {
 			apptainerconf.SetCurrentConfig(conf)
 
 			path, err := findFromConfigOrPath(tc.bin)
-
-			if tc.expectSuccess && err == nil {
-				// expect success, no error, check path
-				if path != tc.expectPath {
-					t.Errorf("Expecting %q, got %q", tc.expectPath, path)
-				}
-			}
-
-			if tc.expectSuccess && err != nil {
-				// expect success, got error
-				t.Errorf("unexpected error: %v", err)
-			}
-
-			if !tc.expectSuccess && err == nil {
-				// expect failure, got no error
-				t.Errorf("expected error, got %q", path)
-			}
-		})
-	}
-}
-
-func TestFindFromConfigOnly(t *testing.T) {
-	//nolint:dupl
-	cases := []struct {
-		name          string
-		bin           string
-		buildcfg      string
-		expectSuccess bool
-		configKey     string
-		configVal     string
-		expectPath    string
-	}{
-		{
-			name:          "nvidia-container-cli valid",
-			bin:           "nvidia-container-cli",
-			buildcfg:      buildcfg.NVIDIA_CONTAINER_CLI_PATH,
-			configKey:     "nvidia-container-cli path",
-			configVal:     buildcfg.NVIDIA_CONTAINER_CLI_PATH,
-			expectPath:    buildcfg.NVIDIA_CONTAINER_CLI_PATH,
-			expectSuccess: true,
-		},
-		{
-			name:          "nvidia-container-cli invalid",
-			bin:           "nvidia-container-cli",
-			buildcfg:      buildcfg.NVIDIA_CONTAINER_CLI_PATH,
-			configKey:     "nvidia-container-cli path",
-			configVal:     "/invalid/dir/go",
-			expectSuccess: false,
-		},
-		{
-			name:          "nvidia-container-cli empty",
-			bin:           "nvidia-container-cli",
-			buildcfg:      buildcfg.NVIDIA_CONTAINER_CLI_PATH,
-			configKey:     "nvidia-container-cli path",
-			configVal:     "",
-			expectPath:    "",
-			expectSuccess: false,
-		},
-		{
-			name:          "cryptsetup valid",
-			bin:           "cryptsetup",
-			buildcfg:      buildcfg.CRYPTSETUP_PATH,
-			configKey:     "cryptsetup path",
-			configVal:     buildcfg.CRYPTSETUP_PATH,
-			expectPath:    buildcfg.CRYPTSETUP_PATH,
-			expectSuccess: true,
-		},
-		{
-			name:          "cryptsetup invalid",
-			bin:           "cryptsetup",
-			buildcfg:      buildcfg.CRYPTSETUP_PATH,
-			configKey:     "cryptsetup path",
-			configVal:     "/invalid/dir/cryptsetup",
-			expectSuccess: false,
-		},
-		{
-			name:          "cryptsetup empty",
-			bin:           "cryptsetup",
-			buildcfg:      buildcfg.CRYPTSETUP_PATH,
-			configKey:     "cryptsetup path",
-			configVal:     "",
-			expectPath:    "",
-			expectSuccess: false,
-		},
-		{
-			name:          "ldconfig valid",
-			bin:           "ldconfig",
-			buildcfg:      buildcfg.LDCONFIG_PATH,
-			configKey:     "ldconfig path",
-			configVal:     buildcfg.LDCONFIG_PATH,
-			expectPath:    buildcfg.LDCONFIG_PATH,
-			expectSuccess: true,
-		},
-		{
-			name:          "ldconfig invalid",
-			bin:           "ldconfig",
-			buildcfg:      buildcfg.LDCONFIG_PATH,
-			configKey:     "ldconfig path",
-			configVal:     "/invalid/dir/go",
-			expectSuccess: false,
-		},
-		{
-			name:          "ldconfig empty",
-			bin:           "ldconfig",
-			buildcfg:      buildcfg.LDCONFIG_PATH,
-			configKey:     "ldconfig path",
-			configVal:     "",
-			expectPath:    "",
-			expectSuccess: false,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			if tc.buildcfg == "" {
-				t.Skip("skipping - no buildcfg path known")
-			}
-
-			f, err := ioutil.TempFile("", "test.conf")
-			if err != nil {
-				t.Fatalf("cannot create temporary test configuration: %+v", err)
-			}
-			f.Close()
-			defer os.Remove(f.Name())
-
-			cfg := fmt.Sprintf("%s = %s\n", tc.configKey, tc.configVal)
-			ioutil.WriteFile(f.Name(), []byte(cfg), 0o644)
-
-			conf, err := apptainerconf.Parse(f.Name())
-			if err != nil {
-				t.Errorf("Error parsing test apptainerconf: %v", err)
-			}
-			apptainerconf.SetCurrentConfig(conf)
-
-			path, err := findFromConfigOnly(tc.bin)
 
 			if tc.expectSuccess && err == nil {
 				// expect success, no error, check path
