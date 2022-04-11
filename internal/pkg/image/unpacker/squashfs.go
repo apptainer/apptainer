@@ -11,7 +11,6 @@
 package unpacker
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -108,12 +107,11 @@ func (s *Squashfs) extract(files []string, reader io.Reader, dest string) (err e
 		}
 	}
 
-	// First we try unsquashfs with appropriate xattr options.
-	// If we are in rootless mode we need "-user-xattrs" so we don't try to set system xattrs that require root.
-	// However...
-	//  1. This isn't supported on unsquashfs 4.0 in RHEL6 so we have to fall back to not using that option on failure.
-	//  2. Must check (user) xattrs are supported on the FS as unsquashfs >=4.4 will give a non-zero error code if
-	//	   it cannot set them, e.g. on tmpfs (#5668)
+	// First we try unsquashfs with appropriate xattr options. If we are in
+	// rootless mode we need "-user-xattrs" so we don't try to set system xattrs
+	// that require root. However we must check (user) xattrs are supported on
+	// the FS as unsquashfs >=4.4 will give a non-zero error code if it cannot
+	// set them, e.g. on tmpfs (#5668)
 	opts := []string{}
 	hostuid, err := namespaces.HostUID()
 	if err != nil {
@@ -121,7 +119,7 @@ func (s *Squashfs) extract(files []string, reader io.Reader, dest string) (err e
 	}
 	rootless := hostuid != 0
 
-	// Do we support user xattrs?
+	// Does our target filesystem support user xattrs?
 	ok, err := TestUserXattr(filepath.Dir(dest))
 	if err != nil {
 		return err
@@ -171,33 +169,10 @@ func (s *Squashfs) extract(files []string, reader io.Reader, dest string) (err e
 		cmd.Stdin = reader
 	}
 
-	o, err := cmd.CombinedOutput()
-	if err == nil {
-		return nil
-	}
-
-	// Invalid options give output...
-	// SYNTAX: unsquashfs [options] filesystem [directories or files to extract]
-	if bytes.Contains(o, []byte("SYNTAX")) {
-		sylog.Warningf("unsquashfs does not support %v. Images with xattrs may fail to extract", opts)
-	} else {
-		// A different error is fatal
-		return fmt.Errorf("extract command failed: %s: %s", string(o), err)
-	}
-
-	// Now we fall back to running without additional xattr options - to do the best we can on old 4.0 squashfs that
-	// does not support them.
-	cmd, err = cmdFunc(s.UnsquashfsPath, dest, filter, filename)
-	if err != nil {
-		return fmt.Errorf("command error: %s", err)
-	}
-	cmd.Args = append(cmd.Args, files...)
-	if stdin {
-		cmd.Stdin = reader
-	}
 	if o, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("extract command failed: %s: %s", string(o), err)
 	}
+
 	return nil
 }
 
