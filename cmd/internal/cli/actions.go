@@ -67,6 +67,7 @@ func actionPreRun(cmd *cobra.Command, args []string) {
 		IsWritableTmpfs = true
 		NoInit = true
 		NoUmask = true
+		NoEval = true
 	}
 }
 
