@@ -454,6 +454,104 @@ func (c ctx) testDockerLabels(t *testing.T) {
 	)
 }
 
+func (c ctx) testDockerCMD(t *testing.T) {
+	imageDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "docker-", "")
+	defer cleanup(t)
+	imagePath := filepath.Join(imageDir, "container")
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatalf("while getting $HOME: %s", err)
+	}
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs(imagePath, "docker://sylabsio/docker-cmd"),
+		e2e.ExpectExit(0),
+	)
+
+	tests := []struct {
+		name         string
+		args         []string
+		noeval       bool
+		expectOutput string
+	}{
+		// Apptainer historic behavior (without --no-eval)
+		// These do not all match Docker, due to evaluation, consumption of quoting.
+		{
+			name:         "default",
+			args:         []string{},
+			noeval:       false,
+			expectOutput: `CMD 'quotes' "quotes" $DOLLAR s p a c e s`,
+		},
+		{
+			name:         "override",
+			args:         []string{"echo", "test"},
+			noeval:       false,
+			expectOutput: `test`,
+		},
+		{
+			name:         "override env var",
+			args:         []string{"echo", "$HOME"},
+			noeval:       false,
+			expectOutput: home,
+		},
+		// This looks very wrong, but is historic behavior
+		{
+			name:         "override sh echo",
+			args:         []string{"sh", "-c", `echo "hello there"`},
+			noeval:       false,
+			expectOutput: "hello",
+		},
+		// Docker/OCI behavior (with --no-eval)
+		{
+			name:         "no-eval/default",
+			args:         []string{},
+			noeval:       false,
+			expectOutput: `CMD 'quotes' "quotes" $DOLLAR s p a c e s`,
+		},
+		{
+			name:         "no-eval/override",
+			args:         []string{"echo", "test"},
+			noeval:       true,
+			expectOutput: `test`,
+		},
+		{
+			name:         "no-eval/override env var",
+			noeval:       true,
+			args:         []string{"echo", "$HOME"},
+			expectOutput: "$HOME",
+		},
+		{
+			name:         "no-eval/override sh echo",
+			noeval:       true,
+			args:         []string{"sh", "-c", `echo "hello there"`},
+			expectOutput: "hello there",
+		},
+	}
+
+	for _, tt := range tests {
+		cmdArgs := []string{}
+		if tt.noeval {
+			cmdArgs = append(cmdArgs, "--no-eval")
+		}
+		cmdArgs = append(cmdArgs, imagePath)
+		cmdArgs = append(cmdArgs, tt.args...)
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(e2e.UserProfile),
+			e2e.WithCommand("run"),
+			e2e.WithArgs(cmdArgs...),
+			e2e.ExpectExit(0,
+				e2e.ExpectOutput(e2e.ExactMatch, tt.expectOutput),
+			),
+		)
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -467,6 +565,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"pulls":            c.testDockerPulls,
 		"registry":         c.testDockerRegistry,
 		"whiteout symlink": c.testDockerWhiteoutSymlink,
+		"cmd":              c.testDockerCMD,
 		"cmd quotes":       c.testDockerCMDQuotes,
 		"labels":           c.testDockerLabels,
 	}
