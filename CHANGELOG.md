@@ -9,6 +9,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Changed defaults / behaviours
 
+- When starting a container, if the user has specified the cwd by using
+  the `--pwd` flag, in case of problem return error instead of defaulting to
+  a different directory.
 - Added a squashfuse image driver that enables mounting SIF files as an
   unprivileged user.  Requires the separate installation of squashfuse.
 - Added the ability to use persistent overlay (`--overlay`) and
