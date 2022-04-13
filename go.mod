@@ -14,7 +14,7 @@ require (
 	github.com/buger/jsonparser v1.1.1
 	github.com/cenkalti/backoff/v4 v4.1.2
 	github.com/containerd/cgroups v1.0.3
-	github.com/containerd/containerd v1.6.0
+	github.com/containerd/containerd v1.6.1
 	github.com/containernetworking/cni v1.0.1
 	github.com/containernetworking/plugins v1.1.0
 	github.com/containers/image/v5 v5.19.1
@@ -49,7 +49,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools/v3 v3.1.0
 	mvdan.cc/sh/v3 v3.4.3-0.20220202175809-113ed667a8a7
-	oras.land/oras-go v1.1.0
+	oras.land/oras-go v1.1.1
 )
 
 // Temporarily force an image-spec that has the main branch commits not in 1.0.2 which is being brought in by oras-go
