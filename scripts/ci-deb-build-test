@@ -13,6 +13,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libseccomp-dev \
     pkg-config \
     squashfs-tools \
+    squashfuse \
     cryptsetup \
     curl wget git
 apt-get install -y \

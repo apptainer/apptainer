@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Changed defaults / behaviours
 
+- Added a squashfuse image driver that enables mounting SIF files as an
+  unprivileged user.  Requires the separate installation of squashfuse.
 - Added a `binary path` configuration variable as the default path to use
   when searching for helper executables.  May contain `$PATH:` which gets
   substituted with the user's PATH when running unprivileged.  Defaults to

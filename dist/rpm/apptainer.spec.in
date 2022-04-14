@@ -70,6 +70,7 @@ Requires: squashfs
 Requires: squashfs-tools
 %endif
 BuildRequires: cryptsetup
+Requires: squashfuse
 
 %description
 Apptainer provides functionality to make portable

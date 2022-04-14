@@ -48,7 +48,10 @@ func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, st
 
 	if imageDriver != nil {
 		if err := umount(); err != nil {
-			sylog.Errorf("%s", err)
+			// Errors are OK here, just show them in debug.
+			// Everything will be unmounted when the namespace
+			// is deleted.
+			sylog.Debugf("%s", err)
 		}
 		if err := imageDriver.Stop(); err != nil {
 			sylog.Errorf("could not stop driver: %s", err)

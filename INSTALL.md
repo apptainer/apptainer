@@ -25,6 +25,7 @@ sudo apt-get install -y \
     libseccomp-dev \
     pkg-config \
     squashfs-tools \
+    squashfuse \
     cryptsetup \
     curl wget git
 ```
@@ -40,6 +41,7 @@ sudo yum install -y epel-release
 sudo yum install -y \
     libseccomp-devel \
     squashfs-tools \
+    squashfuse \
     cryptsetup \
     wget git
 ```

@@ -26,6 +26,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/cgroups"
 	fakerootutil "github.com/apptainer/apptainer/internal/pkg/fakeroot"
+	"github.com/apptainer/apptainer/internal/pkg/image/driver"
 	"github.com/apptainer/apptainer/internal/pkg/instance"
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/starter"
@@ -152,6 +153,9 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	// determine if engine need to propagate signals across processes
 	e.checkSignalPropagation()
 
+	userNS := !starterConfig.GetIsSUID() || e.EngineConfig.GetFakeroot()
+	driver.InitImageDrivers(false, userNS, e.EngineConfig.File)
+
 	// We must call this here because at this point we haven't
 	// spawned the master process nor the RPC server. The assumption
 	// is that this function runs in stage 1 and that even if it's a
@@ -167,6 +171,7 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		return err
 	}
 
+	sylog.Debugf("image driver is %v", e.EngineConfig.File.ImageDriver)
 	if sendFd || e.EngineConfig.File.ImageDriver != "" {
 		fds, err := unix.Socketpair(unix.AF_UNIX, unix.SOCK_STREAM|unix.SOCK_CLOEXEC, 0)
 		if err != nil {

@@ -22,6 +22,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/checkpoint/dmtcp"
+	"github.com/apptainer/apptainer/internal/pkg/image/driver"
 	"github.com/apptainer/apptainer/internal/pkg/image/unpacker"
 	"github.com/apptainer/apptainer/internal/pkg/instance"
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
@@ -635,6 +636,9 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	}
 
 	generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "APPNAME", AppName)
+
+	// initialize internal image drivers
+	driver.InitImageDrivers(true, UserNamespace || insideUserNs, engineConfig.File)
 
 	// convert image file to sandbox if we are using user
 	// namespace or if we are currently running inside a
