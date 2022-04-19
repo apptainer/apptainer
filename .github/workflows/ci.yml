@@ -50,6 +50,7 @@ jobs:
 
       - name: Build Apptainer
         run: |
+          git config --global --add safe.directory $(pwd)
           ./mconfig -v -p /usr/local
           make -C ./builddir all
 
@@ -66,6 +67,7 @@ jobs:
 
       - name: Build Apptainer
         run: |
+          git config --global --add safe.directory $(pwd)
           ./mconfig -v -p /usr/local
           make -C ./builddir all
 
