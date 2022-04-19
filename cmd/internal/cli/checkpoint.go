@@ -161,7 +161,7 @@ var CheckpointInstanceCmd = &cobra.Command{
 
 		port, err := e.CoordinatorPort()
 		if err != nil {
-			sylog.Fatalf("Failed to parse port file for coordinator pord: %s", err)
+			sylog.Fatalf("Failed to parse port file for coordinator port: %s", err)
 		}
 
 		sylog.Infof("Using checkpoint %q", e.Name())
