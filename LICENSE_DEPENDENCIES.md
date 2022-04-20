@@ -659,6 +659,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/rivo/uniseg/blob/master/LICENSE.txt>
 
+## github.com/shopspring/decimal
+
+**License:** MIT
+
+**License URL:** <https://github.com/shopspring/decimal/blob/master/LICENSE>
+
 ## github.com/sirupsen/logrus
 
 **License:** MIT

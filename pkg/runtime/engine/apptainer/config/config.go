@@ -87,7 +87,7 @@ type JSONConfig struct {
 	Image                 string            `json:"image"`
 	ImageArg              string            `json:"imageArg"`
 	Workdir               string            `json:"workdir,omitempty"`
-	CgroupsTOML           string            `json:"cgroupsTOML,omitempty"`
+	CgroupsJSON           string            `json:"cgroupsJSON,omitempty"`
 	HomeSource            string            `json:"homedir,omitempty"`
 	HomeDest              string            `json:"homeDest,omitempty"`
 	Command               string            `json:"command,omitempty"`
@@ -605,14 +605,14 @@ func (e *EngineConfig) GetSecurity() []string {
 	return e.JSON.Security
 }
 
-// SetCgroupsTOML sets path to cgroups TOML file to apply.
-func (e *EngineConfig) SetCgroupsTOML(path string) {
-	e.JSON.CgroupsTOML = path
+// SetCgroupsJSON sets cgroups configuration to apply.
+func (e *EngineConfig) SetCgroupsJSON(data string) {
+	e.JSON.CgroupsJSON = data
 }
 
-// GetCgroupsTOML returns path to cgroups TOML file to apply.
-func (e *EngineConfig) GetCgroupsTOML() string {
-	return e.JSON.CgroupsTOML
+// GetCgroupsTOML returns cgroups configuration to apply.
+func (e *EngineConfig) GetCgroupsJSON() string {
+	return e.JSON.CgroupsJSON
 }
 
 // SetTargetUID sets target UID to execute the container process as user ID.

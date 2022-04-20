@@ -61,6 +61,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   container resource usage on a system using cgroups v2 and the systemd cgroups
   manager.
 - Add instance stats command.
+- Added `--cpu*`, `--blkio*`, `--memory*`, `--pids-limit` flags to apply cgroups
+  resource limits to a container directly.
 
 ### Bug fixes
 

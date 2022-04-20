@@ -20,6 +20,7 @@ require (
 	github.com/creack/pty v1.1.18
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/docker/docker v20.10.16+incompatible
+	github.com/docker/go-units v0.4.0
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-log/log v0.2.0
@@ -37,6 +38,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/seccomp/containers-golang v0.6.0
 	github.com/seccomp/libseccomp-golang v0.9.2-0.20210429002308-3879420cc921
+	github.com/shopspring/decimal v1.3.1
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
 	github.com/sylabs/json-resp v0.8.1
@@ -52,8 +54,6 @@ require (
 	mvdan.cc/sh/v3 v3.5.0
 	oras.land/oras-go v1.1.1
 )
-
-require github.com/docker/go-units v0.4.0
 
 require (
 	github.com/AdamKorcz/go-fuzz-headers v0.0.0-20210319161527-f761c2329661 // indirect

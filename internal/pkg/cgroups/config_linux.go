@@ -175,7 +175,26 @@ type Config struct {
 	Unified map[string]string `toml:"unified" json:"unified,omitempty"`
 }
 
-// LoadConfig loads a cgroups config file into our native cgroups.Config struct
+// MarshalJSON marshals a cgroups.Config struct to a JSON string
+func (c *Config) MarshalJSON() (string, error) {
+	data, err := json.Marshal(c)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+// UnmarshalJSON unmarshals a JSON string into a LinuxResources struct
+func UnmarshalJSONResources(data string) (*specs.LinuxResources, error) {
+	res := specs.LinuxResources{}
+	err := json.Unmarshal([]byte(data), &res)
+	if err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+// LoadConfig loads a TOML cgroups config file into our native cgroups.Config struct
 func LoadConfig(confPath string) (config Config, err error) {
 	path, err := filepath.Abs(confPath)
 	if err != nil {

@@ -11,7 +11,6 @@ package main
 
 import (
 	"log"
-	"path/filepath"
 
 	"github.com/apptainer/apptainer/internal/pkg/cgroups"
 	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
@@ -48,17 +47,11 @@ func callbackCgroups(common *config.Common) {
 		},
 	}
 
-	path, err := filepath.Abs("test-cgroups")
+	data, err := cfg.MarshalJSON()
 	if err != nil {
-		sylog.Errorf("Could not get cgroups path: %s", path)
+		sylog.Errorf("While Marshalling cgroups config to JSON: %s", err)
+		return
 	}
-	err = cgroups.SaveConfig(cfg, path)
-	if err != nil {
-		log.Printf("Put c error: %v", err)
-	}
-	if path := c.GetCgroupsTOML(); path != "" {
-		sylog.Infof("Old cgroups path: %s", path)
-	}
-	sylog.Infof("Setting cgroups path to %s", path)
-	c.SetCgroupsTOML(path)
+	sylog.Infof("Overriding cgroups config")
+	c.SetCgroupsJSON(data)
 }

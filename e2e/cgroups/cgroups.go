@@ -135,7 +135,7 @@ func (c *ctx) instanceApply(t *testing.T, profile e2e.Profile) {
 			startErrorCode: 255,
 			// e2e test currently only captures the error from the CLI process, not the error displayed by the
 			// starter process, so we check for the generic CLI error.
-			startErrorOut: "failed to start instance",
+			startErrorOut: "no such file or directory",
 			rootfull:      true,
 			rootless:      true,
 		},
@@ -145,7 +145,7 @@ func (c *ctx) instanceApply(t *testing.T, profile e2e.Profile) {
 			startErrorCode: 255,
 			// e2e test currently only captures the error from the CLI process, not the error displayed by the
 			// starter process, so we check for the generic CLI error.
-			startErrorOut: "failed to start instance",
+			startErrorOut: "parsing error",
 			rootfull:      true,
 			rootless:      true,
 		},
