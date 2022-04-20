@@ -113,6 +113,7 @@ func getBlkioLimits() (*cgroups.LinuxBlockIO, error) {
 	// Format of --blkio-device-weight CLI values is...
 	//  <device>:<weight>
 	//  /dev/sda:123
+	// We need to translate the path into device major and minor numbers.
 	if len(BlkioWeightDevice) > 0 {
 		for _, val := range BlkioWeightDevice {
 			fields := strings.SplitN(val, ":", 2)
