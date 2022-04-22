@@ -362,7 +362,7 @@ func TestImageNameAndImageSHA(t *testing.T) {
 
 		testName = "ImageSHA - " + tt.name
 		t.Run(testName, func(t *testing.T) {
-			_, err := ImageSHA(context.Background(), tt.uri, tt.ctx)
+			_, err := ImageDigest(context.Background(), tt.uri, tt.ctx)
 			if tt.shouldPass == true && err != nil {
 				t.Fatal("test expected to succeeded but failed")
 			}
