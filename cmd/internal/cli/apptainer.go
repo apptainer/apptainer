@@ -457,7 +457,7 @@ func persistentPreRun(*cobra.Command, []string) {
 	sylog.Debugf("Parsing configuration file %s", configurationFile)
 	config, err := apptainerconf.Parse(configurationFile)
 	if err != nil {
-		sylog.Fatalf("Couldn't not parse configuration file %s: %s", configurationFile, err)
+		sylog.Fatalf("Couldn't parse configuration file %s: %s", configurationFile, err)
 	}
 	apptainerconf.SetCurrentConfig(config)
 	// Include the user's PATH for now.
