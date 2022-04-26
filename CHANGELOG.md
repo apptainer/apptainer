@@ -33,6 +33,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - The `--no-mount` flag & `APPTAINER_NO_MOUNT` env var can now be used to
   disable a `bind path` entry from `apptainer.conf` by specifying the
   absolute path to the destination of the bind.
+- Non-root users can now use `--apply-cgroups` with `run/shell/exec` to limit
+  container resource usage on a system using cgroups v2 and the systemd cgroups
+  manager.
 
 ### Bug fixes
 
