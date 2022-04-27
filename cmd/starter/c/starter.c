@@ -40,6 +40,7 @@
 #include <setjmp.h>
 #include <sys/syscall.h>
 #include <net/if.h>
+#include <sys/auxv.h>
 #include <sys/eventfd.h>
 #include <sys/sysmacros.h>
 #include <linux/magic.h>
@@ -868,36 +869,18 @@ static int shared_mount_namespace_init(struct namespace *nsconfig) {
  * has additional capabilities in extended file attributes
  */
 static bool is_suid(void) {
-    ElfW(auxv_t) *auxv;
-    bool suid = 0;
-    char *buffer = (char *)malloc(4096);
-    int proc_auxv = open("/proc/self/auxv", O_RDONLY);
+    unsigned long auxval;
 
     verbosef("Check if we are running as setuid\n");
 
-    if ( proc_auxv < 0 ) {
-        fatalf("Can't open /proc/self/auxv: %s\n", strerror(errno));
+    errno = 0;
+    auxval = getauxval(AT_SECURE);
+
+    if( errno != 0 ) {
+        fatalf("Cannot obtain AT_SECURE auxval: %s\n", strerror(errno));
     }
 
-    /* use auxiliary vectors to determine if running privileged */
-    memset(buffer, 0, 4096);
-    if ( read(proc_auxv, buffer, 4088) < 0 ) {
-        fatalf("Can't read auxiliary vectors: %s\n", strerror(errno));
-    }
-
-    auxv = (ElfW(auxv_t) *)buffer;
-
-    for (; auxv->a_type != AT_NULL; auxv++) {
-        if ( auxv->a_type == AT_SECURE ) {
-            suid = (int)auxv->a_un.a_val;
-            break;
-        }
-    }
-
-    free(buffer);
-    close(proc_auxv);
-
-    return suid;
+    return auxval != 0;
 }
 
 /* list_fd returns list of currently opened file descriptors (from /proc/self/fd) */
