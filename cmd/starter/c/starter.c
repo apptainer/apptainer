@@ -1070,11 +1070,10 @@ static void fix_streams(void) {
     int i = 0;
     int null = open("/dev/null", O_RDONLY);
 
-    if ( null <= 2 ) {
-        i = null;
-    }
-
     for ( ; i <= 2; i++ ) {
+        if ( i == null )
+            continue;
+
         if ( fstat(i, &st) < 0 && errno == EBADF ) {
             if ( dup2(null, i) < 0 ) {
                 fatalf("Error while fixing IO streams: %s\n", strerror(errno));
