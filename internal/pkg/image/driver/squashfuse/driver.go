@@ -73,7 +73,12 @@ func (d *squashfuseDriver) Features() image.DriverFeature {
 
 func (d *squashfuseDriver) Mount(params *image.MountParams, _ image.MountFunc) error {
 	optsStr := "offset=" + strconv.FormatUint(params.Offset, 10)
-	d.cmd = exec.Command(d.cmdpath, "-f", "-o", optsStr, params.Source, params.Target)
+	srcPath := params.Source
+	if path.Dir(params.Source) == "/proc/self/fd" {
+		// this will be passed as the first ExtraFile below, always fd 3
+		srcPath = "/proc/self/fd/3"
+	}
+	d.cmd = exec.Command(d.cmdpath, "-f", "-o", optsStr, srcPath, params.Target)
 	sylog.Debugf("Executing %v", d.cmd.String())
 	var stderr bytes.Buffer
 	d.cmd.Stderr = &stderr
