@@ -280,7 +280,8 @@ func handleRemoteConf(remoteConfFile string) {
 func handleConfDir(confDir, legacyConfigDir string) {
 	ok, err := fs.PathExists(confDir)
 	if err != nil {
-		sylog.Fatalf("Failed to retrieve information for %s: %s", confDir, err)
+		sylog.Warningf("Unable to retrieve information for %s: %s", confDir, err)
+		return
 	}
 
 	// apptainer user config directory exists, run perm check and return
@@ -288,7 +289,8 @@ func handleConfDir(confDir, legacyConfigDir string) {
 		sylog.Debugf("%s already exists. Not creating.", confDir)
 		fi, err := os.Stat(confDir)
 		if err != nil {
-			sylog.Fatalf("Failed to retrieve information for %s: %s", confDir, err)
+			sylog.Warningf("Unable to retrieve information for %s: %s", confDir, err)
+			return
 		}
 		if fi.Mode().Perm() != 0o700 {
 			sylog.Debugf("Enforce permission 0700 on %s", confDir)
