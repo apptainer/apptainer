@@ -53,6 +53,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Do not truncate environment variables with commas
 - Use HEAD request when checking digest of remote OCI image sources, with GET as
   a fall-back. Greatly reduces Apptainer's impact on Docker Hub API limits.
+- Fixed `FATAL` error thrown by user configuration migration code that caused
+  users with inaccessible home directories to be unable to use `apptainer`
+  commands.
 
 ## v1.0.1 - \[2022-03-15\]
 
