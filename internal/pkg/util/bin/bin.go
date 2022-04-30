@@ -29,7 +29,7 @@ func FindBin(name string) (path string, err error) {
 	case "true", "mkfs.ext3", "cp", "rm", "dd":
 		return findOnPath(name)
 	// Bootstrap related executables that we assume are on PATH
-	case "mount", "mknod", "debootstrap", "pacstrap", "dnf", "yum", "rpm", "curl", "uname", "zypper", "SUSEConnect", "rpmkeys", "squashfuse":
+	case "mount", "mknod", "debootstrap", "pacstrap", "dnf", "yum", "rpm", "curl", "uname", "zypper", "SUSEConnect", "rpmkeys", "squashfuse", "fuse-overlayfs":
 		return findOnPath(name)
 	// Configurable executables that are found at build time, can be overridden
 	// in apptainer.conf. If config value is "" will look on PATH.

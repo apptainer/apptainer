@@ -11,6 +11,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Added a squashfuse image driver that enables mounting SIF files as an
   unprivileged user.  Requires the separate installation of squashfuse.
+- Added the ability to use persistent overlay (`--overlay`) and
+  `--writable-tmpfs` as an unprivileged user.  This works when the
+  kernel is new enough (>= 5.11) or if fuse-overlayfs is available.
+  Persistent overlay only works when the overlay path is to a regular
+  filesystem (known as "sandbox" mode), which is not allowed when in
+  setuid mode.  Does not work with a SIF partition because it requires
+  privileges to mount that as an ext3 image.
 - Added a `binary path` configuration variable as the default path to use
   when searching for helper executables.  May contain `$PATH:` which gets
   substituted with the user's PATH when running unprivileged.  Defaults to

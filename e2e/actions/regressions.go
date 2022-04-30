@@ -393,22 +393,6 @@ func (c actionTests) issue5271(t *testing.T) {
 	)
 }
 
-// Check that we get a warning when using --writable-tmpfs with underlay.
-func (c actionTests) issue5307(t *testing.T) {
-	e2e.EnsureImage(t, c.env)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserNamespaceProfile),
-		e2e.WithCommand("exec"),
-		e2e.WithArgs("--writable-tmpfs", c.env.ImagePath, "true"),
-		e2e.ExpectExit(
-			0,
-			e2e.ExpectError(e2e.ContainMatch, "Disabling --writable-tmpfs"),
-		),
-	)
-}
-
 // Check we can fakeroot exec an image containing a system xattr, which we may
 // not be able to set in the SIF -> sandbox extraction.
 func (c actionTests) issue5399(t *testing.T) {
