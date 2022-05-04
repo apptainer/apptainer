@@ -50,6 +50,7 @@
 - Maciej Sieczka <msieczka@sieczka.org>
 - Marcelo Magallon <marcelo@sylabs.io>
 - Mark Egan-Fuller <markeganfuller@googlemail.com>
+- Matthias Gerstner <matthias.gerstner@suse.com>
 - Matt Wiens <mwiens91@gmail.com>
 - Michael Bauer <m@sylabs.io>, <bauerm@umich.edu>
 - Michael Herzberg <michael@mherzberg.de>
