@@ -14,9 +14,9 @@ require (
 	github.com/buger/jsonparser v1.1.1
 	github.com/cenkalti/backoff/v4 v4.1.2
 	github.com/containerd/cgroups v1.0.3
-	github.com/containerd/containerd v1.6.0
-	github.com/containernetworking/cni v1.0.1
-	github.com/containernetworking/plugins v1.1.0
+	github.com/containerd/containerd v1.6.4
+	github.com/containernetworking/cni v1.1.0
+	github.com/containernetworking/plugins v1.1.1
 	github.com/containers/image/v5 v5.19.1
 	github.com/creack/pty v1.1.17
 	github.com/cyphar/filepath-securejoin v0.2.3
@@ -29,7 +29,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.3-0.20211202193544-a5463b7f9c84
 	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/opencontainers/runtime-tools v0.9.1-0.20210326182921-59cdde06764b
-	github.com/opencontainers/selinux v1.10.0
+	github.com/opencontainers/selinux v1.10.1
 	github.com/opencontainers/umoci v0.4.7
 	github.com/pelletier/go-toml v1.9.4
 	github.com/pkg/errors v0.9.1
