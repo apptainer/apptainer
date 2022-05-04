@@ -80,7 +80,7 @@ e2e-test:
 	@echo "       PASS"
 	@echo " TEST e2e-coverage"
 	$(V)cd $(SOURCEDIR) && \
-		$(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" $(GO_GCFLAGS) $(GO_ASMFLAGS) \
+		$(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" \
 			$(SOURCEDIR)/cmd/docs/cmds/cmdtree.go \
 			-coverage $(BUILDDIR_ABSPATH)/e2e-cmd-coverage \
 			-report $(BUILDDIR_ABSPATH)/e2e-cmd-report.txt

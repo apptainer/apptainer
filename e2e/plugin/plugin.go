@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2020, Sylabs Inc. All rights reserved.
+// Copyright (c) 2020-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -26,7 +26,7 @@ func (c ctx) testPluginBasic(t *testing.T) {
 	pluginName := "github.com/apptainer/apptainer/e2e-plugin"
 
 	// plugin code directory
-	pluginDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "plugin-dir-", "")
+	pluginDir, cleanup := e2e.MakeTempDir(t, "testdata", "e2e-plugin-dir-", "")
 	defer cleanup(t)
 
 	// plugin sif file

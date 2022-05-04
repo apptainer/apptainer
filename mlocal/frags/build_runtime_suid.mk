@@ -7,7 +7,7 @@ starter_suid_INSTALL := $(DESTDIR)$(LIBEXECDIR)/apptainer/bin/starter-suid
 
 $(starter_suid): $(starter)
 	@echo " GO" $@; echo "    [+] GO_TAGS" \"$(GO_TAGS_SUID)\"
-	$(V)$(GO) build $(GO_MODFLAGS) $(GO_BUILDMODE) -tags "$(GO_TAGS_SUID)" $(GO_LDFLAGS) $(GO_GCFLAGS) $(GO_ASMFLAGS) \
+	$(V)$(GO) build $(GO_MODFLAGS) $(GO_BUILDMODE) -tags "$(GO_TAGS_SUID)" $(GO_LDFLAGS) \
 		-o $@ $(SOURCEDIR)/cmd/starter/main_linux.go
 
 $(starter_suid_INSTALL): $(starter_suid)
