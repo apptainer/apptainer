@@ -154,7 +154,7 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	e.checkSignalPropagation()
 
 	userNS := !starterConfig.GetIsSUID() || e.EngineConfig.GetFakeroot()
-	driver.InitImageDrivers(false, userNS, e.EngineConfig.File)
+	driver.InitImageDrivers(false, userNS, e.EngineConfig.File, 0)
 
 	// We must call this here because at this point we haven't
 	// spawned the master process nor the RPC server. The assumption
@@ -994,7 +994,7 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 	overlayDriver := e.EngineConfig.File.EnableOverlay == "driver"
 
 	if writableImage && hasOverlayImage {
-		return fmt.Errorf("you could not use --overlay in conjunction with --writable")
+		return fmt.Errorf("cannot use --overlay in conjunction with --writable")
 	}
 
 	// a SIF image may contain one or more overlay partition
@@ -1015,8 +1015,8 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 		}
 	}
 
-	// overlay is handled by the image driver
 	if overlayDriver {
+		// overlay is always handled by the image driver
 		if e.EngineConfig.File.ImageDriver == "" {
 			return fmt.Errorf("you need to specify an image driver with 'enable overlay = driver'")
 		}
@@ -1044,6 +1044,13 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 	}
 
 	if userNS {
+		if writableTmpfs || hasOverlayImage {
+			sylog.Debugf("Although in user namespace, user requested overlay")
+			// Try overlay although it will only work if the image driver or the
+			//  kernel support unprivileged overlay
+			e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
+			return nil
+		}
 		if !e.EngineConfig.File.EnableUnderlay {
 			sylog.Debugf("Not attempting to use underlay with user namespace: disabled by configuration ('enable underlay = no')")
 			return nil
@@ -1075,10 +1082,10 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 			return nil
 		default:
 			if hasOverlayImage {
-				return fmt.Errorf("overlay images requires 'enable overlay = yes': set to 'no' by administrator")
+				return fmt.Errorf("overlay images requires 'enable overlay = yes', but set to 'no' by administrator")
 			}
 			if writableTmpfs {
-				return fmt.Errorf("--writable-tmpfs requires 'enable overlay = yes': set to 'no' by administrator")
+				return fmt.Errorf("--writable-tmpfs requires 'enable overlay = yes', but set to 'no' by administrator")
 			}
 			sylog.Debugf("Could not use overlay, disabled by configuration ('enable overlay = no')")
 		}
