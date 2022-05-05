@@ -4,7 +4,6 @@
 // rights to use or distribute this software.
 
 //go:build apptainer_engine
-// +build apptainer_engine
 
 package unpacker
 
