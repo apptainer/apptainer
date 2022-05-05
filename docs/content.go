@@ -104,6 +104,9 @@ Enterprise Performance Computing (EPC)`
 
   DEFFILE SECTIONS:
 
+  The following sections are presented in the order of processing, with the exception
+  that labels and environment can also be manipulated in %post.
+
       %pre
           echo "This is a scriptlet that will be executed on the host, as root before"
           echo "the container has been bootstrapped. This section is not commonly used."
@@ -113,9 +116,19 @@ Enterprise Performance Computing (EPC)`
           echo "the container has been bootstrapped. To install things into the container"
           echo "reference the file system location with $APPTAINER_ROOTFS."
 
+      %files
+          /path/on/host/file.txt /path/on/container/file.txt
+          relative_file.txt /path/on/container/relative_file.txt
+
       %post
           echo "This scriptlet section will be executed from within the container after"
           echo "the bootstrap/base has been created and setup."
+
+      %environment
+          LUKE=goodguy
+          VADER=badguy
+          HAN=someguy
+          export HAN VADER LUKE
 
       %test
           echo "Define any test commands that should be executed after container has been"
@@ -134,16 +147,6 @@ Enterprise Performance Computing (EPC)`
       %labels
           HELLO MOTO
           KEY VALUE
-
-      %files
-          /path/on/host/file.txt /path/on/container/file.txt
-          relative_file.txt /path/on/container/relative_file.txt
-
-      %environment
-          LUKE=goodguy
-          VADER=badguy
-          HAN=someguy
-          export HAN VADER LUKE
 
       %help
           This is a text file to be displayed with the run-help command.
