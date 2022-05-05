@@ -555,6 +555,20 @@ Enterprise Performance Computing (EPC)`
   Stopping /tmp/my-sql.sif mysql`
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// instance stats
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	InstanceStatsUse   string = `stats [stats options...] <instance name>`
+	InstanceStatsShort string = `Get stats for a named instance`
+	InstanceStatsLong  string = `
+  The instance stats command allows you to get statistics for a named instance,
+  either printed to the terminal or in json. If you are root, you can optionally
+  ask for statistics for a container instance belonging to a specific user.`
+	InstanceStatsExample string = `
+  $ apptainer instance stats mysql
+  $ apptainer instance stats --json mysql
+  $ sudo apptainer instance stats --user <username> user-mysql`
+
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// instance stop
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	InstanceStopUse   string = `stop [stop options...] [instance]`

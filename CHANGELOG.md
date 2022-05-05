@@ -48,6 +48,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Non-root users can now use `--apply-cgroups` with `run/shell/exec` to limit
   container resource usage on a system using cgroups v2 and the systemd cgroups
   manager.
+- Add instance stats command.
 
 ### Bug fixes
 
