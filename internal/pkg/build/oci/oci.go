@@ -20,11 +20,11 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/containers/image/v5/copy"
+	"github.com/containers/image/v5/docker"
 	"github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/transports"
 	"github.com/containers/image/v5/types"
-	"github.com/pkg/errors"
 )
 
 // ImageReference wraps containers/image ImageReference type
@@ -42,7 +42,7 @@ func ConvertReference(ctx context.Context, imgCache *cache.Handle, src types.Ima
 	// Our cache dir is an OCI directory. We are using this as a 'blob pool'
 	// storing all incoming containers under unique tags, which are a hash of
 	// their source URI.
-	cacheTag, err := calculateRefHash(ctx, src, sys)
+	cacheTag, err := getRefDigest(ctx, src, sys)
 	if err != nil {
 		return nil, err
 	}
@@ -112,24 +112,37 @@ func parseURI(uri string) (types.ImageReference, error) {
 	return transport.ParseReference(split[1])
 }
 
-// ImageSHA calculates the SHA of a uri's manifest
-func ImageSHA(ctx context.Context, uri string, sys *types.SystemContext) (string, error) {
+// ImageDigest obtains the digest of a uri's manifest
+func ImageDigest(ctx context.Context, uri string, sys *types.SystemContext) (string, error) {
 	ref, err := parseURI(uri)
 	if err != nil {
 		return "", fmt.Errorf("unable to parse image name %v: %v", uri, err)
 	}
 
-	return calculateRefHash(ctx, ref, sys)
+	return getRefDigest(ctx, ref, sys)
 }
 
-func calculateRefHash(ctx context.Context, ref types.ImageReference, sys *types.SystemContext) (hash string, err error) {
+// getRefDigest obtains the manifest digest for a ref.
+func getRefDigest(ctx context.Context, ref types.ImageReference, sys *types.SystemContext) (digest string, err error) {
+	// Handle docker references specially, using a HEAD request to ensure we don't hit API limits
+	if ref.Transport().Name() == "docker" {
+		digest, err := getDockerRefDigest(ctx, ref, sys)
+		if err == nil {
+			return digest, err
+		}
+		// Need to have a fallback path, as the Docker-Content-Digest header is
+		// not required in oci-distribution-spec.
+		sylog.Debugf("Falling back to GetManifest digest: %s", err)
+	}
+
+	// Otherwise get the manifest and calculate sha256 over it
 	source, err := ref.NewImageSource(ctx, sys)
 	if err != nil {
 		return "", err
 	}
 	defer func() {
 		if closeErr := source.Close(); closeErr != nil {
-			err = errors.Wrapf(err, " (src: %v)", closeErr)
+			err = fmt.Errorf("%w (src: %v)", err, closeErr)
 		}
 	}()
 
@@ -137,7 +150,18 @@ func calculateRefHash(ctx context.Context, ref types.ImageReference, sys *types.
 	if err != nil {
 		return "", err
 	}
+	digest = fmt.Sprintf("%x", sha256.Sum256(man))
+	sylog.Debugf("GetManifest digest for %s is %s", transports.ImageName(ref), digest)
+	return digest, nil
+}
 
-	hash = fmt.Sprintf("%x", sha256.Sum256(man))
-	return hash, nil
+// getDockerRefDigest obtains the manifest digest for a docker ref.
+func getDockerRefDigest(ctx context.Context, ref types.ImageReference, sys *types.SystemContext) (digest string, err error) {
+	d, err := docker.GetDigest(ctx, sys, ref)
+	if err != nil {
+		return "", err
+	}
+	digest = d.Encoded()
+	sylog.Debugf("docker.GetDigest digest for %s is %s", transports.ImageName(ref), digest)
+	return digest, nil
 }

@@ -43,7 +43,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, tmpDi
 		sysCtx.DockerInsecureSkipTLSVerify = ocitypes.NewOptionalBool(true)
 	}
 
-	hash, err := oci.ImageSHA(ctx, pullFrom, sysCtx)
+	hash, err := oci.ImageDigest(ctx, pullFrom, sysCtx)
 	if err != nil {
 		return "", fmt.Errorf("failed to get checksum for %s: %s", pullFrom, err)
 	}
