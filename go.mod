@@ -19,7 +19,7 @@ require (
 	github.com/containers/image/v5 v5.21.1
 	github.com/creack/pty v1.1.18
 	github.com/cyphar/filepath-securejoin v0.2.3
-	github.com/docker/docker v20.10.14+incompatible
+	github.com/docker/docker v20.10.15+incompatible
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-log/log v0.2.0
