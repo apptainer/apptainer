@@ -45,8 +45,8 @@ acknowledging that you agree to the [Developer Certificate of Origin](DCO.md).
 
 ## Pull Requests (PRs)
 
-1. Essential bug fix PRs should be sent to both master and release branches.
-1. Small bug fix and feature enhancement PRs should be sent to master only.
+1. Essential bug fix PRs should be sent to both main and release branches.
+1. Small bug fix and feature enhancement PRs should be sent to main only.
 1. Follow the existing code style precedent, especially for C. For Go, you
    will mostly conform to the style and form enforced by the "go fmt" and
    "golint" tools for proper formatting.
