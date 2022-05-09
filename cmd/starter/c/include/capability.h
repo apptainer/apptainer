@@ -23,11 +23,9 @@
 /* 37 is the latest cap since many kernel versions */
 #define CAPSET_MAX  37
 
-/* Support only 64 bits sets, since kernel 2.6.25 */
+/* Support only 64 bits sets, since kernel 2.6.26 */
 #ifdef _LINUX_CAPABILITY_VERSION_3
 #  define LINUX_CAPABILITY_VERSION  _LINUX_CAPABILITY_VERSION_3
-#elif defined(_LINUX_CAPABILITY_VERSION_2)
-#  define LINUX_CAPABILITY_VERSION  _LINUX_CAPABILITY_VERSION_2
 #else
 #  error Linux 64 bits capability set not supported
 #endif /* _LINUX_CAPABILITY_VERSION_3 */
