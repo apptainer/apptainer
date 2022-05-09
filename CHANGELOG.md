@@ -5,17 +5,17 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes Since Last Release
+## v1.0.2 - \[2022-05-09\]
 
 ### Bug fixes
 
-- The Debian package now conflicts with the singularity-container package.
-- Do not truncate environment variables with commas
-- Use HEAD request when checking digest of remote OCI image sources, with GET as
-  a fall-back. Greatly reduces Apptainer's impact on Docker Hub API limits.
 - Fixed `FATAL` error thrown by user configuration migration code that caused
   users with inaccessible home directories to be unable to use `apptainer`
   commands.
+- The Debian package now conflicts with the singularity-container package.
+- Do not truncate environment variables with commas.
+- Use HEAD request when checking digest of remote OCI image sources, with GET as
+  a fall-back. Greatly reduces Apptainer's impact on Docker Hub API limits.
 
 ## v1.0.1 - \[2022-03-15\]
 
