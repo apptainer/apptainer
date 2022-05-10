@@ -88,4 +88,5 @@
 - Onur Yılmaz <csonuryilmaz@gmail.com>
 - Pranathi Locula <locula@deshaw.com>
 - Pedro Alves Batista <pedro.pesquisapb@gmail.com>
+- Chen Yiyang <cyyzero@qq.com>
 ```
