@@ -1554,7 +1554,7 @@ __attribute__((constructor)) static void init(void) {
          * go back to the host's PID namespace in this case.
          */
         if ( pidns == ENTER_NAMESPACE && is_namespace_create(&sconfig->container.namespace, CLONE_NEWNS) ) {
-            if ( enter_namespace("/proc/self/ns/pid", CLONE_NEWPID) < 0 ) {
+            if ( enter_namespace(SELF_PID_NS, CLONE_NEWPID) < 0 ) {
                 fatalf("Failed to enter in pid namespace: %s\n", strerror(errno));
             }
         }
