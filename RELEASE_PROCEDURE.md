@@ -30,7 +30,7 @@ process begins by branching, and then issuing a release candidate for
 broader testing.
 
 When a new 1.Y.Z patch release is issued, the branch will already be present,
-and steps 1-2 should be skipped.
+and steps 1-4 should be skipped.
 
 1. From a repository that is up-to-date with main, create a release
    branch e.g. `git checkout upstream/main -b release-1.0`.
@@ -38,6 +38,10 @@ and steps 1-2 should be skipped.
 1. Examine the GitHub branch protection rules, to extend them to the
    new release branch if needed.  Also examine `.github/dependabot.yml`
    to see if the new branch should be added there.
+1. Update the `.github/dependabot.yml` configuration so that dependabot is
+   tracking the new stable release branch. Do not remove the previous stable
+   release branch from the configuration yet, as it should be monitored until
+   the final release of a new 1.Y.0 version.
 1. Modify the `README.md`, `INSTALL.md`, `CHANGELOG.md` via PR against
    the release-1.Y branch, so that they reflect the version to be released.
    1. Apply an annotated tag via `git tag -a -m "Apptainer v1.0.0
@@ -89,7 +93,7 @@ covered by tests.
    history from the RC process etc. is captured on `main`.
 1. If the release is a new major/minor version, move the prior `release-1.x`
    branch to `vault/release-1.x`.
-1. If the release is a new major/minor version, update the
-   `.github/dependabot.yml` configuration so that dependabot is tracking the new
-   stable release branch.
+1. If the release is a new final major/minor version, update the
+   `.github/dependabot.yml` configuration to remove the prior stable release
+   branch.
 1. Start scheduling / setting up milestones etc. to track the next release!
