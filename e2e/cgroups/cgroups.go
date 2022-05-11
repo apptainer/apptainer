@@ -305,6 +305,14 @@ func (c *ctx) actionApply(t *testing.T, profile e2e.Profile) {
 			// Reason is believed to be: https://github.com/opencontainers/runc/issues/3026
 			rootless: false,
 		},
+		// Device access is allowed by default.
+		{
+			name:            "device allow default",
+			args:            []string{"--apply-cgroups", "testdata/cgroups/null.toml", c.env.ImagePath, "cat", "/dev/null"},
+			expectErrorCode: 0,
+			rootfull:        true,
+			rootless:        true,
+		},
 		// Device limits are properly applied only in rootful mode. Rootless will ignore them with a warning.
 		{
 			name:            "device deny",
