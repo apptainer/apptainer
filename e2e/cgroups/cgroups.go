@@ -99,9 +99,6 @@ func (c *ctx) instanceStats(t *testing.T, profile e2e.Profile) {
 					e2e.ExpectOutput(e2e.ContainMatch, "MEM %"),
 					e2e.ExpectOutput(e2e.ContainMatch, "BLOCK I/O"),
 					e2e.ExpectOutput(e2e.ContainMatch, "PIDS"),
-					e2e.ExpectOutput(e2e.ContainMatch, "GiB"),
-					e2e.ExpectOutput(e2e.ContainMatch, "KiB"),
-					e2e.ExpectOutput(e2e.ContainMatch, "MiB"),
 				),
 			)
 			c.env.RunApptainer(
