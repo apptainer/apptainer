@@ -51,6 +51,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Bug fixes
 
+- Add specific error for unreadable image / overlay file.
+
 ## v1.0.2 - \[2022-05-09\]
 
 ### Bug fixes

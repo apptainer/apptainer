@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -401,7 +401,13 @@ func CopyFileAtomic(from, to string, mode os.FileMode) (err error) {
 	return nil
 }
 
-// IsWritable returns true of the file that is passed in
+// IsReadable returns true if the file that is passed in
+// is readable by the user (note: uid is checked, not euid).
+func IsReadable(path string) bool {
+	return unix.Access(path, unix.R_OK) == nil
+}
+
+// IsWritable returns true if the file that is passed in
 // is writable by the user (note: uid is checked, not euid).
 func IsWritable(path string) bool {
 	return unix.Access(path, unix.W_OK) == nil
