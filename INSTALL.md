@@ -26,6 +26,7 @@ sudo apt-get install -y \
     pkg-config \
     squashfs-tools \
     squashfuse \
+    fuse-overlayfs \
     cryptsetup \
     curl wget git
 ```
@@ -42,6 +43,7 @@ sudo yum install -y \
     libseccomp-devel \
     squashfs-tools \
     squashfuse \
+    fuse-overlayfs \
     cryptsetup \
     wget git
 ```

@@ -72,6 +72,9 @@ Requires: squashfs-tools
 %endif
 BuildRequires: cryptsetup
 Requires: squashfuse
+%if 0%{?el7}
+Requires: fuse-overlayfs
+%endif
 
 %description
 Apptainer provides functionality to make portable
