@@ -23,6 +23,7 @@ func init() {
 		cmdManager.RegisterSubCmd(instanceCmd, instanceStartCmd)
 		cmdManager.RegisterSubCmd(instanceCmd, instanceStopCmd)
 		cmdManager.RegisterSubCmd(instanceCmd, instanceListCmd)
+		cmdManager.RegisterSubCmd(instanceCmd, instanceStatsCmd)
 	})
 }
 

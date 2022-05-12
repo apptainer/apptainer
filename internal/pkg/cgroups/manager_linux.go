@@ -110,6 +110,15 @@ func (m *Manager) GetCgroupRelPath() (relPath string, err error) {
 	return filepath.Clean(pathParts[1]), nil
 }
 
+// GetStats wraps the Manager.GetStats from runc
+func (m *Manager) GetStats() (*lccgroups.Stats, error) {
+	stats, err := m.cgroup.GetStats()
+	if err != nil {
+		return &lccgroups.Stats{}, fmt.Errorf("could not get stats from cgroups manager: %x", err)
+	}
+	return stats, nil
+}
+
 // UpdateFromSpec updates the existing managed cgroup using configuration from
 // an OCI LinuxResources spec struct.
 func (m *Manager) UpdateFromSpec(resources *specs.LinuxResources) (err error) {

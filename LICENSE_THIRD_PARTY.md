@@ -280,3 +280,11 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
+
+## github.com/docker/cli
+
+The source files:
+
+* `internal/app/apptainer/instance_linux.go`
+
+Contain code from the docker cli project, under the Apache License, Version 2.0.
