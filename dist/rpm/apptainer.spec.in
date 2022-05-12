@@ -46,14 +46,15 @@ URL: https://apptainer.org
 Source: https://github.com/%{name}/%{name}/releases/download/v%{package_version}/%{name}-%{package_version}.tar.gz
 @PACKAGE_GOLANG_SOURCE@
 # The singularity package was renamed to apptainer after version 3.8.x.
-# The apptainer package reset numbering at 1.0.0, so Provide corresponding
-#  singularity versions in the next epoch.
-Provides: singularity = 1:%{version}-%{release}
-Obsoletes: singularity < 4.0
+# The apptainer package reset numbering at 1.0.0, and some singularity
+#  packages are in epoch 1, so Provide corresponding singularity versions
+#  in epoch 2.
+Provides: singularity = 2:%{version}-%{release}
+Obsoletes: singularity < 1:4.0
 # In the singularity 2.x series there was a singularity-runtime package
 #  that could have been installed independently, but starting in 3.x
 #  there was only one package
-Provides: singularity-runtime = 1:%{version}-%{release}
+Provides: singularity-runtime = 2:%{version}-%{release}
 Obsoletes: singularity-runtime < 3.0
 
 %if "%{_target_vendor}" == "suse"
