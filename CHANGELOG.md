@@ -5,6 +5,12 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes since last release
+
+### Bug fixes
+
+- Process redirects that can come from sregistry with a `library://` URL.
+
 ## v1.0.2 - \[2022-05-09\]
 
 ### Bug fixes
