@@ -148,8 +148,8 @@ github.com/aphistic/golf v0.0.0-20180712155816-02c07f170c5a/go.mod h1:3NqKYiepwy
 github.com/aphistic/sweet v0.2.0/go.mod h1:fWDlIh/isSE9n6EPsRmC0det+whmX6dJid3stzu0Xys=
 github.com/apptainer/container-key-client v0.7.2 h1:lfKlKgONO8CvlZ11bbWE0vwJtMx/IE2Tg01g1/YCY+4=
 github.com/apptainer/container-key-client v0.7.2/go.mod h1:hLHrJBfdMb8SHy1pbCTNRQ7bxqcSh4GPiMV4ajEnAqk=
-github.com/apptainer/container-library-client v1.2.2 h1:a9FKNnxOcb5wk6bZBoOZ26D/XNYAIwiDcyup2GGnpGA=
-github.com/apptainer/container-library-client v1.2.2/go.mod h1:1lAVGneLEzW68ecuWY02a2LljuShndSp4USOKyzG0ds=
+github.com/apptainer/container-library-client v1.3.1 h1:+oW0gbCUeKJMSIAlrfhkk8XyczFuyAyN8VCV30I5A9k=
+github.com/apptainer/container-library-client v1.3.1/go.mod h1:E0JxfDpMHqnyrCdlI12OtRBR14aEy/3i67Jtx+5KBS0=
 github.com/apptainer/sif/v2 v2.3.2 h1:kCziSWi8ICBpKQlUbvP5jtjlkuP40/XPsPcTFgzVmGA=
 github.com/apptainer/sif/v2 v2.3.2/go.mod h1:VAABIuw3qaIPekMd2jBU22tUBF92x8QpfEU7ThNttz0=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
@@ -1073,11 +1073,13 @@ github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UV
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
+github.com/stretchr/testify v1.7.1 h1:5TQK59W5E3v0r2duFAb7P95B6hEeOyEnHRa8MjYSMTY=
+github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
-github.com/sylabs/json-resp v0.8.0 h1:bZ932uaF220aPqT0+x/vakoaGCGNbpLCjUFm1f+JKlY=
 github.com/sylabs/json-resp v0.8.0/go.mod h1:bUGV9cqShOyxz7RxBq03Yt9raKGfELKrfN6Yac3lfiw=
+github.com/sylabs/json-resp v0.8.1 h1:3KF04WzGizDVlROeI4DK4B0f9p7XKb0BRTFzI7wPTG8=
+github.com/sylabs/json-resp v0.8.1/go.mod h1:bUGV9cqShOyxz7RxBq03Yt9raKGfELKrfN6Yac3lfiw=
 github.com/sylabs/release-tools v0.1.0/go.mod h1:pqP/z/11/rYMQ0OM/Nn7TxGijw7KfZwW9UolD/J1TUo=
 github.com/sylabs/sif/v2 v2.3.1/go.mod h1:NnvveH62GiibimL00MrI6YYcZfb7DnZMcRo/40giY+0=
 github.com/syndtr/gocapability v0.0.0-20170704070218-db04d3cc01c8/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
