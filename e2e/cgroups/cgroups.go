@@ -99,9 +99,6 @@ func (c *ctx) instanceStats(t *testing.T, profile e2e.Profile) {
 					e2e.ExpectOutput(e2e.ContainMatch, "MEM %"),
 					e2e.ExpectOutput(e2e.ContainMatch, "BLOCK I/O"),
 					e2e.ExpectOutput(e2e.ContainMatch, "PIDS"),
-					e2e.ExpectOutput(e2e.ContainMatch, "GiB"),
-					e2e.ExpectOutput(e2e.ContainMatch, "KiB"),
-					e2e.ExpectOutput(e2e.ContainMatch, "MiB"),
 				),
 			)
 			c.env.RunApptainer(
@@ -304,6 +301,14 @@ func (c *ctx) actionApply(t *testing.T, profile e2e.Profile) {
 			// It *does* work if you test it, directly calling the apptainer CLI.
 			// Reason is believed to be: https://github.com/opencontainers/runc/issues/3026
 			rootless: false,
+		},
+		// Device access is allowed by default.
+		{
+			name:            "device allow default",
+			args:            []string{"--apply-cgroups", "testdata/cgroups/null.toml", c.env.ImagePath, "cat", "/dev/null"},
+			expectErrorCode: 0,
+			rootfull:        true,
+			rootless:        true,
 		},
 		// Device limits are properly applied only in rootful mode. Rootless will ignore them with a warning.
 		{
