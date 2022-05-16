@@ -98,8 +98,8 @@ const (
   The 'plugin inspect' command allows a user to inspect a plugin that is already
   installed in the system or an image containing a plugin that is yet to be installed.`
 	PluginInspectExample string = `
-  $ apptainer plugin inspect sylabs.io/test-plugin
-  Name: sylabs.io/test-plugin
+  $ apptainer plugin inspect example.com/test-plugin
+  Name: example.com/test-plugin
   Description: A test Apptainer plugin.
   Author: Sylabs
   Version: 0.1.0`
