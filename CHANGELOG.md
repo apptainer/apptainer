@@ -39,6 +39,15 @@ For older changes see the [archived Singularity change log](https://github.com/a
   support.
 - Apptainer now requires squashfs-tools >=4.3, which is satisfied by
   current EL / Ubuntu / Debian and other distributions.
+- New action flag `--no-eval` which:
+  - Prevents shell evaluation of `APPTAINERENV_ / --env / --env-file`
+    environment variables as they are injected in the container, to match OCI
+    behavior. *Applies to all containers*.
+  - Prevents shell evaluation of the values of `CMD / ENTRYPOINT` and command
+    line arguments for containers run or built directly from an OCI/Docker
+    source. *Applies to newly built containers only, use `apptainer inspect`
+    to check version that container was built with*.
+- Added `--no-eval` to the list of flags set by the OCI/Docker `--compat` mode.
 
 ### New features / functionalities
 

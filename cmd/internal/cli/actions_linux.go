@@ -223,6 +223,11 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		engineConfig.SetRestoreUmask(true)
 	}
 
+	if NoEval {
+		engineConfig.SetNoEval(true)
+		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "NO_EVAL", "1")
+	}
+
 	uidParam := security.GetParam(Security, "uid")
 	gidParam := security.GetParam(Security, "gid")
 

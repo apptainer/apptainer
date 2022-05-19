@@ -637,7 +637,12 @@ func (b *bufferCloser) Close() error {
 // after /.singularity.d/env/99-base.sh or /environment.
 // This handler turns all SINGUALRITYENV_KEY=VAL defined variables into their form:
 // export KEY=VAL. It can be sourced only once otherwise it returns an empty content.
-func injectEnvHandler(senv map[string]string) interpreter.OpenHandler {
+// If noEval is true then exports are single quoted so their content is not evaluated
+// when the script is sourced (OCI compatible behavior).
+// If noEval is false then exports are double quoted, and their content is evaluated,
+// consuming one level of shell escaping and performing any unescaped var substitution,
+// subshell execution etc (Apptainer historic behavior).
+func injectEnvHandler(senv map[string]string, noEval bool) interpreter.OpenHandler {
 	var once sync.Once
 
 	return func(_ string, _ int, _ os.FileMode) (io.ReadWriteCloser, error) {
@@ -651,25 +656,27 @@ func injectEnvHandler(senv map[string]string) interpreter.OpenHandler {
 			`
 			b.WriteString(fmt.Sprintf(defaultPathSnippet, env.DefaultPath))
 
-			// We wrap the value of the export in double quotes manually, and do not use
-			// go's %q format string as it prevents passing an escaped literal $ in
-			// a APPTAINERENV_ as \$
 			snippet := `
 			if test -v %[1]s; then
 				sylog debug "Overriding %[1]s environment variable"
 			fi
-			export %[1]s="%[2]s"
+			export %[1]s=%[2]s
 			`
 			for key, value := range senv {
-				switch key {
-				case "UID", "GID":
-				case "LD_LIBRARY_PATH":
-					if value != "" {
-						b.WriteString(fmt.Sprintf(snippet, key, value+":/.singularity.d/libs"))
-					}
-				default:
-					b.WriteString(fmt.Sprintf(snippet, key, shell.EscapeDoubleQuotes(value)))
+				if key == "UID" || key == "GID" {
+					continue
 				}
+				if key == "LD_LIBRARY_PATH" && value != "" {
+					value = value + ":/.singularity.d/libs"
+				}
+				if noEval {
+					// No evaluation when the export is sourced
+					value = "'" + shell.EscapeSingleQuotes(value) + "'"
+				} else {
+					// Shell evaluation when the export is sourced
+					value = "\"" + shell.EscapeDoubleQuotes(value) + "\""
+				}
+				b.WriteString(fmt.Sprintf(snippet, key, value))
 			}
 		})
 
@@ -826,7 +833,7 @@ func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []st
 
 	// inject APPTAINERENV_ defined variables
 	senv := engineConfig.GetApptainerEnv()
-	shell.RegisterOpenHandler("/.inject-apptainer-env.sh", injectEnvHandler(senv))
+	shell.RegisterOpenHandler("/.inject-apptainer-env.sh", injectEnvHandler(senv, engineConfig.GetNoEval()))
 
 	shell.RegisterOpenHandler("/.singularity.d/env/99-runtimevars.sh", runtimeVarsHandler(senv))
 
