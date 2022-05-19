@@ -77,8 +77,14 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 	bootInstance := isInstance && e.EngineConfig.GetBootInstance()
 	shimProcess := false
 
+	_, customCwd := e.EngineConfig.OciConfig.Annotations["CustomCwd"]
+
 	if err := os.Chdir(e.EngineConfig.OciConfig.Process.Cwd); err != nil {
+		if customCwd {
+			return fmt.Errorf("failed to set working directory: %s", err)
+		}
 		if err := os.Chdir(e.EngineConfig.GetHomeDest()); err != nil {
+			sylog.Debugf("Error setting the working directory. Using '/' instead: %s", err)
 			os.Chdir("/")
 		}
 	}

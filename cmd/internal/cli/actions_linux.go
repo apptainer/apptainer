@@ -642,6 +642,10 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		engineConfig.SetCwd(pwd)
 		if PwdPath != "" {
 			generator.SetProcessCwd(PwdPath)
+			if generator.Config.Annotations == nil {
+				generator.Config.Annotations = make(map[string]string)
+			}
+			generator.Config.Annotations["CustomCwd"] = "true"
 		} else {
 			if engineConfig.GetContain() {
 				generator.SetProcessCwd(engineConfig.GetHomeDest())
