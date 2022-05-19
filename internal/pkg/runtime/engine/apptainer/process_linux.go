@@ -721,11 +721,17 @@ func getAllEnvBuiltin(shell *interpreter.Shell) interpreter.ShellBuiltin {
 				sylog.Debugf("Not exporting %q to container environment: invalid key", key)
 				continue
 			}
-
-			// Because we are using IFS=\n we need to escape newlines
-			// here and unescape them in the action script when we
-			// export the var again.
-			env := strings.Replace(env, "\n", "\\n", -1)
+			// Because we are using IFS=\n we need to escape newlines here and
+			// unescape them in the action script when we export the var again.
+			//
+			// This is imperfect - it is not possible to represent a string
+			// containing a literal '\u000A' (unicode escaped newline) in it.
+			//
+			// Full escaping / unescaping requires iterative parsing of the
+			// string in the action script. This is too awkward and slow in
+			// shell code. If we can use `printf -v VAR "%b" ...` from mvdan.cc/sh
+			// in future, we may be able to revisit this.
+			env := strings.Replace(env, "\n", "\\u000A", -1)
 			fmt.Fprintf(hc.Stdout, "%s\n", env)
 		}
 		return nil

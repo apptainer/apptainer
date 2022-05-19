@@ -70,7 +70,7 @@ restore_env() {
     for e in ${__exported_env__}; do
         key=${e%%=*}
         if ! test -v "${key}"; then
-            export "${e//'\n'/$IFS}"
+            export "${e//'\u000A'/$IFS}"
         elif test -z "${!key}"; then
             unset "${key}"
         fi

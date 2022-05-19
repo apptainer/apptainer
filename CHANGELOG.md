@@ -53,6 +53,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 ### Bug fixes
 
 - Add specific error for unreadable image / overlay file.
+- Pass through a literal `\n` in host environment variables to container.
 
 ## v1.0.2 - \[2022-05-09\]
 
