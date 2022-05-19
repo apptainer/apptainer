@@ -618,7 +618,7 @@ Enterprise Performance Computing (EPC)`
       oras://registry/namespace/image:tag
 
   http, https: Pull an image using the http(s?) protocol
-      https://library.sylabs.io/v1/imagefile/library/default/alpine:latest`
+      https://example.com/alpine.sif`
 	PullExample string = `
   From a library
   $ apptainer pull alpine.sif library://alpine:latest
@@ -880,7 +880,7 @@ Enterprise Performance Computing (EPC)`
   For additional help, please visit our public documentation pages which are
   found at:
 
-      https://www.sylabs.io/docs/`
+      https://apptainer.org/docs/`
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// OCI
