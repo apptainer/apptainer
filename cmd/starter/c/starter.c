@@ -627,8 +627,9 @@ static void set_mappings_external(const char *name, char *cmdpath, pid_t pid, ch
     }
 
     /* scary !? it's fine as it's never called by setuid context */
-    if ( system(cmd) < 0 ) {
-        fatalf("'%s' execution failed", cmd);
+    debugf("Executing '%s'", cmd);
+    if ( system(cmd) != 0 ) {
+        fatalf("'%s' execution failed. Check that '%s' is setuid root, or has required capabilities.\n", name, name);
     }
 
     free(cmd);

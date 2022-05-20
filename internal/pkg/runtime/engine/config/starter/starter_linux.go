@@ -281,10 +281,6 @@ func setNewIDMapPath(command string, pathPointer unsafe.Pointer) error {
 		return fmt.Errorf("%s must be owned by the root user to setup fakeroot ID mappings in an unprivileged installation", path)
 	}
 
-	if !fs.IsSuid(path) {
-		return fmt.Errorf("%s must be setuid root to setup fakeroot ID mappings in an unprivileged installation", path)
-	}
-
 	lpath := len(path)
 	size := C.size_t(lpath)
 	if lpath >= C.MAX_PATH_SIZE-1 {
