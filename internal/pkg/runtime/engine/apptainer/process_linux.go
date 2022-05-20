@@ -412,7 +412,7 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 
 		// If we are using cgroups with this instance then mark that in the instance config.
 		// We don't store the path, as we will get the cgroup manager by Pid.
-		if e.EngineConfig.GetCgroupsTOML() != "" {
+		if e.EngineConfig.GetCgroupsJSON() != "" {
 			file.Cgroup = true
 		}
 

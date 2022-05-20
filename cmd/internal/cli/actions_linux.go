@@ -425,7 +425,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "SHELL", ShellPath)
 	}
 
-	if name != "" && uid != 0 && CgroupsTOML != "" {
+	if name != "" && uid != 0 && CgroupsTOMLFile != "" {
 		sylog.Fatalf("Instances do not currently support rootless cgroups")
 	}
 
@@ -435,7 +435,11 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		engineConfig.SetDbusSessionBusAddress(os.Getenv("DBUS_SESSION_BUS_ADDRESS"))
 	}
 
-	engineConfig.SetCgroupsTOML(CgroupsTOML)
+	cgJSON, err := getCgroupsJSON()
+	if err != nil {
+		sylog.Fatalf("While parsing cgroups configuration: %s", err)
+	}
+	engineConfig.SetCgroupsJSON(cgJSON)
 
 	if IsWritable && IsWritableTmpfs {
 		sylog.Warningf("Disabling --writable-tmpfs flag, mutually exclusive with --writable")

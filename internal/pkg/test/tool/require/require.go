@@ -13,6 +13,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -163,6 +165,49 @@ func CgroupsFreezer(t *testing.T) {
 	}
 	if !slice.ContainsString(subsystems, "freezer") {
 		t.Skipf("no cgroups freezer subsystem available")
+	}
+}
+
+// CgroupsResourceExists checks that the requested controller and resource exist
+// in the cgroupfs.
+func CgroupsResourceExists(t *testing.T, controller string, resource string) {
+	cgs, err := cgroups.ParseCgroupFile("/proc/self/cgroup")
+	if err != nil {
+		t.Error(err)
+	}
+	cgPath, ok := cgs[controller]
+	if !ok {
+		t.Skipf("controller %s cgroup path not found", controller)
+	}
+
+	resourcePath := filepath.Join("/sys/fs/cgroup", controller, cgPath, resource)
+	if _, err := os.Stat(resourcePath); err != nil {
+		t.Skipf("cannot stat resource %s: %s", resource, err)
+	}
+}
+
+// CroupsV2Delegated checks that the controller is delegated to users.
+func CgroupsV2Delegated(t *testing.T, controller string) {
+	CgroupsV2Unified(t)
+	cgs, err := cgroups.ParseCgroupFile("/proc/self/cgroup")
+	if err != nil {
+		t.Error(err)
+	}
+
+	cgPath, ok := cgs[""]
+	if !ok {
+		t.Skipf("unified cgroup path not found")
+	}
+
+	delegatePath := filepath.Join("/sys/fs/cgroup", cgPath, "cgroup.controllers")
+
+	data, err := ioutil.ReadFile(delegatePath)
+	if err != nil {
+		t.Skipf("while reading delegation file: %s", err)
+	}
+
+	if !strings.Contains(string(data), controller) {
+		t.Skipf("%s controller is not delegated", controller)
 	}
 }
 

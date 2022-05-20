@@ -81,7 +81,7 @@ func (m *flagManager) registerFlagForCmd(flag *Flag, cmds ...*cobra.Command) err
 	if flag.EnvHandler == nil {
 		flag.EnvHandler = EnvSetValue
 	}
-	switch t := flag.DefaultValue.(type) {
+	switch flag.DefaultValue.(type) {
 	case string:
 		m.registerStringVar(flag, cmds)
 	case map[string]string:
@@ -97,7 +97,7 @@ func (m *flagManager) registerFlagForCmd(flag *Flag, cmds ...*cobra.Command) err
 	case uint32:
 		m.registerUint32Var(flag, cmds)
 	default:
-		return fmt.Errorf("flag of type %s is not supported", t)
+		return fmt.Errorf("flag %s of type %T is not supported", flag.Name, flag.DefaultValue)
 	}
 	m.flags[flag.ID] = flag
 	return nil

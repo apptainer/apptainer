@@ -360,6 +360,17 @@ func NewManagerWithSpec(spec *specs.LinuxResources, pid int, group string, syste
 	return mgr, nil
 }
 
+// NewManagerWithJSON creates a Manager, applies the JSON configuration supplied, and adds pid to the cgroup.
+// If a group name is supplied, it will be used by the manager.
+// If group = "" then "/apptainer/<pid>" is used as a default.
+func NewManagerWithJSON(jsonSpec string, pid int, group string, systemd bool) (manager *Manager, err error) {
+	spec, err := UnmarshalJSONResources(jsonSpec)
+	if err != nil {
+		return nil, fmt.Errorf("while loading cgroups spec: %w", err)
+	}
+	return NewManagerWithSpec(spec, pid, group, systemd)
+}
+
 // NewManagerWithFile creates a Manager, applies the configuration at specPath, and adds pid to the cgroup.
 // If a group name is supplied, it will be used by the manager.
 // If group = "" then "/apptainer/<pid>" is used as a default.
