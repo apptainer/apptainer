@@ -52,20 +52,24 @@ func ConfigDir() string {
 }
 
 func configDir(dir string) string {
-	user, err := user.Current()
-	if err != nil {
-		sylog.Warningf("Could not lookup the current user's information: %s", err)
-
-		cwd, err := os.Getwd()
+	homedir := os.Getenv("HOME")
+	if homedir == "" {
+		user, err := user.Current()
 		if err != nil {
-			sylog.Warningf("Could not get current working directory: %s", err)
-			return dir
-		}
+			sylog.Warningf("Could not lookup the current user's information: %s", err)
 
-		return filepath.Join(cwd, dir)
+			cwd, err := os.Getwd()
+			if err != nil {
+				sylog.Warningf("Could not get current working directory: %s", err)
+				return dir
+			}
+			homedir = cwd
+		} else {
+			homedir = user.HomeDir
+		}
 	}
 
-	return filepath.Join(user.HomeDir, dir)
+	return filepath.Join(homedir, dir)
 }
 
 func RemoteConf() string {
