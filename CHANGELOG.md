@@ -27,6 +27,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `$PATH:` followed by standard system paths.  Configuration variables
   for paths to individual programs that were in apptainer.conf are still
   supported but deprecated.
+- $HOME is now used to find the user's configuration and cache by default.
+  If that is not set it will fall back to the previous behavior of looking
+  up the home directory in the password file.  The value of $HOME inside
+  the container still defaults to the home directory in the password file
+  and can still be overridden by the ``--home`` option.
 - `oci mount` sets `Process.Terminal: true` when creating an OCI `config.json`,
   so that `oci run` provides expected interactive behavior by default.
 - Default hostname for `oci mount` containers is now `apptainer` instead of
