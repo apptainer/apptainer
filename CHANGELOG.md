@@ -21,6 +21,14 @@ For older changes see the [archived Singularity change log](https://github.com/a
   filesystem (known as "sandbox" mode), which is not allowed when in
   setuid mode.  Does not work with a SIF partition because it requires
   privileges to mount that as an ext3 image.
+- Enabled unprivileged users to build containers without the `--fakeroot`
+  option.  Requires unprivileged user namespaces and the fakeroot command.
+  This is simpler to administer than the `--fakeroot` option because
+  there is no need for maintaining /etc/subuid and /etc/subgid mappings.
+  On the other hand, it isn't as complete an emulation and may fail under
+  some circumstances.  Only the %post scriptlet is run with fakeroot; the
+  other scriptlets are run in a root-mapped unprivileged user namespace,
+  the equivalent of `unshare -r`.
 - Added a `binary path` configuration variable as the default path to use
   when searching for helper executables.  May contain `$PATH:` which gets
   substituted with the user's PATH when running unprivileged.  Defaults to

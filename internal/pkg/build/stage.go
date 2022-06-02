@@ -10,6 +10,7 @@
 package build
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/build/files"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	envUtil "github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
@@ -48,11 +50,11 @@ func (s *stage) Assemble(path string) error {
 	return s.a.Assemble(s.b, path)
 }
 
-// runSetupScript executes the stage's pre script on host.
+// runSectionScript executes the stage's pre and setup scripts on host.
 func (s *stage) runSectionScript(name string, script types.Script) error {
 	if s.b.RunSection(name) && script.Script != "" {
 		if syscall.Getuid() != 0 {
-			return fmt.Errorf("attempted to build with scripts as non-root user or without --fakeroot")
+			return fmt.Errorf("internal error -- uid does not appear to be root for build section %v", name)
 		}
 
 		aRootfs := "APPTAINER_ROOTFS=" + s.b.RootfsPath
@@ -95,10 +97,19 @@ func (s *stage) runPostScript(configFile, sessionResolv, sessionHosts string) er
 		if sessionHosts != "" {
 			cmdArgs = append(cmdArgs, "-B", sessionHosts+":/etc/hosts")
 		}
+		var fakerootBinds []string
+		var err error
+		if s.b.Opts.FakerootPath != "" {
+			fakerootBinds, err = s.makeFakerootBindpoints()
+			if err != nil {
+				return fmt.Errorf("while creating fakeroot bindpoints: %v", err)
+			}
+			cmdArgs = append(cmdArgs, "-B", strings.Join(fakerootBinds[:], ","))
+		}
 
 		script := s.b.Recipe.BuildData.Post
 		scriptPath := filepath.Join(s.b.RootfsPath, ".post.script")
-		if err := createScript(scriptPath, []byte(script.Script)); err != nil {
+		if err = createScript(scriptPath, []byte(script.Script)); err != nil {
 			return fmt.Errorf("while creating post script: %s", err)
 		}
 		defer os.Remove(scriptPath)
@@ -110,16 +121,31 @@ func (s *stage) runPostScript(configFile, sessionResolv, sessionHosts string) er
 
 		exe := filepath.Join(buildcfg.BINDIR, "apptainer")
 
+		env := currentEnvNoApptainer([]string{"NV", "NVCCLI", "ROCM", "BINDPATH", "MOUNT"})
 		cmdArgs = append(cmdArgs, s.b.RootfsPath)
+		if s.b.Opts.FakerootPath != "" {
+			base := filepath.Base(s.b.Opts.FakerootPath)
+			sylog.Debugf("Post scriptlet will be run with %v", base)
+			cmdArgs = append(cmdArgs, "/usr/bin/"+base)
+			// Without this workaround fakeroot does not work
+			//  properly in a user namespace. It is especially
+			//  noticeable with debian containers.  Learned from
+			//  https://salsa.debian.org/clint/fakeroot/-/merge_requests/4
+			env = append(env, envUtil.ApptainerEnvPrefix+"FAKEROOTDONTTRYCHOWN=1")
+		}
 		cmdArgs = append(cmdArgs, args...)
 		cmd := exec.Command(exe, cmdArgs...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Dir = "/"
-		cmd.Env = currentEnvNoApptainer([]string{"NV", "NVCCLI", "ROCM", "BINDPATH", "MOUNT"})
+		cmd.Env = env
 
 		sylog.Infof("Running post scriptlet")
-		return cmd.Run()
+		err = cmd.Run()
+		if len(fakerootBinds) > 0 {
+			s.cleanFakerootBindpoints(fakerootBinds)
+		}
+		return err
 	}
 	return nil
 }
@@ -217,4 +243,155 @@ func (s *stage) copyFiles() error {
 	}
 
 	return nil
+}
+
+// make a file mountpoint
+// assumes directory already exists
+func (s *stage) makeFilePoint(point string) error {
+	sylog.Debugf("Making file mountpoint %v", point)
+	path := filepath.Join(s.b.RootfsPath, point)
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		file, err := os.Create(path)
+		if err != nil {
+			return fmt.Errorf("while making file mountpoint %v: %v", point, err)
+		}
+		file.Close()
+	} else if err != nil {
+		return fmt.Errorf("while making file mountpoint %v: %v", point, err)
+	}
+	return nil
+}
+
+// make a directory mountpoint
+// will create parent directory if missing
+func (s *stage) makeDirPoint(point string) error {
+	sylog.Debugf("Making directory mountpoint %v", point)
+	path := filepath.Join(s.b.RootfsPath, point)
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(path, 0o755)
+		if err != nil {
+			return fmt.Errorf("while making directory mountpoint %v: %v", point, err)
+		}
+	} else if err != nil {
+		return fmt.Errorf("while making directory mountpoint %v: %v", point, err)
+	}
+	return nil
+}
+
+func (s *stage) makeFakerootBindpoints() ([]string, error) {
+	var binds []string
+
+	// Start by examining the environment fakeroot creates
+	cmd := exec.Command(s.b.Opts.FakerootPath, "env")
+	env := os.Environ()
+	for idx := range env {
+		if strings.HasPrefix(env[idx], "LD_LIBRARY_PATH=") {
+			// Remove any incoming LD_LIBRARY_PATH
+			env[idx] = "LD_LIBRARY_PREFIX="
+		}
+	}
+	cmd.Env = env
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return binds, fmt.Errorf("error make fakeroot stdout pipe: %v", err)
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return binds, fmt.Errorf("error starting fakeroot: %v", err)
+	}
+	preload := ""
+	libraryPath := ""
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "LD_PRELOAD=") {
+			preload = line[len("LD_PRELOAD="):]
+		} else if strings.HasPrefix(line, "LD_LIBRARY_PATH=") {
+			libraryPath = line[len("LD_LIBRARY_PATH="):]
+		}
+	}
+	_ = cmd.Wait()
+	if preload == "" {
+		return binds, fmt.Errorf("No LD_PRELOAD in fakeroot environment")
+	}
+	if libraryPath == "" {
+		return binds, fmt.Errorf("No LD_LIBRARY_PATH in fakeroot environment")
+	}
+
+	src := s.b.Opts.FakerootPath
+	point := "/usr/bin/fakeroot"
+	err = s.makeFilePoint(point)
+	if err != nil {
+		return binds, err
+	}
+	binds = append(binds, src+":"+point)
+
+	// faked isn't strictly needed but include it if present in case it
+	// is used in a future version
+	dir := filepath.Dir(src)
+	src = filepath.Join(dir, "faked")
+	point = "/usr/bin/faked"
+	if _, err = os.Stat(src); err == nil {
+		err = s.makeFilePoint(point)
+		if err != nil {
+			return binds, err
+		}
+		binds = append(binds, src+":"+point)
+	}
+	splits := strings.Split(preload, ".")
+	splits = strings.Split(splits[0], "-")
+	if len(splits) > 1 {
+		// add the faked that corresponds to the preload library
+		src += "-" + splits[1]
+		point += "-" + splits[1]
+		if _, err = os.Stat(src); err == nil {
+			err = s.makeFilePoint(point)
+			if err != nil {
+				return binds, err
+			}
+			binds = append(binds, src+":"+point)
+		}
+	}
+	splits = strings.Split(libraryPath, ":")
+	for _, dir := range splits {
+		// Find the directory in libraryPath that contains the
+		// preload library and include that
+		src = filepath.Join(dir, preload)
+		if _, err = os.Stat(src); err == nil {
+			err = s.makeDirPoint(dir)
+			if err != nil {
+				return binds, err
+			}
+			binds = append(binds, dir+"/")
+			break
+		}
+	}
+	return binds, nil
+}
+
+func (s *stage) cleanFakerootBindpoints(binds []string) {
+	for _, bind := range binds {
+		splits := strings.Split(bind, ":")
+		point := splits[len(splits)-1]
+		sylog.Debugf("Removing %v mount point", point)
+		path := filepath.Join(s.b.RootfsPath, point)
+		if strings.HasSuffix(point, "/") {
+			// remove parent directories until not empty
+			for {
+				if err := syscall.Rmdir(path); err != nil {
+					sylog.Debugf("Removing %v did not succeed because: %v", path[len(s.b.RootfsPath):], err)
+					break
+				}
+				path = filepath.Dir(path)
+				sylog.Debugf("Attempting to remove %v", path[len(s.b.RootfsPath):])
+			}
+		} else if fileinfo, err := os.Stat(path); err == nil {
+			if fileinfo.Size() == 0 {
+				syscall.Unlink(path)
+			}
+		}
+	}
 }

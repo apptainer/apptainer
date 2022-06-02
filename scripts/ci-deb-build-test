@@ -15,6 +15,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     squashfs-tools \
     squashfuse \
     fuse-overlayfs \
+    fakeroot \
     cryptsetup \
     curl wget git
 apt-get install -y \

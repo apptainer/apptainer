@@ -114,3 +114,17 @@ func HostUID() (int, error) {
 	// return current UID by default
 	return currentUID, nil
 }
+
+// IsUnprivileged returns true if running as an unprivileged user, even
+// if the user id is root inside an unprivileged user namespace; otherwise
+// it returns false
+func IsUnprivileged() bool {
+	if os.Geteuid() != 0 {
+		return true
+	}
+	uid, err := HostUID()
+	if err != nil {
+		return true
+	}
+	return uid != 0
+}

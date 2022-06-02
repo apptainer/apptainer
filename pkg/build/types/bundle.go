@@ -49,6 +49,8 @@ type Options struct {
 	LibraryURL string `json:"libraryURL"`
 	// LibraryAuthToken contains authentication token to access specified library.
 	LibraryAuthToken string `json:"libraryAuthToken"`
+	// Path to fakeroot command will be empty if not needed or not available
+	FakerootPath string `json:"fakerootPath"`
 	// KeyServerOpts contains options for keyserver used for SIF fingerprint verification in builds.
 	KeyServerOpts []keyClient.Option
 	// contains docker credentials if specified.

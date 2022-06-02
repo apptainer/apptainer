@@ -24,6 +24,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	sytypes "github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	"github.com/containers/image/v5/types"
 	imgspecv1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/opencontainers/umoci"
@@ -53,7 +54,8 @@ func unpackRootfs(ctx context.Context, b *sytypes.Bundle, tmpfsRef types.ImageRe
 	}
 
 	// Allow unpacking as non-root
-	if os.Geteuid() != 0 {
+	if namespaces.IsUnprivileged() {
+		sylog.Debugf("setting umoci rootless mode")
 		mapOptions.Rootless = true
 
 		uidMap, err := idtools.ParseMapping(fmt.Sprintf("0:%d:1", os.Geteuid()))
