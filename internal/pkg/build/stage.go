@@ -53,10 +53,6 @@ func (s *stage) Assemble(path string) error {
 // runSectionScript executes the stage's pre and setup scripts on host.
 func (s *stage) runSectionScript(name string, script types.Script) error {
 	if s.b.RunSection(name) && script.Script != "" {
-		if syscall.Getuid() != 0 {
-			return fmt.Errorf("internal error -- uid does not appear to be root for build section %v", name)
-		}
-
 		aRootfs := "APPTAINER_ROOTFS=" + s.b.RootfsPath
 		sRootfs := "SINGULARITY_ROOTFS=" + s.b.RootfsPath
 
@@ -86,9 +82,9 @@ func (s *stage) runSectionScript(name string, script types.Script) error {
 	return nil
 }
 
-func (s *stage) runPostScript(configFile, sessionResolv, sessionHosts string) error {
+func (s *stage) runPostScript(sessionResolv, sessionHosts string) error {
 	if s.b.Recipe.BuildData.Post.Script != "" {
-		cmdArgs := []string{"-s", "-c", configFile, "exec", "--pwd", "/", "--writable"}
+		cmdArgs := []string{"-s", "--build-config", "exec", "--pwd", "/", "--writable"}
 		cmdArgs = append(cmdArgs, "--cleanenv", "--env", aEnvironment, "--env", sEnvironment, "--env", aLabels, "--env", sLabels)
 
 		if sessionResolv != "" {
@@ -150,9 +146,9 @@ func (s *stage) runPostScript(configFile, sessionResolv, sessionHosts string) er
 	return nil
 }
 
-func (s *stage) runTestScript(configFile, sessionResolv, sessionHosts string) error {
+func (s *stage) runTestScript(sessionResolv, sessionHosts string) error {
 	if !s.b.Opts.NoTest && s.b.Recipe.BuildData.Test.Script != "" {
-		cmdArgs := []string{"-s", "-c", configFile, "test", "--pwd", "/"}
+		cmdArgs := []string{"-s", "--build-config", "test", "--pwd", "/"}
 
 		if sessionResolv != "" {
 			cmdArgs = append(cmdArgs, "-B", sessionResolv+":/etc/resolv.conf")

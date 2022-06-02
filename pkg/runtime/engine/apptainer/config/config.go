@@ -101,6 +101,7 @@ type JSONConfig struct {
 	Cwd                   string            `json:"cwd,omitempty"`
 	SessionLayer          string            `json:"sessionLayer,omitempty"`
 	ConfigurationFile     string            `json:"configurationFile,omitempty"`
+	UseBuildConfig        bool              `json:"useBuildConfig,omitempty"`
 	EncryptionKey         []byte            `json:"encryptionKey,omitempty"`
 	TargetUID             int               `json:"targetUID,omitempty"`
 	WritableImage         bool              `json:"writableImage,omitempty"`
@@ -797,6 +798,16 @@ func (e *EngineConfig) SetConfigurationFile(filename string) {
 // GetConfigurationFile returns the apptainer configuration file to use.
 func (e *EngineConfig) GetConfigurationFile() string {
 	return e.JSON.ConfigurationFile
+}
+
+// SetUseBuildConfig defines whether to use the build configuration or not.
+func (e *EngineConfig) SetUseBuildConfig(useBuildConfig bool) {
+	e.JSON.UseBuildConfig = useBuildConfig
+}
+
+// GetUseBuildConfig returns if the build configuration should be used or not.
+func (e *EngineConfig) GetUseBuildConfig() bool {
+	return e.JSON.UseBuildConfig
 }
 
 // SetRestoreUmask returns whether to restore Umask for the container launched process.

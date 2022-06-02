@@ -139,6 +139,7 @@ func findFakeroot() string {
 		sylog.Debugf("failure finding fakeroot: %v", err)
 		sylog.Fatalf("fakeroot command or --fakeroot option are required for non-root user to build from an Apptainer recipe file")
 	}
+	sylog.Debugf("fakeroot found at %v", fakerootPath)
 	return fakerootPath
 }
 
@@ -146,20 +147,23 @@ func runBuild(cmd *cobra.Command, args []string) {
 	dest := args[0]
 	spec := args[1]
 
-	if syscall.Getuid() != 0 && !buildArgs.fakeroot && fs.IsFile(spec) && !isImage(spec) {
-		_ = findFakeroot()
-		if err := unshareRootMapped(); err != nil {
-			sylog.Errorf("%v", err)
-			sylog.Fatalf("Building from an Apptainer recipe file requires either root user or unprivileged user namespaces")
-		}
-		os.Exit(0)
-	}
-
 	fakerootPath := ""
-	if namespaces.IsUnprivileged() && os.Getenv("_CONTAINERS_ROOTLESS_UID") == "" {
-		// we are running in an unshared root mapped unprivileged namespace
+	if syscall.Getuid() != 0 && !buildArgs.fakeroot && fs.IsFile(spec) && !isImage(spec) {
 		fakerootPath = findFakeroot()
-		sylog.Debugf("fakeroot found at %v", fakerootPath)
+		err := unshareRootMapped()
+		if err == nil {
+			// All the work has been done by the child process
+			os.Exit(0)
+		}
+		sylog.Debugf("%v", err)
+		if !buildArgs.fixPerms {
+			sylog.Infof("Using --fix-perms because building from an Apptainer recipe file")
+			sylog.Infof(" without either root user or unprivileged user namespaces")
+			buildArgs.fixPerms = true
+		}
+	} else if namespaces.IsUnprivileged() && os.Getenv("_CONTAINERS_ROOTLESS_UID") == "" {
+		// we are running in a root-mapped unprivileged user namespace
+		fakerootPath = findFakeroot()
 	}
 
 	if buildArgs.nvidia {

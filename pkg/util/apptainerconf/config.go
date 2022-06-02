@@ -31,6 +31,20 @@ func GetCurrentConfig() *File {
 	return currentConfig
 }
 
+// GetBuildConfig returns the configuration to be used for building containers
+func GetBuildConfig() *File {
+	// Use default configuration except without default binds
+	config, err := Parse("")
+	if err != nil {
+		sylog.Fatalf("failure getting default config: %v", err)
+	}
+	config.BindPath = nil
+	config.ConfigResolvConf = false
+	config.MountHome = false
+	config.MountDevPts = false
+	return config
+}
+
 // SetBinaryPath sets the value of the binary path, substituting the
 // user's $PATH plus ":" for "$PATH:" in BinaryPath if subPath is true.
 func SetBinaryPath(subPath bool) {
@@ -420,7 +434,6 @@ memory fs type = {{ .MemoryFSType }}
 # DEFAULT: Undefined
 # DEPRECATED
 # Path to the ldconfig executable, used to find GPU libraries.
-# Must be set to use --nv / --nvccli.
 # When run as root, executable must be owned by root for security reasons.
 # If not set, Apptainer will search the directories set in binary path.
 # ldconfig path =
@@ -454,7 +467,6 @@ mksquashfs procs = {{ .MksquashfsProcs }}
 # DEFAULT: Undefined
 # DEPRECATED
 # Path to the nvidia-container-cli executable, used to find GPU libraries.
-# Must be set to use --nvccli.
 # When run as root, executable must be owned by root for security reasons
 # If not set, Apptainer will search the directories set in binary path.
 # nvidia-container-cli path =

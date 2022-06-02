@@ -33,9 +33,13 @@ func (e *EngineOperations) InitConfig(cfg *config.Common, privStageOne bool) {
 	if privStageOne {
 		// override the contents of File for security reasons
 		var err error
-		e.EngineConfig.File, err = apptainerconf.Parse(buildcfg.APPTAINER_CONF_FILE)
-		if err != nil {
-			sylog.Fatalf("unable to parse apptainer.conf file: %s", err)
+		if e.EngineConfig.GetUseBuildConfig() {
+			e.EngineConfig.File = apptainerconf.GetBuildConfig()
+		} else {
+			e.EngineConfig.File, err = apptainerconf.Parse(buildcfg.APPTAINER_CONF_FILE)
+			if err != nil {
+				sylog.Fatalf("unable to parse apptainer.conf file: %s", err)
+			}
 		}
 		apptainerconf.SetCurrentConfig(e.EngineConfig.File)
 		apptainerconf.SetBinaryPath(false)
