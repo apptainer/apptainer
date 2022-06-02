@@ -456,7 +456,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	// This doesn't count as a SetCustomHome(true), as we are mounting from the real
 	// user's standard $HOME -> /root and we want to respect --contain not mounting
 	// the $HOME in this case.
-	// See https://github.com/apptainer/apptainer/pull/5227
+	// See https://github.com/apptainer/singularity/pull/5227
 	if !homeFlag.Changed && IsFakeroot {
 		HomePath = fmt.Sprintf("%s:/root", HomePath)
 	}

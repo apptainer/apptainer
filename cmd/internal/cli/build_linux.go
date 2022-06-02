@@ -24,6 +24,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	fakerootConfig "github.com/apptainer/apptainer/internal/pkg/runtime/engine/fakeroot/config"
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/internal/pkg/util/starter"
@@ -33,6 +34,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
+	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	keyClient "github.com/apptainer/container-key-client/client"
 	"github.com/spf13/cobra"
 )
@@ -101,7 +103,65 @@ func fakerootExec(cmdArgs []string) {
 	sylog.Fatalf("%s", err)
 }
 
+// re-exec the command effectively under unshare -r
+func unshareRootMapped() error {
+	cmd := osExec.Command(os.Args[0], os.Args[1:]...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.SysProcAttr = &syscall.SysProcAttr{}
+	cmd.SysProcAttr.Cloneflags = syscall.CLONE_NEWUSER
+	cmd.SysProcAttr.UidMappings = []syscall.SysProcIDMap{
+		{ContainerID: 0, HostID: syscall.Getuid(), Size: 1},
+	}
+	cmd.SysProcAttr.GidMappings = []syscall.SysProcIDMap{
+		{ContainerID: 0, HostID: syscall.Getgid(), Size: 1},
+	}
+	sylog.Debugf("Re-executing to root-mapped unprivileged user namespace")
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("Error re-executing in root-mapped unprivileged user namespace: %v", err)
+	}
+	if err := cmd.Wait(); err != nil {
+		if exiterr, ok := err.(*osExec.ExitError); ok {
+			// exit with the non-zero exit code
+			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+				os.Exit(status.ExitStatus())
+			}
+		}
+		sylog.Fatalf("error waiting for root-mapped unprivileged command: %v", err)
+	}
+	return nil
+}
+
+func findFakeroot() string {
+	fakerootPath, err := bin.FindBin("fakeroot")
+	if err != nil {
+		sylog.Debugf("failure finding fakeroot: %v", err)
+		sylog.Fatalf("fakeroot command or --fakeroot option are required for non-root user to build from an Apptainer recipe file")
+	}
+	return fakerootPath
+}
+
 func runBuild(cmd *cobra.Command, args []string) {
+	dest := args[0]
+	spec := args[1]
+
+	if syscall.Getuid() != 0 && !buildArgs.fakeroot && fs.IsFile(spec) && !isImage(spec) {
+		_ = findFakeroot()
+		if err := unshareRootMapped(); err != nil {
+			sylog.Errorf("%v", err)
+			sylog.Fatalf("Building from an Apptainer recipe file requires either root user or unprivileged user namespaces")
+		}
+		os.Exit(0)
+	}
+
+	fakerootPath := ""
+	if namespaces.IsUnprivileged() && os.Getenv("_CONTAINERS_ROOTLESS_UID") == "" {
+		// we are running in an unshared root mapped unprivileged namespace
+		fakerootPath = findFakeroot()
+		sylog.Debugf("fakeroot found at %v", fakerootPath)
+	}
+
 	if buildArgs.nvidia {
 		os.Setenv("APPTAINER_NV", "1")
 	}
@@ -124,19 +184,16 @@ func runBuild(cmd *cobra.Command, args []string) {
 		os.Setenv("APPTAINER_WRITABLE_TMPFS", "1")
 	}
 
-	dest := args[0]
-	spec := args[1]
-
 	// check if target collides with existing file
 	if err := checkBuildTarget(dest); err != nil {
 		sylog.Fatalf("While checking build target: %s", err)
 	}
 
-	runBuildLocal(cmd.Context(), cmd, dest, spec)
+	runBuildLocal(cmd.Context(), cmd, dest, spec, fakerootPath)
 	sylog.Infof("Build complete: %s", dest)
 }
 
-func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string) {
+func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fakerootPath string) {
 	var keyInfo *cryptkey.KeyInfo
 	if buildArgs.encrypt || promptForPassphrase || cmd.Flags().Lookup("pem-path").Changed {
 		if os.Getuid() != 0 {
@@ -159,10 +216,6 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string) {
 	imgCache := getCacheHandle(cache.Config{Disable: disableCache})
 	if imgCache == nil {
 		sylog.Fatalf("Failed to create an image cache handle")
-	}
-
-	if syscall.Getuid() != 0 && !buildArgs.fakeroot && fs.IsFile(spec) && !isImage(spec) {
-		sylog.Fatalf("You must be the root user, however you can --fakeroot to build from an Apptainer recipe file")
 	}
 
 	err := checkSections()
@@ -252,6 +305,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string) {
 				NoHTTPS:           noHTTPS,
 				LibraryURL:        buildArgs.libraryURL,
 				LibraryAuthToken:  authToken,
+				FakerootPath:      fakerootPath,
 				KeyServerOpts:     ko,
 				DockerAuthConfig:  authConf,
 				EncryptionKeyInfo: keyInfo,

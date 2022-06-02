@@ -72,6 +72,7 @@ Requires: squashfs-tools
 %endif
 BuildRequires: cryptsetup
 Requires: squashfuse
+Requires: fakeroot
 %if 0%{?el7}
 Requires: fuse-overlayfs
 %endif

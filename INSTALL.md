@@ -27,6 +27,7 @@ sudo apt-get install -y \
     squashfs-tools \
     squashfuse \
     fuse-overlayfs \
+    fakeroot \
     cryptsetup \
     curl wget git
 ```
@@ -44,6 +45,7 @@ sudo yum install -y \
     squashfs-tools \
     squashfuse \
     fuse-overlayfs \
+    fakeroot \
     cryptsetup \
     wget git
 ```

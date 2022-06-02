@@ -154,7 +154,7 @@ jobs:
           go-version: 1.18.2
 
       - name: Fetch deps
-        run: sudo apt-get -q update && sudo apt-get install -y build-essential squashfs-tools squashfuse fuse-overlayfs libseccomp-dev cryptsetup
+        run: sudo apt-get -q update && sudo apt-get install -y build-essential squashfs-tools squashfuse fuse-overlayfs fakeroot libseccomp-dev cryptsetup
 
       - name: Build and install Apptainer
         run: |
@@ -229,7 +229,7 @@ jobs:
 
       - name: Fetch deps
         if: env.run_tests
-        run: sudo apt-get -q update && sudo apt-get install -y build-essential squashfs-tools squashfuse fuse-overlayfs libseccomp-dev cryptsetup
+        run: sudo apt-get -q update && sudo apt-get install -y build-essential squashfs-tools squashfuse fuse-overlayfs fakeroot libseccomp-dev cryptsetup
 
       - name: Build and install Apptainer
         if: env.run_tests
