@@ -32,17 +32,12 @@ func GetCurrentConfig() *File {
 }
 
 // GetBuildConfig returns the configuration to be used for building containers
-func GetBuildConfig() *File {
-	// Use default configuration except without default binds
-	config, err := Parse("")
-	if err != nil {
-		sylog.Fatalf("failure getting default config: %v", err)
-	}
+func ApplyBuildConfig(config *File) {
+	// Remove default binds when doing builds
 	config.BindPath = nil
 	config.ConfigResolvConf = false
 	config.MountHome = false
 	config.MountDevPts = false
-	return config
 }
 
 // SetBinaryPath sets the value of the binary path, substituting the

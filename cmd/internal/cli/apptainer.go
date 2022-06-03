@@ -458,7 +458,12 @@ func persistentPreRun(*cobra.Command, []string) {
 	var err error
 	if useBuildConfig {
 		sylog.Debugf("Using container build configuration")
-		config = apptainerconf.GetBuildConfig()
+		// Base this on a default configuration.
+		config, err = apptainerconf.Parse("")
+		if err != nil {
+			sylog.Fatalf("Failure getting default config: %v", err)
+		}
+		apptainerconf.ApplyBuildConfig(config)
 	} else {
 		if os.Geteuid() != 0 && buildcfg.APPTAINER_SUID_INSTALL == 1 {
 			if configurationFile != singConfigFileFlag.DefaultValue {
