@@ -62,6 +62,7 @@ var (
 	promptForPassphrase bool
 	forceOverwrite      bool
 	noHTTPS             bool
+	useBuildConfig      bool
 	tmpDir              string
 )
 
@@ -226,6 +227,15 @@ var singConfigFileFlag = cmdline.Flag{
 	ShortHand:    "c",
 	Usage:        "specify a configuration file (for root or unprivileged installation only)",
 	EnvKeys:      []string{"CONFIG_FILE"},
+}
+
+// --build-config
+var singBuildConfigFlag = cmdline.Flag{
+	ID:           "singBuildConfigFlag",
+	Value:        &useBuildConfig,
+	DefaultValue: false,
+	Name:         "build-config",
+	Usage:        "use configuration needed for building containers",
 }
 
 func getCurrentUser() *user.User {
@@ -444,22 +454,34 @@ func persistentPreRun(*cobra.Command, []string) {
 	setSylogMessageLevel()
 	sylog.Debugf("Apptainer version: %s", buildcfg.PACKAGE_VERSION)
 
-	if os.Geteuid() != 0 && buildcfg.APPTAINER_SUID_INSTALL == 1 {
-		if configurationFile != singConfigFileFlag.DefaultValue {
-			sylog.Fatalf("--config requires to be root or an unprivileged installation")
+	var config *apptainerconf.File
+	var err error
+	if useBuildConfig {
+		sylog.Debugf("Using container build configuration")
+		// Base this on a default configuration.
+		config, err = apptainerconf.Parse("")
+		if err != nil {
+			sylog.Fatalf("Failure getting default config: %v", err)
 		}
-	}
+		apptainerconf.ApplyBuildConfig(config)
+	} else {
+		if os.Geteuid() != 0 && buildcfg.APPTAINER_SUID_INSTALL == 1 {
+			if configurationFile != singConfigFileFlag.DefaultValue {
+				sylog.Fatalf("--config requires to be root or an unprivileged installation")
+			}
+		}
 
-	oldconfdir := filepath.Dir(filepath.Dir(configurationFile)) + "/singularity/"
+		oldconfdir := filepath.Dir(filepath.Dir(configurationFile)) + "/singularity/"
 
-	if _, err := os.Stat(oldconfdir); err == nil {
-		sylog.Warningf("%s exists, migration to apptainer by system administrator is not complete", oldconfdir)
-	}
+		if _, err := os.Stat(oldconfdir); err == nil {
+			sylog.Warningf("%s exists, migration to apptainer by system administrator is not complete", oldconfdir)
+		}
 
-	sylog.Debugf("Parsing configuration file %s", configurationFile)
-	config, err := apptainerconf.Parse(configurationFile)
-	if err != nil {
-		sylog.Fatalf("Couldn't parse configuration file %s: %s", configurationFile, err)
+		sylog.Debugf("Parsing configuration file %s", configurationFile)
+		config, err = apptainerconf.Parse(configurationFile)
+		if err != nil {
+			sylog.Fatalf("Couldn't parse configuration file %s: %s", configurationFile, err)
+		}
 	}
 	apptainerconf.SetCurrentConfig(config)
 	// Include the user's PATH for now.
@@ -510,6 +532,7 @@ func Init(loadPlugins bool) {
 	cmdManager.RegisterFlagForCmd(&singQuietFlag, apptainerCmd)
 	cmdManager.RegisterFlagForCmd(&singVerboseFlag, apptainerCmd)
 	cmdManager.RegisterFlagForCmd(&singConfigFileFlag, apptainerCmd)
+	cmdManager.RegisterFlagForCmd(&singBuildConfigFlag, apptainerCmd)
 
 	cmdManager.RegisterCmd(VersionCmd)
 

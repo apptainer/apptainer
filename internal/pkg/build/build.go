@@ -10,7 +10,6 @@
 package build
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -21,13 +20,11 @@ import (
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
-	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 
 	"github.com/apptainer/apptainer/internal/pkg/build/apps"
 	"github.com/apptainer/apptainer/internal/pkg/build/assemblers"
 	"github.com/apptainer/apptainer/internal/pkg/build/sources"
-	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/image/packer"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/squashfs"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
@@ -345,36 +342,6 @@ func (b *Build) Full(ctx context.Context) error {
 
 	oldumask := syscall.Umask(0o002)
 
-	// generate the default configuration
-	config, err := apptainerconf.Parse("")
-	if err != nil {
-		return err
-	}
-	config.BindPath = nil
-	config.ConfigResolvConf = false
-	config.MountHome = false
-	config.MountDevPts = false
-
-	// nvidia-container-cli path / ldconfig path will be needed by %post/%test
-	// in builds run with --nv / --nvccli. Must grab paths from the main config.
-	sysConfig := apptainerconf.GetCurrentConfig()
-	if sysConfig == nil {
-		configFile := buildcfg.APPTAINER_CONF_FILE
-		sysConfig, err = apptainerconf.Parse(configFile)
-		if err != nil {
-			return fmt.Errorf("could not parse %q: %v", configFile, err)
-		}
-	}
-	config.LdconfigPath = sysConfig.LdconfigPath
-	config.NvidiaContainerCliPath = sysConfig.NvidiaContainerCliPath
-
-	var buffer bytes.Buffer
-
-	if err := apptainerconf.Generate(&buffer, "", config); err != nil {
-		return fmt.Errorf("while generating configuration file: %s", err)
-	}
-	configData := buffer.Bytes()
-
 	// build each stage one after the other
 	for i, stage := range b.stages {
 		if err := stage.runSectionScript("pre", stage.b.Recipe.BuildData.Pre); err != nil {
@@ -455,15 +422,8 @@ func (b *Build) Full(ctx context.Context) error {
 			defer os.Remove(sessionHosts)
 		}
 
-		// write the build configuration used for %post and %test sections
-		configFile := filepath.Join(stage.b.TmpDir, "apptainer.conf")
-		if err := ioutil.WriteFile(configFile, configData, 0o644); err != nil {
-			return fmt.Errorf("while creating %s: %s", configFile, err)
-		}
-		defer os.Remove(configFile)
-
 		if stage.b.Recipe.BuildData.Post.Script != "" {
-			if err := stage.runPostScript(configFile, sessionResolv, sessionHosts); err != nil {
+			if err := stage.runPostScript(sessionResolv, sessionHosts); err != nil {
 				return fmt.Errorf("while running engine: %v", err)
 			}
 		}
@@ -473,7 +433,7 @@ func (b *Build) Full(ctx context.Context) error {
 			return fmt.Errorf("while inserting metadata to bundle: %v", err)
 		}
 
-		if err := stage.runTestScript(configFile, sessionResolv, sessionHosts); err != nil {
+		if err := stage.runTestScript(sessionResolv, sessionHosts); err != nil {
 			return fmt.Errorf("failed to execute %%test script: %v", err)
 		}
 	}

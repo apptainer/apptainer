@@ -406,6 +406,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	engineConfig.SetAddCaps(AddCaps)
 	engineConfig.SetDropCaps(DropCaps)
 	engineConfig.SetConfigurationFile(configurationFile)
+	engineConfig.SetUseBuildConfig(useBuildConfig)
 
 	checkPrivileges(AllowSUID, "--allow-setuid", func() {
 		engineConfig.SetAllowSUID(AllowSUID)

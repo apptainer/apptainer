@@ -37,6 +37,16 @@ func (e *EngineOperations) InitConfig(cfg *config.Common, privStageOne bool) {
 		if err != nil {
 			sylog.Fatalf("unable to parse apptainer.conf file: %s", err)
 		}
+		if e.EngineConfig.GetUseBuildConfig() {
+			// Note that this is different from what is seen by
+			//  the unprivileged cli code, because that gets based
+			//  on a default configuration instead of the system
+			//  configuration.  We can't do that here because it
+			//  could bypass restrictions the system administrator
+			//  has defined.
+			sylog.Debugf("Applying build configuration on system configuration")
+			apptainerconf.ApplyBuildConfig(e.EngineConfig.File)
+		}
 		apptainerconf.SetCurrentConfig(e.EngineConfig.File)
 		apptainerconf.SetBinaryPath(false)
 	} else {
