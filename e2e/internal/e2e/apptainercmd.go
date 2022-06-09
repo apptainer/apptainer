@@ -13,7 +13,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -646,9 +645,6 @@ func (env TestEnv) RunApptainer(t *testing.T, cmdOps ...ApptainerCmdOp) {
 			defer s.postFn(t)
 		}
 
-		if os.Getenv("APPTAINER_E2E_COVERAGE") != "" {
-			log.Printf("COVERAGE: %q", s.result.FullCmd)
-		}
 		t.Logf("Running command %q", s.result.FullCmd)
 
 		if err := cmd.Start(); err != nil {
