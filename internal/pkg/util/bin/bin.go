@@ -37,6 +37,7 @@ func FindBin(name string) (path string, err error) {
 		"rm",
 		"stdbuf",
 		"true",
+		"truncate",
 		"uname":
 		return findOnPath(name, true)
 	// Executables that might be run privileged from the suid flow
