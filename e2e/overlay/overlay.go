@@ -90,6 +90,13 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 			exit:    255,
 		},
 		{
+			name:    "create ext3 sparse overlay image",
+			profile: e2e.UserProfile,
+			command: "overlay",
+			args:    []string{"create", "--size", "128", "--sparse", ext3Image},
+			exit:    0,
+		},
+		{
 			name:    "create ext3 overlay image",
 			profile: e2e.UserProfile,
 			command: "overlay",

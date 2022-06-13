@@ -1083,6 +1083,9 @@ Enterprise Performance Computing (EPC)`
   To create a single EXT3 writable overlay image:
   $ apptainer overlay create --size 1024 /tmp/my_overlay.img
 
+  To create a sparse overlay when creating a new ext3 file system image:
+  $ apptainer overlay create --size 1024 --sparse /tmp/ext3_overlay.img
+
   To create an EXT3 writable overlay image for use with --fakeroot actions:
   $ apptainer overlay create --fakeroot --size 1024 /tmp/my_overlay.img`
 

@@ -66,6 +66,8 @@ acknowledging that you agree to the [Developer Certificate of Origin](DCO.md).
      [this post on golang.org](https://golang.org/doc/effective_go.html#commentary)
 1. Make sure you have locally tested using `make -C builddir test` and that all
    tests succeed before submitting the PR.
+1. If you accidentally changed code in a submodule, you can undo it like
+   `git submodule foreach --recursive git reset --hard` before committing.
 1. If possible, run `make -C builddir testall` locally, after setting the
    environment variables `E2E_DOCKER_USERNAME` and `E2E_DOCKER_PASSWORD`
    appropriately for an authorized Docker Hub account. This is required as
