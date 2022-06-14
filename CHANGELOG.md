@@ -135,6 +135,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add specific error for unreadable image / overlay file.
 - Pass through a literal `\n` in host environment variables to container.
 - Allow `newgidmap / newuidmap` that use capabilities instead of setuid root.
+- Fix compilation on `mipsel`.
 
 ## v1.0.3 - \[2022-07-06\]
 
