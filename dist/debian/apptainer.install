@@ -1,0 +1,5 @@
+etc/apptainer
+usr/bin
+usr/libexec
+usr/share
+var/lib/apptainer

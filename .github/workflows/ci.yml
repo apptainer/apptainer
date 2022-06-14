@@ -35,7 +35,7 @@ jobs:
 
       - name: Check apptainer source
         run: |
-          ./mconfig -v -p /usr/local
+          ./mconfig -v -p /usr/local --with-suid
           make -C ./builddir check
 
   shellcheck:
@@ -61,7 +61,7 @@ jobs:
       - name: Build Apptainer
         run: |
           git config --global --add safe.directory $(pwd)
-          ./mconfig -v -p /usr/local
+          ./mconfig -v -p /usr/local --with-suid
           make -C ./builddir all
 
   oldgo:
@@ -78,7 +78,7 @@ jobs:
       - name: Build Apptainer
         run: |
           git config --global --add safe.directory $(pwd)
-          ./mconfig -v -p /usr/local
+          ./mconfig -v -p /usr/local --with-suid
           make -C ./builddir all
 
   check_license_dependencies:
@@ -158,7 +158,7 @@ jobs:
 
       - name: Build and install Apptainer
         run: |
-          ./mconfig -v -p /usr/local
+          ./mconfig -v -p /usr/local --with-suid
           make -C ./builddir all && sudo make -C ./builddir install
 
       - name: Run unit tests
@@ -188,7 +188,7 @@ jobs:
 
       - name: Build and install Apptainer
         run: |
-          ./mconfig -v -p /usr/local
+          ./mconfig -v -p /usr/local --with-suid
           make -C ./builddir all && sudo make -C ./builddir install
 
       - name: Run integration tests
@@ -234,7 +234,7 @@ jobs:
       - name: Build and install Apptainer
         if: env.run_tests
         run: |
-          ./mconfig -v -p /usr/local
+          ./mconfig -v -p /usr/local --with-suid
           make -C ./builddir all && sudo make -C ./builddir install
 
       - name: Run E2E tests

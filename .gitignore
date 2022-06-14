@@ -107,6 +107,6 @@ runtime/cli
 
 pkg/library/client/test[0-9]*
 
-debian
+/debian
 
 LICENSE_DEPENDENCIES.csv

@@ -33,15 +33,12 @@ DEB_SC_PROFILE ?= release
 DEB_SC_BUILDDIR ?= builddir
 
 # see mconfig for options
-# set environemnt variables to disable options
-# NOALL, NOSUID, NONETWORK, NOSECCOMP
+# set environment variables to disable options
+# NOALL, NONETWORK, NOSECCOMP
 SC_OPTIONS =
 ifdef DEB_NOALL
-SC_OPTIONS = --without-suid --without-network --without-seccomp
+SC_OPTIONS = --without-network --without-seccomp
 else
-ifdef DEB_NOSUID
-SC_OPTIONS += --without-suid
-endif
 ifdef DEB_NONETWORK
 SC_OPTIONS += --without-network
 endif
@@ -51,7 +48,8 @@ endif
 endif
 
 MAKEPARALLEL = $(shell nproc --ignore=2 || echo 1 )
-override pkgdir = debian/$(pkgsrc)
+override pkgdir = debian/tmp
+override apppkgdir = debian/apptainer
 
 export APPTAINER_CACHEDIR=$(pkgdir)/var/lib/apptainer/cache
 
@@ -74,7 +72,7 @@ ifneq ($(NEW_VERSION),)
 	$(warning "Setting new version in debian changelog: $(NEW_VERSION)")
 	@debchange -v $(NEW_VERSION)$(VERSION_POSTFIX) "Version $(NEW_VERSION)" && debchange -m -r ""
 endif
-	@PATH=$(GOROOT)/bin:$$PATH ./mconfig $(SC_VERBOSE) -b $(DEB_SC_BUILDDIR) -P $(DEB_SC_PROFILE) $(SC_OPTIONS) \
+	@PATH=$(GOROOT)/bin:$$PATH ./mconfig $(SC_VERBOSE) -b $(DEB_SC_BUILDDIR) -P $(DEB_SC_PROFILE) --with-suid $(SC_OPTIONS) \
                 --prefix=/usr \
 		--sysconfdir=/etc \
 		--localstatedir=/var/lib \
@@ -86,17 +84,19 @@ override_dh_auto_build:
 override_dh_auto_install:
 	@dh_auto_install -Smakefile -D$(DEB_SC_BUILDDIR)
 
-override_dh_installman:
-	: # Very sloppy man pages for now
-	@chmod 755 $(pkgdir)/usr/bin/run-singularity
-	@debian/generate_manpages $(pkgdir) $(pkgver)
-	@dh_installman
+override_dh_install:
+	@dh_install -papptainer-suid usr/libexec/apptainer/bin/starter-suid
+	@rm -f $(pkgdir)/usr/libexec/apptainer/bin/starter-suid
+	@dh_install -papptainer
 
 override_dh_auto_test:
 
 override_dh_fixperms:
 	@dh_fixperms
-	@chmod 4755 $(pkgdir)/usr/libexec/apptainer/bin/*-suid
+	@EXE=`echo $(apppkgdir)-suid/usr/libexec/apptainer/bin/*-suid`; \
+	  if [ -f "$$EXE" ]; then \
+	    chmod 4755 $$EXE; \
+	  fi
 
 override_dh_clean:
 	@rm -rf -- $(DEB_SC_BUILDDIR)

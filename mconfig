@@ -61,7 +61,7 @@ if test -z "${package_version}" ; then
 fi
 
 with_network=1
-with_suid=1
+with_suid=0
 with_seccomp_check=1
 do_go_version_check=1
 
@@ -116,7 +116,8 @@ usage_args () {
 	echo "     -h   this help"
 	echo
 	echo "  Apptainer options:"
-	echo "     --without-suid    do not install SUID binary (linux only)"
+	echo "     --without-suid    do not install SUID binary (default, linux only)"
+	echo "     --with-suid       do install SUID binary (linux only)"
 	echo "     --without-network do not compile/install network plugins (linux only)"
 	echo "     --without-seccomp do not compile/install seccomp support even if available"
 	echo "     --only-rpm        only configure for rpm (lower host go version check)"
@@ -368,6 +369,8 @@ while [ $# -ne 0 ]; do
    verbose=1; shift;;
   --without-suid)
    with_suid=0; shift;;
+  --with-suid)
+   with_suid=1; shift;;
   --without-network)
    with_network=0; shift;;
   --without-seccomp)

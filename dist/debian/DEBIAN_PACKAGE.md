@@ -50,8 +50,6 @@ configuration variables need to be prefixed by `DEB_`
 
 See `mconfig --help` for details about the configuration options.
 
-`export DEB_NOSUID=1`    adds --without-suid
-
 `export DEB_NONETWORK=1` adds --without-network
 
 `export DEB_NOSECCOMP=1` adds --without-seccomp
@@ -127,7 +125,7 @@ or all in one
 debuild --build=binary --no-sign --lintian-opts --display-info --show-overrides
 ```
 
-After successful build the Debian package can be found in the parent directory.
+After successful build the Debian packages can be found in the parent directory.
 
 To clean up the temporary files created by `debuild` use the command:
 

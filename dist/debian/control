@@ -3,9 +3,6 @@ Section: admin
 Priority: optional
 Maintainer: Gregory M. Kurtzer <gmkurtzer@gmail.com>
 Uploaders:
- Dave Love <fx@gnu.org>,
- Mehdi Dogguy <mehdi@debian.org>,
- Yaroslav Halchenko <debian@onerussian.com>,
  Gregory M. Kurtzer <gmkurtzer@gmail.com>,
 Build-Depends:
  debhelper (>= 9),
@@ -38,3 +35,9 @@ Description: container platform focused on supporting "Mobility of Compute"
  ideal solution for users (both computational and non-computational)
  and HPC centers.
 
+Package: apptainer-suid
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}, apptainer (= ${binary:Version})
+Description: setuid-root portion of apptainer
+ This package is the optional setuid-root portion of Apptainer.  
+ Without it, Apptainer will run only unprivileged command flows.
