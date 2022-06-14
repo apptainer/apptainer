@@ -8,7 +8,7 @@ require (
 	github.com/adigunhammedolalekan/registry-auth v0.0.0-20200730122110-8cde180a3a60
 	github.com/apex/log v1.9.0
 	github.com/apptainer/container-key-client v0.7.3
-	github.com/apptainer/container-library-client v1.3.2
+	github.com/apptainer/container-library-client v1.3.3
 	github.com/apptainer/sif/v2 v2.7.1
 	github.com/blang/semver/v4 v4.0.0
 	github.com/buger/jsonparser v1.1.1
@@ -137,7 +137,7 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
+	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220304144024-325a89244dc8 // indirect
 	google.golang.org/grpc v1.44.0 // indirect
