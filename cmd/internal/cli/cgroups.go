@@ -303,5 +303,7 @@ func deviceMajorMinor(path string) (major, minor int64, err error) {
 		return -1, -1, fmt.Errorf("%s is not a device", path)
 	}
 
-	return int64(unix.Major(stat.Rdev)), int64(unix.Minor(stat.Rdev)), nil
+	// Extra casting to uint64 for stat.Rdev to make sure correct type is set correctly on all archs
+	// and avoid failures on mips
+	return int64(unix.Major(uint64(stat.Rdev))), int64(unix.Minor(uint64(stat.Rdev))), nil
 }
