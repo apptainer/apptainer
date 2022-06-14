@@ -60,6 +60,7 @@
 - Mike Gray <mike@sylabs.io>
 - Nathan Chou <nathan.chou@sylabs.io>, <choun@berkeley.edu>
 - Nathan Lin <nathan.lin@yale.edu>
+- Nilesh Patra <nilesh@nileshpatra.info>
 - Oleksandr Moskalenko <om@rc.ufl.edu>
 - Oliver Breitwieser <obreitwi@kip.uni-heidelberg.de>, <oliver@breitwieser.eu>
 - Oliver Freyermuth <freyermuth@physik.uni-bonn.de>
