@@ -102,8 +102,9 @@ github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2 h1:+vx7roKuyA63n
 github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2/go.mod h1:HBCaDeC1lPdgDeDbhX8XFpy1jqjK0IBG8W5K+xYqA0w=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7/go.mod h1:z4/9nQmJSSwwds7ejkxaJwO37dru3geImFUdJlaLzQo=
-github.com/ProtonMail/go-crypto v0.0.0-20220407094043-a94812496cf5 h1:cSHEbLj0GZeHM1mWG84qEnGFojNEQ83W7cwaPRjcwXU=
 github.com/ProtonMail/go-crypto v0.0.0-20220407094043-a94812496cf5/go.mod h1:z4/9nQmJSSwwds7ejkxaJwO37dru3geImFUdJlaLzQo=
+github.com/ProtonMail/go-crypto v0.0.0-20220517143526-88bb52951d5b h1:lcbBNuQhppsc7A5gjdHmdlqUqJfgGMylBdGyDs0j7G8=
+github.com/ProtonMail/go-crypto v0.0.0-20220517143526-88bb52951d5b/go.mod h1:z4/9nQmJSSwwds7ejkxaJwO37dru3geImFUdJlaLzQo=
 github.com/PuerkitoBio/purell v1.0.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20160726150825-5bd2802263f2/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
@@ -138,8 +139,8 @@ github.com/apptainer/container-key-client v0.7.3 h1:7M4CQOnN5ss1NReIe4v3C+noQvOP
 github.com/apptainer/container-key-client v0.7.3/go.mod h1:wMeJdiMXlPRiwJfUyae2WRHsZlHG9Af6iPQ9TZcBnS8=
 github.com/apptainer/container-library-client v1.3.2 h1:20fvS82Ga6w2EWQY/zpnYzBiG5MR0EnRY37qA5MGdrw=
 github.com/apptainer/container-library-client v1.3.2/go.mod h1:E0JxfDpMHqnyrCdlI12OtRBR14aEy/3i67Jtx+5KBS0=
-github.com/apptainer/sif/v2 v2.7.0 h1:jDlQysDpiO98OrkrLdnk5d19HiwF0qiXjUQHiqsRsb0=
-github.com/apptainer/sif/v2 v2.7.0/go.mod h1:7XJTCo/Pg8F0wOWg5nyoHZRIXYrhHqWdWeq+HBB4g2s=
+github.com/apptainer/sif/v2 v2.7.1 h1:SOKVYyAzkZoixFWUNs2I/p6fc1ZRwYbes/6guN/jAt8=
+github.com/apptainer/sif/v2 v2.7.1/go.mod h1:Fv2WlhhLFTHNj3w++tpoUREQ4tngMCQxdqFwFZMOEtw=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
