@@ -1,0 +1,6 @@
+Bootstrap: docker
+From: ubuntu
+
+%test
+#!/usr/local/csh
+echo $0
