@@ -81,6 +81,13 @@ Requires: fuse-overlayfs
 Apptainer provides functionality to make portable
 containers that can be used across host environments.
 
+%package suid
+Summary: Setuid component of Apptainer
+Requires: %{name} = %{version}-%{release}
+
+%description suid
+Provides the optional setuid-root portion of Apptainer.
+
 %prep
 %autosetup -n %{name}-%{package_version}
 
@@ -101,7 +108,7 @@ fi
 
 # Not all of these parameters currently have an effect, but they might be
 #  used someday.  They are the same parameters as in the configure macro.
-./mconfig -P debug -V %{version}-%{release} \
+./mconfig -P debug -V %{version}-%{release} --with-suid \
         --prefix=%{_prefix} \
         --exec-prefix=%{_exec_prefix} \
         --bindir=%{_bindir} \
@@ -134,7 +141,6 @@ rmdir %{_sysconfdir}/singularity/* %{_sysconfdir}/singularity 2>/dev/null || tru
 %{!?_licensedir:%global license %doc}
 
 %files
-%attr(4755, root, root) %{_libexecdir}/%{name}/bin/starter-suid
 %{_bindir}/%{name}
 %{_bindir}/singularity
 %{_bindir}/run-singularity
@@ -155,6 +161,9 @@ rmdir %{_sysconfdir}/singularity/* %{_sysconfdir}/singularity 2>/dev/null || tru
 %license LICENSE_DEPENDENCIES.md
 %doc README.md
 %doc CHANGELOG.md
+
+%files suid
+%attr(4755, root, root) %{_libexecdir}/%{name}/bin/starter-suid
 
 %changelog
 

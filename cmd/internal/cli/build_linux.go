@@ -20,7 +20,6 @@ import (
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/build"
-	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	fakerootConfig "github.com/apptainer/apptainer/internal/pkg/runtime/engine/fakeroot/config"
@@ -45,7 +44,7 @@ func fakerootExec(cmdArgs []string) {
 		sylog.Infof("Use -T / --notest to disable running tests during the build")
 	}
 
-	useSuid := buildcfg.APPTAINER_SUID_INSTALL == 1
+	useSuid := starter.IsSuidInstall()
 
 	short := "-" + buildFakerootFlag.ShortHand
 	long := "--" + buildFakerootFlag.Name

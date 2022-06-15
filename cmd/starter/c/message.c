@@ -182,9 +182,7 @@ void _print(int level, const char *function, const char *file_in, char *format, 
             snprintf(header_string, 15, "%s%-7s: ", color, prefix);
         }
 
-        if ( level == INFO && messagelevel == INFO ) {
-            printf("%s%s", message, color_reset);
-        } else if ( level == INFO ) {
+        if ( level == INFO ) {
             printf("%s%s%s", header_string, message, color_reset);
         } else {
             fprintf(stderr, "%s%s%s", header_string, message, color_reset);

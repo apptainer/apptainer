@@ -1,8 +1,0 @@
-var/lib/apptainer
-var/lib/apptainer/mnt
-var/lib/apptainer/mnt/container
-var/lib/apptainer/mnt/final
-var/lib/apptainer/mnt/overlay
-var/lib/apptainer/mnt/session
-usr/share/bash-completion
-usr/share/man/man1

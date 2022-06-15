@@ -3,11 +3,7 @@
 Since you are reading this from the Apptainer source code, it will be assumed
 that you are building/compiling from source.
 
-Apptainer packages are available for various Linux distributions, but may not
-always be up-to-date with the latest source release version.
-
-For full instructions on installation, including building RPMs,
-installing pre-built EPEL packages etc. please check the
+For more complete instructions on installation options, please check the
 [installation section of the admin guide](https://apptainer.org/docs/admin/main/installation.html).
 
 ## Install system dependencies
@@ -165,16 +161,19 @@ install prefix to a different path:
 ./mconfig -b ./buildtree -p /usr/local
 ```
 
+If you want a setuid-installation (formerly the default) use the
+`--with-suid` option.
+
 See the output of `./mconfig -h` for available options.
 
-## Building & Installing from an RPM
+## Building & Installing from RPM
 
-On a RHEL / CentOS / Fedora machine you can build an Apptainer into an rpm
-package, and install it from the rpm. This is useful if you need to install
+On a RHEL / CentOS / Fedora machine you can build an Apptainer into rpm
+packages, and install it from them. This is useful if you need to install
 Apptainer across multiple machines, or wish to manage all software via
 `yum/dnf`.
 
-To build the rpm, in addition to the
+To build the rpms, in addition to the
 [dependencies](#install-system-dependencies),
 install `rpm-build`, `wget`, and `golang`:
 
@@ -210,19 +209,21 @@ and use it to install the RPM like this:
 VERSION=1.0.2  # this is the apptainer version, change as you need
 # Fetch the source
 wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
-# Build the rpm from the source tar.gz
+# Build rpms from the source tar.gz
 rpmbuild -tb apptainer-${VERSION}.tar.gz
 # Install Apptainer using the resulting rpm
 sudo rpm -Uvh ~/rpmbuild/RPMS/x86_64/apptainer-$(echo $VERSION|tr - \~)-1.el7.x86_64.rpm
+# (Optionally) Install the setuid-root portion
+sudo rpm -Uvh ~/rpmbuild/RPMS/x86_64/apptainer-suid-$(echo $VERSION|tr - \~)-1.el7.x86_64.rpm
 # (Optionally) Remove the build tree and source to save space
 rm -rf ~/rpmbuild apptainer-${VERSION}*.tar.gz
 ```
 
 <!-- markdownlint-enable MD013 -->
 
-Alternatively, to build an RPM from the latest main you can
+Alternatively, to build RPMs from the latest main you can
 [clone the repo as detailed above](#clone-the-repo).
-Then use the `rpm` make target to build Apptainer as an rpm package,
+Then use the `rpm` make target to build Apptainer as rpm packages,
 for example like this if you already have a new enough golang first
 in your PATH:
 
@@ -233,26 +234,28 @@ VERSION=1.0.2  # this is the latest apptainer version, change as you need
 ./mconfig
 make -C builddir rpm
 sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-$(echo $VERSION|tr - \~)*.x86_64.rpm 
+# (Optionally) Install the setuid-root portion
+sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-suid-$(echo $VERSION|tr - \~)*.x86_64.rpm 
 ```
 
 <!-- markdownlint-enable MD013 -->
 
-By default, the rpm will be built so that Apptainer is installed in
+By default, the rpms will be built so that Apptainer is installed in
 standard Linux paths under ``/``.
 
-To build an rpm with an alternative install prefix set RPMPREFIX on the make
+To build rpms with an alternative install prefix set RPMPREFIX on the make
 step, for example:
 
 ```sh
 make -C builddir rpm RPMPREFIX=/opt/apptainer
 ```
 
-For more information on installing/updating/uninstalling the RPM, check out our
+For more information on installing/updating/uninstalling RPMs, check out our
 [admin docs](https://apptainer.org/docs/admin/main/admin_quickstart.html).
 
 ## Debian Package
 
-Information on how to build a Debian package can be found in
+Information on how to build Debian packages can be found in
 [dist/debian/DEBIAN_PACKAGE.md](dist/debian/DEBIAN_PACKAGE.md).
 
 ## Run E2E tests

@@ -1413,7 +1413,11 @@ __attribute__((constructor)) static void init(void) {
         if ( sconfig->starter.isSuid ) {
             priv_escalate(true);
         } else if ( uid != 0 ) {
-            fatalf("No setuid installation found, for unprivileged installation use: ./mconfig --without-suid\n");
+            /*
+             * This case should not be hit because IsSuidInstall() checks
+             * earlier to make sure starter-suid is setuid root
+             */
+            fatalf("installation issue: starter-suid doesn't have setuid bit set\n");
         }
         break;
     case ENTER_NAMESPACE:
@@ -1428,6 +1432,8 @@ __attribute__((constructor)) static void init(void) {
             }
             /* master and container processes lives in the same user namespace */
             if ( create_namespace(CLONE_NEWUSER) < 0 ) {
+                infof("A system administrator may need to enable user namespaces, install\n");
+                infof("  apptainer-suid, or compile with ./mconfig --with-suid\n");
                 fatalf("Failed to create user namespace: %s\n", nserror(errno, CLONE_NEWUSER));
             }
         } else {

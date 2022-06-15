@@ -20,6 +20,7 @@
                          exit(1)
 #define debugf(b...)     apptainer_message(DEBUG, b)
 #define verbosef(b...)   apptainer_message(VERBOSE, b)
+#define infof(b...)      apptainer_message(INFO, b)
 #define warningf(b...)   apptainer_message(WARNING, b)
 #define errorf(b...)     apptainer_message(ERROR, b)
 
