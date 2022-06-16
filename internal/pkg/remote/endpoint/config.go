@@ -33,6 +33,7 @@ var DefaultEndpointConfig = &Config{
 type Config struct {
 	URI        string           `yaml:"URI,omitempty"`
 	Token      string           `yaml:"Token,omitempty"`
+    Scheme     string           `yaml:"Scheme,omitempty"`
 	System     bool             `yaml:"System"`    // Was this EndPoint set from system config file
 	Exclusive  bool             `yaml:"Exclusive"` // true if the endpoint must be used exclusively
 	Keyservers []*ServiceConfig `yaml:"Keyservers,omitempty"`
