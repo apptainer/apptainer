@@ -54,7 +54,7 @@ func RemoteAdd(configFile, name, uri string, global bool) (err error) {
 	if err != nil {
 		return err
 	}
-    e := endpoint.Config{URI: path.Join(u.Host + u.Path), Scheme: u.Scheme, System: global}
+	e := endpoint.Config{URI: path.Join(u.Host + u.Path), Scheme: u.Scheme, System: global}
 
 	if err := c.Add(name, &e); err != nil {
 		return err

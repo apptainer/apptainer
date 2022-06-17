@@ -123,16 +123,16 @@ func (config *Config) GetAllServices() (map[string][]Service, error) {
 		Timeout: defaultTimeout,
 	}
 
-    // Add the Scheme to the URL if exists
+	// Add the Scheme to the URL if exists
 
-    var url string
-    if len(config.Scheme) > 0 {
-        url = config.Scheme + "://" + config.URI + "/assets/config/config.prod.json"
-    } else {
-        url = "https://" + config.URI + "/assets/config/config.prod.json"
-    }
+	var url string
+	if len(config.Scheme) > 0 {
+		url = config.Scheme + "://" + config.URI + "/assets/config/config.prod.json"
+	} else {
+		url = "https://" + config.URI + "/assets/config/config.prod.json"
+	}
 
-    req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}

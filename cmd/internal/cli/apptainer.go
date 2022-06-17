@@ -832,9 +832,9 @@ func getLibraryClientConfig(uri string) (*libClient.Config, error) {
 }
 
 func URI() string {
-    if len(currentRemoteEndpoint.Scheme) > 0 {
-	    return currentRemoteEndpoint.Scheme + "://" + strings.TrimSuffix(currentRemoteEndpoint.URI, "/")
-    } else {
-        return "https://" + strings.TrimSuffix(currentRemoteEndpoint.URI, "/")
-    }
+	if len(currentRemoteEndpoint.Scheme) > 0 {
+		return currentRemoteEndpoint.Scheme + "://" + strings.TrimSuffix(currentRemoteEndpoint.URI, "/")
+	} else {
+		return "https://" + strings.TrimSuffix(currentRemoteEndpoint.URI, "/")
+	}
 }
