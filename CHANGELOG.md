@@ -9,18 +9,26 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Changed defaults / behaviours
 
-- When starting a container, if the user has specified the cwd by using
-  the `--pwd` flag, in case of problem return error instead of defaulting to
-  a different directory.
-- Added a squashfuse image driver that enables mounting SIF files as an
-  unprivileged user.  Requires the separate installation of squashfuse.
+- The most significant change is that Apptainer no longer installs a
+  setuid-root portion by default.
+  This is now reasonable to do because most operations can be done with
+  only unprivileged user namespaces (see additional changes below).
+  If installing from rpm or debian packages, the setuid portion can be
+  included by installing the `apptainer-suid` package, or if installing
+  from source it can be included by compiling with the mconfig
+  `--with-suid` option.
+- Added a squashfuse image driver that enables mounting SIF files without
+  using setuid-root.  Requires the squashfuse command and unprivileged user
+  namespaces.
 - Added the ability to use persistent overlay (`--overlay`) and
-  `--writable-tmpfs` as an unprivileged user.  This works when the
-  kernel is new enough (>= 5.11) or if fuse-overlayfs is available.
+  `--writable-tmpfs` without using setuid-root.
+  This requires unprivileged user namespaces and either a new enough
+  kernel (>= 5.11) or the fuse-overlayfs command.
   Persistent overlay only works when the overlay path is to a regular
   filesystem (known as "sandbox" mode), which is not allowed when in
-  setuid mode.  Does not work with a SIF partition because it requires
-  privileges to mount that as an ext3 image.
+  setuid mode.
+  Does not work with a SIF partition because that requires privileges to
+  mount as an ext3 image.
 - Enabled unprivileged users to build containers without the `--fakeroot`
   option.  Requires the fakeroot command.  
   This is simpler to administer than the `--fakeroot` option because
@@ -44,6 +52,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   up the home directory in the password file.  The value of $HOME inside
   the container still defaults to the home directory in the password file
   and can still be overridden by the ``--home`` option.
+- When starting a container, if the user has specified the cwd by using
+  the `--pwd` flag, in case of problem return error instead of defaulting to
+  a different directory.
 - `oci mount` sets `Process.Terminal: true` when creating an OCI `config.json`,
   so that `oci run` provides expected interactive behavior by default.
 - Default hostname for `oci mount` containers is now `apptainer` instead of
