@@ -52,7 +52,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools/v3 v3.2.0
 	mvdan.cc/sh/v3 v3.5.1
-	oras.land/oras-go v1.1.1
+	oras.land/oras-go v1.2.0
 )
 
 require (
@@ -79,7 +79,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/d2g/dhcp4 v0.0.0-20170904100407-a1d1b6c41b1c // indirect
 	github.com/d2g/dhcp4client v1.0.0 // indirect
-	github.com/docker/cli v20.10.11+incompatible // indirect
+	github.com/docker/cli v20.10.17+incompatible // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.6.4 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
@@ -113,9 +113,9 @@ require (
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/networkplumbing/go-nft v0.2.0 // indirect
 	github.com/proglottis/gpgme v0.1.1 // indirect
-	github.com/prometheus/client_golang v1.11.1 // indirect
+	github.com/prometheus/client_golang v1.12.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.30.0 // indirect
+	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rootless-containers/proto v0.1.0 // indirect
@@ -135,9 +135,9 @@ require (
 	go.etcd.io/bbolt v1.3.6 // indirect
 	go.mozilla.org/pkcs7 v0.0.0-20200128120323-432b2356ecb1 // indirect
 	go.opencensus.io v0.23.0 // indirect
-	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect
+	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
-	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29 // indirect
+	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220304144024-325a89244dc8 // indirect
 	google.golang.org/grpc v1.44.0 // indirect
