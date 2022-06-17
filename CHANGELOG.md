@@ -22,11 +22,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
   setuid mode.  Does not work with a SIF partition because it requires
   privileges to mount that as an ext3 image.
 - Enabled unprivileged users to build containers without the `--fakeroot`
-  option.  Requires the fakeroot command.  
+  option.  Requires the fakeroot command.
   This is simpler to administer than the `--fakeroot` option because
   there is no need for maintaining /etc/subuid and /etc/subgid mappings.
   On the other hand, it isn't as complete an emulation and may fail under
-  some circumstances.  
+  some circumstances.
   The %post scriptlet is run with fakeroot, which is needed to allow
   package installation scripts to think they were run as root.
   Works better with unprivileged user namespaces because then everything
@@ -65,6 +65,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
     source. *Applies to newly built containers only, use `apptainer inspect`
     to check version that container was built with*.
 - Added `--no-eval` to the list of flags set by the OCI/Docker `--compat` mode.
+- Remotes can now be added with http URLs. In this case all communication with
+  the remote will use http as well. The `--no-https` option for pull/exec/...
+  is no longer necessary in this case.
 
 ### New features / functionalities
 
