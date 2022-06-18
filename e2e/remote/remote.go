@@ -44,6 +44,7 @@ func (c ctx) remoteAdd(t *testing.T) {
 	}{
 		{"AddCloud", "cloud", "cloud.sylabs.io"},
 		{"AddOtherCloud", "other", "cloud.sylabs.io"},
+		{"LocalHTTPCloud", "localhttp", "http://localhost"},
 	}
 
 	for _, tt := range testPass {
@@ -100,6 +101,7 @@ func (c ctx) remoteRemove(t *testing.T) {
 	}{
 		{"addCloud", "cloud", "cloud.sylabs.io"},
 		{"addOther", "other", "cloud.sylabs.io"},
+		{"LocalHTTPCloud", "localhttp", "http://localhost"},
 	}
 
 	for _, tt := range add {
@@ -120,6 +122,7 @@ func (c ctx) remoteRemove(t *testing.T) {
 	}{
 		{"RemoveCloud", "cloud"},
 		{"RemoveOther", "other"},
+		{"removeLocalHTTP", "localhttp"},
 	}
 
 	for _, tt := range testPass {
@@ -192,6 +195,7 @@ func (c ctx) remoteUse(t *testing.T) {
 	}{
 		{"addCloud", "cloud", "cloud.sylabs.io"},
 		{"addOther", "other", "cloud.sylabs.io"},
+		{"LocalHTTPCloud", "localhttp", "http://localhost"},
 	}
 
 	for _, tt := range add {
@@ -212,6 +216,7 @@ func (c ctx) remoteUse(t *testing.T) {
 	}{
 		{"UseFromNothingToRemote", "cloud"},
 		{"UseFromRemoteToRemote", "other"},
+		{"UseFromLocalHTTP", "localhttp"},
 	}
 
 	for _, tt := range testPass {
