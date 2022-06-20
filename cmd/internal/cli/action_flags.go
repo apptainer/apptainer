@@ -468,7 +468,7 @@ var actionNoMountFlag = cmdline.Flag{
 	Value:        &NoMount,
 	DefaultValue: []string{},
 	Name:         "no-mount",
-	Usage:        "disable one or more 'mount xxx' options set in apptainer.conf and/or specify absolute destination path to disable a 'bind path' entry",
+	Usage:        "disable one or more 'mount xxx' options set in apptainer.conf and/or specify absolute destination path to disable a bind path entry, or 'bind-paths' to disable all bind path entries.",
 	EnvKeys:      []string{"NO_MOUNT"},
 }
 

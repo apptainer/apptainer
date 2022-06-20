@@ -160,7 +160,11 @@ func setNoMountFlags(c *apptainerConfig.EngineConfig) {
 			c.SetNoHostfs(true)
 		case "cwd":
 			c.SetNoCwd(true)
+		// All bind path apptainer.conf entries
+		case "bind-paths":
+			skipBinds = append(skipBinds, "*")
 		default:
+			// Single bind path apptainer.conf entry by abs path
 			if filepath.IsAbs(v) {
 				skipBinds = append(skipBinds, v)
 				continue

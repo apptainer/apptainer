@@ -7,6 +7,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes Since Last Release
 
+### New features / functionalities
+
+- The `--no-mount` flag now accepts the value `bind-paths` to disable mounting of
+  all `bind path` entries in `apptainer.conf.
+
+## Changes Since Last Release Candidate
+
 - Add `--sparse` flag to `overlay create` command to allow generation of a
   sparse ext3 overlay image.
 - Support for a custom hashbang in the `%test` section of an Apptainer recipe
