@@ -170,6 +170,7 @@ var internalOptions = []string{"loop", "offset", "sizelimit", "key", "skip-on-er
 type Point struct {
 	specs.Mount
 	InternalOptions []string `json:"internalOptions"`
+    MaskedPaths []string `json:"maskedPaths"`
 }
 
 // Points defines and stores a set of mount points by tag
