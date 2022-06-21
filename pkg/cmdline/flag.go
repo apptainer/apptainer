@@ -36,6 +36,8 @@ type Flag struct {
 	Required     bool
 	EnvKeys      []string
 	EnvHandler   EnvHandler
+	// Export envar also without prefix
+	WithoutPrefix bool
 }
 
 // flagManager manages cobra command flags and store them
@@ -57,6 +59,11 @@ func (m *flagManager) setFlagOptions(flag *Flag, cmd *cobra.Command) {
 
 	if len(flag.EnvKeys) > 0 {
 		cmd.Flags().SetAnnotation(flag.Name, "envkey", flag.EnvKeys)
+
+		// Environment flags can also be exported without a prefix (e.g. DOCKER_*)
+		if flag.WithoutPrefix {
+			cmd.Flags().SetAnnotation(flag.Name, "withoutPrefix", []string{"true"})
+		}
 	}
 	if flag.Deprecated != "" {
 		cmd.Flags().MarkDeprecated(flag.Name, flag.Deprecated)
@@ -209,9 +216,28 @@ func (m *flagManager) updateCmdFlagFromEnv(cmd *cobra.Command, precedence int, f
 			return
 		}
 		for _, key := range envKeys {
+
+			// First priority goes to prefixed variable
 			val, set := os.LookupEnv(prefix + key)
+			withoutPrefix := false
 			if !set {
-				continue
+
+				// The prefix-less check only needs to be done for precedence 0
+				if precedence > 0 {
+					continue
+				}
+
+				// Determine if environment keys should be looked for without prefix
+				// This annotation just needs to be present, period
+				_, withoutPrefix = flag.Annotations["withoutPrefix"]
+				if !withoutPrefix {
+					continue
+				}
+				// Second try - looking for the same without prefix!
+				val, set = os.LookupEnv(key)
+				if !set {
+					continue
+				}
 			}
 			if precedence > 0 {
 				if foundVal, ok := foundKeys[key]; ok {
@@ -225,7 +251,9 @@ func (m *flagManager) updateCmdFlagFromEnv(cmd *cobra.Command, precedence int, f
 					sylog.Warningf("DEPRECATED USAGE: Environment variable %s will not be supported in the future, use %s instead", prefix+key, env.ApptainerPrefixes[0]+key)
 				}
 			}
-			foundKeys[key] = val
+			if !withoutPrefix {
+				foundKeys[key] = val
+			}
 			if mflag.EnvHandler != nil {
 				if err := mflag.EnvHandler(flag, val); err != nil {
 					errs = append(errs, err)

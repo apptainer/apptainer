@@ -55,6 +55,8 @@ type Options struct {
 	KeyServerOpts []keyClient.Option
 	// contains docker credentials if specified.
 	DockerAuthConfig *ocitypes.DockerAuthConfig
+	// Custom docker Daemon host
+	DockerDaemonHost string
 	// EncryptionKeyInfo specifies the key used for filesystem
 	// encryption if applicable.
 	// A nil value indicates encryption should not occur.

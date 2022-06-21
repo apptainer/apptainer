@@ -12,6 +12,7 @@ package docker
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -20,6 +21,7 @@ import (
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	dockerclient "github.com/docker/docker/client"
 	"github.com/pkg/errors"
 	"golang.org/x/sys/unix"
 )
@@ -120,6 +122,138 @@ func (c ctx) testDockerPulls(t *testing.T) {
 			e2e.ExpectExit(tt.exit),
 		)
 	}
+}
+
+// Testing DOCKER_ host support (only if docker available)
+func (c ctx) testDockerHost(t *testing.T) {
+	require.Command(t, "docker")
+
+	// Write a temporary "empty" Dockerfile (from scratch)
+	tmpPath, err := fs.MakeTmpDir(c.env.TestDir, "docker-", 0o755)
+	err = errors.Wrapf(err, "creating temporary directory in %q for docker host test", c.env.TestDir)
+	if err != nil {
+		t.Fatalf("failed to create temporary directory: %+v", err)
+	}
+	defer os.RemoveAll(tmpPath)
+
+	// Here is the Dockerfile, and a temporary image path
+	dockerfile := filepath.Join(tmpPath, "Dockerfile")
+	emptyfile := filepath.Join(tmpPath, "file")
+	tmpImage := filepath.Join(tmpPath, "scratch-tmp.sif")
+
+	// Write Dockerfile and empty file to file
+	dockerfileContent := []byte("FROM scratch\nCOPY file /mrbigglesworth")
+	err = os.WriteFile(dockerfile, dockerfileContent, 0o644)
+	if err != nil {
+		t.Fatalf("failed to create temporary Dockerfile: %+v", err)
+	}
+
+	fileContent := []byte("")
+	err = os.WriteFile(emptyfile, fileContent, 0o644)
+	if err != nil {
+		t.Fatalf("failed to create empty file: %+v", err)
+	}
+
+	dockerURI := "dinosaur/test-image:latest"
+	pullURI := "docker-daemon:" + dockerURI
+
+	// Invoke docker build to build an empty scratch image in the docker daemon.
+	// Use os/exec because easier to generate a command with a working directory
+	e2e.Privileged(func(t *testing.T) {
+		cmd := exec.Command("docker", "build", "-t", dockerURI, ".")
+		cmd.Dir = tmpPath
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatalf("Unexpected error while running command.\n%s: %s", err, string(out))
+		}
+	})
+
+	tests := []struct {
+		name       string
+		envarName  string
+		envarValue string
+		exit       int
+	}{
+		// Unset docker host should use default and succeed
+		{
+			name:       "apptainerDockerHostEmpty",
+			envarName:  "APPTAINER_DOCKER_HOST",
+			envarValue: "",
+			exit:       0,
+		},
+		{
+			name:       "dockerHostEmpty",
+			envarName:  "DOCKER_HOST",
+			envarValue: "",
+			exit:       0,
+		},
+
+		// bad Docker host should fail
+		{
+			name:       "apptainerDockerHostInvalid",
+			envarName:  "APPTAINER_DOCKER_HOST",
+			envarValue: "tcp://192.168.59.103:oops",
+			exit:       255,
+		},
+		{
+			name:       "dockerHostInvalid",
+			envarName:  "DOCKER_HOST",
+			envarValue: "tcp://192.168.59.103:oops",
+			exit:       255,
+		},
+
+		// Set to default should succeed
+		// The default host varies based on OS, so we use dockerclient default
+		{
+			name:       "apptainerDockerHostValid",
+			envarName:  "APPTAINER_DOCKER_HOST",
+			envarValue: dockerclient.DefaultDockerHost,
+			exit:       0,
+		},
+		{
+			name:       "dockerHostValid",
+			envarName:  "DOCKER_HOST",
+			envarValue: dockerclient.DefaultDockerHost,
+			exit:       0,
+		},
+	}
+
+	for _, tt := range tests {
+		// Export variable to environment if it's defined
+		if tt.envarValue != "" {
+			e2e.Privileged(func(t *testing.T) {
+				c.env.RunApptainer(
+					t,
+					e2e.WithEnv(append(os.Environ(), tt.envarValue)),
+					e2e.AsSubtest(tt.name),
+					e2e.WithProfile(e2e.UserProfile),
+					e2e.WithCommand("pull"),
+					e2e.WithArgs(tmpImage, pullURI),
+					e2e.ExpectExit(tt.exit),
+				)
+			})
+		} else {
+			e2e.Privileged(func(t *testing.T) {
+				c.env.RunApptainer(
+					t,
+					e2e.AsSubtest(tt.name),
+					e2e.WithProfile(e2e.UserProfile),
+					e2e.WithCommand("pull"),
+					e2e.WithArgs(tmpImage, pullURI),
+					e2e.ExpectExit(tt.exit),
+				)
+			})
+		}
+	}
+
+	// Clean up docker image
+	e2e.Privileged(func(t *testing.T) {
+		cmd := exec.Command("docker", "rmi", dockerURI)
+		_, err = cmd.Output()
+		if err != nil {
+			t.Fatalf("Unexpected error while cleaning up docker image.\n%s", err)
+		}
+	})
 }
 
 // AUFS sanity tests
@@ -732,6 +866,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	return testhelper.Tests{
 		"AUFS":             c.testDockerAUFS,
 		"def file":         c.testDockerDefFile,
+		"docker host":      c.testDockerHost,
 		"permissions":      c.testDockerPermissions,
 		"pulls":            c.testDockerPulls,
 		"registry":         c.testDockerRegistry,

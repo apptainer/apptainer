@@ -912,6 +912,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&commonNoHTTPSFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&commonOldNoHTTPSFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&dockerLoginFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&dockerHostFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&dockerPasswordFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&dockerUsernameFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionEnvFlag, actionsInstanceCmd...)
