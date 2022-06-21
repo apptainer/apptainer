@@ -1,9 +1,8 @@
-### Version of Apptainer:
+### Version of Apptainer
 
 What version of Apptainer (or Singularity) are you using? Run
 
 `apptainer --version` (or `singularity --version`).
-
 
 <!-- please include command-line output in a code block -->
 
@@ -11,12 +10,9 @@ What version of Apptainer (or Singularity) are you using? Run
 
 What did you expect to see when you do...?
 
-
 ### Actual behavior
 
 What actually happend? Why was it incorrect?
-
-
 
 <!-- if this is a feature request, you can ignore this next part -->
 
@@ -24,18 +20,13 @@ What actually happend? Why was it incorrect?
 
 How can others reproduce this issue/problem?
 
-
 ### What OS/distro are you running
 
-```
+```sh
 $ cat /etc/os-release
 
-
 ```
-
 
 ### How did you install Apptainer
 
 Write here how you installed Apptainer (or Singularity). Eg. RPM, source.
-
-
