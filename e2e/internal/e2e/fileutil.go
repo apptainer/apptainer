@@ -38,11 +38,8 @@ func WriteTempFile(dir, pattern, content string) (string, error) {
 	return tmpfile.Name(), nil
 }
 
-// MakeTempDir creates a temporary image cache directory that can then be
+// MakeTempDir creates a temporary directory that can then be
 // used for the execution of a e2e test.
-//
-// This function shall not set the environment variable to specify the
-// image cache location since it would create thread safety problems.
 func MakeTempDir(t *testing.T, baseDir string, prefix string, context string) (string, func(t *testing.T)) {
 	dir, err := fs.MakeTmpDir(baseDir, prefix, 0o755)
 	err = errors.Wrapf(err, "creating temporary %s at %s", context, baseDir)

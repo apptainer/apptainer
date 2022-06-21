@@ -75,7 +75,7 @@ func (c cacheTests) issue5097(t *testing.T) {
 	}
 }
 
-// issue5350 - need to handle the cache being inside a non-accssible directory
+// issue5350 - need to handle the cache being inside a non-accessible directory
 // e.g. home directory without perms to access
 func (c cacheTests) issue5350(t *testing.T) {
 	outerDir, cleanupOuter := e2e.MakeTempDir(t, c.env.TestDir, "issue5350-cache-", "")
