@@ -206,7 +206,7 @@ func (config *Config) GetServiceURI(service string) (string, error) {
 		}
 	}
 
-    services, err := config.GetAllServices()
+	services, err := config.GetAllServices()
 	if err != nil {
 		return "", err
 	}
