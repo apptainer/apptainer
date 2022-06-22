@@ -40,6 +40,7 @@ var (
 	remoteNoLogin           bool
 	global                  bool
 	remoteUseExclusive      bool
+	remoteAddInsecure       bool
 )
 
 // assemble values of remoteConfig for user/sys locations
@@ -155,6 +156,16 @@ var remoteKeyserverInsecureFlag = cmdline.Flag{
 	Usage:        "allow insecure connection to keyserver",
 }
 
+// -i|--insecure
+var remoteAddInsecureFlag = cmdline.Flag{
+	ID:           "remoteAddInsecureFlag",
+	Value:        &remoteAddInsecure,
+	DefaultValue: false,
+	Name:         "insecure",
+	ShortHand:    "i",
+	Usage:        "allow connection to an insecure http remote; alternatively set the environment variable APPTAINER_REMOTE_ADD_INSECURE to true",
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(RemoteCmd)
@@ -176,6 +187,8 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&remoteGlobalFlag, RemoteAddCmd, RemoteRemoveCmd, RemoteUseCmd)
 		// add --no-login flag to add command
 		cmdManager.RegisterFlagForCmd(&remoteNoLoginFlag, RemoteAddCmd)
+		// add --insecure, --no-login flags to add command
+		cmdManager.RegisterFlagForCmd(&remoteAddInsecureFlag, RemoteAddCmd)
 
 		cmdManager.RegisterFlagForCmd(&remoteLoginUsernameFlag, RemoteLoginCmd)
 		cmdManager.RegisterFlagForCmd(&remoteLoginPasswordFlag, RemoteLoginCmd)
@@ -228,8 +241,24 @@ var RemoteAddCmd = &cobra.Command{
 	PreRun: setGlobalRemoteConfig,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
+
 		uri := args[1]
-		if err := apptainer.RemoteAdd(remoteConfig, name, uri, global); err != nil {
+
+		// Implicitly set --insecure if APPTAINER_REMOTE_ADD_INSECURE is true
+		localInsecure := remoteAddInsecure
+		insecureEnv := os.Getenv("APPTAINER_REMOTE_ADD_INSECURE")
+		if insecureEnv == "1" || strings.EqualFold(insecureEnv, "true") {
+			localInsecure = true
+		}
+		if strings.HasPrefix(uri, "https://") {
+			localInsecure = false
+		}
+
+		if strings.HasPrefix(uri, "http://") && !localInsecure {
+			sylog.Fatalf("Add http URI without specifying --insecure or setting APPTAINER_REMOTE_ADD_INSECURE to true.")
+		}
+
+		if err := apptainer.RemoteAdd(remoteConfig, name, uri, global, localInsecure); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 		sylog.Infof("Remote %q added.", name)

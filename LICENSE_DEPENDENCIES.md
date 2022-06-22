@@ -113,6 +113,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/docker/libtrust/blob/master/LICENSE>
 
+## github.com/gosimple/unidecode
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/gosimple/unidecode/blob/master/LICENSE>
+
 ## github.com/klauspost/compress
 
 **License:** Apache-2.0
@@ -688,6 +694,12 @@ The dependencies and their licenses are as follows:
 **License:** MIT
 
 **Project URL:** <https://go.mozilla.org/pkcs7>
+
+## github.com/gosimple/slug
+
+**License:** MPL-2.0
+
+**License URL:** <https://github.com/gosimple/slug/blob/master/LICENSE>
 
 ## github.com/hashicorp/errwrap
 

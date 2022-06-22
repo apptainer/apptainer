@@ -109,6 +109,7 @@ func TestRemoteAdd(t *testing.T) {
 		remoteName string
 		uri        string
 		global     bool
+		insecure   bool
 		shallPass  bool
 	}{
 		{
@@ -346,6 +347,15 @@ func TestRemoteAdd(t *testing.T) {
 			global:     false,
 			shallPass:  true,
 		},
+		{
+			name:       "30: valid config file; valid remote name; valid URI; local; insecure",
+			cfgfile:    validCfgFile,
+			remoteName: validRemoteName,
+			uri:        validURI,
+			global:     false,
+			insecure:   true,
+			shallPass:  true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -371,7 +381,7 @@ func TestRemoteAdd(t *testing.T) {
 				remote.SystemConfigPath = tt.cfgfile
 			}
 
-			err := RemoteAdd(tt.cfgfile, tt.remoteName, tt.uri, tt.global)
+			err := RemoteAdd(tt.cfgfile, tt.remoteName, tt.uri, tt.global, tt.insecure)
 			if tt.shallPass == true && err != nil {
 				restoreSysConfig()
 				t.Fatalf("valid case failed: %s\n", err)

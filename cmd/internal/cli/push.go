@@ -106,13 +106,17 @@ var PushCmd = &cobra.Command{
 			if err != nil {
 				sylog.Fatalf("Unable to get keyserver client configuration: %v", err)
 			}
+			feURL, err := currentRemoteEndpoint.GetURL()
+			if err != nil {
+				sylog.Fatalf("Unable to find remote web URI %v", err)
+			}
 
 			pushSpec := apptainer.LibraryPushSpec{
 				SourceFile:    file,
 				DestRef:       dest,
 				Description:   pushDescription,
 				AllowUnsigned: unsignedPush,
-				FrontendURI:   URI(),
+				FrontendURI:   feURL,
 			}
 
 			err = apptainer.LibraryPush(cmd.Context(), pushSpec, lc, co)
