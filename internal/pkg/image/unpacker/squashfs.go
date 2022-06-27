@@ -64,9 +64,17 @@ type Squashfs struct {
 }
 
 // NewSquashfs initializes and returns a Squahfs unpacker instance
-func NewSquashfs() *Squashfs {
+func NewSquashfs(envPath string) *Squashfs {
+	if envPath != "" {
+		oldPath := os.Getenv("PATH")
+		os.Setenv("PATH", envPath)
+		defer os.Setenv("PATH", oldPath)
+	}
 	s := &Squashfs{}
+	defaultPath := os.Getenv("PATH")
+	os.Setenv("PATH", os.Getenv("USER_PATH"))
 	s.UnsquashfsPath, _ = bin.FindBin("unsquashfs")
+	os.Setenv("PATH", defaultPath)
 	return s
 }
 

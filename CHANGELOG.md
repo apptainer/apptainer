@@ -76,6 +76,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
     source. *Applies to newly built containers only, use `apptainer inspect`
     to check version that container was built with*.
 - Added `--no-eval` to the list of flags set by the OCI/Docker `--compat` mode.
+- Support finding unsquashfs and its library dependencies from non-standard locations
 
 ### New features / functionalities
 

@@ -55,7 +55,7 @@ import (
 // convertImage extracts the image found at filename to directory dir within a temporary directory
 // tempDir. If the unsquashfs binary is not located, the binary at unsquashfsPath is used. It is
 // the caller's responsibility to remove rootfsDir when no longer needed.
-func convertImage(filename string, unsquashfsPath string, tmpDir string) (rootfsDir, imageDir string, err error) {
+func convertImage(filename string, unsquashfsPath string, tmpDir string, userPath string) (rootfsDir, imageDir string, err error) {
 	img, err := imgutil.Init(filename, false)
 	if err != nil {
 		return "", "", fmt.Errorf("could not open image %s: %s", filename, err)
@@ -85,7 +85,7 @@ func convertImage(filename string, unsquashfsPath string, tmpDir string) (rootfs
 	if err != nil {
 		return "", "", fmt.Errorf("could not extract root filesystem: %s", err)
 	}
-	s := unpacker.NewSquashfs()
+	s := unpacker.NewSquashfs(userPath)
 	if !s.HasUnsquashfs() && unsquashfsPath != "" {
 		s.UnsquashfsPath = unsquashfsPath
 	}
@@ -716,7 +716,8 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			}
 			sylog.Verbosef("User namespace requested, convert image %s to sandbox", image)
 			sylog.Infof("Converting SIF file to temporary sandbox...")
-			rootfsDir, imageDir, err := convertImage(image, unsquashfsPath, tmpDir)
+			userPath := os.Getenv("USER_PATH")
+			rootfsDir, imageDir, err := convertImage(image, unsquashfsPath, tmpDir, userPath)
 			if err != nil {
 				sylog.Fatalf("while extracting %s: %s", image, err)
 			}
