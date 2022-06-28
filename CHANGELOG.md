@@ -82,9 +82,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   resource limits to a container directly.
 - `remote add --insecure` may be used to configure endpoints that are only
   accessible via http. Alternatively the environment variable
-  `APPTAINER_REMOTE_ADD_INSECURE` can be set to true to allow http remotes to be
+  `APPTAINER_ADD_INSECURE` can be set to true to allow http remotes to be
   added wihtout the `--insecure` flag. Specifying https in the remote URI
-  overrules both `--insecure` and `APPTAINER_REMOTE_ADD_INSECURE`.
+  overrules both `--insecure` and `APPTAINER_ADD_INSECURE`.
 
 ### Bug fixes
 

@@ -163,7 +163,8 @@ var remoteAddInsecureFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "insecure",
 	ShortHand:    "i",
-	Usage:        "allow connection to an insecure http remote; alternatively set the environment variable APPTAINER_REMOTE_ADD_INSECURE to true",
+	Usage:        "allow connection to an insecure http remote.",
+	EnvKeys:      []string{"ADD_INSECURE"},
 }
 
 func init() {
@@ -246,16 +247,13 @@ var RemoteAddCmd = &cobra.Command{
 
 		// Implicitly set --insecure if APPTAINER_REMOTE_ADD_INSECURE is true
 		localInsecure := remoteAddInsecure
-		insecureEnv := os.Getenv("APPTAINER_REMOTE_ADD_INSECURE")
-		if insecureEnv == "1" || strings.EqualFold(insecureEnv, "true") {
-			localInsecure = true
-		}
 		if strings.HasPrefix(uri, "https://") {
+			sylog.Infof("adding an https remote ignores `--insecure`.")
 			localInsecure = false
 		}
 
 		if strings.HasPrefix(uri, "http://") && !localInsecure {
-			sylog.Fatalf("Add http URI without specifying --insecure or setting APPTAINER_REMOTE_ADD_INSECURE to true.")
+			sylog.Fatalf("Add http URI without specifying --insecure or setting APPTAINER_ADD_INSECURE to true.")
 		}
 
 		if err := apptainer.RemoteAdd(remoteConfig, name, uri, global, localInsecure); err != nil {
