@@ -245,7 +245,6 @@ var RemoteAddCmd = &cobra.Command{
 
 		uri := args[1]
 
-		// Implicitly set --insecure if APPTAINER_REMOTE_ADD_INSECURE is true
 		localInsecure := remoteAddInsecure
 		if strings.HasPrefix(uri, "https://") {
 			sylog.Infof("adding an https remote ignores `--insecure`.")
