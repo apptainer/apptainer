@@ -549,7 +549,7 @@ Enterprise Performance Computing (EPC)`
   /home/mibauer/mysql
   Apptainer my-sql.sif> ps
   PID TTY          TIME CMD
-    1 pts/0    00:00:00 sinit
+    1 pts/0    00:00:00 appinit
     2 pts/0    00:00:00 bash
     3 pts/0    00:00:00 ps
   Apptainer my-sql.sif>
@@ -728,7 +728,7 @@ Enterprise Performance Computing (EPC)`
   Apptainer: Invoking an interactive shell within container...
   Apptainer container:~> ps -ef
   UID        PID  PPID  C STIME TTY          TIME CMD
-  ubuntu       1     0  0 20:00 ?        00:00:00 /usr/local/bin/apptainer/bin/sinit
+  ubuntu       1     0  0 20:00 ?        00:00:00 /usr/local/bin/apptainer/bin/appinit
   ubuntu       2     0  0 20:01 pts/8    00:00:00 /bin/bash --norc
   ubuntu       3     2  0 20:02 pts/8    00:00:00 ps -ef`
 

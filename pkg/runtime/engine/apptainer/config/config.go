@@ -693,7 +693,7 @@ func (e *EngineConfig) SetDeleteTempDir(dir string) {
 
 // SetSignalPropagation sets if engine must propagate signals from
 // master process -> container process when PID namespace is disabled
-// or from master process -> sinit process -> container
+// or from master process -> appinit process -> container
 // process when PID namespace is enabled.
 func (e *EngineConfig) SetSignalPropagation(propagation bool) {
 	e.JSON.SignalPropagation = propagation

@@ -2384,7 +2384,7 @@ func (c actionTests) actionCompat(t *testing.T) {
 			name:     "no-init",
 			args:     []string{"--compat", c.env.ImagePath, "sh", "-c", "ps"},
 			exitCode: 0,
-			expect:   e2e.ExpectOutput(e2e.UnwantedContainMatch, "sinit"),
+			expect:   e2e.ExpectOutput(e2e.UnwantedContainMatch, "appinit"),
 		},
 		{
 			name:     "no-umask",
