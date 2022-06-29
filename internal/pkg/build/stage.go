@@ -124,7 +124,7 @@ func (s *stage) runPostScript(sessionResolv, sessionHosts string) error {
 
 		exe := filepath.Join(buildcfg.BINDIR, "apptainer")
 
-		env := currentEnvNoApptainer([]string{"NV", "NVCCLI", "ROCM", "BINDPATH", "MOUNT"})
+		env := currentEnvNoApptainer([]string{"DEBUG", "NV", "NVCCLI", "ROCM", "BINDPATH", "MOUNT"})
 		cmdArgs = append(cmdArgs, s.b.RootfsPath)
 		cmdArgs = append(cmdArgs, args...)
 		cmd := exec.Command(exe, cmdArgs...)
@@ -161,7 +161,7 @@ func (s *stage) runTestScript(sessionResolv, sessionHosts string) error {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Dir = "/"
-		cmd.Env = currentEnvNoApptainer([]string{"NV", "NVCCLI", "ROCM", "BINDPATH", "MOUNT", "WRITABLE_TMPFS"})
+		cmd.Env = currentEnvNoApptainer([]string{"DEBUG", "NV", "NVCCLI", "ROCM", "BINDPATH", "MOUNT", "WRITABLE_TMPFS"})
 
 		sylog.Infof("Running testscript")
 		return cmd.Run()
