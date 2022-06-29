@@ -97,6 +97,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `APPTAINER_ADD_INSECURE` can be set to true to allow http remotes to be
   added wihtout the `--insecure` flag. Specifying https in the remote URI
   overrules both `--insecure` and `APPTAINER_ADD_INSECURE`.
+- Gpu flags `--nv` and `--rocm` can now be used from an apptainer nested
+  inside another apptainer container.
 
 ### Bug fixes
 
