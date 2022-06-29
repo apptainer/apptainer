@@ -87,7 +87,7 @@ func (c *ctx) instanceStats(t *testing.T, profile e2e.Profile) {
 				e2e.AsSubtest("stats"),
 				e2e.WithProfile(profile),
 				e2e.WithCommand("instance stats"),
-				e2e.WithArgs(instanceName),
+				e2e.WithArgs("--no-stream", instanceName),
 				e2e.ExpectExit(tt.statsErrorCode,
 					e2e.ExpectOutput(e2e.ContainMatch, instanceName),
 					e2e.ExpectOutput(e2e.ContainMatch, "INSTANCE NAME"),
