@@ -914,6 +914,10 @@ func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Conf
 		e.EngineConfig.OciConfig.Linux.Seccomp = instanceEngineConfig.OciConfig.Linux.Seccomp
 	}
 
+	// Note - in non-root flow without userns the CLI process joined the cgroup
+	// early in execStarter because we don't have permission to move a parent
+	// process into the cgroup here. In that case, this code is a no-op that
+	// just enforces that actually happened.
 	if file.Cgroup {
 		sylog.Debugf("Adding process to instance cgroup")
 		ppid := os.Getppid()

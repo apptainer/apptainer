@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/cgroups"
 	"github.com/apptainer/apptainer/internal/pkg/checkpoint/dmtcp"
 	"github.com/apptainer/apptainer/internal/pkg/fakeroot"
 	"github.com/apptainer/apptainer/internal/pkg/image/driver"
@@ -338,6 +339,24 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "NAME", filepath.Base(file.Image))
 		engineConfig.SetImage(image)
 		engineConfig.SetInstanceJoin(true)
+
+		// If we are running non-root, without a user ns, join the instance cgroup now, as we
+		// can't manipulate the ppid cgroup in the engine
+		// prepareInstanceJoinConfig().
+		//
+		// TODO - consider where /proc/sys/fs/cgroup is mounted in the engine
+		// flow, to move this further down.
+		if file.Cgroup && uid != 0 && !UserNamespace {
+			pid := os.Getpid()
+			sylog.Debugf("Adding process %d to instance cgroup", pid)
+			manager, err := cgroups.GetManagerForPid(file.Pid)
+			if err != nil {
+				sylog.Fatalf("couldn't create cgroup manager: %v", err)
+			}
+			if err := manager.AddProc(pid); err != nil {
+				sylog.Fatalf("couldn't add process to instance cgroup: %v", err)
+			}
+		}
 	} else {
 		abspath, err := filepath.Abs(image)
 		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "CONTAINER", abspath)
@@ -526,10 +545,6 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 
 	if ShellPath != "" {
 		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "SHELL", ShellPath)
-	}
-
-	if name != "" && uid != 0 && CgroupsTOMLFile != "" {
-		sylog.Fatalf("Instances do not currently support rootless cgroups")
 	}
 
 	if uid != 0 {
