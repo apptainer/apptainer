@@ -55,6 +55,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - When starting a container, if the user has specified the cwd by using
   the `--pwd` flag, in case of problem return error instead of defaulting to
   a different directory.
+- The warning about more than 50 bind mounts required for an underlay bind
+  has been changed to an info message.
 - `oci mount` sets `Process.Terminal: true` when creating an OCI `config.json`,
   so that `oci run` provides expected interactive behavior by default.
 - Default hostname for `oci mount` containers is now `apptainer` instead of
