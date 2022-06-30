@@ -227,7 +227,7 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 	}
 
 	// Modify argv argument and program name shown in /proc/self/comm
-	name := "sinit"
+	name := "appinit"
 
 	argv0str := (*reflect.StringHeader)(unsafe.Pointer(&os.Args[0]))
 	argv0 := (*[1 << 30]byte)(unsafe.Pointer(argv0str.Data))[:argv0str.Len]

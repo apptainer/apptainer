@@ -57,7 +57,7 @@ src/image-type
 src/mount
 src/mount-suid
 src/sif
-src/sinit
+src/appinit
 src/get-section
 src/sign
 src/verify

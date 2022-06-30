@@ -735,7 +735,7 @@ func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Conf
 
 		// read "/proc/pid/root" link of instance process must return
 		// a permission denied error.
-		// This is the "sinit" process (PID 1 in container) and it inherited
+		// This is the "appinit" process (PID 1 in container) and it inherited
 		// setuid bit, so most of "/proc/pid" entries are owned by root:root
 		// like "/proc/pid/root" link even if the process has dropped all
 		// privileges and run with user UID/GID. So we expect a "permission denied"
@@ -779,7 +779,7 @@ func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Conf
 		}
 
 		// read "/proc/ppid/root" link of parent instance process must return
-		// a permission denied error (same logic than "sinit" process).
+		// a permission denied error (same logic than "appinit" process).
 		// Also we don't use absolute path because we want to return an error
 		// if current working directory is deleted meaning that instance process
 		// exited.
@@ -803,14 +803,14 @@ func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Conf
 			return fmt.Errorf("failed to determine absolute path for comm: %s", err)
 		}
 
-		// we must read "sinit\n"
+		// we must read "appinit\n"
 		b, err := ioutil.ReadFile("comm")
 		if err != nil {
 			return fmt.Errorf("failed to read %s: %s", path, err)
 		}
-		// check that we are currently joining sinit process
-		if "sinit" != strings.Trim(string(b), "\n") {
-			return fmt.Errorf("sinit not found in %s, wrong instance process", path)
+		// check that we are currently joining appinit process
+		if "appinit" != strings.Trim(string(b), "\n") {
+			return fmt.Errorf("appinit not found in %s, wrong instance process", path)
 		}
 	}
 
