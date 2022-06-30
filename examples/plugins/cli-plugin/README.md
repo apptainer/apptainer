@@ -44,7 +44,7 @@ Once you have compiled the plugin into a SIF file, you can install it into the
 correct apptainer directory using the command:
 
 ```sh
-apptainer plugin install ./examples/plugins/cli-plugin/cli-plugin.sif
+sudo apptainer plugin install ./examples/plugins/cli-plugin/cli-plugin.sif
 ```
 
 Apptainer will automatically load the plugin code from now on.
@@ -56,33 +56,33 @@ You can query the list of installed plugins:
 ```console
 $ apptainer plugin list
 ENABLED  NAME
-    yes  sylabs.io/cli-plugin
+    yes  example.com/cli-plugin
 ```
 
 Disable an installed plugin:
 
 ```sh
-apptainer plugin disable sylabs.io/cli-plugin
+sudo apptainer plugin disable example.com/cli-plugin
 ```
 
 Enable a disabled plugin:
 
 ```sh
-apptainer plugin enable sylabs.io/cli-plugin
+sudo apptainer plugin enable example.com/cli-plugin
 ```
 
 Uninstall an installed plugin:
 
 ```sh
-apptainer plugin uninstall sylabs.io/cli-plugin
+sudo apptainer plugin uninstall example.com/cli-plugin
 ```
 
 And inspect a SIF file before installing:
 
 ```console
 $ apptainer plugin inspect examples/plugins/cli-plugin/cli-plugin.sif
-Name: sylabs.io/cli-plugin
-Description: This is a short test CLI plugin for Apptainer
-Author: Sylabs Team
+Name: example.com/cli-plugin
+Description: This is a short example CLI plugin for Apptainer
+Author: Apptainer Team
 Version: 0.1.0
 ```

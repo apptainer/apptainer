@@ -27,8 +27,8 @@ import (
 // This symbol is accessed by the plugin framework to initialize the plugin
 var Plugin = pluginapi.Plugin{
 	Manifest: pluginapi.Manifest{
-		Name:        "github.com/apptainer/apptainer/log-plugin",
-		Author:      "Sylabs Team",
+		Name:        "example.com/log-plugin",
+		Author:      "Apptainer Team",
 		Version:     "0.2.0",
 		Description: "Log executed CLI commands to syslog",
 	},
