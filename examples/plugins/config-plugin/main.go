@@ -24,8 +24,8 @@ import (
 // This symbol is accessed by the plugin framework to initialize the plugin
 var Plugin = pluginapi.Plugin{
 	Manifest: pluginapi.Manifest{
-		Name:        "github.com/apptainer/apptainer/config-example-plugin",
-		Author:      "Sylabs Team",
+		Name:        "example.com/config-plugin",
+		Author:      "Apptainer Team",
 		Version:     "0.1.0",
 		Description: "This is a short example config plugin for Apptainer",
 	},

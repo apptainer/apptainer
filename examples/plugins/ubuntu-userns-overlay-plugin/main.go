@@ -22,8 +22,8 @@ import (
 // Plugin allows usage of overlay with user namespace on Ubuntu flavors.
 var Plugin = pluginapi.Plugin{
 	Manifest: pluginapi.Manifest{
-		Name:        "github.com/apptainer/apptainer/ubuntu-userns-overlay-plugin",
-		Author:      "Sylabs Team",
+		Name:        "example.com/ubuntu-userns-overlay-plugin",
+		Author:      "Apptainer Team",
 		Version:     "0.1.0",
 		Description: "Overlay ubuntu driver with user namespace",
 	},
