@@ -30,11 +30,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
   Does not work with a SIF partition because that requires privileges to
   mount as an ext3 image.
 - Enabled unprivileged users to build containers without the `--fakeroot`
-  option.  Requires the fakeroot command.  
+  option.  Requires the fakeroot command.
   This is simpler to administer than the `--fakeroot` option because
   there is no need for maintaining /etc/subuid and /etc/subgid mappings.
   On the other hand, it isn't as complete an emulation and may fail under
-  some circumstances.  
+  some circumstances.
   The %post scriptlet is run with fakeroot, which is needed to allow
   package installation scripts to think they were run as root.
   Works better with unprivileged user namespaces because then everything
@@ -92,6 +92,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add instance stats command.
 - Added `--cpu*`, `--blkio*`, `--memory*`, `--pids-limit` flags to apply cgroups
   resource limits to a container directly.
+- `remote add --insecure` may be used to configure endpoints that are only
+  accessible via http. Alternatively the environment variable
+  `APPTAINER_ADD_INSECURE` can be set to true to allow http remotes to be
+  added wihtout the `--insecure` flag. Specifying https in the remote URI
+  overrules both `--insecure` and `APPTAINER_ADD_INSECURE`.
 
 ### Bug fixes
 

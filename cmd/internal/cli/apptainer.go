@@ -830,7 +830,3 @@ func getLibraryClientConfig(uri string) (*libClient.Config, error) {
 	}
 	return libClientConfig, nil
 }
-
-func URI() string {
-	return "https://" + strings.TrimSuffix(currentRemoteEndpoint.URI, "/")
-}

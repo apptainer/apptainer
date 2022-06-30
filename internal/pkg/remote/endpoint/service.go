@@ -123,16 +123,20 @@ func (config *Config) GetAllServices() (map[string][]Service, error) {
 		Timeout: defaultTimeout,
 	}
 
-	url := "https://" + config.URI + "/assets/config/config.prod.json"
+	epURL, err := config.GetURL()
+	if err != nil {
+		return nil, err
+	}
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	configURL := epURL + "/assets/config/config.prod.json"
+	req, err := http.NewRequest(http.MethodGet, configURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("User-Agent", useragent.Value())
 
-	cacheReader := getCachedConfig(config.URI)
+	cacheReader := getCachedConfig(epURL)
 	reader := cacheReader
 
 	if cacheReader == nil {
@@ -158,7 +162,7 @@ func (config *Config) GetAllServices() (map[string][]Service, error) {
 	}
 
 	if reader != cacheReader {
-		updateCachedConfig(config.URI, b)
+		updateCachedConfig(epURL, b)
 	}
 
 	for k, v := range a {
