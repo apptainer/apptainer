@@ -160,6 +160,17 @@ func (c ctx) apptainerInspect(t *testing.T) {
 			compareFn: compareLabel("org.label-schema.usage.apptainer.runscript.help", "/.singularity.d/runscript.help", ""),
 		},
 		{
+			name:    "deffile",
+			insType: "--deffile",
+			compareFn: func(t *testing.T, meta *inspect.Metadata) {
+				out := "bootstrap:"
+				v := meta.Attributes.Deffile[0:len(out)]
+				if v != out {
+					t.Errorf("unexpected deffile output, got '%s' instead of '%s'", v, out)
+				}
+			},
+		},
+		{
 			name:    "runscript",
 			insType: "--runscript",
 			compareFn: func(t *testing.T, meta *inspect.Metadata) {

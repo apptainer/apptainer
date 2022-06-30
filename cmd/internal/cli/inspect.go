@@ -534,7 +534,7 @@ func (c *command) addEnvironmentCommand() {
 func (c *command) addDefinitionCommand() {
 	deffile, err := inspectDeffilePartition(c.img)
 	if err == errNoSIFMetadata || err == errNoSIF {
-		c.addSingleFileCommand("Apptainer", "deffile")
+		c.addSingleFileCommand("Singularity", "deffile")
 	} else if err != nil {
 		sylog.Warningf("Unable to inspect deffile: %s", err)
 	} else {
