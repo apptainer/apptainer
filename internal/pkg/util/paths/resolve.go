@@ -12,6 +12,7 @@ package paths
 import (
 	"debug/elf"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -70,6 +71,12 @@ func Resolve(fileList []string) ([]string, []string, error) {
 		return nil, nil, fmt.Errorf("could not retrieve ld cache: %v", err)
 	}
 
+	boundLibsDir := "/.singularity.d/libs"
+	boundLibs, err := ioutil.ReadDir(boundLibsDir)
+	if err != nil {
+		boundLibs = nil // just in case
+	}
+
 	// Track processed binaries/libraries to eliminate duplicates
 	bins := make(map[string]struct{})
 	libs := make(map[string]struct{})
@@ -100,6 +107,21 @@ func Resolve(fileList []string) ([]string, []string, error) {
 					sylog.Warningf("Could not close ELIB: %v", err)
 				}
 			} else {
+				// look first in /.singularity.d/libs
+				// this enables using gpu options in nested containers
+				gotone := false
+				for _, boundLib := range boundLibs {
+					libName := boundLib.Name()
+					if !strings.HasPrefix(libName, file) {
+						continue
+					}
+					libraries = append(libraries, filepath.Join(boundLibsDir, libName))
+					gotone = true
+					break
+				}
+				if gotone {
+					continue
+				}
 				for libPath, libName := range ldCache {
 					if !strings.HasPrefix(libName, file) {
 						continue
