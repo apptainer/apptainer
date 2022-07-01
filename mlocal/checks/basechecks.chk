@@ -458,3 +458,24 @@ if [ "$short_version" = "" ]; then
 		sed -e "s/^v//;s/-/_/g;s/_/-/;s/_/./g"`
 fi
 echo "$short_version"
+
+
+########################
+# unprivileged user namespaces
+########################
+printf " checking: unprivileged user namespaces... "
+if unshare -U true >/dev/null 2>&1; then
+	if [ "$with_suid" = -1 ]; then
+		echo "enabled. Implying --without-suid"
+		with_suid=0
+	else
+		echo "enabled"
+	fi
+else
+	if [ "$with_suid" = -1 ]; then
+		echo "disabled. Run mconfig with either --with-suid or --without-suid option"
+		exit 1
+	else
+		echo "disabled"
+	fi
+fi
