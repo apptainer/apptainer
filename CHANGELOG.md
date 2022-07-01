@@ -10,6 +10,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 ### Bug fixes
 
 - Process redirects that can come from sregistry with a `library://` URL.
+- Fix `inspect --deffile` and `inspect --all` to correctly show definition
+  files in sandbox container images instead of empty output.
+  This has a side effect of also fixing the storing of definition files in
+  the metadata of sif files built by Apptainer, because that metadata is
+  constructed by doing `inspect --all`.
 
 ## v1.0.2 - \[2022-05-09\]
 
