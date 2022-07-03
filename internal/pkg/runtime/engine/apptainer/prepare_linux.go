@@ -95,6 +95,18 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		if !fs.IsOwner(buildcfg.ECL_FILE, 0) {
 			return fmt.Errorf("%s must be owned by root", buildcfg.ECL_FILE)
 		}
+		if fakerootPath := e.EngineConfig.GetFakerootPath(); fakerootPath != "" {
+			// look for fakeroot again because the PATH used is
+			//  more restricted at this point than it was earlier
+			newPath, err := fakerootutil.FindFake()
+			if err != nil {
+				return fmt.Errorf("error finding fakeroot in privileged PATH: %v", err)
+			}
+			if newPath != fakerootPath {
+				sylog.Verbosef("path to fakeroot changed from %v to %v", fakerootPath, newPath)
+			}
+			e.EngineConfig.SetFakerootPath(newPath)
+		}
 	}
 
 	// Save the current working directory if not set

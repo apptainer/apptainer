@@ -20,6 +20,7 @@ import (
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/fs/lock"
 	"github.com/opencontainers/runtime-spec/specs-go"
 )
@@ -371,4 +372,27 @@ func GetIDRange(path string, uid uint32) (*specs.LinuxIDMapping, error) {
 		HostID:      e.Start,
 		Size:        e.Count,
 	}, nil
+}
+
+// IsUIDMapped returns true if the given uid is mapped in SubUIDFile
+//  and otherwise it returns false
+func IsUIDMapped(uid uint32) bool {
+	config, err := GetConfig(SubUIDFile, false, getPwNam)
+	if err != nil {
+		return false
+	}
+	defer config.Close()
+
+	userinfo, err := getPwUID(uid)
+	if err != nil {
+		sylog.Fatalf("could not retrieve user with UID %d: %s", uid, err)
+	}
+	e, err := config.GetUserEntry(userinfo.Name)
+	if err != nil {
+		return false
+	}
+	if e.disabled {
+		return false
+	}
+	return true
 }

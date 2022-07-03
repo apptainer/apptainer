@@ -350,7 +350,7 @@ var actionFakerootFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "fakeroot",
 	ShortHand:    "f",
-	Usage:        "run container in new user namespace as uid 0",
+	Usage:        "run container with the appearance of running as root",
 	EnvKeys:      []string{"FAKEROOT"},
 }
 

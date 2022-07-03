@@ -92,6 +92,7 @@ type JSONConfig struct {
 	HomeDest              string            `json:"homeDest,omitempty"`
 	Command               string            `json:"command,omitempty"`
 	Shell                 string            `json:"shell,omitempty"`
+	FakerootPath          string            `json:"fakerootPath,omitempty"`
 	TmpDir                string            `json:"tmpdir,omitempty"`
 	AddCaps               string            `json:"addCaps,omitempty"`
 	DropCaps              string            `json:"dropCaps,omitempty"`
@@ -318,6 +319,16 @@ func (e *EngineConfig) SetShell(shell string) {
 // GetShell retrieves shell for shell command.
 func (e *EngineConfig) GetShell() string {
 	return e.JSON.Shell
+}
+
+// SetFakerootPath sets the fakeroot path
+func (e *EngineConfig) SetFakerootPath(fakerootPath string) {
+	e.JSON.FakerootPath = fakerootPath
+}
+
+// GetFakerootPath retrieves the fakeroot path
+func (e *EngineConfig) GetFakerootPath() string {
+	return e.JSON.FakerootPath
 }
 
 // SetTmpDir sets temporary directory path.

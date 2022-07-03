@@ -10,7 +10,6 @@
 package actions
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -568,7 +567,7 @@ func (c actionTests) issue5599(t *testing.T) {
 	envBind := tmpDir + ":/srv"
 	bindEnv := "APPTAINER_BIND=" + envBind
 	flagBind := tmpDir + ":/mnt"
-	expectedEnv := fmt.Sprintf("APPTAINER_BIND=%s,%s", flagBind, envBind)
+	expectedEnv := "/mnt,/srv"
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),

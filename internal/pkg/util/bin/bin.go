@@ -31,8 +31,8 @@ func FindBin(name string) (path string, err error) {
 	// Bootstrap related executables that we assume are on PATH
 	case "mount", "mknod", "debootstrap", "pacstrap", "dnf", "yum", "rpm", "curl", "uname", "zypper", "SUSEConnect", "rpmkeys", "squashfuse", "fuse-overlayfs", "fakeroot":
 		return findOnPath(name)
-	// Configurable executables that are found at build time, can be overridden
-	// in apptainer.conf. If config value is "" will look on PATH.
+	// Configurable executables that can be overridden in
+	// apptainer.conf. If config value is "" will look on PATH.
 	case "unsquashfs", "mksquashfs", "go", "cryptsetup", "ldconfig", "nvidia-container-cli":
 		return findFromConfigOrPath(name)
 	// distro provided setUID executables that are used in the fakeroot flow to setup subuid/subgid mappings

@@ -276,7 +276,7 @@ func GetLogFilePaths(name string, subDir string) (string, string, error) {
 
 // SetLogFile replaces stdout/stderr streams and redirect content
 // to log file
-func SetLogFile(name string, uid int, subDir string) (*os.File, *os.File, error) {
+func SetLogFile(name string, userNs bool, uid int, subDir string) (*os.File, *os.File, error) {
 	path, err := getPath("", subDir)
 	if err != nil {
 		return nil, nil, err
@@ -304,7 +304,7 @@ func SetLogFile(name string, uid int, subDir string) (*os.File, *os.File, error)
 		return nil, nil, err
 	}
 
-	if uid != os.Getuid() || uid == 0 {
+	if !userNs && (uid != os.Getuid() || uid == 0) {
 		if err := stderr.Chown(uid, os.Getgid()); err != nil {
 			return nil, nil, err
 		}

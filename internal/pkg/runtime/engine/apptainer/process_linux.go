@@ -33,6 +33,7 @@ import (
 	"unsafe"
 
 	"github.com/apptainer/apptainer/internal/pkg/checkpoint/dmtcp"
+	"github.com/apptainer/apptainer/internal/pkg/fakeroot"
 	"github.com/apptainer/apptainer/internal/pkg/instance"
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
 	"github.com/apptainer/apptainer/internal/pkg/security"
@@ -876,6 +877,11 @@ func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []st
 				return nil, nil, err
 			}
 		}
+	}
+
+	if fakerootPath := engineConfig.GetFakerootPath(); fakerootPath != "" {
+		sylog.Verbosef("Running command with %v", filepath.Base(fakerootPath))
+		args = append(fakeroot.GetFakeArgs(), args...)
 	}
 
 	return args, env, nil

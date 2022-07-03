@@ -22,6 +22,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/checkpoint/dmtcp"
+	"github.com/apptainer/apptainer/internal/pkg/fakeroot"
 	"github.com/apptainer/apptainer/internal/pkg/image/driver"
 	"github.com/apptainer/apptainer/internal/pkg/image/unpacker"
 	"github.com/apptainer/apptainer/internal/pkg/instance"
@@ -185,6 +186,36 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 
 	// Are we running from a privileged account?
 	isPrivileged := uid == 0
+
+	var fakerootPath string
+	if IsFakeroot {
+		if isPrivileged && namespaces.IsUnprivileged() {
+			// Already running root-mapped unprivileged
+			IsFakeroot = false
+			sylog.Debugf("running root-mapped unprivileged")
+			fakerootPath, err = fakeroot.FindFake()
+			if err != nil {
+				sylog.Infof("fakeroot command not found, using only root-mapped namespace")
+			} else {
+				sylog.Infof("Using fakeroot command combined with root-mapped namespace")
+			}
+		} else if !isPrivileged && !fakeroot.IsUIDMapped(uid) {
+			sylog.Infof("User not listed in %v, trying root-mapped namespace", fakeroot.SubUIDFile)
+			IsFakeroot = false
+			err = fakeroot.UnshareRootMapped(os.Args)
+			if err == nil {
+				// All good
+				os.Exit(0)
+			}
+			sylog.Debugf("%v", err)
+			fakerootPath, err = fakeroot.FindFake()
+			if err != nil {
+				sylog.Fatalf("--fakeroot requires either being in %v, unprivileged user namespaces, or the fakeroot command", fakeroot.SubUIDFile)
+			}
+			sylog.Infof("No user namespaces available, using only the fakeroot command")
+		}
+	}
+
 	checkPrivileges := func(cond bool, desc string, fn func()) {
 		if !cond {
 			return
@@ -361,12 +392,14 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	}
 
 	// First get binds from -B/--bind and env var
-	binds, err := apptainerConfig.ParseBindPath(BindPaths)
+	bindPaths := BindPaths
+	binds, err := apptainerConfig.ParseBindPath(bindPaths)
 	if err != nil {
 		sylog.Fatalf("while parsing bind path: %s", err)
 	}
 
 	// Now add binds from one or more --mount and env var.
+	// Note that these do not get exported for nested containers
 	for _, m := range Mounts {
 		bps, err := apptainerConfig.ParseMountString(m)
 		if err != nil {
@@ -375,8 +408,40 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		binds = append(binds, bps...)
 	}
 
+	if fakerootPath != "" {
+		engineConfig.SetFakerootPath(fakerootPath)
+		// Add binds for fakeroot command
+		fakebindPaths, err := fakeroot.GetFakeBinds(fakerootPath)
+		if err != nil {
+			sylog.Fatalf("while getting fakeroot bindpoints: %v", err)
+		}
+		bindPaths = append(bindPaths, fakebindPaths...)
+		fakebinds, err := apptainerConfig.ParseBindPath(fakebindPaths)
+		if err != nil {
+			sylog.Fatalf("while parsing fakeroot bind paths: %s", err)
+		}
+		binds = append(binds, fakebinds...)
+	}
+
 	engineConfig.SetBindPath(binds)
-	generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "BIND", strings.Join(BindPaths, ","))
+
+	for i, bindPath := range bindPaths {
+		splits := strings.Split(bindPath, ":")
+		if len(splits) > 1 {
+			// For nesting, change the source to the destination
+			//  because this level is bound at the destination
+			if len(splits) > 2 {
+				// Replace the source with the destination
+				splits[0] = splits[1]
+				bindPath = strings.Join(splits, ":")
+			} else {
+				// leave only the destination
+				bindPath = splits[1]
+			}
+			bindPaths[i] = bindPath
+		}
+	}
+	generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "BIND", strings.Join(bindPaths, ","))
 
 	if len(FuseMount) > 0 {
 		/* If --fusemount is given, imply --pid */
@@ -762,7 +827,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	}
 
 	if engineConfig.GetInstance() {
-		stdout, stderr, err := instance.SetLogFile(name, int(uid), instance.LogSubDir)
+		stdout, stderr, err := instance.SetLogFile(name, UserNamespace || insideUserNs, int(uid), instance.LogSubDir)
 		if err != nil {
 			sylog.Fatalf("failed to create instance log files: %s", err)
 		}
