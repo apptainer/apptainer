@@ -216,7 +216,7 @@ func (u *Underlay) duplicateDir(dir string, system *mount.System, existingPath s
 		}
 	}
 	if binds > 50 && existingPath != "" {
-		sylog.Warningf("underlay of %s required more than 50 (%d) bind mounts", existingPath, binds)
+		sylog.Infof("underlay of %s required more than 50 (%d) bind mounts", existingPath, binds)
 	}
 	return nil
 }

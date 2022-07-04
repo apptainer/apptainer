@@ -10,7 +10,6 @@
 package build
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
@@ -20,6 +19,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/build/files"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/fakeroot"
 	envUtil "github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -96,7 +96,11 @@ func (s *stage) runPostScript(sessionResolv, sessionHosts string) error {
 		var fakerootBinds []string
 		var err error
 		if s.b.Opts.FakerootPath != "" {
-			fakerootBinds, err = s.makeFakerootBindpoints()
+			fakerootBinds, err = fakeroot.GetFakeBinds(s.b.Opts.FakerootPath)
+			if err != nil {
+				return fmt.Errorf("while getting fakeroot bindpoints: %v", err)
+			}
+			err = s.makeFakerootBindpoints(fakerootBinds)
 			if err != nil {
 				return fmt.Errorf("while creating fakeroot bindpoints: %v", err)
 			}
@@ -122,7 +126,7 @@ func (s *stage) runPostScript(sessionResolv, sessionHosts string) error {
 		if s.b.Opts.FakerootPath != "" {
 			base := filepath.Base(s.b.Opts.FakerootPath)
 			sylog.Debugf("Post scriptlet will be run with %v", base)
-			cmdArgs = append(cmdArgs, "/usr/bin/"+base)
+			cmdArgs = append(cmdArgs, fakeroot.GetFakeArgs()...)
 			// Without this workaround fakeroot does not work
 			//  properly in a user namespace. It is especially
 			//  noticeable with debian containers.  Learned from
@@ -241,131 +245,24 @@ func (s *stage) copyFiles() error {
 	return nil
 }
 
-// make a file mountpoint
-// assumes directory already exists
-func (s *stage) makeFilePoint(point string) error {
-	sylog.Debugf("Making file mountpoint %v", point)
-	path := filepath.Join(s.b.RootfsPath, point)
-	_, err := os.Stat(path)
-	if os.IsNotExist(err) {
-		file, err := os.Create(path)
-		if err != nil {
+func (s *stage) makeFakerootBindpoints(binds []string) error {
+	for _, bind := range binds {
+		splits := strings.Split(bind, ":")
+		point := splits[len(splits)-1]
+		sylog.Debugf("Making %v mount point", point)
+		path := filepath.Join(s.b.RootfsPath, point)
+		_, err := os.Stat(path)
+		if os.IsNotExist(err) {
+			file, err := os.Create(path)
+			if err != nil {
+				return fmt.Errorf("while making file mountpoint %v: %v", point, err)
+			}
+			file.Close()
+		} else if err != nil {
 			return fmt.Errorf("while making file mountpoint %v: %v", point, err)
 		}
-		file.Close()
-	} else if err != nil {
-		return fmt.Errorf("while making file mountpoint %v: %v", point, err)
 	}
 	return nil
-}
-
-// make a directory mountpoint
-// will create parent directory if missing
-func (s *stage) makeDirPoint(point string) error {
-	sylog.Debugf("Making directory mountpoint %v", point)
-	path := filepath.Join(s.b.RootfsPath, point)
-	_, err := os.Stat(path)
-	if os.IsNotExist(err) {
-		err = os.MkdirAll(path, 0o755)
-		if err != nil {
-			return fmt.Errorf("while making directory mountpoint %v: %v", point, err)
-		}
-	} else if err != nil {
-		return fmt.Errorf("while making directory mountpoint %v: %v", point, err)
-	}
-	return nil
-}
-
-func (s *stage) makeFakerootBindpoints() ([]string, error) {
-	var binds []string
-
-	// Start by examining the environment fakeroot creates
-	cmd := exec.Command(s.b.Opts.FakerootPath, "env")
-	env := os.Environ()
-	for idx := range env {
-		if strings.HasPrefix(env[idx], "LD_LIBRARY_PATH=") {
-			// Remove any incoming LD_LIBRARY_PATH
-			env[idx] = "LD_LIBRARY_PREFIX="
-		}
-	}
-	cmd.Env = env
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return binds, fmt.Errorf("error make fakeroot stdout pipe: %v", err)
-	}
-
-	err = cmd.Start()
-	if err != nil {
-		return binds, fmt.Errorf("error starting fakeroot: %v", err)
-	}
-	preload := ""
-	libraryPath := ""
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, "LD_PRELOAD=") {
-			preload = line[len("LD_PRELOAD="):]
-		} else if strings.HasPrefix(line, "LD_LIBRARY_PATH=") {
-			libraryPath = line[len("LD_LIBRARY_PATH="):]
-		}
-	}
-	_ = cmd.Wait()
-	if preload == "" {
-		return binds, fmt.Errorf("No LD_PRELOAD in fakeroot environment")
-	}
-	if libraryPath == "" {
-		return binds, fmt.Errorf("No LD_LIBRARY_PATH in fakeroot environment")
-	}
-
-	src := s.b.Opts.FakerootPath
-	point := "/usr/bin/fakeroot"
-	err = s.makeFilePoint(point)
-	if err != nil {
-		return binds, err
-	}
-	binds = append(binds, src+":"+point)
-
-	// faked isn't strictly needed but include it if present in case it
-	// is used in a future version
-	dir := filepath.Dir(src)
-	src = filepath.Join(dir, "faked")
-	point = "/usr/bin/faked"
-	if _, err = os.Stat(src); err == nil {
-		err = s.makeFilePoint(point)
-		if err != nil {
-			return binds, err
-		}
-		binds = append(binds, src+":"+point)
-	}
-	splits := strings.Split(preload, ".")
-	splits = strings.Split(splits[0], "-")
-	if len(splits) > 1 {
-		// add the faked that corresponds to the preload library
-		src += "-" + splits[1]
-		point += "-" + splits[1]
-		if _, err = os.Stat(src); err == nil {
-			err = s.makeFilePoint(point)
-			if err != nil {
-				return binds, err
-			}
-			binds = append(binds, src+":"+point)
-		}
-	}
-	splits = strings.Split(libraryPath, ":")
-	for _, dir := range splits {
-		// Find the directory in libraryPath that contains the
-		// preload library and include that
-		src = filepath.Join(dir, preload)
-		if _, err = os.Stat(src); err == nil {
-			err = s.makeDirPoint(dir)
-			if err != nil {
-				return binds, err
-			}
-			binds = append(binds, dir+"/")
-			break
-		}
-	}
-	return binds, nil
 }
 
 func (s *stage) cleanFakerootBindpoints(binds []string) {

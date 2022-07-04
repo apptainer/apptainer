@@ -29,21 +29,40 @@ For older changes see the [archived Singularity change log](https://github.com/a
   setuid mode.
   Does not work with a SIF partition because that requires privileges to
   mount as an ext3 image.
-- Enabled unprivileged users to build containers without the `--fakeroot`
-  option.  Requires the fakeroot command.
-  This is simpler to administer than the `--fakeroot` option because
-  there is no need for maintaining /etc/subuid and /etc/subgid mappings.
-  On the other hand, it isn't as complete an emulation and may fail under
-  some circumstances.
-  The %post scriptlet is run with fakeroot, which is needed to allow
-  package installation scripts to think they were run as root.
-  Works better with unprivileged user namespaces because then everything
-  is also run in a root-mapped unprivileged user namespace, the
-  equivalent of `unshare -r`.  Without unprivileged user namespaces, the
-  `--fix-perms` option is implied to allow writing into directories.
+- Extended the `--fakeroot` option to be useful when `/etc/subuid` and
+  `/etc/subgid` mappings have not been set up.
+  If they have not been set up, a root-mapped unprivileged user namespace
+  (the equivalent of `unshare -r`) and/or the fakeroot command from the
+  host will be tried.
+  Together they emulate the mappings pretty well but they are simpler to
+  administer.
+  This feature is especially useful with the `--overlay` and
+  `--writable-tmpfs` options and for building containers unprivileged,
+  because they allow installing packages that assume they're running
+  as root.
+  The feature works nested inside of an apptainer container, where
+  another apptainer command will also be in the fakeroot environment
+  without requesting the `--fakeroot` option again, or it can be used
+  inside an apptainer container that was not started with `--fakeroot`.
+  However, the fakeroot command uses LD_PRELOAD and so needs to be bound
+  into the container which requires a compatible libc.
+  For that reason it doesn't work when the host and container operating
+  systems are of very different vintages.
+  If that's a problem and you want to use only an unprivileged
+  root-mapped namespace even when the fakeroot command is installed,
+  just run apptainer with `unshare -r`.
+- Made the `--fakeroot` option be implied when an unprivileged user
+  builds a container from a definition file.
+  When `/etc/subuid` and `/etc/subgid` mappings are not available,
+  all scriptlets are run in a root-mapped unprivileged namespace (when
+  possible) and the %post scriptlet is additionally run with the fakeroot
+  command.
+  When unprivileged user namespaces are not available, such that only
+  the fakeroot command can be used, the `--fix-perms` option is implied
+  to allow writing into directories.
 - Added a `binary path` configuration variable as the default path to use
   when searching for helper executables.  May contain `$PATH:` which gets
-  substituted with the user's PATH when running unprivileged.  Defaults to
+  substituted with the user's PATH when running without suid.  Defaults to
   `$PATH:` followed by standard system paths.  Configuration variables
   for paths to individual programs that were in apptainer.conf are still
   supported but deprecated.
@@ -55,6 +74,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - When starting a container, if the user has specified the cwd by using
   the `--pwd` flag, in case of problem return error instead of defaulting to
   a different directory.
+- Nesting of bind mounts now works even when a `--bind` option specified
+  a different source and destination with a colon between them.  Now the
+  APPTAINER_BIND environment variable makes sure the bind source is
+  from the bind destination so it will be succesfully re-bound into a
+  nested apptainer container.
+- The warning about more than 50 bind mounts required for an underlay bind
+  has been changed to an info message.
 - `oci mount` sets `Process.Terminal: true` when creating an OCI `config.json`,
   so that `oci run` provides expected interactive behavior by default.
 - Default hostname for `oci mount` containers is now `apptainer` instead of

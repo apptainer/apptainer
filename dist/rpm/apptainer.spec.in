@@ -108,7 +108,7 @@ fi
 
 # Not all of these parameters currently have an effect, but they might be
 #  used someday.  They are the same parameters as in the configure macro.
-./mconfig -P debug -V %{version}-%{release} --with-suid \
+./mconfig %{?mconfig_opts} -V %{version}-%{release} --with-suid \
         --prefix=%{_prefix} \
         --exec-prefix=%{_exec_prefix} \
         --bindir=%{_bindir} \

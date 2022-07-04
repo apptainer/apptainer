@@ -21,6 +21,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/image"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	ocitypes "github.com/containers/image/v5/types"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
@@ -137,7 +138,7 @@ var buildFakerootFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "fakeroot",
 	ShortHand:    "f",
-	Usage:        "build using user namespace to fake root user (requires a privileged installation)",
+	Usage:        "build with the appearance of running as root (default when building from a definition file unprivileged)",
 	EnvKeys:      []string{"FAKEROOT"},
 }
 
@@ -276,8 +277,15 @@ var buildCmd = &cobra.Command{
 }
 
 func preRun(cmd *cobra.Command, args []string) {
+	spec := args[len(args)-1]
+	isDeffile := fs.IsFile(spec) && !isImage(spec)
 	if buildArgs.fakeroot {
-		fakerootExec(args)
+		fakerootExec(isDeffile)
+	} else {
+		if os.Getuid() != 0 && isDeffile {
+			sylog.Verbosef("Implying --fakeroot because building from Deffile file unprivileged")
+			fakerootExec(isDeffile)
+		}
 	}
 }
 

@@ -80,6 +80,8 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	if err != nil {
 		return fmt.Errorf("unable to parse apptainer.conf file: %s", err)
 	}
+	apptainerconf.SetCurrentConfig(fileConfig)
+	apptainerconf.SetBinaryPath(!starterConfig.GetIsSUID())
 
 	if starterConfig.GetIsSUID() {
 		if !fileConfig.AllowSetuid {

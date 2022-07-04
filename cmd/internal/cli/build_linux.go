@@ -17,13 +17,13 @@ import (
 	osExec "os/exec"
 	"strconv"
 	"strings"
-	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/build"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/fakeroot"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	fakerootConfig "github.com/apptainer/apptainer/internal/pkg/runtime/engine/fakeroot/config"
-	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/internal/pkg/util/starter"
@@ -33,44 +33,70 @@ import (
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
-	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	keyClient "github.com/apptainer/container-key-client/client"
 	"github.com/spf13/cobra"
 )
 
-func fakerootExec(cmdArgs []string) {
-	if buildArgs.nvccli && !buildArgs.noTest {
-		sylog.Warningf("Due to writable-tmpfs limitations, %%test sections will fail with --nvccli & --fakeroot")
-		sylog.Infof("Use -T / --notest to disable running tests during the build")
-	}
-
+func fakerootExec(isDeffile bool) {
 	useSuid := starter.IsSuidInstall()
 
+	// First remove fakeroot option from args and environment if present
 	short := "-" + buildFakerootFlag.ShortHand
 	long := "--" + buildFakerootFlag.Name
-	envKey := fmt.Sprintf("APPTAINER_%s", buildFakerootFlag.EnvKeys[0])
-	fakerootEnv := os.Getenv(envKey) != ""
-
-	argsLen := len(os.Args) - 1
-	if fakerootEnv {
-		argsLen = len(os.Args)
-		os.Unsetenv(envKey)
+	for _, pfx := range env.ApptainerPrefixes {
+		envKey := fmt.Sprintf("%s_%s", pfx, buildFakerootFlag.EnvKeys[0])
+		if os.Getenv(envKey) != "" {
+			os.Unsetenv(envKey)
+		}
 	}
-	args := make([]string, argsLen)
-	idx := 0
+	var args []string
 	for i, arg := range os.Args {
 		if i == 0 {
 			path, _ := osExec.LookPath(arg)
 			arg = path
 		}
+		// This does not treat options before the "build" command
+		//   differently than after, which is OK currently because
+		//   there is no -f defined there
 		if arg != short && arg != long {
-			args[idx] = arg
-			idx++
+			if len(arg) > 2 && arg[0] == '-' && arg[1] != '-' {
+				// remove all f within the multiple short options
+				arg = strings.ReplaceAll(arg, buildFakerootFlag.ShortHand, "")
+				if arg == "-" {
+					// could have been -ff
+					continue
+				}
+			}
+			args = append(args, arg)
 		}
-
 	}
 
-	user, err := user.GetPwUID(uint32(os.Getuid()))
+	var err error
+	uid := uint32(os.Getuid())
+	if uid != 0 && !fakeroot.IsUIDMapped(uid) {
+		sylog.Infof("User not listed in %v, trying root-mapped namespace", fakeroot.SubUIDFile)
+		os.Setenv("_APPTAINER_FAKEFAKEROOT", "1")
+		err = fakeroot.UnshareRootMapped(args)
+		if err == nil {
+			// All the work has been done by the child process
+			os.Exit(0)
+		}
+		sylog.Debugf("UnshareRootMapped failed: %v", err)
+		sylog.Infof("Could not start root-mapped namespace")
+		if !useSuid && isDeffile {
+			sylog.Fatalf("Building from a definition file unprivileged requires either a suid installation or unprivileged user namespaces")
+		}
+		// Returning from here at this point will go on to try
+		// the fakeroot command below
+		return
+	}
+
+	if buildArgs.nvccli && !buildArgs.noTest {
+		sylog.Warningf("Due to writable-tmpfs limitations, %%test sections will fail with --nvccli & --fakeroot")
+		sylog.Infof("Use -T / --notest to disable running tests during the build")
+	}
+
+	user, err := user.GetPwUID(uid)
 	if err != nil {
 		sylog.Fatalf("failed to retrieve user information: %s", err)
 	}
@@ -79,7 +105,7 @@ func fakerootExec(cmdArgs []string) {
 	// This is required in fakeroot builds that may use containers/image 5.7 and above.
 	// https://github.com/containers/image/issues/1066
 	// https://github.com/containers/image/blob/master/internal/rootless/rootless.go
-	os.Setenv("_CONTAINERS_ROOTLESS_UID", strconv.Itoa(os.Getuid()))
+	os.Setenv("_CONTAINERS_ROOTLESS_UID", strconv.FormatUint(uint64(uid), 10))
 
 	engineConfig := &fakerootConfig.EngineConfig{
 		Args:     args,
@@ -102,67 +128,35 @@ func fakerootExec(cmdArgs []string) {
 	sylog.Fatalf("%s", err)
 }
 
-// re-exec the command effectively under unshare -r
-func unshareRootMapped() error {
-	cmd := osExec.Command(os.Args[0], os.Args[1:]...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-	cmd.SysProcAttr = &syscall.SysProcAttr{}
-	cmd.SysProcAttr.Cloneflags = syscall.CLONE_NEWUSER
-	cmd.SysProcAttr.UidMappings = []syscall.SysProcIDMap{
-		{ContainerID: 0, HostID: syscall.Getuid(), Size: 1},
-	}
-	cmd.SysProcAttr.GidMappings = []syscall.SysProcIDMap{
-		{ContainerID: 0, HostID: syscall.Getgid(), Size: 1},
-	}
-	sylog.Debugf("Re-executing to root-mapped unprivileged user namespace")
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("Error re-executing in root-mapped unprivileged user namespace: %v", err)
-	}
-	if err := cmd.Wait(); err != nil {
-		if exiterr, ok := err.(*osExec.ExitError); ok {
-			// exit with the non-zero exit code
-			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-				os.Exit(status.ExitStatus())
-			}
-		}
-		sylog.Fatalf("error waiting for root-mapped unprivileged command: %v", err)
-	}
-	return nil
-}
-
-func findFakeroot() string {
-	fakerootPath, err := bin.FindBin("fakeroot")
-	if err != nil {
-		sylog.Debugf("failure finding fakeroot: %v", err)
-		sylog.Fatalf("fakeroot command or --fakeroot option are required for non-root user to build from an Apptainer recipe file")
-	}
-	sylog.Debugf("fakeroot found at %v", fakerootPath)
-	return fakerootPath
-}
-
 func runBuild(cmd *cobra.Command, args []string) {
 	dest := args[0]
 	spec := args[1]
 
 	fakerootPath := ""
-	if syscall.Getuid() != 0 && !buildArgs.fakeroot && fs.IsFile(spec) && !isImage(spec) {
-		fakerootPath = findFakeroot()
-		err := unshareRootMapped()
-		if err == nil {
-			// All the work has been done by the child process
-			os.Exit(0)
+	if os.Getenv("_APPTAINER_FAKEFAKEROOT") == "1" {
+		// Try fakeroot command
+		os.Unsetenv("_APPTAINER_FAKEFAKEROOT")
+		buildArgs.fakeroot = false
+		var err error
+		fakerootPath, err = fakeroot.FindFake()
+		if err != nil {
+			sylog.Infof("fakeroot command not found")
+			if os.Getuid() != 0 {
+				if fs.IsFile(spec) && !isImage(spec) {
+					sylog.Fatalf("Building from a definition file requires root or some kind of fake root")
+				}
+				// else it must have been explicitly requested
+				sylog.Fatalf("Cannot start any kind of fake root")
+			}
+			sylog.Infof("Installing some packages may fail")
+		} else {
+			sylog.Infof("The %%post section will be run under fakeroot")
+			if !buildArgs.fixPerms && os.Getuid() != 0 {
+				sylog.Infof("Using --fix-perms because building from a definition file")
+				sylog.Infof(" without either root user or unprivileged user namespaces")
+				buildArgs.fixPerms = true
+			}
 		}
-		sylog.Debugf("%v", err)
-		if !buildArgs.fixPerms {
-			sylog.Infof("Using --fix-perms because building from an Apptainer recipe file")
-			sylog.Infof(" without either root user or unprivileged user namespaces")
-			buildArgs.fixPerms = true
-		}
-	} else if namespaces.IsUnprivileged() && os.Getenv("_CONTAINERS_ROOTLESS_UID") == "" {
-		// we are running in a root-mapped unprivileged user namespace
-		fakerootPath = findFakeroot()
 	}
 
 	if buildArgs.nvidia {

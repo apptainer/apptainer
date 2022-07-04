@@ -205,7 +205,7 @@ func TestAdd(t *testing.T) {
 		if err := file.Update(); err != nil {
 			t.Errorf("error while creating instance %s: %s", e.name, err)
 		}
-		stdout, stderr, err := SetLogFile(e.name, 0, testSubDir)
+		stdout, stderr, err := SetLogFile(e.name, false, 0, testSubDir)
 		if err != nil {
 			t.Errorf("error while creating instance log file: %s", err)
 		}

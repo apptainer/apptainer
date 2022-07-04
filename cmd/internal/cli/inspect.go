@@ -68,7 +68,7 @@ var inspectDeffileFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "deffile",
 	ShortHand:    "d",
-	Usage:        "show the Apptainer recipe file that was used to generate the image",
+	Usage:        "show the Apptainer definition file that was used to generate the image",
 }
 
 // -j|--json

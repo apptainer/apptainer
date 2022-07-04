@@ -45,7 +45,7 @@ var scmpArchMap = map[specs.Arch]lseccomp.ScmpArch{
 }
 
 var scmpActionMap = map[specs.LinuxSeccompAction]lseccomp.ScmpAction{
-	specs.ActKill:  lseccomp.ActKill,
+	specs.ActKill:  lseccomp.ActKillThread,
 	specs.ActTrap:  lseccomp.ActTrap,
 	specs.ActErrno: lseccomp.ActErrno,
 	specs.ActTrace: lseccomp.ActTrace,
