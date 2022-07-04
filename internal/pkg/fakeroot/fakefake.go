@@ -87,6 +87,11 @@ func GetFakeBinds(fakerootPath string) ([]string, error) {
 		args[4],
 	}
 
+	if fakerootPath == args[0] {
+		// The binding has already been done, this is for nesting
+		return binds, nil
+	}
+
 	// Start by examining the environment fakeroot creates
 	cmd := osExec.Command(fakerootPath, "env")
 	env := os.Environ()

@@ -802,15 +802,25 @@ func umaskBuiltin(ctx context.Context, argv []string) error {
 	return nil
 }
 
+func getEnvVal(env []string, envname string) string {
+	envname += "="
+	for _, keyval := range env {
+		if strings.HasPrefix(keyval, envname) {
+			return keyval[len(envname):]
+		}
+	}
+	return ""
+}
+
 // runActionScript interprets and executes the action script within
 // an embedded shell interpreter.
 func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []string, error) {
 	args := engineConfig.OciConfig.Process.Args
-	env := append(engineConfig.OciConfig.Process.Env, "APPTAINER_COMMAND="+filepath.Base(args[0]))
+	penv := append(engineConfig.OciConfig.Process.Env, "APPTAINER_COMMAND="+filepath.Base(args[0]))
 
 	b := bytes.NewBufferString(files.ActionScript)
 
-	shell, err := interpreter.New(b, args[0], args[1:], env)
+	shell, err := interpreter.New(b, args[0], args[1:], penv)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -826,7 +836,7 @@ func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []st
 		if err != nil {
 			return err
 		}
-		env = interpreter.GetEnv(interp.HandlerCtx(ctx))
+		penv = interpreter.GetEnv(interp.HandlerCtx(ctx))
 		argv[0] = cmd
 		args = argv
 		return nil
@@ -864,7 +874,7 @@ func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []st
 		if err != nil {
 			return nil, nil, err
 		} else if b != nil {
-			interp, err := interpreter.New(b, args[0], args[1:], env)
+			interp, err := interpreter.New(b, args[0], args[1:], penv)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -879,12 +889,38 @@ func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []st
 		}
 	}
 
-	if fakerootPath := engineConfig.GetFakerootPath(); fakerootPath != "" {
+	fakeargs := fakeroot.GetFakeArgs()
+	fakerootPath := fakeargs[0]
+	_, err = os.Stat(fakerootPath)
+	if err == nil && getEnvVal(penv, "FAKEROOTKEY") == "" {
+		// fakeroot command exists but we're not running nested
 		sylog.Verbosef("Running command with %v", filepath.Base(fakerootPath))
-		args = append(fakeroot.GetFakeArgs(), args...)
+		args = append(fakeargs, args...)
+
+		if engineConfig.GetFakerootPath() == "" {
+			// Must be joining an instance, so also set BIND
+			//  variables for nesting
+			fakebinds, _ := fakeroot.GetFakeBinds(fakerootPath)
+			bindval := strings.Join(fakebinds, ",")
+			for _, pfx := range env.ApptainerPrefixes {
+				bindvar := pfx + "BIND="
+				for idx, keyval := range penv {
+					if !strings.HasPrefix(keyval, bindvar) {
+						continue
+					}
+					val := keyval[len(bindvar):]
+					if val != "" {
+						val += ","
+					}
+					val += bindval
+					penv[idx] = bindvar + val
+					break
+				}
+			}
+		}
 	}
 
-	return args, env, nil
+	return args, penv, nil
 }
 
 // getDockerRunscript returns the content as a reader of
