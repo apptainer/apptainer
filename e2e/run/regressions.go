@@ -1,7 +1,6 @@
 package run
 
 import (
-	"fmt"
 	"io/fs"
 	"os"
 	"testing"
@@ -45,13 +44,12 @@ func (c ctx) issue409(t *testing.T) {
 
 			cmdArgs := []string{"oras://ghcr.io/apptainer/alpine:3.15.0", "/bin/true"}
 
-			homeDirEnv := fmt.Sprintf("HOME=%s", tempHomeDir)
+			c.env.HomeDir = tempHomeDir
 			c.env.RunApptainer(
 				t,
 				e2e.WithProfile(e2e.UserProfile),
 				e2e.WithCommand("run"),
 				e2e.WithArgs(cmdArgs...),
-				e2e.WithEnv(append(os.Environ(), homeDirEnv)),
 				e2e.ExpectExit(0),
 			)
 		})
