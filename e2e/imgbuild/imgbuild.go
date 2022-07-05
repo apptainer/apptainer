@@ -1460,6 +1460,76 @@ func (c imgBuildTests) testWritableTmpfs(t *testing.T) {
 	)
 }
 
+// testBuildEnvironmentVariables tests the environment variables exposed by the build system when executing
+// definition sections. This includes APPTAINER_ROOTFS, APPTAINER_ENVIRONMENT, APPTAINER_LABELS and their
+// SINGULARITY_ prefixed counterparts.
+func (c imgBuildTests) testBuildEnvironmentVariables(t *testing.T) {
+	const definition = `Bootstrap: docker
+From: alpine:latest
+
+%setup
+touch $APPTAINER_ROOTFS/rootfs-file
+touch $SINGULARITY_ROOTFS/legacy-rootfs-file
+
+%post
+echo 'test-label value' >> $APPTAINER_LABELS
+echo 'legacy-test-label legacy-value' >> $SINGULARITY_LABELS
+echo 'export TEST_ENV=value' >> $APPTAINER_ENVIRONMENT
+echo 'export LEGACY_TEST_ENV=legacy-value' >> $SINGULARITY_ENVIRONMENT
+`
+
+	tmpdir, cleanup := c.tempDir(t, "build-environment-test")
+	defer cleanup()
+
+	defFile, err := e2e.WriteTempFile(tmpdir, "testFile-", definition)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove(defFile)
+
+	imagePath := filepath.Join(tmpdir, "image-build-environment")
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("-F", imagePath, defFile),
+		e2e.ExpectExit(0),
+	)
+
+	// Check to ensure the *_ROOTFS commands in the definition succeeded in file creation.
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs(imagePath, "ls", "/rootfs-file", "/legacy-rootfs-file"),
+		e2e.ExpectExit(0),
+	)
+
+	// Check to ensure the *_ENVIRONMENT commands in the definition successfully set the env.
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs(imagePath, "env"),
+		e2e.ExpectExit(0,
+			e2e.ExpectOutput(e2e.ContainMatch, "TEST_ENV=value"),
+			e2e.ExpectOutput(e2e.ContainMatch, "LEGACY_TEST_ENV=legacy-value"),
+		),
+	)
+
+	// Check to ensure the *_LABELS commands in the definition successfully set labels.
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("inspect"),
+		e2e.WithArgs("-l", imagePath),
+		e2e.ExpectExit(0,
+			e2e.ExpectOutput(e2e.ContainMatch, "test-label: value"),
+			e2e.ExpectOutput(e2e.ContainMatch, "legacy-test-label: legacy-value"),
+		),
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := imgBuildTests{
@@ -1467,35 +1537,36 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"bad path":                        c.badPath,                   // try to build from a non existent path
-		"build encrypt with PEM file":     c.buildEncryptPemFile,       // build encrypted images with certificate
-		"build encrypted with passphrase": c.buildEncryptPassphrase,    // build encrypted images with passphrase
-		"definition":                      c.buildDefinition,           // builds from definition template
-		"from local image":                c.buildLocalImage,           // build and image from an existing image
-		"from":                            c.buildFrom,                 // builds from definition file and URI
-		"multistage":                      c.buildMultiStageDefinition, // multistage build from definition templates
-		"non-root build":                  c.nonRootBuild,              // build sifs from non-root
-		"build and update sandbox":        c.buildUpdateSandbox,        // build/update sandbox
-		"fingerprint check":               c.buildWithFingerprint,      // definition file includes fingerprint check
-		"build with bind mount":           c.buildBindMount,            // build image with bind mount
-		"library host":                    c.buildLibraryHost,          // build image with hostname in library URI
-		"test with writable tmpfs":        c.testWritableTmpfs,         // build image, using writable tmpfs in the test step
-		"issue 3848":                      c.issue3848,                 // https://github.com/apptainer/singularity/issues/3848
-		"issue 4203":                      c.issue4203,                 // https://github.com/apptainer/singularity/issues/4203
-		"issue 4407":                      c.issue4407,                 // https://github.com/apptainer/singularity/issues/4407
-		"issue 4524":                      c.issue4524,                 // https://github.com/apptainer/singularity/issues/4524
-		"issue 4583":                      c.issue4583,                 // https://github.com/apptainer/singularity/issues/4583
-		"issue 4820":                      c.issue4820,                 // https://github.com/apptainer/singularity/issues/4820
-		"issue 4837":                      c.issue4837,                 // https://github.com/apptainer/singularity/issues/4837
-		"issue 4943":                      c.issue4943,                 // https://github.com/apptainer/singularity/issues/4943
-		"issue 4967":                      c.issue4967,                 // https://github.com/apptainer/singularity/issues/4967
-		"issue 4969":                      c.issue4969,                 // https://github.com/apptainer/singularity/issues/4969
-		"issue 5166":                      c.issue5166,                 // https://github.com/apptainer/singularity/issues/5166
-		"issue 5172":                      c.issue5172,                 // https://github.com/apptainer/singularity/issues/5172
-		"issue 5250":                      c.issue5250,                 // https://github.com/apptainer/singularity/issues/5250
-		"issue 5315":                      c.issue5315,                 // https://github.com/apptainer/singularity/issues/5315
-		"issue 5435":                      c.issue5435,                 // https://github.com/apptainer/singularity/issues/5435
-		"issue 5668":                      c.issue5668,                 // https://github.com/apptainer/singularity/issues/5435
-		"issue 5690":                      c.issue5690,                 // https://github.com/apptainer/singularity/issues/5690
+		"bad path":                        c.badPath,                       // try to build from a non existent path
+		"build encrypt with PEM file":     c.buildEncryptPemFile,           // build encrypted images with certificate
+		"build encrypted with passphrase": c.buildEncryptPassphrase,        // build encrypted images with passphrase
+		"definition":                      c.buildDefinition,               // builds from definition template
+		"from local image":                c.buildLocalImage,               // build and image from an existing image
+		"from":                            c.buildFrom,                     // builds from definition file and URI
+		"multistage":                      c.buildMultiStageDefinition,     // multistage build from definition templates
+		"non-root build":                  c.nonRootBuild,                  // build sifs from non-root
+		"build and update sandbox":        c.buildUpdateSandbox,            // build/update sandbox
+		"fingerprint check":               c.buildWithFingerprint,          // definition file includes fingerprint check
+		"build with bind mount":           c.buildBindMount,                // build image with bind mount
+		"library host":                    c.buildLibraryHost,              // build image with hostname in library URI
+		"test with writable tmpfs":        c.testWritableTmpfs,             // build image, using writable tmpfs in the test step
+		"test build system environment":   c.testBuildEnvironmentVariables, // build image with build system environment variables set in definition
+		"issue 3848":                      c.issue3848,                     // https://github.com/apptainer/singularity/issues/3848
+		"issue 4203":                      c.issue4203,                     // https://github.com/apptainer/singularity/issues/4203
+		"issue 4407":                      c.issue4407,                     // https://github.com/apptainer/singularity/issues/4407
+		"issue 4524":                      c.issue4524,                     // https://github.com/apptainer/singularity/issues/4524
+		"issue 4583":                      c.issue4583,                     // https://github.com/apptainer/singularity/issues/4583
+		"issue 4820":                      c.issue4820,                     // https://github.com/apptainer/singularity/issues/4820
+		"issue 4837":                      c.issue4837,                     // https://github.com/apptainer/singularity/issues/4837
+		"issue 4943":                      c.issue4943,                     // https://github.com/apptainer/singularity/issues/4943
+		"issue 4967":                      c.issue4967,                     // https://github.com/apptainer/singularity/issues/4967
+		"issue 4969":                      c.issue4969,                     // https://github.com/apptainer/singularity/issues/4969
+		"issue 5166":                      c.issue5166,                     // https://github.com/apptainer/singularity/issues/5166
+		"issue 5172":                      c.issue5172,                     // https://github.com/apptainer/singularity/issues/5172
+		"issue 5250":                      c.issue5250,                     // https://github.com/apptainer/singularity/issues/5250
+		"issue 5315":                      c.issue5315,                     // https://github.com/apptainer/singularity/issues/5315
+		"issue 5435":                      c.issue5435,                     // https://github.com/apptainer/singularity/issues/5435
+		"issue 5668":                      c.issue5668,                     // https://github.com/apptainer/singularity/issues/5435
+		"issue 5690":                      c.issue5690,                     // https://github.com/apptainer/singularity/issues/5690
 	}
 }
