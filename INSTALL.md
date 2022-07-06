@@ -223,7 +223,7 @@ in your PATH:
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-VERSION=1.0.2  # this is the latest apptainer version, change as you need
+VERSION=1.0.3  # this is the latest apptainer version, change as you need
 ./mconfig
 make -C builddir rpm
 sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-$(echo $VERSION|tr - \~)*.x86_64.rpm 
