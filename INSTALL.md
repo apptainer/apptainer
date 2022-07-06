@@ -131,7 +131,7 @@ To build a specific version of Apptainer, check out a
 for example:
 
 ```sh
-git checkout v1.0.2
+git checkout v1.0.3
 ```
 
 ## Compiling Apptainer
@@ -201,7 +201,7 @@ and use it to install the RPM like this:
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-VERSION=1.0.2  # this is the apptainer version, change as you need
+VERSION=1.0.3  # this is the apptainer version, change as you need
 # Fetch the source
 wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
 # Build the rpm from the source tar.gz
