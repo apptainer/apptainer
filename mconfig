@@ -61,7 +61,7 @@ if test -z "${package_version}" ; then
 fi
 
 with_network=1
-with_suid=0
+with_suid=-1
 with_seccomp_check=1
 do_go_version_check=1
 
