@@ -1068,9 +1068,18 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 			return nil
 		}
 		if !writableImage {
+			if hasSIFOverlay {
+				// This can be removed when fuse2fs is supported
+				sylog.Infof("Ignoring EXT3 overlay partition in %s because not root or suid", img.Path)
+			}
 			sylog.Debugf("Using underlay layer: user namespace requested")
 			e.EngineConfig.SetSessionLayer(apptainerConfig.UnderlayLayer)
 			return nil
+		}
+		if hasSIFOverlay {
+			// This can be removed when fuse2fs is supported
+			sylog.Infof("Consider using --overlay or --writable-tmpfs instead of --writable")
+			return fmt.Errorf("cannot use overlay partition in %v for --writable without root or suid", img.Path)
 		}
 		sylog.Debugf("Not attempting to use overlay or underlay: writable flag requested")
 		return nil

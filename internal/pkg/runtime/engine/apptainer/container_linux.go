@@ -973,6 +973,15 @@ func (c *container) addOverlayMount(system *mount.System) error {
 			return fmt.Errorf("while opening overlay image %s: %s", img.Path, err)
 		}
 		for _, overlay := range overlays {
+			if overlay.Type == image.EXT3 && c.userNS {
+				// This can be removed when fuse2fs is supported
+				if overlay.Offset > 0 {
+					sylog.Infof("Ignoring EXT3 overlay partition in %s because not root or suid", img.Path)
+					continue
+				}
+				return fmt.Errorf("cannot use overlay in %v without root or suid", img.Path)
+			}
+
 			sylog.Debugf("Using overlay partition in image %s", img.Path)
 
 			sessionDest := fmt.Sprintf("/overlay-images/%d", nb)
