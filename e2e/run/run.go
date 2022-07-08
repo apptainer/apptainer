@@ -203,6 +203,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 
 	return testhelper.Tests{
 		"0555 cache":           c.testRun555Cache,
+		"inaccessible home":    c.issue409,
 		"passphrase encrypted": c.testRunPassphraseEncrypted,
 		"PEM encrypted":        c.testRunPEMEncrypted,
 	}

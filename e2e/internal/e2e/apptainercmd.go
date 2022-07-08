@@ -591,7 +591,10 @@ func (env TestEnv) RunApptainer(t *testing.T, cmdOps ...ApptainerCmdOp) {
 		}
 
 		// Set $HOME
-		cmd.Env = append(cmd.Env, fmt.Sprintf("HOME=%s", CurrentUser(t).Dir))
+		if env.HomeDir == "" {
+			env.HomeDir = CurrentUser(t).Dir
+		}
+		cmd.Env = append(cmd.Env, fmt.Sprintf("HOME=%s", env.HomeDir))
 
 		// propagate proxy environment variables
 		for _, env := range []string{"HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY"} {

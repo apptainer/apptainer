@@ -19,6 +19,7 @@ type TestEnv struct {
 	OrasTestImage        string
 	TestDir              string // Path to the directory from which an Apptainer command needs to be executed
 	TestRegistry         string
+	HomeDir              string // HomeDir sets the home directory that will be used for the execution of a command
 	KeyringDir           string // KeyringDir sets the directory where the keyring will be created for the execution of a command (instead of using APPTAINER_KEYSDIR which should be avoided when running e2e tests)
 	ImgCacheDir          string // ImgCacheDir sets the location of the image cache to be used by the Apptainer command to be executed (instead of using APPTAINER_CACHE_DIR which should be avoided when running e2e tests)
 	RunDisabled          bool
