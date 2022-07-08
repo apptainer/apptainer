@@ -131,6 +131,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add specific error for unreadable image / overlay file.
 - Pass through a literal `\n` in host environment variables to container.
 - Allow `newgidmap / newuidmap` that use capabilities instead of setuid root.
+
+## v1.0.3 - \[2022-07-06\]
+
+### Bug fixes
+
+- Process redirects that can come from sregistry with a `library://` URL.
 - Fix `inspect --deffile` and `inspect --all` to correctly show definition
   files in sandbox container images instead of empty output.
   This has a side effect of also fixing the storing of definition files in
