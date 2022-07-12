@@ -97,11 +97,13 @@ func (d *fuseappsDriver) Features() image.DriverFeature {
 
 func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc) error {
 	var f *fuseappsFeature
-	if params.Filesystem == "overlay" {
+	switch params.Filesystem {
+	case "overlay":
 		f = &d.overlayFeature
 		optsStr := strings.Join(params.FSOptions, ",")
 		f.cmd = exec.Command(f.cmdPath, "-f", "-o", optsStr, params.Target)
-	} else {
+
+	case "squashfs":
 		f = &d.squashFeature
 		optsStr := "offset=" + strconv.FormatUint(params.Offset, 10)
 		srcPath := params.Source
@@ -110,7 +112,17 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 			srcPath = "/proc/self/fd/3"
 		}
 		f.cmd = exec.Command(f.cmdPath, "-f", "-o", optsStr, srcPath, params.Target)
+
+	case "ext3":
+		return fmt.Errorf("mounting an EXT3 filesystem requires root or a suid installation")
+
+	case "encryptfs":
+		return fmt.Errorf("mounting an encrypted filesystem requires root or a suid installation")
+
+	default:
+		return fmt.Errorf("filesystem type %v not recognized by image driver", params.Filesystem)
 	}
+
 	sylog.Debugf("Executing %v", f.cmd.String())
 	var stderr bytes.Buffer
 	f.cmd.Stderr = &stderr

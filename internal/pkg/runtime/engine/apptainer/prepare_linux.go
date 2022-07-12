@@ -1057,9 +1057,15 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 
 	if userNS {
 		if writableTmpfs || hasOverlayImage {
-			sylog.Debugf("Although in user namespace, user requested overlay")
+			sylog.Debugf("Overlay requested while in user namespace")
 			// Try overlay although it will only work if the image driver or the
 			//  kernel support unprivileged overlay
+			e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
+			return nil
+		}
+		if hasSIFOverlay {
+			sylog.Debugf("Overlay partition found while in user namespace")
+			// Likewise try the overlay because of the partition
 			e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
 			return nil
 		}
