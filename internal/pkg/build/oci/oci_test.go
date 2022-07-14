@@ -112,10 +112,7 @@ func createIndexFile(t *testing.T, dir string, sum string) {
 // and a SHA256 hash associated to the unique entry in the OCI cache.
 func createDummyOCICache(t *testing.T) (string, string) {
 	// Temporary directory that will serve as root of the OCI cache
-	dir, err := ioutil.TempDir("", "")
-	if err != nil {
-		t.Fatalf("cannot create temporary directory: %s\n", err)
-	}
+	dir := t.TempDir()
 
 	// Create the directory structure.
 	blobPath := filepath.Join(dir, "blobs")
@@ -123,16 +120,14 @@ func createDummyOCICache(t *testing.T) (string, string) {
 	sum := sha256.New()
 	sumFilename := hex.EncodeToString(sum.Sum(nil))
 	path := filepath.Join(shaPath, sumFilename)
-	err = os.MkdirAll(shaPath, 0o755)
+	err := os.MkdirAll(shaPath, 0o755)
 	if err != nil {
-		os.RemoveAll(dir)
 		t.Fatalf("cannot create cache directory: %s\n", err)
 	}
 
 	// Create the SHA256 file
 	f, err := os.Create(path)
 	if err != nil {
-		os.RemoveAll(dir)
 		t.Fatalf("cannot create file: %s\n", err)
 	}
 	defer f.Close()
@@ -161,8 +156,7 @@ func TestParseURI(t *testing.T) {
 	test.DropPrivilege(t)
 	defer test.ResetPrivilege(t)
 
-	cacheDir, _, ref := getTestCacheInfo(t)
-	defer os.RemoveAll(cacheDir)
+	_, _, ref := getTestCacheInfo(t)
 
 	tests := []struct {
 		name       string
@@ -239,7 +233,6 @@ func TestConvertReference(t *testing.T) {
 	defer test.ResetPrivilege(t)
 
 	cacheDir, _, ref := getTestCacheInfo(t)
-	defer os.RemoveAll(cacheDir)
 	imgCache, err := cache.New(cache.Config{ParentDir: cacheDir})
 	if err != nil {
 		t.Fatalf("failed to create an image cache handle")
@@ -297,7 +290,6 @@ func TestImageNameAndImageSHA(t *testing.T) {
 
 	// We create a dummy OCI cache to run all our tests
 	cacheDir, _, _ := getTestCacheInfo(t)
-	defer os.RemoveAll(cacheDir)
 	imgCache, err := cache.New(cache.Config{ParentDir: cacheDir})
 	if imgCache == nil || err != nil {
 		t.Fatal("failed to create an image cache handle")
@@ -412,7 +404,6 @@ func TestNewImageSource(t *testing.T) {
 
 	// We create a minimalistic image reference that is valid enough for testing
 	cacheDir, _, ref := getTestCacheInfo(t)
-	defer os.RemoveAll(cacheDir)
 	imgCache, err := cache.New(cache.Config{ParentDir: cacheDir})
 	if err != nil {
 		t.Fatalf("failed to create an image cache handle: %s", err)

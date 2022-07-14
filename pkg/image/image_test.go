@@ -62,13 +62,9 @@ func copyImage(t *testing.T) string {
 	return name
 }
 
-func checkPartition(reader io.Reader) error {
+func checkPartition(t *testing.T, reader io.Reader) error {
 	extracted := "/bin/busybox"
-	dir, err := ioutil.TempDir("", "extract-")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	s := unpacker.NewSquashfs()
 	if s.HasUnsquashfs() {
@@ -82,7 +78,7 @@ func checkPartition(reader io.Reader) error {
 	return nil
 }
 
-func checkSection(reader io.Reader) error {
+func checkSection(_ *testing.T, reader io.Reader) error {
 	dec := json.NewDecoder(reader)
 	imgSpec := &imageSpecs.ImageConfig{}
 	if err := dec.Decode(imgSpec); err != nil {
@@ -110,7 +106,7 @@ func TestReader(t *testing.T) {
 
 	for _, e := range []struct {
 		fn       func(*Image, string, int) (io.Reader, error)
-		fnCheck  func(io.Reader) error
+		fnCheck  func(*testing.T, io.Reader) error
 		errCheck error
 		name     string
 		index    int
@@ -173,7 +169,7 @@ func TestReader(t *testing.T) {
 		if r, err := e.fn(img, e.name, e.index); err == e.errCheck {
 			t.Error(err)
 		} else {
-			if err := e.fnCheck(r); err != nil {
+			if err := e.fnCheck(t, r); err != nil {
 				t.Error(err)
 			}
 		}

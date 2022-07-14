@@ -10,7 +10,6 @@
 package types
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,11 +17,7 @@ import (
 )
 
 func TestNewBundle(t *testing.T) {
-	testDir, err := ioutil.TempDir("", "bundleTest-")
-	if err != nil {
-		t.Fatal("Could not create temporary directory", err)
-	}
-	defer os.RemoveAll(testDir)
+	testDir := t.TempDir()
 
 	tt := []struct {
 		name        string

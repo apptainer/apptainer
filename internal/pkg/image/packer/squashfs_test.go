@@ -23,11 +23,7 @@ func checkArchive(t *testing.T, path string, files []string) {
 		t.SkipNow()
 	}
 
-	dir, err := ioutil.TempDir("", "extracted-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	cmd := exec.Command(un, "-f", "-d", dir, path)
 	if err := cmd.Run(); err != nil {

@@ -20,12 +20,6 @@ import (
 // createSquashfs creates a small but valid squashfs file that can be used
 // with an image.
 func createSquashfs(t *testing.T) string {
-	dir, dirErr := ioutil.TempDir("", "squashfsHdrTesting-")
-	if dirErr != nil {
-		t.Fatalf("impossible to create temporary directory: %s\n", dirErr)
-	}
-	defer os.RemoveAll(dir)
-
 	sqshFile, fileErr := ioutil.TempFile("", "")
 	if fileErr != nil {
 		t.Fatalf("impossible to create temporary file: %s\n", fileErr)
@@ -44,7 +38,7 @@ func createSquashfs(t *testing.T) string {
 		t.Skipf("%s is not  available, skipping the test...", cmdBin)
 	}
 
-	cmd := exec.Command(cmdBin, dir, sqshFilePath)
+	cmd := exec.Command(cmdBin, t.TempDir(), sqshFilePath)
 	cmdErr := cmd.Run()
 	if cmdErr != nil {
 		t.Fatalf("cannot create squashfs volume: %s\n", cmdErr)
@@ -113,11 +107,7 @@ func TestSquashfsInitializer(t *testing.T) {
 	img.File.Close()
 
 	// Invalid image
-	invalidPath, err := ioutil.TempDir("", "")
-	if err != nil {
-		t.Fatalf("impossible to create temporary directory: %s\n", err)
-	}
-	defer os.RemoveAll(invalidPath)
+	invalidPath := t.TempDir()
 	img.File, err = os.Open(invalidPath)
 	if err != nil {
 		t.Fatalf("open() failed: %s\n", err)

@@ -14,7 +14,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -229,11 +228,7 @@ func TestEnsureDirPrivate(t *testing.T) {
 	test.DropPrivilege(t)
 	defer test.ResetPrivilege(t)
 
-	tmpdir, err := ioutil.TempDir("", "test-ensure-dir-private")
-	if err != nil {
-		t.Fatalf("Cannot create temporary directory")
-	}
-	defer os.RemoveAll(tmpdir)
+	tmpdir := t.TempDir()
 
 	cases := []struct {
 		name        string
@@ -477,11 +472,7 @@ func TestGenKeyPair(t *testing.T) {
 	}
 
 	// Create a temporary directory to store the keyring
-	dir, err := ioutil.TempDir("", "")
-	if err != nil {
-		t.Fatalf("failed to create temporary directory")
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	keyring := NewHandle(dir)
 
@@ -779,11 +770,7 @@ func TestRemoveKey(t *testing.T) {
 }
 
 func TestGlobalKeyRing(t *testing.T) {
-	dir, err := ioutil.TempDir("", "global-keyring-")
-	if err != nil {
-		t.Fatalf("could not create temporary global keyring: %s", err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	keypairOptions := GenKeyPairOptions{
 		Name:      "test",
@@ -793,7 +780,7 @@ func TestGlobalKeyRing(t *testing.T) {
 
 	keyring := NewHandle(dir, GlobalHandleOpt())
 
-	_, err = keyring.GenKeyPair(keypairOptions)
+	_, err := keyring.GenKeyPair(keypairOptions)
 	if err == nil {
 		t.Errorf("unexpected success while generating keypair for global keyring")
 	}

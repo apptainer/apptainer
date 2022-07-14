@@ -38,11 +38,7 @@ func TestEncrypt(t *testing.T) {
 	defer os.Remove(emptyFile.Name())
 
 	// Create a dummy squashfs file
-	dummyDir, err := ioutil.TempDir("", "dummy-fs-")
-	if err != nil {
-		t.Fatalf("failed to create temporary directory: %s", err)
-	}
-	defer os.RemoveAll(dummyDir) // This is delete the directory and all its sub-directories
+	dummyDir := t.TempDir()
 
 	// We create a few more sub-directories; note that they will be
 	// removed when the top-directory (dummyDir) will be removed.

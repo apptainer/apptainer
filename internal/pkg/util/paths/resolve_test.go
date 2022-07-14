@@ -58,10 +58,7 @@ func TestSoLinks(t *testing.T) {
 	//   - soLinks(a.so) should give both of these symlinks
 	// a.so.2 -> b.so
 	//   - this should *not* get included, as it doesn't resolve back to a.so
-	tmpDir, err := ioutil.TempDir("", "test-solinks")
-	if err != nil {
-		t.Fatalf("Could not create tempDir: %v", err)
-	}
+	tmpDir := t.TempDir()
 	aFile := filepath.Join(tmpDir, "a.so")
 	a1Link := filepath.Join(tmpDir, "a.so.1")
 	a12Link := filepath.Join(tmpDir, "a.so.1.2")
@@ -75,7 +72,7 @@ func TestSoLinks(t *testing.T) {
 		t.Fatalf("Could not symlink: %v", err)
 	}
 	bFile := filepath.Join(tmpDir, "b.so")
-	err = ioutil.WriteFile(bFile, nil, 0o644)
+	err := ioutil.WriteFile(bFile, nil, 0o644)
 	if err != nil {
 		t.Fatalf("Could not create file: %v", err)
 	}

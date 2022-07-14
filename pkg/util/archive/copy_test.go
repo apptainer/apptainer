@@ -34,11 +34,8 @@ func TestCopyWithTar(t *testing.T) {
 }
 
 func testCopyWithTar(t *testing.T) {
-	srcRoot, err := ioutil.TempDir("", "copywithtar-src-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(srcRoot)
+	srcRoot := t.TempDir()
+	t.Logf("srcRoot location: %s\n", srcRoot)
 
 	// Source Files
 	srcFile := filepath.Join(srcRoot, "srcFile")
@@ -56,16 +53,13 @@ func testCopyWithTar(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	dstRoot, err := ioutil.TempDir("", "copywithtar-dst-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dstRoot)
+	dstRoot := t.TempDir()
+	t.Logf("dstRoot location: %s\n", dstRoot)
 
 	// Perform the actual copy to a subdir of our dst tempdir.
 	// This ensures CopyWithTar has to create the dest directory, which is
 	// where the non-wrapped call would fail for unprivileged users.
-	err = CopyWithTar(srcRoot, path.Join(dstRoot, "dst"))
+	err := CopyWithTar(srcRoot, path.Join(dstRoot, "dst"))
 	if err != nil {
 		t.Fatalf("Error during CopyWithTar: %v", err)
 	}

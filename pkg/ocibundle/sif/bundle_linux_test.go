@@ -30,10 +30,7 @@ const busyboxSIF = "../../../e2e/testdata/busybox_" + runtime.GOARCH + ".sif"
 func TestFromSif(t *testing.T) {
 	test.EnsurePrivilege(t)
 
-	bundlePath, err := ioutil.TempDir("", "bundle")
-	if err != nil {
-		t.Fatal(err)
-	}
+	bundlePath := t.TempDir()
 	f, err := ioutil.TempFile("", "busybox")
 	if err != nil {
 		t.Fatal(err)
