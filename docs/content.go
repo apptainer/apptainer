@@ -456,7 +456,8 @@ Enterprise Performance Computing (EPC)`
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	formats string = `
 
-  *.sif               Singularity Image Format (SIF). Native to Singularity (3.0+) and Apptainer (v1.0.0+)
+  *.sif               Singularity Image Format (SIF). Native to Singularity
+                      (3.0+) and Apptainer (v1.0.0+)
   
   *.sqsh              SquashFS format.  Native to Singularity 2.4+
 
