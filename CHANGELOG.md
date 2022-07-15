@@ -40,7 +40,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `--writable-tmpfs` options and for building containers unprivileged,
   because they allow installing packages that assume they're running
   as root.
-  The feature works nested inside of an apptainer container, where
+  A limitation on using it with `--overlay` and `--writable-tmpfs`
+  however is that when only the fakeroot command can be used (because
+  there are no user namespaces available, in suid mode) then the base
+  image has to be a sandbox.
+  This feature works nested inside of an apptainer container, where
   another apptainer command will also be in the fakeroot environment
   without requesting the `--fakeroot` option again, or it can be used
   inside an apptainer container that was not started with `--fakeroot`.

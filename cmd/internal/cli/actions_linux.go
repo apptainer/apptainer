@@ -212,6 +212,21 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			if err != nil {
 				sylog.Fatalf("--fakeroot requires either being in %v, unprivileged user namespaces, or the fakeroot command", fakeroot.SubUIDFile)
 			}
+			notSandbox := false
+			if strings.Contains(image, "://") {
+				notSandbox = true
+			} else {
+				info, err := os.Stat(image)
+				if err == nil && !info.Mode().IsDir() {
+					notSandbox = true
+				}
+			}
+			if notSandbox {
+				sylog.Infof("No user namespaces available")
+				sylog.Infof("The fakeroot command by itself is only useful with sandbox images")
+				sylog.Infof(" which can be built with 'apptainer build --sandbox'")
+				sylog.Fatalf("--fakeroot used without sandbox image or user namespaces")
+			}
 			sylog.Infof("No user namespaces available, using only the fakeroot command")
 		}
 	}
