@@ -72,6 +72,14 @@ func unpackSIF(b *types.Bundle, img *image.Image) (err error) {
 		return fmt.Errorf("unrecognized partition format")
 	}
 
+	if b.Opts.FixPerms {
+		sylog.Debugf("Modifying permissions for file/directory owners")
+		err = fixPerms(b.RootfsPath)
+		if err != nil {
+			return err
+		}
+	}
+
 	ociReader, err := image.NewSectionReader(img, image.SIFDescOCIConfigJSON, -1)
 	if err == image.ErrNoSection {
 		sylog.Debugf("No %s section found", image.SIFDescOCIConfigJSON)

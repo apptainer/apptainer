@@ -897,6 +897,12 @@ func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []st
 		sylog.Verbosef("Running command with %v", filepath.Base(fakerootPath))
 		args = append(fakeargs, args...)
 
+		// Without this workaround fakeroot does not work
+		//  properly in a user namespace. It is especially
+		//  noticeable with debian containers.  Learned from
+		//  https://salsa.debian.org/clint/fakeroot/-/merge_requests/4
+		penv = append(penv, "FAKEROOTDONTTRYCHOWN=1")
+
 		if engineConfig.GetFakerootPath() == "" {
 			// Must be joining an instance, so also set BIND
 			//  variables for nesting

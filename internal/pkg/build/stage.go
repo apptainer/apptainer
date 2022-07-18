@@ -20,7 +20,6 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/build/files"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/fakeroot"
-	envUtil "github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
@@ -96,6 +95,10 @@ func (s *stage) runPostScript(sessionResolv, sessionHosts string) error {
 		var fakerootBinds []string
 		var err error
 		if s.b.Opts.FakerootPath != "" {
+			// Bind the fakeroot components.  Once they are there,
+			//  the nested apptainer will run fakeroot if it isn't
+			//  started and pass down the components and environment
+			//  to nested apptainers.
 			fakerootBinds, err = fakeroot.GetFakeBinds(s.b.Opts.FakerootPath)
 			if err != nil {
 				return fmt.Errorf("while getting fakeroot bindpoints: %v", err)
@@ -123,16 +126,6 @@ func (s *stage) runPostScript(sessionResolv, sessionHosts string) error {
 
 		env := currentEnvNoApptainer([]string{"NV", "NVCCLI", "ROCM", "BINDPATH", "MOUNT"})
 		cmdArgs = append(cmdArgs, s.b.RootfsPath)
-		if s.b.Opts.FakerootPath != "" {
-			base := filepath.Base(s.b.Opts.FakerootPath)
-			sylog.Debugf("Post scriptlet will be run with %v", base)
-			cmdArgs = append(cmdArgs, fakeroot.GetFakeArgs()...)
-			// Without this workaround fakeroot does not work
-			//  properly in a user namespace. It is especially
-			//  noticeable with debian containers.  Learned from
-			//  https://salsa.debian.org/clint/fakeroot/-/merge_requests/4
-			env = append(env, envUtil.ApptainerEnvPrefix+"FAKEROOTDONTTRYCHOWN=1")
-		}
 		cmdArgs = append(cmdArgs, args...)
 		cmd := exec.Command(exe, cmdArgs...)
 		cmd.Stdout = os.Stdout
