@@ -5,3 +5,6 @@ MD010: false
 # Allow mixing of asterisks and underscores for emphasis
 MD049: false
 MD050: false
+# Allow link fragments because they work fine
+#   (seen in dist/debian/DEBIAN_PACKAGE.md)
+MD051: false
