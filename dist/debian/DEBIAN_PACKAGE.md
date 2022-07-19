@@ -88,7 +88,7 @@ version.
 Be aware, that `debchange` will complain about a lower version as the top in
 the current changelog. Which means you have to cleanup the changelog if needed.
 If you did not change anything in the debian directory manually, it might
-be easiest to [start from scratch](#Preparation).
+be easiest to [start from scratch](#preparation).
 Be aware, that the Debian install directory as you see it now might not
 be available in older versions (branches, tags). Make sure you have a
 clean copy of the debian directory before you switch to (checkout) an
