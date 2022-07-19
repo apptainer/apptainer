@@ -66,10 +66,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
   to allow writing into directories.
 - Added a `binary path` configuration variable as the default path to use
   when searching for helper executables.  May contain `$PATH:` which gets
-  substituted with the user's PATH when running without suid.  Defaults to
-  `$PATH:` followed by standard system paths.  Configuration variables
-  for paths to individual programs that were in apptainer.conf are still
-  supported but deprecated.
+  substituted with the user's PATH except when running a program that may
+  be run with elevated privileges in the suid flow.
+  Defaults to `$PATH:` followed by standard system paths.
+  Configuration variables for paths to individual programs that were in
+  apptainer.conf (`cryptsetup`, `go`, `ldconfig`, `msquashfs`, `unsquashfs`,
+  and `nvidia-container-cli`) have been removed.
 - $HOME is now used to find the user's configuration and cache by default.
   If that is not set it will fall back to the previous behavior of looking
   up the home directory in the password file.  The value of $HOME inside
