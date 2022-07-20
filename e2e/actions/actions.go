@@ -1803,7 +1803,7 @@ func (c actionTests) fuseMount(t *testing.T) {
 		},
 	}
 
-	optionFmt := "%s:%s root@127.0.0.1:/ -p 2022 -F %s -o IdentityFile=%s -o StrictHostKeyChecking=no %s"
+	optionFmt := "%s:%s root@127.0.0.1:/ -o ConnectTimeout=15 -p 2022 -F %s -o IdentityFile=%s -o StrictHostKeyChecking=no %s"
 	sshConfig := filepath.Join(imageDir, "etc", "ssh", "ssh_config")
 
 	for _, tt := range basicTests {
