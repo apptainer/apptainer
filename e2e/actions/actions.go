@@ -1705,12 +1705,12 @@ func (c actionTests) fuseMount(t *testing.T) {
 		key     string
 		profile e2e.Profile
 	}{
-		{
-			name:    "HostDaemonAsRoot",
-			spec:    "host-daemon",
-			key:     rootPrivKey,
-			profile: e2e.RootProfile,
-		},
+		// {
+		// 	name:    "HostDaemonAsRoot",
+		// 	spec:    "host-daemon",
+		// 	key:     rootPrivKey,
+		// 	profile: e2e.RootProfile,
+		// },
 		{
 			name:    "HostAsRoot",
 			spec:    "host",
@@ -2449,7 +2449,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"network":               c.actionNetwork,       // test basic networking
 		"binds":                 c.actionBinds,         // test various binds with --bind and --mount
 		"exit and signals":      c.exitSignals,         // test exit and signals propagation
-		// "fuse mount":            c.fuseMount,           // test fusemount option
+		"fuse mount":            c.fuseMount,           // test fusemount option
 		"bind image":            c.bindImage,           // test bind image with --bind and --mount
 		"umask":                 c.actionUmask,         // test umask propagation
 		"no-mount":              c.actionNoMount,       // test --no-mount
