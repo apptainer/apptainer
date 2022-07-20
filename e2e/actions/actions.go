@@ -1711,12 +1711,12 @@ func (c actionTests) fuseMount(t *testing.T) {
 		// 	key:     rootPrivKey,
 		// 	profile: e2e.RootProfile,
 		// },
-		{
-			name:    "HostAsRoot",
-			spec:    "host",
-			key:     rootPrivKey,
-			profile: e2e.RootProfile,
-		},
+		// {
+		// 	name:    "HostAsRoot",
+		// 	spec:    "host",
+		// 	key:     rootPrivKey,
+		// 	profile: e2e.RootProfile,
+		// },
 		{
 			name:    "ContainerDaemonAsRoot",
 			spec:    "container-daemon",
@@ -1729,18 +1729,18 @@ func (c actionTests) fuseMount(t *testing.T) {
 			key:     rootPrivKey,
 			profile: e2e.RootProfile,
 		},
-		{
-			name:    "HostDaemonAsUser",
-			spec:    "host-daemon",
-			key:     userPrivKey,
-			profile: e2e.UserProfile,
-		},
-		{
-			name:    "HostAsUser",
-			spec:    "host",
-			key:     userPrivKey,
-			profile: e2e.UserProfile,
-		},
+		// {
+		// 	name:    "HostDaemonAsUser",
+		// 	spec:    "host-daemon",
+		// 	key:     userPrivKey,
+		// 	profile: e2e.UserProfile,
+		// },
+		// {
+		// 	name:    "HostAsUser",
+		// 	spec:    "host",
+		// 	key:     userPrivKey,
+		// 	profile: e2e.UserProfile,
+		// },
 		{
 			name:    "ContainerDaemonAsUser",
 			spec:    "container-daemon",
@@ -1753,18 +1753,18 @@ func (c actionTests) fuseMount(t *testing.T) {
 			key:     userPrivKey,
 			profile: e2e.UserProfile,
 		},
-		{
-			name:    "HostDaemonAsUserNamespace",
-			spec:    "host-daemon",
-			key:     userPrivKey,
-			profile: e2e.UserNamespaceProfile,
-		},
-		{
-			name:    "HostAsUserNamespace",
-			spec:    "host",
-			key:     userPrivKey,
-			profile: e2e.UserNamespaceProfile,
-		},
+		// {
+		// 	name:    "HostDaemonAsUserNamespace",
+		// 	spec:    "host-daemon",
+		// 	key:     userPrivKey,
+		// 	profile: e2e.UserNamespaceProfile,
+		// },
+		// {
+		// 	name:    "HostAsUserNamespace",
+		// 	spec:    "host",
+		// 	key:     userPrivKey,
+		// 	profile: e2e.UserNamespaceProfile,
+		// },
 		{
 			name:    "ContainerDaemonAsUserNamespace",
 			spec:    "container-daemon",
@@ -1777,18 +1777,18 @@ func (c actionTests) fuseMount(t *testing.T) {
 			key:     userPrivKey,
 			profile: e2e.UserNamespaceProfile,
 		},
-		{
-			name:    "HostDaemonAsFakeroot",
-			spec:    "host-daemon",
-			key:     userPrivKey,
-			profile: e2e.FakerootProfile,
-		},
-		{
-			name:    "HostAsFakeroot",
-			spec:    "host",
-			key:     userPrivKey,
-			profile: e2e.FakerootProfile,
-		},
+		// {
+		// 	name:    "HostDaemonAsFakeroot",
+		// 	spec:    "host-daemon",
+		// 	key:     userPrivKey,
+		// 	profile: e2e.FakerootProfile,
+		// },
+		// {
+		// 	name:    "HostAsFakeroot",
+		// 	spec:    "host",
+		// 	key:     userPrivKey,
+		// 	profile: e2e.FakerootProfile,
+		// },
 		{
 			name:    "ContainerDaemonAsFakeroot",
 			spec:    "container-daemon",
