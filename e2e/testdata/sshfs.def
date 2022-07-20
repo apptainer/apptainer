@@ -25,7 +25,7 @@ export ROOTDIR_WRAPPER="\$dir"
 export LD_LIBRARY_PATH="\$dir/usr/lib:\$dir/lib"
 export PATH="\$ROOTDIR_WRAPPER/wrapped:\$PATH"
 
-\$dir$loader \$dir/usr/bin/sshfs "\$@" &
+\$dir$loader \$dir/usr/bin/sshfs -f "\$@" &
 BACKPID=$!
 sleep 15
 kill -9 $BACKPID
