@@ -1811,7 +1811,7 @@ func (c actionTests) fuseMount(t *testing.T) {
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(tt.profile),
-			e2e.WithCommand("exec"),
+			e2e.WithCommand("-d exec"),
 			e2e.WithArgs([]string{
 				"--fusemount", fmt.Sprintf(optionFmt, tt.spec, sshfsWrapper, sshConfig, tt.key, "/mnt"),
 				imageDir,

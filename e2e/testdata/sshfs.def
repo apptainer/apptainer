@@ -25,7 +25,11 @@ export ROOTDIR_WRAPPER="\$dir"
 export LD_LIBRARY_PATH="\$dir/usr/lib:\$dir/lib"
 export PATH="\$ROOTDIR_WRAPPER/wrapped:\$PATH"
 
-exec \$dir$loader \$dir/usr/bin/sshfs "\$@"
+\$dir$loader \$dir/usr/bin/sshfs "\$@" &
+BACKPID=$!
+sleep 15
+kill -9 $BACKPID
+wait
 EOF
 
     # all commands required by FUSE server must be wrapped
