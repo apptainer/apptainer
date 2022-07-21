@@ -43,7 +43,7 @@ func (c ctx) apptainerEnv(t *testing.T) {
 	defaultImage := "docker://alpine:3.8"
 
 	// This image sets a custom path.
-	customImage := "docker://sylabsio/lolcow"
+	customImage := "docker://ghcr.io/apptainer/lolcow"
 	customPath := "/usr/games:" + defaultPath
 
 	// Append or prepend this path.
@@ -179,13 +179,13 @@ func (c ctx) apptainerEnvOption(t *testing.T) {
 		},
 		{
 			name:     "DockerImage",
-			image:    "docker://sylabsio/lolcow",
+			image:    "docker://ghcr.io/apptainer/lolcow",
 			matchEnv: "LC_ALL",
 			matchVal: "C",
 		},
 		{
 			name:     "DockerImageOverride",
-			image:    "docker://sylabsio/lolcow",
+			image:    "docker://ghcr.io/apptainer/lolcow",
 			envOpt:   []string{"LC_ALL=foo"},
 			matchEnv: "LC_ALL",
 			matchVal: "foo",

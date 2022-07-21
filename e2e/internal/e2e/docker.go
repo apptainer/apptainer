@@ -11,172 +11,176 @@
 package e2e
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"net"
 	"net/http"
 	"os"
+	osexec "os/exec"
 	"path/filepath"
-	"sync"
-	"sync/atomic"
 	"testing"
+	"text/template"
 	"time"
 
-	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
-	"github.com/apptainer/apptainer/internal/pkg/util/fs"
-	"github.com/pkg/errors"
+	"github.com/docker/distribution/configuration"
+	dcontext "github.com/docker/distribution/context"
+	"github.com/docker/distribution/registry/handlers"
+
+	// necessary imports for registry drivers
+	_ "github.com/docker/distribution/registry/storage/driver/filesystem"
+	_ "github.com/docker/distribution/registry/storage/driver/inmemory"
+	_ "github.com/docker/distribution/registry/storage/driver/middleware/redirect"
+	"github.com/sirupsen/logrus"
+
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/exec"
 )
 
-const dockerInstanceName = "e2e-docker-instance"
+const registryConfigTemplate = `
+version: 0.1
+storage:
+  cache:
+    blobdescriptor: inmemory
+  filesystem:
+    rootdirectory: {{.RootDir}}
+  delete:
+    enabled: false
+  redirect:
+    disable: true
+http:
+  addr: 127.0.0.1:5000
+  headers:
+    X-Content-Type-Options: [nosniff]
+auth:
+  token:
+    service: Authentication
+    issuer: E2E
+    realm: {{.Realm}}
+    rootcertbundle: {{.RootCertBundle}}
+`
 
-var registrySetup struct {
-	sync.Once
-	up uint32 // 1 if the registry is running, 0 otherwise
-	sync.Mutex
-}
-
-// PrepRegistry runs a docker registry and pushes in a busybox image and
-// the test image using the oras transport.
-// This *MUST* be called before any tests using OCI/instances as it
-// temporarily  mounts a shadow instance directory in the test user
-// $HOME that will obscure any instances of concurrent tests, causing
-// them to fail.
-func PrepRegistry(t *testing.T, env TestEnv) {
-	// The docker registry container is only available for amd64 and arm
-	// See: https://hub.docker.com/_/registry?tab=tags
-	// Skip on other architectures
-	require.ArchIn(t, []string{"amd64", "arm64"})
-
-	registrySetup.Lock()
-	defer registrySetup.Unlock()
-
-	registrySetup.Do(func() {
-		t.Log("Preparing docker registry instance.")
-
-		EnsureImage(t, env)
-
-		dockerDefinition := "testdata/Docker_registry.def"
-		dockerImage := filepath.Join(env.TestDir, "docker-registry")
-
-		env.RunApptainer(
-			t,
-			WithProfile(RootProfile),
-			WithCommand("build"),
-			WithArgs("-s", dockerImage, dockerDefinition),
-			ExpectExit(0),
-		)
-
-		crt := filepath.Join(dockerImage, "certs/root.crt")
-		key := filepath.Join(dockerImage, "certs/root.key")
-
-		ln, err := net.Listen("tcp", "127.0.0.1:0")
-		if err != nil {
-			t.Fatalf("could not setup listener for docker auth server: %s", err)
-		}
-
-		go func() {
-			// for simplicity let this be brutally stopped once test finished
-			if err := startAuthServer(ln, crt, key); err != http.ErrServerClosed {
-				t.Errorf("docker auth server error: %s", err)
-			}
-		}()
-
-		var umountFn func(*testing.T)
-
-		registryAuthRealmEnv := fmt.Sprintf("REGISTRY_AUTH_TOKEN_REALM=http://%s/auth", ln.Addr().String())
-
-		env.RunApptainer(
-			t,
-			WithProfile(RootProfile),
-			WithCommand("instance start"),
-			WithArgs("-w", dockerImage, dockerInstanceName),
-			WithEnv([]string{registryAuthRealmEnv}),
-			PreRun(func(t *testing.T) {
-				if os.Getenv("E2E_DOCKER_MIRROR") != "" {
-					from := "/root/.config/containers/registries.conf"
-					to := filepath.Join(dockerImage, from)
-
-					if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
-						t.Fatalf("while creating %s: %s", filepath.Dir(to), err)
-					}
-					if err := fs.CopyFile(from, to, 0o644); err != nil {
-						t.Fatalf("while copying %s to %s: %s", from, to, err)
-					}
-				}
-				umountFn = shadowInstanceDirectory(t, env)
-			}),
-			PostRun(func(t *testing.T) {
-				if umountFn != nil {
-					umountFn(t)
-				}
-			}),
-			ExpectExit(0),
-		)
-
-		// start script in e2e/testdata/Docker_registry.def will listen
-		// on port 5111 once docker registry is up and initialized, so
-		// we are trying to connect to this port until we got a response,
-		// without any response after 30 seconds we abort tests execution
-		// because the start script probably failed
-		retry := 0
-		for {
-			conn, err := net.Dial("tcp", "127.0.0.1:5111")
-			err = errors.Wrap(err, "connecting to test endpoint in docker registry container")
-			if err == nil {
-				conn.Close()
-				break
-			}
-			time.Sleep(100 * time.Millisecond)
-			retry++
-			if retry == 300 {
-				t.Fatalf("docker registry unreachable after 30 seconds: %+v", err)
-			}
-		}
-
-		atomic.StoreUint32(&registrySetup.up, 1)
-
-		env.RunApptainer(
-			t,
-			WithProfile(UserProfile),
-			WithCommand("push"),
-			WithArgs(env.ImagePath, env.OrasTestImage),
-			ExpectExit(0),
-		)
-	})
-}
-
-// KillRegistry stop and cleanup docker registry.
-func KillRegistry(t *testing.T, env TestEnv) {
-	if !atomic.CompareAndSwapUint32(&registrySetup.up, 1, 0) {
-		return
-	}
-
-	var umountFn func(*testing.T)
-
-	env.RunApptainer(
-		t,
-		WithProfile(RootProfile),
-		WithCommand("instance stop"),
-		WithArgs("-s", "KILL", dockerInstanceName),
-		PreRun(func(t *testing.T) {
-			umountFn = shadowInstanceDirectory(t, env)
-		}),
-		PostRun(func(t *testing.T) {
-			if umountFn != nil {
-				umountFn(t)
-			}
-		}),
-		ExpectExit(0),
+func StartRegistry(t *testing.T, env TestEnv) string {
+	const (
+		rootCert = "root.crt"
+		rootKey  = "root.key"
+		rootPem  = "root.pem"
 	)
-}
 
-// EnsureRegistry fails the current test if the e2e docker registry is not up
-func EnsureRegistry(t *testing.T) {
-	// The docker registry container is only available for amd64 and arm
-	// See: https://hub.docker.com/_/registry?tab=tags
-	// Skip on other architectures
-	require.ArchIn(t, []string{"amd64", "arm64"})
+	ctx := context.Background()
 
-	if registrySetup.up != 1 {
-		t.Fatalf("Registry instance was not setup. e2e.PrepRegistry must be called before this test.")
+	authListener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("could not setup listener for docker auth server: %s", err)
 	}
+
+	certsDir := filepath.Join(env.TestDir, "certs")
+	certFile := filepath.Join(certsDir, rootCert)
+	keyFile := filepath.Join(certsDir, rootKey)
+	pemFile := filepath.Join(certsDir, rootPem)
+	if err := os.Mkdir(certsDir, 0o755); err != nil {
+		t.Fatalf("could not create %s: %s", certsDir, err)
+	}
+
+	if _, err := osexec.LookPath("openssl"); err != nil {
+		t.Fatalf("openssl binary is required to be installed on host")
+	}
+
+	cmd := exec.Command(
+		"openssl",
+		"req", "-x509", "-nodes", "-new", "-sha256", "-days", "1024", "-newkey", "rsa:2048",
+		"-keyout", keyFile, "-out", pemFile, "-subj", "/C=US/CN=localhost",
+	)
+	if res := cmd.Run(t); res.Error != nil {
+		t.Fatalf("openssl command failed: %s: error output:\n%s", res.Error, res.Stderr())
+	}
+
+	cmd = exec.Command(
+		"openssl",
+		"x509", "-outform", "pem", "-in", pemFile, "-out", certFile,
+	)
+	if res := cmd.Run(t); res.Error != nil {
+		t.Fatalf("openssl command failed: %s: error output:\n%s", res.Error, res.Stderr())
+	}
+
+	go func() {
+		// for simplicity let this be brutally stopped once test finished
+		if err := startAuthServer(authListener, certFile, keyFile); err != nil && err != http.ErrServerClosed {
+			panic(fmt.Errorf("failed to start docker auth server: %s", err))
+		}
+	}()
+
+	regDir := filepath.Join(env.TestDir, "local-registry")
+	if err := os.Mkdir(regDir, 0o755); err != nil {
+		t.Fatalf("failed to create registry directory %s: %s", regDir, err)
+	}
+
+	tmpl, err := template.New("registry.yaml").Parse(registryConfigTemplate)
+	if err != nil {
+		t.Fatalf("could not create local registry config template: %+v", err)
+	}
+	data := struct {
+		RootDir        string
+		Realm          string
+		RootCertBundle string
+	}{
+		RootDir:        regDir,
+		Realm:          fmt.Sprintf("http://%s/auth", authListener.Addr().String()),
+		RootCertBundle: certFile,
+	}
+
+	configBuffer := new(bytes.Buffer)
+	if err := tmpl.Execute(configBuffer, data); err != nil {
+		t.Fatalf("could not registries.conf template: %+v", err)
+	}
+	config, err := configuration.Parse(configBuffer)
+	if err != nil {
+		t.Fatalf("failed to parse local registry configuration: %s", err)
+	}
+
+	logrus.SetLevel(logrus.PanicLevel)
+	ctx = dcontext.WithLogger(ctx, dcontext.GetLogger(ctx))
+
+	app := handlers.NewApp(ctx, config)
+	server := &http.Server{
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/" {
+				w.Header().Set("Cache-Control", "no-cache")
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+			app.ServeHTTP(w, r)
+		}),
+	}
+
+	registryListener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("could not setup listener for docker registry: %s", err)
+	}
+
+	go func() {
+		if err := server.Serve(registryListener); err != nil && err != http.ErrServerClosed {
+			panic(fmt.Errorf("failed to start docker local registry: %s", err))
+		}
+	}()
+
+	_, port, err := net.SplitHostPort(registryListener.Addr().String())
+	if err != nil {
+		t.Fatalf("failed to retrieve local registry port: %s", err)
+	}
+
+	addr := net.JoinHostPort("localhost", port)
+
+	for i := 0; i < 30; i++ {
+		resp, err := http.Get(fmt.Sprintf("http://%s/", addr))
+		resp.Body.Close()
+		if err != nil || resp.StatusCode != 200 {
+			time.Sleep(time.Second)
+			continue
+		}
+		return addr
+	}
+
+	t.Fatalf("local registry not reachable")
+
+	return addr
 }

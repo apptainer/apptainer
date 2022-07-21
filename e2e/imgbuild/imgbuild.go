@@ -55,7 +55,7 @@ func (c imgBuildTests) tempDir(t *testing.T, namespace string) (string, func()) 
 }
 
 func (c imgBuildTests) buildFrom(t *testing.T) {
-	e2e.EnsureRegistry(t)
+	e2e.EnsureORASImage(t, c.env)
 
 	// use a trailing slash in tests for sandbox intentionally to make sure
 	// `apptainer build -s /tmp/sand/ docker://alpine` works,

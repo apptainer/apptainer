@@ -461,8 +461,6 @@ func (c ctx) remoteTestFlag(t *testing.T) {
 }
 
 func (c ctx) remoteBasicLogin(t *testing.T) {
-	e2e.EnsureRegistry(t)
-
 	var (
 		registry    = fmt.Sprintf("oras://%s", c.env.TestRegistry)
 		badRegistry = "oras://bad_registry:5000"
@@ -552,7 +550,6 @@ func (c ctx) remoteBasicLogin(t *testing.T) {
 }
 
 func (c ctx) remoteLoginPushPrivate(t *testing.T) {
-	e2e.EnsureRegistry(t)
 	e2e.EnsureImage(t, c.env)
 
 	var (
@@ -608,7 +605,6 @@ func (c ctx) remoteLoginPushPrivate(t *testing.T) {
 // If we login twice, and logout once we should not see the URI in list.
 // See https://github.com/sylabs/singularity/issues/214
 func (c ctx) remoteLoginRepeated(t *testing.T) {
-	e2e.EnsureRegistry(t)
 	e2e.EnsureImage(t, c.env)
 
 	registry := fmt.Sprintf("oras://%s", c.env.TestRegistry)

@@ -490,7 +490,7 @@ func (c actionTests) STDPipe(t *testing.T) {
 
 // RunFromURI tests min fuctionality for apptainer run/exec URI://
 func (c actionTests) RunFromURI(t *testing.T) {
-	e2e.EnsureRegistry(t)
+	e2e.EnsureORASImage(t, c.env)
 
 	runScript := "testdata/runscript.sh"
 	bind := fmt.Sprintf("%s:/.singularity.d/runscript", runScript)
@@ -1625,6 +1625,8 @@ func (c actionTests) exitSignals(t *testing.T) {
 }
 
 func (c actionTests) fuseMount(t *testing.T) {
+	t.Skip("Broken on github for ubuntu 18.04/20.04")
+
 	require.Filesystem(t, "fuse")
 
 	u := e2e.UserProfile.HostUser(t)

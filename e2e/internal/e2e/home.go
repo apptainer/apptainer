@@ -14,6 +14,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"testing"
@@ -35,7 +36,8 @@ var rpmMacrosContent = `
 // $HOME/.config/containers/registries.conf to bypass
 // DockerHub rate limit by using a registry mirror or
 // a local pull through cache registry.
-var registriesTemplate = `[[registry]]
+var registriesTemplate = `{{ if .MirrorURL }}
+[[registry]]
 prefix = "docker.io"
 {{ if .MirrorInsecure }}insecure = true{{ end }}
 location = "{{.MirrorURL}}"
@@ -44,13 +46,18 @@ location = "{{.MirrorURL}}"
 prefix = "index.docker.io"
 {{ if .MirrorInsecure }}insecure = true{{ end }}
 location = "{{.MirrorURL}}"
+{{ end }}
+
+[[registry]]
+location = "{{.TestRegistry}}"
+insecure = true
 `
 
 // SetupHomeDirectories creates temporary home directories for
 // privileged and unprivileged users and bind mount those directories
 // on top of real ones. It's possible because e2e tests are executed
 // in a dedicated mount namespace.
-func SetupHomeDirectories(t *testing.T) {
+func SetupHomeDirectories(t *testing.T, testRegistry string) {
 	var unprivUser, privUser *user.User
 
 	sessionDir := buildcfg.SESSIONDIR
@@ -161,88 +168,55 @@ func SetupHomeDirectories(t *testing.T) {
 			t.Fatalf("could not write macros file: %+v", err)
 		}
 
-		mirror := os.Getenv("E2E_DOCKER_MIRROR")
-
-		// add registries.conf for the registry mirror
-		if mirror != "" {
-			mirrorInsecure := false
-			if os.Getenv("E2E_DOCKER_MIRROR_INSECURE") != "" {
-				mirrorInsecure = true
-			}
-			buf := new(bytes.Buffer)
-
-			tmpl, err := template.New("registries.conf").Parse(registriesTemplate)
+		// add registries.conf for registry mirror and local registry
+		mirrorInsecure := false
+		insecureValue := os.Getenv("E2E_DOCKER_MIRROR_INSECURE")
+		if insecureValue != "" {
+			mirrorInsecure, err = strconv.ParseBool(insecureValue)
 			if err != nil {
-				t.Fatalf("could not create registries.conf template: %+v", err)
+				t.Fatalf("could not convert E2E_DOCKER_MIRROR_INSECURE=%s: %s", insecureValue, err)
 			}
-			data := struct {
-				MirrorURL      string
-				MirrorInsecure bool
-			}{
-				MirrorURL:      mirror,
-				MirrorInsecure: mirrorInsecure,
-			}
-			if err := tmpl.Execute(buf, data); err != nil {
-				t.Fatalf("could not registries.conf template: %+v", err)
-			}
-			registriesContent := buf.Bytes()
+		}
+		buf := new(bytes.Buffer)
 
-			registryFile := filepath.Join(unprivSessionHome, ".config", "containers", "registries.conf")
-			registryDir := filepath.Dir(registryFile)
-			if err := os.MkdirAll(registryDir, 0o755); err != nil {
-				err = errors.Wrapf(err, "creating directory at %s", registryDir)
-				t.Fatalf("could not create directory: %+v", err)
-			}
-			if err := ioutil.WriteFile(registryFile, registriesContent, 0o444); err != nil {
-				err = errors.Wrapf(err, "writing macros file at %s", macrosFile)
-				t.Fatalf("could not write registries.conf file: %+v", err)
-			}
+		tmpl, err := template.New("registries.conf").Parse(registriesTemplate)
+		if err != nil {
+			t.Fatalf("could not create registries.conf template: %+v", err)
+		}
+		data := struct {
+			TestRegistry   string
+			MirrorURL      string
+			MirrorInsecure bool
+		}{
+			TestRegistry:   testRegistry,
+			MirrorURL:      os.Getenv("E2E_DOCKER_MIRROR"),
+			MirrorInsecure: mirrorInsecure,
+		}
+		if err := tmpl.Execute(buf, data); err != nil {
+			t.Fatalf("could not registries.conf template: %+v", err)
+		}
+		registriesContent := buf.Bytes()
 
-			registryFile = filepath.Join(privSessionHome, ".config", "containers", "registries.conf")
-			registryDir = filepath.Dir(registryFile)
-			if err := os.MkdirAll(registryDir, 0o755); err != nil {
-				err = errors.Wrapf(err, "creating directory at %s", registryDir)
-				t.Fatalf("could not create directory: %+v", err)
-			}
-			if err := ioutil.WriteFile(registryFile, registriesContent, 0o444); err != nil {
-				err = errors.Wrapf(err, "writing macros file at %s", macrosFile)
-				t.Fatalf("could not write registries.conf file: %+v", err)
-			}
+		registryFile := filepath.Join(unprivSessionHome, ".config", "containers", "registries.conf")
+		registryDir := filepath.Dir(registryFile)
+		if err := os.MkdirAll(registryDir, 0o755); err != nil {
+			err = errors.Wrapf(err, "creating directory at %s", registryDir)
+			t.Fatalf("could not create directory: %+v", err)
+		}
+		if err := ioutil.WriteFile(registryFile, registriesContent, 0o444); err != nil {
+			err = errors.Wrapf(err, "writing macros file at %s", macrosFile)
+			t.Fatalf("could not write registries.conf file: %+v", err)
+		}
+
+		registryFile = filepath.Join(privSessionHome, ".config", "containers", "registries.conf")
+		registryDir = filepath.Dir(registryFile)
+		if err := os.MkdirAll(registryDir, 0o755); err != nil {
+			err = errors.Wrapf(err, "creating directory at %s", registryDir)
+			t.Fatalf("could not create directory: %+v", err)
+		}
+		if err := ioutil.WriteFile(registryFile, registriesContent, 0o444); err != nil {
+			err = errors.Wrapf(err, "writing macros file at %s", macrosFile)
+			t.Fatalf("could not write registries.conf file: %+v", err)
 		}
 	})(t)
-}
-
-// shadowInstanceDirectory creates a temporary instances directory which
-// will be bound on top of current user home directory in order to execute
-// a "shadow" instance (eg: docker registry).
-func shadowInstanceDirectory(t *testing.T, env TestEnv) func(t *testing.T) {
-	u := CurrentUser(t)
-
-	// $TESTDIR/.apptainer directory
-	fakeApptainerDir := filepath.Join(env.TestDir, ".apptainer")
-	// $TESTDIR/.apptainer/instances symlink
-	fakeInstanceSymlink := filepath.Join(fakeApptainerDir, "instances")
-
-	// create directory $TESTDIR/.apptainer
-	if err := os.Mkdir(fakeApptainerDir, 0o755); err != nil && !os.IsExist(err) {
-		err = errors.Wrapf(err, "create temporary apptainer data directory at %q", fakeApptainerDir)
-		t.Fatalf("failed to create fake apptainer directory: %+v", err)
-	}
-	// mount $TESTDIR on top of $HOME
-	if err := syscall.Mount(env.TestDir, u.Dir, "", syscall.MS_BIND, ""); err != nil {
-		err = errors.Wrapf(err, "mounting temporary apptainer data directory from %q to %q", env.TestDir, u.Dir)
-		t.Fatalf("failed to mount directory: %+v", err)
-	}
-	// create symlink $HOME/.apptainer/instances -> $TESTDIR/.apptainer
-	if err := os.Symlink(fakeApptainerDir, fakeInstanceSymlink); err != nil && !os.IsExist(err) {
-		err = errors.Wrapf(err, "symlink temporary apptainer data directory from %q to %q", fakeApptainerDir, fakeInstanceSymlink)
-		t.Fatalf("failed to create symlink: %+v", err)
-	}
-
-	return func(t *testing.T) {
-		if err := syscall.Unmount(u.Dir, syscall.MNT_DETACH); err != nil {
-			err = errors.Wrapf(err, "unmount directory %q", u.Dir)
-			t.Fatalf("failed to unmount directory: %+v", err)
-		}
-	}
 }

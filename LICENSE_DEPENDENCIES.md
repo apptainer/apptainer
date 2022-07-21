@@ -323,6 +323,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/godbus/dbus/blob/master/v5/LICENSE>
 
+## github.com/gorilla/handlers
+
+**License:** BSD-2-Clause
+
+**License URL:** <https://github.com/gorilla/handlers/blob/master/LICENSE>
+
 ## github.com/pkg/errors
 
 **License:** BSD-2-Clause
@@ -605,6 +611,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/fatih/color/blob/master/LICENSE.md>
 
+## github.com/felixge/httpsnoop
+
+**License:** MIT
+
+**License URL:** <https://github.com/felixge/httpsnoop/blob/master/LICENSE.txt>
+
 ## github.com/ghodss/yaml
 
 **License:** MIT
@@ -712,6 +724,18 @@ The dependencies and their licenses are as follows:
 **License:** MPL-2.0
 
 **License URL:** <https://github.com/hashicorp/go-multierror/blob/master/LICENSE>
+
+## github.com/garyburd/redigo/internal
+
+**License:** Unknown
+
+**Project URL:** <https://github.com/garyburd/redigo/internal>
+
+## github.com/garyburd/redigo/redis
+
+**License:** Unknown
+
+**Project URL:** <https://github.com/garyburd/redigo/redis>
 
 ## github.com/vbauerster/mpb
 

@@ -19,6 +19,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strconv"
 	"syscall"
 	"testing"
 
@@ -104,12 +105,13 @@ func Run(t *testing.T) {
 		log.Fatalf("failed to chmod temporary directory: %v", err)
 	}
 	testenv.TestDir = name
+	testenv.TestRegistry = e2e.StartRegistry(t, testenv)
 
 	// e2e tests need to run in a somehow agnostic environment, so we
 	// don't use environment of user executing tests in order to not
 	// wrongly interfering with cache stuff, sylabs library tokens,
 	// PGP keys
-	e2e.SetupHomeDirectories(t)
+	e2e.SetupHomeDirectories(t, testenv.TestRegistry)
 
 	// generate apptainer.conf with default values
 	e2e.SetupDefaultConfig(t, filepath.Join(testenv.TestDir, "apptainer.conf"))
@@ -135,11 +137,11 @@ func Run(t *testing.T) {
 
 	for _, cf := range configFiles {
 		if fi, err := os.Stat(cf); err != nil {
-			log.Fatalf("%s is not installed on this system: %v", cf, err)
+			t.Fatalf("%s is not installed on this system: %v", cf, err)
 		} else if !fi.Mode().IsRegular() {
-			log.Fatalf("%s is not a regular file", cf)
+			t.Fatalf("%s is not a regular file", cf)
 		} else if fi.Sys().(*syscall.Stat_t).Uid != 0 {
-			log.Fatalf("%s must be owned by root", cf)
+			t.Fatalf("%s must be owned by root", cf)
 		}
 	}
 
@@ -156,19 +158,18 @@ func Run(t *testing.T) {
 	// If you need the test image, add the call at the top of your
 	// own test.
 
-	testenv.TestRegistry = "localhost:5000"
 	testenv.OrasTestImage = fmt.Sprintf("oras://%s/oras_test_sif:latest", testenv.TestRegistry)
 
-	// Because tests are parallelized, and PrepRegistry temporarily masks
-	// the Apptainer instance directory we *must* now call it before we
-	// start running tests which could use instance and oci functionality.
-	// See: https://github.com/apptainer/singularity/issues/5744
-	t.Run("PrepRegistry", func(t *testing.T) {
-		e2e.PrepRegistry(t, testenv)
-	})
-	// e2e.KillRegistry is called here to ensure that the registry
-	// is stopped after tests run.
-	defer e2e.KillRegistry(t, testenv)
+	// provision local registry
+	insecureSource := false
+	insecureValue := os.Getenv("E2E_DOCKER_MIRROR_INSECURE")
+	if insecureValue != "" {
+		insecureSource, err = strconv.ParseBool(insecureValue)
+		if err != nil {
+			t.Fatalf("could not convert E2E_DOCKER_MIRROR_INSECURE=%s: %s", insecureValue, err)
+		}
+	}
+	e2e.CopyImage(t, "busybox:latest", fmt.Sprintf("%s/my-busybox:latest", testenv.TestRegistry), insecureSource, true)
 
 	suite := testhelper.NewSuite(t, testenv)
 

@@ -10,10 +10,18 @@
 package e2e
 
 import (
+	"context"
+	"io/ioutil"
 	"os"
 	"runtime"
 	"sync"
 	"testing"
+
+	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
+	"github.com/containers/image/v5/copy"
+	"github.com/containers/image/v5/docker"
+	"github.com/containers/image/v5/signature"
+	"github.com/containers/image/v5/types"
 )
 
 var (
@@ -81,6 +89,28 @@ func EnsureSingularityImage(t *testing.T, env TestEnv) {
 	)
 }
 
+var orasImageOnce sync.Once
+
+func EnsureORASImage(t *testing.T, env TestEnv) {
+	EnsureImage(t, env)
+
+	ensureMutex.Lock()
+	defer ensureMutex.Unlock()
+
+	orasImageOnce.Do(func() {
+		env.RunApptainer(
+			t,
+			WithProfile(UserProfile),
+			WithCommand("push"),
+			WithArgs(env.ImagePath, env.OrasTestImage),
+			ExpectExit(0),
+		)
+		if t.Failed() {
+			t.Fatalf("failed to push ORAS image to local registry")
+		}
+	})
+}
+
 // PullImage will pull a test image.
 func PullImage(t *testing.T, env TestEnv, imageURL string, arch string, path string) {
 	pullMutex.Lock()
@@ -110,4 +140,41 @@ func PullImage(t *testing.T, env TestEnv, imageURL string, arch string, path str
 		WithArgs("--force", "--allow-unsigned", "--arch", arch, path, imageURL),
 		ExpectExit(0),
 	)
+}
+
+func CopyImage(t *testing.T, source, dest string, insecureSource, insecureDest bool) {
+	policy := &signature.Policy{Default: []signature.PolicyRequirement{signature.NewPRInsecureAcceptAnything()}}
+	policyCtx, err := signature.NewPolicyContext(policy)
+	if err != nil {
+		t.Fatalf("failed to copy %s to %s: %s", source, dest, err)
+	}
+
+	srcCtx := &types.SystemContext{
+		OCIInsecureSkipTLSVerify:    insecureSource,
+		DockerInsecureSkipTLSVerify: types.NewOptionalBool(insecureSource),
+		DockerRegistryUserAgent:     useragent.Value(),
+	}
+	dstCtx := &types.SystemContext{
+		OCIInsecureSkipTLSVerify:    insecureDest,
+		DockerInsecureSkipTLSVerify: types.NewOptionalBool(insecureDest),
+		DockerRegistryUserAgent:     useragent.Value(),
+	}
+
+	srcRef, err := docker.ParseReference("//" + source)
+	if err != nil {
+		t.Fatalf("failed to parse %s reference: %s", source, err)
+	}
+	dstRef, err := docker.ParseReference("//" + dest)
+	if err != nil {
+		t.Fatalf("failed to parse %s reference: %s", dest, err)
+	}
+
+	_, err = copy.Image(context.Background(), policyCtx, dstRef, srcRef, &copy.Options{
+		ReportWriter:   ioutil.Discard,
+		SourceCtx:      srcCtx,
+		DestinationCtx: dstCtx,
+	})
+	if err != nil {
+		t.Fatalf("failed to copy %s to %s: %s", source, dest, err)
+	}
 }
