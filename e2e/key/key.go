@@ -18,6 +18,8 @@ import (
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/syecl"
 )
 
 type ctx struct {
@@ -425,6 +427,146 @@ func (c *ctx) apptainerKeyRemove(t *testing.T) {
 	}
 }
 
+func (c *ctx) apptainerKeyRemoveOpts(t *testing.T) {
+	keyMap := map[string]string{
+		"key1": "0C5B8C9A5FFC44E2A0AC79851CD6FA281D476DD1",
+		"key2": "78F8AD36B0DCB84B707F23853D608DAE21C8CA10",
+	}
+
+	tests := []struct {
+		name               string
+		command            string
+		args               []string
+		profile            e2e.Profile
+		consoleOps         []e2e.ApptainerConsoleOp
+		resultOp           []e2e.ApptainerCmdResultOp
+		config             *syecl.EclConfig
+		expectedRegex      string
+		expectedErrorRegex string
+		exit               int
+	}{
+		{
+			name:    "import pubkey1 as user should succeed",
+			command: "key import",
+			profile: e2e.UserProfile,
+			args:    []string{"testdata/ecl-pgpkeys/pubkey1.asc"},
+			exit:    0,
+		},
+		{
+			name:    "import pubkey2 as user should succeed",
+			command: "key import",
+			profile: e2e.UserProfile,
+			args:    []string{"testdata/ecl-pgpkeys/pubkey2.asc"},
+			exit:    0,
+		},
+		{
+			name:    "remove public should succeed",
+			command: "key remove",
+			profile: e2e.UserProfile,
+			args:    []string{"--public", keyMap["key1"]},
+			exit:    0,
+		},
+		{
+			name:    "remove both should succeed",
+			command: "key remove",
+			profile: e2e.UserProfile,
+			args:    []string{"--both", keyMap["key2"]},
+			exit:    0,
+		},
+		{
+			name:    "import key1 as user should succeed",
+			command: "key import",
+			profile: e2e.UserProfile,
+			args:    []string{"testdata/ecl-pgpkeys/key1.asc"},
+			consoleOps: []e2e.ApptainerConsoleOp{
+				e2e.ConsoleSendLine("e2e"),
+			},
+			exit: 0,
+		},
+		{
+			name:    "remove private should succeed",
+			command: "key remove",
+			profile: e2e.UserProfile,
+			args:    []string{"--private", keyMap["key1"]},
+			exit:    0,
+		},
+		{
+			name:    "import key2 as user should succeed",
+			command: "key import",
+			profile: e2e.UserProfile,
+			args:    []string{"testdata/ecl-pgpkeys/key2.asc"},
+			consoleOps: []e2e.ApptainerConsoleOp{
+				e2e.ConsoleSendLine("e2e"),
+			},
+			exit: 0,
+		},
+		{
+			name:    "remove both should succeed",
+			command: "key remove",
+			profile: e2e.UserProfile,
+			args:    []string{"--both", keyMap["key2"]},
+			exit:    0,
+		},
+		{
+			name:          "key list should return empty",
+			command:       "key list",
+			profile:       e2e.UserProfile,
+			expectedRegex: "^Public key listing.*\n",
+			exit:          0,
+		},
+		{
+			name:          "key list --secret should return empty",
+			command:       "key list",
+			profile:       e2e.UserProfile,
+			args:          []string{"--secret"},
+			expectedRegex: "^Private key listing.*\n",
+			exit:          0,
+		},
+		{
+			name:               "remove private should fail",
+			command:            "key remove",
+			profile:            e2e.UserProfile,
+			args:               []string{"--private", keyMap["key1"]},
+			expectedErrorRegex: "FATAL:",
+			exit:               255,
+		},
+	}
+
+	for _, tt := range tests {
+		cmdOps := []e2e.ApptainerCmdOp{
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(tt.profile),
+			e2e.WithCommand(tt.command),
+			e2e.WithArgs(tt.args...),
+			e2e.PreRun(func(t *testing.T) {
+				if tt.config == nil {
+					return
+				}
+				fn := func(t *testing.T) {
+					if err := tt.config.ValidateConfig(); err != nil {
+						t.Errorf("while validating ecl config: %s", err)
+					}
+					err := syecl.PutConfig(*tt.config, buildcfg.ECL_FILE)
+					if err != nil {
+						t.Errorf("while creating ecl config: %s", err)
+					}
+				}
+				e2e.Privileged(fn)(t)
+			}),
+			e2e.ExpectExit(tt.exit, e2e.ExpectOutput(e2e.RegexMatch, tt.expectedRegex), e2e.ExpectError(e2e.ContainMatch, tt.expectedErrorRegex)),
+		}
+
+		if tt.consoleOps != nil {
+			cmdOps = append(cmdOps, e2e.ConsoleRun(tt.consoleOps...))
+		}
+
+		c.env.RunApptainer(
+			t,
+			cmdOps...,
+		)
+	}
+}
+
 func (c ctx) apptainerKeyNewpairWithLen(t *testing.T) {
 	// Create a unique keyring shared for all these tests
 	tempKeyring, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "keyring-", "")
@@ -626,6 +768,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"ordered": func(t *testing.T) {
 			t.Run("keyCmd", c.apptainerKeyCmd)                       // Run all the tests in order
 			t.Run("keyNewpairWithLen", c.apptainerKeyNewpairWithLen) // We run a separate test for `key newpair --bit-length` because it requires handling a keyring a specific way
+			t.Run("keyRemoveOpts", c.apptainerKeyRemoveOpts)         // run a separated test for `key remove --public/--private/--both`
 		},
 	}
 }
