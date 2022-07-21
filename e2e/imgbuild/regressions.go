@@ -10,7 +10,7 @@
 package imgbuild
 
 import (
-	"bytes"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -127,7 +127,7 @@ func (c *imgBuildTests) issue4524(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--fix-perms", "--sandbox", sandbox, "docker://sylabsio/issue4524"),
+		e2e.WithArgs("--fix-perms", "--sandbox", sandbox, "docker://ghcr.io/apptainer/issue4524"),
 		e2e.PostRun(func(t *testing.T) {
 			// If we failed to build the sandbox completely, leave what we have for
 			// investigation.
@@ -211,7 +211,7 @@ func (c *imgBuildTests) issue4943(t *testing.T) {
 	require.Arch(t, "amd64")
 
 	const (
-		image = "docker://gitlab-registry.cern.ch/linuxsupport/cc7-base:20191107"
+		image = "docker://ghcr.io/apptainer/cern-cc7-base:20191107"
 	)
 
 	c.env.RunApptainer(
@@ -313,27 +313,9 @@ func (c *imgBuildTests) issue5166(t *testing.T) {
 }
 
 func (c *imgBuildTests) issue5172(t *testing.T) {
-	e2e.EnsureRegistry(t)
-
-	u := e2e.UserProfile.HostUser(t)
-
 	// create $HOME/.config/containers/registries.conf
-	regImage := "docker://localhost:5000/my-busybox"
-	regDir := filepath.Join(u.Dir, ".config", "containers")
-	regFile := filepath.Join(regDir, "registries.conf")
+	regImage := fmt.Sprintf("docker://%s/my-busybox", c.env.TestRegistry)
 	imagePath := filepath.Join(c.env.TestDir, "issue-5172")
-
-	if err := os.MkdirAll(regDir, 0o755); err != nil {
-		t.Fatalf("can't create directory %s: %s", regDir, err)
-	}
-
-	// add our test registry as insecure and test build/pull
-	b := new(bytes.Buffer)
-	b.WriteString("[registries.insecure]\nregistries = ['localhost']")
-	if err := ioutil.WriteFile(regFile, b.Bytes(), 0o644); err != nil {
-		t.Fatalf("can't create %s: %s", regFile, err)
-	}
-	defer os.RemoveAll(regDir)
 
 	c.env.RunApptainer(
 		t,

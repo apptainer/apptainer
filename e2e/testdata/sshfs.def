@@ -1,5 +1,5 @@
 bootstrap: docker
-from: alpine:3.11
+from: alpine:3.16
 
 %post
     apk update
@@ -7,7 +7,7 @@ from: alpine:3.11
     loader=`strings /bin/sh | head -n1`
 
     mkdir /etc/dropbear
-    ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa
+    ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa-sha2-512
     mkdir /root/.ssh
     chmod 0600 /root/.ssh
     cp /etc/ssh/ssh_host_rsa_key.pub /root/.ssh/authorized_keys

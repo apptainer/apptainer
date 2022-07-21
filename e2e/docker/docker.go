@@ -132,7 +132,7 @@ func (c ctx) testDockerAUFS(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs([]string{imagePath, "docker://sylabsio/aufs-sanity"}...),
+		e2e.WithArgs([]string{imagePath, "docker://ghcr.io/apptainer/aufs-sanity"}...),
 		e2e.ExpectExit(0),
 	)
 
@@ -179,7 +179,7 @@ func (c ctx) testDockerPermissions(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs([]string{imagePath, "docker://sylabsio/userperms"}...),
+		e2e.WithArgs([]string{imagePath, "docker://ghcr.io/apptainer/userperms"}...),
 		e2e.ExpectExit(0),
 	)
 
@@ -225,7 +225,7 @@ func (c ctx) testDockerWhiteoutSymlink(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs([]string{imagePath, "docker://sylabsio/linkwh"}...),
+		e2e.WithArgs([]string{imagePath, "docker://ghcr.io/apptainer/linkwh"}...),
 		e2e.PostRun(func(t *testing.T) {
 			if t.Failed() {
 				return
@@ -343,8 +343,6 @@ func (c ctx) testDockerRegistry(t *testing.T) {
 	defer cleanup(t)
 	imagePath := filepath.Join(imageDir, "container")
 
-	e2e.EnsureRegistry(t)
-
 	tests := []struct {
 		name string
 		exit int
@@ -355,7 +353,7 @@ func (c ctx) testDockerRegistry(t *testing.T) {
 			exit: 0,
 			dfd: e2e.DefFileDetails{
 				Bootstrap: "docker",
-				From:      "localhost:5000/my-busybox",
+				From:      fmt.Sprintf("%s/my-busybox", c.env.TestRegistry),
 			},
 		},
 		{
@@ -364,7 +362,7 @@ func (c ctx) testDockerRegistry(t *testing.T) {
 			dfd: e2e.DefFileDetails{
 				Bootstrap: "docker",
 				From:      "my-busybox",
-				Registry:  "localhost:5000",
+				Registry:  c.env.TestRegistry,
 			},
 		},
 		{
@@ -373,7 +371,7 @@ func (c ctx) testDockerRegistry(t *testing.T) {
 			dfd: e2e.DefFileDetails{
 				Bootstrap: "docker",
 				From:      "my-busybox",
-				Registry:  "localhost:5000",
+				Registry:  c.env.TestRegistry,
 				Namespace: "not-a-namespace",
 			},
 		},
@@ -408,7 +406,7 @@ func (c ctx) testDockerCMDQuotes(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("run"),
-		e2e.WithArgs("docker://sylabsio/issue233"),
+		e2e.WithArgs("docker://ghcr.io/apptainer/issue233"),
 		e2e.ExpectExit(0,
 			e2e.ExpectOutput(e2e.ContainMatch, "Test run"),
 		),
@@ -422,7 +420,7 @@ func (c ctx) testDockerLabels(t *testing.T) {
 
 	// Test container & set labels
 	// See: https://github.com/sylabs/singularity-test-containers/pull/1
-	imgSrc := "docker://sylabsio/labels"
+	imgSrc := "docker://ghcr.io/apptainer/labels"
 	label1 := "LABEL1: 1"
 	label2 := "LABEL2: TWO"
 
@@ -469,7 +467,7 @@ func (c ctx) testDockerCMD(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs(imagePath, "docker://sylabsio/docker-cmd"),
+		e2e.WithArgs(imagePath, "docker://ghcr.io/apptainer/docker-cmd"),
 		e2e.ExpectExit(0),
 	)
 
@@ -568,7 +566,7 @@ func (c ctx) testDockerENTRYPOINT(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs(imagePath, "docker://sylabsio/docker-entrypoint"),
+		e2e.WithArgs(imagePath, "docker://ghcr.io/apptainer/docker-entrypoint"),
 		e2e.ExpectExit(0),
 	)
 
@@ -654,7 +652,7 @@ func (c ctx) testDockerCMDENTRYPOINT(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs(imagePath, "docker://sylabsio/docker-cmd-entrypoint"),
+		e2e.WithArgs(imagePath, "docker://ghcr.io/apptainer/docker-cmd-entrypoint"),
 		e2e.ExpectExit(0),
 	)
 
