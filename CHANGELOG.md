@@ -141,6 +141,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Allow `newgidmap / newuidmap` that use capabilities instead of setuid root.
 - Fix compilation on `mipsel`.
 - Fix test code that implied `%test -c <shell>` was supported - it is not.
+- Fix loop device creation with loop-control when running inside docker container.
 
 ## v1.0.3 - \[2022-07-06\]
 
