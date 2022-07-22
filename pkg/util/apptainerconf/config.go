@@ -41,20 +41,28 @@ func ApplyBuildConfig(config *File) {
 }
 
 // SetBinaryPath sets the value of the binary path, substituting the
-// user's $PATH plus ":" for "$PATH:" in BinaryPath if subPath is true.
-func SetBinaryPath(subPath bool) {
+// user's $PATH plus ":" for "$PATH:" in BinaryPath.  If nonSuid is true,
+// then SuidBinaryPath gets the same value as BinaryPath, otherwise
+// SuidBinaryPath gets the value of the binary path with with "$PATH:"
+// replaced with nothing,
+func SetBinaryPath(nonSuid bool) {
 	if currentConfig == nil {
 		sylog.Fatalf("apptainerconf.SetCurrentConfig() must be called before SetBinaryPath()")
 	}
-	userPath := ""
-	if subPath {
-		userPath = os.Getenv("PATH")
-		if userPath != "" {
-			userPath += ":"
-		}
+	userPath := os.Getenv("PATH")
+	if userPath != "" {
+		userPath += ":"
 	}
-	currentConfig.BinaryPath = strings.Replace(currentConfig.BinaryPath, "$PATH:", userPath, 1)
+	binaryPath := currentConfig.BinaryPath
+	currentConfig.BinaryPath = strings.Replace(binaryPath, "$PATH:", userPath, 1)
 	sylog.Debugf("Setting binary path to %v", currentConfig.BinaryPath)
+	if nonSuid {
+		sylog.Debugf("Using that path for all binaries")
+		currentConfig.SuidBinaryPath = currentConfig.BinaryPath
+	} else {
+		currentConfig.SuidBinaryPath = strings.Replace(binaryPath, "$PATH:", "", 1)
+		sylog.Debugf("Setting suid binary path to %v", currentConfig.SuidBinaryPath)
+	}
 }
 
 // File describes the apptainer.conf file options
@@ -98,20 +106,16 @@ type File struct {
 	MemoryFSType            string   `default:"tmpfs" authorized:"tmpfs,ramfs" directive:"memory fs type"`
 	CniConfPath             string   `directive:"cni configuration path"`
 	CniPluginPath           string   `directive:"cni plugin path"`
-	CryptsetupPath          string   `directive:"cryptsetup path"`
 	BinaryPath              string   `default:"$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" directive:"binary path"`
-	GoPath                  string   `directive:"go path"`
-	LdconfigPath            string   `directive:"ldconfig path"`
-	MksquashfsPath          string   `directive:"mksquashfs path"`
-	MksquashfsProcs         uint     `default:"0" directive:"mksquashfs procs"`
-	MksquashfsMem           string   `directive:"mksquashfs mem"`
-	NvidiaContainerCliPath  string   `directive:"nvidia-container-cli path"`
-	UnsquashfsPath          string   `directive:"unsquashfs path"`
-	ImageDriver             string   `directive:"image driver"`
-	DownloadConcurrency     uint     `default:"3" directive:"download concurrency"`
-	DownloadPartSize        uint     `default:"5242880" directive:"download part size"`
-	DownloadBufferSize      uint     `default:"32768" directive:"download buffer size"`
-	SystemdCgroups          bool     `default:"yes" authorized:"yes,no" directive:"systemd cgroups"`
+	// SuidBinaryPath is hidden; it is not referenced below, and overwritten
+	SuidBinaryPath      string `directive:"suidbinary path"`
+	MksquashfsProcs     uint   `default:"0" directive:"mksquashfs procs"`
+	MksquashfsMem       string `directive:"mksquashfs mem"`
+	ImageDriver         string `directive:"image driver"`
+	DownloadConcurrency uint   `default:"3" directive:"download concurrency"`
+	DownloadPartSize    uint   `default:"5242880" directive:"download part size"`
+	DownloadBufferSize  uint   `default:"32768" directive:"download buffer size"`
+	SystemdCgroups      bool   `default:"yes" authorized:"yes,no" directive:"systemd cgroups"`
 }
 
 const TemplateAsset = `# APPTAINER.CONF
@@ -406,39 +410,9 @@ memory fs type = {{ .MemoryFSType }}
 # BINARY PATH: [STRING]
 # DEFAULT: $PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # Colon-separated list of directories to search for many binaries.  May include
-# "$PATH:", which will be replaced by the user's PATH only when not running the
-# setuid program flow.
+# "$PATH:", which will be replaced by the user's PATH when not running a binary
+# that may be run with elevated privileges from the setuid program flow.
 # binary path = 
-
-# CRYPTSETUP PATH: [STRING]
-# DEFAULT: Undefined
-# DEPRECATED
-# Path to the cryptsetup executable, used to work with encrypted containers.
-# Executable must be owned by root for security reasons.
-# If not set, Apptainer will search the directories set in binary path.
-# cryptsetup path =
-
-# GO PATH: [STRING]
-# DEFAULT: Undefined
-# DEPRECATED
-# Path to the go executable, used to compile plugins.
-# If not set, Apptainer will search the directories set in binary path.
-# go path =
-
-# LDCONFIG PATH: [STRING]
-# DEFAULT: Undefined
-# DEPRECATED
-# Path to the ldconfig executable, used to find GPU libraries.
-# When run as root, executable must be owned by root for security reasons.
-# If not set, Apptainer will search the directories set in binary path.
-# ldconfig path =
-
-# MKSQUASHFS PATH: [STRING]
-# DEFAULT: Undefined
-# DEPRECATED
-# Path to the mksquashfs executable, used to create SIF and SquashFS containers.
-# If not set, Apptainer will search the directories set in binary path.
-# mksquashfs path =
 
 # MKSQUASHFS PROCS: [UINT]
 # DEFAULT: 0 (All CPUs)
@@ -457,21 +431,6 @@ mksquashfs procs = {{ .MksquashfsProcs }}
 # If using an earlier version you should not set this.
 # mksquashfs mem = 1G
 {{ if ne .MksquashfsMem "" }}mksquashfs mem = {{ .MksquashfsMem }}{{ end }}
-
-# NVIDIA-CONTAINER-CLI PATH: [STRING]
-# DEFAULT: Undefined
-# DEPRECATED
-# Path to the nvidia-container-cli executable, used to find GPU libraries.
-# When run as root, executable must be owned by root for security reasons
-# If not set, Apptainer will search the directories set in binary path.
-# nvidia-container-cli path =
-
-# UNSQUASHFS PATH: [STRING]
-# DEFAULT: Undefined
-# DEPRECATED
-# Path to the unsquashfs executable, used to extract SIF and SquashFS containers
-# If not set, Apptainer will search the directories set in binary path.
-# unsquashfs path =
 
 # SHARED LOOP DEVICES: [BOOL]
 # DEFAULT: no
