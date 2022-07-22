@@ -393,14 +393,7 @@ func getCreateDeviceFn() createDeviceFn {
 		controlFd, err := syscall.Open(loopControlPath, syscall.O_RDWR, 0o600)
 		if err != nil {
 			// create loop device with mknod as a fallback
-			dev := int(unix.Mkdev(uint32(7), uint32(device)))
-			esys := syscall.Mknod(path, syscall.S_IFBLK|0o660, dev)
-			if errno, ok := esys.(syscall.Errno); ok {
-				if errno != syscall.EEXIST {
-					return fmt.Errorf("could not mknod %s: %w", path, esys)
-				}
-			}
-			return nil
+			return createLoopDevice(device)
 		}
 		defer syscall.Close(controlFd)
 
@@ -419,6 +412,14 @@ func getCreateDeviceFn() createDeviceFn {
 			if errno > 0 && errno != syscall.EEXIST {
 				return fmt.Errorf("could not add device %s: %w", path, errno)
 			} else if int(devNum) == device {
+				if _, err := os.Stat(path); err != nil {
+					if os.IsNotExist(err) {
+						// handle docker container case where /dev/loop-control is available
+						// but loop devices are created on /dev host, so create it in container
+						return createLoopDevice(device)
+					}
+					return fmt.Errorf("while retrieving %s status: %s", path, err)
+				}
 				break
 			}
 			// handle a corner case where the device hasn't been created,
@@ -485,4 +486,17 @@ func GetStatusFromPath(path string) (*Info64, error) {
 
 func getLoopPath(device int) string {
 	return fmt.Sprintf("/dev/loop%d", device)
+}
+
+func createLoopDevice(device int) error {
+	// create loop device with mknod as a fallback
+	dev := int(unix.Mkdev(uint32(7), uint32(device)))
+	path := getLoopPath(device)
+	esys := syscall.Mknod(path, syscall.S_IFBLK|0o660, dev)
+	if errno, ok := esys.(syscall.Errno); ok {
+		if errno != syscall.EEXIST {
+			return fmt.Errorf("could not mknod %s: %w", path, esys)
+		}
+	}
+	return nil
 }
