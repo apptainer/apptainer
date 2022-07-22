@@ -49,8 +49,8 @@ func (s *stage) Assemble(path string) error {
 	return s.a.Assemble(s.b, path)
 }
 
-// runSectionScript executes the stage's pre and setup scripts on host.
-func (s *stage) runSectionScript(name string, script types.Script) error {
+// runHostScript executes the stage's pre or setup script on host.
+func (s *stage) runHostScript(name string, script types.Script) error {
 	if s.b.RunSection(name) && script.Script != "" {
 		aRootfs := "APPTAINER_ROOTFS=" + s.b.RootfsPath
 		sRootfs := "SINGULARITY_ROOTFS=" + s.b.RootfsPath

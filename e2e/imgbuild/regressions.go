@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -223,7 +223,9 @@ func (c *imgBuildTests) issue4943(t *testing.T) {
 	)
 }
 
-// Test -c section parameter is correctly handled.
+// Test %post -c section parameter is correctly handled. We use `-c /bin/busybox
+// sh` for this test, and can observe the `/proc/$$/cmdline` to check that was
+// used to invoke the post script.
 func (c *imgBuildTests) issue4967(t *testing.T) {
 	image := filepath.Join(c.env.TestDir, "issue_4967.sif")
 
@@ -237,7 +239,7 @@ func (c *imgBuildTests) issue4967(t *testing.T) {
 		}),
 		e2e.ExpectExit(
 			0,
-			e2e.ExpectOutput(e2e.ContainMatch, "function foo"),
+			e2e.ExpectOutput(e2e.ContainMatch, "/bin/busybox sh /.post.script"),
 		),
 	)
 }

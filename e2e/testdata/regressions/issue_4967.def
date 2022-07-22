@@ -1,9 +1,5 @@
-bootstrap: docker
-from: alpine:3.10
+bootstrap: oras
+from: ghcr.io/apptainer/alpine:3.15.0
 
-%post
-    apk add --update-cache bash
-
-%test -c /bin/bash
-    function foo { echo "function foo"; }
-    foo
+%post -c /bin/busybox sh
+    cat /proc/$$/cmdline | tr '\000' ' '
