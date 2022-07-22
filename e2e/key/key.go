@@ -508,14 +508,14 @@ func (c *ctx) apptainerKeyRemoveOpts(t *testing.T) {
 			exit:    0,
 		},
 		{
-			name:          "key list should return empty",
+			name:          "key list should return empty because all keys have been removed",
 			command:       "key list",
 			profile:       e2e.UserProfile,
 			expectedRegex: "^Public key listing.*\n",
 			exit:          0,
 		},
 		{
-			name:          "key list --secret should return empty",
+			name:          "key list --secret should return empty because all keys have been removed",
 			command:       "key list",
 			profile:       e2e.UserProfile,
 			args:          []string{"--secret"},
@@ -523,12 +523,26 @@ func (c *ctx) apptainerKeyRemoveOpts(t *testing.T) {
 			exit:          0,
 		},
 		{
-			name:               "remove private should fail",
+			name:               "remove private should fail because key does not exist in keyring",
 			command:            "key remove",
 			profile:            e2e.UserProfile,
 			args:               []string{"--private", keyMap["key1"]},
 			expectedErrorRegex: "FATAL:",
 			exit:               255,
+		},
+		{
+			name:    "import pubkey1 as global user (regression test)",
+			command: "key import",
+			profile: e2e.RootProfile,
+			args:    []string{"--global", "testdata/ecl-pgpkeys/pubkey1.asc"},
+			exit:    0,
+		},
+		{
+			name:    "remove pubkey1 from global (regression test)",
+			command: "key remove",
+			profile: e2e.RootProfile,
+			args:    []string{"--global", "--public", keyMap["key1"]},
+			exit:    0,
 		},
 	}
 
