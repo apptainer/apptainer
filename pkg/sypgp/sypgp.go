@@ -532,7 +532,7 @@ func (keyring *Handle) RemovePrivKey(toDelete string) error {
 		return fmt.Errorf("no key matching given fingerprint found")
 	}
 
-	sylog.Verbosef("updating local secret keyring: %v", keyring.SecretPath())
+	sylog.Verbosef("Updating local secret keyring: %v", keyring.SecretPath())
 
 	return keyring.storePrivKeyring(newKeyList)
 }
