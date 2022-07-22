@@ -129,6 +129,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   overrules both `--insecure` and `APPTAINER_ADD_INSECURE`.
 - Gpu flags `--nv` and `--rocm` can now be used from an apptainer nested
   inside another apptainer container.
+- Added `--public`, `--private`, `--both` flags for `key remove` command to
+  support removing private keys from the apptainer keyring.
 
 ### Bug fixes
 

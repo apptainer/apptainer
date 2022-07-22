@@ -33,9 +33,23 @@ var KeyRemoveCmd = &cobra.Command{
 		}
 
 		keyring := sypgp.NewHandle(path, opts...)
-		err := keyring.RemovePubKey(args[0])
-		if err != nil {
-			sylog.Fatalf("Unable to remove public key: %s", err)
+
+		if (keyRemovePrivate && keyRemovePublic) || keyRemoveBoth {
+			pubErr := keyring.RemovePubKey(args[0])
+			priErr := keyring.RemovePrivKey(args[0])
+			if pubErr != nil && priErr != nil {
+				sylog.Fatalf("Unable to remove neither public key: %s, nor private key: %s", pubErr, priErr)
+			}
+		} else if keyRemovePrivate {
+			err := keyring.RemovePrivKey(args[0])
+			if err != nil {
+				sylog.Fatalf("Unable to remove private key: %s", err)
+			}
+		} else {
+			err := keyring.RemovePubKey(args[0])
+			if err != nil {
+				sylog.Fatalf("Unable to remove public key: %s", err)
+			}
 		}
 	},
 

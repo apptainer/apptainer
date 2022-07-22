@@ -28,6 +28,9 @@ var (
 	keySearchLongList   bool   // -l option for long-list
 	keyNewpairBitLength int    // -b option for bit length
 	keyGlobalPubKey     bool   // -g option to manage global public keys
+	keyRemovePublic     bool   //--public option to remove only public keys
+	keyRemovePrivate    bool   //--private option to remove only private keys
+	keyRemoveBoth       bool   //--both option to remove both public and private keys
 )
 
 // -u|--url
@@ -71,6 +74,36 @@ var keyGlobalPubKeyFlag = cmdline.Flag{
 	Usage:        "manage global public keys (import/pull/remove are restricted to root user or unprivileged installation only)",
 }
 
+//--public
+var keyRemovePublicKeyFlag = cmdline.Flag{
+	ID:           "keyRemovePublicKeyFlag",
+	Value:        &keyRemovePublic,
+	DefaultValue: false,
+	Name:         "public",
+	ShortHand:    "p",
+	Usage:        "remove public keys only",
+}
+
+//--private
+var keyRemovePrivateKeyFlag = cmdline.Flag{
+	ID:           "keyRemovePrivateKeyFlag",
+	Value:        &keyRemovePrivate,
+	DefaultValue: false,
+	Name:         "private",
+	ShortHand:    "r",
+	Usage:        "remove private keys only",
+}
+
+//--both
+var keyRemoveBothKeyFlag = cmdline.Flag{
+	ID:           "keyRemoveBothKeyFlag",
+	Value:        &keyRemoveBoth,
+	DefaultValue: false,
+	Name:         "both",
+	ShortHand:    "b",
+	Usage:        "remove both public and private keys",
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(KeyCmd)
@@ -99,6 +132,11 @@ func init() {
 			&keyGlobalPubKeyFlag,
 			KeyImportCmd, KeyExportCmd, KeyListCmd, KeyPullCmd, KeyPushCmd, KeyRemoveCmd,
 		)
+
+		// register public/private/both flags for KeyRemoveCmd only
+		cmdManager.RegisterFlagForCmd(&keyRemovePublicKeyFlag, KeyRemoveCmd)
+		cmdManager.RegisterFlagForCmd(&keyRemovePrivateKeyFlag, KeyRemoveCmd)
+		cmdManager.RegisterFlagForCmd(&keyRemoveBothKeyFlag, KeyRemoveCmd)
 	})
 }
 
