@@ -508,7 +508,7 @@ func (c ctx) testDockerCMD(t *testing.T) {
 		{
 			name:         "no-eval/default",
 			args:         []string{},
-			noeval:       false,
+			noeval:       true,
 			expectOutput: `CMD 'quotes' "quotes" $DOLLAR s p a c e s`,
 		},
 		{
@@ -600,7 +600,7 @@ func (c ctx) testDockerENTRYPOINT(t *testing.T) {
 		{
 			name:         "no-eval/default",
 			args:         []string{},
-			noeval:       false,
+			noeval:       true,
 			expectOutput: `ENTRYPOINT 'quotes' "quotes" $DOLLAR s p a c e s`,
 		},
 		{
@@ -686,7 +686,7 @@ func (c ctx) testDockerCMDENTRYPOINT(t *testing.T) {
 		{
 			name:         "no-eval/default",
 			args:         []string{},
-			noeval:       false,
+			noeval:       true,
 			expectOutput: `ENTRYPOINT 'quotes' "quotes" $DOLLAR s p a c e s CMD 'quotes' "quotes" $DOLLAR s p a c e s`,
 		},
 		{
