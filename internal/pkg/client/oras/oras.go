@@ -158,7 +158,7 @@ func DownloadImage(ctx context.Context, imagePath, ref string, ociAuth *ocitypes
 
 // UploadImage uploads the image specified by path and pushes it to the provided oci reference,
 // it will use credentials if supplied
-func UploadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.DockerAuthConfig) error {
+func UploadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) error {
 	// ensure that are uploading a SIF
 	if err := ensureSIF(path); err != nil {
 		return err
@@ -185,7 +185,7 @@ func UploadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.Docker
 		sylog.Infof("No tag or digest found, using default: %s", SifDefaultTag)
 	}
 
-	resolver, err := getResolver(ctx, ociAuth, false)
+	resolver, err := getResolver(ctx, ociAuth, noHTTPS)
 	if err != nil {
 		return fmt.Errorf("while getting resolver: %s", err)
 	}

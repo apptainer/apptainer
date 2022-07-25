@@ -79,6 +79,7 @@ func (c ctx) testPushCmd(t *testing.T) {
 		dstURI           string // destination URI for image
 		imagePath        string // src image path
 		expectedExitCode int    // expected exit code for the test
+		noHTTPS          bool   // --no-https/--nohttps flag
 	}{
 		{
 			desc:             "non existent image",
@@ -104,6 +105,13 @@ func (c ctx) testPushCmd(t *testing.T) {
 			dstURI:           fmt.Sprintf("oras://%s/standard_sif:test", c.env.TestRegistry),
 			expectedExitCode: 0,
 		},
+		{
+			desc:             "standard SIF push with --no-https/--nohttps",
+			imagePath:        c.env.ImagePath,
+			dstURI:           fmt.Sprintf("oras://%s/standard_sif:test_nohttps", c.env.TestRegistry),
+			noHTTPS:          true,
+			expectedExitCode: 0,
+		},
 	}
 
 	for _, tt := range tests {
@@ -120,6 +128,10 @@ func (c ctx) testPushCmd(t *testing.T) {
 		args := tt.dstURI
 		if tt.imagePath != "" {
 			args = tt.imagePath + " " + args
+		}
+
+		if tt.noHTTPS {
+			args = "--no-https" + " " + args
 		}
 
 		c.env.RunApptainer(

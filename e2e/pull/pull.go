@@ -164,156 +164,156 @@ func (c *ctx) setup(t *testing.T) {
 
 func (c ctx) testPullCmd(t *testing.T) {
 	tests := []testStruct{
-		// {
-		// 	desc:             "non existent image",
-		// 	srcURI:           "oras://image/does/not:exist",
-		// 	expectedExitCode: 255,
-		// },
+		{
+			desc:             "non existent image",
+			srcURI:           "oras://image/does/not:exist",
+			expectedExitCode: 255,
+		},
 
-		// // --allow-unauthenticated tests
-		// {
-		// 	desc:             "unsigned image allow unauthenticated",
-		// 	srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
-		// 	unauthenticated:  true,
-		// 	expectedExitCode: 0,
-		// },
+		// --allow-unauthenticated tests
+		{
+			desc:             "unsigned image allow unauthenticated",
+			srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
+			unauthenticated:  true,
+			expectedExitCode: 0,
+		},
 
-		// // --force tests
-		// {
-		// 	desc:             "force existing file",
-		// 	srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
-		// 	force:            true,
-		// 	createDst:        true,
-		// 	unauthenticated:  true,
-		// 	expectedExitCode: 0,
-		// },
-		// {
-		// 	desc:             "force non-existing file",
-		// 	srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
-		// 	force:            true,
-		// 	createDst:        false,
-		// 	unauthenticated:  true,
-		// 	expectedExitCode: 0,
-		// },
-		// {
-		// 	// --force should not have an effect on --allow-unauthenticated=false
-		// 	desc:             "unsigned image force require authenticated",
-		// 	srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
-		// 	force:            true,
-		// 	unauthenticated:  false,
-		// 	expectedExitCode: 0,
-		// },
+		// --force tests
+		{
+			desc:             "force existing file",
+			srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
+			force:            true,
+			createDst:        true,
+			unauthenticated:  true,
+			expectedExitCode: 0,
+		},
+		{
+			desc:             "force non-existing file",
+			srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
+			force:            true,
+			createDst:        false,
+			unauthenticated:  true,
+			expectedExitCode: 0,
+		},
+		{
+			// --force should not have an effect on --allow-unauthenticated=false
+			desc:             "unsigned image force require authenticated",
+			srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
+			force:            true,
+			unauthenticated:  false,
+			expectedExitCode: 0,
+		},
 
-		// // test version specifications
-		// {
-		// 	desc:             "image with specific hash",
-		// 	srcURI:           "oras://ghcr.io/apptainer/alpine@sha256:aef2a1baf177ee2e6f21da40bdb7025f58466d39116507837f74c2ab4abf5606",
-		// 	unauthenticated:  true,
-		// 	expectedExitCode: 0,
-		// },
-		// {
-		// 	desc:             "latest tag",
-		// 	srcURI:           "oras://ghcr.io/apptainer/alpine:latest",
-		// 	unauthenticated:  true,
-		// 	expectedExitCode: 0,
-		// },
+		// test version specifications
+		{
+			desc:             "image with specific hash",
+			srcURI:           "oras://ghcr.io/apptainer/alpine@sha256:aef2a1baf177ee2e6f21da40bdb7025f58466d39116507837f74c2ab4abf5606",
+			unauthenticated:  true,
+			expectedExitCode: 0,
+		},
+		{
+			desc:             "latest tag",
+			srcURI:           "oras://ghcr.io/apptainer/alpine:latest",
+			unauthenticated:  true,
+			expectedExitCode: 0,
+		},
 
-		// // --dir tests
-		// {
-		// 	desc:             "dir no image path",
-		// 	srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
-		// 	unauthenticated:  true,
-		// 	setPullDir:       true,
-		// 	setImagePath:     false,
-		// 	expectedExitCode: 0,
-		// },
-		// {
-		// 	// XXX(mem): this specific test is passing both --path and an image path to
-		// 	// apptainer pull. The current behavior is that the code is joining both paths and
-		// 	// failing to find the image in the expected location indicated by image path
-		// 	// because image path is absolute, so after joining /tmp/a/b/c and
-		// 	// /tmp/a/b/image.sif, the code expects to find /tmp/a/b/c/tmp/a/b/image.sif. Since
-		// 	// the directory /tmp/a/b/c/tmp/a/b does not exist, it fails to create the file
-		// 	// image.sif in there.
-		// 	desc:             "dir image path",
-		// 	srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
-		// 	unauthenticated:  true,
-		// 	setPullDir:       true,
-		// 	setImagePath:     true,
-		// 	expectedExitCode: 255,
-		// },
+		// --dir tests
+		{
+			desc:             "dir no image path",
+			srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
+			unauthenticated:  true,
+			setPullDir:       true,
+			setImagePath:     false,
+			expectedExitCode: 0,
+		},
+		{
+			// XXX(mem): this specific test is passing both --path and an image path to
+			// apptainer pull. The current behavior is that the code is joining both paths and
+			// failing to find the image in the expected location indicated by image path
+			// because image path is absolute, so after joining /tmp/a/b/c and
+			// /tmp/a/b/image.sif, the code expects to find /tmp/a/b/c/tmp/a/b/image.sif. Since
+			// the directory /tmp/a/b/c/tmp/a/b does not exist, it fails to create the file
+			// image.sif in there.
+			desc:             "dir image path",
+			srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
+			unauthenticated:  true,
+			setPullDir:       true,
+			setImagePath:     true,
+			expectedExitCode: 255,
+		},
 
-		// // transport tests
-		// {
-		// 	desc:             "bare image name",
-		// 	srcURI:           "alpine:3.15.0",
-		// 	force:            true,
-		// 	unauthenticated:  true,
-		// 	expectedExitCode: 0,
-		// 	disabled:         true,
-		// },
+		// transport tests
+		{
+			desc:             "bare image name",
+			srcURI:           "alpine:3.15.0",
+			force:            true,
+			unauthenticated:  true,
+			expectedExitCode: 0,
+			disabled:         true,
+		},
 
-		// {
-		// 	desc:             "image from docker",
-		// 	srcURI:           "docker://alpine:3.8",
-		// 	force:            true,
-		// 	unauthenticated:  false,
-		// 	expectedExitCode: 0,
-		// },
-		// // TODO(mem): reenable this; disabled while shub is down
-		// {
-		// 	desc:             "image from shub",
-		// 	srcURI:           "shub://GodloveD/busybox",
-		// 	force:            true,
-		// 	unauthenticated:  false,
-		// 	expectedExitCode: 0,
-		// 	disabled:         true,
-		// },
-		// // Finalized v1 layer mediaType (3.7 and onward)
-		// {
-		// 	desc:             "oras transport for SIF from registry",
-		// 	srcURI:           fmt.Sprintf("oras://%s/pull_test_sif:latest", c.env.TestRegistry),
-		// 	force:            true,
-		// 	unauthenticated:  false,
-		// 	expectedExitCode: 0,
-		// },
-		// // Original/prototype layer mediaType (<3.7)
-		// {
-		// 	desc:             "oras transport for SIF from registry (SifLayerMediaTypeProto)",
-		// 	srcURI:           fmt.Sprintf("oras://%s/pull_test_sif_mediatypeproto:latest", c.env.TestRegistry),
-		// 	force:            true,
-		// 	unauthenticated:  false,
-		// 	expectedExitCode: 0,
-		// },
+		{
+			desc:             "image from docker",
+			srcURI:           "docker://alpine:3.8",
+			force:            true,
+			unauthenticated:  false,
+			expectedExitCode: 0,
+		},
+		// TODO(mem): reenable this; disabled while shub is down
+		{
+			desc:             "image from shub",
+			srcURI:           "shub://GodloveD/busybox",
+			force:            true,
+			unauthenticated:  false,
+			expectedExitCode: 0,
+			disabled:         true,
+		},
+		// Finalized v1 layer mediaType (3.7 and onward)
+		{
+			desc:             "oras transport for SIF from registry",
+			srcURI:           fmt.Sprintf("oras://%s/pull_test_sif:latest", c.env.TestRegistry),
+			force:            true,
+			unauthenticated:  false,
+			expectedExitCode: 0,
+		},
+		// Original/prototype layer mediaType (<3.7)
+		{
+			desc:             "oras transport for SIF from registry (SifLayerMediaTypeProto)",
+			srcURI:           fmt.Sprintf("oras://%s/pull_test_sif_mediatypeproto:latest", c.env.TestRegistry),
+			force:            true,
+			unauthenticated:  false,
+			expectedExitCode: 0,
+		},
 
-		// // pulling of invalid images with oras
-		// {
-		// 	desc:             "oras pull of non SIF file",
-		// 	srcURI:           fmt.Sprintf("oras://%s/pull_test_:latest", c.env.TestRegistry),
-		// 	force:            true,
-		// 	expectedExitCode: 255,
-		// },
-		// {
-		// 	desc:             "oras pull of packed dir",
-		// 	srcURI:           fmt.Sprintf("oras://%s/pull_test_invalid_file:latest", c.env.TestRegistry),
-		// 	force:            true,
-		// 	expectedExitCode: 255,
-		// },
+		// pulling of invalid images with oras
+		{
+			desc:             "oras pull of non SIF file",
+			srcURI:           fmt.Sprintf("oras://%s/pull_test_:latest", c.env.TestRegistry),
+			force:            true,
+			expectedExitCode: 255,
+		},
+		{
+			desc:             "oras pull of packed dir",
+			srcURI:           fmt.Sprintf("oras://%s/pull_test_invalid_file:latest", c.env.TestRegistry),
+			force:            true,
+			expectedExitCode: 255,
+		},
 
-		// // pulling with library URI argument
-		// {
-		// 	desc:             "bad library URI",
-		// 	srcURI:           "oras://ghcr.io/apptainer/bad/busybox:1.31.1",
-		// 	library:          "https://bad-library.sylabs.io",
-		// 	expectedExitCode: 255,
-		// },
-		// {
-		// 	desc:             "default library URI",
-		// 	srcURI:           "oras://ghcr.io/apptainer/busybox:1.31.1",
-		// 	library:          "https://library.sylabs.io",
-		// 	force:            true,
-		// 	expectedExitCode: 0,
-		// },
+		// pulling with library URI argument
+		{
+			desc:             "bad library URI",
+			srcURI:           "oras://ghcr.io/apptainer/bad/busybox:1.31.1",
+			library:          "https://bad-library.sylabs.io",
+			expectedExitCode: 255,
+		},
+		{
+			desc:             "default library URI",
+			srcURI:           "oras://ghcr.io/apptainer/busybox:1.31.1",
+			library:          "https://library.sylabs.io",
+			force:            true,
+			expectedExitCode: 0,
+		},
 
 		// pulling with --no-https image with oras
 		{
@@ -654,9 +654,9 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			c.setup(t)
 
 			t.Run("pull", c.testPullCmd)
-			// t.Run("pullDisableCache", c.testPullDisableCacheCmd)
-			// t.Run("concurrencyConfig", c.testConcurrencyConfig)
-			// t.Run("concurrentPulls", c.testConcurrentPulls)
+			t.Run("pullDisableCache", c.testPullDisableCacheCmd)
+			t.Run("concurrencyConfig", c.testConcurrencyConfig)
+			t.Run("concurrentPulls", c.testConcurrentPulls)
 
 			// Regressions
 			// Disable for now, see issue #6299
