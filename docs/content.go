@@ -1074,14 +1074,17 @@ Enterprise Performance Computing (EPC)`
 	OverlayCreateUse   string = `create <options> image`
 	OverlayCreateShort string = `Create EXT3 writable overlay image`
 	OverlayCreateLong  string = `
-  The overlay create command allows to create EXT3 writable overlay image either
+  The overlay create command allows creating EXT3 writable overlay image either
   as a single EXT3 image or by adding it automatically to an existing SIF image.`
 	OverlayCreateExample string = `
   To create and add a writable overlay to an existing SIF image:
   $ apptainer overlay create --size 1024 /tmp/image.sif
 
   To create a single EXT3 writable overlay image:
-  $ apptainer overlay create --size 1024 /tmp/my_overlay.img`
+  $ apptainer overlay create --size 1024 /tmp/my_overlay.img
+
+  To create an EXT3 writable overlay image for use with --fakeroot actions:
+  $ apptainer overlay create --fakeroot --size 1024 /tmp/my_overlay.img`
 
 	CheckpointUse   string = `checkpoint`
 	CheckpointShort string = `Manage container checkpoint state (experimental)`

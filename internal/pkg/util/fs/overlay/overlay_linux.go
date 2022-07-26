@@ -33,43 +33,43 @@ type fs struct {
 }
 
 const (
-	nfs    int64 = 0x6969
-	fuse   int64 = 0x65735546
-	ecrypt int64 = 0xF15F
-	lustre int64 = 0x0BD00BD0 //nolint:misspell
-	gpfs   int64 = 0x47504653
+	Nfs    int64 = 0x6969
+	Fuse   int64 = 0x65735546
+	Ecrypt int64 = 0xF15F
+	Lustre int64 = 0x0BD00BD0 //nolint:misspell
+	Gpfs   int64 = 0x47504653
 )
 
 var incompatibleFs = map[int64]fs{
 	// NFS filesystem
-	nfs: {
+	Nfs: {
 		name:       "NFS",
 		overlayDir: upperDir,
 	},
 	// FUSE filesystem
-	fuse: {
+	Fuse: {
 		name:       "FUSE",
 		overlayDir: upperDir,
 	},
 	// ECRYPT filesystem
-	ecrypt: {
+	Ecrypt: {
 		name:       "ECRYPT",
 		overlayDir: lowerDir | upperDir,
 	},
 	// LUSTRE filesystem
 	//nolint:misspell
-	lustre: {
+	Lustre: {
 		name:       "LUSTRE",
 		overlayDir: lowerDir | upperDir,
 	},
 	// GPFS filesystem
-	gpfs: {
+	Gpfs: {
 		name:       "GPFS",
 		overlayDir: lowerDir | upperDir,
 	},
 }
 
-func check(path string, d dir) error {
+func check(path string, d dir, allowType int64) error {
 	stfs := &unix.Statfs_t{}
 
 	if err := statfs(path, stfs); err != nil {
@@ -78,6 +78,10 @@ func check(path string, d dir) error {
 
 	fs, ok := incompatibleFs[int64(stfs.Type)]
 	if !ok || (ok && fs.overlayDir&d == 0) {
+		return nil
+	}
+
+	if stfs.Type == allowType {
 		return nil
 	}
 
@@ -90,14 +94,16 @@ func check(path string, d dir) error {
 
 // CheckUpper checks if the underlying filesystem of the
 // provided path can be used as an upper overlay directory.
-func CheckUpper(path string) error {
-	return check(path, upperDir)
+// allowType is an optional filesystem type to always allow.
+func CheckUpper(path string, allowType int64) error {
+	return check(path, upperDir, allowType)
 }
 
 // CheckLower checks if the underlying filesystem of the
 // provided path can be used as lower overlay directory.
-func CheckLower(path string) error {
-	return check(path, lowerDir)
+// allowType is an optional filesystem type to always allow.
+func CheckLower(path string, allowType int64) error {
+	return check(path, lowerDir, allowType)
 }
 
 type errIncompatibleFs struct {

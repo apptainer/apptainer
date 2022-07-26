@@ -40,7 +40,7 @@ func UnshareRootMapped(args []string) error {
 	}
 	sylog.Debugf("Re-executing to root-mapped unprivileged user namespace")
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("Error re-executing in root-mapped unprivileged user namespace: %v", err)
+		return fmt.Errorf("error re-executing in root-mapped unprivileged user namespace: %v", err)
 	}
 	if err := cmd.Wait(); err != nil {
 		if exiterr, ok := err.(*osExec.ExitError); ok {

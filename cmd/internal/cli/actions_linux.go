@@ -207,7 +207,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 				// All good
 				os.Exit(0)
 			}
-			sylog.Debugf("%v", err)
+			sylog.Debugf("UnshareRootMapped failed: %v", err)
 			fakerootPath, err = fakeroot.FindFake()
 			if err != nil {
 				sylog.Fatalf("--fakeroot requires either being in %v, unprivileged user namespaces, or the fakeroot command", fakeroot.SubUIDFile)

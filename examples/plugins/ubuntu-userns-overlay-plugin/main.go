@@ -66,7 +66,7 @@ func (d *ubuntuOvlDriver) Start(params *image.DriverParams) error {
 	return nil
 }
 
-func (d *ubuntuOvlDriver) Stop() error {
+func (d *ubuntuOvlDriver) Stop(target string) error {
 	return nil
 }
 

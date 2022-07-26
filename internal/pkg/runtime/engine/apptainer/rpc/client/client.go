@@ -139,6 +139,20 @@ func (t *RPC) Lstat(path string) (os.FileInfo, error) {
 	return reply.Fi, reply.Err
 }
 
+// Access calls the access RPC using the supplied arguments.
+func (t *RPC) Access(path string, mode uint32) error {
+	arguments := &args.AccessArgs{
+		Path: path,
+		Mode: mode,
+	}
+	var reply args.AccessReply
+	err := t.Client.Call(t.Name+".Access", arguments, &reply)
+	if err != nil {
+		return err
+	}
+	return reply.Err
+}
+
 // SendFuseFd calls the SendFuseFd RPC using the supplied arguments.
 func (t *RPC) SendFuseFd(socket int, fds []int) error {
 	arguments := &args.SendFuseFdArgs{

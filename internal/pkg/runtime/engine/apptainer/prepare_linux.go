@@ -1171,7 +1171,7 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config) error {
 		starterConfig.SetWorkingDirectoryFd(int(img.Fd))
 
 		if e.EngineConfig.GetSessionLayer() == apptainerConfig.OverlayLayer {
-			if err := overlay.CheckLower(img.Path); overlay.IsIncompatible(err) {
+			if err := overlay.CheckLower(img.Path, 0); overlay.IsIncompatible(err) {
 				layer := apptainerConfig.UnderlayLayer
 				if !e.EngineConfig.File.EnableUnderlay {
 					sylog.Warningf("Could not fallback to underlay, disabled by configuration ('enable underlay = no')")

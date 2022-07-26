@@ -22,6 +22,7 @@ sudo apt-get install -y \
     pkg-config \
     squashfs-tools \
     squashfuse \
+    fuse2fs \
     fuse-overlayfs \
     fakeroot \
     cryptsetup \

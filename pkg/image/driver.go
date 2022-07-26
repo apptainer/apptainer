@@ -58,8 +58,8 @@ type Driver interface {
 	Mount(*MountParams, MountFunc) error
 	// Start the driver for initialization.
 	Start(*DriverParams) error
-	// Stop the driver for cleanup.
-	Stop() error
+	// Stop the driver related to given mount target for cleanup.
+	Stop(string) error
 	// Features Feature returns supported features.
 	Features() DriverFeature
 }

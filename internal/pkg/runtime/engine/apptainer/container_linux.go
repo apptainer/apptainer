@@ -266,6 +266,18 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 		return err
 	}
 
+	if engine.EngineConfig.GetSessionLayer() == apptainer.UnderlayLayer {
+		// Underlay bind points can interfere with unmounting
+		//  the image, so unmount all those bind points first
+		bindPoints := []string{}
+		for _, bindPoint := range system.Points.GetAllBinds() {
+			if strings.Contains(bindPoint.Destination, "/session/underlay/") {
+				bindPoints = append(bindPoints, bindPoint.Destination)
+			}
+		}
+		umountPoints = append(umountPoints, bindPoints...)
+	}
+
 	if engine.EngineConfig.GetNvCCLI() {
 		// If a container has a CUDA install in it then nvidia-container-cli will bind mount
 		// from <session_dir>/final/usr/local/cuda/compat into the main container lib dir.
@@ -676,6 +688,7 @@ mount:
 			} else if mnt.Type == "overlay" && tag == mount.LayerTag {
 				if imageDriver != nil && imageDriver.Features()&image.OverlayFeature != 0 {
 
+					sylog.Debugf("kernel overlay mount failed, trying image driver: %v", err)
 					// Kernel overlay didn't work so try the image driver
 					params := &image.MountParams{
 						Source:     source,
@@ -901,27 +914,30 @@ func (c *container) addRootfsMount(system *mount.System) error {
 func (c *container) overlayUpperWork(system *mount.System) error {
 	ov := c.session.Layer.(*overlay.Overlay)
 
-	createUpperWork := func(path, label string) error {
+	createUpperWork := func(path string) error {
 		fi, err := c.rpcOps.Lstat(path)
 		if os.IsNotExist(err) {
 			if err := c.rpcOps.Mkdir(path, 0o755); err != nil {
 				return fmt.Errorf("failed to create %s directory: %s", path, err)
 			}
-		} else if err == nil && !fi.IsDir() {
-			return fmt.Errorf("%s overlay %s must be a directory", label, path)
 		} else if err != nil {
-			return fmt.Errorf("could not setup writable overlay: %s", err)
+			return fmt.Errorf("stat error on path %s: %v", path, err)
+		} else if !fi.IsDir() {
+			return fmt.Errorf("%s is not a directory", path)
+		} else if err = c.rpcOps.Access(path, 2); err != nil {
+			if err != syscall.EROFS {
+				return fmt.Errorf("%s is not writable: %v", path, err)
+			}
+			sylog.Debugf("%s is on a read-only filesystem", path)
 		}
 		return nil
 	}
 
-	if err := createUpperWork(ov.GetUpperDir(), "upper"); err != nil {
-		sylog.Errorf("Could not create overlay upper dir. If using an overlay image ensure it contains 'upper' and 'work' directories")
-		return err
+	if err := createUpperWork(ov.GetUpperDir()); err != nil {
+		return fmt.Errorf("setup of overlay upper dir failed: %v", err)
 	}
-	if err := createUpperWork(ov.GetWorkDir(), "workdir"); err != nil {
-		sylog.Errorf("Could not create overlay work dir. If using an overlay image ensure it contains 'upper' and 'work' directories")
-		return err
+	if err := createUpperWork(ov.GetWorkDir()); err != nil {
+		return fmt.Errorf("setup of overlay work dir failed: %v", err)
 	}
 
 	return nil
@@ -980,6 +996,7 @@ func (c *container) addOverlayMount(system *mount.System) error {
 				return fmt.Errorf("failed to create session directory for overlay: %s", err)
 			}
 			dst, _ := c.session.GetPath(sessionDest)
+			umountPoints = append(umountPoints, dst)
 			nb++
 
 			src := img.Source
@@ -1007,13 +1024,12 @@ func (c *container) addOverlayMount(system *mount.System) error {
 				}
 				ov.AddLowerDir(dst)
 			case image.SANDBOX:
-				allowed := os.Geteuid() == 0
-
+				overlayImageDriver := false
 				if imageDriver != nil && imageDriver.Features()&image.OverlayFeature != 0 {
-					allowed = true
+					overlayImageDriver = true
 				}
 
-				if !allowed {
+				if os.Geteuid() != 0 && !overlayImageDriver {
 					if !c.userNS {
 						return fmt.Errorf("only root user can use sandbox as overlay in setuid mode")
 					}
@@ -1030,7 +1046,7 @@ func (c *container) addOverlayMount(system *mount.System) error {
 				if !img.Writable {
 					// check if the sandbox directory is located on a compatible
 					// filesystem usable overlay lower directory
-					if err := fsoverlay.CheckLower(img.Path); err != nil {
+					if err := fsoverlay.CheckLower(img.Path, 0); err != nil {
 						return err
 					}
 					if fs.IsDir(filepath.Join(img.Path, "upper")) {
@@ -1041,7 +1057,13 @@ func (c *container) addOverlayMount(system *mount.System) error {
 				} else {
 					// check if the sandbox directory is located on a compatible
 					// filesystem usable with overlay upper directory
-					if err := fsoverlay.CheckUpper(img.Path); err != nil {
+					allowType := int64(0)
+					if overlayImageDriver {
+						// The imageDriver is likely to able to handle
+						//  a fuse upper even though the kernel can't
+						allowType = fsoverlay.Fuse
+					}
+					if err := fsoverlay.CheckUpper(img.Path, allowType); err != nil {
 						return err
 					}
 				}
@@ -1153,6 +1175,7 @@ func (c *container) addImageBindMount(system *mount.System) error {
 				return fmt.Errorf("failed to create session directory for overlay: %s", err)
 			}
 			imgDest, _ := c.session.GetPath(sessionDest)
+			umountPoints = append(umountPoints, imgDest)
 			nb++
 
 			flags := uintptr(syscall.MS_NOSUID | syscall.MS_NODEV)

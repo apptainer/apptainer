@@ -19,8 +19,10 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/apptainer/apptainer/internal/pkg/fakeroot"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/pkg/image"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/sif/v2/pkg/sif"
 	"golang.org/x/sys/unix"
 )
@@ -74,7 +76,8 @@ func addOverlayToImage(imagePath, overlayPath string) error {
 	return f.AddObject(di)
 }
 
-func OverlayCreate(size int, imgPath string, overlayDirs ...string) error {
+//nolint:maintidx
+func OverlayCreate(size int, imgPath string, isFakeroot bool, overlayDirs ...string) error {
 	if size < 64 {
 		return fmt.Errorf("image size must be equal or greater than 64 MiB")
 	}
@@ -173,7 +176,8 @@ func OverlayCreate(size int, imgPath string, overlayDirs ...string) error {
 
 	perm := os.FileMode(0o755)
 
-	if os.Getuid() > 65535 || os.Getgid() > 65535 {
+	uid := os.Getuid()
+	if uid > 65535 || os.Getgid() > 65535 {
 		perm = 0o777
 	}
 
@@ -182,6 +186,42 @@ func OverlayCreate(size int, imgPath string, overlayDirs ...string) error {
 
 	oldumask := unix.Umask(0)
 	defer unix.Umask(oldumask)
+
+	if uid != 0 {
+		if !fakeroot.IsUIDMapped(uint32(uid)) {
+			// Using --fakeroot here for use with --fakeroot
+			//  overlay is only necessary when only root-mapped
+			//  user namespaces are in use: real root of course
+			//  can override, and the kernel allows fake root to
+			//  override the user's ownership if the user's id is
+			//  mapped via /etc/subuid.  In the case of using only
+			//  the fakeroot command (in suid flow with no user
+			//  namespaces), using the --fakeroot option here
+			//  prevents overlay from working, most unfortunately.
+			err = fakeroot.UnshareRootMapped([]string{"/bin/true"})
+			if err != nil {
+				sylog.Debugf("UnshareRootMapped failed: %v", err)
+				if isFakeroot {
+					sylog.Infof("User namespaces are not available, so using --fakeroot here would")
+					sylog.Infof("  actually interfere with fakeroot command overlay operation")
+					return fmt.Errorf("--fakeroot used without user namespaces")
+				}
+			} else if !isFakeroot {
+				sylog.Infof("Creating overlay image for use without fakeroot.")
+				sylog.Infof("Consider re-running with --fakeroot option.")
+			}
+		}
+
+		if isFakeroot {
+			sylog.Debugf("Trying root-mapped namespace")
+			err = fakeroot.UnshareRootMapped(os.Args)
+			if err == nil {
+				// everything was done by the child
+				os.Exit(0)
+			}
+			return fmt.Errorf("Failed to start fakeroot: %v", err)
+		}
+	}
 
 	if err := os.Mkdir(upperDir, perm); err != nil {
 		return fmt.Errorf("while creating %s: %s", upperDir, err)

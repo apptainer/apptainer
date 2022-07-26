@@ -77,6 +77,17 @@ type StatArgs struct {
 	Path string
 }
 
+// AccessReply defines the reply for access.
+type AccessReply struct {
+	Err error
+}
+
+// AccessArgs defines the arguments to access.
+type AccessArgs struct {
+	Path string
+	Mode uint32
+}
+
 // SendFuseFdArgs defines the arguments to send fuse file descriptor.
 type SendFuseFdArgs struct {
 	Socket int
