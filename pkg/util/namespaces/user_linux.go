@@ -67,17 +67,24 @@ func IsInsideUserNamespace(pid int) (bool, bool) {
 // process is running inside a user namespace, if it doesn't it
 // simply returns the current UID
 func HostUID() (int, error) {
-	const uidMap = "/proc/self/uid_map"
+	return getHostID("uid", os.Getuid())
+}
 
-	currentUID := os.Getuid()
+// Likewise for HostGID
+func HostGID() (int, error) {
+	return getHostID("gid", os.Getgid())
+}
 
-	f, err := os.Open(uidMap)
+func getHostID(typ string, currentID int) (int, error) {
+	idMap := fmt.Sprintf("/proc/self/%s_map", typ)
+
+	f, err := os.Open(idMap)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			return 0, fmt.Errorf("failed to read: %s: %s", uidMap, err)
+			return 0, fmt.Errorf("failed to read: %s: %s", idMap, err)
 		}
 		// user namespace not supported
-		return currentUID, nil
+		return currentID, nil
 	}
 	defer f.Close()
 
@@ -89,7 +96,7 @@ func HostUID() (int, error) {
 		if err != nil {
 			return 0, fmt.Errorf("failed to convert size field %s: %s", fields[2], err)
 		}
-		// not in a user namespace, use current UID
+		// not in a user namespace, use current ID
 		if uint32(size) == ^uint32(0) {
 			break
 		}
@@ -97,22 +104,22 @@ func HostUID() (int, error) {
 		// we are inside a user namespace
 		containerID, err := strconv.ParseUint(fields[0], 10, 32)
 		if err != nil {
-			return 0, fmt.Errorf("failed to convert container UID field %s: %s", fields[0], err)
+			return 0, fmt.Errorf("failed to convert container %s field %s: %s", typ, fields[0], err)
 		}
 		// we can safely assume that a user won't have two
-		// consequent UID and we look if current UID match
+		// consequent ID and we look if current ID match
 		// a 1:1 user mapping
-		if size == 1 && uint32(currentUID) == uint32(containerID) {
-			uid, err := strconv.ParseUint(fields[1], 10, 32)
+		if size == 1 && uint32(currentID) == uint32(containerID) {
+			id, err := strconv.ParseUint(fields[1], 10, 32)
 			if err != nil {
-				return 0, fmt.Errorf("failed to convert host UID field %s: %s", fields[1], err)
+				return 0, fmt.Errorf("failed to convert host %v field %s: %s", typ, fields[1], err)
 			}
-			return int(uid), nil
+			return int(id), nil
 		}
 	}
 
-	// return current UID by default
-	return currentUID, nil
+	// return current ID by default
+	return currentID, nil
 }
 
 // IsUnprivileged returns true if running as an unprivileged user, even

@@ -14,8 +14,9 @@ import (
 )
 
 var (
-	overlaySize int
-	overlayDirs []string
+	overlaySize       int
+	overlayDirs       []string
+	isOverlayFakeroot bool
 )
 
 // -s|--size
@@ -37,11 +38,22 @@ var overlayCreateDirFlag = cmdline.Flag{
 	Usage:        "directory to create as part of the overlay layout",
 }
 
+// --fakeroot
+var overlayFakerootFlag = cmdline.Flag{
+	ID:           "overlayFakerootFlag",
+	Value:        &isOverlayFakeroot,
+	DefaultValue: false,
+	Name:         "fakeroot",
+	ShortHand:    "f",
+	Usage:        "make overlay layout usable by actions run with --fakeroot",
+	EnvKeys:      []string{"FAKEROOT"},
+}
+
 // OverlayCreateCmd is the 'overlay create' command that allows to create writable overlay.
 var OverlayCreateCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := apptainer.OverlayCreate(overlaySize, args[0], overlayDirs...); err != nil {
+		if err := apptainer.OverlayCreate(overlaySize, args[0], isOverlayFakeroot, overlayDirs...); err != nil {
 			sylog.Fatalf(err.Error())
 		}
 		return nil

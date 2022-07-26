@@ -39,6 +39,24 @@ INSTALLFILES += $(starter_INSTALL)
 ALL += $(starter)
 
 
+# preload library for offsetting accesses into a file
+offsetpreload := $(BUILDDIR)/offsetpreload.so
+offsetpreload_SOURCE := $(SOURCEDIR)/tools/offsetpreload.c
+$(offsetpreload): $(offsetpreload_SOURCE)
+	@echo " CC" $@
+	$(V)$(CC) $(CFLAGS) -shared -o $@ $(offsetpreload_SOURCE) -ldl
+
+offsetpreload_INSTALL := $(DESTDIR)$(LIBEXECDIR)/apptainer/lib/offsetpreload.so
+$(offsetpreload_INSTALL): $(offsetpreload)
+	@echo " INSTALL" $@
+	$(V)umask 0022 && mkdir -p $(@D)
+	$(V)install -m 0755 $(offsetpreload) $@
+
+CLEANFILES += $(offsetpreload)
+INSTALLFILES += $(offsetpreload_INSTALL)
+ALL += $(offsetpreload)
+
+
 # sessiondir
 sessiondir_INSTALL := $(DESTDIR)$(LOCALSTATEDIR)/apptainer/mnt/session
 $(sessiondir_INSTALL):

@@ -62,7 +62,7 @@ func TestCheckLowerUpper(t *testing.T) {
 			path:                  "/",
 			fsName:                "NFS",
 			dir:                   lowerDir,
-			fsType:                nfs,
+			fsType:                Nfs,
 			expectedSuccess:       true,
 			expectIncompatibleErr: false,
 		},
@@ -71,7 +71,7 @@ func TestCheckLowerUpper(t *testing.T) {
 			path:                  "/",
 			fsName:                "NFS",
 			dir:                   upperDir,
-			fsType:                nfs,
+			fsType:                Nfs,
 			expectedSuccess:       false,
 			expectIncompatibleErr: true,
 		},
@@ -80,7 +80,7 @@ func TestCheckLowerUpper(t *testing.T) {
 			path:                  "/",
 			fsName:                "FUSE",
 			dir:                   lowerDir,
-			fsType:                fuse,
+			fsType:                Fuse,
 			expectedSuccess:       true,
 			expectIncompatibleErr: false,
 		},
@@ -89,7 +89,7 @@ func TestCheckLowerUpper(t *testing.T) {
 			path:                  "/",
 			fsName:                "FUSE",
 			dir:                   upperDir,
-			fsType:                fuse,
+			fsType:                Fuse,
 			expectedSuccess:       false,
 			expectIncompatibleErr: true,
 		},
@@ -98,7 +98,7 @@ func TestCheckLowerUpper(t *testing.T) {
 			path:                  "/",
 			fsName:                "ECRYPT",
 			dir:                   lowerDir,
-			fsType:                ecrypt,
+			fsType:                Ecrypt,
 			expectedSuccess:       false,
 			expectIncompatibleErr: true,
 		},
@@ -107,7 +107,7 @@ func TestCheckLowerUpper(t *testing.T) {
 			path:                  "/",
 			fsName:                "ECRYPT",
 			dir:                   upperDir,
-			fsType:                ecrypt,
+			fsType:                Ecrypt,
 			expectedSuccess:       false,
 			expectIncompatibleErr: true,
 		},
@@ -117,7 +117,7 @@ func TestCheckLowerUpper(t *testing.T) {
 			path:                  "/",
 			fsName:                "LUSTRE",
 			dir:                   lowerDir,
-			fsType:                lustre,
+			fsType:                Lustre,
 			expectedSuccess:       false,
 			expectIncompatibleErr: true,
 		},
@@ -127,7 +127,7 @@ func TestCheckLowerUpper(t *testing.T) {
 			path:                  "/",
 			fsName:                "LUSTRE",
 			dir:                   upperDir,
-			fsType:                lustre,
+			fsType:                Lustre,
 			expectedSuccess:       false,
 			expectIncompatibleErr: true,
 		},
@@ -136,7 +136,7 @@ func TestCheckLowerUpper(t *testing.T) {
 			path:                  "/",
 			fsName:                "GPFS",
 			dir:                   lowerDir,
-			fsType:                gpfs,
+			fsType:                Gpfs,
 			expectedSuccess:       false,
 			expectIncompatibleErr: true,
 		},
@@ -145,7 +145,7 @@ func TestCheckLowerUpper(t *testing.T) {
 			path:                  "/",
 			fsName:                "GPFS",
 			dir:                   upperDir,
-			fsType:                gpfs,
+			fsType:                Gpfs,
 			expectedSuccess:       false,
 			expectIncompatibleErr: true,
 		},
@@ -170,9 +170,9 @@ func TestCheckLowerUpper(t *testing.T) {
 
 		switch tt.dir {
 		case lowerDir:
-			err = CheckLower(tt.path)
+			err = CheckLower(tt.path, 0)
 		case upperDir:
-			err = CheckUpper(tt.path)
+			err = CheckUpper(tt.path, 0)
 		}
 
 		if err != nil && tt.expectedSuccess {

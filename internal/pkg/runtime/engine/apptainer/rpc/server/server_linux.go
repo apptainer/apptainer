@@ -334,6 +334,12 @@ func (t *Methods) Lstat(arguments *args.StatArgs, reply *args.StatReply) error {
 	return nil
 }
 
+// Access checks file access permissions
+func (t *Methods) Access(arguments *args.AccessArgs, reply *args.AccessReply) error {
+	reply.Err = syscall.Access(arguments.Path, arguments.Mode)
+	return nil
+}
+
 // SendFuseFd send fuse file descriptor over unix socket.
 func (t *Methods) SendFuseFd(arguments *args.SendFuseFdArgs, reply *int) error {
 	usernsFd, err := unix.Open("/proc/self/ns/user", unix.O_RDONLY|unix.O_CLOEXEC, 0)

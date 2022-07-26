@@ -20,6 +20,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Added a squashfuse image driver that enables mounting SIF files without
   using setuid-root.  Requires the squashfuse command and unprivileged user
   namespaces.
+- Added a fuse2fs image driver that enables mounting EXT3 files and EXT3
+  SIF overlay partitions without using setuid-root.  Requires the fuse2fs
+  command and unprivileged user namespaces.
 - Added the ability to use persistent overlay (`--overlay`) and
   `--writable-tmpfs` without using setuid-root.
   This requires unprivileged user namespaces and either a new enough
@@ -64,6 +67,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
   When unprivileged user namespaces are not available, such that only
   the fakeroot command can be used, the `--fix-perms` option is implied
   to allow writing into directories.
+- Added a `--fakeroot` option to the `apptainer overlay create` command
+  to make an overlay EXT3 image file that works with the fakeroot that
+  comes from unprivileged root-mapped namespaces.
+  This is not needed with the fakeroot that comes with `/etc/sub[ug]id`
+  mappings nor with the fakeroot that comes with only the fakeroot
+  command in suid flow.
 - Added a `binary path` configuration variable as the default path to use
   when searching for helper executables.  May contain `$PATH:` which gets
   substituted with the user's PATH except when running a program that may

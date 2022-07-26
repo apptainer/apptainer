@@ -35,6 +35,7 @@ func FindBin(name string) (path string, err error) {
 		"mknod",
 		"mount",
 		"rm",
+		"stdbuf",
 		"true",
 		"uname":
 		return findOnPath(name, true)
@@ -49,6 +50,7 @@ func FindBin(name string) (path string, err error) {
 		"dnf",
 		"fakeroot",
 		"fuse-overlayfs",
+		"fuse2fs",
 		"go",
 		"ldconfig",
 		"mksquashfs",
