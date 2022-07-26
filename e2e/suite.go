@@ -20,6 +20,7 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"syscall"
 	"testing"
 
@@ -106,6 +107,7 @@ func Run(t *testing.T) {
 	}
 	testenv.TestDir = name
 	testenv.TestRegistry = e2e.StartRegistry(t, testenv)
+	testenv.InsecureRegistry = strings.Replace(testenv.TestRegistry, "localhost", "127.0.0.1.nip.io", 1)
 
 	// e2e tests need to run in a somehow agnostic environment, so we
 	// don't use environment of user executing tests in order to not
