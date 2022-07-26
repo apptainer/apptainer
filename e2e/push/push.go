@@ -102,13 +102,13 @@ func (c ctx) testPushCmd(t *testing.T) {
 		{
 			desc:             "standard SIF push",
 			imagePath:        c.env.ImagePath,
-			dstURI:           fmt.Sprintf("oras://%s/standard_sif:test", c.env.TestRegistry),
-			expectedExitCode: 0,
+			dstURI:           fmt.Sprintf("oras://%s/standard_sif:test", c.env.InsecureRegistry),
+			expectedExitCode: 255,
 		},
 		{
 			desc:             "standard SIF push with --no-https/--nohttps",
 			imagePath:        c.env.ImagePath,
-			dstURI:           fmt.Sprintf("oras://%s/standard_sif:test_nohttps", c.env.TestRegistry),
+			dstURI:           fmt.Sprintf("oras://%s/standard_sif:test_nohttps", c.env.InsecureRegistry),
 			noHTTPS:          true,
 			expectedExitCode: 0,
 		},

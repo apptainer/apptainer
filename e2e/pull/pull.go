@@ -315,14 +315,21 @@ func (c ctx) testPullCmd(t *testing.T) {
 			expectedExitCode: 0,
 		},
 
-		// pulling with --no-https image with oras
+		// pulling with --no-https flag
 		{
-			desc:             "oras pull of SIF file with --no-https flag",
-			srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
+			desc:             "oras pull of SIF file with --no-https flag should succeed",
+			srcURI:           fmt.Sprintf("oras://%s/pull_test_sif:latest", c.env.InsecureRegistry),
 			unauthenticated:  true,
 			force:            true,
 			noHTTPS:          true,
 			expectedExitCode: 0,
+		},
+		{
+			desc:             "oras pull of SIF file should fail because the insecure registry only expects non-secure header",
+			srcURI:           fmt.Sprintf("oras://%s/pull_test_sif:latest", c.env.InsecureRegistry),
+			unauthenticated:  true,
+			force:            true,
+			expectedExitCode: 255,
 		},
 	}
 

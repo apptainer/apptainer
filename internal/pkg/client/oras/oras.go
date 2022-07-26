@@ -63,12 +63,7 @@ const (
 var sifLayerMediaTypes = []string{SifLayerMediaTypeV1, SifLayerMediaTypeProto}
 
 func getResolver(ctx context.Context, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (remotes.Resolver, error) {
-	var opts docker.ResolverOptions
-	if noHTTPS {
-		opts = docker.ResolverOptions{Credentials: genCredfn(ociAuth), PlainHTTP: true}
-	} else {
-		opts = docker.ResolverOptions{Credentials: genCredfn(ociAuth)}
-	}
+	opts := docker.ResolverOptions{Credentials: genCredfn(ociAuth), PlainHTTP: noHTTPS}
 	if ociAuth != nil && (ociAuth.Username != "" || ociAuth.Password != "") {
 		return docker.NewResolver(opts), nil
 	}
@@ -79,9 +74,13 @@ func getResolver(ctx context.Context, ociAuth *ocitypes.DockerAuthConfig, noHTTP
 		return docker.NewResolver(opts), nil
 	}
 
-	return cli.ResolverWithOpts(
+	resolverOpts := []auth.ResolverOption{
 		auth.WithResolverClient(&http.Client{}),
-	)
+	}
+	if noHTTPS {
+		resolverOpts = append(resolverOpts, auth.WithResolverPlainHTTP())
+	}
+	return cli.ResolverWithOpts(resolverOpts...)
 }
 
 // DownloadImage downloads a SIF image specified by an oci reference to a file using the included credentials

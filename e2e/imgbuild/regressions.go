@@ -542,32 +542,3 @@ From: alpine:latest
 		e2e.ExpectExit(0),
 	)
 }
-
-func (c *imgBuildTests) issue18(t *testing.T) {
-	const (
-		imageURL = "oras://ghcr.io/apptainer/alpine:3.15.0"
-	)
-
-	tmpFolder, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "issue-18-build", "")
-	defer func(t *testing.T) {
-		if !t.Failed() {
-			cleanup(t)
-		}
-	}(t)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithCommand("build"),
-		e2e.WithArgs("--sandbox", "--no-https", fmt.Sprintf("%s/alpine", tmpFolder), imageURL),
-		e2e.ExpectExit(0),
-	)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithCommand("pull"),
-		e2e.WithArgs("--no-https", "--disable-cache", "--force", fmt.Sprintf("%s/alpine.sif", tmpFolder), imageURL),
-		e2e.ExpectExit(0),
-	)
-}
