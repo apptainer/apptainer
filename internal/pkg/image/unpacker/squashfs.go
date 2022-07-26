@@ -169,7 +169,13 @@ func (s *Squashfs) extract(files []string, reader io.Reader, dest string) (err e
 		cmd.Stdin = reader
 	}
 
-	if o, err := cmd.CombinedOutput(); err != nil {
+	o, err := cmd.CombinedOutput()
+
+	sylog.Debugf("*** BEGIN WRAPPED UNSQUASHFS OUTPUT ***")
+	sylog.Debugf(string(o))
+	sylog.Debugf("*** END WRAPPED UNSQUASHFS OUTPUT ***")
+
+	if err != nil {
 		return fmt.Errorf("extract command failed: %s: %s", string(o), err)
 	}
 

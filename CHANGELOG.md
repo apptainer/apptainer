@@ -133,6 +133,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   inside another apptainer container.
 - Added `--public`, `--private`, `--both` flags for `key remove` command to
   support removing private keys from the apptainer keyring.
+- Debug output can now be enabled by setting the `APPTAINER_DEBUG` env var.
+- Debug output is now shown for nested `apptainer` calls, in wrapped
+  `unsquashfs` image extraction, and build stages.
 
 ### Bug fixes
 

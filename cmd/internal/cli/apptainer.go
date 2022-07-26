@@ -85,6 +85,7 @@ var singDebugFlag = cmdline.Flag{
 	Name:         "debug",
 	ShortHand:    "d",
 	Usage:        "print debugging information (highest verbosity)",
+	EnvKeys:      []string{"DEBUG"},
 }
 
 // --nocolor
@@ -255,6 +256,8 @@ func setSylogMessageLevel() {
 
 	if debug {
 		level = 5
+		// Propagate debug flag to nested `apptainer` calls.
+		os.Setenv("APPTAINER_DEBUG", "1")
 	} else if verbose {
 		level = 4
 	} else if quiet {
@@ -275,14 +278,15 @@ func setSylogMessageLevel() {
 
 // handleRemoteConf will make sure your 'remote.yaml' config file
 // has the correct permission.
-func handleRemoteConf(remoteConfFile string) {
+func handleRemoteConf(remoteConfFile string) error {
 	// Only check the permission if it exists.
 	if fs.IsFile(remoteConfFile) {
 		sylog.Debugf("Ensuring file permission of 0600 on %s", remoteConfFile)
 		if err := fs.EnsureFileWithPermission(remoteConfFile, 0o600); err != nil {
-			sylog.Fatalf("Unable to correct the permission on %s: %s", remoteConfFile, err)
+			return fmt.Errorf("unable to correct the permission on %s: %w", remoteConfFile, err)
 		}
 	}
+	return nil
 }
 
 // handleConfDir tries to create the user's configuration directory and handles
@@ -450,7 +454,7 @@ func migrateGPGPrivate(sypgpDir, legacySypgpDir string) {
 	}
 }
 
-func persistentPreRun(*cobra.Command, []string) {
+func persistentPreRun(*cobra.Command, []string) error {
 	setSylogMessageLevel()
 	sylog.Debugf("Apptainer version: %s", buildcfg.PACKAGE_VERSION)
 
@@ -461,13 +465,13 @@ func persistentPreRun(*cobra.Command, []string) {
 		// Base this on a default configuration.
 		config, err = apptainerconf.Parse("")
 		if err != nil {
-			sylog.Fatalf("Failure getting default config: %v", err)
+			return fmt.Errorf("failure getting default config: %v", err)
 		}
 		apptainerconf.ApplyBuildConfig(config)
 	} else {
 		if os.Geteuid() != 0 && starter.IsSuidInstall() {
 			if configurationFile != singConfigFileFlag.DefaultValue {
-				sylog.Fatalf("--config requires to be root or an unprivileged installation")
+				return fmt.Errorf("--config requires to be root or an unprivileged installation")
 			}
 		}
 
@@ -480,7 +484,7 @@ func persistentPreRun(*cobra.Command, []string) {
 		sylog.Debugf("Parsing configuration file %s", configurationFile)
 		config, err = apptainerconf.Parse(configurationFile)
 		if err != nil {
-			sylog.Fatalf("Couldn't parse configuration file %s: %s", configurationFile, err)
+			return fmt.Errorf("couldn't parse configuration file %s: %s", configurationFile, err)
 		}
 	}
 	apptainerconf.SetCurrentConfig(config)
@@ -491,7 +495,10 @@ func persistentPreRun(*cobra.Command, []string) {
 	// Handle the config dir (~/.apptainer),
 	// then check the remove conf file permission.
 	handleConfDir(syfs.ConfigDir(), syfs.LegacyConfigDir())
-	handleRemoteConf(syfs.RemoteConf())
+	if err := handleRemoteConf(syfs.RemoteConf()); err != nil {
+		return fmt.Errorf("while handling remote config: %w", err)
+	}
+	return nil
 }
 
 // Init initializes and registers all apptainer commands.
@@ -514,16 +521,24 @@ func Init(loadPlugins bool) {
 
 	// set persistent pre run function here to avoid initialization loop error
 	apptainerCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-		persistentPreRun(cmd, args)
 		var err error
 		foundKeys := make(map[string]string)
 		for precedence := range env.ApptainerPrefixes {
-			err = cmdManager.UpdateCmdFlagFromEnv(cmd, precedence, foundKeys)
+			err = cmdManager.UpdateCmdFlagFromEnv(apptainerCmd, precedence, foundKeys)
 			if nil != err {
-				break
+				sylog.Fatalf("While parsing global environment variables: %s", err)
 			}
 		}
-		return err
+		for precedence := range env.ApptainerPrefixes {
+			err = cmdManager.UpdateCmdFlagFromEnv(cmd, precedence, foundKeys)
+			if nil != err {
+				sylog.Fatalf("While parsing environment variables: %s", err)
+			}
+		}
+		if err := persistentPreRun(cmd, args); err != nil {
+			sylog.Fatalf("While initializing: %s", err)
+		}
+		return nil
 	}
 
 	cmdManager.RegisterFlagForCmd(&singDebugFlag, apptainerCmd)
