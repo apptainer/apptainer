@@ -50,6 +50,7 @@ type testStruct struct {
 	expectedImage    string
 	envVars          []string
 	disabled         bool
+	noHTTPS          bool
 }
 
 func (c *ctx) imagePull(t *testing.T, tt testStruct) {
@@ -76,6 +77,10 @@ func (c *ctx) imagePull(t *testing.T, tt testStruct) {
 
 	if tt.imagePath != "" {
 		argv += tt.imagePath + " "
+	}
+
+	if tt.noHTTPS {
+		argv += "--no-https "
 	}
 
 	argv += tt.srcURI
@@ -308,6 +313,23 @@ func (c ctx) testPullCmd(t *testing.T) {
 			library:          "https://library.sylabs.io",
 			force:            true,
 			expectedExitCode: 0,
+		},
+
+		// pulling with --no-https flag
+		{
+			desc:             "oras pull of SIF file with --no-https flag should succeed",
+			srcURI:           fmt.Sprintf("oras://%s/pull_test_sif:latest", c.env.InsecureRegistry),
+			unauthenticated:  true,
+			force:            true,
+			noHTTPS:          true,
+			expectedExitCode: 0,
+		},
+		{
+			desc:             "oras pull of SIF file should fail because the insecure registry only expects non-secure header",
+			srcURI:           fmt.Sprintf("oras://%s/pull_test_sif:latest", c.env.InsecureRegistry),
+			unauthenticated:  true,
+			force:            true,
+			expectedExitCode: 255,
 		},
 	}
 

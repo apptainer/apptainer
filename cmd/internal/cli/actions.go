@@ -84,7 +84,7 @@ func handleOras(ctx context.Context, imgCache *cache.Handle, cmd *cobra.Command,
 	if err != nil {
 		return "", fmt.Errorf("while creating docker credentials: %v", err)
 	}
-	return oras.Pull(ctx, imgCache, pullFrom, tmpDir, ociAuth)
+	return oras.Pull(ctx, imgCache, pullFrom, tmpDir, ociAuth, noHTTPS)
 }
 
 func handleLibrary(ctx context.Context, imgCache *cache.Handle, pullFrom string) (string, error) {
