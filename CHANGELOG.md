@@ -145,6 +145,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Debug output can now be enabled by setting the `APPTAINER_DEBUG` env var.
 - Debug output is now shown for nested `apptainer` calls, in wrapped
   `unsquashfs` image extraction, and build stages.
+- Added EL9 package builds to CI for GitHub releases.
 
 ### Bug fixes
 
