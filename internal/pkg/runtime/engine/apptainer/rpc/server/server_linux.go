@@ -349,7 +349,12 @@ func (t *Methods) SendFuseFd(arguments *args.SendFuseFdArgs, reply *int) error {
 	defer unix.Close(usernsFd)
 
 	rights := unix.UnixRights(append(arguments.Fds, usernsFd)...)
-	return unix.Sendmsg(arguments.Socket, nil, rights, nil, 0)
+	// The second parameter here was added as a workaround after
+	//  the following change to golang.org/x/sys/unix which removed
+	//  that value as a default:
+	//     https://go-review.googlesource.com/c/sys/+/412497
+	err = unix.Sendmsg(arguments.Socket, []byte{0}, rights, nil, 0)
+	return err
 }
 
 // OpenSendFuseFd open a new /dev/fuse file descriptor and send it
@@ -362,7 +367,7 @@ func (t *Methods) OpenSendFuseFd(arguments *args.OpenSendFuseFdArgs, reply *int)
 	*reply = fd
 
 	rights := unix.UnixRights(fd)
-	return unix.Sendmsg(arguments.Socket, nil, rights, nil, 0)
+	return unix.Sendmsg(arguments.Socket, []byte{0}, rights, nil, 0)
 }
 
 // Symlink performs a symlink with the specified arguments.
