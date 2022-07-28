@@ -113,6 +113,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/docker/libtrust/blob/master/LICENSE>
 
+## github.com/google/go-containerregistry/pkg/name
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/google/go-containerregistry/blob/master/pkg/name/LICENSE>
+
 ## github.com/gosimple/unidecode
 
 **License:** Apache-2.0
@@ -250,6 +256,12 @@ The dependencies and their licenses are as follows:
 **License:** Apache-2.0
 
 **License URL:** <https://github.com/seccomp/containers-golang/blob/master/LICENSE>
+
+## github.com/sigstore/sigstore/pkg
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/sigstore/sigstore/blob/master/pkg/LICENSE>
 
 ## github.com/spf13/cobra
 
@@ -442,6 +454,12 @@ The dependencies and their licenses are as follows:
 **License:** BSD-3-Clause
 
 **License URL:** <https://github.com/sylabs/json-resp/blob/master/LICENSE.md>
+
+## github.com/theupdateframework/go-tuf/encrypted
+
+**License:** BSD-3-Clause
+
+**License URL:** <https://github.com/theupdateframework/go-tuf/blob/master/encrypted/LICENSE>
 
 ## github.com/ulikunitz/xz
 
@@ -689,6 +707,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/sirupsen/logrus/blob/master/LICENSE>
 
+## github.com/titanous/rocacheck
+
+**License:** MIT
+
+**License URL:** <https://github.com/titanous/rocacheck/blob/master/LICENSE>
+
 ## github.com/urfave/cli
 
 **License:** MIT
@@ -707,6 +731,12 @@ The dependencies and their licenses are as follows:
 
 **Project URL:** <https://go.mozilla.org/pkcs7>
 
+## gopkg.in/yaml.v3
+
+**License:** MIT
+
+**Project URL:** <https://gopkg.in/yaml.v3>
+
 ## github.com/gosimple/slug
 
 **License:** MPL-2.0
@@ -724,6 +754,12 @@ The dependencies and their licenses are as follows:
 **License:** MPL-2.0
 
 **License URL:** <https://github.com/hashicorp/go-multierror/blob/master/LICENSE>
+
+## github.com/letsencrypt/boulder
+
+**License:** MPL-2.0
+
+**License URL:** <https://github.com/letsencrypt/boulder/blob/master/LICENSE.txt>
 
 ## github.com/garyburd/redigo/internal
 
