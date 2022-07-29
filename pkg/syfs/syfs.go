@@ -81,6 +81,9 @@ func RemoteCacheDir() string {
 }
 
 func DockerConf() string {
+	if authFile := os.Getenv("APPTAINER_AUTH_FILE"); authFile != "" {
+		return authFile
+	}
 	return filepath.Join(ConfigDir(), DockerConfFile)
 }
 
