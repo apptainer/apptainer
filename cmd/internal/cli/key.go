@@ -91,7 +91,7 @@ var keyRemovePrivateKeyFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "secret",
 	ShortHand:    "s",
-	Usage:        "remove private keys only",
+	Usage:        "remove secret keys only",
 }
 
 //--both

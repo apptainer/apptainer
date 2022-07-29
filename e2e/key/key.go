@@ -460,7 +460,7 @@ func (c *ctx) apptainerKeyRemoveOpts(t *testing.T) {
 			exit:    0,
 		},
 		{
-			name:    "remove public should succeed",
+			name:    "remove public key should succeed",
 			command: "key remove",
 			profile: e2e.UserProfile,
 			args:    []string{"--public", keyMap["key1"]},
@@ -484,7 +484,7 @@ func (c *ctx) apptainerKeyRemoveOpts(t *testing.T) {
 			exit: 0,
 		},
 		{
-			name:    "remove private should succeed",
+			name:    "remove secret key should succeed",
 			command: "key remove",
 			profile: e2e.UserProfile,
 			args:    []string{"--secret", keyMap["key1"]},
@@ -523,7 +523,7 @@ func (c *ctx) apptainerKeyRemoveOpts(t *testing.T) {
 			exit:          0,
 		},
 		{
-			name:               "remove private should fail because key does not exist in keyring",
+			name:               "remove secret key should fail because key does not exist in keyring",
 			command:            "key remove",
 			profile:            e2e.UserProfile,
 			args:               []string{"--secret", keyMap["key1"]},
