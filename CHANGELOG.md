@@ -149,6 +149,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Bug fixes
 
+- Remove warning message about SINGULARITY and APPTAINER variables having
+  different values when the SINGULARITY variable is not set.
 - Add specific error for unreadable image / overlay file.
 - Pass through a literal `\n` in host environment variables to container.
 - Allow `newgidmap / newuidmap` that use capabilities instead of setuid root.
