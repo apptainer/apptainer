@@ -461,7 +461,7 @@ func (c *ctx) apptainerKeyRemoveOpts(t *testing.T) {
 			exit:    0,
 		},
 		{
-			name:    "remove public should succeed",
+			name:    "remove public key should succeed",
 			command: "key remove",
 			profile: e2e.UserProfile,
 			args:    []string{"--public", keyMap["key1"]},
@@ -485,10 +485,10 @@ func (c *ctx) apptainerKeyRemoveOpts(t *testing.T) {
 			exit: 0,
 		},
 		{
-			name:    "remove private should succeed",
+			name:    "remove secret key should succeed",
 			command: "key remove",
 			profile: e2e.UserProfile,
-			args:    []string{"--private", keyMap["key1"]},
+			args:    []string{"--secret", keyMap["key1"]},
 			exit:    0,
 		},
 		{
@@ -524,10 +524,10 @@ func (c *ctx) apptainerKeyRemoveOpts(t *testing.T) {
 			exit:          0,
 		},
 		{
-			name:               "remove private should fail because key does not exist in keyring",
+			name:               "remove secret key should fail because key does not exist in keyring",
 			command:            "key remove",
 			profile:            e2e.UserProfile,
-			args:               []string{"--private", keyMap["key1"]},
+			args:               []string{"--secret", keyMap["key1"]},
 			expectedErrorRegex: "FATAL:",
 			exit:               255,
 		},
@@ -843,7 +843,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"ordered": func(t *testing.T) {
 			t.Run("keyCmd", c.apptainerKeyCmd)                                 // Run all the tests in order
 			t.Run("keyNewpairWithLen", c.apptainerKeyNewpairWithLen)           // We run a separate test for `key newpair --bit-length` because it requires handling a keyring a specific way
-			t.Run("keyRemoveOpts", c.apptainerKeyRemoveOpts)                   // run a separated test for `key remove --public/--private/--both`
+			t.Run("keyRemoveOpts", c.apptainerKeyRemoveOpts)                   // run a separated test for `key remove --public/--secret/--both`
 			t.Run("keyDirCmdRegression", c.apptainerLocalKeyDirFlagRegression) // run a separated test for regression purpose after we add a new feature of manually setting --keysdir through cli
 		},
 	}
