@@ -106,15 +106,6 @@ func GetTokenFile() string {
 	return filepath.Join(syfs.ConfigDir(), "sylabs-token")
 }
 
-// dirPath returns a string describing the path to the sypgp home folder
-func dirPath() string {
-	// read this as: look for APPTAINER_KEYSDIR and/or SINGULARITY_SYPGPDIR
-	if dir := env.GetenvLegacy("KEYSDIR", "SYPGPDIR"); dir != "" {
-		return dir
-	}
-	return filepath.Join(syfs.ConfigDir(), Directory)
-}
-
 // NewHandle initializes a new keyring in path.
 func NewHandle(path string, opts ...HandleOpt) *Handle {
 	newHandle := new(Handle)
@@ -128,7 +119,7 @@ func NewHandle(path string, opts ...HandleOpt) *Handle {
 		if newHandle.global {
 			panic("global public keyring requires a path")
 		}
-		newHandle.path = dirPath()
+		newHandle.path = env.DefaultLocalKeyDirPath()
 	}
 
 	return newHandle

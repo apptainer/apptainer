@@ -58,7 +58,7 @@ var KeyListCmd = &cobra.Command{
 
 func doKeyListCmd(secret bool) error {
 	var opts []sypgp.HandleOpt
-	path := ""
+	path := keyLocalDir
 
 	if keyGlobalPubKey {
 		path = buildcfg.APPTAINER_CONFDIR

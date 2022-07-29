@@ -25,7 +25,7 @@ var KeyRemoveCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		var opts []sypgp.HandleOpt
-		path := ""
+		path := keyLocalDir
 
 		if keyGlobalPubKey {
 			path = buildcfg.APPTAINER_CONFDIR

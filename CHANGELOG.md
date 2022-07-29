@@ -118,6 +118,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
     to check version that container was built with*.
 - Added `--no-eval` to the list of flags set by the OCI/Docker `--compat` mode.
 - `sinit` process has been renamed to `appinit`.
+- Added `--keysdir` to `key` command to provide an alternative way of setting
+  local keyring path, existing reading keyring path from environment variable
+  'APPTAINER_KEYSDIR' is untouched.
 
 ### New features / functionalities
 

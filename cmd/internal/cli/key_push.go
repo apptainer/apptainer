@@ -49,7 +49,7 @@ var KeyPushCmd = &cobra.Command{
 
 func doKeyPushCmd(ctx context.Context, fingerprint string, co ...client.Option) error {
 	var opts []sypgp.HandleOpt
-	path := ""
+	path := keyLocalDir
 
 	if keyGlobalPubKey {
 		path = buildcfg.APPTAINER_CONFDIR
