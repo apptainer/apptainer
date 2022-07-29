@@ -164,7 +164,7 @@ func (c *ctx) apptainerKeyNewpair(t *testing.T) {
 		{
 			name:   "newpair help",
 			args:   []string{"newpair", "--help"},
-			stdout: "^Create a new key pair",
+			stdout: "Create a new key pair",
 		},
 		{
 			name: "newpair",
@@ -187,7 +187,7 @@ func (c *ctx) apptainerKeyNewpair(t *testing.T) {
 			e2e.ConsoleRun(buildConsoleLines(tt.consoleOps...)...),
 			e2e.WithCommand("key"),
 			e2e.WithArgs(tt.args...),
-			e2e.ExpectExit(0, e2e.ExpectOutput(e2e.RegexMatch, tt.stdout)),
+			e2e.ExpectExit(0, e2e.ExpectOutput(e2e.ContainMatch, tt.stdout)),
 		)
 	}
 }
@@ -764,7 +764,6 @@ func (c *ctx) apptainerLocalKeyDirFlagRegression(t *testing.T) {
 		consoleOps []string
 		resultOp   []e2e.ApptainerCmdResultOp
 		exit       int
-		stdout     string
 	}{
 		{
 			name:    "newpair regression with customized keydirs",
@@ -783,8 +782,10 @@ func (c *ctx) apptainerLocalKeyDirFlagRegression(t *testing.T) {
 			name:    "key list regression test should succeed and return value",
 			command: "key list",
 			args:    []string{"--secret", "--keysdir", keysdir},
-			stdout:  "e2e test key",
-			exit:    0,
+			resultOp: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ContainMatch, "e2e test key"),
+			},
+			exit: 0,
 		},
 		{
 			name:    "key list regression test should succeed but shoud return nothing because keysdir value is invalid",
