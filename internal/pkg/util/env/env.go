@@ -63,7 +63,7 @@ func GetenvLegacy(key, legacyKey string) string {
 		if val != "" {
 			sylog.Warningf("DEPRECATED USAGE: Environment variable %s will not be supported in the future, use %s instead", legacyKeyEnv, keyEnv)
 		}
-	} else if os.Getenv(legacyKeyEnv) != val {
+	} else if os.Getenv(legacyKeyEnv) != "" && os.Getenv(legacyKeyEnv) != val {
 		sylog.Warningf("%s and %s have different values, using the latter", legacyKeyEnv, keyEnv)
 	}
 
