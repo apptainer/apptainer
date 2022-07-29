@@ -26,6 +26,7 @@ import (
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/apptainer/sif/v2/pkg/integrity"
 	"github.com/apptainer/sif/v2/pkg/sif"
+	"github.com/hashicorp/go-multierror"
 	toml "github.com/pelletier/go-toml"
 )
 
@@ -119,7 +120,7 @@ func (ecl *EclConfig) ValidateConfig() error {
 }
 
 // checkWhiteList evaluates authorization by requiring at least 1 entity
-func checkWhiteList(v *integrity.Verifier, egroup *Execgroup) (ok bool, err error) {
+func checkWhiteList(v *integrity.Verifier, egroup *Execgroup, unvalidated [][]byte) (ok bool, err error) {
 	// get signing entities fingerprints that have signed all selected objects
 	keyfps, err := v.AllSignedBy()
 	if err != nil {
@@ -131,7 +132,19 @@ func checkWhiteList(v *integrity.Verifier, egroup *Execgroup) (ok bool, err erro
 		for _, u := range keyfps {
 			if strings.EqualFold(v, hex.EncodeToString(u[:])) {
 				ok = true
+				for _, ufp := range unvalidated {
+					if strings.EqualFold(v, hex.EncodeToString(ufp[:])) {
+						ok = false
+						break
+					}
+				}
 			}
+			if ok {
+				break
+			}
+		}
+		if ok {
+			break
 		}
 	}
 
@@ -143,7 +156,7 @@ func checkWhiteList(v *integrity.Verifier, egroup *Execgroup) (ok bool, err erro
 }
 
 // checkWhiteStrict evaluates authorization by requiring all entities
-func checkWhiteStrict(v *integrity.Verifier, egroup *Execgroup) (ok bool, err error) {
+func checkWhiteStrict(v *integrity.Verifier, egroup *Execgroup, unvalidated [][]byte) (ok bool, err error) {
 	// get signing entities fingerprints that have signed all selected objects
 	keyfps, err := v.AllSignedBy()
 	if err != nil {
@@ -157,6 +170,11 @@ func checkWhiteStrict(v *integrity.Verifier, egroup *Execgroup) (ok bool, err er
 		for _, u := range keyfps {
 			if strings.EqualFold(v, hex.EncodeToString(u[:])) {
 				m[v] = true
+				for _, ufp := range unvalidated {
+					if strings.EqualFold(v, hex.EncodeToString(ufp[:])) {
+						m[v] = false
+					}
+				}
 			}
 		}
 	}
@@ -239,16 +257,41 @@ func shouldRun(ecl *EclConfig, fp *os.File, kr openpgp.KeyRing) (ok bool, err er
 	}
 
 	// Validate signature.
+	unvalidated := make([][]byte, 0)
 	if err := v.Verify(); err != nil {
-		return false, fmt.Errorf("image signature not valid: %v", err)
+		var merr *multierror.Error
+		if errors.As(err, &merr) {
+			var filteredErrors *multierror.Error
+			for _, suberr := range merr.Errors {
+				var sigerr *integrity.SignatureNotValidError
+				if errors.As(suberr, &sigerr) {
+					od, descerr := f.GetDescriptor(sif.WithID(sigerr.ID))
+					if descerr != nil {
+						return false, fmt.Errorf("get descriptor with ID %d: %v", sigerr.ID, descerr)
+					}
+					_, fp, sigmetaerr := od.SignatureMetadata()
+					if sigmetaerr != nil {
+						return false, sigmetaerr
+					}
+					unvalidated = append(unvalidated, fp)
+				} else {
+					filteredErrors = multierror.Append(filteredErrors, suberr)
+				}
+			}
+			if filteredErrors.ErrorOrNil() != nil {
+				return false, fmt.Errorf("unable to verify image: %v", filteredErrors)
+			}
+		} else {
+			return false, fmt.Errorf("image signature not valid: %v", err)
+		}
 	}
 
 	// Check fingerprints against policy.
 	switch egroup.ListMode {
 	case "whitelist":
-		return checkWhiteList(v, egroup)
+		return checkWhiteList(v, egroup, unvalidated)
 	case "whitestrict":
-		return checkWhiteStrict(v, egroup)
+		return checkWhiteStrict(v, egroup, unvalidated)
 	case "blacklist":
 		return checkBlackList(v, egroup)
 	}
