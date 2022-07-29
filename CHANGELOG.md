@@ -118,6 +118,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
     to check version that container was built with*.
 - Added `--no-eval` to the list of flags set by the OCI/Docker `--compat` mode.
 - `sinit` process has been renamed to `appinit`.
+- `apptainer key push` will output the key server's response if included in
+  order to help guide users through any identity verification the server may
+  require.
 
 ### New features / functionalities
 
