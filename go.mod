@@ -9,7 +9,7 @@ require (
 	github.com/apex/log v1.9.0
 	github.com/apptainer/container-key-client v0.8.0
 	github.com/apptainer/container-library-client v1.3.3
-	github.com/apptainer/sif/v2 v2.7.1
+	github.com/apptainer/sif/v2 v2.7.2
 	github.com/blang/semver/v4 v4.0.0
 	github.com/buger/jsonparser v1.1.1
 	github.com/cenkalti/backoff/v4 v4.1.3
@@ -57,6 +57,7 @@ require (
 
 require (
 	github.com/docker/distribution v2.8.1+incompatible
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/sirupsen/logrus v1.9.0
 )
 
@@ -103,7 +104,6 @@ require (
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect

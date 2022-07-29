@@ -41,6 +41,7 @@
 - Jeff Kriske <jekriske@gmail.com>
 - Jia Li <jiali@sylabs.io>
 - Joana Chavez <joana@sylabs.io>, <j.chavezlavalle@gmail.com>
+- Jonathon Anderson <janderson@ciq.co>
 - Josef Hrabal <josef.hrabal@vsb.cz>
 - Justin Cook <justin@sylabs.io>
 - Justin Riley <justin_riley@harvard.edu>

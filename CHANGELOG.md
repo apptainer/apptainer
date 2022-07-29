@@ -121,6 +121,18 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - `apptainer key push` will output the key server's response if included in
   order to help guide users through any identity verification the server may
   require.
+- ECL no longer requires verification for all signatures, but only
+  when signature verification would alter the expected behavior of the
+  list:
+  - At least one matching signature included in a whitelist must be
+    validated, but other unvalidated signatures do not cause ECL to
+    fail.
+  - All matching signatures included in a whitestrict must be
+    validated, but unvalidated signatures not in the whitestrict do
+    not cause ECL to fail.
+  - Signature verification is not checked for a blacklist; unvalidated
+    signatures can still block execution via ECL, and unvalidated
+    signatures not in the blacklist do not cause ECL to fail.
 
 ### New features / functionalities
 
