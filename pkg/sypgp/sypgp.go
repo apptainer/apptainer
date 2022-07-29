@@ -1212,7 +1212,7 @@ func (keyring *Handle) ImportKey(kpath string, setNewPassword bool) error {
 	return nil
 }
 
-// PushPubkey pushes a public key to the Key Service.
+// PushPubkey pushes a public key to the Key Service and displays the service's response if provided.
 func PushPubkey(ctx context.Context, e *openpgp.Entity, opts ...client.Option) error {
 	keyText, err := serializeEntity(e, openpgp.PublicKeyType)
 	if err != nil {
@@ -1226,7 +1226,8 @@ func PushPubkey(ctx context.Context, e *openpgp.Entity, opts ...client.Option) e
 	}
 
 	// Push key to Key Service.
-	if err := c.PKSAdd(ctx, keyText); err != nil {
+	r, err := c.PKSAddWithResponse(ctx, keyText)
+	if err != nil {
 		var httpError *client.HTTPError
 		if errors.As(err, &httpError) && httpError.Code() == http.StatusUnauthorized {
 			// The request failed with HTTP code unauthorized. Guide user to fix that.
@@ -1236,5 +1237,10 @@ func PushPubkey(ctx context.Context, e *openpgp.Entity, opts ...client.Option) e
 		return fmt.Errorf("key server did not accept PGP key: %v", err)
 
 	}
+
+	if r != "" {
+		sylog.Infof("Key server response: %s", r)
+	}
+
 	return nil
 }
