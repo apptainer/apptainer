@@ -29,8 +29,8 @@ const (
 	// ApptainerEnvPrefix Apptainer environment variables recognized prefixes for passthru to container
 	ApptainerEnvPrefix = "APPTAINERENV_"
 
-	// DefaultLocalKeyDirName represents the default local key storage folder name
-	DefaultLocalKeyDirName = "keys"
+	// defaultLocalKeyDirName represents the default local key storage folder name
+	defaultLocalKeyDirName = "keys"
 )
 
 // ApptainerPrefixes the following prefixes are for settings looked at by Apptainer command
@@ -85,5 +85,5 @@ func DefaultLocalKeyDirPath() string {
 	if dir := GetenvLegacy("KEYSDIR", "SYPGPDIR"); dir != "" {
 		return dir
 	}
-	return filepath.Join(syfs.ConfigDir(), DefaultLocalKeyDirName)
+	return filepath.Join(syfs.ConfigDir(), defaultLocalKeyDirName)
 }

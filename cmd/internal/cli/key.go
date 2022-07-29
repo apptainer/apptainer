@@ -114,7 +114,6 @@ var keyLocalDirKeyFlag = cmdline.Flag{
 	Name:         "keysdir",
 	ShortHand:    "d",
 	Usage:        "set local keyring dir path, an alternative way is to set environment variable 'APPTAINER_KEYSDIR'",
-	Hidden:       true,
 }
 
 func init() {
