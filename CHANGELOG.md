@@ -140,7 +140,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   overrules both `--insecure` and `APPTAINER_ADD_INSECURE`.
 - Gpu flags `--nv` and `--rocm` can now be used from an apptainer nested
   inside another apptainer container.
-- Added `--public`, `--private`, `--both` flags for `key remove` command to
+- Added `--public`, `--secret`, `--both` flags for `key remove` command to
   support removing private keys from the apptainer keyring.
 - Debug output can now be enabled by setting the `APPTAINER_DEBUG` env var.
 - Debug output is now shown for nested `apptainer` calls, in wrapped
