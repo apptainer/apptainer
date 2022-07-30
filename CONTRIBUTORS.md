@@ -92,4 +92,5 @@
 - Chen Yiyang <cyyzero@qq.com>
 - Pablo Caderno <kaderno@gmail.com>
 - Xu Yang <jasonyangshadow@gmail.com>
+- Charles Vejnar <charles.vejnar@gmail.com>
 ```
