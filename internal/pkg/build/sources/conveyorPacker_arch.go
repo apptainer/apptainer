@@ -19,6 +19,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
@@ -29,7 +30,7 @@ import (
 )
 
 const (
-	pacmanConfURL = "https://github.com/archlinux/svntogit-packages/raw/master/pacman/trunk/pacman.conf"
+	defaultPacmanConfURL = "https://github.com/archlinux/svntogit-packages/raw/master/pacman/trunk/pacman.conf"
 )
 
 // Default list of packages to install when bootstrapping arch
@@ -39,7 +40,9 @@ var instList = []string{"base"}
 
 // ArchConveyorPacker only needs to hold the conveyor to have the needed data to pack
 type ArchConveyorPacker struct {
-	b *types.Bundle
+	b       *types.Bundle
+	confurl string
+	include string
 }
 
 // prepareFakerootEnv prepares a build environment to
@@ -115,6 +118,11 @@ func (cp *ArchConveyorPacker) prepareFakerootEnv(ctx context.Context) (func(), e
 func (cp *ArchConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err error) {
 	cp.b = b
 
+	err = cp.getBootstrapOptions()
+	if err != nil {
+		return fmt.Errorf("while getting bootstrap options: %v", err)
+	}
+
 	// check for pacstrap on system
 	pacstrapPath, err := bin.FindBin("pacstrap")
 	if err != nil {
@@ -126,7 +134,7 @@ func (cp *ArchConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err err
 		return fmt.Errorf("%v architecture is not supported", arch)
 	}
 
-	pacConf, err := cp.getPacConf(pacmanConfURL)
+	pacConf, err := cp.getPacConf(cp.confurl)
 	if err != nil {
 		return fmt.Errorf("while getting pacman config: %v", err)
 	}
@@ -186,6 +194,28 @@ func (cp *ArchConveyorPacker) Pack(context.Context) (b *types.Bundle, err error)
 	}
 
 	return cp.b, nil
+}
+
+func (cp *ArchConveyorPacker) getBootstrapOptions() (err error) {
+	var include string
+	var ok bool
+
+	// get ConfURL component to definition
+	cp.confurl, ok = cp.b.Recipe.Header["confurl"]
+	if !ok {
+		cp.confurl = defaultPacmanConfURL
+	}
+
+	// get Include component to instList
+	include, ok = cp.b.Recipe.Header["include"]
+	if ok {
+		// trim leading and trailing whitespace
+		include = strings.TrimSpace(include)
+
+		instList = []string{include}
+	}
+
+	return nil
 }
 
 func (cp *ArchConveyorPacker) getPacConf(pacmanConfURL string) (pacConf string, err error) {

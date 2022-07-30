@@ -161,6 +161,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Debug output is now shown for nested `apptainer` calls, in wrapped
   `unsquashfs` image extraction, and build stages.
 - Added EL9 package builds to CI for GitHub releases.
+- Add confURL & Include parameters to Arch packer for alternate `pacman.conf`
+  URL and alternate installed (meta)package.
 
 ### Bug fixes
 
