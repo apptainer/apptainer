@@ -121,6 +121,21 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Added `--keysdir` to `key` command to provide an alternative way of setting
   local keyring path. The existing reading keyring path from environment variable
   'APPTAINER_KEYSDIR' is untouched.
+- `apptainer key push` will output the key server's response if included in
+  order to help guide users through any identity verification the server may
+  require.
+- ECL no longer requires verification for all signatures, but only
+  when signature verification would alter the expected behavior of the
+  list:
+  - At least one matching signature included in a whitelist must be
+    validated, but other unvalidated signatures do not cause ECL to
+    fail.
+  - All matching signatures included in a whitestrict must be
+    validated, but unvalidated signatures not in the whitestrict do
+    not cause ECL to fail.
+  - Signature verification is not checked for a blacklist; unvalidated
+    signatures can still block execution via ECL, and unvalidated
+    signatures not in the blacklist do not cause ECL to fail.
 
 ### New features / functionalities
 
@@ -152,6 +167,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Bug fixes
 
+- Remove warning message about SINGULARITY and APPTAINER variables having
+  different values when the SINGULARITY variable is not set.
 - Add specific error for unreadable image / overlay file.
 - Pass through a literal `\n` in host environment variables to container.
 - Allow `newgidmap / newuidmap` that use capabilities instead of setuid root.
