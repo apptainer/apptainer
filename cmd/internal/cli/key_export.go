@@ -68,7 +68,7 @@ var KeyExportCmd = &cobra.Command{
 
 func exportRun(cmd *cobra.Command, args []string) {
 	var opts []sypgp.HandleOpt
-	path := ""
+	path := keyLocalDir
 
 	if keyGlobalPubKey {
 		path = buildcfg.APPTAINER_CONFDIR

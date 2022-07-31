@@ -17,6 +17,7 @@ import (
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/starter"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -31,6 +32,7 @@ var (
 	keyRemovePublic     bool   //--public option to remove only public keys
 	keyRemovePrivate    bool   //--private option to remove only private keys
 	keyRemoveBoth       bool   //--both option to remove both public and private keys
+	keyLocalDir         string //--keysdir option for local key dir path
 )
 
 // -u|--url
@@ -104,6 +106,16 @@ var keyRemoveBothKeyFlag = cmdline.Flag{
 	Usage:        "remove both public and private keys",
 }
 
+//--keysdir
+var keyLocalDirKeyFlag = cmdline.Flag{
+	ID:           "keyLocalDirKeyFlag",
+	Value:        &keyLocalDir,
+	DefaultValue: env.DefaultLocalKeyDirPath(),
+	Name:         "keysdir",
+	ShortHand:    "d",
+	Usage:        "set local keyring dir path, an alternative way is to set environment variable 'APPTAINER_KEYSDIR'",
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(KeyCmd)
@@ -128,9 +140,16 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&keyNewpairBitLengthFlag, KeyNewPairCmd)
 		cmdManager.RegisterFlagForCmd(&keyImportWithNewPasswordFlag, KeyImportCmd)
 
+		cmdManager.SetCmdGroup("key_group_cmd", KeyImportCmd, KeyExportCmd, KeyListCmd, KeyPullCmd, KeyPushCmd, KeyRemoveCmd)
+
 		cmdManager.RegisterFlagForCmd(
 			&keyGlobalPubKeyFlag,
-			KeyImportCmd, KeyExportCmd, KeyListCmd, KeyPullCmd, KeyPushCmd, KeyRemoveCmd,
+			cmdManager.GetCmdGroup("key_group_cmd")...,
+		)
+
+		cmdManager.RegisterFlagForCmd(
+			&keyLocalDirKeyFlag,
+			append(cmdManager.GetCmdGroup("key_group_cmd"), KeyNewPairCmd)...,
 		)
 
 		// register public/private/both flags for KeyRemoveCmd only

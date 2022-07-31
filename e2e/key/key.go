@@ -11,6 +11,7 @@
 package key
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -163,7 +164,7 @@ func (c *ctx) apptainerKeyNewpair(t *testing.T) {
 		{
 			name:   "newpair help",
 			args:   []string{"newpair", "--help"},
-			stdout: "^Create a new key pair",
+			stdout: "Create a new key pair",
 		},
 		{
 			name: "newpair",
@@ -186,7 +187,7 @@ func (c *ctx) apptainerKeyNewpair(t *testing.T) {
 			e2e.ConsoleRun(buildConsoleLines(tt.consoleOps...)...),
 			e2e.WithCommand("key"),
 			e2e.WithArgs(tt.args...),
-			e2e.ExpectExit(0, e2e.ExpectOutput(e2e.RegexMatch, tt.stdout)),
+			e2e.ExpectExit(0, e2e.ExpectOutput(e2e.ContainMatch, tt.stdout)),
 		)
 	}
 }
@@ -750,6 +751,66 @@ func (c *ctx) globalKeyring(t *testing.T) {
 	}
 }
 
+// As we support setting keyring dir path through the cli (add a flag '--keysdir'), this test is for regression purpose
+func (c *ctx) apptainerLocalKeyDirFlagRegression(t *testing.T) {
+	tempKeyring, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "regression-keyring-", "")
+	keysdir := fmt.Sprintf("%s/newpair", tempKeyring)
+	defer cleanup(t)
+
+	tests := []struct {
+		name       string
+		command    string
+		args       []string
+		consoleOps []string
+		resultOp   []e2e.ApptainerCmdResultOp
+		exit       int
+	}{
+		{
+			name:    "newpair regression with customized keydirs",
+			command: "key newpair",
+			args:    []string{"--keysdir", keysdir},
+			consoleOps: []string{
+				"e2e test key",
+				"westley@apptainer.org",
+				"for e2e tests",
+				"e2etests",
+				"e2etests",
+			},
+			exit: 0,
+		},
+		{
+			name:    "key list regression test should succeed and return value",
+			command: "key list",
+			args:    []string{"--secret", "--keysdir", keysdir},
+			resultOp: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ContainMatch, "e2e test key"),
+			},
+			exit: 0,
+		},
+		{
+			name:    "key list regression test should succeed but shoud return nothing because keysdir value is invalid",
+			command: "key list",
+			args:    []string{"--secret"},
+			resultOp: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.UnwantedContainMatch, "e2e test key"),
+			},
+			exit: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(e2e.UserProfile),
+			e2e.ConsoleRun(buildConsoleLines(tt.consoleOps...)...),
+			e2e.WithCommand(tt.command),
+			e2e.WithArgs(tt.args...),
+			e2e.ExpectExit(tt.exit, tt.resultOp...),
+		)
+	}
+}
+
 // Run the 'key' tests in order
 func (c ctx) apptainerKeyCmd(t *testing.T) {
 	c.apptainerKeySearch(t)
@@ -780,9 +841,10 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	return testhelper.Tests{
 		"global": testhelper.NoParallel(c.globalKeyring), // global keyring
 		"ordered": func(t *testing.T) {
-			t.Run("keyCmd", c.apptainerKeyCmd)                       // Run all the tests in order
-			t.Run("keyNewpairWithLen", c.apptainerKeyNewpairWithLen) // We run a separate test for `key newpair --bit-length` because it requires handling a keyring a specific way
-			t.Run("keyRemoveOpts", c.apptainerKeyRemoveOpts)         // run a separated test for `key remove --public/--secret/--both`
+			t.Run("keyCmd", c.apptainerKeyCmd)                                 // Run all the tests in order
+			t.Run("keyNewpairWithLen", c.apptainerKeyNewpairWithLen)           // We run a separate test for `key newpair --bit-length` because it requires handling a keyring a specific way
+			t.Run("keyRemoveOpts", c.apptainerKeyRemoveOpts)                   // run a separated test for `key remove --public/--secret/--both`
+			t.Run("keyDirCmdRegression", c.apptainerLocalKeyDirFlagRegression) // run a separated test for regression purpose after we add a new feature of manually setting --keysdir through cli
 		},
 	}
 }

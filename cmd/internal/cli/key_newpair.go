@@ -93,7 +93,8 @@ type keyNewPairOptions struct {
 }
 
 func runNewPairCmd(cmd *cobra.Command, args []string) {
-	keyring := sypgp.NewHandle("")
+	path := keyLocalDir
+	keyring := sypgp.NewHandle(path)
 
 	opts, err := collectInput(cmd)
 	if err != nil {

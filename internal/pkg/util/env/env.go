@@ -12,8 +12,10 @@ package env
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
@@ -26,6 +28,9 @@ const (
 
 	// ApptainerEnvPrefix Apptainer environment variables recognized prefixes for passthru to container
 	ApptainerEnvPrefix = "APPTAINERENV_"
+
+	// defaultLocalKeyDirName represents the default local key storage folder name
+	defaultLocalKeyDirName = "keys"
 )
 
 // ApptainerPrefixes the following prefixes are for settings looked at by Apptainer command
@@ -73,4 +78,12 @@ func GetenvLegacy(key, legacyKey string) string {
 // TrimApptainerKey returns the key without APPTAINER_ prefix.
 func TrimApptainerKey(key string) string {
 	return strings.TrimPrefix(key, ApptainerPrefixes[0])
+}
+
+func DefaultLocalKeyDirPath() string {
+	// read this as: look for APPTAINER_KEYSDIR and/or SINGULARITY_SYPGPDIR
+	if dir := GetenvLegacy("KEYSDIR", "SYPGPDIR"); dir != "" {
+		return dir
+	}
+	return filepath.Join(syfs.ConfigDir(), defaultLocalKeyDirName)
 }

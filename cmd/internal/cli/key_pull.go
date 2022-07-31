@@ -50,7 +50,7 @@ var KeyPullCmd = &cobra.Command{
 func doKeyPullCmd(ctx context.Context, fingerprint string, co ...client.Option) error {
 	var count int
 	var opts []sypgp.HandleOpt
-	path := ""
+	path := keyLocalDir
 	mode := os.FileMode(0o600)
 
 	if keyGlobalPubKey {
