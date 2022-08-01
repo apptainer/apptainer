@@ -146,8 +146,8 @@ github.com/apex/logs v0.0.7/go.mod h1:XzxuLZ5myVHDy9SAmYpamKKRNApGj54PfYLcFrXqDw
 github.com/apex/logs v1.0.0/go.mod h1:XzxuLZ5myVHDy9SAmYpamKKRNApGj54PfYLcFrXqDwo=
 github.com/aphistic/golf v0.0.0-20180712155816-02c07f170c5a/go.mod h1:3NqKYiepwy8kCu4PNA+aP7WUV72eXWJeP9/r3/K9aLE=
 github.com/aphistic/sweet v0.2.0/go.mod h1:fWDlIh/isSE9n6EPsRmC0det+whmX6dJid3stzu0Xys=
-github.com/apptainer/container-key-client v0.7.2 h1:lfKlKgONO8CvlZ11bbWE0vwJtMx/IE2Tg01g1/YCY+4=
-github.com/apptainer/container-key-client v0.7.2/go.mod h1:hLHrJBfdMb8SHy1pbCTNRQ7bxqcSh4GPiMV4ajEnAqk=
+github.com/apptainer/container-key-client v0.8.0 h1:K181Zrejb53mR2YQZwCathSj8YReCen+Wi2YuBxGH60=
+github.com/apptainer/container-key-client v0.8.0/go.mod h1:wMeJdiMXlPRiwJfUyae2WRHsZlHG9Af6iPQ9TZcBnS8=
 github.com/apptainer/container-library-client v1.3.1 h1:+oW0gbCUeKJMSIAlrfhkk8XyczFuyAyN8VCV30I5A9k=
 github.com/apptainer/container-library-client v1.3.1/go.mod h1:E0JxfDpMHqnyrCdlI12OtRBR14aEy/3i67Jtx+5KBS0=
 github.com/apptainer/sif/v2 v2.3.2 h1:kCziSWi8ICBpKQlUbvP5jtjlkuP40/XPsPcTFgzVmGA=
@@ -1077,7 +1077,6 @@ github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.1 h1:5TQK59W5E3v0r2duFAb7P95B6hEeOyEnHRa8MjYSMTY=
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
-github.com/sylabs/json-resp v0.8.0/go.mod h1:bUGV9cqShOyxz7RxBq03Yt9raKGfELKrfN6Yac3lfiw=
 github.com/sylabs/json-resp v0.8.1 h1:3KF04WzGizDVlROeI4DK4B0f9p7XKb0BRTFzI7wPTG8=
 github.com/sylabs/json-resp v0.8.1/go.mod h1:bUGV9cqShOyxz7RxBq03Yt9raKGfELKrfN6Yac3lfiw=
 github.com/sylabs/release-tools v0.1.0/go.mod h1:pqP/z/11/rYMQ0OM/Nn7TxGijw7KfZwW9UolD/J1TUo=
