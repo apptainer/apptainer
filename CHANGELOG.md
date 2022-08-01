@@ -5,7 +5,7 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes Since Last Release
+## v1.1.0-rc.1 - \[2022-08-01\]
 
 ### Changed defaults / behaviours
 
@@ -17,6 +17,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   included by installing the `apptainer-suid` package, or if installing
   from source it can be included by compiling with the mconfig
   `--with-suid` option.
+  For those that are concerned about kernel vulnerabilities with user
+  namespaces, we recommend disabling network namespaces if you can.
+  See the [discussion in the admin guide](https://apptainer.org/docs/admin/main/user_namespace.html#disabling-network-namespaces).
 - Added a squashfuse image driver that enables mounting SIF files without
   using setuid-root.  Requires the squashfuse command and unprivileged user
   namespaces.
@@ -27,9 +30,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `--writable-tmpfs` without using setuid-root.
   This requires unprivileged user namespaces and either a new enough
   kernel (>= 5.11) or the fuse-overlayfs command.
-  Persistent overlay only works when the overlay path is to a regular
-  filesystem (known as "sandbox" mode), which is not allowed when in
-  setuid mode.
+  Persistent overlay works when the overlay path points to a regular
+  filesystem (known as "sandbox" mode, which is not allowed when in
+  setuid mode), or when it points to an EXT3 image.
   Does not work with a SIF partition because that requires privileges to
   mount as an ext3 image.
 - Extended the `--fakeroot` option to be useful when `/etc/subuid` and
@@ -87,8 +90,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   the container still defaults to the home directory in the password file
   and can still be overridden by the ``--home`` option.
 - When starting a container, if the user has specified the cwd by using
-  the `--pwd` flag, in case of problem return error instead of defaulting to
-  a different directory.
+  the `--pwd` flag, if there is a problem an error is returned instead
+  of defaulting to a different directory.
 - Nesting of bind mounts now works even when a `--bind` option specified
   a different source and destination with a colon between them.  Now the
   APPTAINER_BIND environment variable makes sure the bind source is
@@ -98,7 +101,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   has been changed to an info message.
 - `oci mount` sets `Process.Terminal: true` when creating an OCI `config.json`,
   so that `oci run` provides expected interactive behavior by default.
-- Default hostname for `oci mount` containers is now `apptainer` instead of
+- The default hostname for `oci mount` containers is now `apptainer` instead of
   `mrsdalloway`.
 - systemd is now supported and used as the default cgroups manager. Set
   `systemd cgroups = no` in `apptainer.conf` to manage cgroups directly via
@@ -108,7 +111,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   support.
 - Apptainer now requires squashfs-tools >=4.3, which is satisfied by
   current EL / Ubuntu / Debian and other distributions.
-- New action flag `--no-eval` which:
+- Added a new action flag `--no-eval` which:
   - Prevents shell evaluation of `APPTAINERENV_ / --env / --env-file`
     environment variables as they are injected in the container, to match OCI
     behavior. *Applies to all containers*.
@@ -119,8 +122,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Added `--no-eval` to the list of flags set by the OCI/Docker `--compat` mode.
 - `sinit` process has been renamed to `appinit`.
 - Added `--keysdir` to `key` command to provide an alternative way of setting
-  local keyring path. The existing reading keyring path from environment variable
-  'APPTAINER_KEYSDIR' is untouched.
+  local keyring path. The existing reading of the keyring path from
+  environment variable 'APPTAINER_KEYSDIR' is untouched.
 - `apptainer key push` will output the key server's response if included in
   order to help guide users through any identity verification the server may
   require.
@@ -139,45 +142,47 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### New features / functionalities
 
-- Apptainer now supports the `riscv64` architecture.
-- Native cgroups v2 resource limits can be specified using the `[unified]` key
-  in a cgroups toml file applied via `--apply-cgroups`.
-- The `--no-mount` flag & `APPTAINER_NO_MOUNT` env var can now be used to
-  disable a `bind path` entry from `apptainer.conf` by specifying the
-  absolute path to the destination of the bind.
 - Non-root users can now use `--apply-cgroups` with `run/shell/exec` to limit
   container resource usage on a system using cgroups v2 and the systemd cgroups
   manager.
-- Add instance stats command.
+- Native cgroups v2 resource limits can be specified using the `[unified]` key
+  in a cgroups toml file applied via `--apply-cgroups`.
 - Added `--cpu*`, `--blkio*`, `--memory*`, `--pids-limit` flags to apply cgroups
   resource limits to a container directly.
-- `remote add --insecure` may be used to configure endpoints that are only
+- Added instance stats command.
+- The `--no-mount` flag & `APPTAINER_NO_MOUNT` env var can now be used to
+  disable a `bind path` entry from `apptainer.conf` by specifying the
+  absolute path to the destination of the bind.
+- Apptainer now supports the `riscv64` architecture.
+- `remote add --insecure` may now be used to configure endpoints that are only
   accessible via http. Alternatively the environment variable
   `APPTAINER_ADD_INSECURE` can be set to true to allow http remotes to be
   added wihtout the `--insecure` flag. Specifying https in the remote URI
   overrules both `--insecure` and `APPTAINER_ADD_INSECURE`.
 - Gpu flags `--nv` and `--rocm` can now be used from an apptainer nested
   inside another apptainer container.
-- Added `--public`, `--secret`, `--both` flags for `key remove` command to
-  support removing secret keys from the apptainer keyring.
+- Added `--public`, `--secret`, and `--both` flags to the `key remove` command
+  to support removing secret keys from the apptainer keyring.
 - Debug output can now be enabled by setting the `APPTAINER_DEBUG` env var.
 - Debug output is now shown for nested `apptainer` calls, in wrapped
   `unsquashfs` image extraction, and build stages.
 - Added EL9 package builds to CI for GitHub releases.
-- Add confURL & Include parameters to Arch packer for alternate `pacman.conf`
-  URL and alternate installed (meta)package.
+- Added confURL & Include parameters to the Arch packer for alternate
+  `pacman.conf` URL and alternate installed (meta)package.
 
 ### Bug fixes
 
 - Remove warning message about SINGULARITY and APPTAINER variables having
   different values when the SINGULARITY variable is not set.
 - Add specific error for unreadable image / overlay file.
-- Pass through a literal `\n` in host environment variables to container.
+- Pass through a literal `\n` in host environment variables to the container.
 - Allow `newgidmap / newuidmap` that use capabilities instead of setuid root.
 - Fix compilation on `mipsel`.
 - Fix test code that implied `%test -c <shell>` was supported - it is not.
-- Fix loop device creation with loop-control when running inside docker container.
-- Fix the issue that oras protocol will ignore the flag of `--no-https/--nohttps`
+- Fix loop device creation with loop-control when running inside docker
+  containers.
+- Fix the issue that the oras protocol would ignore the `--no-https/--nohttps`
+  flag.
 
 ## v1.0.3 - \[2022-07-06\]
 
