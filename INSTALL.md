@@ -134,7 +134,7 @@ To build a specific version of Apptainer, check out a
 for example:
 
 ```sh
-git checkout v1.1.0-rc1
+git checkout v1.1.0-rc.1
 ```
 
 ## Compiling Apptainer
