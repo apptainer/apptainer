@@ -81,7 +81,7 @@ func check(path string, d dir, allowType int64) error {
 		return nil
 	}
 
-	if stfs.Type == allowType {
+	if int64(stfs.Type) == allowType {
 		return nil
 	}
 
