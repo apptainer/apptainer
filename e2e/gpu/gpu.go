@@ -140,21 +140,21 @@ func (c ctx) testNvCCLI(t *testing.T) {
 		{
 			name:       "User",
 			profile:    e2e.RootProfile,
-			args:       []string{"--nv", "--nvccli", imagePath, "nvidia-smi"},
+			args:       []string{"--nvccli", imagePath, "nvidia-smi"},
 			expectExit: 0,
 		},
 		{
 			// With --contain, we should only see NVIDIA_VISIBLE_DEVICES configured GPUs
 			name:        "UserContainNoDevices",
 			profile:     e2e.RootProfile,
-			args:        []string{"--contain", "--nv", "--nvccli", imagePath, "nvidia-smi"},
+			args:        []string{"--contain", "--nvccli", imagePath, "nvidia-smi"},
 			expectMatch: e2e.ExpectOutput(e2e.ContainMatch, "No devices were found"),
 			expectExit:  6,
 		},
 		{
 			name:       "UserContainAllDevices",
 			profile:    e2e.RootProfile,
-			args:       []string{"--contain", "--nv", "--nvccli", imagePath, "nvidia-smi"},
+			args:       []string{"--contain", "--nvccli", imagePath, "nvidia-smi"},
 			env:        []string{"NVIDIA_VISIBLE_DEVICES=all"},
 			expectExit: 0,
 		},
@@ -162,7 +162,7 @@ func (c ctx) testNvCCLI(t *testing.T) {
 			// If we only request compute, not utility, then nvidia-smi should not be present
 			name:        "UserNoUtility",
 			profile:     e2e.RootProfile,
-			args:        []string{"--nv", "--nvccli", imagePath, "nvidia-smi"},
+			args:        []string{"--nvccli", imagePath, "nvidia-smi"},
 			env:         []string{"NVIDIA_DRIVER_CAPABILITIES=compute"},
 			expectMatch: e2e.ExpectError(e2e.ContainMatch, "\"nvidia-smi\": executable file not found in $PATH"),
 			expectExit:  255,
@@ -171,7 +171,7 @@ func (c ctx) testNvCCLI(t *testing.T) {
 			// Require CUDA version >8 should be fine!
 			name:       "UserValidRequire",
 			profile:    e2e.RootProfile,
-			args:       []string{"--nv", "--nvccli", imagePath, "nvidia-smi"},
+			args:       []string{"--nvccli", imagePath, "nvidia-smi"},
 			env:        []string{"NVIDIA_REQUIRE_CUDA=cuda>8"},
 			expectExit: 0,
 		},
@@ -179,7 +179,7 @@ func (c ctx) testNvCCLI(t *testing.T) {
 			// Require CUDA version >999 should not be satisfied
 			name:        "UserInvalidRequire",
 			profile:     e2e.RootProfile,
-			args:        []string{"--nv", "--nvccli", imagePath, "nvidia-smi"},
+			args:        []string{"--nvccli", imagePath, "nvidia-smi"},
 			env:         []string{"NVIDIA_REQUIRE_CUDA=cuda>999"},
 			expectMatch: e2e.ExpectError(e2e.ContainMatch, "requirement error: unsatisfied condition: cuda>99"),
 			expectExit:  255,
@@ -187,7 +187,17 @@ func (c ctx) testNvCCLI(t *testing.T) {
 		{
 			name:    "UserNamespace",
 			profile: e2e.UserNamespaceProfile,
-			args:    []string{"--nv", "--nvccli", "--writable", imagePath, "nvidia-smi"},
+			args:    []string{"--nvccli", imagePath, "nvidia-smi"},
+		},
+		{
+			name:    "UserNamespaceWritable",
+			profile: e2e.UserNamespaceProfile,
+			args:    []string{"--nvccli", "--writable", imagePath, "nvidia-smi"},
+		},
+		{
+			name:    "Fakeroot",
+			profile: e2e.FakerootProfile,
+			args:    []string{"--nvccli", imagePath, "nvidia-smi"},
 		},
 	}
 
@@ -409,7 +419,7 @@ func (c ctx) testBuildNvCCLI(t *testing.T) {
 
 		args := []string{}
 		if tt.setNvFlag {
-			args = append(args, "--nv", "--nvccli")
+			args = append(args, "--nvccli")
 		}
 		args = append(args, "-F", "--sandbox", sandboxImage, defFile)
 
