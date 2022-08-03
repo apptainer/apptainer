@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2020, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -174,31 +174,29 @@ func insertHelpScript(b *types.Bundle) error {
 }
 
 func insertDefinition(b *types.Bundle) error {
-	// if update, check for existing definition and move it to bootstrap history
-	if b.Opts.Update {
-		if _, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity")); err == nil {
-			// make bootstrap_history directory if it doesn't exist
-			if _, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history")); err != nil {
-				err = os.Mkdir(filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history"), 0o755)
-				if err != nil {
-					return err
-				}
-			}
-
-			// look at number of files in bootstrap_history to give correct file name
-			files, err := ioutil.ReadDir(filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history"))
+	// Check for existing definition and move it to bootstrap history
+	if _, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity")); err == nil {
+		// make bootstrap_history directory if it doesn't exist
+		if _, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history")); err != nil {
+			err = os.Mkdir(filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history"), 0o755)
 			if err != nil {
 				return err
 			}
+		}
 
-			// name is "Apptainer" concatenated with an index based on number of other files in bootstrap_history
-			length := strconv.Itoa(len(files))
-			histName := "Apptainer" + length
-			// move old definition into bootstrap_history
-			err = os.Rename(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity"), filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history", histName))
-			if err != nil {
-				return err
-			}
+		// look at number of files in bootstrap_history to give correct file name
+		files, err := ioutil.ReadDir(filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history"))
+		if err != nil {
+			return err
+		}
+
+		// name is "Apptainer" concatenated with an index based on number of other files in bootstrap_history
+		len := strconv.Itoa(len(files))
+		histName := "Apptainer" + len
+		// move old definition into bootstrap_history
+		err = os.Rename(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity"), filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history", histName))
+		if err != nil {
+			return err
 		}
 	}
 
