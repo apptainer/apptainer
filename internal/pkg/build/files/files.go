@@ -11,34 +11,47 @@ package files
 
 import (
 	"bytes"
+	"context"
 	"fmt"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
 	securejoin "github.com/cyphar/filepath-securejoin"
+	"mvdan.cc/sh/v3/interp"
+	"mvdan.cc/sh/v3/syntax"
 )
 
-const filenameExpansionScript = `for n in %[1]s ; do
-	printf "$n\0"
+const filenameExpansionScript = `
+for n in %[1]s ; do
+	echo -n "$n\0"
 done
 `
 
 func expandPath(path string) ([]string, error) {
 	var output, stderr bytes.Buffer
 
-	// Escape spaces for glob pattern
 	path = strings.Replace(path, " ", "\\ ", -1)
-	cmd := exec.Command("/bin/sh", "-c", fmt.Sprintf(filenameExpansionScript, path))
-	cmd.Stdout = &output
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("%s: %s", err, stderr.String())
+	cmdline := fmt.Sprintf(filenameExpansionScript, path)
+	parser, err := syntax.NewParser().Parse(strings.NewReader(cmdline), "")
+	if err != nil {
+		return nil, err
+	}
+
+	runner, err := interp.New(
+		interp.StdIO(nil, &output, &stderr),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	err = runner.Run(context.TODO(), parser)
+	if err != nil {
+		return nil, err
 	}
 
 	// parse expanded output and ignore empty strings from consecutive null bytes
 	var paths []string
-	for _, s := range strings.Split(output.String(), "\x00") {
+	for _, s := range strings.Split(output.String(), "\\0") {
 		if s == "" {
 			continue
 		}

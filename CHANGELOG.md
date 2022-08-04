@@ -5,6 +5,11 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes since last release
+
+- Improved wildcard matching in the %files directive of build definition
+  files by replacing usage of sh with the mvdan.cc library.
+
 ## v1.1.0-rc.1 - \[2022-08-01\]
 
 ### Changed defaults / behaviours
