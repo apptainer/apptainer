@@ -185,7 +185,7 @@ func TestExpandPath(t *testing.T) {
 		{
 			name:    "hiddenFileWildcards",
 			path:    "dirL1/.*",
-			correct: []string{"dirL1/.", "dirL1/..", "dirL1/.dirL2", "dirL1/.file"},
+			correct: []string{"dirL1/.dirL2", "dirL1/.file"},
 		},
 		{
 			name:    "hiddenDirWildcards",
