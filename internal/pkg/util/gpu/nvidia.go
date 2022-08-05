@@ -23,6 +23,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
 	"github.com/apptainer/apptainer/pkg/util/slice"
+	"golang.org/x/sys/unix"
 )
 
 var (
@@ -63,6 +64,7 @@ var nVCLIAmbientCaps = []uintptr{
 	uintptr(capabilities.Map["CAP_SYS_PTRACE"].Value),
 	uintptr(capabilities.Map["CAP_DAC_OVERRIDE"].Value),
 	uintptr(capabilities.Map["CAP_SETPCAP"].Value),
+	uintptr(capabilities.Map["CAP_NET_ADMIN"].Value),
 }
 
 // NVCLIConfigure calls out to the nvidia-container-cli configure operation.
@@ -86,6 +88,16 @@ func NVCLIConfigure(nvidiaEnv []string, rootfs string, userNS bool) error {
 	// it is trusted, i.e. owned by them.
 	if !userNS && !fs.IsOwner(nvCCLIPath, 0) {
 		return errNvCCLIInsecure
+	}
+
+	// Make sure the /usr/bin is writable in the container
+	binpath := rootfs + "/usr/bin"
+	if err := unix.Access(binpath, unix.W_OK); err != nil {
+		sylog.Debugf("%v not writable: %v", binpath, err)
+		if os.Getuid() != 0 {
+			sylog.Infof("Consider using either `--fakeroot` or sandbox built with `--fix-perms`")
+		}
+		return fmt.Errorf("/usr/bin not writable in the container")
 	}
 
 	// Translate the passed in NVIDIA_ env vars to option flags

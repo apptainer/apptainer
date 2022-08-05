@@ -9,6 +9,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Improved wildcard matching in the %files directive of build definition
   files by replacing usage of sh with the mvdan.cc library.
+- The `--nvccli` option now works without `--fakeroot`.  In that case the
+  option can be used with `--writable-tmpfs` instead of `--writable`,
+  and `--writable-tmpfs` is implied if neither option is given.
+  Note that also `/usr/bin` has to be writable by the user, so without
+  `--fakeroot` that probably requires a sandbox image that was built with
+  `--fix-perms`.
+- The `--nvccli` option implies `--nv`.
 
 ## v1.1.0-rc.1 - \[2022-08-01\]
 

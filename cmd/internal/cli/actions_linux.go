@@ -906,6 +906,11 @@ func SetGPUConfig(engineConfig *apptainerConfig.EngineConfig) error {
 		sylog.Verbosef("'always use rocm = yes' found in apptainer.conf")
 	}
 
+	if NvCCLI && !Nvidia {
+		sylog.Debugf("implying --nv from --nvccli")
+		Nvidia = true
+	}
+
 	if Nvidia && Rocm {
 		sylog.Warningf("--nv and --rocm cannot be used together. Only --nv will be applied.")
 	}
@@ -959,9 +964,6 @@ func setNvCCLIConfig(engineConfig *apptainerConfig.EngineConfig) (err error) {
 	}
 	engineConfig.SetNvCCLIEnv(nvCCLIEnv)
 
-	if UserNamespace && !IsWritable {
-		return fmt.Errorf("nvidia-container-cli requires --writable with user namespace/fakeroot")
-	}
 	if !IsWritable && !IsWritableTmpfs {
 		sylog.Infof("Setting --writable-tmpfs (required by nvidia-container-cli)")
 		IsWritableTmpfs = true
