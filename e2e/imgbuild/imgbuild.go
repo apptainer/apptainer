@@ -130,7 +130,7 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 		},
 	}
 
-	profiles := []e2e.Profile{e2e.RootProfile, e2e.FakerootProfile}
+	profiles := []e2e.Profile{e2e.RootProfile, e2e.FakerootProfile, e2e.UnprivilegedNamespaceFakerootProfile}
 	for _, profile := range profiles {
 		profile := profile
 
@@ -213,31 +213,34 @@ func (c imgBuildTests) nonRootBuild(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tt {
-		dn, cleanup := c.tempDir(t, "non-root-build")
-		defer cleanup()
+	profiles := []e2e.Profile{e2e.UserProfile, e2e.UnprivilegedNamespaceFakerootProfile}
+	for _, profile := range profiles {
+		for _, tc := range tt {
+			dn, cleanup := c.tempDir(t, "non-root-build")
+			defer cleanup()
 
-		imagePath := path.Join(dn, "container")
+			imagePath := path.Join(dn, "container")
 
-		args := append(tc.args, imagePath, tc.buildSpec)
+			args := append(tc.args, imagePath, tc.buildSpec)
 
-		c.env.RunApptainer(
-			t,
-			e2e.AsSubtest(tc.name),
-			e2e.WithProfile(e2e.UserProfile),
-			e2e.WithCommand("build"),
-			e2e.WithArgs(args...),
-			e2e.PreRun(func(t *testing.T) {
-				if tc.requireArch != "" {
-					require.Arch(t, tc.requireArch)
-				}
-			}),
+			c.env.RunApptainer(
+				t,
+				e2e.AsSubtest(tc.name),
+				e2e.WithProfile(profile),
+				e2e.WithCommand("build"),
+				e2e.WithArgs(args...),
+				e2e.PreRun(func(t *testing.T) {
+					if tc.requireArch != "" {
+						require.Arch(t, tc.requireArch)
+					}
+				}),
 
-			e2e.PostRun(func(t *testing.T) {
-				c.env.ImageVerify(t, imagePath, e2e.UserProfile)
-			}),
-			e2e.ExpectExit(0),
-		)
+				e2e.PostRun(func(t *testing.T) {
+					c.env.ImageVerify(t, imagePath, e2e.UserProfile)
+				}),
+				e2e.ExpectExit(0),
+			)
+		}
 	}
 }
 
@@ -294,7 +297,7 @@ func (c imgBuildTests) buildLocalImage(t *testing.T) {
 		{"LocalImageSandbox", localSandboxDefFile},
 	}
 
-	profiles := []e2e.Profile{e2e.RootProfile, e2e.FakerootProfile}
+	profiles := []e2e.Profile{e2e.RootProfile, e2e.FakerootProfile, e2e.UnprivilegedNamespaceFakerootProfile}
 	for _, profile := range profiles {
 		profile := profile
 
@@ -808,7 +811,7 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 		},
 	}
 
-	profiles := []e2e.Profile{e2e.RootProfile, e2e.FakerootProfile}
+	profiles := []e2e.Profile{e2e.RootProfile, e2e.FakerootProfile, e2e.UnprivilegedNamespaceFakerootProfile}
 	for _, profile := range profiles {
 		profile := profile
 
