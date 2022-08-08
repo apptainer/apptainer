@@ -265,6 +265,63 @@ jobs:
           name: e2e-artifact
           path: builddir/e2e-cmd-report.txt
           retention-days: 7
+  
+  e2e_tests_unprivileged:
+    name: e2e_tests_unprivileged
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      # fetch tags as checkout@v2 doesn't do that by default
+      - run: git fetch --prune --unshallow --tags --force
+
+      - name: Check changes
+        env:
+          PROJECT_REF: ${{ github.ref }}
+          PROJECT_REPOSITORY: ${{ github.repository }}
+          PROJECT_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          rc=0
+          ./scripts/should-e2e-run "${PROJECT_REPOSITORY}" "${PROJECT_REF##*/}" "${PROJECT_PR_NUMBER}" || rc=$?
+          case $rc in
+            0)
+              echo "Verifying critical changes"
+              echo "run_tests=true" >> $GITHUB_ENV ;;
+            1)
+              echo "No critical changes, skipping tests" ;;
+            *)
+              echo "E: ./scripts/should-e2e-run returned with exit code $rc. Abort."
+              exit $rc ;;
+          esac
+
+      - name: Setup Go
+        if: env.run_tests
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18.4
+
+      - name: Fetch deps
+        if: env.run_tests
+        run: sudo apt-get -q update && sudo apt-get install -y build-essential squashfs-tools fuse-overlayfs fuse2fs squashfuse libseccomp-dev cryptsetup
+
+      - name: Build and install Apptainer
+        if: env.run_tests
+        run: |
+          ./mconfig -v -p /usr/local --without-suid
+          make -C ./builddir all && sudo make -C ./builddir install
+
+      - name: Run E2E tests
+        if: env.run_tests
+        env:
+          E2E_PARALLEL: 8
+        run: make -C ./builddir e2e-test
+
+      - name: Upload artifacts
+        if: env.run_tests
+        uses: actions/upload-artifact@v2
+        with:
+          name: e2e-artifact
+          path: builddir/e2e-cmd-report.txt
+          retention-days: 7
 
   check_pkg_no_buildcfg:
     name: check_pkg_no_buildcfg
