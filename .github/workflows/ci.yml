@@ -266,8 +266,8 @@ jobs:
           path: builddir/e2e-cmd-report.txt
           retention-days: 7
   
-  e2e_tests_unprivileged:
-    name: e2e_tests_unprivileged
+  unprivileged_build:
+    name: unprivileged build
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
@@ -301,27 +301,27 @@ jobs:
 
       - name: Fetch deps
         if: env.run_tests
-        run: sudo apt-get -q update && sudo apt-get install -y build-essential squashfs-tools fuse-overlayfs fuse2fs squashfuse libseccomp-dev cryptsetup
+        run: sudo apt-get -q update && sudo apt-get install -y build-essential squashfs-tools fuse-overlayfs fuse2fs squashfuse libseccomp-dev cryptsetup newuidmap
 
-      - name: Build and install Apptainer
+      - name: Build and install Apptainer without suid
         if: env.run_tests
         run: |
           ./mconfig -v -p /usr/local --without-suid
           make -C ./builddir all && sudo make -C ./builddir install
 
-      - name: Run E2E tests
+      - name: Run build under unprivileged permission without fakeroot
+        if: env.run_tests
+        run: apptainer build /tmp/build.sif e2e/testdata/unprivileged/build.def && rm -rf /tmp/build.sif
+      
+      - name: Install fakeroot as well
+        if: env.run_tests
+        run: sudo apt-get install -y fakeroot
+      
+      - name: Run build under unprivileged permission with fakeroot
         if: env.run_tests
         env:
-          E2E_PARALLEL: 8
-        run: make -C ./builddir e2e-test
-
-      - name: Upload artifacts
-        if: env.run_tests
-        uses: actions/upload-artifact@v2
-        with:
-          name: e2e-artifact
-          path: builddir/e2e-cmd-report.txt
-          retention-days: 7
+          _APPTAINER_FAKEFAKEROOT: 1
+        run: apptainer build --fakeroot /tmp/build.sif e2e/testdata/unprivileged/build.def && rm -rf /tmp/build.sif
 
   check_pkg_no_buildcfg:
     name: check_pkg_no_buildcfg
