@@ -301,7 +301,7 @@ jobs:
 
       - name: Fetch deps
         if: env.run_tests
-        run: sudo apt-get -q update && sudo apt-get install -y build-essential squashfs-tools fuse-overlayfs fuse2fs squashfuse libseccomp-dev cryptsetup newuidmap
+        run: sudo apt-get -q update && sudo apt-get install -y build-essential squashfs-tools fuse-overlayfs fuse2fs squashfuse libseccomp-dev cryptsetup
 
       - name: Build and install Apptainer without suid
         if: env.run_tests
