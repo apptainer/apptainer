@@ -192,22 +192,19 @@ func (c imgBuildTests) issue4837(t *testing.T) {
 		t.Fatalf("failed to retrieve absolute path for testdata/Apptainer: %s", err)
 	}
 
-	profiles := []e2e.Profile{e2e.FakerootProfile, e2e.UnprivilegedNamespaceFakerootProfile}
-	for _, profile := range profiles {
-		c.env.RunApptainer(
-			t,
-			e2e.WithProfile(profile),
-			e2e.WithDir(u.Dir),
-			e2e.WithCommand("build"),
-			e2e.WithArgs("--sandbox", sandboxName, def),
-			e2e.PostRun(func(t *testing.T) {
-				if !t.Failed() {
-					os.RemoveAll(filepath.Join(u.Dir, sandboxName))
-				}
-			}),
-			e2e.ExpectExit(0),
-		)
-	}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithDir(u.Dir),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--sandbox", sandboxName, def),
+		e2e.PostRun(func(t *testing.T) {
+			if !t.Failed() {
+				os.RemoveAll(filepath.Join(u.Dir, sandboxName))
+			}
+		}),
+		e2e.ExpectExit(0),
+	)
 }
 
 func (c *imgBuildTests) issue4943(t *testing.T) {
@@ -373,22 +370,19 @@ func (c *imgBuildTests) issue4820(t *testing.T) {
 func (c *imgBuildTests) issue5315(t *testing.T) {
 	image := filepath.Join(c.env.TestDir, "issue_5315.sif")
 
-	profiles := []e2e.Profile{e2e.FakerootProfile, e2e.UnprivilegedNamespaceFakerootProfile}
-	for _, profile := range profiles {
-		c.env.RunApptainer(
-			t,
-			e2e.WithProfile(profile),
-			e2e.WithCommand("build"),
-			e2e.WithArgs(image, "testdata/regressions/issue_5315.def"),
-			e2e.PostRun(func(t *testing.T) {
-				os.Remove(image)
-			}),
-			e2e.ExpectExit(
-				0,
-				e2e.ExpectOutput(e2e.ContainMatch, "TEST OK"),
-			),
-		)
-	}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs(image, "testdata/regressions/issue_5315.def"),
+		e2e.PostRun(func(t *testing.T) {
+			os.Remove(image)
+		}),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.ContainMatch, "TEST OK"),
+		),
+	)
 }
 
 // This test will attempt to build an image by passing an empty string as
@@ -486,14 +480,6 @@ func (c *imgBuildTests) issue5690(t *testing.T) {
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
-		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--sandbox", sandbox, c.env.ImagePath),
-		e2e.ExpectExit(0),
-	)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UnprivilegedNamespaceFakerootProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs("--force", "--sandbox", sandbox, c.env.ImagePath),
 		e2e.ExpectExit(0),

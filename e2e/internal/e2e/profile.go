@@ -19,12 +19,11 @@ import (
 )
 
 const (
-	userProfile                          = "UserProfile"
-	rootProfile                          = "RootProfile"
-	fakerootProfile                      = "FakerootProfile"
-	userNamespaceProfile                 = "UserNamespaceProfile"
-	rootUserNamespaceProfile             = "RootUserNamespaceProfile"
-	unprivilegedNamespaceFakerootProfile = "UnprivilegedNamespaceFakerootProfile"
+	userProfile              = "UserProfile"
+	rootProfile              = "RootProfile"
+	fakerootProfile          = "FakerootProfile"
+	userNamespaceProfile     = "UserNamespaceProfile"
+	rootUserNamespaceProfile = "RootUserNamespaceProfile"
 )
 
 var (
@@ -38,8 +37,6 @@ var (
 	UserNamespaceProfile = Profiles[userNamespaceProfile]
 	// RootUserNamespaceProfile is the execution profile for root and a user namespace.
 	RootUserNamespaceProfile = Profiles[rootUserNamespaceProfile]
-	// UnprivilegedNamespaceFakerootProfile  is the execution profile for fakeroot in an unprivileged namespace.
-	UnprivilegedNamespaceFakerootProfile = Profiles[unprivilegedNamespaceFakerootProfile]
 )
 
 // Profile represents various properties required to run an E2E test
@@ -114,16 +111,6 @@ var Profiles = map[string]Profile{
 		requirementsFn:    require.UserNamespace,
 		apptainerOption:   "--userns",
 		optionForCommands: []string{"shell", "exec", "run", "test", "instance start"},
-	},
-	unprivilegedNamespaceFakerootProfile: {
-		name:              "UnprivilegedNamespaceFakeroot",
-		privileged:        false,
-		hostUID:           0,
-		containerUID:      0,
-		defaultCwd:        "",
-		requirementsFn:    fakerootRequirements,
-		apptainerOption:   "",
-		optionForCommands: []string{"build"},
 	},
 }
 
