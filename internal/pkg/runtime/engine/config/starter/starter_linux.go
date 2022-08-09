@@ -272,7 +272,7 @@ func setNewIDMapPath(command string, pathPointer unsafe.Pointer) error {
 	path, err := bin.FindBin(command)
 	if err != nil {
 		return fmt.Errorf(
-			"%s was not found in PATH (%s), required with fakeroot and unprivileged installation",
+			"%s was not found in PATH (%s), required with fakeroot and unprivileged installation when user is in /etc/subuid",
 			command, env.DefaultPath,
 		)
 	}

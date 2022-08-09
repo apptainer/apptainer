@@ -560,7 +560,10 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 	}
 
 	if e.EngineConfig.GetFakeroot() {
-		if !starterConfig.GetIsSUID() {
+		uid := uint32(os.Getuid())
+		gid := uint32(os.Getgid())
+
+		if !starterConfig.GetIsSUID() && fakerootutil.IsUIDMapped(uid) {
 			// no SUID workflow, check if newuidmap/newgidmap are present
 			sylog.Verbosef("Fakeroot requested with unprivileged workflow, fallback to newuidmap/newgidmap")
 			sylog.Debugf("Search for newuidmap binary")
@@ -572,9 +575,6 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 				return err
 			}
 		}
-
-		uid := uint32(os.Getuid())
-		gid := uint32(os.Getgid())
 
 		getIDRange := fakerootutil.GetIDRange
 
