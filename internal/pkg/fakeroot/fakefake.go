@@ -21,6 +21,7 @@ import (
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
@@ -94,14 +95,21 @@ func GetFakeBinds(fakerootPath string) ([]string, error) {
 
 	// Start by examining the environment fakeroot creates
 	cmd := osExec.Command(fakerootPath, "env")
-	env := os.Environ()
-	for idx := range env {
-		if strings.HasPrefix(env[idx], "LD_LIBRARY_PATH=") {
+	environ := os.Environ()
+	hasPath := false
+	for idx := range environ {
+		if strings.HasPrefix(environ[idx], "LD_LIBRARY_PATH=") {
 			// Remove any incoming LD_LIBRARY_PATH
-			env[idx] = "LD_LIBRARY_PREFIX="
+			environ[idx] = "LD_LIBRARY_PREFIX="
+		} else if strings.HasPrefix(environ[idx], "PATH=") &&
+			environ[idx] != "PATH=" {
+			hasPath = true
 		}
 	}
-	cmd.Env = env
+	if !hasPath {
+		environ = append(environ, "PATH="+env.DefaultPath)
+	}
+	cmd.Env = environ
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return binds, fmt.Errorf("error make fakeroot stdout pipe: %v", err)
