@@ -26,7 +26,6 @@ const (
 	rootUserNamespaceProfile = "RootUserNamespaceProfile"
 	fakerootModeTwoProfile   = "FakerootModeTwoProfile"
 	fakerootModeThreeProfile = "FakerootModeThreeProfile"
-	fakerootModeFourProfile  = "FakerootModeFourProfile"
 )
 
 var (
