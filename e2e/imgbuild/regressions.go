@@ -605,7 +605,7 @@ func (c *imgBuildTests) issue476(t *testing.T) {
 	// // call the apptainer build
 	c.env.RunApptainer(
 		t,
-		e2e.WithProfile(e2e.FakerootModeFourProfile),
+		e2e.WithProfile(e2e.FakerootModeThreeProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs("--force", fmt.Sprintf("%s/openssh-mode4.sif", tmpDir), "testdata/regressions/issue_476.def"),
 		e2e.ExpectExit(0),

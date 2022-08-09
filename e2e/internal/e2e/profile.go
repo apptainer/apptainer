@@ -44,8 +44,6 @@ var (
 	FakerootModeTwoProfile = Profiles[fakerootModeTwoProfile]
 	// FakerootModeThreeProfile is the execution profile representing the three mode here: https://apptainer.org/docs/user/main/fakeroot.html
 	FakerootModeThreeProfile = Profiles[fakerootModeThreeProfile]
-	// FakerootModeFourProfile is the execution profile representing the three mode here: https://apptainer.org/docs/user/main/fakeroot.html
-	FakerootModeFourProfile = Profiles[fakerootModeFourProfile]
 )
 
 // Profile represents various properties required to run an E2E test
@@ -141,16 +139,6 @@ var Profiles = map[string]Profile{
 		apptainerOption:   "--fakeroot",
 		optionForCommands: []string{"build"},
 	},
-	fakerootModeFourProfile: {
-		name:              "FakerootModeFour",
-		privileged:        false,
-		hostUID:           origUID,
-		containerUID:      0,
-		defaultCwd:        "",
-		requirementsFn:    fakerootModeFourRequirements,
-		apptainerOption:   "--fakeroot",
-		optionForCommands: []string{"build"},
-	},
 }
 
 // Privileged returns whether the test should be executed with
@@ -240,23 +228,6 @@ func fakerootRequirements(t *testing.T) {
 	// *name*, it is keyed by user name, not by group name. This
 	// means that even if we are requesting the *group* mappings, we
 	// need to pass the *user* ID.
-	if _, err := fakeroot.GetIDRange(fakeroot.SubGIDFile, uid); err != nil {
-		t.Fatalf("fakeroot configuration error: %s", err)
-	}
-}
-
-func fakerootModeFourRequirements(t *testing.T) {
-	require.UserNamespace(t)
-	if !t.Skipped() {
-		t.Fatalf("userns should not be enabled")
-	}
-
-	uid := uint32(origUID)
-
-	if _, err := fakeroot.GetIDRange(fakeroot.SubUIDFile, uid); err != nil {
-		t.Fatalf("fakeroot configuration error: %s", err)
-	}
-
 	if _, err := fakeroot.GetIDRange(fakeroot.SubGIDFile, uid); err != nil {
 		t.Fatalf("fakeroot configuration error: %s", err)
 	}
