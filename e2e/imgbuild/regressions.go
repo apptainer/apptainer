@@ -572,7 +572,7 @@ func (c *imgBuildTests) issue476(t *testing.T) {
 		e2e.WithCommand("build"),
 		e2e.WithArgs("--force", fmt.Sprintf("%s/openssh-mode2.sif", tmpDir), "testdata/regressions/issue_476.def"),
 		e2e.WithEnv([]string{"_APPTAINER_E2E_FAKEROOT=1"}),
-		e2e.ExpectExit(0),
+		e2e.ExpectExit(255), // because chown will fail
 	)
 	// restore permission to fakeroot
 	e2e.Privileged(func(t *testing.T) {
