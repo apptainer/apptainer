@@ -16,6 +16,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `--fakeroot` that probably requires a sandbox image that was built with
   `--fix-perms`.
 - The `--nvccli` option implies `--nv`.
+- The fakeroot command can now be used even if $PATH is empty in the
+  environment of the apptainer command.
 
 ## v1.1.0-rc.1 - \[2022-08-01\]
 
