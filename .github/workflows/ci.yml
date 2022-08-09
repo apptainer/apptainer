@@ -244,7 +244,7 @@ jobs:
 
       - name: Fetch deps
         if: env.run_tests
-        run: sudo apt-get -q update && sudo apt-get install -y build-essential squashfs-tools squashfuse fuse-overlayfs fakeroot libseccomp-dev cryptsetup
+        run: sudo apt-get -q update && sudo apt-get install -y build-essential uidmap squashfs-tools squashfuse fuse-overlayfs fakeroot libseccomp-dev cryptsetup
 
       - name: Build and install Apptainer
         if: env.run_tests

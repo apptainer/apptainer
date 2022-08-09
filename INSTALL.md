@@ -20,6 +20,7 @@ sudo apt-get install -y \
     build-essential \
     libseccomp-dev \
     pkg-config \
+    uidmap \
     squashfs-tools \
     squashfuse \
     fuse2fs \
