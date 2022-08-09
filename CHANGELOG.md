@@ -18,6 +18,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - The `--nvccli` option implies `--nv`.
 - The fakeroot command can now be used even if $PATH is empty in the
   environment of the apptainer command.
+- Allow the ``newuidmap`` command to be missing if the current user is not
+  listed in ``/etc/subuid``.
 
 ## v1.1.0-rc.1 - \[2022-08-01\]
 
