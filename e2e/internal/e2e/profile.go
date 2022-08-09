@@ -24,6 +24,9 @@ const (
 	fakerootProfile          = "FakerootProfile"
 	userNamespaceProfile     = "UserNamespaceProfile"
 	rootUserNamespaceProfile = "RootUserNamespaceProfile"
+	fakerootModeTwoProfile   = "FakerootModeTwoProfile"
+	fakerootModeThreeProfile = "FakerootModeThreeProfile"
+	fakerootModeFourProfile  = "FakerootModeFourProfile"
 )
 
 var (
@@ -37,6 +40,12 @@ var (
 	UserNamespaceProfile = Profiles[userNamespaceProfile]
 	// RootUserNamespaceProfile is the execution profile for root and a user namespace.
 	RootUserNamespaceProfile = Profiles[rootUserNamespaceProfile]
+	// FakerootModeTwoProfile is the execution profile representing the second mode here: https://apptainer.org/docs/user/main/fakeroot.html
+	FakerootModeTwoProfile = Profiles[fakerootModeTwoProfile]
+	// FakerootModeThreeProfile is the execution profile representing the three mode here: https://apptainer.org/docs/user/main/fakeroot.html
+	FakerootModeThreeProfile = Profiles[fakerootModeThreeProfile]
+	// FakerootModeFourProfile is the execution profile representing the three mode here: https://apptainer.org/docs/user/main/fakeroot.html
+	FakerootModeFourProfile = Profiles[fakerootModeFourProfile]
 )
 
 // Profile represents various properties required to run an E2E test
@@ -111,6 +120,36 @@ var Profiles = map[string]Profile{
 		requirementsFn:    require.UserNamespace,
 		apptainerOption:   "--userns",
 		optionForCommands: []string{"shell", "exec", "run", "test", "instance start"},
+	},
+	fakerootModeTwoProfile: {
+		name:              "FakerootModeTwo",
+		privileged:        false,
+		hostUID:           origUID,
+		containerUID:      0,
+		defaultCwd:        "",
+		requirementsFn:    require.UserNamespace,
+		apptainerOption:   "",
+		optionForCommands: []string{"build"},
+	},
+	fakerootModeThreeProfile: {
+		name:              "FakerootModeThree",
+		privileged:        false,
+		hostUID:           origUID,
+		containerUID:      0,
+		defaultCwd:        "",
+		requirementsFn:    fakerootRequirements,
+		apptainerOption:   "--fakeroot",
+		optionForCommands: []string{"build"},
+	},
+	fakerootModeFourProfile: {
+		name:              "FakerootModeFour",
+		privileged:        false,
+		hostUID:           origUID,
+		containerUID:      0,
+		defaultCwd:        "",
+		requirementsFn:    fakerootModeFourRequirements,
+		apptainerOption:   "--fakeroot",
+		optionForCommands: []string{"build"},
 	},
 }
 
@@ -201,6 +240,23 @@ func fakerootRequirements(t *testing.T) {
 	// *name*, it is keyed by user name, not by group name. This
 	// means that even if we are requesting the *group* mappings, we
 	// need to pass the *user* ID.
+	if _, err := fakeroot.GetIDRange(fakeroot.SubGIDFile, uid); err != nil {
+		t.Fatalf("fakeroot configuration error: %s", err)
+	}
+}
+
+func fakerootModeFourRequirements(t *testing.T) {
+	require.UserNamespace(t)
+	if !t.Skipped() {
+		t.Fatalf("userns should not be enabled")
+	}
+
+	uid := uint32(origUID)
+
+	if _, err := fakeroot.GetIDRange(fakeroot.SubUIDFile, uid); err != nil {
+		t.Fatalf("fakeroot configuration error: %s", err)
+	}
+
 	if _, err := fakeroot.GetIDRange(fakeroot.SubGIDFile, uid); err != nil {
 		t.Fatalf("fakeroot configuration error: %s", err)
 	}

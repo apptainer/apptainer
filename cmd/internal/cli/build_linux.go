@@ -73,9 +73,10 @@ func fakerootExec(isDeffile bool) {
 
 	var err error
 	uid := uint32(os.Getuid())
-	if uid != 0 && !fakeroot.IsUIDMapped(uid) {
+	if (uid != 0 && !fakeroot.IsUIDMapped(uid)) || os.Getenv("_APPTAINER_E2E_FAKEROOT") != "" {
 		sylog.Infof("User not listed in %v, trying root-mapped namespace", fakeroot.SubUIDFile)
 		os.Setenv("_APPTAINER_FAKEFAKEROOT", "1")
+		os.Unsetenv("_APPTAINER_E2E_FAKEROOT")
 		err = fakeroot.UnshareRootMapped(args)
 		if err == nil {
 			// All the work has been done by the child process
