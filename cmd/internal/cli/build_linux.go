@@ -39,6 +39,10 @@ import (
 
 func fakerootExec(isDeffile bool) {
 	useSuid := starter.IsSuidInstall()
+	if os.Getenv("_APPTAINER_E2E_NOT_USE_SUID") != "" {
+		useSuid = false
+		os.Unsetenv("_APPTAINER_E2E_NOT_USE_SUID")
+	}
 
 	// First remove fakeroot option from args and environment if present
 	short := "-" + buildFakerootFlag.ShortHand

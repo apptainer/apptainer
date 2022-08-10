@@ -25,7 +25,6 @@ const (
 	userNamespaceProfile     = "UserNamespaceProfile"
 	rootUserNamespaceProfile = "RootUserNamespaceProfile"
 	fakerootModeTwoProfile   = "FakerootModeTwoProfile"
-	fakerootModeThreeProfile = "FakerootModeThreeProfile"
 )
 
 var (
@@ -41,8 +40,6 @@ var (
 	RootUserNamespaceProfile = Profiles[rootUserNamespaceProfile]
 	// FakerootModeTwoProfile is the execution profile representing the second mode here: https://apptainer.org/docs/user/main/fakeroot.html
 	FakerootModeTwoProfile = Profiles[fakerootModeTwoProfile]
-	// FakerootModeThreeProfile is the execution profile representing the three mode here: https://apptainer.org/docs/user/main/fakeroot.html
-	FakerootModeThreeProfile = Profiles[fakerootModeThreeProfile]
 )
 
 // Profile represents various properties required to run an E2E test
@@ -126,16 +123,6 @@ var Profiles = map[string]Profile{
 		defaultCwd:        "",
 		requirementsFn:    require.UserNamespace,
 		apptainerOption:   "",
-		optionForCommands: []string{"build"},
-	},
-	fakerootModeThreeProfile: {
-		name:              "FakerootModeThree",
-		privileged:        false,
-		hostUID:           origUID,
-		containerUID:      0,
-		defaultCwd:        "",
-		requirementsFn:    fakerootRequirements,
-		apptainerOption:   "--fakeroot",
 		optionForCommands: []string{"build"},
 	},
 }
