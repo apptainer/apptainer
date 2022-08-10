@@ -25,8 +25,35 @@ import (
 	"testing"
 
 	// Tests imports
-
+	"github.com/apptainer/apptainer/e2e/actions"
+	e2ebuildcfg "github.com/apptainer/apptainer/e2e/buildcfg"
+	"github.com/apptainer/apptainer/e2e/cache"
+	"github.com/apptainer/apptainer/e2e/cgroups"
+	"github.com/apptainer/apptainer/e2e/cmdenvvars"
+	"github.com/apptainer/apptainer/e2e/config"
+	"github.com/apptainer/apptainer/e2e/delete"
+	"github.com/apptainer/apptainer/e2e/docker"
+	"github.com/apptainer/apptainer/e2e/ecl"
+	apptainerenv "github.com/apptainer/apptainer/e2e/env"
+	"github.com/apptainer/apptainer/e2e/gpu"
+	"github.com/apptainer/apptainer/e2e/help"
 	"github.com/apptainer/apptainer/e2e/imgbuild"
+	"github.com/apptainer/apptainer/e2e/inspect"
+	"github.com/apptainer/apptainer/e2e/instance"
+	"github.com/apptainer/apptainer/e2e/key"
+	"github.com/apptainer/apptainer/e2e/legacy"
+	"github.com/apptainer/apptainer/e2e/oci"
+	"github.com/apptainer/apptainer/e2e/overlay"
+	"github.com/apptainer/apptainer/e2e/plugin"
+	"github.com/apptainer/apptainer/e2e/pull"
+	"github.com/apptainer/apptainer/e2e/push"
+	"github.com/apptainer/apptainer/e2e/remote"
+	"github.com/apptainer/apptainer/e2e/run"
+	"github.com/apptainer/apptainer/e2e/runhelp"
+	"github.com/apptainer/apptainer/e2e/security"
+	"github.com/apptainer/apptainer/e2e/sign"
+	"github.com/apptainer/apptainer/e2e/verify"
+	"github.com/apptainer/apptainer/e2e/version"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
@@ -148,34 +175,34 @@ func Run(t *testing.T) {
 
 	suite := testhelper.NewSuite(t, testenv)
 
-	// suite.AddGroup("ACTIONS", actions.E2ETests)
-	// suite.AddGroup("BUILDCFG", e2ebuildcfg.E2ETests)
+	suite.AddGroup("ACTIONS", actions.E2ETests)
+	suite.AddGroup("BUILDCFG", e2ebuildcfg.E2ETests)
 	suite.AddGroup("BUILD", imgbuild.E2ETests)
-	// suite.AddGroup("CACHE", cache.E2ETests)
-	// suite.AddGroup("CGROUPS", cgroups.E2ETests)
-	// suite.AddGroup("CMDENVVARS", cmdenvvars.E2ETests)
-	// suite.AddGroup("CONFIG", config.E2ETests)
-	// suite.AddGroup("DELETE", delete.E2ETests)
-	// suite.AddGroup("DOCKER", docker.E2ETests)
-	// suite.AddGroup("ECL", ecl.E2ETests)
-	// suite.AddGroup("ENV", apptainerenv.E2ETests)
-	// suite.AddGroup("GPU", gpu.E2ETests)
-	// suite.AddGroup("HELP", help.E2ETests)
-	// suite.AddGroup("INSPECT", inspect.E2ETests)
-	// suite.AddGroup("INSTANCE", instance.E2ETests)
-	// suite.AddGroup("KEY", key.E2ETests)
-	// suite.AddGroup("LEGACY", legacy.E2ETests)
-	// suite.AddGroup("OCI", oci.E2ETests)
-	// suite.AddGroup("OVERLAY", overlay.E2ETests)
-	// suite.AddGroup("PLUGIN", plugin.E2ETests)
-	// suite.AddGroup("PULL", pull.E2ETests)
-	// suite.AddGroup("PUSH", push.E2ETests)
-	// suite.AddGroup("REMOTE", remote.E2ETests)
-	// suite.AddGroup("RUN", run.E2ETests)
-	// suite.AddGroup("RUNHELP", runhelp.E2ETests)
-	// suite.AddGroup("SECURITY", security.E2ETests)
-	// suite.AddGroup("SIGN", sign.E2ETests)
-	// suite.AddGroup("VERIFY", verify.E2ETests)
-	// suite.AddGroup("VERSION", version.E2ETests)
+	suite.AddGroup("CACHE", cache.E2ETests)
+	suite.AddGroup("CGROUPS", cgroups.E2ETests)
+	suite.AddGroup("CMDENVVARS", cmdenvvars.E2ETests)
+	suite.AddGroup("CONFIG", config.E2ETests)
+	suite.AddGroup("DELETE", delete.E2ETests)
+	suite.AddGroup("DOCKER", docker.E2ETests)
+	suite.AddGroup("ECL", ecl.E2ETests)
+	suite.AddGroup("ENV", apptainerenv.E2ETests)
+	suite.AddGroup("GPU", gpu.E2ETests)
+	suite.AddGroup("HELP", help.E2ETests)
+	suite.AddGroup("INSPECT", inspect.E2ETests)
+	suite.AddGroup("INSTANCE", instance.E2ETests)
+	suite.AddGroup("KEY", key.E2ETests)
+	suite.AddGroup("LEGACY", legacy.E2ETests)
+	suite.AddGroup("OCI", oci.E2ETests)
+	suite.AddGroup("OVERLAY", overlay.E2ETests)
+	suite.AddGroup("PLUGIN", plugin.E2ETests)
+	suite.AddGroup("PULL", pull.E2ETests)
+	suite.AddGroup("PUSH", push.E2ETests)
+	suite.AddGroup("REMOTE", remote.E2ETests)
+	suite.AddGroup("RUN", run.E2ETests)
+	suite.AddGroup("RUNHELP", runhelp.E2ETests)
+	suite.AddGroup("SECURITY", security.E2ETests)
+	suite.AddGroup("SIGN", sign.E2ETests)
+	suite.AddGroup("VERIFY", verify.E2ETests)
+	suite.AddGroup("VERSION", version.E2ETests)
 	suite.Run()
 }
