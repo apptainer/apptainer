@@ -21,6 +21,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Allow the ``newuidmap`` command to be missing if the current user is not
   listed in ``/etc/subuid``.
 - Require the ``uidmap`` package in Debian packaging.
+- Ensure bootstrap_history directory is populated with previous definition files,
+  present in source containers used in a build.
 
 ## v1.1.0-rc.1 - \[2022-08-01\]
 
