@@ -1043,28 +1043,30 @@ func (c *container) addOverlayMount(system *mount.System) error {
 				}
 				system.Points.AddRemount(mount.PreLayerTag, dst, flags)
 
-				if !img.Writable {
-					// check if the sandbox directory is located on a compatible
-					// filesystem usable overlay lower directory
-					if err := fsoverlay.CheckLower(img.Path, 0); err != nil {
-						return err
+				if !overlayImageDriver {
+					// When no overlay image driver available,
+					//  make sure filesystems type are compatible
+					//  with kernel overlayfs
+					if !img.Writable {
+						// check if the sandbox directory is located on a compatible
+						// filesystem usable overlay lower directory
+						if err := fsoverlay.CheckLower(img.Path); err != nil {
+							return err
+						}
+					} else {
+						// check if the sandbox directory is located on a compatible
+						// filesystem usable with overlay upper directory
+						if err := fsoverlay.CheckUpper(img.Path); err != nil {
+							return err
+						}
 					}
+				}
+
+				if !img.Writable {
 					if fs.IsDir(filepath.Join(img.Path, "upper")) {
 						ov.AddLowerDir(filepath.Join(dst, "upper"))
 					} else {
 						ov.AddLowerDir(dst)
-					}
-				} else {
-					// check if the sandbox directory is located on a compatible
-					// filesystem usable with overlay upper directory
-					allowType := int64(0)
-					if overlayImageDriver {
-						// The imageDriver is likely to able to handle
-						//  a fuse upper even though the kernel can't
-						allowType = fsoverlay.Fuse
-					}
-					if err := fsoverlay.CheckUpper(img.Path, allowType); err != nil {
-						return err
 					}
 				}
 			default:
