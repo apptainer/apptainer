@@ -1604,7 +1604,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs("--force", fmt.Sprintf("%s/openssh-mode4.sif", tmpDir), "testdata/regressions/issue_476.def"),
-		e2e.ExpectExit(1, e2e.ExpectError(e2e.ContainMatch, "user namespaces seems not enabled or supported")),
+		e2e.ExpectExit(1, e2e.ExpectError(e2e.ContainMatch, "Operation not permitted")),
 	)
 	// // restore the userns at last
 	e2e.Privileged(func(t *testing.T) {
@@ -1623,37 +1623,37 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"bad path":                        c.badPath,                       // try to build from a non existent path
-		"build encrypt with PEM file":     c.buildEncryptPemFile,           // build encrypted images with certificate
-		"build encrypted with passphrase": c.buildEncryptPassphrase,        // build encrypted images with passphrase
-		"definition":                      c.buildDefinition,               // builds from definition template
-		"from local image":                c.buildLocalImage,               // build and image from an existing image
-		"from":                            c.buildFrom,                     // builds from definition file and URI
-		"multistage":                      c.buildMultiStageDefinition,     // multistage build from definition templates
-		"non-root build":                  c.nonRootBuild,                  // build sifs from non-root
-		"build and update sandbox":        c.buildUpdateSandbox,            // build/update sandbox
-		"fingerprint check":               c.buildWithFingerprint,          // definition file includes fingerprint check
-		"build with bind mount":           c.buildBindMount,                // build image with bind mount
-		"library host":                    c.buildLibraryHost,              // build image with hostname in library URI
-		"test with writable tmpfs":        c.testWritableTmpfs,             // build image, using writable tmpfs in the test step
-		"test build system environment":   c.testBuildEnvironmentVariables, // build image with build system environment variables set in definition
-		"test container build under differnt fakeroot modes": c.testContainerBuildUnderFakerootModes, // build image under different fakeroot modes
-		"issue 3848": c.issue3848, // https://github.com/apptainer/singularity/issues/3848
-		"issue 4203": c.issue4203, // https://github.com/apptainer/singularity/issues/4203
-		"issue 4407": c.issue4407, // https://github.com/apptainer/singularity/issues/4407
-		"issue 4524": c.issue4524, // https://github.com/apptainer/singularity/issues/4524
-		"issue 4583": c.issue4583, // https://github.com/apptainer/singularity/issues/4583
-		"issue 4820": c.issue4820, // https://github.com/apptainer/singularity/issues/4820
-		"issue 4837": c.issue4837, // https://github.com/apptainer/singularity/issues/4837
-		"issue 4943": c.issue4943, // https://github.com/apptainer/singularity/issues/4943
-		"issue 4967": c.issue4967, // https://github.com/apptainer/singularity/issues/4967
-		"issue 4969": c.issue4969, // https://github.com/apptainer/singularity/issues/4969
-		"issue 5166": c.issue5166, // https://github.com/apptainer/singularity/issues/5166
-		"issue 5172": c.issue5172, // https://github.com/apptainer/singularity/issues/5172
-		"issue 5250": c.issue5250, // https://github.com/apptainer/singularity/issues/5250
-		"issue 5315": c.issue5315, // https://github.com/apptainer/singularity/issues/5315
-		"issue 5435": c.issue5435, // https://github.com/apptainer/singularity/issues/5435
-		"issue 5668": c.issue5668, // https://github.com/apptainer/singularity/issues/5435
-		"issue 5690": c.issue5690, // https://github.com/apptainer/singularity/issues/5690
+		"bad path":                        c.badPath,                              // try to build from a non existent path
+		"build encrypt with PEM file":     c.buildEncryptPemFile,                  // build encrypted images with certificate
+		"build encrypted with passphrase": c.buildEncryptPassphrase,               // build encrypted images with passphrase
+		"definition":                      c.buildDefinition,                      // builds from definition template
+		"from local image":                c.buildLocalImage,                      // build and image from an existing image
+		"from":                            c.buildFrom,                            // builds from definition file and URI
+		"multistage":                      c.buildMultiStageDefinition,            // multistage build from definition templates
+		"non-root build":                  c.nonRootBuild,                         // build sifs from non-root
+		"build and update sandbox":        c.buildUpdateSandbox,                   // build/update sandbox
+		"fingerprint check":               c.buildWithFingerprint,                 // definition file includes fingerprint check
+		"build with bind mount":           c.buildBindMount,                       // build image with bind mount
+		"library host":                    c.buildLibraryHost,                     // build image with hostname in library URI
+		"test with writable tmpfs":        c.testWritableTmpfs,                    // build image, using writable tmpfs in the test step
+		"test build system environment":   c.testBuildEnvironmentVariables,        // build image with build system environment variables set in definition
+		"test build under fakeroot modes": c.testContainerBuildUnderFakerootModes, // build image under different fakeroot modes
+		"issue 3848":                      c.issue3848,                            // https://github.com/apptainer/singularity/issues/3848
+		"issue 4203":                      c.issue4203,                            // https://github.com/apptainer/singularity/issues/4203
+		"issue 4407":                      c.issue4407,                            // https://github.com/apptainer/singularity/issues/4407
+		"issue 4524":                      c.issue4524,                            // https://github.com/apptainer/singularity/issues/4524
+		"issue 4583":                      c.issue4583,                            // https://github.com/apptainer/singularity/issues/4583
+		"issue 4820":                      c.issue4820,                            // https://github.com/apptainer/singularity/issues/4820
+		"issue 4837":                      c.issue4837,                            // https://github.com/apptainer/singularity/issues/4837
+		"issue 4943":                      c.issue4943,                            // https://github.com/apptainer/singularity/issues/4943
+		"issue 4967":                      c.issue4967,                            // https://github.com/apptainer/singularity/issues/4967
+		"issue 4969":                      c.issue4969,                            // https://github.com/apptainer/singularity/issues/4969
+		"issue 5166":                      c.issue5166,                            // https://github.com/apptainer/singularity/issues/5166
+		"issue 5172":                      c.issue5172,                            // https://github.com/apptainer/singularity/issues/5172
+		"issue 5250":                      c.issue5250,                            // https://github.com/apptainer/singularity/issues/5250
+		"issue 5315":                      c.issue5315,                            // https://github.com/apptainer/singularity/issues/5315
+		"issue 5435":                      c.issue5435,                            // https://github.com/apptainer/singularity/issues/5435
+		"issue 5668":                      c.issue5668,                            // https://github.com/apptainer/singularity/issues/5435
+		"issue 5690":                      c.issue5690,                            // https://github.com/apptainer/singularity/issues/5690
 	}
 }
