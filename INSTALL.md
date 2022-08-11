@@ -44,6 +44,7 @@ sudo yum install -y \
     squashfuse \
     fuse-overlayfs \
     fakeroot \
+    /usr/*bin/fuse2fs \
     cryptsetup \
     wget git
 ```

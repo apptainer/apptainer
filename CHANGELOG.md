@@ -21,6 +21,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Allow the ``newuidmap`` command to be missing if the current user is not
   listed in ``/etc/subuid``.
 - Require the ``uidmap`` package in Debian packaging.
+- Require fuse2fs in RPM packaging.  In EPEL7 the package is called fuse2fs,
+  otherwise it is in e2fsprogs.
+- Require the fuse-overlayfs package for all RPM packages instead of just
+  on el7 because it is sometimes useful even with kernel support for
+  unprivileged overlayfs.
+- Ensure bootstrap_history directory is populated with previous definition
+  files, present in source containers used in a build.
 - Add e2e-test for unprivileged contaienr build under different fakeroot modes.
 
 ## v1.1.0-rc.1 - \[2022-08-01\]
