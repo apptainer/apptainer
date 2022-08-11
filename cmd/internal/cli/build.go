@@ -28,24 +28,28 @@ import (
 )
 
 var buildArgs struct {
-	sections      []string
-	bindPaths     []string
-	mounts        []string
-	libraryURL    string
-	keyServerURL  string
-	webURL        string
-	encrypt       bool
-	fakeroot      bool
-	fixPerms      bool
-	isJSON        bool
-	noCleanUp     bool
-	noTest        bool
-	sandbox       bool
-	update        bool
-	nvidia        bool
-	nvccli        bool
-	rocm          bool
-	writableTmpfs bool // For test section only
+	sections       []string
+	bindPaths      []string
+	mounts         []string
+	libraryURL     string
+	keyServerURL   string
+	webURL         string
+	encrypt        bool
+	fakeroot       bool
+	fixPerms       bool
+	isJSON         bool
+	noCleanUp      bool
+	noTest         bool
+	sandbox        bool
+	update         bool
+	nvidia         bool
+	nvccli         bool
+	rocm           bool
+	writableTmpfs  bool // For test section only
+	userns         bool // enabling userns flag
+	ignoreSubuid   bool // ignoring subuid entires flag (hidden)
+	ignoreFakeroot bool // ignoring fakeroot command (hidden)
+	ignoreUserns   bool // ignoring userns flag (hidden)
 }
 
 // -s|--sandbox
@@ -227,6 +231,49 @@ var buildWritableTmpfsFlag = cmdline.Flag{
 	EnvKeys:      []string{"WRITABLE_TMPFS"},
 }
 
+// --userns
+var buildUsernsFlag = cmdline.Flag{
+	ID:           "buildUsernsFlag",
+	Value:        &buildArgs.userns,
+	DefaultValue: false,
+	Name:         "userns",
+	Usage:        "building under the unprivileged user namespace if possible",
+	EnvKeys:      []string{"USERNS"},
+}
+
+// --ignore-subuid
+var buildIgnoreSubuidFlag = cmdline.Flag{
+	ID:           "buildIgnoreSubuidFlag",
+	Value:        &buildArgs.ignoreSubuid,
+	DefaultValue: false,
+	Name:         "ignore-subuid",
+	Usage:        "ignoring entries inside /etc/subuid",
+	EnvKeys:      []string{"IGNORE_SUBUID"},
+	Hidden:       true,
+}
+
+// --ignore-fakeroot-command
+var buildIgnoreFakerootCommand = cmdline.Flag{
+	ID:           "buildIgnoreFakerootCommandFlag",
+	Value:        &buildArgs.ignoreFakeroot,
+	DefaultValue: false,
+	Name:         "ignore-fakeroot-command",
+	Usage:        "ignoring fakeroot command",
+	EnvKeys:      []string{"IGNORE_FAKEROOT_COMMAND"},
+	Hidden:       true,
+}
+
+// --ignore-userns
+var buildIgnoreUsernsFlag = cmdline.Flag{
+	ID:           "buildIgnoreUsernsFlag",
+	Value:        &buildArgs.ignoreUserns,
+	DefaultValue: false,
+	Name:         "ignore-userns",
+	Usage:        "ignoring userns",
+	EnvKeys:      []string{"IGNORE_USERNS"},
+	Hidden:       true,
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(buildCmd)
@@ -259,6 +306,11 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildBindFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildMountFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildWritableTmpfsFlag, buildCmd)
+
+		cmdManager.RegisterFlagForCmd(&buildUsernsFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildIgnoreSubuidFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildIgnoreFakerootCommand, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildIgnoreUsernsFlag, buildCmd)
 	})
 }
 

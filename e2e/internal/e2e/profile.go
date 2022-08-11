@@ -24,7 +24,6 @@ const (
 	fakerootProfile          = "FakerootProfile"
 	userNamespaceProfile     = "UserNamespaceProfile"
 	rootUserNamespaceProfile = "RootUserNamespaceProfile"
-	fakerootModeTwoProfile   = "FakerootModeTwoProfile"
 )
 
 var (
@@ -38,8 +37,6 @@ var (
 	UserNamespaceProfile = Profiles[userNamespaceProfile]
 	// RootUserNamespaceProfile is the execution profile for root and a user namespace.
 	RootUserNamespaceProfile = Profiles[rootUserNamespaceProfile]
-	// FakerootModeTwoProfile is the execution profile representing the second mode here: https://apptainer.org/docs/user/main/fakeroot.html
-	FakerootModeTwoProfile = Profiles[fakerootModeTwoProfile]
 )
 
 // Profile represents various properties required to run an E2E test
@@ -114,16 +111,6 @@ var Profiles = map[string]Profile{
 		requirementsFn:    require.UserNamespace,
 		apptainerOption:   "--userns",
 		optionForCommands: []string{"shell", "exec", "run", "test", "instance start"},
-	},
-	fakerootModeTwoProfile: {
-		name:              "FakerootModeTwo",
-		privileged:        false,
-		hostUID:           origUID,
-		containerUID:      0,
-		defaultCwd:        "",
-		requirementsFn:    require.UserNamespace,
-		apptainerOption:   "",
-		optionForCommands: []string{"build"},
 	},
 }
 

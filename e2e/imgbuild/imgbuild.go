@@ -1539,7 +1539,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--fakeroot", fmt.Sprintf("%s/openssh-mode1a.sif", tmpDir), "testdata/regressions/issue_476.def"),
+		e2e.WithArgs("--force", "--fakeroot", fmt.Sprintf("%s/openssh-mode1a.sif", tmpDir), "testdata/unprivileged_build.def"),
 		e2e.ExpectExit(0),
 	)
 
@@ -1548,72 +1548,36 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--fakeroot", fmt.Sprintf("%s/openssh-mode1b.sif", tmpDir), "testdata/regressions/issue_476.def"),
-		e2e.WithEnv([]string{"_APPTAINER_E2E_NOT_USE_SUID=1"}),
+		e2e.WithArgs("--force", "--fakeroot", "--ignore-subuid", "--userns", fmt.Sprintf("%s/openssh-mode1b.sif", tmpDir), "testdata/unprivileged_build.def"),
 		e2e.ExpectExit(0),
 	)
 
 	// running under the mode 2(https://apptainer.org/docs/user/main/fakeroot.html)
-	// temporally remove executable permission from fakeroot
-	e2e.Privileged(func(t *testing.T) {
-		cmd := exec.Command("chmod", "-x", "/usr/bin/fakeroot")
-		err := cmd.Run()
-		if err != nil {
-			t.Fatal(err)
-		}
-	})(t)
 	c.env.RunApptainer(
 		t,
-		e2e.WithProfile(e2e.FakerootModeTwoProfile),
+		e2e.WithProfile(e2e.UserNamespaceProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", fmt.Sprintf("%s/openssh-mode2.sif", tmpDir), "testdata/regressions/issue_476.def"),
-		e2e.WithEnv([]string{"_APPTAINER_E2E_FAKEROOT=1"}),
+		e2e.WithArgs("--force", "--userns", "--ignore-fakeroot-command", fmt.Sprintf("%s/openssh-mode2.sif", tmpDir), "testdata/unprivileged_build.def"),
 		e2e.ExpectExit(255), // because chown will fail
 	)
-	// restore permission to fakeroot
-	e2e.Privileged(func(t *testing.T) {
-		cmd := exec.Command("chmod", "+x", "/usr/bin/fakeroot")
-		err := cmd.Run()
-		if err != nil {
-			t.Fatal(err)
-		}
-	})(t)
 
 	// running under the mode 3(https://apptainer.org/docs/user/main/fakeroot.html)
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", fmt.Sprintf("%s/openssh-mode3.sif", tmpDir), "testdata/regressions/issue_476.def"),
-		e2e.WithEnv([]string{"_APPTAINER_E2E_FAKEROOT=1"}),
+		e2e.WithArgs("--force", "--userns", fmt.Sprintf("%s/openssh-mode3.sif", tmpDir), "testdata/unprivileged_build.def"),
 		e2e.ExpectExit(0),
 	)
 
 	// running under the mode 4(https://apptainer.org/docs/user/main/fakeroot.html)
-	// disable the userns first
-	e2e.Privileged(func(t *testing.T) {
-		cmd := exec.Command("sysctl", "-w", "kernel.unprivileged_userns_clone=0")
-		err := cmd.Run()
-		if err != nil {
-			t.Fatal(err)
-		}
-	})(t)
-	// // call the apptainer build
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", fmt.Sprintf("%s/openssh-mode4.sif", tmpDir), "testdata/regressions/issue_476.def"),
-		e2e.ExpectExit(1, e2e.ExpectError(e2e.ContainMatch, "Operation not permitted")),
+		e2e.WithArgs("--force", "--ignore-userns", fmt.Sprintf("%s/openssh-mode4.sif", tmpDir), "testdata/unprivileged_build.def"),
+		e2e.ExpectExit(0),
 	)
-	// // restore the userns at last
-	e2e.Privileged(func(t *testing.T) {
-		cmd := exec.Command("sysctl", "-w", "kernel.unprivileged_userns_clone=1")
-		err := cmd.Run()
-		if err != nil {
-			t.Fatal(err)
-		}
-	})(t)
 }
 
 // E2ETests is the main func to trigger the test suite

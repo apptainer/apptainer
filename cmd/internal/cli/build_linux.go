@@ -12,6 +12,7 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	osExec "os/exec"
@@ -39,9 +40,9 @@ import (
 
 func fakerootExec(isDeffile bool) {
 	useSuid := starter.IsSuidInstall()
-	if os.Getenv("_APPTAINER_E2E_NOT_USE_SUID") != "" {
+	if buildArgs.ignoreSubuid {
 		useSuid = false
-		os.Unsetenv("_APPTAINER_E2E_NOT_USE_SUID")
+		os.Setenv("APPTAINER_IGNORE_SUBUID", "1")
 	}
 
 	// First remove fakeroot option from args and environment if present
@@ -77,10 +78,12 @@ func fakerootExec(isDeffile bool) {
 
 	var err error
 	uid := uint32(os.Getuid())
-	if (uid != 0 && !fakeroot.IsUIDMapped(uid)) || os.Getenv("_APPTAINER_E2E_FAKEROOT") != "" {
+	if buildArgs.ignoreUserns {
+		os.Setenv("APPTAINER_IGNORE_USERNS", "1")
+	} else if (uid != 0 && !fakeroot.IsUIDMapped(uid)) || buildArgs.userns {
 		sylog.Infof("User not listed in %v, trying root-mapped namespace", fakeroot.SubUIDFile)
 		os.Setenv("_APPTAINER_FAKEFAKEROOT", "1")
-		os.Unsetenv("_APPTAINER_E2E_FAKEROOT")
+		os.Setenv("APPTAINER_USERNS", "1")
 		err = fakeroot.UnshareRootMapped(args)
 		if err == nil {
 			// All the work has been done by the child process
@@ -143,7 +146,12 @@ func runBuild(cmd *cobra.Command, args []string) {
 		os.Unsetenv("_APPTAINER_FAKEFAKEROOT")
 		buildArgs.fakeroot = false
 		var err error
-		fakerootPath, err = fakeroot.FindFake()
+		if buildArgs.ignoreFakeroot {
+			os.Setenv("APPTAINER_IGNORE_FAKEROOT_COMMAND", "1")
+			err = errors.New("fakeroot command is ignored because of --ignore-fakeroot-command")
+		} else {
+			fakerootPath, err = fakeroot.FindFake()
+		}
 		if err != nil {
 			sylog.Infof("fakeroot command not found")
 			if os.Getuid() != 0 {
