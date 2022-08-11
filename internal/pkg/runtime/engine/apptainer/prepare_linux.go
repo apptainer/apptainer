@@ -138,6 +138,10 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		e.EngineConfig.OciConfig.SetProcessNoNewPrivileges(true)
 	}
 
+	userNS := !starterConfig.GetIsSUID() || e.EngineConfig.GetFakeroot()
+	driver.InitImageDrivers(true, userNS, e.EngineConfig.File, 0)
+	imageDriver = image.GetDriver(e.EngineConfig.File.ImageDriver)
+
 	if e.EngineConfig.GetInstanceJoin() {
 		if err := e.prepareInstanceJoinConfig(starterConfig); err != nil {
 			return err
@@ -164,9 +168,6 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 
 	// determine if engine need to propagate signals across processes
 	e.checkSignalPropagation()
-
-	userNS := !starterConfig.GetIsSUID() || e.EngineConfig.GetFakeroot()
-	driver.InitImageDrivers(false, userNS, e.EngineConfig.File, 0)
 
 	// We must call this here because at this point we haven't
 	// spawned the master process nor the RPC server. The assumption
@@ -1170,8 +1171,9 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config) error {
 		// C starter code will position current working directory
 		starterConfig.SetWorkingDirectoryFd(int(img.Fd))
 
-		if e.EngineConfig.GetSessionLayer() == apptainerConfig.OverlayLayer {
-			if err := overlay.CheckLower(img.Path, 0); overlay.IsIncompatible(err) {
+		if e.EngineConfig.GetSessionLayer() == apptainerConfig.OverlayLayer &&
+			(imageDriver == nil || imageDriver.Features()&image.OverlayFeature == 0) {
+			if err := overlay.CheckLower(img.Path); overlay.IsIncompatible(err) {
 				layer := apptainerConfig.UnderlayLayer
 				if !e.EngineConfig.File.EnableUnderlay {
 					sylog.Warningf("Could not fallback to underlay, disabled by configuration ('enable underlay = no')")

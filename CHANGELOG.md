@@ -9,6 +9,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Improved wildcard matching in the %files directive of build definition
   files by replacing usage of sh with the mvdan.cc library.
+- Replaced checks for compatible filesystem types when using fuse-overlayfs
+  with an INFO message when an incompatible filesystem type causes it to
+  be unwritable by a fakeroot user.
 - The `--nvccli` option now works without `--fakeroot`.  In that case the
   option can be used with `--writable-tmpfs` instead of `--writable`,
   and `--writable-tmpfs` is implied if neither option is given.
