@@ -579,7 +579,7 @@ var actionUserNamespaceFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "userns",
 	ShortHand:    "u",
-	Usage:        "run container in a new user namespace, allowing Apptainer to run completely unprivileged on recent kernels. This disables some features of Apptainer, for example it only works with sandbox images.",
+	Usage:        "run container in a new user namespace",
 	EnvKeys:      []string{"USERNS", "UNSHARE_USERNS"},
 }
 
