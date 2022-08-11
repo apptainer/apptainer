@@ -19,6 +19,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `--fakeroot` that probably requires a sandbox image that was built with
   `--fix-perms`.
 - The `--nvccli` option implies `--nv`.
+- Configure squashfuse to always show files to be owned by the current user.
+  That's especially important for fakeroot to prevent most of the files
+  from looking like they are owned by user 65534.
 - The fakeroot command can now be used even if $PATH is empty in the
   environment of the apptainer command.
 - Allow the ``newuidmap`` command to be missing if the current user is not

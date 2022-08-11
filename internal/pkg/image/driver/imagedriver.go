@@ -116,7 +116,10 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 
 	case "squashfs":
 		f = &d.squashFeature
-		optsStr := "offset=" + strconv.FormatUint(params.Offset, 10)
+		optsStr := fmt.Sprintf("uid=%v,gid=%v", os.Getuid(), os.Getgid())
+		if params.Offset > 0 {
+			optsStr += ",offset=" + strconv.FormatUint(params.Offset, 10)
+		}
 		srcPath := params.Source
 		if path.Dir(params.Source) == "/proc/self/fd" {
 			// this will be passed as the first ExtraFile below, always fd 3
