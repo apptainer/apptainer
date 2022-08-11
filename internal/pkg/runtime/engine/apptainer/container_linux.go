@@ -2370,7 +2370,9 @@ func (c *container) prepareNetworkSetup(system *mount.System, pid int) (func(con
 			allowedNetNetwork = slice.ContainsString(c.engine.EngineConfig.File.AllowNetNetworks, n)
 			// If any one requested network is not allowed, disallow the whole config
 			if !allowedNetNetwork {
-				sylog.Errorf("Network %s is not permitted for unprivileged users.", n)
+				if !fakeroot {
+					sylog.Errorf("Network %s is not permitted for unprivileged users.", n)
+				}
 				break
 			}
 		}
@@ -2379,7 +2381,7 @@ func (c *container) prepareNetworkSetup(system *mount.System, pid int) (func(con
 	}
 
 	if (c.userNS || euid != 0) && !fakeroot && !allowedNetUnpriv {
-		return nil, fmt.Errorf("network requires root or --fakeroot, non-root users can only use --network=%s unless permitted by the administrator", noneNet)
+		return nil, fmt.Errorf("network requires root or a suid installation with /etc/subuid --fakeroot; non-root users can only use --network=%s unless permitted by the administrator", noneNet)
 	}
 
 	// we hold a reference to container network namespace
