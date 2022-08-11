@@ -28,7 +28,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   unprivileged overlayfs.
 - Ensure bootstrap_history directory is populated with previous definition
   files, present in source containers used in a build.
-- Add e2e-test for unprivileged contaienr build under different fakeroot modes.
+- Add e2e-test for unprivileged container build under different fakeroot modes.
 
 ## v1.1.0-rc.1 - \[2022-08-01\]
 
