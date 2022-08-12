@@ -76,6 +76,8 @@ covered by tests.
       - `git add apptainer_source`
    - [Admin Docs](https://apptainer.org/docs/admin/main/) can be
      edited [here](https://github.com/apptainer/apptainer-admindocs)
+   - Look in replacements.py in both the User Docs and Admin Docs for
+     any needed updates to the variable_replacements
    - If a new branch was created, add it to the docsVersion list in the
      [web page](https://github.com/apptainer/apptainer.org/blob/master/src/pages/docs.js)
 1. Ensure the user and admin documentation has been deployed to the

@@ -11,6 +11,7 @@ package driver
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -103,6 +104,7 @@ func (d *fuseappsDriver) Features() image.DriverFeature {
 	return features
 }
 
+//nolint:maintidx
 func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc) error {
 	var f *fuseappsFeature
 	var cmd *exec.Cmd
@@ -250,6 +252,32 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 				sylog.Infof("%v", msg)
 			}
 			sylog.Debugf("%v mounted in %v", params.Target, totTime)
+			if params.Filesystem == "overlay" && os.Getuid() == 0 {
+				// Look for unexpectedly readonly overlay
+				hasUpper := false
+				for _, opt := range params.FSOptions {
+					if strings.HasPrefix(opt, "upperdir=") {
+						hasUpper = true
+					}
+				}
+				if !hasUpper {
+					// No upperdir means readonly expected
+					return nil
+				}
+				// Using unix.Access is not sufficient here
+				// so have to attempt to create a file
+				binpath := params.Target + "/usr/bin"
+				tmpfile, err := ioutil.TempFile(binpath, ".tmp*")
+				if err != nil {
+					sylog.Debugf("%v not writable: %v", binpath, err)
+					sylog.Infof("/usr/bin not writable in container")
+					sylog.Infof("Consider using a different overlay upper layer filesystem type")
+				} else {
+					sylog.Debugf("successfully created %v", tmpfile.Name())
+					tmpfile.Close()
+					os.Remove(tmpfile.Name())
+				}
+			}
 			return nil
 		}
 	}
