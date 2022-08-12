@@ -34,6 +34,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   unprivileged overlayfs.
 - Ensure bootstrap_history directory is populated with previous definition
   files, present in source containers used in a build.
+- Add additional options to the build command for testing different fakeroot
+  modes: `--userns` like the action flag and hidden options `--ignore-subuid`,
+  `--ignore-fakeroot-command`, and `--ignore-userns`.
 
 ## v1.1.0-rc.1 - \[2022-08-01\]
 
