@@ -1644,12 +1644,12 @@ func (c *container) getHomePaths() (source string, dest string, err error) {
 		pw, err := user.CurrentOriginal()
 		if err == nil {
 			source = pw.Dir
-			if os.Getuid() == 0 {
+			if c.engine.EngineConfig.GetFakeroot() || os.Getuid() == 0 {
 				// Mount user home directory onto /root for
 				//  any root-mapped namespace
 				dest = "/root"
 			} else {
-				dest = pw.Dir
+				dest = source
 			}
 		} else if os.Getuid() == 0 {
 			// The user could not be found
