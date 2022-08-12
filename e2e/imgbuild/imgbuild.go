@@ -1548,7 +1548,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--fakeroot", "--ignore-subuid", "--userns", fmt.Sprintf("%s/openssh-mode1b.sif", tmpDir), "testdata/unprivileged_build.def"),
+		e2e.WithArgs("--force", "--fakeroot", "--userns", fmt.Sprintf("%s/openssh-mode1b.sif", tmpDir), "testdata/unprivileged_build.def"),
 		e2e.ExpectExit(0),
 	)
 
@@ -1557,7 +1557,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserNamespaceProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--userns", "--ignore-fakeroot-command", fmt.Sprintf("%s/openssh-mode2.sif", tmpDir), "testdata/unprivileged_build.def"),
+		e2e.WithArgs("--force", "--userns", "--ignore-subuid", "--ignore-fakeroot-command", fmt.Sprintf("%s/openssh-mode2.sif", tmpDir), "testdata/unprivileged_build.def"),
 		e2e.ExpectExit(255), // because chown will fail
 	)
 
@@ -1566,7 +1566,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--userns", fmt.Sprintf("%s/openssh-mode3.sif", tmpDir), "testdata/unprivileged_build.def"),
+		e2e.WithArgs("--force", "--userns", "--ignore-subuid", fmt.Sprintf("%s/openssh-mode3.sif", tmpDir), "testdata/unprivileged_build.def"),
 		e2e.ExpectExit(0),
 	)
 
