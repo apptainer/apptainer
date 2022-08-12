@@ -12,6 +12,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Replaced checks for compatible filesystem types when using fuse-overlayfs
   with an INFO message when an incompatible filesystem type causes it to
   be unwritable by a fakeroot user.
+- Mount the user's home directory at `/root` when using `--fakeroot` in
+  the setuid flow (fixes a regression introduced in 1.1.0-rc.1 which didn't
+  impact non-setuid flow).
 - The `--nvccli` option now works without `--fakeroot`.  In that case the
   option can be used with `--writable-tmpfs` instead of `--writable`,
   and `--writable-tmpfs` is implied if neither option is given.
