@@ -34,6 +34,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
+	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	keyClient "github.com/apptainer/container-key-client/client"
 	"github.com/spf13/cobra"
 )
@@ -202,7 +203,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fakerootPath string) {
 	var keyInfo *cryptkey.KeyInfo
 	if buildArgs.encrypt || promptForPassphrase || cmd.Flags().Lookup("pem-path").Changed {
-		if os.Getuid() != 0 {
+		if namespaces.IsUnprivileged() {
 			sylog.Fatalf("You must be root to build an encrypted container")
 		}
 

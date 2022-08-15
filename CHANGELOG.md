@@ -40,6 +40,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add additional options to the build command for testing different fakeroot
   modes: `--userns` like the action flag and hidden options `--ignore-subuid`,
   `--ignore-fakeroot-command`, and `--ignore-userns`.
+- Require root user early when building an encrypted container.
 
 ## v1.1.0-rc.1 - \[2022-08-01\]
 
