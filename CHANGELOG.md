@@ -7,6 +7,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes since last release
 
+- Fixed longstanding bug in the underlay logic when there are nested bind
+  points separated by more than one path level, for example `/var` and
+  `/var/lib/yum`, and the path didn't exist in the container image.
+  The bug only caused an error when there was a directory in the container
+  image that didn't exist on the host.
 - Improved wildcard matching in the %files directive of build definition
   files by replacing usage of sh with the mvdan.cc library.
 - Replaced checks for compatible filesystem types when using fuse-overlayfs

@@ -126,6 +126,8 @@ func (u *Underlay) createLayer(rootFsPath string, system *mount.System) error {
 		return createdPath[i].len < createdPath[j].len
 	})
 
+	// Duplicate the parent directories of the new path, unless
+	//  it has already been done by another bind
 	for _, pl := range createdPath {
 		splitted := strings.Split(filepath.Dir(pl.path), string(os.PathSeparator))
 		l := len(splitted)
@@ -142,7 +144,7 @@ func (u *Underlay) createLayer(rootFsPath string, system *mount.System) error {
 				// if the directory is overridden by a bind mount we won't
 				// need to duplicate the container image directory
 				if _, ok := destinations[p]; ok {
-					continue
+					break
 				}
 				// directory not overridden, duplicate it
 				if err := u.duplicateDir(p, system, pl.path); err != nil {
