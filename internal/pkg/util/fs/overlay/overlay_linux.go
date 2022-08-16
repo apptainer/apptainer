@@ -69,7 +69,7 @@ var incompatibleFs = map[int64]fs{
 	},
 }
 
-func check(path string, d dir, allowType int64) error {
+func check(path string, d dir) error {
 	stfs := &unix.Statfs_t{}
 
 	if err := statfs(path, stfs); err != nil {
@@ -78,10 +78,6 @@ func check(path string, d dir, allowType int64) error {
 
 	fs, ok := incompatibleFs[int64(stfs.Type)]
 	if !ok || (ok && fs.overlayDir&d == 0) {
-		return nil
-	}
-
-	if int64(stfs.Type) == allowType {
 		return nil
 	}
 
@@ -94,16 +90,14 @@ func check(path string, d dir, allowType int64) error {
 
 // CheckUpper checks if the underlying filesystem of the
 // provided path can be used as an upper overlay directory.
-// allowType is an optional filesystem type to always allow.
-func CheckUpper(path string, allowType int64) error {
-	return check(path, upperDir, allowType)
+func CheckUpper(path string) error {
+	return check(path, upperDir)
 }
 
 // CheckLower checks if the underlying filesystem of the
 // provided path can be used as lower overlay directory.
-// allowType is an optional filesystem type to always allow.
-func CheckLower(path string, allowType int64) error {
-	return check(path, lowerDir, allowType)
+func CheckLower(path string) error {
+	return check(path, lowerDir)
 }
 
 type errIncompatibleFs struct {

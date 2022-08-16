@@ -7,8 +7,19 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes since last release
 
+- Fixed longstanding bug in the underlay logic when there are nested bind
+  points separated by more than one path level, for example `/var` and
+  `/var/lib/yum`, and the path didn't exist in the container image.
+  The bug only caused an error when there was a directory in the container
+  image that didn't exist on the host.
 - Improved wildcard matching in the %files directive of build definition
   files by replacing usage of sh with the mvdan.cc library.
+- Replaced checks for compatible filesystem types when using fuse-overlayfs
+  with an INFO message when an incompatible filesystem type causes it to
+  be unwritable by a fakeroot user.
+- Mount the user's home directory at `/root` when using `--fakeroot` in
+  the setuid flow (fixes a regression introduced in 1.1.0-rc.1 which didn't
+  impact non-setuid flow).
 - The `--nvccli` option now works without `--fakeroot`.  In that case the
   option can be used with `--writable-tmpfs` instead of `--writable`,
   and `--writable-tmpfs` is implied if neither option is given.
@@ -16,6 +27,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `--fakeroot` that probably requires a sandbox image that was built with
   `--fix-perms`.
 - The `--nvccli` option implies `--nv`.
+- Configure squashfuse to always show files to be owned by the current user.
+  That's especially important for fakeroot to prevent most of the files
+  from looking like they are owned by user 65534.
 - The fakeroot command can now be used even if $PATH is empty in the
   environment of the apptainer command.
 - Allow the ``newuidmap`` command to be missing if the current user is not
@@ -23,6 +37,17 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Require the ``uidmap`` package in Debian packaging.
 - Improved error handling of unsupported pass protected PEM files with 
   encrypted containers.
+- Require fuse2fs in RPM packaging.  In EPEL7 the package is called fuse2fs,
+  otherwise it is in e2fsprogs.
+- Require the fuse-overlayfs package for all RPM packages instead of just
+  on el7 because it is sometimes useful even with kernel support for
+  unprivileged overlayfs.
+- Ensure bootstrap_history directory is populated with previous definition
+  files, present in source containers used in a build.
+- Add additional options to the build command for testing different fakeroot
+  modes: `--userns` like the action flag and hidden options `--ignore-subuid`,
+  `--ignore-fakeroot-command`, and `--ignore-userns`.
+- Require root user early when building an encrypted container.
 
 ## v1.1.0-rc.1 - \[2022-08-01\]
 

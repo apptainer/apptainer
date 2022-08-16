@@ -170,9 +170,9 @@ func TestCheckLowerUpper(t *testing.T) {
 
 		switch tt.dir {
 		case lowerDir:
-			err = CheckLower(tt.path, 0)
+			err = CheckLower(tt.path)
 		case upperDir:
-			err = CheckUpper(tt.path, 0)
+			err = CheckUpper(tt.path)
 		}
 
 		if err != nil && tt.expectedSuccess {

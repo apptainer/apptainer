@@ -1043,28 +1043,30 @@ func (c *container) addOverlayMount(system *mount.System) error {
 				}
 				system.Points.AddRemount(mount.PreLayerTag, dst, flags)
 
-				if !img.Writable {
-					// check if the sandbox directory is located on a compatible
-					// filesystem usable overlay lower directory
-					if err := fsoverlay.CheckLower(img.Path, 0); err != nil {
-						return err
+				if !overlayImageDriver {
+					// When no overlay image driver available,
+					//  make sure filesystems type are compatible
+					//  with kernel overlayfs
+					if !img.Writable {
+						// check if the sandbox directory is located on a compatible
+						// filesystem usable overlay lower directory
+						if err := fsoverlay.CheckLower(img.Path); err != nil {
+							return err
+						}
+					} else {
+						// check if the sandbox directory is located on a compatible
+						// filesystem usable with overlay upper directory
+						if err := fsoverlay.CheckUpper(img.Path); err != nil {
+							return err
+						}
 					}
+				}
+
+				if !img.Writable {
 					if fs.IsDir(filepath.Join(img.Path, "upper")) {
 						ov.AddLowerDir(filepath.Join(dst, "upper"))
 					} else {
 						ov.AddLowerDir(dst)
-					}
-				} else {
-					// check if the sandbox directory is located on a compatible
-					// filesystem usable with overlay upper directory
-					allowType := int64(0)
-					if overlayImageDriver {
-						// The imageDriver is likely to able to handle
-						//  a fuse upper even though the kernel can't
-						allowType = fsoverlay.Fuse
-					}
-					if err := fsoverlay.CheckUpper(img.Path, allowType); err != nil {
-						return err
 					}
 				}
 			default:
@@ -1642,12 +1644,12 @@ func (c *container) getHomePaths() (source string, dest string, err error) {
 		pw, err := user.CurrentOriginal()
 		if err == nil {
 			source = pw.Dir
-			if os.Getuid() == 0 {
+			if c.engine.EngineConfig.GetFakeroot() || os.Getuid() == 0 {
 				// Mount user home directory onto /root for
 				//  any root-mapped namespace
 				dest = "/root"
 			} else {
-				dest = pw.Dir
+				dest = source
 			}
 		} else if os.Getuid() == 0 {
 			// The user could not be found
@@ -2370,7 +2372,9 @@ func (c *container) prepareNetworkSetup(system *mount.System, pid int) (func(con
 			allowedNetNetwork = slice.ContainsString(c.engine.EngineConfig.File.AllowNetNetworks, n)
 			// If any one requested network is not allowed, disallow the whole config
 			if !allowedNetNetwork {
-				sylog.Errorf("Network %s is not permitted for unprivileged users.", n)
+				if !fakeroot {
+					sylog.Errorf("Network %s is not permitted for unprivileged users.", n)
+				}
 				break
 			}
 		}
@@ -2379,7 +2383,7 @@ func (c *container) prepareNetworkSetup(system *mount.System, pid int) (func(con
 	}
 
 	if (c.userNS || euid != 0) && !fakeroot && !allowedNetUnpriv {
-		return nil, fmt.Errorf("network requires root or --fakeroot, non-root users can only use --network=%s unless permitted by the administrator", noneNet)
+		return nil, fmt.Errorf("network requires root or a suid installation with /etc/subuid --fakeroot; non-root users can only use --network=%s unless permitted by the administrator", noneNet)
 	}
 
 	// we hold a reference to container network namespace
