@@ -35,7 +35,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Allow the ``newuidmap`` command to be missing if the current user is not
   listed in ``/etc/subuid``.
 - Require the ``uidmap`` package in Debian packaging.
-- Improved error handling of unsupported pass protected PEM files with 
+- Improved error handling of unsupported pass protected PEM files with
   encrypted containers.
 - Require fuse2fs in RPM packaging.  In EPEL7 the package is called fuse2fs,
   otherwise it is in e2fsprogs.
