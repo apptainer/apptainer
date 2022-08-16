@@ -701,3 +701,20 @@ func (c actionTests) issue6165(t *testing.T) {
 		),
 	)
 }
+
+// Check that a nested bind separated by more than one level works with
+// underlay when the lower directory does not existing in the image but
+// the image has another directory that does not exist on the host
+func (c actionTests) issue619(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	// use of user namespace to force runtime to use underlay
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithDir(c.env.TestDir),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--bind", "/var,/var/lib/apt", c.env.ImagePath, "true"),
+		e2e.ExpectExit(0),
+	)
+}
