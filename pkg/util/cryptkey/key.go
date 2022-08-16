@@ -22,6 +22,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/apptainer/sif/v2/pkg/sif"
 )
@@ -153,6 +154,10 @@ func LoadPEMPrivateKey(fn string) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode(b)
 	if block == nil {
 		return nil, fmt.Errorf("could not read %s: %v", fn, ErrNoPEMData)
+	}
+
+	if strings.Contains(block.Headers["Proc-Type"], "ENCRYPTED") {
+		return nil, fmt.Errorf("passphrase protected pem files not supported")
 	}
 
 	return x509.ParsePKCS1PrivateKey(block.Bytes)
