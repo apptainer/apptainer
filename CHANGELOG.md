@@ -5,7 +5,9 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes since last release
+## v1.1.0-rc.2 - \[2022-08-16\]
+
+### Changed defaults / behaviours
 
 - Fixed longstanding bug in the underlay logic when there are nested bind
   points separated by more than one path level, for example `/var` and
