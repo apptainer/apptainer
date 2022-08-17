@@ -195,6 +195,43 @@ func (c ctx) testRunPassphraseEncrypted(t *testing.T) {
 	)
 }
 
+func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
+	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
+	defer e2e.Privileged(cleanup)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--writable-tmpfs", "docker://centos:7", "yum", "install", "-y", "openssh"),
+		e2e.ExpectExit(1), // because of no enough permission
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--writable-tmpfs", "docker://centos:7", "yum", "install", "-y", "openssh"),
+		e2e.ExpectExit(0), // works fine with root permission
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--sandbox", "--force", tempDir, "docker://centos:7"),
+		e2e.ExpectExit(0), // create sandbox first
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--writable-tmpfs", tempDir, "yum", "install", "-y", "openssh"),
+		e2e.ExpectExit(0), // works fine in sandbox
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -202,9 +239,10 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"0555 cache":           c.testRun555Cache,
-		"inaccessible home":    c.issue409,
-		"passphrase encrypted": c.testRunPassphraseEncrypted,
-		"PEM encrypted":        c.testRunPEMEncrypted,
+		"0555 cache":                          c.testRun555Cache,
+		"inaccessible home":                   c.issue409,
+		"passphrase encrypted":                c.testRunPassphraseEncrypted,
+		"PEM encrypted":                       c.testRunPEMEncrypted,
+		"add package with fakeroot and tmpfs": c.testAddPackageWithFakerootAndTmpfs,
 	}
 }
