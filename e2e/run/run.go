@@ -11,6 +11,7 @@ package run
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -199,11 +200,34 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
 	defer e2e.Privileged(cleanup)
 
+	sandbox, err := ioutil.TempDir(tempDir, "sandbox")
+	if err != nil {
+		t.Fatalf("could not create sandbox folder inside tempdir: %s", tempDir)
+	}
+
+	sif := fmt.Sprintf("%s/centos7.sif", tempDir)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs(sif, "docker://centos:7"),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--sandbox", "--force", sandbox, sif),
+		e2e.ExpectExit(0),
+	)
+
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--writable-tmpfs", "docker://centos:7", "yum", "install", "-y", "openssh"),
+		e2e.WithArgs("--writable-tmpfs", sif, "yum", "install", "-y", "openssh"),
 		e2e.ExpectExit(1), // because of no enough permission
 	)
 
@@ -211,23 +235,15 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--writable-tmpfs", "docker://centos:7", "yum", "install", "-y", "openssh"),
+		e2e.WithArgs("--writable-tmpfs", sif, "yum", "install", "-y", "openssh"),
 		e2e.ExpectExit(0), // works fine with root permission
-	)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithCommand("build"),
-		e2e.WithArgs("--sandbox", "--force", tempDir, "docker://centos:7"),
-		e2e.ExpectExit(0), // create sandbox first
 	)
 
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--writable-tmpfs", tempDir, "yum", "install", "-y", "openssh"),
+		e2e.WithArgs("--writable-tmpfs", sandbox, "yum", "install", "-y", "openssh"),
 		e2e.ExpectExit(0), // works fine in sandbox
 	)
 }
