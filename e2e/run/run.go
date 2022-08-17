@@ -205,13 +205,13 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 		t.Fatalf("could not create sandbox folder inside tempdir: %s", tempDir)
 	}
 
-	sif := fmt.Sprintf("%s/centos7.sif", tempDir)
+	sif := fmt.Sprintf("%s/alpine.sif", tempDir)
 
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs(sif, "docker://centos:7"),
+		e2e.WithArgs(sif, "docker://alpine"),
 		e2e.ExpectExit(0),
 	)
 
@@ -227,15 +227,15 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--writable-tmpfs", sif, "yum", "install", "-y", "openssh"),
-		e2e.ExpectExit(1), // because of no enough permission
+		e2e.WithArgs("--writable-tmpfs", sif, "apk", "add", "openssh"),
+		e2e.ExpectExit(99), // because of no enough permission
 	)
 
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--writable-tmpfs", sif, "yum", "install", "-y", "openssh"),
+		e2e.WithArgs("--writable-tmpfs", sif, "apk", "add", "openssh"),
 		e2e.ExpectExit(0), // works fine with root permission
 	)
 
@@ -243,7 +243,7 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--writable-tmpfs", sandbox, "yum", "install", "-y", "openssh"),
+		e2e.WithArgs("--writable-tmpfs", sandbox, "apk", "add", "openssh"),
 		e2e.ExpectExit(0), // works fine in sandbox
 	)
 }
