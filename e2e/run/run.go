@@ -11,7 +11,9 @@ package run
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -195,6 +197,104 @@ func (c ctx) testRunPassphraseEncrypted(t *testing.T) {
 	)
 }
 
+func (c ctx) testFuseOverlayfs(t *testing.T) {
+	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
+	defer cleanup(t)
+
+	overlayPath := fmt.Sprintf("%s/overlay.img", tempDir)
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("overlay"),
+		e2e.WithArgs("create", "--size", "64", overlayPath),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--no-home", "--writable-tmpfs", "testdata/busybox_amd64.sif", "touch", "file"),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--no-home", "--overlay", overlayPath, "testdata/busybox_amd64.sif", "touch", "file"),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--no-home", "--overlay", tempDir, "testdata/busybox_amd64.sif", "touch", "file"),
+		e2e.ExpectExit(0),
+	)
+}
+
+func (c ctx) testFuseSquashMount(t *testing.T) {
+	dataDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
+	defer cleanup(t)
+
+	file, err := ioutil.TempFile(dataDir, "")
+	if err != nil {
+		t.Fatalf("failed to create temp file under temp data dir: %s", dataDir)
+	}
+
+	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
+	defer cleanup(t)
+
+	filename := file.Name()
+	file.Close()
+
+	squashfile := fmt.Sprintf("%s/input.squashfs", tempDir)
+	_, err = exec.Command("mksquashfs", dataDir, squashfile).Output()
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--no-home", "--mount", fmt.Sprintf("type=bind,src=%s,dst=/input-data,image-src=/", squashfile), "testdata/busybox_amd64.sif", "ls", "/input-data"),
+		e2e.ExpectExit(0, e2e.ExpectOutput(e2e.ContainMatch, filepath.Base(filename))),
+	)
+}
+
+func (c ctx) testFuseExt3Mount(t *testing.T) {
+	dataDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
+	defer cleanup(t)
+
+	file, err := ioutil.TempFile(dataDir, "")
+	if err != nil {
+		t.Fatalf("failed to create temp file under temp data dir: %s", dataDir)
+	}
+
+	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
+	defer cleanup(t)
+
+	filename := file.Name()
+	file.Close()
+
+	ext3file := fmt.Sprintf("%s/input.img", tempDir)
+	_, err = exec.Command("mkfs.ext3", "-d", dataDir, ext3file, "64M").Output()
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--no-home", "--mount", fmt.Sprintf("type=bind,src=%s,dst=/input-data,image-src=/", ext3file), "testdata/busybox_amd64.sif", "ls", "/input-data"),
+		e2e.ExpectExit(0, e2e.ExpectOutput(e2e.ContainMatch, filepath.Base(filename))),
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -206,5 +306,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"inaccessible home":    c.issue409,
 		"passphrase encrypted": c.testRunPassphraseEncrypted,
 		"PEM encrypted":        c.testRunPEMEncrypted,
+		"fuse overlayfs":       c.testFuseOverlayfs,
+		"fuse squash mount":    c.testFuseSquashMount,
+		"fuse ext3 mount":      c.testFuseExt3Mount,
 	}
 }
