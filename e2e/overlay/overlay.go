@@ -34,6 +34,7 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 
 	sifSignedImage := filepath.Join(tmpDir, "signed.sif")
 	sifImage := filepath.Join(tmpDir, "unsigned.sif")
+	ext3SparseImage := filepath.Join(tmpDir, "image.sparse.ext3")
 	ext3Image := filepath.Join(tmpDir, "image.ext3")
 	ext3DirImage := filepath.Join(tmpDir, "imagedir.ext3")
 
@@ -88,6 +89,13 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 			command: "overlay",
 			args:    []string{"create", "--size", "1", ext3Image},
 			exit:    255,
+		},
+		{
+			name:    "create ext3 sparse overlay image",
+			profile: e2e.UserProfile,
+			command: "overlay",
+			args:    []string{"create", "--size", "128", "--sparse", ext3SparseImage},
+			exit:    0,
 		},
 		{
 			name:    "create ext3 overlay image",
