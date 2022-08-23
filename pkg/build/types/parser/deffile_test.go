@@ -193,6 +193,7 @@ func TestParseDefinitionFile(t *testing.T) {
 		{"MultipleFiles", "testdata_good/multiplefiles/multiplefiles", "testdata_good/multiplefiles/multiplefiles.json"},
 		{"QuotedFiles", "testdata_good/quotedfiles/quotedfiles", "testdata_good/quotedfiles/quotedfiles.json"},
 		{"Shebang", "testdata_good/shebang/shebang", "testdata_good/shebang/shebang.json"},
+		{"ShebangTest", "testdata_good/shebang_test/shebang_test", "testdata_good/shebang_test/shebang_test.json"},
 	}
 
 	for _, tt := range tests {

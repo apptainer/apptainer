@@ -149,7 +149,8 @@ func insertStartScript(b *types.Bundle) error {
 func insertTestScript(b *types.Bundle) error {
 	if b.RunSection("test") && b.Recipe.ImageData.Test.Script != "" {
 		sylog.Infof("Adding testscript")
-		err := ioutil.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/test"), []byte("#!/bin/sh\n\n"+b.Recipe.ImageData.Test.Script+"\n"), 0o755)
+		shebang, script := handleShebangScript(b.Recipe.ImageData.Test)
+		err := ioutil.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/test"), []byte(shebang+"\n\n"+script+"\n"), 0o755)
 		if err != nil {
 			return err
 		}

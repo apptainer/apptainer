@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Add `--sparse` flag to `overlay create` command to allow generation of a
   sparse ext3 overlay image.
+- Support for a custom hashbang in the `%test` section of an Apptainer recipe
+  (akin to the runscript and start sections).
 
 ## v1.1.0-rc.2 - \[2022-08-16\]
 

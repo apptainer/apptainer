@@ -1,0 +1,56 @@
+{
+          "header": {
+            "bootstrap": "docker",
+            "from": "ubuntu"
+          },
+          "imageData": {
+            "metadata": null,
+            "labels": {},
+            "imageScripts": {
+              "help": {
+                "args": "",
+                "script": ""
+              },
+              "environment": {
+                "args": "",
+                "script": ""
+              },
+              "runScript": {
+                "args": "",
+                "script": ""
+              },
+              "test": {
+                "args": "",
+                "script": "#!/usr/local/csh\necho $0\n"
+              },
+              "startScript": {
+                "args": "",
+                "script": ""
+              }
+            }
+          },
+          "buildData": {
+            "files": [],
+            "buildScripts": {
+              "pre": {
+                "args": "",
+                "script": ""
+              },
+              "setup": {
+                "args": "",
+                "script": ""
+              },
+              "post": {
+                "args": "",
+                "script": ""
+              },
+              "test": {
+                "args": "",
+                "script": "#!/usr/local/csh\necho $0\n"
+              }
+            }
+          },
+          "customData": null,
+          "raw": "Qm9vdHN0cmFwOiBkb2NrZXIKRnJvbTogdWJ1bnR1CgoldGVzdAojIS91c3IvbG9jYWwvY3NoCmVjaG8gJDAK",
+          "appOrder": []
+}
