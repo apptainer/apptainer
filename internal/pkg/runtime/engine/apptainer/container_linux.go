@@ -587,6 +587,7 @@ func (c *container) chdirFinal(system *mount.System) error {
 }
 
 // mount any generic mount (not loop dev)
+//nolint:maintidx
 func (c *container) mountGeneric(mnt *mount.Point, tag mount.AuthorizedTag) (err error) {
 	flags, opts := mount.ConvertOptions(mnt.Options)
 	optsString := strings.Join(opts, ",")
@@ -649,7 +650,39 @@ func (c *container) mountGeneric(mnt *mount.Point, tag mount.AuthorizedTag) (err
 	}
 
 mount:
-	err = c.rpcOps.Mount(source, dest, mnt.Type, flags, optsString)
+	err = nil
+	if !bindMount && !remount && mnt.Type == "overlay" && tag == mount.LayerTag &&
+		imageDriver != nil && imageDriver.Features()&image.OverlayFeature != 0 {
+		lowerdirs := ""
+		hasUpper := false
+		for _, opt := range opts {
+			if strings.HasPrefix(opt, "lowerdir=") {
+				lowerdirs = opt[len("lowerdir="):]
+			} else if strings.HasPrefix(opt, "upperdir=") {
+				hasUpper = true
+			}
+		}
+		if hasUpper {
+			// This is a writable overlay and there is an overlay
+			//  image driver.  When the lower layer is of type FUSE
+			//  we want to skip trying the kernel overlayfs. That's
+			//  because sometimes the mount succeeds but the
+			//  operation doesn't work, due to a kernel regression
+			//  related to fuse under overlayfs that first showed up
+			//  in kernel version 5.15, as discussed at
+			//   https://lore.kernel.org/lkml/CAJfpegvaUyCUkucNwP0P419hC8v78PEM25pW5mBho94HRCgO3Q@mail.gmail.com/
+
+			for _, ldir := range strings.Split(lowerdirs, ":") {
+				err = fsoverlay.CheckFuse(ldir)
+				if err != nil {
+					break
+				}
+			}
+		}
+	}
+	if err == nil {
+		err = c.rpcOps.Mount(source, dest, mnt.Type, flags, optsString)
+	}
 	if os.IsNotExist(err) {
 		switch tag {
 		case mount.KernelTag,
