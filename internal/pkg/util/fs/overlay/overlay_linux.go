@@ -22,9 +22,10 @@ var statfs = unix.Statfs
 type dir uint8
 
 const (
-	_ dir = iota << 1
+	_ dir = 1 << iota
 	lowerDir
 	upperDir
+	fuseDir
 )
 
 type fs struct {
@@ -49,7 +50,7 @@ var incompatibleFs = map[int64]fs{
 	// FUSE filesystem
 	Fuse: {
 		name:       "FUSE",
-		overlayDir: upperDir,
+		overlayDir: upperDir | fuseDir,
 	},
 	// ECRYPT filesystem
 	Ecrypt: {
@@ -100,6 +101,12 @@ func CheckLower(path string) error {
 	return check(path, lowerDir)
 }
 
+// CheckFuse checks if the filesystem of the provided path
+// is of type FUSE and if so return errIncompatibleFs.
+func CheckFuse(path string) error {
+	return check(path, fuseDir)
+}
+
 type errIncompatibleFs struct {
 	path string
 	name string
@@ -107,6 +114,7 @@ type errIncompatibleFs struct {
 }
 
 func (e *errIncompatibleFs) Error() string {
+	// fuseDir is checked as lower layer
 	overlayDir := "lower"
 	if e.dir == upperDir {
 		overlayDir = "upper"
