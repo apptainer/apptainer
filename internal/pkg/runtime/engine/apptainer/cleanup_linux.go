@@ -48,7 +48,7 @@ func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, st
 
 	if imageDriver != nil {
 		if err := umount(); err != nil {
-			sylog.Errorf("Cleanup error: %s", err)
+			sylog.Infof("Cleanup error: %s", err)
 		}
 	}
 
