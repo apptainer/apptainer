@@ -13,6 +13,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   (akin to the runscript and start sections).
 - Skip trying to user kernel overlayfs when using writable overlay and the
   lower layer is FUSE, because of a kernel bug introduced in kernel 5.15.
+- Add additional hidden options to the action command for testing different fakeroot
+  modes with `--fakeroot`: `--ignore-subuid`, `--ignore-fakeroot-command`,
+  and `--ignore-userns`.
 
 ## v1.1.0-rc.2 - \[2022-08-16\]
 
