@@ -88,6 +88,10 @@ var (
 	MemorySwap        string // bytes
 	OomKillDisable    bool
 	PidsLimit         int
+
+	IgnoreSubuid      bool
+	IgnoreFakerootCmd bool
+	IgnoreUserns      bool
 )
 
 // --app
@@ -802,6 +806,39 @@ var actionPidsLimitFlag = cmdline.Flag{
 	EnvKeys:      []string{"PIDS_LIMIT"},
 }
 
+// --ignore-subuid
+var actionIgnoreSubuidFlag = cmdline.Flag{
+	ID:           "actionIgnoreSubuidFlag",
+	Value:        &IgnoreSubuid,
+	DefaultValue: false,
+	Name:         "ignore-subuid",
+	Usage:        "ignore entries inside /etc/subuid",
+	EnvKeys:      []string{"IGNORE_SUBUID"},
+	Hidden:       true,
+}
+
+// --ignore-fakeroot-command
+var actionIgnoreFakerootCommand = cmdline.Flag{
+	ID:           "actionIgnoreFakerootCommandFlag",
+	Value:        &IgnoreFakerootCmd,
+	DefaultValue: false,
+	Name:         "ignore-fakeroot-command",
+	Usage:        "ignore fakeroot command",
+	EnvKeys:      []string{"IGNORE_FAKEROOT_COMMAND"},
+	Hidden:       true,
+}
+
+// --ignore-userns
+var actionIgnoreUsernsFlag = cmdline.Flag{
+	ID:           "actionIgnoreUsernsFlag",
+	Value:        &IgnoreUserns,
+	DefaultValue: false,
+	Name:         "ignore-userns",
+	Usage:        "ignore user namespaces",
+	EnvKeys:      []string{"IGNORE_USERNS"},
+	Hidden:       true,
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(ExecCmd)
@@ -892,5 +929,8 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&actionMemorySwapFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionOomKillDisableFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionPidsLimitFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionIgnoreSubuidFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionIgnoreFakerootCommand, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionIgnoreUsernsFlag, actionsInstanceCmd...)
 	})
 }

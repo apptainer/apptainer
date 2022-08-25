@@ -10,6 +10,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -193,22 +194,36 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			// Already running root-mapped unprivileged
 			IsFakeroot = false
 			sylog.Debugf("running root-mapped unprivileged")
-			fakerootPath, err = fakeroot.FindFake()
+			var err error
+			if IgnoreFakerootCmd {
+				err = errors.New("fakeroot command is ignored because of --ignore-fakeroot-command")
+			} else {
+				fakerootPath, err = fakeroot.FindFake()
+			}
 			if err != nil {
 				sylog.Infof("fakeroot command not found, using only root-mapped namespace")
 			} else {
 				sylog.Infof("Using fakeroot command combined with root-mapped namespace")
 			}
-		} else if !isPrivileged && !fakeroot.IsUIDMapped(uid) {
+		} else if !isPrivileged && (!fakeroot.IsUIDMapped(uid) || IgnoreSubuid) {
 			sylog.Infof("User not listed in %v, trying root-mapped namespace", fakeroot.SubUIDFile)
 			IsFakeroot = false
-			err = fakeroot.UnshareRootMapped(os.Args)
+			var err error
+			if IgnoreUserns {
+				err = errors.New("could not start root-mapped namespace because of --ignore-userns is set")
+			} else {
+				err = fakeroot.UnshareRootMapped(os.Args)
+			}
 			if err == nil {
 				// All good
 				os.Exit(0)
 			}
 			sylog.Debugf("UnshareRootMapped failed: %v", err)
-			fakerootPath, err = fakeroot.FindFake()
+			if IgnoreFakerootCmd {
+				err = errors.New("fakeroot command is ignored because of --ignore-fakeroot-command")
+			} else {
+				fakerootPath, err = fakeroot.FindFake()
+			}
 			if err != nil {
 				sylog.Fatalf("--fakeroot requires either being in %v, unprivileged user namespaces, or the fakeroot command", fakeroot.SubUIDFile)
 			}
@@ -367,6 +382,9 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			}
 		}
 	}
+
+	// IgnoreUserns is a hidden control flag
+	UserNamespace = UserNamespace && !IgnoreUserns
 
 	// early check for key material before we start engine so we can fail fast if missing
 	// we do not need this check when joining a running instance, just for starting a container
@@ -595,7 +613,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	}
 
 	if IsFakeroot {
-		UserNamespace = true
+		UserNamespace = !IgnoreUserns
 	}
 
 	/* if name submitted, run as instance */

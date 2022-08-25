@@ -295,6 +295,122 @@ func (c ctx) testFuseExt3Mount(t *testing.T) {
 	)
 }
 
+func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
+	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
+	defer e2e.Privileged(cleanup)
+
+	sandbox, err := ioutil.TempDir(tempDir, "sandbox")
+	if err != nil {
+		t.Fatalf("could not create sandbox folder inside tempdir: %s", tempDir)
+	}
+
+	sif := fmt.Sprintf("%s/centos7.sif", tempDir)
+	overlay := fmt.Sprintf("%s/overlay.img", tempDir)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs(sif, "docker://centos:7"),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--sandbox", "--force", sandbox, sif),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("overlay"),
+		e2e.WithArgs("create", "--fakeroot", "--size", "512", overlay),
+		e2e.ExpectExit(0),
+	)
+
+	// we need to increase sessiondir max size to 32MB
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("config"),
+		e2e.WithArgs("global", "-s", "sessiondir max size", "1024"),
+		e2e.ExpectExit(0),
+	)
+
+	// restore sessiondir max size to 16MB
+	defer c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("config"),
+		e2e.WithArgs("global", "-s", "sessiondir max size", "16"),
+		e2e.ExpectExit(0),
+	)
+
+	// running under the mode 1, 1a (--with-suid) (https://apptainer.org/docs/user/main/fakeroot.html)
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--overlay", overlay, sif, "yum", "install", "-y", "openssh"),
+		e2e.ExpectExit(0), // sif with --writable-tmpfs isn't working (see https://github.com/apptainer/apptainer/issues/651)
+	)
+
+	// running under the mode 1, 1b (--without-suid) (https://apptainer.org/docs/user/main/fakeroot.html)
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--userns", "--writable-tmpfs", sif, "yum", "install", "-y", "openssh"),
+		e2e.ExpectExit(0),
+	)
+
+	// running under the mode 2(https://apptainer.org/docs/user/main/fakeroot.html)
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--userns", "--writable-tmpfs", "--ignore-subuid", "--ignore-fakeroot-command", sif, "yum", "install", "-y", "openssh"),
+		e2e.ExpectExit(1),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--userns", "--writable-tmpfs", "--ignore-subuid", "--ignore-fakeroot-command", sif, "yum", "install", "-y", "epel-release"),
+		e2e.ExpectExit(0),
+	)
+
+	// running under the mode 3(https://apptainer.org/docs/user/main/fakeroot.html)
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--userns", "--writable-tmpfs", "--ignore-subuid", sif, "yum", "install", "-y", "openssh"),
+		e2e.ExpectExit(0),
+	)
+
+	// running under the mode 4(https://apptainer.org/docs/user/main/fakeroot.html)
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--writable-tmpfs", "--ignore-userns", "--ignore-subuid", sandbox, "yum", "install", "-y", "openssh"),
+		e2e.ExpectExit(1), // because only fakeroot is used. cpio: open failure
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--writable-tmpfs", "--ignore-userns", "--ignore-subuid", sandbox, "yum", "install", "-y", "epel-release"),
+		e2e.ExpectExit(0),
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -302,12 +418,13 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"0555 cache":           c.testRun555Cache,
-		"inaccessible home":    c.issue409,
-		"passphrase encrypted": c.testRunPassphraseEncrypted,
-		"PEM encrypted":        c.testRunPEMEncrypted,
-		"fuse overlayfs":       c.testFuseOverlayfs,
-		"fuse squash mount":    c.testFuseSquashMount,
-		"fuse ext3 mount":      c.testFuseExt3Mount,
+		"0555 cache":                          c.testRun555Cache,
+		"inaccessible home":                   c.issue409,
+		"passphrase encrypted":                c.testRunPassphraseEncrypted,
+		"PEM encrypted":                       c.testRunPEMEncrypted,
+		"fuse overlayfs":                      c.testFuseOverlayfs,
+		"fuse squash mount":                   c.testFuseSquashMount,
+		"fuse ext3 mount":                     c.testFuseExt3Mount,
+		"add package with fakeroot and tmpfs": c.testAddPackageWithFakerootAndTmpfs,
 	}
 }
