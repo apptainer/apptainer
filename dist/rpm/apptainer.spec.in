@@ -74,11 +74,12 @@ BuildRequires: cryptsetup
 Requires: squashfuse
 Requires: fakeroot
 Requires: fuse-overlayfs
-%if 0%{?el7}
-Requires: fuse2fs
-%else
 Requires: e2fsprogs
-%endif
+# Uncomment this for the epel build, but we don't want it for the Apptainer
+#  release build because there the same rpm is shared across OS versions
+#%if 0%{?el7}
+#Requires: fuse2fs
+#%endif
 
 %description
 Apptainer provides functionality to make portable
@@ -134,6 +135,17 @@ export PATH=$PWD/go/bin:$PATH
 %endif
 
 %make_install -C builddir V=
+
+%if 0%{?el7}
+# Check for fuse2fs only as a pre-install so that an rpm built on el7 can
+# be used on el8 & el9.  Only el7 has a fuse2fs package, the others have 
+# the fuse2fs program in the e2fsprogs package.
+%pre
+if [ ! -f /usr/bin/fuse2fs ] && [ ! -f /usr/sbin/fuse2fs ]; then
+	echo "fuse2fs not found, please yum install /usr/*bin/fuse2fs from epel" >&2
+	exit 1
+fi
+%endif
 
 %posttrans
 # clean out empty directories under /etc/singularity

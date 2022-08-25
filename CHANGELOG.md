@@ -16,6 +16,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add additional hidden options to the action command for testing different fakeroot
   modes with `--fakeroot`: `--ignore-subuid`, `--ignore-fakeroot-command`,
   and `--ignore-userns`.
+- Fix github release rpm to be installable on EL8 & EL9 by not requiring
+  the fuse2fs package which doesn't exist there.  Instead, on EL7 cause an
+  install failure if /usr/*bin/fuse2fs is not installed with a message
+  explaining how to fix it.  The EPEL build won't have this issue; there
+  EPEL7 will require the fuse2fs package.
 
 ## v1.1.0-rc.2 - \[2022-08-16\]
 
