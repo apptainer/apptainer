@@ -71,7 +71,8 @@ covered by tests.
       - `git submodule deinit -f .`
       - `git submodule update --init`
       - `cd apptainer_source`
-      - `git checkout main`
+      - `git fetch`
+      - `git checkout v1.0.0-rc.1`
       - `cd ..`
       - `git add apptainer_source`
    - [Admin Docs](https://apptainer.org/docs/admin/main/) can be
