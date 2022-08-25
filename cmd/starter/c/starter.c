@@ -1700,5 +1700,8 @@ __attribute__((constructor)) static void init(void) {
     } else if ( clone_flags & CLONE_NEWUSER != 0 ) {
         fatalf("Failed to create container namespace: %s\n", nserror(errno, CLONE_NEWUSER));
     }
+    if ( errno == EINVAL ) {
+        infof("Unprivileged user namespaces may not be enabled\n");
+    }
     fatalf("Failed to create container process: %s\n", strerror(errno));
 }
