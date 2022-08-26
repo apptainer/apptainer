@@ -39,12 +39,12 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/sylabs/json-resp v0.8.1
 	github.com/urfave/cli v1.22.5 // indirect
-	github.com/vbauerster/mpb/v7 v7.4.1
+	github.com/vbauerster/mpb/v7 v7.5.0
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
 	github.com/yvasiyarov/gorelic v0.0.6 // indirect
 	github.com/yvasiyarov/newrelic_platform_go v0.0.0-20160601141957-9c099fbc30e9 // indirect
-	golang.org/x/sys v0.0.0-20220209214540-3681064d5158
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
 	golang.org/x/term v0.0.0-20210916214954-140adaaadfaf
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools/v3 v3.1.0
