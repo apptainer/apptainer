@@ -92,6 +92,8 @@ var (
 	IgnoreSubuid      bool
 	IgnoreFakerootCmd bool
 	IgnoreUserns      bool
+
+	NoImgDrv bool
 )
 
 // --app
@@ -839,6 +841,16 @@ var actionIgnoreUsernsFlag = cmdline.Flag{
 	Hidden:       true,
 }
 
+// --no-imgdrv
+var actionNoImgDrv = cmdline.Flag{
+	ID:           "actionNoImgDrv",
+	Value:        &NoImgDrv,
+	DefaultValue: false,
+	Name:         "no-imgdrv",
+	Usage:        "Disable image drivers",
+	EnvKeys:      []string{"NOIMGDRV"},
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(ExecCmd)
@@ -932,5 +944,6 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&actionIgnoreSubuidFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionIgnoreFakerootCommand, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionIgnoreUsernsFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionNoImgDrv, actionsInstanceCmd...)
 	})
 }

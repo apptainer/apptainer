@@ -786,7 +786,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	if (UserNamespace || insideUserNs) && fs.IsFile(image) {
 		convert := true
 
-		if engineConfig.File.ImageDriver != "" {
+		if !NoImgDrv && engineConfig.File.ImageDriver != "" {
 			// load image driver plugins
 			callbackType := (apptainercallback.RegisterImageDriver)(nil)
 			callbacks, err := plugin.LoadCallbacks(callbackType)
