@@ -24,8 +24,10 @@
 - Diana Langenbach <dcl@dcl.sh>
 - Dimitri Papadopoulos <3234522+DimitriPapadopoulos@users.noreply.github.com>
 - Divya Cote <divya.cote@gmail.com>
+- Edita Kizinevič <edita.kizinevic@cern.ch>
 - Eduardo Arango <eduardo@sylabs.io>, <arangogutierrez@gmail.com>
 - Egbert Eich <eich@suse.com>
+- Eng Zer Jun <engzerjun@gmail.com>
 - Eric Müller <mueller@kip.uni-heidelberg.de>
 - Felix Abecassis <fabecassis@nvidia.com>
 - Geoffroy Vallee <geoffroy@sylabs.io>, <geoffroy.vallee@gmail.com>

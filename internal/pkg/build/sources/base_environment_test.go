@@ -10,8 +10,6 @@
 package sources
 
 import (
-	"io/ioutil"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -20,13 +18,7 @@ import (
 )
 
 func testWithGoodDir(t *testing.T, f func(d string) error) {
-	d, err := ioutil.TempDir(os.TempDir(), "test")
-	if err != nil {
-		t.Fatalf("Failed to make temporary directory: %v", err)
-	}
-	defer os.RemoveAll(d)
-
-	if err := f(d); err != nil {
+	if err := f(t.TempDir()); err != nil {
 		t.Fatalf("Unexpected failure: %v", err)
 	}
 }

@@ -11,7 +11,6 @@ package files
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -80,10 +79,7 @@ func contains(slice []string, s string) bool {
 }
 
 func createTestDirLayout(t *testing.T) string {
-	testDirName, err := ioutil.TempDir("", "files-test-dir-")
-	if err != nil {
-		t.Fatalf("cannot create temporary dir for testing: %s\n", err)
-	}
+	testDirName := t.TempDir()
 
 	dirList := []string{
 		"dirL1",
@@ -109,7 +105,7 @@ func createTestDirLayout(t *testing.T) string {
 		".file",
 	}
 
-	err = filepath.Walk(testDirName, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(testDirName, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
 			return err
@@ -155,7 +151,6 @@ func createTestDirLayout(t *testing.T) string {
 
 func TestExpandPath(t *testing.T) {
 	testDir := createTestDirLayout(t)
-	defer os.RemoveAll(testDir)
 
 	tests := []struct {
 		name    string

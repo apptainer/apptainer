@@ -61,11 +61,7 @@ func testSquashfs(t *testing.T, tmpParent string) {
 		t.Skip("unsquashfs not found")
 	}
 
-	dir, err := ioutil.TempDir(tmpParent, "unpacker-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	// create archive with files present in this directory
 	archive := createArchive(t)

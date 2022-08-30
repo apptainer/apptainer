@@ -46,18 +46,14 @@ func runSandboxInitializerTest(t *testing.T, img *Image, path string) error {
 
 func TestSandboxInitializer(t *testing.T) {
 	// Valid case using a directory
-	path, err := ioutil.TempDir("", "")
-	if err != nil {
-		t.Fatalf("cannot create a temporary directory: %s\n", err)
-	}
-	defer os.RemoveAll(path)
+	path := t.TempDir()
 
 	img := &Image{
 		Path: path,
 		Name: "test",
 	}
 
-	err = runSandboxInitializerTest(t, img, path)
+	err := runSandboxInitializerTest(t, img, path)
 	if err != nil {
 		t.Fatalf("sandbox initializer failed: %s\n", err)
 	}
