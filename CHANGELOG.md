@@ -21,6 +21,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   install failure if /usr/*bin/fuse2fs is not installed with a message
   explaining how to fix it.  The EPEL build won't have this issue; there
   EPEL7 will require the fuse2fs package.
+- Fix ORAS image push to registries with authorization servers not supporting
+  multiple scope query parameter.
 
 ## v1.1.0-rc.2 - \[2022-08-16\]
 
