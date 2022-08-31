@@ -33,11 +33,11 @@ import (
 	ocitypes "github.com/containers/image/v5/types"
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
-	"oras.land/oras-go/pkg/auth"
 	oras_docker "oras.land/oras-go/pkg/auth/docker"
 	"oras.land/oras-go/pkg/content"
 	orasctx "oras.land/oras-go/pkg/context"
 	"oras.land/oras-go/pkg/oras"
+	orasAuth "oras.land/oras-go/pkg/registry/remote/auth"
 )
 
 const (
@@ -62,7 +62,31 @@ const (
 
 var sifLayerMediaTypes = []string{SifLayerMediaTypeV1, SifLayerMediaTypeProto}
 
-func getResolver(ctx context.Context, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (remotes.Resolver, error) {
+type orasUploadTransport struct {
+	rt    http.RoundTripper
+	scope string
+}
+
+func (t *orasUploadTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	values := r.URL.Query()
+	// service is a required parameter
+	if values.Has("service") {
+		// inspect scopes and merge them if possible
+		if scopes, ok := values["scope"]; ok && len(scopes) > 1 {
+			values["scope"] = orasAuth.CleanScopes(scopes)
+			r.URL.RawQuery = values.Encode()
+		}
+	}
+	return t.rt.RoundTrip(r)
+}
+
+func newOrasUploadTransport() http.RoundTripper {
+	return &orasUploadTransport{
+		rt: http.DefaultTransport,
+	}
+}
+
+func getResolver(ctx context.Context, ociAuth *ocitypes.DockerAuthConfig, noHTTPS, push bool) (remotes.Resolver, error) {
 	opts := docker.ResolverOptions{Credentials: genCredfn(ociAuth), PlainHTTP: noHTTPS}
 	if ociAuth != nil && (ociAuth.Username != "" || ociAuth.Password != "") {
 		return docker.NewResolver(opts), nil
@@ -74,13 +98,18 @@ func getResolver(ctx context.Context, ociAuth *ocitypes.DockerAuthConfig, noHTTP
 		return docker.NewResolver(opts), nil
 	}
 
-	resolverOpts := []auth.ResolverOption{
-		auth.WithResolverClient(&http.Client{}),
+	httpClient := &http.Client{}
+
+	// docker client doesn't merge scopes correctly and can set multiple scopes in url parameters when pushing image:
+	// "scope=repository:my_namespace/alpine:pull&scope=repository:my_namespace:alpine:pull,push",
+	// this could be merged to "scope=repository:my_namespace:alpine:pull,push".
+	// Since there are authorization servers that might not support multiple scopes, a custom transport is injected
+	// to merge duplicated scopes
+	if push {
+		httpClient.Transport = newOrasUploadTransport()
 	}
-	if noHTTPS {
-		resolverOpts = append(resolverOpts, auth.WithResolverPlainHTTP())
-	}
-	return cli.ResolverWithOpts(resolverOpts...)
+
+	return cli.Resolver(ctx, httpClient, noHTTPS)
 }
 
 // DownloadImage downloads a SIF image specified by an oci reference to a file using the included credentials
@@ -99,7 +128,7 @@ func DownloadImage(ctx context.Context, imagePath, ref string, ociAuth *ocitypes
 		sylog.Infof("No tag or digest found, using default: %s", SifDefaultTag)
 	}
 
-	resolver, err := getResolver(ctx, ociAuth, noHTTPS)
+	resolver, err := getResolver(ctx, ociAuth, noHTTPS, false)
 	if err != nil {
 		return fmt.Errorf("while getting resolver: %s", err)
 	}
@@ -184,7 +213,7 @@ func UploadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.Docker
 		sylog.Infof("No tag or digest found, using default: %s", SifDefaultTag)
 	}
 
-	resolver, err := getResolver(ctx, ociAuth, noHTTPS)
+	resolver, err := getResolver(ctx, ociAuth, noHTTPS, true)
 	if err != nil {
 		return fmt.Errorf("while getting resolver: %s", err)
 	}
@@ -209,11 +238,11 @@ func UploadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.Docker
 		return fmt.Errorf("unable to load config: %w", err)
 	}
 
-	if err := store.StoreManifest(spec.String(), manifestDesc, manifest); err != nil {
+	if err := store.StoreManifest("local", manifestDesc, manifest); err != nil {
 		return fmt.Errorf("unable to store manifest: %w", err)
 	}
 
-	if _, err = oras.Copy(orasctx.WithLoggerDiscarded(ctx), store, spec.String(), resolver, ""); err != nil {
+	if _, err = oras.Copy(orasctx.WithLoggerDiscarded(ctx), store, "local", resolver, spec.String()); err != nil {
 		return fmt.Errorf("unable to push: %w", err)
 	}
 
@@ -244,7 +273,7 @@ func ImageSHA(ctx context.Context, uri string, ociAuth *ocitypes.DockerAuthConfi
 	ref := strings.TrimPrefix(uri, "oras://")
 	ref = strings.TrimPrefix(ref, "//")
 
-	resolver, err := getResolver(ctx, ociAuth, noHTTPS)
+	resolver, err := getResolver(ctx, ociAuth, noHTTPS, false)
 	if err != nil {
 		return "", fmt.Errorf("while getting resolver: %s", err)
 	}
