@@ -2327,6 +2327,23 @@ func (c actionTests) actionNoMount(t *testing.T) {
 			testContained: true,
 			exit:          0,
 		},
+		// bind-paths should disable all of the bind path mounts - including both defaults
+		{
+			name:          "binds-paths-hosts",
+			noMount:       "bind-paths",
+			noMatch:       "on /etc/hosts",
+			testDefault:   true,
+			testContained: true,
+			exit:          0,
+		},
+		{
+			name:          "bind-paths-localtime",
+			noMount:       "bind-paths",
+			noMatch:       "on /etc/localtime",
+			testDefault:   true,
+			testContained: true,
+			exit:          0,
+		},
 	}
 
 	for _, tt := range tests {
