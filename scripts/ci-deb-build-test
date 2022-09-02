@@ -8,7 +8,8 @@
 
 # install dependencies
 apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -y \
+export DEBIAN_FRONTEND=noninteractive
+apt-get install -y \
     build-essential \
     libseccomp-dev \
     pkg-config \
@@ -22,12 +23,16 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     curl wget git
 apt-get install -y \
     devscripts \
+    debhelper \
+    dh-autoreconf \
     help2man \
     libarchive-dev \
     libssl-dev \
-    python \
+    python2 \
     uuid-dev \
     golang-go
+# for squashfuse_ll build
+apt-get install -y autoconf automake libtool pkg-config libfuse-dev zlib1g-dev
 
 # move source code down a level because debuild writes into parent dir
 shopt -s extglob
@@ -61,6 +66,22 @@ su testuser -c '
     fi
   fi
   go version
+  # download additional source & patch urls listed in rpm
+  SPEC=dist/rpm/apptainer.spec.in
+  DOWNLOADURL="$(sed -n "s/^Source[1-9][0-9]*: //p" $SPEC)"
+  DOWNLOADURL="$DOWNLOADURL $(sed -n "s/^Patch[1-9][0-9]*: //p" $SPEC)"
+  SUBS="$(sed -n "s/.*%global //p" $SPEC)"
+  for URL in $DOWNLOADURL; do
+      if [[ "$URL" != http* ]]; then
+	  continue
+      fi
+      URL=$(echo "$SUBS" | (while read FROM TO; do
+	      URL="$(echo $URL|sed "s,%{$FROM},$TO,g")"
+	    done
+	    echo $URL))
+      BASE="$(basename $URL)"
+      curl -f -L -sS -o debian/$BASE $URL
+  done
   export DEB_FULLNAME="'"${DEB_FULLNAME:-CI Test}"'"
   export DEBEMAIL="'${DEBEMAIL:-citest@example.com}'"
   debuild --build=binary --no-sign --lintian-opts --display-info --show-overrides
