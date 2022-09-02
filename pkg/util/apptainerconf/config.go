@@ -11,6 +11,7 @@ package apptainerconf
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -44,8 +45,9 @@ func ApplyBuildConfig(config *File) {
 // user's $PATH plus ":" for "$PATH:" in BinaryPath.  If nonSuid is true,
 // then SuidBinaryPath gets the same value as BinaryPath, otherwise
 // SuidBinaryPath gets the value of the binary path with with "$PATH:"
-// replaced with nothing,
-func SetBinaryPath(nonSuid bool) {
+// replaced with nothing.  libexecdir + "apptainer/bin" is always included
+// either at the beginning of $PATH if present, or the very beginning.
+func SetBinaryPath(libexecDir string, nonSuid bool) {
 	if currentConfig == nil {
 		sylog.Fatalf("apptainerconf.SetCurrentConfig() must be called before SetBinaryPath()")
 	}
@@ -53,14 +55,21 @@ func SetBinaryPath(nonSuid bool) {
 	if userPath != "" {
 		userPath += ":"
 	}
+	internalPath := filepath.Join(libexecDir, "apptainer/bin") + ":"
+	if !strings.Contains(currentConfig.BinaryPath, "$PATH:") {
+		// If there's no "$PATH:" in binary path, add internalPath
+		//  beginning of search path.  Otherwise put it at the
+		//  beginning of where "$PATH:" is, below.
+		currentConfig.BinaryPath = internalPath + currentConfig.BinaryPath
+	}
 	binaryPath := currentConfig.BinaryPath
-	currentConfig.BinaryPath = strings.Replace(binaryPath, "$PATH:", userPath, 1)
+	currentConfig.BinaryPath = strings.Replace(binaryPath, "$PATH:", internalPath+userPath, 1)
 	sylog.Debugf("Setting binary path to %v", currentConfig.BinaryPath)
 	if nonSuid {
 		sylog.Debugf("Using that path for all binaries")
 		currentConfig.SuidBinaryPath = currentConfig.BinaryPath
 	} else {
-		currentConfig.SuidBinaryPath = strings.Replace(binaryPath, "$PATH:", "", 1)
+		currentConfig.SuidBinaryPath = strings.Replace(binaryPath, "$PATH:", internalPath, 1)
 		sylog.Debugf("Setting suid binary path to %v", currentConfig.SuidBinaryPath)
 	}
 }
@@ -411,7 +420,10 @@ memory fs type = {{ .MemoryFSType }}
 # DEFAULT: $PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # Colon-separated list of directories to search for many binaries.  May include
 # "$PATH:", which will be replaced by the user's PATH when not running a binary
-# that may be run with elevated privileges from the setuid program flow.
+# that may be run with elevated privileges from the setuid program flow.  The
+# internal bin ${prefix}/libexec/apptainer/bin is always included, either at the
+# beginning of "$PATH:" if it is present or at the very beginning if "$PATH:" is
+# not present.
 # binary path = 
 
 # MKSQUASHFS PROCS: [UINT]

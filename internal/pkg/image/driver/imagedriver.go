@@ -48,14 +48,19 @@ type fuseappsDriver struct {
 	overlayFeature fuseappsFeature
 }
 
-func (f *fuseappsFeature) init(binName string, purpose string, desired image.DriverFeature) {
+func (f *fuseappsFeature) init(binNames string, purpose string, desired image.DriverFeature) {
 	var err error
-	f.binName = binName
-	f.cmdPath, err = bin.FindBin(binName)
+	for _, binName := range strings.Split(binNames, "|") {
+		f.binName = binName
+		f.cmdPath, err = bin.FindBin(binName)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
-		sylog.Debugf("%v mounting not enabled because: %v", binName, err)
+		sylog.Debugf("%v mounting not enabled because: %v", f.binName, err)
 		if desired != 0 {
-			sylog.Infof("%v not found, will not be able to %v", binName, purpose)
+			sylog.Infof("%v not found, will not be able to %v", f.binName, purpose)
 		}
 	}
 }
@@ -79,7 +84,7 @@ func InitImageDrivers(register bool, unprivileged bool, fileconf *apptainerconf.
 	var squashFeature fuseappsFeature
 	var ext3Feature fuseappsFeature
 	var overlayFeature fuseappsFeature
-	squashFeature.init("squashfuse", "mount SIF", desiredFeatures&image.ImageFeature)
+	squashFeature.init("squashfuse_ll|squashfuse", "mount SIF", desiredFeatures&image.ImageFeature)
 	ext3Feature.init("fuse2fs", "mount EXT3 filesystems", desiredFeatures&image.ImageFeature)
 	overlayFeature.init("fuse-overlayfs", "use overlay", desiredFeatures&image.OverlayFeature)
 
@@ -116,9 +121,20 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 
 	case "squashfs":
 		f = &d.squashFeature
-		optsStr := fmt.Sprintf("uid=%v,gid=%v", os.Getuid(), os.Getgid())
+		optsStr := ""
+		// Unfortunately squashfuse_ll does not currently support
+		//  setting the uid/gid options, so need to skip those with
+		//  that.  It makes setuid-flow fakeroot overlay unwritable
+		//  because the default root ownership gets mapped to 65534
+		//  inside the container.
+		if f.binName == "squashfuse" {
+			optsStr = fmt.Sprintf("uid=%v,gid=%v", os.Getuid(), os.Getgid())
+		}
 		if params.Offset > 0 {
-			optsStr += ",offset=" + strconv.FormatUint(params.Offset, 10)
+			if optsStr != "" {
+				optsStr += ","
+			}
+			optsStr += "offset=" + strconv.FormatUint(params.Offset, 10)
 		}
 		srcPath := params.Source
 		if path.Dir(params.Source) == "/proc/self/fd" {
@@ -205,23 +221,40 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 		return fmt.Errorf("no %v process started", f.binName)
 	}
 
+	ignoreMsgs := []string{
+		// from fuse2fs
+		"journal is not supported.",
+		"Mounting read-only.",
+		// from squashfuse_ll
+		"failed to clone device fd",
+		"continue without -o clone_fd",
+	}
 	filterMsg := func() string {
-		stdoutstr := stdout.String()
-		if len(stdoutstr) > 0 {
-			for _, line := range strings.Split(stdoutstr, "\n") {
+		var errstr string
+		for idx, fd := range []bytes.Buffer{stdout, stderr} {
+			str := fd.String()
+			for _, line := range strings.Split(str, "\n") {
 				if len(line) == 0 {
 					continue
 				}
-				if strings.Contains(line, "journal is not supported.") ||
-					line == "Mounting read-only." {
-					// skip these unhelpful messages from fuse2fs
-					sylog.Debugf("%v", stdoutstr)
-					continue
+				skip := false
+				for _, ignoreMsg := range ignoreMsgs {
+					if strings.Contains(line, ignoreMsg) {
+						// skip these unhelpful messages
+						skip = true
+						break
+					}
 				}
-				sylog.Infof("%v\n", line)
+				if skip {
+					sylog.Debugf("%v", line)
+				} else if idx == 0 {
+					sylog.Infof("%v\n", line)
+				} else {
+					errstr += line + "\n"
+				}
 			}
 		}
-		return stderr.String()
+		return errstr
 	}
 
 	f.instances = append(f.instances, fuseappsInstance{cmd, params})
