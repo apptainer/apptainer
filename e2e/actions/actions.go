@@ -2414,6 +2414,48 @@ func (c actionTests) actionCompat(t *testing.T) {
 	}
 }
 
+// actionFakerootHome verifies that home dir is /root with --fakeroot
+// (see: https://github.com/apptainer/apptainer/issues/618)
+func (c actionTests) actionFakerootHome(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	type test struct {
+		name     string
+		args     []string
+		exitCode int
+		expect   e2e.ApptainerCmdResultOp
+	}
+
+	tests := []test{
+		{
+			name:     "fakeroot --with-suid",
+			args:     []string{c.env.ImagePath, "sh", "-c", "echo $HOME"},
+			exitCode: 0,
+			expect:   e2e.ExpectOutput(e2e.ExactMatch, "/root"),
+		},
+		{
+			name:     "fakeroot --without-suid",
+			args:     []string{"--userns", c.env.ImagePath, "sh", "-c", "echo $HOME"},
+			exitCode: 0,
+			expect:   e2e.ExpectOutput(e2e.ExactMatch, "/root"),
+		},
+	}
+
+	for _, tt := range tests {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(e2e.FakerootProfile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(tt.args...),
+			e2e.ExpectExit(
+				tt.exitCode,
+				tt.expect,
+			),
+		)
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := actionTests{
@@ -2458,5 +2500,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"no-mount":              c.actionNoMount,       // test --no-mount
 		"compat":                c.actionCompat,        // test --compat
 		"invalidRemote":         np(c.invalidRemote),   // GHSA-5mv9-q7fq-9394
+		"fakeroot home":         c.actionFakerootHome,  // test home dir in fakeroot
 	}
 }
