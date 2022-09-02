@@ -11,6 +11,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - The `--no-mount` flag now accepts the value `bind-paths` to disable mounting of
   all `bind path` entries in `apptainer.conf.
+- Instances started by a non-root user can use `--apply-cgroups` to apply
+  resource limits. Requires cgroups v2, and delegation configured via systemd.
 
 ## Changes Since Last Release Candidate
 

@@ -66,11 +66,6 @@ func (c *ctx) instanceStats(t *testing.T, profile e2e.Profile) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// stats only for privileged atm
-			if !profile.Privileged() {
-				t.Skip()
-			}
-
 			// We always expect stats output, not create
 			createExitFunc := []e2e.ApptainerCmdResultOp{}
 			instanceName := randomName(t)
@@ -156,6 +151,7 @@ func (c *ctx) instanceApply(t *testing.T, profile e2e.Profile) {
 			createArgs: []string{"--apply-cgroups", "testdata/cgroups/memory_limit.toml", c.env.ImagePath},
 			// We get a CLI 255 error code, not the 137 that the starter receives for an OOM kill
 			startErrorCode: 255,
+			startErrorOut:  "signal: killed",
 			rootfull:       true,
 			rootless:       true,
 		},
@@ -181,56 +177,60 @@ func (c *ctx) instanceApply(t *testing.T, profile e2e.Profile) {
 	}
 
 	for _, tt := range tests {
-		if profile.Privileged() && !tt.rootfull {
-			t.Skip()
-		}
-		if !profile.Privileged() && !tt.rootless {
-			t.Skip()
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			if profile.Privileged() && !tt.rootfull {
+				t.Skip()
+			}
+			if !profile.Privileged() && !tt.rootless {
+				t.Skip()
+			}
 
-		createExitFunc := []e2e.ApptainerCmdResultOp{}
-		if tt.startErrorOut != "" {
-			createExitFunc = []e2e.ApptainerCmdResultOp{e2e.ExpectError(e2e.ContainMatch, tt.startErrorOut)}
-		}
-		execExitFunc := []e2e.ApptainerCmdResultOp{}
-		if tt.execErrorOut != "" {
-			execExitFunc = []e2e.ApptainerCmdResultOp{e2e.ExpectError(e2e.ContainMatch, tt.execErrorOut)}
-		}
-		// pick up a random name
-		instanceName := randomName(t)
-		joinName := fmt.Sprintf("instance://%s", instanceName)
+			createExitFunc := []e2e.ApptainerCmdResultOp{}
+			if tt.startErrorOut != "" {
+				createExitFunc = []e2e.ApptainerCmdResultOp{e2e.ExpectError(e2e.ContainMatch, tt.startErrorOut)}
+			}
+			execExitFunc := []e2e.ApptainerCmdResultOp{}
+			if tt.execErrorOut != "" {
+				execExitFunc = []e2e.ApptainerCmdResultOp{e2e.ExpectError(e2e.ContainMatch, tt.execErrorOut)}
+			}
+			// pick up a random name
+			instanceName := randomName(t)
+			joinName := fmt.Sprintf("instance://%s", instanceName)
 
-		createArgs := append(tt.createArgs, instanceName)
-		c.env.RunApptainer(
-			t,
-			e2e.AsSubtest(tt.name+"/start"),
-			e2e.WithProfile(profile),
-			e2e.WithCommand("instance start"),
-			e2e.WithArgs(createArgs...),
-			e2e.ExpectExit(tt.startErrorCode, createExitFunc...),
-		)
-		if tt.startErrorCode != 0 {
-			continue
-		}
+			createArgs := append(tt.createArgs, instanceName)
+			c.env.RunApptainer(
+				t,
+				e2e.AsSubtest("start"),
+				e2e.WithProfile(profile),
+				e2e.WithCommand("instance start"),
+				e2e.WithArgs(createArgs...),
+				e2e.ExpectExit(tt.startErrorCode, createExitFunc...),
+			)
+			if tt.startErrorCode != 0 {
+				return
+			}
 
-		execArgs := append([]string{joinName}, tt.execArgs...)
-		c.env.RunApptainer(
-			t,
-			e2e.AsSubtest(tt.name+"/exec"),
-			e2e.WithProfile(profile),
-			e2e.WithCommand("exec"),
-			e2e.WithArgs(execArgs...),
-			e2e.ExpectExit(tt.execErrorCode, execExitFunc...),
-		)
+			execArgs := append([]string{joinName}, tt.execArgs...)
+			c.env.RunApptainer(
+				t,
+				e2e.AsSubtest("exec"),
+				e2e.WithProfile(profile),
+				e2e.WithGlobalOptions("-d"),
+				e2e.WithCommand("exec"),
+				e2e.WithArgs(execArgs...),
+				e2e.WithDir(profile.HostUser(t).Dir),
+				e2e.ExpectExit(tt.execErrorCode, execExitFunc...),
+			)
 
-		c.env.RunApptainer(
-			t,
-			e2e.AsSubtest(tt.name+"/stop"),
-			e2e.WithProfile(profile),
-			e2e.WithCommand("instance stop"),
-			e2e.WithArgs(instanceName),
-			e2e.ExpectExit(0),
-		)
+			c.env.RunApptainer(
+				t,
+				e2e.AsSubtest("stop"),
+				e2e.WithProfile(profile),
+				e2e.WithCommand("instance stop"),
+				e2e.WithArgs(instanceName),
+				e2e.ExpectExit(0),
+			)
+		})
 	}
 }
 
@@ -238,26 +238,16 @@ func (c *ctx) instanceApplyRoot(t *testing.T) {
 	c.instanceApply(t, e2e.RootProfile)
 }
 
+func (c *ctx) instanceApplyRootless(t *testing.T) {
+	c.instanceApply(t, e2e.UserProfile)
+}
+
 func (c *ctx) instanceStatsRoot(t *testing.T) {
 	c.instanceStats(t, e2e.RootProfile)
 }
 
-// TODO - when instance support for rootless cgroups is ready, this
-// should instead call instanceApply over the user profiles.
-func (c *ctx) instanceApplyRootless(t *testing.T) {
-	e2e.EnsureImage(t, c.env)
-	// pick up a random name
-	instanceName := randomName(t)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithRootlessEnv(),
-		e2e.WithCommand("instance start"),
-		e2e.WithArgs("--apply-cgroups", "testdata/cgroups/memory_limit.toml", c.env.ImagePath, instanceName),
-		e2e.ExpectExit(255,
-			e2e.ExpectError(e2e.ContainMatch, "Instances do not currently support rootless cgroups")),
-	)
+func (c *ctx) instanceStatsRootless(t *testing.T) {
+	c.instanceStats(t, e2e.UserProfile)
 }
 
 func (c *ctx) actionApply(t *testing.T, profile e2e.Profile) {
@@ -325,31 +315,32 @@ func (c *ctx) actionApply(t *testing.T, profile e2e.Profile) {
 			name:            "device ignored",
 			args:            []string{"--apply-cgroups", "testdata/cgroups/deny_device.toml", c.env.ImagePath, "cat", "/dev/null"},
 			expectErrorCode: 0,
-			expectErrorOut:  "Operation not permitted",
+			expectErrorOut:  "Device limits will not be applied with rootless cgroups",
 			rootfull:        false,
 			rootless:        true,
 		},
 	}
 
 	for _, tt := range tests {
-		if profile.Privileged() && !tt.rootfull {
-			t.Skip()
-		}
-		if !profile.Privileged() && !tt.rootless {
-			t.Skip()
-		}
-		exitFunc := []e2e.ApptainerCmdResultOp{}
-		if tt.expectErrorOut != "" {
-			exitFunc = []e2e.ApptainerCmdResultOp{e2e.ExpectError(e2e.ContainMatch, tt.expectErrorOut)}
-		}
-		c.env.RunApptainer(
-			t,
-			e2e.AsSubtest(tt.name),
-			e2e.WithProfile(profile),
-			e2e.WithCommand("exec"),
-			e2e.WithArgs(tt.args...),
-			e2e.ExpectExit(tt.expectErrorCode, exitFunc...),
-		)
+		t.Run(tt.name, func(t *testing.T) {
+			if profile.Privileged() && !tt.rootfull {
+				t.Skip()
+			}
+			if !profile.Privileged() && !tt.rootless {
+				t.Skip()
+			}
+			exitFunc := []e2e.ApptainerCmdResultOp{}
+			if tt.expectErrorOut != "" {
+				exitFunc = []e2e.ApptainerCmdResultOp{e2e.ExpectError(e2e.ContainMatch, tt.expectErrorOut)}
+			}
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(profile),
+				e2e.WithCommand("exec"),
+				e2e.WithArgs(tt.args...),
+				e2e.ExpectExit(tt.expectErrorCode, exitFunc...),
+			)
+		})
 	}
 }
 
@@ -594,7 +585,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	np := testhelper.NoParallel
 
 	return testhelper.Tests{
-		"instance stats":                np(env.WithRootManagers(c.instanceStatsRoot)),
+		"instance stats root":           np(env.WithRootManagers(c.instanceStatsRoot)),
+		"instance stats rootless":       np(env.WithRootlessManagers(c.instanceStatsRootless)),
 		"instance root cgroups":         np(env.WithRootManagers(c.instanceApplyRoot)),
 		"instance rootless cgroups":     np(env.WithRootlessManagers(c.instanceApplyRootless)),
 		"action root cgroups":           np(env.WithRootManagers(c.actionApplyRoot)),

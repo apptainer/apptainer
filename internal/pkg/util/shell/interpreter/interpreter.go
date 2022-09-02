@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2020, Sylabs, Inc. All rights reserved.
+// Copyright (c) 2020-2022, Sylabs, Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license.  Please
 // consult LICENSE.md file distributed with the sources of this project regarding
 // your rights to use or distribute this software.
@@ -121,23 +121,24 @@ func New(r io.Reader, name string, args []string, envs []string, runnerOptions .
 		name:   name,
 	}
 
+	dir, err := os.Getwd()
+	if err != nil {
+		dir = "/"
+	}
+
 	opts := []interp.RunnerOption{
 		interp.StdIO(os.Stdin, os.Stdout, os.Stderr),
 		interp.ExecHandler(s.internalExecHandler()),
 		interp.OpenHandler(s.internalOpenHandler()),
 		interp.Params("--"),
 		interp.Env(expand.ListEnviron(envs...)),
+		interp.Dir(dir),
 	}
 	opts = append(opts, runnerOptions...)
 	s.runner, err = interp.New(opts...)
 
 	if err != nil {
 		return nil, fmt.Errorf("while creating shell interpreter: %s", err)
-	}
-
-	s.runner.Dir, err = os.Getwd()
-	if err != nil {
-		s.runner.Dir = "/"
 	}
 
 	s.runner.Params = append(s.runner.Params, args...)

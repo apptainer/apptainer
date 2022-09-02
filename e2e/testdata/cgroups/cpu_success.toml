@@ -1,4 +1,4 @@
 [cpu]
-  cpus = "0"
-  mems = "0"
+  shares = 512
+
 
