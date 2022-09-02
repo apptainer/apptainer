@@ -13,6 +13,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   all `bind path` entries in `apptainer.conf.
 - Instances started by a non-root user can use `--apply-cgroups` to apply
   resource limits. Requires cgroups v2, and delegation configured via systemd.
+- The `instance stats` command displays the resource usage every second. The
+  `--no-stream` option disables this interactive mode and shows the
+  point-in-time usage.
 
 ## Changes Since Last Release Candidate
 

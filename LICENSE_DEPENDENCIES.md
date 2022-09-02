@@ -581,6 +581,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/blang/semver/blob/master/v4/LICENSE>
 
+## github.com/buger/goterm
+
+**License:** MIT
+
+**License URL:** <https://github.com/buger/goterm/blob/master/LICENSE>
+
 ## github.com/buger/jsonparser
 
 **License:** MIT

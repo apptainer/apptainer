@@ -13,6 +13,7 @@
 package apptainer
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,6 +28,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/instance"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
+	"github.com/buger/goterm"
 	units "github.com/docker/go-units"
 	libcgroups "github.com/opencontainers/runc/libcontainer/cgroups"
 )
@@ -181,7 +183,7 @@ func calculateMemoryUsage(stats *libcgroups.MemoryStats) (float64, float64, floa
 }
 
 // InstanceStats uses underlying cgroups to get statistics for a named instance
-func InstanceStats(name, instanceUser string, formatJSON bool) error {
+func InstanceStats(ctx context.Context, name, instanceUser string, formatJSON bool, noStream bool) error {
 	ii, err := instanceListOrError(instanceUser, name)
 	if err != nil {
 		return err
@@ -197,6 +199,12 @@ func InstanceStats(name, instanceUser string, formatJSON bool) error {
 		sylog.Infof("Stats for %s instance of %s (PID=%d)\n", i.Name, i.Image, i.Pid)
 	}
 
+	// If asking for json and not nostream, not possible
+	if formatJSON && !noStream {
+		sylog.Warningf("JSON output is only available for a single timepoint (--no-stream)")
+		noStream = true
+	}
+
 	// Cut out early if we do not have cgroups
 	if !i.Cgroup {
 		url := "the Apptainer instance user guide for instructions"
@@ -208,42 +216,68 @@ func InstanceStats(name, instanceUser string, formatJSON bool) error {
 	if err != nil {
 		return fmt.Errorf("while getting cgroup manager for pid: %v", err)
 	}
-	stats, err := manager.GetStats()
-	if err != nil {
-		return fmt.Errorf("while getting stats for pid: %v", err)
-	}
-
-	// Do we want json?
-	if formatJSON {
-		enc := json.NewEncoder(os.Stdout)
-		enc.SetIndent("", "\t")
-		err = enc.Encode(stats)
-		return err
-	}
 
 	// Otherwise print shortened table
 	tabWriter := tabwriter.NewWriter(os.Stdout, 0, 8, 4, ' ', 0)
 	defer tabWriter.Flush()
 
-	// Stats can be added from this set:
-	// https://github.com/opencontainers/runc/blob/main/libcontainer/cgroups/stats.go
-	_, err = fmt.Fprintln(tabWriter, "INSTANCE NAME\tCPU USAGE\tMEM USAGE / LIMIT\tMEM %\tBLOCK I/O\tPIDS")
-	if err != nil {
-		return fmt.Errorf("could not write stats header: %v", err)
-	}
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
 
-	// CpuUsage denotes the usage of a CPU, aggregate since container inception.
-	// TODO CPU time needs to be a percentage
-	totalCPUTime := strconv.FormatUint(stats.CpuStats.CpuUsage.TotalUsage, 10) + " ns"
-	memUsage, memLimit, memPercent := calculateMemoryUsage(&stats.MemoryStats)
-	blockRead, blockWrite := calculateBlockIO(&stats.BlkioStats)
+		case <-time.After(1 * time.Second):
 
-	// Generate a shortened stats list
-	_, err = fmt.Fprintf(tabWriter, "%s\t%s\t%s / %s\t%.2f%s\t%s / %s\t%d\n", i.Name, totalCPUTime, units.BytesSize(memUsage), units.BytesSize(memLimit), memPercent, "%", units.BytesSize(blockRead), units.BytesSize(blockWrite), stats.PidsStats.Current)
-	if err != nil {
-		return fmt.Errorf("could not write instance stats: %v", err)
+			// Stream clears the terminal and reprint header and stats each time
+			if !noStream {
+				goterm.Clear()
+				goterm.MoveCursor(1, 1)
+				goterm.Flush()
+			}
+
+			// Retrieve new stats
+			stats, err := manager.GetStats()
+			if err != nil {
+				return fmt.Errorf("while getting stats for pid: %v", err)
+			}
+
+			// Do we want json?
+			if formatJSON {
+				enc := json.NewEncoder(os.Stdout)
+				enc.SetIndent("", "\t")
+				err = enc.Encode(stats)
+				return err
+			}
+
+			// Stats can be added from this set
+			// https://github.com/opencontainers/runc/blob/main/libcontainer/cgroups/stats.go
+			_, err = fmt.Fprintln(tabWriter, "INSTANCE NAME\tCPU USAGE\tMEM USAGE / LIMIT\tMEM %\tBLOCK I/O\tPIDS")
+			if err != nil {
+				return fmt.Errorf("could not write stats header: %v", err)
+			}
+
+			// CpuUsage denotes the usage of a CPU, aggregate since container inception.
+			// TODO CPU time needs to be a percentage
+			totalCPUTime := strconv.FormatUint(stats.CpuStats.CpuUsage.TotalUsage, 10) + " ns"
+			memUsage, memLimit, memPercent := calculateMemoryUsage(&stats.MemoryStats)
+			blockRead, blockWrite := calculateBlockIO(&stats.BlkioStats)
+
+			// Generate a shortened stats list
+			_, err = fmt.Fprintf(tabWriter, "%s\t%s\t%s / %s\t%.2f%s\t%s / %s\t%d\n", i.Name,
+				totalCPUTime, units.BytesSize(memUsage), units.BytesSize(memLimit),
+				memPercent, "%", units.BytesSize(blockRead), units.BytesSize(blockWrite),
+				stats.PidsStats.Current)
+			tabWriter.Flush()
+			if err != nil {
+				return fmt.Errorf("could not write instance stats: %v", err)
+			}
+
+			// We don't want a stream, return after just one record
+			if noStream {
+				return nil
+			}
+		}
 	}
-	return nil
 }
 
 // StopInstance fetches instance list, applying name and
