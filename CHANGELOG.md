@@ -16,6 +16,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - The `instance stats` command displays the resource usage every second. The
   `--no-stream` option disables this interactive mode and shows the
   point-in-time usage.
+- Support for `DOCKER_HOST` parsing when using `docker-daemon://`
+- `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
 
 ## Changes Since Last Release Candidate
 

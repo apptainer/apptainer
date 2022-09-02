@@ -156,11 +156,13 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 	cp.sysCtx = &types.SystemContext{
 		OCIInsecureSkipTLSVerify: cp.b.Opts.NoHTTPS,
 		DockerAuthConfig:         cp.b.Opts.DockerAuthConfig,
+		DockerDaemonHost:         cp.b.Opts.DockerDaemonHost,
 		OSChoice:                 "linux",
 		AuthFilePath:             syfs.DockerConf(),
 		DockerRegistryUserAgent:  useragent.Value(),
 		BigFilesTemporaryDir:     b.TmpDir,
 	}
+
 	if cp.b.Opts.NoHTTPS {
 		cp.sysCtx.DockerInsecureSkipTLSVerify = types.NewOptionalBool(true)
 	}

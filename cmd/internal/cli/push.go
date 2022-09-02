@@ -74,6 +74,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&pushDescriptionFlag, PushCmd)
 		cmdManager.RegisterFlagForCmd(&commonNoHTTPSFlag, PushCmd)
 
+		cmdManager.RegisterFlagForCmd(&dockerHostFlag, PushCmd)
 		cmdManager.RegisterFlagForCmd(&dockerUsernameFlag, PushCmd)
 		cmdManager.RegisterFlagForCmd(&dockerPasswordFlag, PushCmd)
 	})
