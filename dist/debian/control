@@ -14,7 +14,13 @@ Build-Depends:
  devscripts,
  libseccomp-dev,
  cryptsetup,
- golang-go (>= 2:1.13~~)
+ golang-go (>= 2:1.13~~),
+ autoconf,
+ automake,
+ libtool,
+ pkg-config,
+ libfuse-dev,
+ zlib1g-dev
 Standards-Version: 3.9.8
 Homepage: http://apptainer.org
 Vcs-Git: https://github.com/apptainer/apptainer.git

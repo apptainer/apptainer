@@ -9,8 +9,11 @@
 # install dependencies
 yum install -y rpm-build make yum-utils gcc binutils util-linux-ng which git
 yum install -y libseccomp-devel e2fsprogs cryptsetup
-yum install -y epel-release
+if [ $OS_TYPE != fedora ]; then
+  yum install -y epel-release
+fi
 yum install -y golang squashfuse fuse-overlayfs fakeroot /usr/*bin/fuse2fs
+yum install -y autoconf automake libtool pkgconfig fuse3-devel zlib-devel # for squashfuse_ll build
 
 # switch to an unprivileged user with sudo privileges
 yum install -y sudo
@@ -38,6 +41,22 @@ su testuser -c '
     fi
   fi
   go version
+  # enable the multithreading squashfuse
+  sed -i "s/^# %\(%global squashfuse_version\)/\1/" apptainer.spec
+  # download any additional source & patch urls
+  DOWNLOADURL="$(sed -n "s/^Source[1-9][0-9]*: //p" apptainer.spec)"
+  DOWNLOADURL="$DOWNLOADURL $(sed -n "s/^Patch[1-9][0-9]*: //p" apptainer.spec)"
+  SUBS="$(sed -n "s/^%global //p" apptainer.spec)"
+  for URL in $DOWNLOADURL; do
+      if [[ "$URL" != http* ]]; then
+	  continue
+      fi
+      URL=$(echo "$SUBS" | (while read FROM TO; do
+	      URL="$(echo $URL|sed "s,%{$FROM},$TO,g")"
+	    done
+	    echo $URL))
+      curl -f -L -sS -O $URL
+  done
   # eliminate the "dist" part in the rpm name, for the release_assets
   echo "%dist %{nil}" >$HOME/.rpmmacros
   make -C builddir rpm

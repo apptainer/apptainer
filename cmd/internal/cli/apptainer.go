@@ -490,7 +490,7 @@ func persistentPreRun(*cobra.Command, []string) error {
 	apptainerconf.SetCurrentConfig(config)
 	// Include the user's PATH for now.
 	// It will be overridden later if using setuid flow.
-	apptainerconf.SetBinaryPath(true)
+	apptainerconf.SetBinaryPath(buildcfg.LIBEXECDIR, true)
 
 	// Handle the config dir (~/.apptainer),
 	// then check the remove conf file permission.

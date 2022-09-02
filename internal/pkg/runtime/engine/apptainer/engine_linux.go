@@ -48,7 +48,7 @@ func (e *EngineOperations) InitConfig(cfg *config.Common, privStageOne bool) {
 			apptainerconf.ApplyBuildConfig(e.EngineConfig.File)
 		}
 		apptainerconf.SetCurrentConfig(e.EngineConfig.File)
-		apptainerconf.SetBinaryPath(false)
+		apptainerconf.SetBinaryPath(buildcfg.LIBEXECDIR, false)
 	} else {
 		// use the configuration passed in
 		apptainerconf.SetCurrentConfig(e.EngineConfig.File)

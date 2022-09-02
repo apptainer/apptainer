@@ -7,6 +7,18 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes Since Last Release
 
+- Imply adding `${prefix}/libexec/apptainer/bin` to the `binary path` in
+  `apptainer.conf`, which is used for searching for helper executables.
+  It is implied as the first directory of `$PATH` if present (which is at
+  the beginning of `binary path` by default) or just as the first directory
+  if `$PATH` is not included in `binary path`.
+- Change squash mounts to prefer to use `squashfuse_ll` instead of
+  `squashfuse`, if available, for improved performance.
+  `squashfuse_ll` is available on RHEL-based systems but not Debian as
+  part of the `squashfuse` package.
+  Also, for even better parallel performance, include a patched multithreaded
+  version of `squashfuse_ll` in rpm and debian packaging in
+  `${prefix}/libexec/apptainer/bin`.
 - Add `--sparse` flag to `overlay create` command to allow generation of a
   sparse ext3 overlay image.
 - Support for a custom hashbang in the `%test` section of an Apptainer recipe
