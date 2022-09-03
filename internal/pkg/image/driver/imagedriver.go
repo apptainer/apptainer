@@ -46,6 +46,7 @@ type fuseappsDriver struct {
 	squashFeature  fuseappsFeature
 	ext3Feature    fuseappsFeature
 	overlayFeature fuseappsFeature
+	cmdPrefix      []string
 }
 
 func (f *fuseappsFeature) init(binNames string, purpose string, desired image.DriverFeature) {
@@ -92,7 +93,7 @@ func InitImageDrivers(register bool, unprivileged bool, fileconf *apptainerconf.
 		sylog.Debugf("Setting ImageDriver to %v", driverName)
 		fileconf.ImageDriver = driverName
 		if register {
-			return image.RegisterDriver(driverName, &fuseappsDriver{squashFeature, ext3Feature, overlayFeature})
+			return image.RegisterDriver(driverName, &fuseappsDriver{squashFeature, ext3Feature, overlayFeature, []string{}})
 		}
 	}
 	return nil
@@ -113,20 +114,21 @@ func (d *fuseappsDriver) Features() image.DriverFeature {
 func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc) error {
 	var f *fuseappsFeature
 	var cmd *exec.Cmd
+	cmdArgs := d.cmdPrefix
 	switch params.Filesystem {
 	case "overlay":
 		f = &d.overlayFeature
 		optsStr := strings.Join(params.FSOptions, ",")
-		cmd = exec.Command(f.cmdPath, "-f", "-o", optsStr, params.Target)
+		cmdArgs = append(cmdArgs, f.cmdPath, "-f", "-o", optsStr, params.Target)
+		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
 
 	case "squashfs":
 		f = &d.squashFeature
 		optsStr := ""
-		// Unfortunately squashfuse_ll does not currently support
-		//  setting the uid/gid options, so need to skip those with
-		//  that.  It makes setuid-flow fakeroot overlay unwritable
-		//  because the default root ownership gets mapped to 65534
-		//  inside the container.
+		// squashfuse_ll does not currently support setting the
+		//   uid/gid options, so need to skip those with that.
+		// It only affects the way the ownership of files look
+		//   without fakeroot, it's not very significant.
 		if f.binName == "squashfuse" {
 			optsStr = fmt.Sprintf("uid=%v,gid=%v", os.Getuid(), os.Getgid())
 		}
@@ -141,7 +143,8 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 			// this will be passed as the first ExtraFile below, always fd 3
 			srcPath = "/proc/self/fd/3"
 		}
-		cmd = exec.Command(f.cmdPath, "-f", "-o", optsStr, srcPath, params.Target)
+		cmdArgs = append(cmdArgs, f.cmdPath, "-f", "-o", optsStr, srcPath, params.Target)
+		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
 
 	case "ext3":
 		f = &d.ext3Feature
@@ -163,12 +166,11 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 			optsStr += "ro"
 		}
 
-		var cmdArgs []string
 		stdbuf, err := bin.FindBin("stdbuf")
 		if err == nil {
 			// Run fuse2fs through stdbuf to be able to read the
 			//  warnings sometimes sent through stdout
-			cmdArgs = []string{stdbuf, "-oL"}
+			cmdArgs = append(cmdArgs, stdbuf, "-oL")
 		}
 		cmdArgs = append(cmdArgs, f.cmdPath, "-f", "-o", optsStr, srcPath, params.Target)
 		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
@@ -210,6 +212,9 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		AmbientCaps: []uintptr{
 			uintptr(capabilities.Map["CAP_SYS_ADMIN"].Value),
+			// Needed for nsenter
+			//  https://stackoverflow.com/a/69724124/10457761
+			uintptr(capabilities.Map["CAP_SYS_PTRACE"].Value),
 		},
 	}
 	var err error
@@ -321,7 +326,21 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 	return fmt.Errorf("%v failed to mount %v in %v: %v", f.binName, params.Target, maxTime, stderr.String())
 }
 
-func (d *fuseappsDriver) Start(params *image.DriverParams) error {
+func (d *fuseappsDriver) Start(params *image.DriverParams, containerPid int) error {
+	if containerPid != 0 {
+		// Running in hybrid setuid-fakeroot mode
+		// Need any subcommand to first enter the container's
+		//  user namespace
+		nsenter, err := bin.FindBin("nsenter")
+		if err != nil {
+			return fmt.Errorf("failed to find nsenter: %v", err)
+		}
+		d.cmdPrefix = []string{
+			nsenter,
+			fmt.Sprintf("--user=/proc/%d/ns/user", containerPid),
+			"-F",
+		}
+	}
 	return nil
 }
 
