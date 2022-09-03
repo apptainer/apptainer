@@ -305,7 +305,6 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 	}
 
 	sif := fmt.Sprintf("%s/centos7.sif", tempDir)
-	overlay := fmt.Sprintf("%s/overlay.img", tempDir)
 
 	c.env.RunApptainer(
 		t,
@@ -320,14 +319,6 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs("--sandbox", "--force", sandbox, sif),
-		e2e.ExpectExit(0),
-	)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithCommand("overlay"),
-		e2e.WithArgs("create", "--fakeroot", "--size", "512", overlay),
 		e2e.ExpectExit(0),
 	)
 
@@ -354,8 +345,8 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--overlay", overlay, sif, "yum", "install", "-y", "openssh"),
-		e2e.ExpectExit(0), // sif with --writable-tmpfs isn't working (see https://github.com/apptainer/apptainer/issues/651)
+		e2e.WithArgs("--writable-tmpfs", sif, "yum", "install", "-y", "openssh"),
+		e2e.ExpectExit(0),
 	)
 
 	// running under the mode 1, 1b (--without-suid) (https://apptainer.org/docs/user/main/fakeroot.html)

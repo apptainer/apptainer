@@ -57,7 +57,7 @@ type Driver interface {
 	// Mount is called each time an engine mount an image
 	Mount(*MountParams, MountFunc) error
 	// Start the driver for initialization.
-	Start(*DriverParams) error
+	Start(*DriverParams, int) error
 	// Stop the driver related to given mount target for cleanup.
 	Stop(string) error
 	// Features Feature returns supported features.

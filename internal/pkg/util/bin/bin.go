@@ -34,6 +34,7 @@ func FindBin(name string) (path string, err error) {
 		"mkfs.ext3",
 		"mknod",
 		"mount",
+		"nsenter",
 		"rm",
 		"stdbuf",
 		"true",
