@@ -62,6 +62,7 @@ func FindBin(name string) (path string, err error) {
 		"rpm",
 		"rpmkeys",
 		"squashfuse",
+		"squashfuse_ll",
 		"SUSEConnect",
 		"unsquashfs",
 		"yum",
@@ -89,7 +90,7 @@ func findOnPath(name string, useSuidPath bool) (path string, err error) {
 	}
 	if cfg.SuidBinaryPath == "" {
 		if strings.HasSuffix(os.Args[0], ".test") {
-			apptainerconf.SetBinaryPath(true)
+			apptainerconf.SetBinaryPath(buildcfg.LIBEXECDIR, true)
 		} else {
 			sylog.Fatalf("SetBinaryPath has not been run before findOnPath")
 		}

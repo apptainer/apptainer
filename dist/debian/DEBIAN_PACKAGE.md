@@ -19,11 +19,13 @@ Also install these additional dependencies for the packaging:
 
 ```sh
 sudo apt-get install \
+    debhelper \
+    dh-autoreconf \
     devscripts \
     help2man \
     libarchive-dev \
     libssl-dev \
-    python \
+    python2 \
     uuid-dev \
     golang-go
 ```
@@ -37,6 +39,10 @@ debian directory like this:
 TARBALL=go$(scripts/get-min-go-version).src.tar.gz
 wget -O debian/$TARBALL https://dl.google.com/go/$TARBALL
 ```
+
+Finally, install the additional dependencies in the section on the
+[improved performance squashfuse](../../INSTALL.md##installing-improved-performance-squashfuse_ll)
+and download the additional files listed there into the debian directory.
 
 ## Configuration
 

@@ -33,6 +33,9 @@
 # For example, it has dash instead of tilde for release candidates.
 %global package_version @PACKAGE_VERSION@
 
+# Uncomment this to include a multithreaded version of squashfuse_ll
+# %%global squashfuse_version 0.1.105
+
 Summary: Application and environment virtualization
 Name: apptainer
 Version: @PACKAGE_RPM_VERSION@
@@ -45,6 +48,10 @@ License: BSD and LBNL BSD and ASL 2.0
 URL: https://apptainer.org
 Source: https://github.com/%{name}/%{name}/releases/download/v%{package_version}/%{name}-%{package_version}.tar.gz
 @PACKAGE_GOLANG_SOURCE@
+%if "%{?squashfuse_version}" != ""
+Source10: https://github.com/vasi/squashfuse/archive/%{squashfuse_version}/squashfuse-%{squashfuse_version}.tar.gz
+Patch10: https://github.com/vasi/squashfuse/pull/70.patch
+%endif
 # The singularity package was renamed to apptainer after version 3.8.x.
 # The apptainer package reset numbering at 1.0.0, and some singularity
 #  packages are in epoch 1, so Provide corresponding singularity versions
@@ -71,6 +78,14 @@ Requires: squashfs
 Requires: squashfs-tools
 %endif
 BuildRequires: cryptsetup
+%if "%{?squashfuse_version}" != ""
+BuildRequires: autoconf
+BuildRequires: automake
+BuildRequires: libtool
+BuildRequires: pkgconfig
+BuildRequires: fuse3-devel
+BuildRequires: zlib-devel
+%endif
 Requires: squashfuse
 Requires: fakeroot
 Requires: fuse-overlayfs
@@ -93,9 +108,25 @@ Requires: %{name} = %{version}-%{release}
 Provides the optional setuid-root portion of Apptainer.
 
 %prep
+%if "%{?squashfuse_version}" != ""
+# the default directory for other steps is where the %prep section ends
+# so do main package last
+%setup -b 10 -n squashfuse-%{squashfuse_version}
+%patch -P 10 -p1
+%setup -n %{name}-%{package_version}
+%else
 %autosetup -n %{name}-%{package_version}
+%endif
 
 %build
+%if "%{?squashfuse_version}" != ""
+pushd ../squashfuse-%{squashfuse_version}
+./autogen.sh
+FLAGS=-std=c99 ./configure --enable-multithreading
+%make_build squashfuse_ll
+popd
+%endif
+
 %if "%{?SOURCE1}" != ""
 GOVERSION="$(echo %SOURCE1|sed 's,.*/,,;s/go//;s/\.src.*//')"
 if ! ./mlocal/scripts/check-min-go-version go $GOVERSION; then
@@ -135,6 +166,9 @@ export PATH=$PWD/go/bin:$PATH
 %endif
 
 %make_install -C builddir V=
+%if "%{?squashfuse_version}" != ""
+install -m 755 ../squashfuse-%{squashfuse_version}/squashfuse_ll %{buildroot}%{_libexecdir}/%{name}/bin/squashfuse_ll
+%endif
 
 %if 0%{?el7}
 # Check for fuse2fs only as a pre-install so that an rpm built on el7 can
@@ -162,6 +196,9 @@ rmdir %{_sysconfdir}/singularity/* %{_sysconfdir}/singularity 2>/dev/null || tru
 %dir %{_libexecdir}/%{name}
 %dir %{_libexecdir}/%{name}/bin
 %{_libexecdir}/%{name}/bin/starter
+%if "%{?squashfuse_version}" != ""
+%{_libexecdir}/%{name}/bin/squashfuse_ll
+%endif
 %{_libexecdir}/%{name}/cni
 %{_libexecdir}/%{name}/lib
 %dir %{_sysconfdir}/%{name}

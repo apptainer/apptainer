@@ -24,7 +24,7 @@ func SetupDefaultConfig(t *testing.T, path string) {
 		t.Fatalf("while generating apptainer configuration: %s", err)
 	}
 	apptainerconf.SetCurrentConfig(c)
-	apptainerconf.SetBinaryPath(true)
+	apptainerconf.SetBinaryPath(buildcfg.LIBEXECDIR, true)
 
 	Privileged(func(t *testing.T) {
 		f, err := os.Create(path)
