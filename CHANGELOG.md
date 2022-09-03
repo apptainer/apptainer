@@ -23,7 +23,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   sparse ext3 overlay image.
 - Support for a custom hashbang in the `%test` section of an Apptainer recipe
   (akin to the runscript and start sections).
-- Skip trying to user kernel overlayfs when using writable overlay and the
+- When using fakeroot in setuid mode, have the image drivers first enter the
+  the container's user namespace to avoid write errors with overlays.
+- Skip trying to use kernel overlayfs when using writable overlay and the
   lower layer is FUSE, because of a kernel bug introduced in kernel 5.15.
 - Add additional hidden options to the action command for testing different fakeroot
   modes with `--fakeroot`: `--ignore-subuid`, `--ignore-fakeroot-command`,
