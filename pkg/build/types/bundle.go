@@ -239,3 +239,41 @@ func newBundle(parentPath, tempDir string, keyInfo *cryptkey.KeyInfo) (*Bundle, 
 		},
 	}, nil
 }
+
+// FixPerms will work through the rootfs of this bundle, making sure that all
+// files and directories have permissions set such that the owner can read,
+// modify, delete. This brings us to the situation of <=3.4
+func FixPerms(rootfs string) (err error) {
+	errors := 0
+	err = fs.PermWalk(rootfs, func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			sylog.Errorf("Unable to access rootfs path %s: %s", path, err)
+			errors++
+			return nil
+		}
+
+		switch mode := f.Mode(); {
+		// Directories must have the owner 'rx' bits to allow traversal and reading on move, and the 'w' bit
+		// so their content can be deleted by the user when the rootfs/sandbox is deleted
+		case mode.IsDir():
+			if err := os.Chmod(path, f.Mode().Perm()|0o700); err != nil {
+				sylog.Errorf("Error setting permission for %s: %s", path, err)
+				errors++
+			}
+		case mode.IsRegular():
+			// Regular files must have the owner 'r' bit so that everything can be read in order to
+			// copy or move the rootfs/sandbox around. Also, the `w` bit as the build does write into
+			// some files (e.g. resolv.conf) in the container rootfs.
+			if err := os.Chmod(path, f.Mode().Perm()|0o600); err != nil {
+				sylog.Errorf("Error setting permission for %s: %s", path, err)
+				errors++
+			}
+		}
+		return nil
+	})
+
+	if errors > 0 {
+		err = fmt.Errorf("%d errors were encountered when setting permissions", errors)
+	}
+	return err
+}

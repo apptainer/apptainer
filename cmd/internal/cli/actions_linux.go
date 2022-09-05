@@ -799,30 +799,35 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	}
 	driver.InitImageDrivers(true, UserNamespace || insideUserNs, engineConfig.File, desiredFeatures)
 
-	// convert image file to sandbox if we are using user
-	// namespace or if we are currently running inside a
-	// user namespace
-	if (UserNamespace || insideUserNs) && fs.IsFile(image) {
-		convert := true
+	// convert image file to sandbox if either it was requested by
+	// `--unsquash` or if we are inside of a user namespace and there's
+	// no image driver.
+	if fs.IsFile(image) {
+		convert := false
 
-		if engineConfig.File.ImageDriver != "" {
-			// load image driver plugins
-			callbackType := (apptainercallback.RegisterImageDriver)(nil)
-			callbacks, err := plugin.LoadCallbacks(callbackType)
-			if err != nil {
-				sylog.Debugf("Loading plugins callbacks '%T' failed: %s", callbackType, err)
-			} else {
-				for _, callback := range callbacks {
-					if err := callback.(apptainercallback.RegisterImageDriver)(true); err != nil {
-						sylog.Debugf("While registering image driver: %s", err)
+		if Unsquash {
+			convert = true
+		} else if UserNamespace || insideUserNs {
+			convert = true
+			if engineConfig.File.ImageDriver != "" {
+				// load image driver plugins
+				callbackType := (apptainercallback.RegisterImageDriver)(nil)
+				callbacks, err := plugin.LoadCallbacks(callbackType)
+				if err != nil {
+					sylog.Debugf("Loading plugins callbacks '%T' failed: %s", callbackType, err)
+				} else {
+					for _, callback := range callbacks {
+						if err := callback.(apptainercallback.RegisterImageDriver)(true); err != nil {
+							sylog.Debugf("While registering image driver: %s", err)
+						}
 					}
 				}
-			}
-			driver := imgutil.GetDriver(engineConfig.File.ImageDriver)
-			if driver != nil && driver.Features()&imgutil.ImageFeature != 0 {
-				// the image driver indicates support for image so let's
-				// proceed with the image driver without conversion
-				convert = false
+				driver := imgutil.GetDriver(engineConfig.File.ImageDriver)
+				if driver != nil && driver.Features()&imgutil.ImageFeature != 0 {
+					// the image driver indicates support for image so let's
+					// proceed with the image driver without conversion
+					convert = false
+				}
 			}
 		}
 

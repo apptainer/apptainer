@@ -88,6 +88,7 @@ var (
 	MemorySwap        string // bytes
 	OomKillDisable    bool
 	PidsLimit         int
+	Unsquash          bool
 
 	IgnoreSubuid      bool
 	IgnoreFakerootCmd bool
@@ -806,6 +807,16 @@ var actionPidsLimitFlag = cmdline.Flag{
 	EnvKeys:      []string{"PIDS_LIMIT"},
 }
 
+// --unsquash
+var actionUnsquashFlag = cmdline.Flag{
+	ID:           "actionUnsquashFlag",
+	Value:        &Unsquash,
+	DefaultValue: false,
+	Name:         "unsquash",
+	Usage:        "Convert SIF file to temporary sandbox before running",
+	EnvKeys:      []string{"UNSQUASH"},
+}
+
 // --ignore-subuid
 var actionIgnoreSubuidFlag = cmdline.Flag{
 	ID:           "actionIgnoreSubuidFlag",
@@ -930,6 +941,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&actionMemorySwapFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionOomKillDisableFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionPidsLimitFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionUnsquashFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionIgnoreSubuidFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionIgnoreFakerootCommand, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionIgnoreUsernsFlag, actionsInstanceCmd...)

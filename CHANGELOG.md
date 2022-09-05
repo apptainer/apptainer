@@ -33,6 +33,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   Also, for even better parallel performance, include a patched multithreaded
   version of `squashfuse_ll` in rpm and debian packaging in
   `${prefix}/libexec/apptainer/bin`.
+- Add `--unsquash` action flag to temporarily convert a SIF file to a
+  sandbox before running.  In previous versions this was the default when
+  running a SIF file without setuid or with fakeroot, but now the default
+  is to instead mount with squashfuse.
 - Add `--sparse` flag to `overlay create` command to allow generation of a
   sparse ext3 overlay image.
 - Support for a custom hashbang in the `%test` section of an Apptainer recipe
