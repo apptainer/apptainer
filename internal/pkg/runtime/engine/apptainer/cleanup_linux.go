@@ -24,6 +24,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/crypt"
 	"github.com/apptainer/apptainer/internal/pkg/util/priv"
 	"github.com/apptainer/apptainer/internal/pkg/util/starter"
+	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
@@ -66,6 +67,10 @@ func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, st
 			// the fakeroot engine
 			err = fakerootCleanup(tempDir)
 		} else {
+			err = types.FixPerms(tempDir)
+			if err != nil {
+				sylog.Debugf("FixPerms had a problem: %v", err)
+			}
 			err = os.RemoveAll(tempDir)
 		}
 		if err != nil {
