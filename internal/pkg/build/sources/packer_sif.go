@@ -74,7 +74,7 @@ func unpackSIF(b *types.Bundle, img *image.Image) (err error) {
 
 	if b.Opts.FixPerms {
 		sylog.Debugf("Modifying permissions for file/directory owners")
-		err = fixPerms(b.RootfsPath)
+		err = types.FixPerms(b.RootfsPath)
 		if err != nil {
 			return err
 		}
