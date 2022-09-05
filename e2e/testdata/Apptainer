@@ -2,7 +2,7 @@ bootstrap: oras
 from: ghcr.io/apptainer/alpine:3.15.0
 
 %labels
-    maintainer "Sylabs Team <support@sylabs.io>"
+    maintainer "Apptainer Team <tsc@apptainer.org>"
 
 %help
     export BAD_GUY=Thanos

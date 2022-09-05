@@ -2221,6 +2221,43 @@ func (c actionTests) actionUmask(t *testing.T) {
 	)
 }
 
+// actionUnsquash tests that the --unsquash option succeeds in conversion
+func (c actionTests) actionUnsquash(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	tests := []struct {
+		name    string
+		profile e2e.Profile
+	}{
+		{
+			name:    "user",
+			profile: e2e.UserProfile,
+		},
+		{
+			name:    "userns",
+			profile: e2e.UserNamespaceProfile,
+		},
+		{
+			name:    "fakeroot",
+			profile: e2e.FakerootProfile,
+		},
+	}
+
+	for _, tt := range tests {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(tt.profile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs("--unsquash", c.env.ImagePath, "true"),
+			e2e.ExpectExit(
+				0,
+				e2e.ExpectError(e2e.ContainMatch, "Converting SIF"),
+			),
+		)
+	}
+}
+
 func (c actionTests) actionNoMount(t *testing.T) {
 	// TODO - this does not test --no-mount hostfs as that is a little tricky
 	// We are in a mount namespace for e2e tests, so we can setup some mounts in there,
@@ -2514,6 +2551,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"fuse mount":            c.fuseMount,           // test fusemount option
 		"bind image":            c.bindImage,           // test bind image with --bind and --mount
 		"umask":                 c.actionUmask,         // test umask propagation
+		"unsquash":              c.actionUnsquash,      // test --unsquash
 		"no-mount":              c.actionNoMount,       // test --no-mount
 		"compat":                c.actionCompat,        // test --compat
 		"invalidRemote":         np(c.invalidRemote),   // GHSA-5mv9-q7fq-9394
