@@ -183,7 +183,7 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 		return err
 	}
 
-	if err := c.setupImageDriver(system); err != nil {
+	if err := c.setupImageDriver(system, pid); err != nil {
 		return err
 	}
 
@@ -426,7 +426,7 @@ func (c *container) mount(point *mount.Point, system *mount.System) error {
 
 // setupImageDriver prepare the image driver configured in apptainer.conf
 // to start it after the session setup.
-func (c *container) setupImageDriver(system *mount.System) error {
+func (c *container) setupImageDriver(system *mount.System, containerPid int) error {
 	if imageDriver == nil {
 		return nil
 	}
@@ -455,6 +455,12 @@ func (c *container) setupImageDriver(system *mount.System) error {
 		params.UsernsFd = fds[0]
 	}
 
+	fakeroot := c.engine.EngineConfig.GetFakeroot()
+	fakerootHybrid := fakeroot && os.Geteuid() != 0
+	if !fakerootHybrid {
+		containerPid = 0
+	}
+
 	if fuseDriver {
 		fuseFd, fuseRPCFd, err := c.openFuseFdFromRPC()
 		if err != nil {
@@ -463,9 +469,6 @@ func (c *container) setupImageDriver(system *mount.System) error {
 		params.FuseFd = fuseFd
 		system.RunAfterTag(mount.SessionTag, func(system *mount.System) error {
 			defer unix.Close(params.FuseFd)
-
-			fakeroot := c.engine.EngineConfig.GetFakeroot()
-			fakerootHybrid := fakeroot && os.Geteuid() != 0
 
 			uid := os.Getuid()
 			gid := os.Getgid()
@@ -516,7 +519,7 @@ func (c *container) setupImageDriver(system *mount.System) error {
 			umountPoints = append(umountPoints, sp)
 
 			sylog.Debugf("Starting image driver %s", c.engine.EngineConfig.File.ImageDriver)
-			if err := imageDriver.Start(params); err != nil {
+			if err := imageDriver.Start(params, containerPid); err != nil {
 				return fmt.Errorf("failed to start driver: %s", err)
 			}
 
@@ -530,7 +533,7 @@ func (c *container) setupImageDriver(system *mount.System) error {
 			defer unix.Close(params.UsernsFd)
 		}
 		sylog.Debugf("Starting image driver %s", c.engine.EngineConfig.File.ImageDriver)
-		if err := imageDriver.Start(params); err != nil {
+		if err := imageDriver.Start(params, containerPid); err != nil {
 			return fmt.Errorf("failed to start driver: %s", err)
 		}
 		return nil
