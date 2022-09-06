@@ -19,7 +19,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Support for `DOCKER_HOST` parsing when using `docker-daemon://`
 - `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
 
-## Changes Since Last Release Candidate
+## v1.1.0-rc.3 - \[2022-09-06\]
 
 - Imply adding `${prefix}/libexec/apptainer/bin` to the `binary path` in
   `apptainer.conf`, which is used for searching for helper executables.
