@@ -206,7 +206,7 @@ tar xzf squashfuse-$SQUASHFUSEVERSION.tar.gz
 cd squashfuse-$SQUASHFUSEVERSION
 patch -p1 <../$SQUASHFUSEPR.patch
 ./autogen.sh
-FLAGS=-std=c99 ./configure --enable-multithreading
+CFLAGS=-std=c99 ./configure --enable-multithreading
 make squashfuse_ll
 sudo cp squashfuse_ll /usr/local/libexec/apptainer/bin
 ```
