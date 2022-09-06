@@ -1,5 +1,7 @@
 run:
   timeout: 3m
+  skip-files:
+    - "internal/pkg/util/user/cgo_lookup_unix.go"
 
 linters:
   disable-all: true

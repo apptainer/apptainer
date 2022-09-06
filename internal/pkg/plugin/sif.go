@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -32,12 +32,12 @@ const (
 // make up a valid plugin. A plugin sif file should have the following
 // format:
 //
-// DESCR[0]: Sifplugin
-//   - DataType: sif.DataPartition
-//   - FSType:   sif.FsRaw
-//   - PartType: sif.PartData
-// DESCR[1]: Sifmanifest
-//   - Datatype: sif.DataGenericJSON
+//	DESCR[0]: Sifplugin
+//	  - DataType: sif.DataPartition
+//	  - FSType:   sif.FsRaw
+//	  - PartType: sif.PartData
+//	DESCR[1]: Sifmanifest
+//	  - Datatype: sif.DataGenericJSON
 func isPluginFile(img *image.Image) bool {
 	if img.Type != image.SIF {
 		return false

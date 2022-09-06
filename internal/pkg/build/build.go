@@ -37,9 +37,9 @@ import (
 // Build is an abstracted way to look at the entire build process.
 // For example calling NewBuild() will return this object.
 // From there we can call Full() on this build object, which will:
-// 		Call Bundle() to obtain all data needed to execute the specified build locally on the machine
-// 		Execute all of a definition using AllSections()
-// 		And finally call Assemble() to create our container image
+//   - Call Bundle() to obtain all data needed to execute the specified build locally on the machine
+//   - Execute all of a definition using AllSections()
+//   - And finally call Assemble() to create our container image
 type Build struct {
 	// stages of the build
 	stages []stage

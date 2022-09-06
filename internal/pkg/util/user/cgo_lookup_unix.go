@@ -17,9 +17,6 @@
 
 //go:build (aix || darwin || dragonfly || freebsd || (!android && linux) || netbsd || openbsd || solaris) && cgo && !osusergo
 
-// Do not lint this file in order to keep it as close as possible to the
-// original, even if the original has linter issues.
-
 package user
 
 import (

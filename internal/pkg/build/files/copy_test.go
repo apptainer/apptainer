@@ -82,6 +82,7 @@ func TestMakeParentDir(t *testing.T) {
 
 // TestCopyFromHost tests that copying non-nested source dirs, files, links to various
 // destinations works. CopyFromHost should always resolve symlinks.
+//
 //nolint:maintidx
 func TestCopyFromHost(t *testing.T) {
 	// create tmpdir
@@ -467,6 +468,7 @@ func TestCopyFromHostNested(t *testing.T) {
 // TestCopyFromStage tests that copying non-nested source dirs, files, links to various
 // destinations works. CopyFromStage should resolve top-level symlinks for sources it is
 // called against.
+//
 //nolint:maintidx
 func TestCopyFromStage(t *testing.T) {
 	// create tmpdir

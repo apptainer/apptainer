@@ -658,6 +658,7 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 
 // prepareInstanceJoinConfig is responsible for getting and
 // applying configuration to join a running instance.
+//
 //nolint:maintidx
 func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Config) error {
 	name := instance.ExtractName(e.EngineConfig.GetImage())

@@ -475,9 +475,8 @@ func (c ctx) apptainerEnvFile(t *testing.T) {
 // shell script that injects them. With --no-eval it should match Docker, with
 // no evaluation:
 //
-//   WHO='$(id -u)' docker run -it --env WHO --rm alpine sh -c 'echo $WHO'
-//   $(id -u)
-//
+//	WHO='$(id -u)' docker run -it --env WHO --rm alpine sh -c 'echo $WHO'
+//	$(id -u)
 func (c ctx) apptainerEnvEval(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
