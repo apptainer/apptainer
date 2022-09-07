@@ -173,13 +173,14 @@ func (h *Handle) CleanCache(cacheType string, dryRun bool, days int) (err error)
 
 	errCount := 0
 	for _, f := range files {
-		fi, err := f.Info()
-		if err != nil {
-			sylog.Debugf("Failed to get file info: %s", f.Name())
-			continue
-		}
-
 		if days >= 0 {
+			fi, err := f.Info()
+			if err != nil {
+				sylog.Errorf("Could not get info for cache entry '%s': %v", f.Name(), err)
+				errCount = errCount + 1
+				continue
+			}
+
 			if time.Since(fi.ModTime()) < time.Duration(days*24)*time.Hour {
 				sylog.Debugf("Skipping %s: less that %d days old", f.Name(), days)
 				continue
