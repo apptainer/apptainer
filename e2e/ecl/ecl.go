@@ -53,6 +53,7 @@ func (c *ctx) eclConfig(t *testing.T) {
 		consoleOps []e2e.ApptainerConsoleOp
 		config     *syecl.EclConfig
 		exit       int
+		err        string
 	}{
 		{
 			name:    "import key1 local",
@@ -329,13 +330,6 @@ func (c *ctx) eclConfig(t *testing.T) {
 			exit: 0,
 		},
 		{
-			name:    "remove key1 from global",
-			command: "key remove",
-			profile: e2e.RootProfile,
-			args:    []string{"--global", KeyMap["key1"]},
-			exit:    0,
-		},
-		{
 			name:    "remove key2 from global",
 			command: "key remove",
 			profile: e2e.RootProfile,
@@ -349,6 +343,90 @@ func (c *ctx) eclConfig(t *testing.T) {
 			args:    []string{unsigned, "true"},
 			config:  &syecl.EclConfig{}, // disable ECL
 			exit:    0,
+		},
+
+		// here we start to test additional cases for https://github.com/apptainer/apptainer/issues/578
+		{
+			name:    "run with whitelist and signed image should fail",
+			command: "exec",
+			profile: e2e.UserProfile,
+			config: &syecl.EclConfig{
+				Activated: true,
+				ExecGroups: []syecl.Execgroup{
+					{
+						TagName:  "group1",
+						ListMode: "whitelist",
+						DirPath:  tmpDir,
+						KeyFPs:   []string{KeyMap["key2"]},
+					},
+				},
+			},
+			args: []string{signed, "true"},
+			exit: 255, // should fail because signed key does not exist
+			err:  "while checking container image with ECL: image not signed by required entities",
+		},
+		{
+			name:    "run with whitelist and signed image should succeed",
+			command: "exec",
+			profile: e2e.UserProfile,
+			config: &syecl.EclConfig{
+				Activated: true,
+				ExecGroups: []syecl.Execgroup{
+					{
+						TagName:  "group1",
+						ListMode: "whitelist",
+						DirPath:  tmpDir,
+						KeyFPs:   []string{KeyMap["key1"], KeyMap["key2"]},
+					},
+				},
+			},
+			args: []string{signed, "true"},
+			exit: 0, // should work because one of the two signed keys exists
+		},
+		{
+			name:    "run with whitestrict and signed image should fail",
+			command: "exec",
+			profile: e2e.UserProfile,
+			config: &syecl.EclConfig{
+				Activated: true,
+				ExecGroups: []syecl.Execgroup{
+					{
+						TagName:  "group1",
+						ListMode: "whitestrict",
+						DirPath:  tmpDir,
+						KeyFPs:   []string{KeyMap["key1"], KeyMap["key2"]},
+					},
+				},
+			},
+			args: []string{signed, "true"},
+			exit: 255, // should fail because both keys should exist
+			err:  "while checking container image with ECL: image not signed by required entities",
+		},
+		{
+			name:    "remove key1 from global",
+			command: "key remove",
+			profile: e2e.RootProfile,
+			args:    []string{"--global", KeyMap["key1"]},
+			exit:    0,
+		},
+		{
+			name:    "run with blacklist and signed image",
+			command: "exec",
+			profile: e2e.UserProfile,
+			config: &syecl.EclConfig{
+				Activated: true,
+				ExecGroups: []syecl.Execgroup{
+					{
+						TagName:  "group1",
+						ListMode: "blacklist",
+						DirPath:  tmpDir,
+						KeyFPs:   []string{KeyMap["key1"], KeyMap["key2"]},
+					},
+				},
+			},
+			args: []string{signed, "true"},
+			exit: 255, // should fail because the image is signed by forbidden keys
+			err:  "while checking container image with ECL: image signed by a forbidden entity",
 		},
 	}
 
@@ -373,7 +451,7 @@ func (c *ctx) eclConfig(t *testing.T) {
 				}
 				e2e.Privileged(fn)(t)
 			}),
-			e2e.ExpectExit(tt.exit),
+			e2e.ExpectExit(tt.exit, e2e.ExpectError(e2e.ContainMatch, tt.err)),
 		}
 
 		if tt.consoleOps != nil {
