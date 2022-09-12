@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -43,6 +43,7 @@ type EclConfig struct {
 }
 
 // Execgroup describes an execution group, the main unit of configuration:
+//
 //	TagName: a descriptive identifier
 //	ListMode: whether the execgroup follows a whitelist, whitestrict or blacklist model
 //		whitelist: one or more KeyFP's present and verified,

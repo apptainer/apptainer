@@ -477,6 +477,7 @@ func ExpectExit(code int, resultOps ...ApptainerCmdResultOp) ApptainerCmdOp {
 // cmdPath specifies the path to the apptainer binary and cmdOps
 // provides a list of operations to be executed before or after running
 // the command.
+//
 //nolint:maintidx
 func (env TestEnv) RunApptainer(t *testing.T, cmdOps ...ApptainerCmdOp) {
 	t.Helper()

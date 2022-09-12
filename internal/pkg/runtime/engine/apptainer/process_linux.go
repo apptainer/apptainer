@@ -61,6 +61,7 @@ const defaultShell = "/bin/sh"
 // No additional privileges can be gained during this call (unless container
 // is executed as root intentionally) as starter will set uid/euid/suid
 // to the targetUID (PrepareConfig will set it by calling starter.Config.SetTargetUID).
+//
 //nolint:maintidx
 func (e *EngineOperations) StartProcess(masterConnFd int) error {
 	// Manage all signals.

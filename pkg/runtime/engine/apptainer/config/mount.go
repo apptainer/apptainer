@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2021-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -24,7 +24,8 @@ import (
 // for specifying multiple mounts in a single env var.
 //
 // The fields are in key[=value] format. Flag options have no value, e.g.:
-//   type=bind,source=/opt,destination=/other,rw
+//
+//	type=bind,source=/opt,destination=/other,rw
 //
 // We only support type=bind at present, so assume this if type is missing and
 // error for other types.

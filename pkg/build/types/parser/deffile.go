@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2019, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -57,15 +57,14 @@ func IsInvalidSectionError(err error) bool {
 // that designated by a line starting with %
 //
 // Scanner behavior:
-//     1. The *first* time `s.Text()` is non-nil (which can be after infinitely many calls to
-//        `s.Scan()`), that text is *guaranteed* to be the header, unless the header doesn't exist.
-//		  In that case it returns the first section it finds.
-//     2. The next `n` times that `s.Text()` is non-nil (again, each could take many calls to
-//        `s.Scan()`), that text is guaranteed to be one specific section of the definition file.
-//     3. Once the input buffer is completely scanned, `s.Text()` will either be nil or non-nil
-//        (in which case `s.Text()` contains the last section found of the input buffer) *and*
-//        `s.Err()` will be non-nil with an `bufio.ErrFinalToken` returned. This is where scanning can completely halt.
-//
+//  1. The *first* time `s.Text()` is non-nil (which can be after infinitely many calls to
+//     `s.Scan()`), that text is *guaranteed* to be the header, unless the header doesn't exist.
+//     In that case it returns the first section it finds.
+//  2. The next `n` times that `s.Text()` is non-nil (again, each could take many calls to
+//     `s.Scan()`), that text is guaranteed to be one specific section of the definition file.
+//  3. Once the input buffer is completely scanned, `s.Text()` will either be nil or non-nil
+//     (in which case `s.Text()` contains the last section found of the input buffer) *and*
+//     `s.Err()` will be non-nil with an `bufio.ErrFinalToken` returned. This is where scanning can completely halt.
 func scanDefinitionFile(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	inSection := false
 	var retbuf bytes.Buffer

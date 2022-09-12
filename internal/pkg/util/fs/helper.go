@@ -483,9 +483,9 @@ func ForceRemoveAll(path string) error {
 }
 
 // PermWalk is similar to filepath.Walk - but:
-//   1. The skipDir checks are removed (we never want to skip anything here)
-//   2. Our walk will call walkFn on a directory *before* attempting to look
-//      inside that directory.
+//  1. The skipDir checks are removed (we never want to skip anything here)
+//  2. Our walk will call walkFn on a directory *before* attempting to look
+//     inside that directory.
 func PermWalk(root string, walkFn filepath.WalkFunc) error {
 	info, err := os.Lstat(root)
 	if err != nil {
@@ -531,11 +531,11 @@ func permWalk(path string, info os.FileInfo, walkFn filepath.WalkFunc) error {
 }
 
 // PermWalkRaiseError is similar to filepath.Walk - but:
-//   1. The skipDir checks are removed (we never want to skip anything here)
-//   2. Our walk will call walkFn on a directory *before* attempting to look
-//      inside that directory.
-//   3. We back out of the recursion at the *first* error... we don't attempt
-//      to go through as much as we can.
+//  1. The skipDir checks are removed (we never want to skip anything here)
+//  2. Our walk will call walkFn on a directory *before* attempting to look
+//     inside that directory.
+//  3. We back out of the recursion at the *first* error... we don't attempt
+//     to go through as much as we can.
 func PermWalkRaiseError(root string, walkFn filepath.WalkFunc) error {
 	info, err := os.Lstat(root)
 	if err != nil {

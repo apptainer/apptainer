@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2020-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2020-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the LICENSE.md file
 // distributed with the sources of this project regarding your rights to use or distribute this
 // software.
@@ -58,6 +58,7 @@ func NewHybridKeyRing(ctx context.Context, opts ...client.Option) (openpgp.KeyRi
 }
 
 // KeysById returns the set of keys that have the given key id.
+//
 //nolint:revive  // golang/x/crypto uses Id instead of ID so we have to too
 func (kr *hybridKeyRing) KeysById(id uint64) []openpgp.Key {
 	if keys := kr.local.KeysById(id); len(keys) > 0 {
@@ -75,6 +76,7 @@ func (kr *hybridKeyRing) KeysById(id uint64) []openpgp.Key {
 
 // KeysByIdUsage returns the set of keys with the given id that also meet the key usage given by
 // requiredUsage. The requiredUsage is expressed as the bitwise-OR of packet.KeyFlag* values.
+//
 //nolint:revive  // golang/x/crypto uses Id instead of ID so we have to too
 func (kr *hybridKeyRing) KeysByIdUsage(id uint64, requiredUsage byte) []openpgp.Key {
 	if keys := kr.local.KeysByIdUsage(id, requiredUsage); len(keys) > 0 {
@@ -120,6 +122,7 @@ func NewMultiKeyRing(keyrings ...openpgp.KeyRing) openpgp.KeyRing {
 }
 
 // KeysById returns the set of keys that have the given key id.
+//
 //nolint:revive  // golang/x/crypto uses Id instead of ID so we have to too
 func (mkr *multiKeyRing) KeysById(id uint64) []openpgp.Key {
 	for _, kr := range mkr.keyrings {
@@ -132,6 +135,7 @@ func (mkr *multiKeyRing) KeysById(id uint64) []openpgp.Key {
 
 // KeysByIdUsage returns the set of keys with the given id that also meet the key usage given by
 // requiredUsage. The requiredUsage is expressed as the bitwise-OR of packet.KeyFlag* values.
+//
 //nolint:revive  // golang/x/crypto uses Id instead of ID so we have to too
 func (mkr *multiKeyRing) KeysByIdUsage(id uint64, requiredUsage byte) []openpgp.Key {
 	for _, kr := range mkr.keyrings {
