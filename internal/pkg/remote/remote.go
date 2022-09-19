@@ -14,7 +14,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -71,7 +70,7 @@ func ReadFrom(r io.Reader) (*Config, error) {
 	}
 
 	// read all data from r into b
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from io.Reader: %s", err)
 	}

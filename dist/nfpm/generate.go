@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -68,7 +67,7 @@ func main() {
 	}
 
 	file := "dist/nfpm/nfpm.yaml"
-	t, err := ioutil.ReadFile(file)
+	t, err := os.ReadFile(file)
 	if err != nil {
 		log.Fatalf("while reading %s: %s", file, err)
 	}

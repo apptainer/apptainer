@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -193,7 +192,7 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 			cp.srcRef, err = ociarchive.ParseReference(ref)
 		} else {
 			// As non-root we need to do a dumb tar extraction first
-			tmpDir, err := ioutil.TempDir(b.TmpDir, "temp-oci-")
+			tmpDir, err := os.MkdirTemp(b.TmpDir, "temp-oci-")
 			if err != nil {
 				return fmt.Errorf("could not create temporary oci directory: %v", err)
 			}
@@ -287,7 +286,7 @@ func (cp *OCIConveyorPacker) Pack(ctx context.Context) (*sytypes.Bundle, error) 
 func (cp *OCIConveyorPacker) fetch(ctx context.Context) error {
 	// cp.srcRef contains the cache source reference
 	_, err := copy.Image(ctx, cp.policyCtx, cp.tmpfsRef, cp.srcRef, &copy.Options{
-		ReportWriter: ioutil.Discard,
+		ReportWriter: io.Discard,
 		SourceCtx:    cp.sysCtx,
 	})
 	return err
@@ -539,7 +538,7 @@ func (cp *OCIConveyorPacker) insertOCILabels() (err error) {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/labels.json"), []byte(text), 0o644)
+	err = os.WriteFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/labels.json"), []byte(text), 0o644)
 	return err
 }
 

@@ -14,7 +14,6 @@ package auth
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -40,7 +39,7 @@ func ReadToken(tokenPath string) (token string, err error) {
 		return "", ErrTokenFileNotFound
 	}
 
-	buf, err := ioutil.ReadFile(tokenPath)
+	buf, err := os.ReadFile(tokenPath)
 	if err != nil {
 		return "", ErrCouldntReadFile
 	}

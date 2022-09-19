@@ -12,8 +12,8 @@ package e2e
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"log"
+	"os"
 	"path"
 	"testing"
 	"text/template"
@@ -81,7 +81,7 @@ func PrepareDefFile(dfd DefFileDetails) (outputPath string) {
 		log.Fatalf("failed to parse template: %v", err)
 	}
 
-	f, err := ioutil.TempFile("", "TestTemplate-")
+	f, err := os.CreateTemp("", "TestTemplate-")
 	if err != nil {
 		log.Fatalf("failed to open temp file: %v", err)
 	}
@@ -109,7 +109,7 @@ func PrepareMultiStageDefFile(dfd []DefFileDetails) (outputPath string) {
 		}
 	}
 
-	f, err := ioutil.TempFile("", "TestTemplate-")
+	f, err := os.CreateTemp("", "TestTemplate-")
 	if err != nil {
 		log.Fatalf("failed to open temp file: %v", err)
 	}

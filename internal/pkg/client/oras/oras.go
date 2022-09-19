@@ -18,7 +18,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -304,7 +303,7 @@ func ImageSHA(ctx context.Context, uri string, ociAuth *ocitypes.DockerAuthConfi
 	}
 	defer rc.Close()
 
-	b, err := ioutil.ReadAll(rc)
+	b, err := io.ReadAll(rc)
 	if err != nil {
 		return "", fmt.Errorf("while reading manifest: %v", err)
 	}

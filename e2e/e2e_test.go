@@ -14,7 +14,6 @@ package e2e
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -111,7 +110,7 @@ func killAllChilds() {
 		switch match {
 		case "/proc/net/stat", "/proc/self/stat", "/proc/thread-self/stat":
 		default:
-			d, err := ioutil.ReadFile(match)
+			d, err := os.ReadFile(match)
 			if err != nil {
 				continue
 			}

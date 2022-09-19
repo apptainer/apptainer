@@ -13,7 +13,6 @@ package endpoint
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -120,5 +119,5 @@ func updateCachedConfig(uri string, data []byte) {
 		return
 	}
 	config := filepath.Join(dir, uri+".json")
-	ioutil.WriteFile(config, data, 0o600)
+	os.WriteFile(config, data, 0o600)
 }

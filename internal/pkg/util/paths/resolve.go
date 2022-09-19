@@ -12,7 +12,6 @@ package paths
 import (
 	"debug/elf"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -72,7 +71,7 @@ func Resolve(fileList []string) ([]string, []string, error) {
 	}
 
 	boundLibsDir := "/.singularity.d/libs"
-	boundLibs, err := ioutil.ReadDir(boundLibsDir)
+	boundLibs, err := os.ReadDir(boundLibsDir)
 	if err != nil {
 		boundLibs = nil // just in case
 	}

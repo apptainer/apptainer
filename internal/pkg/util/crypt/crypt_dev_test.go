@@ -10,7 +10,6 @@
 package crypt
 
 import (
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -27,7 +26,7 @@ func TestEncrypt(t *testing.T) {
 
 	dev := &Device{}
 
-	emptyFile, err := ioutil.TempFile("", "")
+	emptyFile, err := os.CreateTemp("", "")
 	if err != nil {
 		t.Fatalf("failed to create temporary file: %s", err)
 	}
@@ -56,7 +55,7 @@ func TestEncrypt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to get path to squashfs binary: %s", err)
 	}
-	tempTargetFile, err := ioutil.TempFile("", "")
+	tempTargetFile, err := os.CreateTemp("", "")
 	if err != nil {
 		t.Fatalf("failed to create temporary file: %s", err)
 	}

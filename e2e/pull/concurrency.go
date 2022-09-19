@@ -6,7 +6,6 @@
 package pull
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -93,7 +92,7 @@ func (c ctx) testConcurrentPulls(t *testing.T) {
 		tt := tt
 
 		t.Run(tt.name, func(t *testing.T) {
-			tmpdir, err := ioutil.TempDir(c.env.TestDir, "pull_test.")
+			tmpdir, err := os.MkdirTemp(c.env.TestDir, "pull_test.")
 			if err != nil {
 				t.Fatalf("Failed to create temporary directory for pull test: %+v", err)
 			}

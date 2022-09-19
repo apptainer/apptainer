@@ -13,7 +13,6 @@ package sylog
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 )
 
@@ -55,9 +54,9 @@ func GetEnvVar() string {
 	return "APPTAINER_MESSAGELEVEL=-1"
 }
 
-// Writer is a dummy function returning ioutil.Discard writer.
+// Writer is a dummy function returning io.Discard writer.
 func Writer() io.Writer {
-	return ioutil.Discard
+	return io.Discard
 }
 
 // DebugLogger is an implementation of the go-log/log Logger interface that will

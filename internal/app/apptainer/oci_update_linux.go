@@ -13,7 +13,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/apptainer/apptainer/internal/pkg/cgroups"
@@ -54,7 +53,7 @@ func OciUpdate(containerID string, args *OciArgs) error {
 		reader = f
 	}
 
-	data, err := ioutil.ReadAll(reader)
+	data, err := io.ReadAll(reader)
 	if err != nil {
 		return fmt.Errorf("failed to read cgroups config file: %s", err)
 	}

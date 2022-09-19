@@ -13,7 +13,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -101,7 +101,7 @@ func GetManifest(uri URI, noHTTPS bool) (APIResponse, error) {
 		return APIResponse{}, err
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return APIResponse{}, err
 	}

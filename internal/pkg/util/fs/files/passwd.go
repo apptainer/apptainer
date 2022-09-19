@@ -11,7 +11,7 @@ package files
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
@@ -27,7 +27,7 @@ func Passwd(path string, home string, uid int) (content []byte, err error) {
 	}
 
 	sylog.Verbosef("Creating passwd content")
-	content, err = ioutil.ReadFile(path)
+	content, err = os.ReadFile(path)
 	if err != nil {
 		return content, fmt.Errorf("failed to read passwd file content in container: %s", err)
 	}

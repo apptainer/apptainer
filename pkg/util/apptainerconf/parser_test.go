@@ -12,14 +12,13 @@ package apptainerconf
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
 )
 
 func TestGenerate(t *testing.T) {
-	discard := ioutil.Discard
+	discard := io.Discard
 
 	if err := Generate(discard, "/non-existent/template", nil); err == nil {
 		t.Fatalf("unexpected success with non-existent template")
@@ -30,7 +29,7 @@ func TestGenerate(t *testing.T) {
 }
 
 func TestParser(t *testing.T) {
-	f, err := ioutil.TempFile("", "apptainer.conf-")
+	f, err := os.CreateTemp("", "apptainer.conf-")
 	if err != nil {
 		t.Fatalf("failed to create temporary configuration file: %s", err)
 	}

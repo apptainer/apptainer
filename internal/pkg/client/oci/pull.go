@@ -13,7 +13,7 @@ package oci
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/build"
@@ -88,7 +88,7 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom, tmpDir string, 
 	directTo := ""
 
 	if imgCache.IsDisabled() {
-		file, err := ioutil.TempFile(tmpDir, "sbuild-tmp-cache-")
+		file, err := os.CreateTemp(tmpDir, "sbuild-tmp-cache-")
 		if err != nil {
 			return "", fmt.Errorf("unable to create tmp file: %v", err)
 		}

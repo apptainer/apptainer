@@ -12,7 +12,6 @@ package e2e
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -308,12 +307,12 @@ func verifyFile(t *testing.T, original, copy string) error {
 		return fmt.Errorf("incorrect file modes. Original: %v, Copy: %v", ofi.Mode(), cfi.Mode())
 	}
 
-	o, err := ioutil.ReadFile(original)
+	o, err := os.ReadFile(original)
 	if err != nil {
 		t.Fatalf("While reading file: %v", err)
 	}
 
-	c, err := ioutil.ReadFile(copy)
+	c, err := os.ReadFile(copy)
 	if err != nil {
 		t.Fatalf("While reading file: %v", err)
 	}
@@ -336,7 +335,7 @@ func verifyHelp(t *testing.T, fileName string, contents []string) error {
 		return fmt.Errorf("incorrect help script perms: %v", fi.Mode().Perm())
 	}
 
-	s, err := ioutil.ReadFile(fileName)
+	s, err := os.ReadFile(fileName)
 	if err != nil {
 		t.Fatalf("While reading file: %v", err)
 	}
@@ -362,7 +361,7 @@ func verifyScript(t *testing.T, fileName string, contents []string) error {
 		return fmt.Errorf("incorrect script perms: %v", fi.Mode().Perm())
 	}
 
-	s, err := ioutil.ReadFile(fileName)
+	s, err := os.ReadFile(fileName)
 	if err != nil {
 		t.Fatalf("While reading file: %v", err)
 	}

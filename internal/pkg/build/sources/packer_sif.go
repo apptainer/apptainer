@@ -12,7 +12,7 @@ package sources
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 
 	"github.com/apptainer/apptainer/internal/pkg/image/unpacker"
 	"github.com/apptainer/apptainer/pkg/build/types"
@@ -86,7 +86,7 @@ func unpackSIF(b *types.Bundle, img *image.Image) (err error) {
 	} else if err != nil {
 		return fmt.Errorf("could not get OCI config section reader: %v", err)
 	} else {
-		ociConfig, err := ioutil.ReadAll(ociReader)
+		ociConfig, err := io.ReadAll(ociReader)
 		if err != nil {
 			return fmt.Errorf("could not read OCI config: %v", err)
 		}

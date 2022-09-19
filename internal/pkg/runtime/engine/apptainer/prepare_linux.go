@@ -15,7 +15,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -818,7 +817,7 @@ func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Conf
 		}
 
 		// we must read "appinit\n"
-		b, err := ioutil.ReadFile("comm")
+		b, err := os.ReadFile("comm")
 		if err != nil {
 			return fmt.Errorf("failed to read %s: %s", path, err)
 		}

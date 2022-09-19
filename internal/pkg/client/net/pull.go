@@ -15,7 +15,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
@@ -182,7 +181,7 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom string, tmpDir s
 	directTo := ""
 
 	if imgCache.IsDisabled() {
-		file, err := ioutil.TempFile(tmpDir, "sbuild-tmp-cache-")
+		file, err := os.CreateTemp(tmpDir, "sbuild-tmp-cache-")
 		if err != nil {
 			return "", fmt.Errorf("unable to create tmp file: %v", err)
 		}

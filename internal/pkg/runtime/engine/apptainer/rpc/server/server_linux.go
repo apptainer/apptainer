@@ -11,7 +11,6 @@ package server
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strconv"
@@ -377,9 +376,9 @@ func (t *Methods) Symlink(arguments *args.SymlinkArgs, reply *int) error {
 
 // ReadDir performs a readdir with the specified arguments.
 func (t *Methods) ReadDir(arguments *args.ReadDirArgs, reply *args.ReadDirReply) error {
-	files, err := ioutil.ReadDir(arguments.Dir)
-	for i, file := range files {
-		files[i] = args.FileInfo(file)
+	files, err := os.ReadDir(arguments.Dir)
+	if err != nil {
+		return err
 	}
 	reply.Files = files
 	return err

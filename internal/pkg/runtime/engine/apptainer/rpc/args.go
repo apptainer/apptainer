@@ -112,7 +112,7 @@ type ReadDirArgs struct {
 
 // ReadDirReply defines the reply for readdir.
 type ReadDirReply struct {
-	Files []os.FileInfo
+	Files []os.DirEntry
 }
 
 // ChownArgs defines the arguments to chown/lchown.

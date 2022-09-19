@@ -12,7 +12,6 @@ package apptainer
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -102,6 +101,7 @@ func findConvertCommand(overlaySparse bool) (string, error) {
 }
 
 // OverlayCreate creates the overlay with an optional size, image path, dirs, fakeroot and sparse option.
+//
 //nolint:maintidx
 func OverlayCreate(size int, imgPath string, overlaySparse bool, isFakeroot bool, overlayDirs ...string) error {
 	if size < 64 {
@@ -200,7 +200,7 @@ func OverlayCreate(size int, imgPath string, overlaySparse bool, isFakeroot bool
 		return fmt.Errorf("while setting 0600 permission on %s: %s", tmpFile, err)
 	}
 
-	tmpDir, err := ioutil.TempDir("", "overlay-")
+	tmpDir, err := os.MkdirTemp("", "overlay-")
 	if err != nil {
 		return fmt.Errorf("while creating temporary overlay directory: %s", err)
 	}

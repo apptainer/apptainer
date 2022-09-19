@@ -14,7 +14,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	osexec "os/exec"
@@ -214,7 +213,7 @@ func (e *EngineOperations) PreStartProcess(ctx context.Context, pid int, masterC
 
 	pidFile := e.EngineConfig.GetPidFile()
 	if pidFile != "" {
-		if err := ioutil.WriteFile(pidFile, []byte(strconv.Itoa(pid)), 0o644); err != nil {
+		if err := os.WriteFile(pidFile, []byte(strconv.Itoa(pid)), 0o644); err != nil {
 			return err
 		}
 	}

@@ -10,7 +10,6 @@
 package sifbundle
 
 import (
-	"io/ioutil"
 	"os"
 	"runtime"
 	"testing"
@@ -31,7 +30,7 @@ func TestFromSif(t *testing.T) {
 	test.EnsurePrivilege(t)
 
 	bundlePath := t.TempDir()
-	f, err := ioutil.TempFile("", "busybox")
+	f, err := os.CreateTemp("", "busybox")
 	if err != nil {
 		t.Fatal(err)
 	}

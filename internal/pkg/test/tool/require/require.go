@@ -13,7 +13,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -201,7 +200,7 @@ func CgroupsV2Delegated(t *testing.T, controller string) {
 
 	delegatePath := filepath.Join("/sys/fs/cgroup", cgPath, "cgroup.controllers")
 
-	data, err := ioutil.ReadFile(delegatePath)
+	data, err := os.ReadFile(delegatePath)
 	if err != nil {
 		t.Skipf("while reading delegation file: %s", err)
 	}

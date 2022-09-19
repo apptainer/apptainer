@@ -14,7 +14,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -99,7 +98,7 @@ func createIndexFile(t *testing.T, dir string, sum string) {
 	if jsonErr != nil {
 		t.Fatalf("cannot unmarshal JSON: %s\n", jsonErr)
 	}
-	err := ioutil.WriteFile(path, data, 0o664)
+	err := os.WriteFile(path, data, 0o664)
 	if err != nil {
 		t.Fatalf("cannot create index file: %s\n", err)
 	}

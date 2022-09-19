@@ -11,7 +11,6 @@ package imgbuild
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -70,7 +69,7 @@ func (c *imgBuildTests) issue4407(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
 	sandboxDir := func() string {
-		name, err := ioutil.TempDir(c.env.TestDir, "sandbox.")
+		name, err := os.MkdirTemp(c.env.TestDir, "sandbox.")
 		if err != nil {
 			log.Fatalf("failed to create temporary directory for sandbox: %v", err)
 		}
@@ -269,7 +268,7 @@ func (c *imgBuildTests) issue5166(t *testing.T) {
 	sensibleDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "sensible-dir-", "")
 
 	secret := filepath.Join(sensibleDir, "secret")
-	if err := ioutil.WriteFile(secret, []byte("secret"), 0o644); err != nil {
+	if err := os.WriteFile(secret, []byte("secret"), 0o644); err != nil {
 		t.Fatalf("could not create %s: %s", secret, err)
 	}
 
@@ -490,7 +489,7 @@ func (c *imgBuildTests) issue3848(t *testing.T) {
 	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "issue-3848-", "")
 	defer cleanup(t)
 
-	f, err := ioutil.TempFile(tmpDir, "test-def-")
+	f, err := os.CreateTemp(tmpDir, "test-def-")
 	if err != nil {
 		t.Fatalf("failed to open temp file: %v", err)
 	}

@@ -13,7 +13,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -36,7 +35,7 @@ func tempFileFrom(path string) (string, error) {
 		pattern = fmt.Sprintf("*.%s", ext)
 	}
 
-	tf, err := ioutil.TempFile("", pattern)
+	tf, err := os.CreateTemp("", pattern)
 	if err != nil {
 		return "", err
 	}

@@ -12,7 +12,6 @@ package build
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -115,7 +114,7 @@ func newBuild(defs []types.Definition, conf Config) (*Build, error) {
 		if conf.Format == "sandbox" {
 			rootfsParent = filepath.Dir(conf.Dest)
 		}
-		parentPath, err := ioutil.TempDir(rootfsParent, "build-temp-")
+		parentPath, err := os.MkdirTemp(rootfsParent, "build-temp-")
 		if err != nil {
 			return nil, fmt.Errorf("failed to create build parent dir: %w", err)
 		}
@@ -230,7 +229,7 @@ func ensureGzipComp(tmpdir, mksquashfsPath string) (bool, error) {
 	s := packer.NewSquashfs()
 	s.MksquashfsPath = mksquashfsPath
 
-	srcf, err := ioutil.TempFile(tmpdir, "squashfs-gzip-comp-test-src")
+	srcf, err := os.CreateTemp(tmpdir, "squashfs-gzip-comp-test-src")
 	if err != nil {
 		return false, fmt.Errorf("while creating temporary file for squashfs source: %v", err)
 	}
@@ -238,7 +237,7 @@ func ensureGzipComp(tmpdir, mksquashfsPath string) (bool, error) {
 	srcf.Write([]byte("Test File Content"))
 	srcf.Close()
 
-	f, err := ioutil.TempFile(tmpdir, "squashfs-gzip-comp-test-")
+	f, err := os.CreateTemp(tmpdir, "squashfs-gzip-comp-test-")
 	if err != nil {
 		return false, fmt.Errorf("while creating temporary file for squashfs: %v", err)
 	}
@@ -265,7 +264,7 @@ func ensureGzipComp(tmpdir, mksquashfsPath string) (bool, error) {
 		return false, fmt.Errorf("while creating squashfs: %v", err)
 	}
 
-	content, err := ioutil.ReadFile(f.Name())
+	content, err := os.ReadFile(f.Name())
 	if err != nil {
 		return false, fmt.Errorf("while reading test squashfs: %v", err)
 	}
@@ -287,7 +286,7 @@ func ensureGzipComp(tmpdir, mksquashfsPath string) (bool, error) {
 		return false, fmt.Errorf("could not build squashfs with required gzip compression")
 	}
 
-	content, err = ioutil.ReadFile(f.Name())
+	content, err = os.ReadFile(f.Name())
 	if err != nil {
 		return false, fmt.Errorf("while reading test squashfs: %v", err)
 	}

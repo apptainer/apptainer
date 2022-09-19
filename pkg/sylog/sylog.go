@@ -14,7 +14,6 @@ package sylog
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strconv"
@@ -155,10 +154,10 @@ func GetEnvVar() string {
 }
 
 // Writer returns an io.Writer to pass to an external packages logging utility.
-// i.e when --quiet option is set, this function returns ioutil.Discard writer to ignore output
+// i.e when --quiet option is set, this function returns io.Discard writer to ignore output
 func Writer() io.Writer {
 	if loggerLevel <= LogLevel {
-		return ioutil.Discard
+		return io.Discard
 	}
 
 	return logWriter

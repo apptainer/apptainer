@@ -11,7 +11,7 @@ package e2e
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"os"
 	"runtime"
 	"sync"
@@ -170,7 +170,7 @@ func CopyImage(t *testing.T, source, dest string, insecureSource, insecureDest b
 	}
 
 	_, err = copy.Image(context.Background(), policyCtx, dstRef, srcRef, &copy.Options{
-		ReportWriter:   ioutil.Discard,
+		ReportWriter:   io.Discard,
 		SourceCtx:      srcCtx,
 		DestinationCtx: dstCtx,
 	})

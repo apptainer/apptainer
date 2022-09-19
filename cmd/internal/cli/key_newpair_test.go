@@ -12,7 +12,6 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -66,7 +65,7 @@ func Test_collectInput_flags(t *testing.T) {
 }
 
 func TestCollectInput(t *testing.T) {
-	tf, err := ioutil.TempFile("", "collect-test-")
+	tf, err := os.CreateTemp("", "collect-test-")
 	assert.NilError(t, err)
 	defer tf.Close()
 

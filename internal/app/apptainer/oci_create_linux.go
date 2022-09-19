@@ -12,7 +12,7 @@ package apptainer
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -54,7 +54,7 @@ func OciCreate(containerID string, args *OciArgs) error {
 		return fmt.Errorf("oci specification file %q is missing or cannot be read", configJSON)
 	}
 
-	data, err := ioutil.ReadAll(fb)
+	data, err := io.ReadAll(fb)
 	if err != nil {
 		return fmt.Errorf("failed to read OCI specification file %s: %s", configJSON, err)
 	}

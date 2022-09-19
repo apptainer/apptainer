@@ -11,7 +11,7 @@ package files
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
@@ -64,7 +64,7 @@ func Group(path string, uid int, gids []int) (content []byte, err error) {
 			groups = append(groups, int(pwInfo.GID))
 		}
 	}
-	content, err = ioutil.ReadAll(groupFile)
+	content, err = io.ReadAll(groupFile)
 	if err != nil {
 		return content, fmt.Errorf("failed to read group file content in container: %s", err)
 	}

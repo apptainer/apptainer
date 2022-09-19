@@ -14,7 +14,6 @@ package pull
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -114,7 +113,7 @@ func (c *ctx) setup(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
 	// setup file and dir to use as invalid images
-	orasInvalidDir, err := ioutil.TempDir(c.env.TestDir, "oras_push_dir-")
+	orasInvalidDir, err := os.MkdirTemp(c.env.TestDir, "oras_push_dir-")
 	if err != nil {
 		t.Fatalf("unable to create src dir for push tests: %v", err)
 	}
@@ -338,14 +337,14 @@ func (c ctx) testPullCmd(t *testing.T) {
 			continue
 		}
 		t.Run(tt.desc, func(t *testing.T) {
-			tmpdir, err := ioutil.TempDir(c.env.TestDir, "pull_test.")
+			tmpdir, err := os.MkdirTemp(c.env.TestDir, "pull_test.")
 			if err != nil {
 				t.Fatalf("Failed to create temporary directory for pull test: %+v", err)
 			}
 			defer os.RemoveAll(tmpdir)
 
 			if tt.setPullDir {
-				tt.pullDir, err = ioutil.TempDir(tmpdir, "pull_dir.")
+				tt.pullDir, err = os.MkdirTemp(tmpdir, "pull_dir.")
 				if err != nil {
 					t.Fatalf("Failed to create temporary directory for pull dir: %+v", err)
 				}
@@ -477,7 +476,7 @@ func orasPushNoCheck(path, ref, layerMediaType string) error {
 }
 
 func (c ctx) testPullDisableCacheCmd(t *testing.T) {
-	cacheDir, err := ioutil.TempDir("", "e2e-imgcache-")
+	cacheDir, err := os.MkdirTemp("", "e2e-imgcache-")
 	if err != nil {
 		t.Fatalf("failed to create temporary directory: %s", err)
 	}

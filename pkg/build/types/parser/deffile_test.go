@@ -13,7 +13,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
@@ -58,7 +57,7 @@ func TestScanDefinitionFile(t *testing.T) {
 			for s.Scan() && s.Text() == "" && s.Err() == nil {
 			}
 
-			b, err := ioutil.ReadFile(tt.sections)
+			b, err := os.ReadFile(tt.sections)
 			if err != nil {
 				t.Fatal("failed to read JSON:", err)
 			}

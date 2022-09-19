@@ -11,7 +11,6 @@ package layout
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -53,7 +52,7 @@ type VFS interface {
 	Lchown(string, int, int) error
 	Mkdir(string, os.FileMode) error
 	Readlink(string) (string, error)
-	ReadDir(string) ([]os.FileInfo, error)
+	ReadDir(string) ([]os.DirEntry, error)
 	Stat(string) (os.FileInfo, error)
 	Symlink(string, string) error
 	Umask(int) int
@@ -82,8 +81,8 @@ func (v *defaultVFS) Readlink(name string) (string, error) {
 	return os.Readlink(name)
 }
 
-func (v *defaultVFS) ReadDir(dir string) ([]os.FileInfo, error) {
-	return ioutil.ReadDir(dir)
+func (v *defaultVFS) ReadDir(dir string) ([]os.DirEntry, error) {
+	return os.ReadDir(dir)
 }
 
 func (v *defaultVFS) Stat(name string) (os.FileInfo, error) {

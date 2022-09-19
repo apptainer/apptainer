@@ -14,7 +14,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -256,7 +255,7 @@ func (c *YumConveyor) genYumConfig() (err error) {
 		return fmt.Errorf("while creating %v: %v", filepath.Join(c.b.RootfsPath, "/etc"), err)
 	}
 
-	err = ioutil.WriteFile(filepath.Join(c.b.RootfsPath, yumConf), []byte(fileContent), 0o664)
+	err = os.WriteFile(filepath.Join(c.b.RootfsPath, yumConf), []byte(fileContent), 0o664)
 	if err != nil {
 		return fmt.Errorf("while creating %v: %v", filepath.Join(c.b.RootfsPath, yumConf), err)
 	}
@@ -346,7 +345,7 @@ func (cp *YumConveyorPacker) insertBaseEnv() (err error) {
 }
 
 func (cp *YumConveyorPacker) insertRunScript() (err error) {
-	err = ioutil.WriteFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/runscript"), []byte("#!/bin/sh\n"), 0o755)
+	err = os.WriteFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/runscript"), []byte("#!/bin/sh\n"), 0o755)
 	if err != nil {
 		return
 	}

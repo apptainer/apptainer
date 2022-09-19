@@ -12,7 +12,7 @@ package apptainer
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -590,6 +590,7 @@ func (c *container) chdirFinal(system *mount.System) error {
 }
 
 // mount any generic mount (not loop dev)
+//
 //nolint:maintidx
 func (c *container) mountGeneric(mnt *mount.Point, tag mount.AuthorizedTag) (err error) {
 	flags, opts := mount.ConvertOptions(mnt.Options)
@@ -2312,7 +2313,7 @@ func (c *container) addResolvConfMount(system *mount.System) error {
 			if err != nil {
 				return err
 			}
-			content, err = ioutil.ReadAll(r)
+			content, err = io.ReadAll(r)
 			r.Close()
 			if err != nil {
 				return err

@@ -13,7 +13,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -129,7 +128,7 @@ func main() {
 	defer outFile.Close()
 
 	// Determine if this is a setuid install
-	b, err := ioutil.ReadFile(os.Args[1])
+	b, err := os.ReadFile(os.Args[1])
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -146,7 +145,7 @@ func main() {
 	}
 
 	// Parse the config.h file
-	inFile, err := ioutil.ReadFile(os.Args[1])
+	inFile, err := os.ReadFile(os.Args[1])
 	if err != nil {
 		fmt.Println(err)
 		return

@@ -198,7 +198,7 @@ func (u *Underlay) duplicateDir(dir string, system *mount.System, existingPath s
 				return fmt.Errorf("can't add bind mount point: %s", err)
 			}
 			binds++
-		} else if file.Mode()&os.ModeSymlink != 0 {
+		} else if file.Type()&os.ModeSymlink != 0 {
 			tgt, err := u.session.VFS.Readlink(src)
 			if err != nil {
 				return fmt.Errorf("can't read symlink information for %s: %s", src, err)

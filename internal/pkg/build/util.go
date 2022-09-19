@@ -12,7 +12,6 @@ package build
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -70,7 +69,7 @@ func createStageFile(source string, b *types.Bundle, warnMsg string) (string, er
 	}
 	defer stageFile.Close()
 
-	content, err := ioutil.ReadFile(source)
+	content, err := os.ReadFile(source)
 	if err != nil {
 		return "", fmt.Errorf("failed to read %s: %s", source, err)
 	}

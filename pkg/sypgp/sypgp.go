@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -264,7 +263,7 @@ func (keyring *Handle) LoadPubKeyring() (openpgp.EntityList, error) {
 func loadKeysFromFile(fn string) (openpgp.EntityList, error) {
 	// use an intermediary bytes.Reader to support key import from
 	// stdin for the seek operation below
-	data, err := ioutil.ReadFile(fn)
+	data, err := os.ReadFile(fn)
 	if err != nil {
 		return nil, err
 	}
@@ -632,7 +631,7 @@ const (
 	tagField = iota
 )
 
-//nolint
+// nolint
 const (
 	// info:<version>:<count>
 
@@ -643,7 +642,7 @@ const (
 	infoFieldsCount = iota
 )
 
-//nolint
+// nolint
 const (
 	// pub:<keyid>:<algo>:<keylen>:<creationdate>:<expirationdate>:<flags>
 
@@ -658,7 +657,7 @@ const (
 	pubFieldsCount = iota
 )
 
-//nolint
+// nolint
 const (
 	// uid:<escaped uid string>:<creationdate>:<expirationdate>:<flags>
 

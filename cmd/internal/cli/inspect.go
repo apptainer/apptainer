@@ -15,7 +15,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -573,7 +572,7 @@ func getSIFMetadata(img *image.Image, dataType uint32) ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("while reading SIF section: %s", err)
 		}
-		b, err := ioutil.ReadAll(r)
+		b, err := io.ReadAll(r)
 		if err != nil {
 			return nil, fmt.Errorf("while reading metadata: %s", err)
 		}

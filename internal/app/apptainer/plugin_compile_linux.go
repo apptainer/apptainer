@@ -14,7 +14,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -68,14 +67,14 @@ func getApptainerSrcDir() (string, error) {
 func checkGoVersion(goPath string) error {
 	var out bytes.Buffer
 
-	tmpDir, err := ioutil.TempDir("", "plugin-")
+	tmpDir, err := os.MkdirTemp("", "plugin-")
 	if err != nil {
 		return errors.New("temporary directory creation failed")
 	}
 	defer os.RemoveAll(tmpDir)
 
 	path := filepath.Join(tmpDir, "rt_version.go")
-	if err := ioutil.WriteFile(path, []byte(goVersionFile), 0o600); err != nil {
+	if err := os.WriteFile(path, []byte(goVersionFile), 0o600); err != nil {
 		return fmt.Errorf("while writing go file %s: %s", path, err)
 	}
 	defer os.Remove(path)

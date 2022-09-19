@@ -12,7 +12,6 @@ package cli
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"syscall"
 
@@ -361,7 +360,7 @@ func checkBuildTarget(path string) error {
 		// image and inform users to check its content and use --force option if
 		// the sandbox image is not an Apptainer image
 		if f.IsDir() && !forceOverwrite {
-			files, err := ioutil.ReadDir(abspath)
+			files, err := os.ReadDir(abspath)
 			if err != nil {
 				return fmt.Errorf("could not read sandbox directory %s: %s", abspath, err)
 			} else if len(files) > 0 {
