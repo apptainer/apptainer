@@ -109,6 +109,20 @@ func Run(t *testing.T) {
 	testenv.TestRegistry = e2e.StartRegistry(t, testenv)
 	testenv.InsecureRegistry = strings.Replace(testenv.TestRegistry, "localhost", "127.0.0.1.nip.io", 1)
 
+	// Make shared cache dirs for privileged and unpriviliged E2E tests.
+	// Individual tests that depend on specific ordered cache behavior, or
+	// directly test the cache, should override the TestEnv values within the
+	// specific test.
+	privCacheDir, cleanPrivCache := e2e.MakeCacheDir(t, testenv.TestDir)
+	testenv.PrivCacheDir = privCacheDir
+	defer e2e.Privileged(func(t *testing.T) {
+		cleanPrivCache(t)
+	})
+
+	unprivCacheDir, cleanUnprivCache := e2e.MakeCacheDir(t, testenv.TestDir)
+	testenv.UnprivCacheDir = unprivCacheDir
+	defer cleanUnprivCache(t)
+
 	// e2e tests need to run in a somehow agnostic environment, so we
 	// don't use environment of user executing tests in order to not
 	// wrongly interfering with cache stuff, sylabs library tokens,

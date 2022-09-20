@@ -34,11 +34,6 @@ const (
 )
 
 func (c ctx) apptainerEnv(t *testing.T) {
-	// use a cache to not download images over and over
-	imgCacheDir, cleanCache := e2e.MakeCacheDir(t, c.env.TestDir)
-	defer cleanCache(t)
-	c.env.ImgCacheDir = imgCacheDir
-
 	// Apptainer defines a path by default. See apptainerware/apptainer/etc/init.
 	defaultImage := "docker://alpine:3.8"
 
@@ -136,11 +131,6 @@ func (c ctx) apptainerEnvOption(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
 	imageDefaultPath := defaultPath + ":/go/bin:/usr/local/go/bin"
-
-	// use a cache to not download images over and over
-	imgCacheDir, cleanCache := e2e.MakeCacheDir(t, c.env.TestDir)
-	defer cleanCache(t)
-	c.env.ImgCacheDir = imgCacheDir
 
 	tests := []struct {
 		name     string
@@ -356,11 +346,6 @@ func (c ctx) apptainerEnvFile(t *testing.T) {
 	dir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "envfile-", "")
 	defer cleanup(t)
 	p := filepath.Join(dir, "env.file")
-
-	// use a cache to not download images over and over
-	imgCacheDir, cleanCache := e2e.MakeCacheDir(t, c.env.TestDir)
-	defer cleanCache(t)
-	c.env.ImgCacheDir = imgCacheDir
 
 	tests := []struct {
 		name     string

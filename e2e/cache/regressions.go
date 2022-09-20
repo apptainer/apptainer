@@ -25,7 +25,7 @@ import (
 func (c cacheTests) issue5097(t *testing.T) {
 	imgCacheDir, cleanCache := e2e.MakeCacheDir(t, c.env.TestDir)
 	defer cleanCache(t)
-	c.env.ImgCacheDir = imgCacheDir
+	c.env.UnprivCacheDir = imgCacheDir
 
 	tempDir, imgStoreCleanup := e2e.MakeTempDir(t, "", "", "image store")
 	defer imgStoreCleanup(t)
@@ -86,7 +86,7 @@ func (c cacheTests) issue5350(t *testing.T) {
 
 	imgCacheDir, cleanCache := e2e.MakeCacheDir(t, outerDir)
 	defer cleanCache(t)
-	c.env.ImgCacheDir = imgCacheDir
+	c.env.UnprivCacheDir = imgCacheDir
 
 	if err := os.Chmod(outerDir, 0o000); err != nil {
 		t.Fatalf("Could not chmod 000 cache outer dir: %v", err)

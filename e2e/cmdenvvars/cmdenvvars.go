@@ -41,14 +41,14 @@ func setupTemporaryDir(t *testing.T, testdir, label string) (string, func(*testi
 	}
 }
 
-// setupTemporaryCache creates a temporary cache directory and modifies
+// setupTemporaryCache creates temporary cache directories and modifies
 // the test environment to use it. The code calling this function is
 // responsible for calling the returned function when its done using the
 // temporary directory.
 func (c *ctx) setupTemporaryCache(t *testing.T) func(*testing.T) {
 	cacheDir, cleanup := setupTemporaryDir(t, c.env.TestDir, "cache-dir")
 
-	c.env.ImgCacheDir = cacheDir
+	c.env.UnprivCacheDir = cacheDir
 
 	return cleanup
 }
@@ -97,10 +97,10 @@ func (c ctx) assertLibraryCacheEntryExists(t *testing.T, imgPath, imgName string
 		t.Fatalf("Cannot get the shasum for image %s: %s", imgPath, err)
 	}
 
-	cacheEntryPath := filepath.Join(c.env.ImgCacheDir, "cache", "oras", shasum)
+	cacheEntryPath := filepath.Join(c.env.UnprivCacheDir, "cache", "oras", shasum)
 	if _, err := os.Stat(cacheEntryPath); os.IsNotExist(err) {
 		ls(t, c.env.TestDir)
-		ls(t, c.env.ImgCacheDir)
+		ls(t, c.env.UnprivCacheDir)
 		t.Fatalf("Cache entry %s for image %s with name %s does not exists: %s",
 			cacheEntryPath, imgPath, imgName, err)
 	}
@@ -109,7 +109,7 @@ func (c ctx) assertLibraryCacheEntryExists(t *testing.T, imgPath, imgName string
 // assertCacheDoesNotExist checks that the image cache that is associated to the
 // test DOES NOT exists.
 func (c ctx) assertCacheDoesNotExist(t *testing.T) {
-	cacheRoot := filepath.Join(c.env.ImgCacheDir, "cache")
+	cacheRoot := filepath.Join(c.env.UnprivCacheDir, "cache")
 	if _, err := os.Stat(cacheRoot); !os.IsNotExist(err) {
 		// The root of the cache does exists
 		t.Fatalf("cache has been incorrectly created (cache root: %s)", cacheRoot)
@@ -208,7 +208,7 @@ func (c ctx) testApptainerReadOnlyCacheDir(t *testing.T) {
 	defer cleanup(t)
 
 	// Change the mode of the image cache to read-only
-	err := os.Chmod(c.env.ImgCacheDir, 0o555)
+	err := os.Chmod(c.env.UnprivCacheDir, 0o555)
 	if err != nil {
 		t.Fatalf("failed to change the access mode to read-only: %s", err)
 	}
@@ -219,7 +219,7 @@ func (c ctx) testApptainerReadOnlyCacheDir(t *testing.T) {
 	// can delete the cache if it was created. Do this _before_
 	// calling c.assertCacheDoesNotExist because that function will
 	// fail if it find a cache.
-	err = os.Chmod(c.env.ImgCacheDir, 0o755)
+	err = os.Chmod(c.env.UnprivCacheDir, 0o755)
 	if err != nil {
 		t.Fatalf("failed to change the access mode to read-only: %s", err)
 	}
