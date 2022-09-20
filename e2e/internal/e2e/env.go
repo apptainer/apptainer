@@ -21,7 +21,8 @@ type TestEnv struct {
 	TestRegistry         string
 	HomeDir              string // HomeDir sets the home directory that will be used for the execution of a command
 	KeyringDir           string // KeyringDir sets the directory where the keyring will be created for the execution of a command (instead of using APPTAINER_KEYSDIR which should be avoided when running e2e tests)
-	ImgCacheDir          string // ImgCacheDir sets the location of the image cache to be used by the Apptainer command to be executed (instead of using APPTAINER_CACHE_DIR which should be avoided when running e2e tests)
+	PrivCacheDir         string // PrivCacheDir sets the location of the image cache to be used by the Apptainer command to be executed as root (instead of using APPTAINER_CACHE_DIR which should be avoided when running e2e tests)
+	UnprivCacheDir       string // UnprivCacheDir sets the location of the image cache to be used by the Apptainer command to be executed as the unpriv user (instead of using APPTAINER_CACHE_DIR which should be avoided when running e2e tests)
 	RunDisabled          bool
 	DisableCache         bool   // DisableCache can be set to disable the cache during the execution of a e2e command
 	InsecureRegistry     string // Insecure registry replaced with nip.io

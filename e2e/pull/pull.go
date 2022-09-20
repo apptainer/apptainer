@@ -55,6 +55,12 @@ type testStruct struct {
 }
 
 func (c *ctx) imagePull(t *testing.T, tt testStruct) {
+	// Use a one-time cache directory specific to this pull. This ensures we are always
+	// testing an entire pull operation, performing the download into an empty cache.
+	cacheDir, cleanup := e2e.MakeCacheDir(t, "")
+	defer cleanup(t)
+	c.env.UnprivCacheDir = cacheDir
+
 	// We use a string rather than a slice of strings to avoid having an empty
 	// element in the slice, which would cause the command to fail, without
 	// over-complicating the code.
@@ -489,7 +495,7 @@ func (c ctx) testPullDisableCacheCmd(t *testing.T) {
 		}
 	}()
 
-	c.env.ImgCacheDir = cacheDir
+	c.env.UnprivCacheDir = cacheDir
 
 	disableCacheTests := []struct {
 		name      string
