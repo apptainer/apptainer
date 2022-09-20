@@ -14,6 +14,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/build"
 	"github.com/apptainer/apptainer/internal/pkg/build/oci"
@@ -108,6 +109,9 @@ func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom, t
 
 	src, err := pull(ctx, imgCache, directTo, pullFrom, tmpDir, ociAuth, noHTTPS, noCleanUp)
 	if err != nil {
+		if strings.Contains(err.Error(), "unsupported image-specific operation on artifact with type \"application/vnd.unknown.config.v1+json\"") {
+			return "", fmt.Errorf("while building SIF from layers: %v, you might need to change the protocol to oras://", err)
+		}
 		return "", fmt.Errorf("error fetching image to cache: %v", err)
 	}
 

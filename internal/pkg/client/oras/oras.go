@@ -15,6 +15,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -30,6 +31,7 @@ import (
 	"github.com/containerd/containerd/reference"
 	"github.com/containerd/containerd/remotes"
 	"github.com/containerd/containerd/remotes/docker"
+	"github.com/containers/image/v5/manifest"
 	ocitypes "github.com/containers/image/v5/types"
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
@@ -285,6 +287,9 @@ func ImageSHA(ctx context.Context, uri string, ociAuth *ocitypes.DockerAuthConfi
 
 	// ensure that we received an image manifest descriptor
 	if desc.MediaType != ocispec.MediaTypeImageManifest {
+		if desc.MediaType == manifest.DockerV2Schema2MediaType {
+			return "", errors.New("please use docker:// instead of oras:// to pull the image")
+		}
 		return "", fmt.Errorf("could not get image manifest, received mediaType: %s", desc.MediaType)
 	}
 
