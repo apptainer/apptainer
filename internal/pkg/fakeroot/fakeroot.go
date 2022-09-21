@@ -388,10 +388,10 @@ func IsUIDMapped(uid uint32) bool {
 		sylog.Fatalf("could not retrieve user with UID %d: %s", uid, err)
 	}
 	e, err := config.GetUserEntry(userinfo.Name)
-	if err != nil {
+	if err != nil && strings.Contains(fmt.Sprintf("%v", err), "no mapping entry found") {
 		return false
 	}
-	if e.disabled {
+	if e != nil && e.disabled {
 		return false
 	}
 	return true
