@@ -7,6 +7,7 @@ package pull
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -134,26 +135,16 @@ func (c ctx) testConcurrentPulls(t *testing.T) {
 				envVars:          tt.envVars,
 			}
 
-			// Since we are not passing an image name, change the current
-			// working directory to the temporary directory we just created so
-			// that we know it's clean. We don't do this for the other case in
-			// order to catch spurious files showing up. Maybe later we can
-			// examine the directory and assert that it only contains what we
-			// expect.
-			oldwd, err := os.Getwd()
-			if err != nil {
-				t.Fatalf("Failed to get working directory for pull test: %+v", err)
-			}
-			defer os.Chdir(oldwd)
-
-			os.Chdir(tmpdir)
+			// No explicit image path specified. Will use temp dir as working directory,
+			// so we pull into a clean location.
+			ts.workDir = tmpdir
+			imageName := getImageNameFromURI(ts.srcURI)
+			ts.expectedImage = filepath.Join(tmpdir, imageName)
 
 			// if there's a pullDir, that's where we expect to find the image
 			if ts.pullDir != "" {
-				os.Chdir(ts.pullDir)
+				ts.expectedImage = filepath.Join(ts.pullDir, imageName)
 			}
-
-			ts.expectedImage = getImageNameFromURI(srcURI)
 
 			// pull image
 			c.imagePull(t, ts)

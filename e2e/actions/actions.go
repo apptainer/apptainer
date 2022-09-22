@@ -385,20 +385,6 @@ func (c actionTests) STDPipe(t *testing.T) {
 			input:   "false",
 			exit:    1,
 		},
-		{
-			name:    "TrueDocker",
-			command: "shell",
-			argv:    []string{"docker://busybox"},
-			input:   "true",
-			exit:    0,
-		},
-		{
-			name:    "FalseDocker",
-			command: "shell",
-			argv:    []string{"docker://busybox"},
-			input:   "false",
-			exit:    1,
-		},
 		// TODO(mem): reenable this; disabled while shub is down
 		// {
 		// 	name:    "TrueShub",
@@ -509,20 +495,6 @@ func (c actionTests) RunFromURI(t *testing.T) {
 	}{
 		// Run from supported URI's and check the runscript call works
 		{
-			name:    "RunFromDockerOK",
-			command: "run",
-			argv:    []string{"--bind", bind, "docker://busybox:latest", size},
-			exit:    0,
-			profile: e2e.UserProfile,
-		},
-		{
-			name:    "RunFromDockerWithoutShellOK",
-			command: "run",
-			argv:    []string{"docker://hello-world"},
-			exit:    0,
-			profile: e2e.UserProfile,
-		},
-		{
 			name:    "RunFromLibraryOK",
 			command: "run",
 			argv:    []string{"--bind", bind, "oras://ghcr.io/apptainer/busybox:1.31.1", size},
@@ -542,13 +514,6 @@ func (c actionTests) RunFromURI(t *testing.T) {
 			command: "run",
 			argv:    []string{"--bind", bind, c.env.OrasTestImage, size},
 			exit:    0,
-			profile: e2e.UserProfile,
-		},
-		{
-			name:    "RunFromDockerKO",
-			command: "run",
-			argv:    []string{"--bind", bind, "docker://busybox:latest", "0"},
-			exit:    1,
 			profile: e2e.UserProfile,
 		},
 		{
@@ -573,22 +538,6 @@ func (c actionTests) RunFromURI(t *testing.T) {
 			exit:    1,
 			profile: e2e.UserProfile,
 		},
-
-		// exec from a supported URI's and check the exit code
-		{
-			name:    "ExecTrueDocker",
-			command: "exec",
-			argv:    []string{"docker://busybox:latest", "true"},
-			exit:    0,
-			profile: e2e.UserProfile,
-		},
-		{
-			name:    "ExecTrueLibrary",
-			command: "exec",
-			argv:    []string{"oras://ghcr.io/apptainer/busybox:1.31.1", "true"},
-			exit:    0,
-			profile: e2e.UserProfile,
-		},
 		// TODO(mem): reenable this; disabled while shub is down
 		// {
 		// 	name:    "ExecTrueShub",
@@ -602,13 +551,6 @@ func (c actionTests) RunFromURI(t *testing.T) {
 			command: "exec",
 			argv:    []string{c.env.OrasTestImage, "true"},
 			exit:    0,
-			profile: e2e.UserProfile,
-		},
-		{
-			name:    "ExecFalseDocker",
-			command: "exec",
-			argv:    []string{"docker://busybox:latest", "false"},
-			exit:    1,
 			profile: e2e.UserProfile,
 		},
 		{
@@ -636,13 +578,6 @@ func (c actionTests) RunFromURI(t *testing.T) {
 
 		// exec from URI with user namespace enabled
 		{
-			name:    "ExecTrueDockerUserns",
-			command: "exec",
-			argv:    []string{"docker://busybox:latest", "true"},
-			exit:    0,
-			profile: e2e.UserNamespaceProfile,
-		},
-		{
 			name:    "ExecTrueLibraryUserns",
 			command: "exec",
 			argv:    []string{"oras://ghcr.io/apptainer/busybox:1.31.1", "true"},
@@ -662,13 +597,6 @@ func (c actionTests) RunFromURI(t *testing.T) {
 			command: "exec",
 			argv:    []string{c.env.OrasTestImage, "true"},
 			exit:    0,
-			profile: e2e.UserNamespaceProfile,
-		},
-		{
-			name:    "ExecFalseDockerUserns",
-			command: "exec",
-			argv:    []string{"docker://busybox:latest", "false"},
-			exit:    1,
 			profile: e2e.UserNamespaceProfile,
 		},
 		{

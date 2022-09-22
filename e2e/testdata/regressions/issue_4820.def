@@ -1,5 +1,5 @@
-Bootstrap: docker
-From: busybox:latest
+Bootstrap: oras
+From: ghcr.io/apptainer/alpine:latest
 
 %appinstall hdf5
 echo "installing hdf5..."

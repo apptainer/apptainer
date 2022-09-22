@@ -1,5 +1,5 @@
-bootstrap: docker
-from: alpine:3.16
+bootstrap: oras
+from: ghcr.io/apptainer/alpine:latest
 
 %post
     apk update

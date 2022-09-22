@@ -202,42 +202,22 @@ func (c *ctx) testContain(t *testing.T) {
 
 // Test by running directly from URI
 func (c *ctx) testInstanceFromURI(t *testing.T) {
-	instances := []struct {
-		name string
-		uri  string
-	}{
-		{
-			name: "test_from_docker",
-			uri:  "docker://busybox",
-		},
-		{
-			name: "test_from_library",
-			uri:  "oras://ghcr.io/apptainer/busybox:1.31.1",
-		},
-		// TODO(mem): reenable this; disabled while shub is down
-		// {
-		// 	name: "test_from_shub",
-		// 	uri:  "shub://singularityhub/busybox",
-		// },
-	}
-
-	for _, i := range instances {
-		args := []string{i.uri, i.name}
-		c.env.RunApptainer(
-			t,
-			e2e.WithProfile(c.profile),
-			e2e.WithCommand("instance start"),
-			e2e.WithArgs(args...),
-			e2e.PostRun(func(t *testing.T) {
-				if t.Failed() {
-					return
-				}
-				c.execInstance(t, i.name, "id")
-				c.stopInstance(t, i.name)
-			}),
-			e2e.ExpectExit(0),
-		)
-	}
+	name := "test_from_library"
+	args := []string{"oras://ghcr.io/apptainer/busybox:latest", name}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(c.profile),
+		e2e.WithCommand("instance start"),
+		e2e.WithArgs(args...),
+		e2e.PostRun(func(t *testing.T) {
+			if t.Failed() {
+				return
+			}
+			c.execInstance(t, name, "id")
+			c.stopInstance(t, name)
+		}),
+		e2e.ExpectExit(0),
+	)
 }
 
 // Execute an instance process, kill master process

@@ -2,10 +2,17 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2021 Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2022 Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
+
+// The DOCKER E2E group tests functionality of actions, pulls / builds of
+// Docker/OCI source images. These tests are separated from direct SIF build /
+// pull / actions because they examine OCI specific image behavior. They are run
+// ordered, rather than in parallel to avoid any concurrency issues with
+// containers/image. Also, we can then maximally benefit from caching to avoid
+// Docker Hub rate limiting.
 
 package docker
 
@@ -864,17 +871,26 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"AUFS":             c.testDockerAUFS,
-		"def file":         c.testDockerDefFile,
-		"docker host":      c.testDockerHost,
-		"permissions":      c.testDockerPermissions,
-		"pulls":            c.testDockerPulls,
-		"registry":         c.testDockerRegistry,
-		"whiteout symlink": c.testDockerWhiteoutSymlink,
-		"cmd":              c.testDockerCMD,
-		"entrypoint":       c.testDockerENTRYPOINT,
-		"cmdentrypoint":    c.testDockerCMDENTRYPOINT,
-		"cmd quotes":       c.testDockerCMDQuotes,
-		"labels":           c.testDockerLabels,
+		// Run all docker:// source tests sequentially amongst themselves, so we
+		// don't hit DockerHub massively in parallel, and we benefit from
+		// caching as the same images are used frequently.
+		"ordered": func(t *testing.T) {
+			t.Run("AUFS", c.testDockerAUFS)
+			t.Run("def file", c.testDockerDefFile)
+			t.Run("docker host", c.testDockerHost)
+			t.Run("permissions", c.testDockerPermissions)
+			t.Run("pulls", c.testDockerPulls)
+			t.Run("registry", c.testDockerRegistry)
+			t.Run("whiteout symlink", c.testDockerWhiteoutSymlink)
+			t.Run("labels", c.testDockerLabels)
+			t.Run("cmd", c.testDockerCMD)
+			t.Run("entrypoint", c.testDockerENTRYPOINT)
+			t.Run("cmdentrypoint", c.testDockerCMDENTRYPOINT)
+			t.Run("cmd quotes", c.testDockerCMDQuotes)
+			// Regressions
+			t.Run("issue 4524", c.issue4524)
+			t.Run("issue 4943", c.issue4943)
+			t.Run("issue 5172", c.issue5172)
+		},
 	}
 }

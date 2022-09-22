@@ -39,10 +39,10 @@ func (c ctx) apptainerEnv(t *testing.T) {
 	c.env.ImgCacheDir = imgCacheDir
 
 	// Apptainer defines a path by default. See apptainerware/apptainer/etc/init.
-	defaultImage := "docker://alpine:3.8"
+	defaultImage := "oras://ghcr.io/apptainer/alpine:latest"
 
 	// This image sets a custom path.
-	customImage := "docker://ghcr.io/apptainer/lolcow"
+	customImage := "oras://ghcr.io/apptainer/lolcow:sif"
 	customPath := "/usr/games:" + defaultPath
 
 	// Append or prepend this path.
@@ -151,43 +151,30 @@ func (c ctx) apptainerEnvOption(t *testing.T) {
 	}{
 		{
 			name:     "DefaultPath",
-			image:    "docker://alpine:3.8",
+			image:    "oras://ghcr.io/apptainer/alpine:latest",
 			matchEnv: "PATH",
 			matchVal: defaultPath,
 		},
 		{
 			name:     "DefaultPathOverride",
-			image:    "docker://alpine:3.8",
+			image:    "oras://ghcr.io/apptainer/alpine:latest",
 			envOpt:   []string{"PATH=/"},
 			matchEnv: "PATH",
 			matchVal: "/",
 		},
 		{
 			name:     "AppendDefaultPath",
-			image:    "docker://alpine:3.8",
+			image:    "oras://ghcr.io/apptainer/alpine:latest",
 			envOpt:   []string{"APPEND_PATH=/foo"},
 			matchEnv: "PATH",
 			matchVal: defaultPath + ":/foo",
 		},
 		{
 			name:     "PrependDefaultPath",
-			image:    "docker://alpine:3.8",
+			image:    "oras://ghcr.io/apptainer/alpine:latest",
 			envOpt:   []string{"PREPEND_PATH=/foo"},
 			matchEnv: "PATH",
 			matchVal: "/foo:" + defaultPath,
-		},
-		{
-			name:     "DockerImage",
-			image:    "docker://ghcr.io/apptainer/lolcow",
-			matchEnv: "LC_ALL",
-			matchVal: "C",
-		},
-		{
-			name:     "DockerImageOverride",
-			image:    "docker://ghcr.io/apptainer/lolcow",
-			envOpt:   []string{"LC_ALL=foo"},
-			matchEnv: "LC_ALL",
-			matchVal: "foo",
 		},
 		{
 			name:     "DefaultPathTestImage",

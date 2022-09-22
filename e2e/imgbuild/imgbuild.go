@@ -58,7 +58,7 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 	e2e.EnsureORASImage(t, c.env)
 
 	// use a trailing slash in tests for sandbox intentionally to make sure
-	// `apptainer build -s /tmp/sand/ docker://alpine` works,
+	// `apptainer build -s /tmp/sand/ <URI>` works,
 	// see https://github.com/apptainer/singularity/issues/4407
 	tt := []struct {
 		name        string
@@ -77,14 +77,6 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 			name:       "Debootstrap",
 			dependency: "debootstrap",
 			buildSpec:  "../examples/debian/Apptainer",
-		},
-		{
-			name:      "DockerURI",
-			buildSpec: "docker://busybox",
-		},
-		{
-			name:      "DockerDefFile",
-			buildSpec: "../examples/docker/Apptainer",
 		},
 		// TODO(mem): reenable this; disabled while shub is down
 		// {
@@ -207,10 +199,6 @@ func (c imgBuildTests) nonRootBuild(t *testing.T) {
 		//		name:      "shub busybox",
 		//		buildSpec: "shub://GodloveD/busybox",
 		//},
-		{
-			name:      "docker busybox",
-			buildSpec: "docker://busybox:latest",
-		},
 	}
 
 	for _, tc := range tt {
@@ -1649,15 +1637,12 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"issue 3848":                        c.issue3848,                            // https://github.com/apptainer/singularity/issues/3848
 		"issue 4203":                        c.issue4203,                            // https://github.com/apptainer/singularity/issues/4203
 		"issue 4407":                        c.issue4407,                            // https://github.com/apptainer/singularity/issues/4407
-		"issue 4524":                        c.issue4524,                            // https://github.com/apptainer/singularity/issues/4524
 		"issue 4583":                        c.issue4583,                            // https://github.com/apptainer/singularity/issues/4583
 		"issue 4820":                        c.issue4820,                            // https://github.com/apptainer/singularity/issues/4820
 		"issue 4837":                        c.issue4837,                            // https://github.com/apptainer/singularity/issues/4837
-		"issue 4943":                        c.issue4943,                            // https://github.com/apptainer/singularity/issues/4943
 		"issue 4967":                        c.issue4967,                            // https://github.com/apptainer/singularity/issues/4967
 		"issue 4969":                        c.issue4969,                            // https://github.com/apptainer/singularity/issues/4969
 		"issue 5166":                        c.issue5166,                            // https://github.com/apptainer/singularity/issues/5166
-		"issue 5172":                        c.issue5172,                            // https://github.com/apptainer/singularity/issues/5172
 		"issue 5250":                        c.issue5250,                            // https://github.com/apptainer/singularity/issues/5250
 		"issue 5315":                        c.issue5315,                            // https://github.com/apptainer/singularity/issues/5315
 		"issue 5435":                        c.issue5435,                            // https://github.com/apptainer/singularity/issues/5435
