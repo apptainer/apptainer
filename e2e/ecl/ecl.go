@@ -41,6 +41,13 @@ func (c *ctx) eclConfig(t *testing.T) {
 	unsigned := filepath.Join(tmpDir, "unsigned.sif")
 
 	defer func() {
+		fn := func(t *testing.T) {
+			err := syecl.PutConfig(syecl.EclConfig{}, buildcfg.ECL_FILE)
+			if err != nil {
+				t.Errorf("while disabling ecl config: %s", err)
+			}
+		}
+		e2e.Privileged(fn)(t)
 		c.env.KeyringDir = ""
 		remove(t)
 	}()
