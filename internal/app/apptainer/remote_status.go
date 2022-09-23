@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -14,12 +14,13 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"strings"
 	"text/tabwriter"
 
 	"github.com/apptainer/apptainer/internal/pkg/remote"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const statusLine = "%s\t%s\t%s\t%s\n"
@@ -111,7 +112,7 @@ func RemoteStatus(usrConfigFile, name string) (err error) {
 	fmt.Fprintf(tw, statusLine, "SERVICE", "STATUS", "VERSION", "URI")
 	for _, n := range names {
 		s := smap[n]
-		fmt.Fprintf(tw, statusLine, strings.Title(s.name), s.status, s.version, s.uri)
+		fmt.Fprintf(tw, statusLine, cases.Title(language.English).String(s.name), s.status, s.version, s.uri)
 	}
 	tw.Flush()
 
