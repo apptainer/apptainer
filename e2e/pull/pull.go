@@ -646,24 +646,24 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		env: env,
 	}
 
-	// Run these pull tests sequentially among themselves, as they perform a lot
-	// of un-cached pulls which could otherwise lead to hitting rate limits.
-	return testhelper.Tests{
-		"ordered": func(t *testing.T) {
-			// Run the tests the do not require setup.
-			t.Run("pullUmaskCheck", c.testPullUmask)
+	np := testhelper.NoParallel
 
+	return testhelper.Tests{
+		// Run pull tests sequentially among themselves, as they perform a lot
+		// of un-cached pulls which could otherwise lead to hitting rate limits.
+		"ordered": func(t *testing.T) {
 			// Setup a test registry to pull from (for oras).
 			c.setup(t)
-
 			t.Run("pull", c.testPullCmd)
 			t.Run("pullDisableCache", c.testPullDisableCacheCmd)
 			t.Run("concurrencyConfig", c.testConcurrencyConfig)
 			t.Run("concurrentPulls", c.testConcurrentPulls)
-
 			// Regressions
 			// Disable for now, see issue #6299
 			// t.Run("issue5808", c.issue5808)
 		},
+		// Manipulates umask for the process, so must be run alone to avoid
+		// causing permission issues for other tests.
+		"pullUmaskCheck": np(c.testPullUmask),
 	}
 }
