@@ -649,7 +649,7 @@ Enterprise Performance Computing (EPC)`
       library://user/collection/container[:tag]
 
   oras:
-      oras://registry/namespace/repo:tag
+      oras://registry/namespace/image:tag
 
 
   NOTE: It's always good practice to sign your containers before
