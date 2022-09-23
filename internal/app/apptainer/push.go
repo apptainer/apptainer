@@ -24,8 +24,8 @@ import (
 	keyClient "github.com/apptainer/container-key-client/client"
 	"github.com/apptainer/container-library-client/client"
 	"github.com/apptainer/sif/v2/pkg/sif"
-	"github.com/vbauerster/mpb/v7"
-	"github.com/vbauerster/mpb/v7/decor"
+	"github.com/vbauerster/mpb/v8"
+	"github.com/vbauerster/mpb/v8/decor"
 	"golang.org/x/term"
 )
 

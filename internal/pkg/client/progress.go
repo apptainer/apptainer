@@ -14,8 +14,8 @@ import (
 	"io"
 
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/vbauerster/mpb/v7"
-	"github.com/vbauerster/mpb/v7/decor"
+	"github.com/vbauerster/mpb/v8"
+	"github.com/vbauerster/mpb/v8/decor"
 )
 
 func initProgressBar(totalSize int64) (*mpb.Progress, *mpb.Bar) {
