@@ -12,6 +12,7 @@ package fakeroot
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -68,6 +69,10 @@ type Config struct {
 
 // GetUserFn defines the user lookup function prototype.
 type GetUserFn func(string) (*user.User, error)
+
+// Wrapped errors
+var errNoMappingEntry = errors.New("no mapping entry found")
+var errRangeTooLow = errors.New("range count lower than")
 
 // GetConfig parses a subuid/subgid configuration file and returns
 // a Config holding all mapping entries, it allows to pass a custom
@@ -334,11 +339,11 @@ func (c *Config) GetUserEntry(username string) (*Entry, error) {
 
 	if entryCount > 0 {
 		return nil, fmt.Errorf(
-			"mapping entries for user %s found in %s but all with a range count lower than %d",
-			username, c.file.Name(), validRangeCount,
+			"mapping entries for user %s found in %s but all with a %w %d",
+			username, c.file.Name(), errRangeTooLow, validRangeCount,
 		)
 	}
-	return nil, fmt.Errorf("no mapping entry found in %s for %s", c.file.Name(), username)
+	return nil, fmt.Errorf("%w in %s for %s", errNoMappingEntry, c.file.Name(), username)
 }
 
 // getPwUID is also used for mocking purpose
@@ -388,10 +393,10 @@ func IsUIDMapped(uid uint32) bool {
 		sylog.Fatalf("could not retrieve user with UID %d: %s", uid, err)
 	}
 	e, err := config.GetUserEntry(userinfo.Name)
-	if err != nil {
+	if err != nil && !errors.Is(err, errRangeTooLow) {
 		return false
 	}
-	if e.disabled {
+	if e != nil && e.disabled {
 		return false
 	}
 	return true
