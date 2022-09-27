@@ -50,7 +50,8 @@ and steps 1-4 should be skipped.
 1. Create a GitHub release, marked as a 'pre-release', incorporating
    `CHANGELOG.md` information.  A tarball, rpm packages, deb packages,
    and a `sha256sums` should get automatically attached.
-1. Notify the community about the RC via the Google Group and Slack.
+1. Notify the community about the RC via the announce Google Group and
+   Slack #general channel.
 
 There will often be multiple release candidates issued prior to the final
 release of a new 1.Y.0 minor version.
@@ -78,7 +79,8 @@ covered by tests.
    - [Admin Docs](https://apptainer.org/docs/admin/main/) can be
      edited [here](https://github.com/apptainer/apptainer-admindocs)
    - Look in replacements.py in both the User Docs and Admin Docs for
-     any needed updates to the variable_replacements
+     any needed updates to the `variable_replacements` and also update
+     `version` in conf.py.
    - If a new branch was created, add it to the docsVersion list in the
      [web page](https://github.com/apptainer/apptainer.org/blob/master/src/pages/docs.js)
 1. Ensure the user and admin documentation has been deployed to the
@@ -88,7 +90,8 @@ covered by tests.
 1. Apply an annotated tag via `git tag -a -m "Apptainer v1.0.0" v1.0.0`.
 1. Push the tag via `git push upstream v1.0.0`.
 1. Create a GitHub release, incorporating `CHANGELOG.md` information.
-1. Notify the community about the RC via the Google Group and Slack.
+1. After the release assets are generated, Notify the community about the
+   release via the announce Google Group and the Slack #general channel.
 
 ## After the Release
 
