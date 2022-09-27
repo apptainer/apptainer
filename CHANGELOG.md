@@ -40,8 +40,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
   Persistent overlay works when the overlay path points to a regular
   filesystem (known as "sandbox" mode, which is not allowed when in
   setuid mode), or when it points to an EXT3 image.
-  Does not work with a SIF partition because that requires privileges to
-  mount as an ext3 image.
 - Extended the `--fakeroot` option to be useful when `/etc/subuid` and
   `/etc/subgid` mappings have not been set up.
   If they have not been set up, a root-mapped unprivileged user namespace
