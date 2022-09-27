@@ -19,90 +19,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Support for `DOCKER_HOST` parsing when using `docker-daemon://`
 - `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
 
-## v1.1.0-rc.3 - \[2022-09-06\]
-
-- Imply adding `${prefix}/libexec/apptainer/bin` to the `binary path` in
-  `apptainer.conf`, which is used for searching for helper executables.
-  It is implied as the first directory of `$PATH` if present (which is at
-  the beginning of `binary path` by default) or just as the first directory
-  if `$PATH` is not included in `binary path`.
-- Change squash mounts to prefer to use `squashfuse_ll` instead of
-  `squashfuse`, if available, for improved performance.
-  `squashfuse_ll` is available on RHEL-based systems but not Debian as
-  part of the `squashfuse` package.
-  Also, for even better parallel performance, include a patched multithreaded
-  version of `squashfuse_ll` in rpm and debian packaging in
-  `${prefix}/libexec/apptainer/bin`.
-- Add `--unsquash` action flag to temporarily convert a SIF file to a
-  sandbox before running.  In previous versions this was the default when
-  running a SIF file without setuid or with fakeroot, but now the default
-  is to instead mount with squashfuse.
-- Add `--sparse` flag to `overlay create` command to allow generation of a
-  sparse ext3 overlay image.
-- Support for a custom hashbang in the `%test` section of an Apptainer recipe
-  (akin to the runscript and start sections).
-- When using fakeroot in setuid mode, have the image drivers first enter the
-  the container's user namespace to avoid write errors with overlays.
-- Skip trying to use kernel overlayfs when using writable overlay and the
-  lower layer is FUSE, because of a kernel bug introduced in kernel 5.15.
-- Add additional hidden options to the action command for testing different fakeroot
-  modes with `--fakeroot`: `--ignore-subuid`, `--ignore-fakeroot-command`,
-  and `--ignore-userns`.
-- Fix github release rpm to be installable on EL8 & EL9 by not requiring
-  the fuse2fs package which doesn't exist there.  Instead, on EL7 cause an
-  install failure if /usr/*bin/fuse2fs is not installed with a message
-  explaining how to fix it.  The EPEL build won't have this issue; there
-  EPEL7 will require the fuse2fs package.
-- Fix ORAS image push to registries with authorization servers not supporting
-  multiple scope query parameter.
-
-## v1.1.0-rc.2 - \[2022-08-16\]
-
-### Changed defaults / behaviours
-
-- Fixed longstanding bug in the underlay logic when there are nested bind
-  points separated by more than one path level, for example `/var` and
-  `/var/lib/yum`, and the path didn't exist in the container image.
-  The bug only caused an error when there was a directory in the container
-  image that didn't exist on the host.
-- Improved wildcard matching in the %files directive of build definition
-  files by replacing usage of sh with the mvdan.cc library.
-- Replaced checks for compatible filesystem types when using fuse-overlayfs
-  with an INFO message when an incompatible filesystem type causes it to
-  be unwritable by a fakeroot user.
-- Mount the user's home directory at `/root` when using `--fakeroot` in
-  the setuid flow (fixes a regression introduced in 1.1.0-rc.1 which didn't
-  impact non-setuid flow).
-- The `--nvccli` option now works without `--fakeroot`.  In that case the
-  option can be used with `--writable-tmpfs` instead of `--writable`,
-  and `--writable-tmpfs` is implied if neither option is given.
-  Note that also `/usr/bin` has to be writable by the user, so without
-  `--fakeroot` that probably requires a sandbox image that was built with
-  `--fix-perms`.
-- The `--nvccli` option implies `--nv`.
-- Configure squashfuse to always show files to be owned by the current user.
-  That's especially important for fakeroot to prevent most of the files
-  from looking like they are owned by user 65534.
-- The fakeroot command can now be used even if $PATH is empty in the
-  environment of the apptainer command.
-- Allow the ``newuidmap`` command to be missing if the current user is not
-  listed in ``/etc/subuid``.
-- Require the ``uidmap`` package in Debian packaging.
-- Improved error handling of unsupported pass protected PEM files with
-  encrypted containers.
-- Require fuse2fs in RPM packaging.  In EPEL7 the package is called fuse2fs,
-  otherwise it is in e2fsprogs.
-- Require the fuse-overlayfs package for all RPM packages instead of just
-  on el7 because it is sometimes useful even with kernel support for
-  unprivileged overlayfs.
-- Ensure bootstrap_history directory is populated with previous definition
-  files, present in source containers used in a build.
-- Add additional options to the build command for testing different fakeroot
-  modes: `--userns` like the action flag and hidden options `--ignore-subuid`,
-  `--ignore-fakeroot-command`, and `--ignore-userns`.
-- Require root user early when building an encrypted container.
-
-## v1.1.0-rc.1 - \[2022-08-01\]
+## v1.1.0 - \[2022-09-27\]
 
 ### Changed defaults / behaviours
 
@@ -118,8 +35,15 @@ For older changes see the [archived Singularity change log](https://github.com/a
   namespaces, we recommend disabling network namespaces if you can.
   See the [discussion in the admin guide](https://apptainer.org/docs/admin/main/user_namespace.html#disabling-network-namespaces).
 - Added a squashfuse image driver that enables mounting SIF files without
-  using setuid-root.  Requires the squashfuse command and unprivileged user
-  namespaces.
+  using setuid-root.  Uses either a squashfuse_ll command or a
+  squashfuse command and requires unprivileged user namespaces.
+  For better parallel performance, a patched multithreaded version of
+  `squashfuse_ll` is included in rpm and debian packaging in
+  `${prefix}/libexec/apptainer/bin`.
+- Added an `--unsquash` action flag to temporarily convert a SIF file to a
+  sandbox before running.  In previous versions this was the default when
+  running a SIF file without setuid or with fakeroot, but now the default
+  is to mount with squashfuse_ll or squashfuse.
 - Added a fuse2fs image driver that enables mounting EXT3 files and EXT3
   SIF overlay partitions without using setuid-root.  Requires the fuse2fs
   command and unprivileged user namespaces.
@@ -130,8 +54,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
   Persistent overlay works when the overlay path points to a regular
   filesystem (known as "sandbox" mode, which is not allowed when in
   setuid mode), or when it points to an EXT3 image.
-  Does not work with a SIF partition because that requires privileges to
-  mount as an ext3 image.
 - Extended the `--fakeroot` option to be useful when `/etc/subuid` and
   `/etc/subgid` mappings have not been set up.
   If they have not been set up, a root-mapped unprivileged user namespace
@@ -167,20 +89,37 @@ For older changes see the [archived Singularity change log](https://github.com/a
   When unprivileged user namespaces are not available, such that only
   the fakeroot command can be used, the `--fix-perms` option is implied
   to allow writing into directories.
+- Added additional hidden options to action and build commands for testing
+  different fakeroot modes: `--ignore-subuid`, `--ignore-fakeroot-command`,
+  and `--ignore-userns`.
+  Also added `--userns` to the build command to ignore setuid-root mode
+  like action commands do.
 - Added a `--fakeroot` option to the `apptainer overlay create` command
   to make an overlay EXT3 image file that works with the fakeroot that
   comes from unprivileged root-mapped namespaces.
   This is not needed with the fakeroot that comes with `/etc/sub[ug]id`
   mappings nor with the fakeroot that comes with only the fakeroot
   command in suid flow.
+- Added a `--sparse` flag to `overlay create` command to allow generation of
+  a sparse EXT3 overlay image.
 - Added a `binary path` configuration variable as the default path to use
   when searching for helper executables.  May contain `$PATH:` which gets
   substituted with the user's PATH except when running a program that may
   be run with elevated privileges in the suid flow.
   Defaults to `$PATH:` followed by standard system paths.
+  `${prefix}/libexec/apptainer/bin` is also implied as the first component,
+  either as the first directory of `$PATH` if present or simply as the
+  first directory if `$PATH` is not included.
   Configuration variables for paths to individual programs that were in
   apptainer.conf (`cryptsetup`, `go`, `ldconfig`, `msquashfs`, `unsquashfs`,
   and `nvidia-container-cli`) have been removed.
+- The `--nvccli` option now works without `--fakeroot`.  In that case the
+  option can be used with `--writable-tmpfs` instead of `--writable`,
+  and `--writable-tmpfs` is implied if neither option is given.
+  Note that also `/usr/bin` has to be writable by the user, so without
+  `--fakeroot` that probably requires a sandbox image that was built with
+  `--fix-perms`.
+- The `--nvccli` option now implies `--nv`.
 - $HOME is now used to find the user's configuration and cache by default.
   If that is not set it will fall back to the previous behavior of looking
   up the home directory in the password file.  The value of $HOME inside
@@ -236,6 +175,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   - Signature verification is not checked for a blacklist; unvalidated
     signatures can still block execution via ECL, and unvalidated
     signatures not in the blacklist do not cause ECL to fail.
+- Improved wildcard matching in the %files directive of build definition
+  files by replacing usage of sh with the mvdan.cc library.
 
 ### New features / functionalities
 
@@ -247,6 +188,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Added `--cpu*`, `--blkio*`, `--memory*`, `--pids-limit` flags to apply cgroups
   resource limits to a container directly.
 - Added instance stats command.
+- Added support for a custom hashbang in the `%test` section of an Apptainer
+  recipe (akin to the runscript and start sections).
 - The `--no-mount` flag & `APPTAINER_NO_MOUNT` env var can now be used to
   disable a `bind path` entry from `apptainer.conf` by specifying the
   absolute path to the destination of the bind.
@@ -271,6 +214,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Remove warning message about SINGULARITY and APPTAINER variables having
   different values when the SINGULARITY variable is not set.
+- Fixed longstanding bug in the underlay logic when there are nested bind
+  points separated by more than one path level, for example `/var` and
+  `/var/lib/yum`, and the path didn't exist in the container image.
+  The bug only caused an error when there was a directory in the container
+  image that didn't exist on the host.
 - Add specific error for unreadable image / overlay file.
 - Pass through a literal `\n` in host environment variables to the container.
 - Allow `newgidmap / newuidmap` that use capabilities instead of setuid root.
@@ -280,6 +228,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
   containers.
 - Fix the issue that the oras protocol would ignore the `--no-https/--nohttps`
   flag.
+- Fix oras image push to registries with authorization servers not supporting
+  multiple scope query parameter.
+- Improved error handling of unsupported password protected PEM files with
+  encrypted containers.
+- Ensure bootstrap_history directory is populated with previous definition
+  files, present in source containers used in a build.
 
 ## v1.0.3 - \[2022-07-06\]
 
