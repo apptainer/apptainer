@@ -664,12 +664,12 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			t.Run("pullDisableCache", c.testPullDisableCacheCmd)
 			t.Run("concurrencyConfig", c.testConcurrencyConfig)
 			t.Run("concurrentPulls", c.testConcurrentPulls)
-			// Regressions
-			// Disable for now, see issue #6299
-			// t.Run("issue5808", c.issue5808)
 		},
 		// Manipulates umask for the process, so must be run alone to avoid
 		// causing permission issues for other tests.
 		"pullUmaskCheck": np(c.testPullUmask),
+		// Regressions
+		// Manipulates remotes, so must run alone
+		"issue5808": np(c.issue5808),
 	}
 }
