@@ -12,7 +12,7 @@ What did you expect to see when you do...?
 
 ### Actual behavior
 
-What actually happend? Why was it incorrect?
+What actually happened? Why was it incorrect?
 
 <!-- if this is a feature request, you can ignore this next part -->
 
