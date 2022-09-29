@@ -11,6 +11,7 @@
 - Aron Öfjörð Jóhannesson <aron1991@gmail.com>
 - Bernard Li <bernardli@lbl.gov>
 - Brian Bockelman <bbockelm@cse.unl.edu>
+- Brian Clemens <brian@resf.org>, <brian@tiuxo.com>
 - Carl Madison <carl@sylabs.io>
 - Chris Burr <christopher.burr@cern.ch>
 - Christian Goll <cgoll@suse.com>
