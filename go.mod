@@ -26,7 +26,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-log/log v0.2.0
 	github.com/google/uuid v1.3.0
-	github.com/gosimple/slug v1.12.0
+	github.com/gosimple/slug v1.13.0
 	github.com/moby/sys/mount v0.3.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.0.3-0.20220114050600-8b9d41f48198
