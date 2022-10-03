@@ -4,12 +4,12 @@ go 1.18
 
 require (
 	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2
-	github.com/ProtonMail/go-crypto v0.0.0-20220517143526-88bb52951d5b
+	github.com/ProtonMail/go-crypto v0.0.0-20220824120805-4b6e5c587895
 	github.com/adigunhammedolalekan/registry-auth v0.0.0-20200730122110-8cde180a3a60
 	github.com/apex/log v1.9.0
 	github.com/apptainer/container-key-client v0.8.0
 	github.com/apptainer/container-library-client v1.3.3
-	github.com/apptainer/sif/v2 v2.7.2
+	github.com/apptainer/sif/v2 v2.8.0
 	github.com/blang/semver/v4 v4.0.0
 	github.com/buger/goterm v1.0.4
 	github.com/buger/jsonparser v1.1.1
@@ -78,6 +78,7 @@ require (
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cilium/ebpf v0.7.0 // indirect
+	github.com/cloudflare/circl v1.1.0 // indirect
 	github.com/containerd/cgroups v1.0.3 // indirect
 	github.com/containers/libtrust v0.0.0-20200511145503-9c3a6c22cd9a // indirect
 	github.com/containers/ocicrypt v1.1.5 // indirect
