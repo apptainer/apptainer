@@ -58,7 +58,7 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 	e2e.EnsureORASImage(t, c.env)
 
 	// use a trailing slash in tests for sandbox intentionally to make sure
-	// `apptainer build -s /tmp/sand/ docker://alpine` works,
+	// `apptainer build -s /tmp/sand/ <URI>` works,
 	// see https://github.com/apptainer/singularity/issues/4407
 	tt := []struct {
 		name        string
@@ -77,14 +77,6 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 			name:       "Debootstrap",
 			dependency: "debootstrap",
 			buildSpec:  "../examples/debian/Apptainer",
-		},
-		{
-			name:      "DockerURI",
-			buildSpec: "docker://busybox",
-		},
-		{
-			name:      "DockerDefFile",
-			buildSpec: "../examples/docker/Apptainer",
 		},
 		// TODO(mem): reenable this; disabled while shub is down
 		// {
@@ -207,10 +199,6 @@ func (c imgBuildTests) nonRootBuild(t *testing.T) {
 		//		name:      "shub busybox",
 		//		buildSpec: "shub://GodloveD/busybox",
 		//},
-		{
-			name:      "docker busybox",
-			buildSpec: "docker://busybox:latest",
-		},
 	}
 
 	for _, tc := range tt {
@@ -353,8 +341,8 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 			name: "FileCopySimple",
 			dfd: []e2e.DefFileDetails{
 				{
-					Bootstrap: "docker",
-					From:      "alpine:latest",
+					Bootstrap: "oras",
+					From:      "ghcr.io/apptainer/alpine:latest",
 					Stage:     "one",
 					Files: []e2e.FilePair{
 						{
@@ -368,8 +356,8 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 					},
 				},
 				{
-					Bootstrap: "docker",
-					From:      "alpine:latest",
+					Bootstrap: "oras",
+					From:      "ghcr.io/apptainer/alpine:latest",
 					FilesFrom: []e2e.FileSection{
 						{
 							Stage: "one",
@@ -405,8 +393,8 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 			name: "FileCopyComplex",
 			dfd: []e2e.DefFileDetails{
 				{
-					Bootstrap: "docker",
-					From:      "alpine:latest",
+					Bootstrap: "oras",
+					From:      "ghcr.io/apptainer/alpine:latest",
 					Stage:     "one",
 					Files: []e2e.FilePair{
 						{
@@ -420,8 +408,8 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 					},
 				},
 				{
-					Bootstrap: "docker",
-					From:      "alpine:latest",
+					Bootstrap: "oras",
+					From:      "ghcr.io/apptainer/alpine:latest",
 					Stage:     "two",
 					Files: []e2e.FilePair{
 						{
@@ -435,8 +423,8 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 					},
 				},
 				{
-					Bootstrap: "docker",
-					From:      "alpine:latest",
+					Bootstrap: "oras",
+					From:      "ghcr.io/apptainer/alpine:latest",
 					Stage:     "three",
 					FilesFrom: []e2e.FileSection{
 						{
@@ -468,8 +456,8 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 					},
 				},
 				{
-					Bootstrap: "docker",
-					From:      "alpine:latest",
+					Bootstrap: "oras",
+					From:      "ghcr.io/apptainer/alpine:latest",
 					FilesFrom: []e2e.FileSection{
 						{
 							Stage: "three",
@@ -554,12 +542,12 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 
 	tt := map[string]e2e.DefFileDetails{
 		"Empty": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 		},
 		"Help": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Help: []string{
 				"help info line 1",
 				"help info line 2",
@@ -567,8 +555,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Files": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Files: []e2e.FilePair{
 				{
 					Src: tmpfile,
@@ -581,8 +569,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Test": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Test: []string{
 				"echo testscript line 1",
 				"echo testscript line 2",
@@ -590,8 +578,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Startscript": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			StartScript: []string{
 				"echo startscript line 1",
 				"echo startscript line 2",
@@ -599,8 +587,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Runscript": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			RunScript: []string{
 				"echo runscript line 1",
 				"echo runscript line 2",
@@ -608,8 +596,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Env": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Env: []string{
 				"testvar1=one",
 				"testvar2=two",
@@ -617,8 +605,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Labels": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Labels: map[string]string{
 				"customLabel1": "one",
 				"customLabel2": "two",
@@ -626,29 +614,29 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Pre": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Pre: []string{
 				filepath.Join(c.env.TestDir, "PreFile1"),
 			},
 		},
 		"Setup": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Setup: []string{
 				filepath.Join(c.env.TestDir, "SetupFile1"),
 			},
 		},
 		"Post": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Post: []string{
 				"PostFile1",
 			},
 		},
 		"AppHelp": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -669,8 +657,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"AppEnv": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -691,8 +679,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"AppLabels": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -713,8 +701,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"AppFiles": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -745,8 +733,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"AppInstall": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -763,8 +751,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"AppRun": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -785,8 +773,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"AppTest": {
-			Bootstrap: "docker",
-			From:      "alpine:latest",
+			Bootstrap: "oras",
+			From:      "ghcr.io/apptainer/alpine:latest",
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -1649,15 +1637,12 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"issue 3848":                        c.issue3848,                            // https://github.com/apptainer/singularity/issues/3848
 		"issue 4203":                        c.issue4203,                            // https://github.com/apptainer/singularity/issues/4203
 		"issue 4407":                        c.issue4407,                            // https://github.com/apptainer/singularity/issues/4407
-		"issue 4524":                        c.issue4524,                            // https://github.com/apptainer/singularity/issues/4524
 		"issue 4583":                        c.issue4583,                            // https://github.com/apptainer/singularity/issues/4583
 		"issue 4820":                        c.issue4820,                            // https://github.com/apptainer/singularity/issues/4820
 		"issue 4837":                        c.issue4837,                            // https://github.com/apptainer/singularity/issues/4837
-		"issue 4943":                        c.issue4943,                            // https://github.com/apptainer/singularity/issues/4943
 		"issue 4967":                        c.issue4967,                            // https://github.com/apptainer/singularity/issues/4967
 		"issue 4969":                        c.issue4969,                            // https://github.com/apptainer/singularity/issues/4969
 		"issue 5166":                        c.issue5166,                            // https://github.com/apptainer/singularity/issues/5166
-		"issue 5172":                        c.issue5172,                            // https://github.com/apptainer/singularity/issues/5172
 		"issue 5250":                        c.issue5250,                            // https://github.com/apptainer/singularity/issues/5250
 		"issue 5315":                        c.issue5315,                            // https://github.com/apptainer/singularity/issues/5315
 		"issue 5435":                        c.issue5435,                            // https://github.com/apptainer/singularity/issues/5435

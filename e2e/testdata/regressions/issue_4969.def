@@ -1,5 +1,5 @@
-bootstrap: docker
-from: busybox
+bootstrap: oras
+from: ghcr.io/apptainer/alpine:latest
 
 %setup
     root=$APPTAINER_ROOTFS

@@ -1,5 +1,5 @@
-bootstrap: docker
-from: ubuntu:16.04
+bootstrap: oras
+from: ghcr.io/apptainer/ubuntu:18.04
 stage: build
 
 %post
@@ -35,8 +35,8 @@ rpc:            bad
 netgroup:       bad
 EOF
 
-bootstrap: docker
-from: ubuntu:16.04
+bootstrap: oras
+from: ghcr.io/apptainer/ubuntu:18.04
 stage: final
 
 %environment

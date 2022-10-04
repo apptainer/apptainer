@@ -33,16 +33,11 @@ const (
 )
 
 func (c ctx) apptainerEnv(t *testing.T) {
-	// use a cache to not download images over and over
-	imgCacheDir, cleanCache := e2e.MakeCacheDir(t, c.env.TestDir)
-	defer cleanCache(t)
-	c.env.ImgCacheDir = imgCacheDir
-
 	// Apptainer defines a path by default. See apptainerware/apptainer/etc/init.
-	defaultImage := "docker://alpine:3.8"
+	defaultImage := "oras://ghcr.io/apptainer/alpine:latest"
 
 	// This image sets a custom path.
-	customImage := "docker://ghcr.io/apptainer/lolcow"
+	customImage := "oras://ghcr.io/apptainer/lolcow:sif"
 	customPath := "/usr/games:" + defaultPath
 
 	// Append or prepend this path.
@@ -136,11 +131,6 @@ func (c ctx) apptainerEnvOption(t *testing.T) {
 
 	imageDefaultPath := defaultPath + ":/go/bin:/usr/local/go/bin"
 
-	// use a cache to not download images over and over
-	imgCacheDir, cleanCache := e2e.MakeCacheDir(t, c.env.TestDir)
-	defer cleanCache(t)
-	c.env.ImgCacheDir = imgCacheDir
-
 	tests := []struct {
 		name     string
 		image    string
@@ -151,43 +141,30 @@ func (c ctx) apptainerEnvOption(t *testing.T) {
 	}{
 		{
 			name:     "DefaultPath",
-			image:    "docker://alpine:3.8",
+			image:    "oras://ghcr.io/apptainer/alpine:latest",
 			matchEnv: "PATH",
 			matchVal: defaultPath,
 		},
 		{
 			name:     "DefaultPathOverride",
-			image:    "docker://alpine:3.8",
+			image:    "oras://ghcr.io/apptainer/alpine:latest",
 			envOpt:   []string{"PATH=/"},
 			matchEnv: "PATH",
 			matchVal: "/",
 		},
 		{
 			name:     "AppendDefaultPath",
-			image:    "docker://alpine:3.8",
+			image:    "oras://ghcr.io/apptainer/alpine:latest",
 			envOpt:   []string{"APPEND_PATH=/foo"},
 			matchEnv: "PATH",
 			matchVal: defaultPath + ":/foo",
 		},
 		{
 			name:     "PrependDefaultPath",
-			image:    "docker://alpine:3.8",
+			image:    "oras://ghcr.io/apptainer/alpine:latest",
 			envOpt:   []string{"PREPEND_PATH=/foo"},
 			matchEnv: "PATH",
 			matchVal: "/foo:" + defaultPath,
-		},
-		{
-			name:     "DockerImage",
-			image:    "docker://ghcr.io/apptainer/lolcow",
-			matchEnv: "LC_ALL",
-			matchVal: "C",
-		},
-		{
-			name:     "DockerImageOverride",
-			image:    "docker://ghcr.io/apptainer/lolcow",
-			envOpt:   []string{"LC_ALL=foo"},
-			matchEnv: "LC_ALL",
-			matchVal: "foo",
 		},
 		{
 			name:     "DefaultPathTestImage",
@@ -355,11 +332,6 @@ func (c ctx) apptainerEnvFile(t *testing.T) {
 	dir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "envfile-", "")
 	defer cleanup(t)
 	p := filepath.Join(dir, "env.file")
-
-	// use a cache to not download images over and over
-	imgCacheDir, cleanCache := e2e.MakeCacheDir(t, c.env.TestDir)
-	defer cleanCache(t)
-	c.env.ImgCacheDir = imgCacheDir
 
 	tests := []struct {
 		name     string
@@ -667,6 +639,5 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"issue 5057":               c.issue5057, // https://github.com/apptainer/singularity/issues/5057
 		"issue 5426":               c.issue5426, // https://github.com/apptainer/singularity/issues/5426
 		"issue 43":                 c.issue43,   // https://github.com/sylabs/singularity/issues/43
-		"issue 274":                c.issue274,  // https://github.com/sylabs/singularity/issues/274
 	}
 }

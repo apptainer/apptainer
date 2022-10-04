@@ -88,7 +88,6 @@ func (c ctx) apptainerSignIDOption(t *testing.T) {
 	}
 
 	c.env.KeyringDir = c.keyringDir
-	c.env.ImgCacheDir = c.imgCache
 
 	for _, tt := range tests {
 		c.env.RunApptainer(
@@ -128,7 +127,6 @@ func (c ctx) apptainerSignAllOption(t *testing.T) {
 	}
 
 	c.env.KeyringDir = c.keyringDir
-	c.env.ImgCacheDir = c.imgCache
 
 	for _, tt := range tests {
 		c.env.RunApptainer(
@@ -169,7 +167,6 @@ func (c ctx) apptainerSignGroupIDOption(t *testing.T) {
 	}
 
 	c.env.KeyringDir = c.keyringDir
-	c.env.ImgCacheDir = c.imgCache
 
 	for _, tt := range tests {
 		c.env.RunApptainer(
@@ -190,7 +187,6 @@ func (c ctx) apptainerSignKeyidxOption(t *testing.T) {
 
 	cmdArgs := []string{"--keyidx", "0", imgPath}
 	c.env.KeyringDir = c.keyringDir
-	c.env.ImgCacheDir = c.imgCache
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
@@ -234,18 +230,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	return testhelper.Tests{
 		"ordered": func(t *testing.T) {
 			var err error
-			// To speed up the tests, we use a common image cache (we pull the same image several times)
-			c.imgCache, err = os.MkdirTemp("", "e2e-sign-imgcache-")
-			if err != nil {
-				t.Fatalf("failed to create temporary directory: %s", err)
-			}
-			defer func() {
-				err := os.RemoveAll(c.imgCache)
-				if err != nil {
-					t.Fatalf("failed to delete temporary cache: %s", err)
-				}
-			}()
-
 			// We need one single key pair in a single keyring for all the tests
 			c.keyringDir, err = os.MkdirTemp("", "e2e-sign-keyring-")
 			if err != nil {

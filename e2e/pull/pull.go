@@ -2,12 +2,13 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-// This file has been migrated from cmd/apptainer/pull_test.go
+// The E2E PULL group tests image pulls of SIF format images (library, oras
+// sources). Docker / OCI image pull is tested as part of the DOCKER E2E group.
 
 package pull
 
@@ -44,6 +45,7 @@ type testStruct struct {
 	setImagePath     bool   // pass destination path
 	setPullDir       bool   // pass --dir
 	expectedExitCode int
+	workDir          string
 	pullDir          string
 	imagePath        string
 	expectedImage    string
@@ -53,6 +55,12 @@ type testStruct struct {
 }
 
 func (c *ctx) imagePull(t *testing.T, tt testStruct) {
+	// Use a one-time cache directory specific to this pull. This ensures we are always
+	// testing an entire pull operation, performing the download into an empty cache.
+	cacheDir, cleanup := e2e.MakeCacheDir(t, "")
+	defer cleanup(t)
+	c.env.UnprivCacheDir = cacheDir
+
 	// We use a string rather than a slice of strings to avoid having an empty
 	// element in the slice, which would cause the command to fail, without
 	// over-complicating the code.
@@ -82,6 +90,14 @@ func (c *ctx) imagePull(t *testing.T, tt testStruct) {
 		argv += "--no-https "
 	}
 
+	if tt.workDir == "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			t.Fatalf("unable to get working directory: %s", err)
+		}
+		tt.workDir = wd
+	}
+
 	argv += tt.srcURI
 
 	c.env.RunApptainer(
@@ -89,6 +105,7 @@ func (c *ctx) imagePull(t *testing.T, tt testStruct) {
 		e2e.AsSubtest(tt.desc),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithEnv(tt.envVars),
+		e2e.WithDir(tt.workDir),
 		e2e.WithCommand("pull"),
 		e2e.WithArgs(strings.Split(argv, " ")...),
 		e2e.ExpectExit(tt.expectedExitCode))
@@ -354,26 +371,17 @@ func (c ctx) testPullCmd(t *testing.T) {
 				tt.imagePath = filepath.Join(tmpdir, "image.sif")
 				tt.expectedImage = tt.imagePath
 			} else {
-				// Since we are not passing an image name, change the current
-				// working directory to the temporary directory we just created so
-				// that we know it's clean. We don't do this for the other case in
-				// order to catch spurious files showing up. Maybe later we can
-				// examine the directory and assert that it only contains what we
-				// expect.
-				oldwd, err := os.Getwd()
-				if err != nil {
-					t.Fatalf("Failed to get working directory for pull test: %+v", err)
-				}
-				defer os.Chdir(oldwd)
-
-				os.Chdir(tmpdir)
+				// No explicit image path specified. Will use temp dir as working directory,
+				// so we pull into a clean location.
+				tt.workDir = tmpdir
+				imageName := getImageNameFromURI(tt.srcURI)
+				tt.expectedImage = filepath.Join(tmpdir, imageName)
 
 				// if there's a pullDir, that's where we expect to find the image
 				if tt.pullDir != "" {
-					os.Chdir(tt.pullDir)
+					tt.expectedImage = filepath.Join(tt.pullDir, imageName)
 				}
 
-				tt.expectedImage = getImageNameFromURI(tt.srcURI)
 			}
 
 			// In order to actually test force, there must already be a file present in
@@ -487,7 +495,7 @@ func (c ctx) testPullDisableCacheCmd(t *testing.T) {
 		}
 	}()
 
-	c.env.ImgCacheDir = cacheDir
+	c.env.UnprivCacheDir = cacheDir
 
 	disableCacheTests := []struct {
 		name      string
@@ -498,11 +506,6 @@ func (c ctx) testPullDisableCacheCmd(t *testing.T) {
 			name:      "library",
 			imagePath: filepath.Join(c.env.TestDir, "library.sif"),
 			imageSrc:  "oras://ghcr.io/apptainer/alpine:latest",
-		},
-		{
-			name:      "docker",
-			imagePath: filepath.Join(c.env.TestDir, "docker.sif"),
-			imageSrc:  "docker://alpine:latest",
 		},
 		{
 			name:      "oras",
@@ -538,7 +541,7 @@ func (c ctx) testPullDisableCacheCmd(t *testing.T) {
 }
 
 // testPullUmask will run some pull tests with different umasks, and
-// ensure the output file hase the correct permissions.
+// ensure the output file has the correct permissions.
 func (c ctx) testPullUmask(t *testing.T) {
 	umask22Image := "0022-umask-pull"
 	umask77Image := "0077-umask-pull"
@@ -649,24 +652,24 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		env: env,
 	}
 
-	// FIX: should run in parallel but the use of Chdir conflicts
-	// with other tests and can lead to test failures
-	return testhelper.Tests{
-		"ordered": testhelper.NoParallel(func(t *testing.T) {
-			// Run the tests the do not require setup.
-			t.Run("pullUmaskCheck", c.testPullUmask)
+	np := testhelper.NoParallel
 
+	return testhelper.Tests{
+		// Run pull tests sequentially among themselves, as they perform a lot
+		// of un-cached pulls which could otherwise lead to hitting rate limits.
+		"ordered": func(t *testing.T) {
 			// Setup a test registry to pull from (for oras).
 			c.setup(t)
-
 			t.Run("pull", c.testPullCmd)
 			t.Run("pullDisableCache", c.testPullDisableCacheCmd)
 			t.Run("concurrencyConfig", c.testConcurrencyConfig)
 			t.Run("concurrentPulls", c.testConcurrentPulls)
-
 			// Regressions
 			// Disable for now, see issue #6299
 			// t.Run("issue5808", c.issue5808)
-		}),
+		},
+		// Manipulates umask for the process, so must be run alone to avoid
+		// causing permission issues for other tests.
+		"pullUmaskCheck": np(c.testPullUmask),
 	}
 }
