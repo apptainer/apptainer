@@ -380,7 +380,15 @@ func (t *Methods) ReadDir(arguments *args.ReadDirArgs, reply *args.ReadDirReply)
 	if err != nil {
 		return err
 	}
-	reply.Files = files
+	infos := make([]os.FileInfo, 0, len(files))
+	for _, file := range files {
+		info, err := file.Info()
+		if err != nil {
+			continue
+		}
+		infos = append(infos, args.FileInfo(info))
+	}
+	reply.Files = infos
 	return err
 }
 

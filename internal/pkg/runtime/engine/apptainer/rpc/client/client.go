@@ -184,7 +184,7 @@ func (t *RPC) Symlink(old string, new string) error {
 }
 
 // ReadDir calls the readdir RPC using the supplied arguments.
-func (t *RPC) ReadDir(dir string) ([]os.DirEntry, error) {
+func (t *RPC) ReadDir(dir string) ([]os.FileInfo, error) {
 	arguments := &args.ReadDirArgs{
 		Dir: dir,
 	}

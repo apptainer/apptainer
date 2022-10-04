@@ -52,7 +52,7 @@ type VFS interface {
 	Lchown(string, int, int) error
 	Mkdir(string, os.FileMode) error
 	Readlink(string) (string, error)
-	ReadDir(string) ([]os.DirEntry, error)
+	ReadDir(string) ([]os.FileInfo, error)
 	Stat(string) (os.FileInfo, error)
 	Symlink(string, string) error
 	Umask(int) int
@@ -81,8 +81,20 @@ func (v *defaultVFS) Readlink(name string) (string, error) {
 	return os.Readlink(name)
 }
 
-func (v *defaultVFS) ReadDir(dir string) ([]os.DirEntry, error) {
-	return os.ReadDir(dir)
+func (v *defaultVFS) ReadDir(dir string) ([]os.FileInfo, error) {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	infos := make([]os.FileInfo, 0, len(files))
+	for _, file := range files {
+		info, err := file.Info()
+		if err != nil {
+			continue
+		}
+		infos = append(infos, info)
+	}
+	return infos, nil
 }
 
 func (v *defaultVFS) Stat(name string) (os.FileInfo, error) {
