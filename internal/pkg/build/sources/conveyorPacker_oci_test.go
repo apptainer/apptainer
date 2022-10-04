@@ -12,7 +12,6 @@ package sources_test
 import (
 	"context"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -285,7 +284,7 @@ func TestOCIPacker(t *testing.T) {
 }
 
 func getTestTar(url string) (path string, err error) {
-	dl, err := ioutil.TempFile("", "oci-test")
+	dl, err := os.CreateTemp("", "oci-test")
 	if err != nil {
 		log.Fatal(err)
 	}

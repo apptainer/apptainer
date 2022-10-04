@@ -9,7 +9,7 @@
 package dmtcp
 
 import (
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -42,7 +42,7 @@ type Config struct {
 
 func parseConfig() (*Config, error) {
 	confPath := filepath.Join(buildcfg.APPTAINER_CONFDIR, "dmtcp-conf.yaml")
-	buf, err := ioutil.ReadFile(confPath)
+	buf, err := os.ReadFile(confPath)
 	if err != nil {
 		return nil, err
 	}

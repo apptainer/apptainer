@@ -11,7 +11,7 @@
 package cli
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 
@@ -357,7 +357,7 @@ var RemoteLoginCmd = &cobra.Command{
 		loginArgs.Insecure = loginInsecure
 
 		if loginPasswordStdin {
-			p, err := ioutil.ReadAll(os.Stdin)
+			p, err := io.ReadAll(os.Stdin)
 			if err != nil {
 				sylog.Fatalf("Failed to read password from stdin: %s", err)
 			}

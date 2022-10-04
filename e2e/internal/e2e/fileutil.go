@@ -10,7 +10,6 @@
 package e2e
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -22,7 +21,7 @@ import (
 // directory or in os.TempDir if dir is ""
 // returns the file name or an error
 func WriteTempFile(dir, pattern, content string) (string, error) {
-	tmpfile, err := ioutil.TempFile(dir, pattern)
+	tmpfile, err := os.CreateTemp(dir, pattern)
 	if err != nil {
 		return "", err
 	}

@@ -11,7 +11,6 @@ package fs
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -472,7 +471,7 @@ func testCopyFileFunc(t *testing.T, fn copyFileFunc) {
 	tmpDir := t.TempDir()
 
 	source := filepath.Join(tmpDir, "source")
-	err := ioutil.WriteFile(source, testData, 0o644)
+	err := os.WriteFile(source, testData, 0o644)
 	if err != nil {
 		t.Fatalf("failed to create test source file: %v", err)
 	}
@@ -526,7 +525,7 @@ func testCopyFileFunc(t *testing.T, fn copyFileFunc) {
 			}
 
 			if tc.expectError == "" {
-				actual, err := ioutil.ReadFile(tc.to)
+				actual, err := os.ReadFile(tc.to)
 				if err != nil {
 					t.Fatalf("could not read copied file: %v", err)
 				}

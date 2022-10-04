@@ -14,7 +14,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	osignal "os/signal"
@@ -139,7 +138,7 @@ func attach(engineConfig *oci.EngineConfig, run bool) error {
 		return nil
 	}
 
-	io.Copy(ioutil.Discard, conn)
+	io.Copy(io.Discard, conn)
 	return nil
 }
 

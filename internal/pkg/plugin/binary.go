@@ -13,7 +13,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -185,7 +184,7 @@ func Inspect(name string) (pluginapi.Manifest, error) {
 		// Replace the original name, which seems to be
 		// the name of a plugin, by the path to the
 		// installed manifest file for that plugin.
-		data, err := ioutil.ReadFile(meta.manifestName())
+		data, err := os.ReadFile(meta.manifestName())
 		if err != nil {
 			return manifest, err
 		}

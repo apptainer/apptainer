@@ -10,7 +10,6 @@
 package sign
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -47,7 +46,7 @@ func (c ctx) apptainerSignHelpOption(t *testing.T) {
 
 func (c *ctx) prepareImage(t *testing.T) (string, func(*testing.T)) {
 	// Get a refresh unsigned image
-	tempDir, err := ioutil.TempDir("", "")
+	tempDir, err := os.MkdirTemp("", "")
 	if err != nil {
 		t.Fatalf("failed to create temporary directory: %s", err)
 	}
@@ -236,7 +235,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"ordered": func(t *testing.T) {
 			var err error
 			// To speed up the tests, we use a common image cache (we pull the same image several times)
-			c.imgCache, err = ioutil.TempDir("", "e2e-sign-imgcache-")
+			c.imgCache, err = os.MkdirTemp("", "e2e-sign-imgcache-")
 			if err != nil {
 				t.Fatalf("failed to create temporary directory: %s", err)
 			}
@@ -248,7 +247,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			}()
 
 			// We need one single key pair in a single keyring for all the tests
-			c.keyringDir, err = ioutil.TempDir("", "e2e-sign-keyring-")
+			c.keyringDir, err = os.MkdirTemp("", "e2e-sign-keyring-")
 			if err != nil {
 				t.Fatalf("failed to create temporary directory: %s", err)
 			}

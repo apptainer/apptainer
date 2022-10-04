@@ -11,7 +11,6 @@ package image
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"testing"
@@ -20,7 +19,7 @@ import (
 // createSquashfs creates a small but valid squashfs file that can be used
 // with an image.
 func createSquashfs(t *testing.T) string {
-	sqshFile, fileErr := ioutil.TempFile("", "")
+	sqshFile, fileErr := os.CreateTemp("", "")
 	if fileErr != nil {
 		t.Fatalf("impossible to create temporary file: %s\n", fileErr)
 	}
@@ -161,7 +160,7 @@ func TestSquashfsCompression(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			b, err := ioutil.ReadFile(tt.path)
+			b, err := os.ReadFile(tt.path)
 			if err != nil {
 				t.Errorf("Failed to read file: %v", err)
 			}

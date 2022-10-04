@@ -11,7 +11,6 @@ package files
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -34,7 +33,7 @@ func TestGroup(t *testing.T) {
 		t.Errorf("should have passed with correct group file")
 	}
 	// with an empty file
-	f, err := ioutil.TempFile("", "empty-group-")
+	f, err := os.CreateTemp("", "empty-group-")
 	if err != nil {
 		t.Error(err)
 	}
@@ -63,7 +62,7 @@ func TestPasswd(t *testing.T) {
 		t.Errorf("should have passed with correct passwd file")
 	}
 	// with an empty file
-	f, err := ioutil.TempFile("", "empty-passwd-")
+	f, err := os.CreateTemp("", "empty-passwd-")
 	if err != nil {
 		t.Error(err)
 	}

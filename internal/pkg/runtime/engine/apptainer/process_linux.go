@@ -17,7 +17,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -933,7 +932,7 @@ func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []st
 // getDockerRunscript returns the content as a reader of
 // the default runscript set for docker images if any.
 func getDockerRunscript(path string) (io.Reader, error) {
-	r, err := ioutil.ReadFile(path)
+	r, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("while reading %s: %s", path, err)
 	}

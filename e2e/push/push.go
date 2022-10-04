@@ -12,7 +12,6 @@ package push
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -62,7 +61,7 @@ func (c ctx) testPushCmd(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
 	// setup file and dir to use as invalid sources
-	orasInvalidDir, err := ioutil.TempDir(c.env.TestDir, "oras_push_dir-")
+	orasInvalidDir, err := os.MkdirTemp(c.env.TestDir, "oras_push_dir-")
 	if err != nil {
 		err = errors.Wrap(err, "creating oras temporary directory")
 		t.Fatalf("unable to create src dir for push tests: %+v", err)
@@ -115,7 +114,7 @@ func (c ctx) testPushCmd(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tmpdir, err := ioutil.TempDir(c.env.TestDir, "pull_test.")
+		tmpdir, err := os.MkdirTemp(c.env.TestDir, "pull_test.")
 		if err != nil {
 			t.Fatalf("Failed to create temporary directory for pull test: %+v", err)
 		}

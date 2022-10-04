@@ -13,7 +13,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -219,7 +218,7 @@ func (cp *ArchConveyorPacker) getBootstrapOptions() (err error) {
 }
 
 func (cp *ArchConveyorPacker) getPacConf(pacmanConfURL string) (pacConf string, err error) {
-	pacConfFile, err := ioutil.TempFile(cp.b.RootfsPath, "pac-conf-")
+	pacConfFile, err := os.CreateTemp(cp.b.RootfsPath, "pac-conf-")
 	if err != nil {
 		return
 	}
@@ -246,7 +245,7 @@ func (cp *ArchConveyorPacker) insertBaseEnv() (err error) {
 }
 
 func (cp *ArchConveyorPacker) insertRunScript() (err error) {
-	err = ioutil.WriteFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/runscript"), []byte("#!/bin/sh\n"), 0o755)
+	err = os.WriteFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/runscript"), []byte("#!/bin/sh\n"), 0o755)
 	if err != nil {
 		return
 	}

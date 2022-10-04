@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -146,7 +145,7 @@ func PlaintextKey(k KeyInfo, image string) ([]byte, error) {
 }
 
 func LoadPEMPrivateKey(fn string) (*rsa.PrivateKey, error) {
-	b, err := ioutil.ReadFile(fn)
+	b, err := os.ReadFile(fn)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +163,7 @@ func LoadPEMPrivateKey(fn string) (*rsa.PrivateKey, error) {
 }
 
 func LoadPEMPublicKey(fn string) (*rsa.PublicKey, error) {
-	b, err := ioutil.ReadFile(fn)
+	b, err := os.ReadFile(fn)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +177,7 @@ func LoadPEMPublicKey(fn string) (*rsa.PublicKey, error) {
 }
 
 func loadPEMMessage(r io.Reader) ([]byte, error) {
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}

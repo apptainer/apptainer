@@ -11,7 +11,6 @@ package interactive
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -24,7 +23,7 @@ func generateQuestionInput(t *testing.T, input string) (*os.File, *os.File) {
 	testBytes := []byte(input)
 
 	// we create a temporary file that will act as Stdin
-	testFile, err := ioutil.TempFile("", "inputTest")
+	testFile, err := os.CreateTemp("", "inputTest")
 	if err != nil {
 		t.Fatalf("failed to create temporary file: %s", err)
 	}

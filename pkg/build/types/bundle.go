@@ -11,7 +11,6 @@ package types
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -167,7 +166,7 @@ func cleanupDir(path string) {
 func newBundle(parentPath, tempDir string, keyInfo *cryptkey.KeyInfo) (*Bundle, error) {
 	rootfsPath := filepath.Join(parentPath, "rootfs")
 
-	tmpPath, err := ioutil.TempDir(tempDir, "bundle-temp-")
+	tmpPath, err := os.MkdirTemp(tempDir, "bundle-temp-")
 	if err != nil {
 		return nil, fmt.Errorf("could not create temp dir in %q: %v", tempDir, err)
 	}
@@ -194,7 +193,7 @@ func newBundle(parentPath, tempDir string, keyInfo *cryptkey.KeyInfo) (*Bundle, 
 		// If the supplied rootfs was not inside tempDir (as is the case during a sandbox build),
 		// try tempDir as a fallback.
 		if !strings.HasPrefix(parentPath, tempDir) {
-			parentPath, err = ioutil.TempDir(tempDir, "build-temp-")
+			parentPath, err = os.MkdirTemp(tempDir, "build-temp-")
 			if err != nil {
 				cleanupDir(tmpPath)
 				return nil, fmt.Errorf("failed to create rootfs directory: %v", err)

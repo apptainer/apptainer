@@ -11,7 +11,6 @@ package layout
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -83,7 +82,19 @@ func (v *defaultVFS) Readlink(name string) (string, error) {
 }
 
 func (v *defaultVFS) ReadDir(dir string) ([]os.FileInfo, error) {
-	return ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	infos := make([]os.FileInfo, 0, len(files))
+	for _, file := range files {
+		info, err := file.Info()
+		if err != nil {
+			continue
+		}
+		infos = append(infos, info)
+	}
+	return infos, nil
 }
 
 func (v *defaultVFS) Stat(name string) (os.FileInfo, error) {

@@ -17,7 +17,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -243,21 +242,21 @@ func canEmulate(arch string) bool {
 	}
 
 	// look at /proc/sys/fs/binfmt_misc
-	content, _ := ioutil.ReadFile(filepath.Join(binfmtMisc, "status"))
+	content, _ := os.ReadFile(filepath.Join(binfmtMisc, "status"))
 	if string(content) != "enabled\n" {
 		return false
 	}
 
-	infos, err := ioutil.ReadDir(binfmtMisc)
+	entries, err := os.ReadDir(binfmtMisc)
 	if err != nil {
 		return false
 	}
 
 	archMagic := hex.EncodeToString(format.ElfMagic)
 
-	for _, fi := range infos {
-		f := filepath.Join(binfmtMisc, fi.Name())
-		b, err := ioutil.ReadFile(f)
+	for _, entry := range entries {
+		f := filepath.Join(binfmtMisc, entry.Name())
+		b, err := os.ReadFile(f)
 		if err != nil {
 			continue
 		}

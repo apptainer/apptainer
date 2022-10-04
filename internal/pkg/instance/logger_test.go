@@ -11,7 +11,6 @@ package instance
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -77,7 +76,7 @@ func TestLogger(t *testing.T) {
 		},
 	}
 
-	logfile, err := ioutil.TempFile("", "log-")
+	logfile, err := os.CreateTemp("", "log-")
 	if err != nil {
 		t.Errorf("failed to create temporary log file: %s", err)
 	}
@@ -97,7 +96,7 @@ func TestLogger(t *testing.T) {
 
 		logger.Close()
 
-		d, err := ioutil.ReadFile(filename)
+		d, err := os.ReadFile(filename)
 		if err != nil {
 			t.Errorf("failed to read log data: %s", err)
 		}

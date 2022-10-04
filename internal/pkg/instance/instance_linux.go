@@ -12,7 +12,6 @@ package instance
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -219,7 +218,7 @@ func (i *File) isExited() bool {
 		// we would have obtained permission denied error,
 		// now check if it's an instance parent process
 		cmdline := fmt.Sprintf("/proc/%d/cmdline", i.PPid)
-		d, err := ioutil.ReadFile(cmdline)
+		d, err := os.ReadFile(cmdline)
 		if err != nil {
 			// this is racy and not accurate but as the process
 			// may have exited during above read, check again

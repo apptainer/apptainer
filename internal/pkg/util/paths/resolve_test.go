@@ -12,7 +12,6 @@
 package paths
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -62,7 +61,7 @@ func TestSoLinks(t *testing.T) {
 	aFile := filepath.Join(tmpDir, "a.so")
 	a1Link := filepath.Join(tmpDir, "a.so.1")
 	a12Link := filepath.Join(tmpDir, "a.so.1.2")
-	if err := ioutil.WriteFile(aFile, nil, 0o644); err != nil {
+	if err := os.WriteFile(aFile, nil, 0o644); err != nil {
 		t.Fatalf("Could not create file: %v", err)
 	}
 	if err := os.Symlink(aFile, a1Link); err != nil {
@@ -72,7 +71,7 @@ func TestSoLinks(t *testing.T) {
 		t.Fatalf("Could not symlink: %v", err)
 	}
 	bFile := filepath.Join(tmpDir, "b.so")
-	err := ioutil.WriteFile(bFile, nil, 0o644)
+	err := os.WriteFile(bFile, nil, 0o644)
 	if err != nil {
 		t.Fatalf("Could not create file: %v", err)
 	}

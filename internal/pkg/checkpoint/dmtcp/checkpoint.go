@@ -11,7 +11,6 @@ package dmtcp
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -93,7 +92,7 @@ func (checkpointManager) Get(name string) (*Entry, error) {
 }
 
 func (checkpointManager) List() ([]*Entry, error) {
-	fis, err := ioutil.ReadDir(dmtcpDir())
+	fis, err := os.ReadDir(dmtcpDir())
 	if err != nil {
 		return nil, err
 	}

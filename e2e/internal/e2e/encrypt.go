@@ -11,7 +11,7 @@ package e2e
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"strings"
 	"testing"
@@ -49,14 +49,14 @@ func CheckCryptsetupVersion() error {
 // GeneratePemFiles creates a new PEM file for testing purposes.
 func GeneratePemFiles(t *testing.T, basedir string) (string, string) {
 	// Temporary file to save the PEM public file. The caller is in charge of cleanup
-	tempPemPubFile, err := ioutil.TempFile(basedir, "pem-pub-")
+	tempPemPubFile, err := os.CreateTemp(basedir, "pem-pub-")
 	if err != nil {
 		t.Fatalf("failed to create temporary file: %s", err)
 	}
 	tempPemPubFile.Close()
 
 	// Temporary file to save the PEM file. The caller is in charge of cleanup
-	tempPemPrivFile, err := ioutil.TempFile(basedir, "pem-priv-")
+	tempPemPrivFile, err := os.CreateTemp(basedir, "pem-priv-")
 	if err != nil {
 		t.Fatalf("failed to create temporary file: %s", err)
 	}

@@ -12,7 +12,6 @@ package sources
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"syscall"
 
@@ -59,7 +58,7 @@ func unpackExt3(b *types.Bundle, img *image.Image) error {
 		return fmt.Errorf("while attaching image to loop device: %v", err)
 	}
 
-	tmpmnt, err := ioutil.TempDir(b.TmpDir, "mnt")
+	tmpmnt, err := os.MkdirTemp(b.TmpDir, "mnt")
 	if err != nil {
 		return fmt.Errorf("while making tmp mount point: %v", err)
 	}

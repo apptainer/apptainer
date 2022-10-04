@@ -11,7 +11,6 @@ package run
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -239,7 +238,7 @@ func (c ctx) testFuseSquashMount(t *testing.T) {
 	dataDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
 	defer cleanup(t)
 
-	file, err := ioutil.TempFile(dataDir, "")
+	file, err := os.CreateTemp(dataDir, "")
 	if err != nil {
 		t.Fatalf("failed to create temp file under temp data dir: %s", dataDir)
 	}
@@ -269,7 +268,7 @@ func (c ctx) testFuseExt3Mount(t *testing.T) {
 	dataDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
 	defer cleanup(t)
 
-	file, err := ioutil.TempFile(dataDir, "")
+	file, err := os.CreateTemp(dataDir, "")
 	if err != nil {
 		t.Fatalf("failed to create temp file under temp data dir: %s", dataDir)
 	}
@@ -299,7 +298,7 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
 	defer e2e.Privileged(cleanup)
 
-	sandbox, err := ioutil.TempDir(tempDir, "sandbox")
+	sandbox, err := os.MkdirTemp(tempDir, "sandbox")
 	if err != nil {
 		t.Fatalf("could not create sandbox folder inside tempdir: %s", tempDir)
 	}

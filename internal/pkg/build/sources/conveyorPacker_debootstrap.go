@@ -14,7 +14,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -206,7 +205,7 @@ func (cp *DebootstrapConveyorPacker) Get(ctx context.Context, b *types.Bundle) (
 			}
 			defer fh.Close()
 
-			log, err := ioutil.ReadAll(fh)
+			log, err := io.ReadAll(fh)
 			if err != nil {
 				sylog.Debugf("Cannot read %s: %#v", fn, err)
 				return

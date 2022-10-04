@@ -13,7 +13,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -49,7 +48,7 @@ type groupTest struct {
 
 // Copy the test image to a temporary location so we don't accidentally clobber the original
 func copyImage(t *testing.T) string {
-	f, err := ioutil.TempFile("", "image-")
+	f, err := os.CreateTemp("", "image-")
 	if err != nil {
 		t.Fatalf("cannot create temporary file: %s\n", err)
 	}

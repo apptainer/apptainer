@@ -12,7 +12,6 @@ package apptainerconf
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"regexp"
@@ -34,7 +33,7 @@ func GetDirectives(reader io.Reader) (Directives, error) {
 		return make(Directives), nil
 	}
 
-	data, err := ioutil.ReadAll(reader)
+	data, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("while reading data: %s", err)
 	}

@@ -14,7 +14,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -150,7 +150,7 @@ func (config *Config) GetAllServices() (map[string][]Service, error) {
 	}
 	defer reader.Close()
 
-	b, err := ioutil.ReadAll(reader)
+	b, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("while reading response body: %v", err)
 	}

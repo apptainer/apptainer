@@ -10,7 +10,6 @@
 package image
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -59,7 +58,7 @@ func TestSandboxInitializer(t *testing.T) {
 	}
 
 	// Invalid case using a file
-	f, err := ioutil.TempFile("", "")
+	f, err := os.CreateTemp("", "")
 	if err != nil {
 		t.Fatalf("cannot create temporary file: %s\n", err)
 	}

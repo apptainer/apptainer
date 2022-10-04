@@ -12,7 +12,6 @@ package syecl
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -105,7 +104,7 @@ func TestAPutConfig(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tf, err := ioutil.TempFile("", "eclconfig-test")
+			tf, err := os.CreateTemp("", "eclconfig-test")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -116,7 +115,7 @@ func TestAPutConfig(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			b, err := ioutil.ReadFile(tf.Name())
+			b, err := os.ReadFile(tf.Name())
 			if err != nil {
 				t.Fatal(err)
 			}

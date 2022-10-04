@@ -10,7 +10,6 @@
 package packer
 
 import (
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -44,7 +43,7 @@ func isExist(path string) bool {
 }
 
 func createSquashfs(t *testing.T, s *Squashfs) (string, error) {
-	image, err := ioutil.TempFile("", "packer-")
+	image, err := os.CreateTemp("", "packer-")
 	if err != nil {
 		t.Fatal(err)
 	}

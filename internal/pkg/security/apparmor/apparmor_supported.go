@@ -13,13 +13,12 @@ package apparmor
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 )
 
 // Enabled returns whether AppArmor is enabled.
 func Enabled() bool {
-	data, err := ioutil.ReadFile("/sys/module/apparmor/parameters/enabled")
+	data, err := os.ReadFile("/sys/module/apparmor/parameters/enabled")
 	if err == nil && len(data) > 0 && data[0] == 'Y' {
 		return true
 	}

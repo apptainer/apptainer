@@ -13,7 +13,7 @@ package seccomp
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"syscall"
 
@@ -200,7 +200,7 @@ func LoadProfileFromFile(profile string, generator *generate.Generator) error {
 	}
 	defer file.Close()
 
-	data, err := ioutil.ReadAll(file)
+	data, err := io.ReadAll(file)
 	if err != nil {
 		return err
 	}

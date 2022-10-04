@@ -11,7 +11,6 @@ package e2e
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -158,12 +157,12 @@ func SetupHomeDirectories(t *testing.T, testRegistry string) {
 
 		// create .rpmmacros files for yum bootstrap builds
 		macrosFile := filepath.Join(unprivSessionHome, ".rpmmacros")
-		if err := ioutil.WriteFile(macrosFile, []byte(rpmMacrosContent), 0o444); err != nil {
+		if err := os.WriteFile(macrosFile, []byte(rpmMacrosContent), 0o444); err != nil {
 			err = errors.Wrapf(err, "writing macros file at %s", macrosFile)
 			t.Fatalf("could not write macros file: %+v", err)
 		}
 		macrosFile = filepath.Join(privSessionHome, ".rpmmacros")
-		if err := ioutil.WriteFile(macrosFile, []byte(rpmMacrosContent), 0o444); err != nil {
+		if err := os.WriteFile(macrosFile, []byte(rpmMacrosContent), 0o444); err != nil {
 			err = errors.Wrapf(err, "writing macros file at %s", macrosFile)
 			t.Fatalf("could not write macros file: %+v", err)
 		}
@@ -203,7 +202,7 @@ func SetupHomeDirectories(t *testing.T, testRegistry string) {
 			err = errors.Wrapf(err, "creating directory at %s", registryDir)
 			t.Fatalf("could not create directory: %+v", err)
 		}
-		if err := ioutil.WriteFile(registryFile, registriesContent, 0o444); err != nil {
+		if err := os.WriteFile(registryFile, registriesContent, 0o444); err != nil {
 			err = errors.Wrapf(err, "writing macros file at %s", macrosFile)
 			t.Fatalf("could not write registries.conf file: %+v", err)
 		}
@@ -214,7 +213,7 @@ func SetupHomeDirectories(t *testing.T, testRegistry string) {
 			err = errors.Wrapf(err, "creating directory at %s", registryDir)
 			t.Fatalf("could not create directory: %+v", err)
 		}
-		if err := ioutil.WriteFile(registryFile, registriesContent, 0o444); err != nil {
+		if err := os.WriteFile(registryFile, registriesContent, 0o444); err != nil {
 			err = errors.Wrapf(err, "writing macros file at %s", macrosFile)
 			t.Fatalf("could not write registries.conf file: %+v", err)
 		}

@@ -11,7 +11,7 @@ package oci
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -63,7 +63,7 @@ func genericOciMount(t *testing.T, c *ctx) (string, func()) {
 	require.Seccomp(t)
 	require.Filesystem(t, "overlay")
 
-	bundleDir, err := ioutil.TempDir(c.env.TestDir, "bundle-")
+	bundleDir, err := os.MkdirTemp(c.env.TestDir, "bundle-")
 	if err != nil {
 		err = errors.Wrapf(err, "creating temporary bundle directory at %q", c.env.TestDir)
 		t.Fatalf("failed to create bundle directory: %+v", err)

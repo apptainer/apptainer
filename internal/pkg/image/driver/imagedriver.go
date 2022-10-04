@@ -11,7 +11,6 @@ package driver
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -308,7 +307,7 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 				// Using unix.Access is not sufficient here
 				// so have to attempt to create a file
 				binpath := params.Target + "/usr/bin"
-				tmpfile, err := ioutil.TempFile(binpath, ".tmp*")
+				tmpfile, err := os.CreateTemp(binpath, ".tmp*")
 				if err != nil {
 					sylog.Debugf("%v not writable: %v", binpath, err)
 					sylog.Infof("/usr/bin not writable in container")

@@ -12,7 +12,6 @@ package namespaces
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -53,7 +52,7 @@ func IsInsideUserNamespace(pid int) (bool, bool) {
 		insideUserNs = true
 
 		// should not fail if open call passed
-		d, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/setgroups", pid))
+		d, err := os.ReadFile(fmt.Sprintf("/proc/%d/setgroups", pid))
 		if err != nil {
 			return insideUserNs, setgroupsAllowed
 		}

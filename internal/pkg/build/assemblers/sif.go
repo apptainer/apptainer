@@ -12,7 +12,6 @@ package assemblers
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"runtime"
@@ -159,7 +158,7 @@ func (a *SIFAssembler) Assemble(b *types.Bundle, path string) error {
 	s := packer.NewSquashfs()
 	s.MksquashfsPath = a.MksquashfsPath
 
-	f, err := ioutil.TempFile(b.TmpDir, "squashfs-")
+	f, err := os.CreateTemp(b.TmpDir, "squashfs-")
 	if err != nil {
 		return fmt.Errorf("while creating temporary file for squashfs: %v", err)
 	}

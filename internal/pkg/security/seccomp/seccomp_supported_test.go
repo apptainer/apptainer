@@ -12,7 +12,6 @@
 package seccomp
 
 import (
-	"io/ioutil"
 	"os"
 	"syscall"
 	"testing"
@@ -43,7 +42,7 @@ func defaultProfile() *specs.LinuxSeccomp {
 }
 
 func testFchmod(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "chmod_file")
+	tmpfile, err := os.CreateTemp("", "chmod_file")
 	if err != nil {
 		t.Fatal(err)
 	}

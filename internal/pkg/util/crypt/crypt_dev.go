@@ -13,7 +13,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -125,7 +124,7 @@ func (crypt *Device) EncryptFilesystem(path string, key []byte) (string, error) 
 	fSize := f.Size()
 
 	// Create a temporary file to format with crypt header
-	cryptF, err := ioutil.TempFile("", "crypt-")
+	cryptF, err := os.CreateTemp("", "crypt-")
 	if err != nil {
 		sylog.Debugf("Error creating temporary crypt file")
 		return "", err

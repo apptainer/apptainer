@@ -14,7 +14,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -175,7 +174,7 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err e
 			return fmt.Errorf("malformed Product setting")
 		}
 		if slepgpOk {
-			tmpfile, err := ioutil.TempFile("/tmp", "apptainer-pgp")
+			tmpfile, err := os.CreateTemp("/tmp", "apptainer-pgp")
 			if err != nil {
 				return fmt.Errorf("cannot create pgp-file: %v", err)
 			}
@@ -393,7 +392,7 @@ func (cp *ZypperConveyorPacker) genZypperConfig() (err error) {
 		return fmt.Errorf("while creating %v: %v", filepath.Join(cp.b.RootfsPath, "/etc/zypp"), err)
 	}
 
-	err = ioutil.WriteFile(filepath.Join(cp.b.RootfsPath, zypperConf), []byte("[main]\ncachedir=/val/cache/zypp-bootstrap\n\n"), 0o664)
+	err = os.WriteFile(filepath.Join(cp.b.RootfsPath, zypperConf), []byte("[main]\ncachedir=/val/cache/zypp-bootstrap\n\n"), 0o664)
 	if err != nil {
 		return
 	}

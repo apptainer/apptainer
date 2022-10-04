@@ -13,7 +13,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -94,7 +93,7 @@ func convertImage(filename string, unsquashfsPath string, tmpDir string) (rootfs
 	}
 
 	// create temporary sandbox
-	rootfsDir, err = ioutil.TempDir(tmpDir, "rootfs-")
+	rootfsDir, err = os.MkdirTemp(tmpDir, "rootfs-")
 	if err != nil {
 		return "", "", fmt.Errorf("could not create temporary sandbox: %s", err)
 	}
@@ -717,7 +716,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			"APPTAINER_IMAGE="+engineConfig.GetImage(),
 		)
 
-		content, err := ioutil.ReadFile(ApptainerEnvFile)
+		content, err := os.ReadFile(ApptainerEnvFile)
 		if err != nil {
 			sylog.Fatalf("Could not read %q environment file: %s", ApptainerEnvFile, err)
 		}

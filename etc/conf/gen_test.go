@@ -11,7 +11,6 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -47,12 +46,12 @@ func TestGenConf(t *testing.T) {
 }
 
 func compareFile(p1, p2 string) (bool, error) {
-	f1, err := ioutil.ReadFile(p1)
+	f1, err := os.ReadFile(p1)
 	if err != nil {
 		return false, err
 	}
 
-	f2, err := ioutil.ReadFile(p2)
+	f2, err := os.ReadFile(p2)
 	if err != nil {
 		return false, err
 	}

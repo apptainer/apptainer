@@ -12,7 +12,6 @@ package fs
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -283,7 +282,7 @@ func Touch(path string) error {
 // basedir exists, so it's the caller's responsibility to create
 // it before calling it.
 func MakeTmpDir(basedir, pattern string, mode os.FileMode) (string, error) {
-	name, err := ioutil.TempDir(basedir, pattern)
+	name, err := os.MkdirTemp(basedir, pattern)
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary directory: %s", err)
 	}
@@ -298,7 +297,7 @@ func MakeTmpDir(basedir, pattern string, mode os.FileMode) (string, error) {
 // basedir exists, so it's the caller's responsibility to create
 // it before calling it.
 func MakeTmpFile(basedir, pattern string, mode os.FileMode) (*os.File, error) {
-	f, err := ioutil.TempFile(basedir, pattern)
+	f, err := os.CreateTemp(basedir, pattern)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temporary file: %s", err)
 	}
