@@ -37,6 +37,15 @@ func OptSignEntitySelector(f sypgp.EntitySelector) SignOpt {
 	}
 }
 
+// OptSignX509 specifies the entity to use to generate signature(s).
+func OptSignX509(f *integrity.X509Signer) SignOpt {
+	return func(s *signer) error {
+		s.opts = append(s.opts, integrity.OptSignWithX509Issuer(f))
+
+		return nil
+	}
+}
+
 // OptSignGroup specifies that a signature be applied to cover all objects in the group with the
 // specified groupID. This may be called multiple times to add multiple group signatures.
 func OptSignGroup(groupID uint32) SignOpt {

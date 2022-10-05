@@ -28,7 +28,6 @@ import (
 	"github.com/apptainer/apptainer/pkg/sypgp"
 	"github.com/apptainer/sif/v2/pkg/integrity"
 	"github.com/apptainer/sif/v2/pkg/sif"
-	"github.com/fatih/color"
 )
 
 var (
@@ -148,62 +147,6 @@ func isGlobal(e *openpgp.Entity) bool {
 	return len(keys) > 0
 }
 
-// outputVerify outputs a textual representation of r to stdout.
-func outputVerify(f *sif.FileImage, r integrity.VerifyResult) bool {
-	e := r.Entity()
-
-	// Print signing entity info.
-	if e != nil {
-		prefix := color.New(color.FgYellow).Sprint("[REMOTE]")
-
-		if isGlobal(e) {
-			prefix = color.New(color.FgCyan).Sprint("[GLOBAL]")
-		} else if isLocal(e) {
-			prefix = color.New(color.FgGreen).Sprint("[LOCAL]")
-		}
-
-		// Print identity, if possible.
-		if id := primaryIdentity(e); id != nil {
-			fmt.Printf("%-18v Signing entity: %v\n", prefix, id.Name)
-		} else {
-			sylog.Warningf("Primary identity unknown")
-		}
-
-		// Always print fingerprint.
-		fmt.Printf("%-18v Fingerprint: %X\n", prefix, e.PrimaryKey.Fingerprint)
-	}
-
-	// Print table of signed objects.
-	if len(r.Verified()) > 0 {
-		fmt.Printf("Objects verified:\n")
-		fmt.Printf("%-4s|%-8s|%-8s|%s\n", "ID", "GROUP", "LINK", "TYPE")
-		fmt.Print("------------------------------------------------\n")
-	}
-	for _, od := range r.Verified() {
-		group := "NONE"
-		if gid := od.GroupID(); gid != 0 {
-			group = fmt.Sprintf("%d", gid)
-		}
-
-		link := "NONE"
-		if l, isGroup := od.LinkedID(); l != 0 {
-			if isGroup {
-				link = fmt.Sprintf("%d (G)", l)
-			} else {
-				link = fmt.Sprintf("%d", l)
-			}
-		}
-
-		fmt.Printf("%-4d|%-8s|%-8s|%s\n", od.ID(), group, link, od.DataType())
-	}
-
-	if err := r.Error(); err != nil {
-		fmt.Printf("\nError encountered during signature verification: %v\n", err)
-	}
-
-	return false
-}
-
 type key struct {
 	Signer keyEntity
 }
@@ -234,7 +177,7 @@ func getJSONCallback(kl *keyList) apptainer.VerifyCallback {
 		kl.Signatures++
 
 		// If entity is determined, note a few values.
-		if e := r.Entity(); e != nil {
+		if e := r.Entity().(*openpgp.Entity); e != nil {
 			if id := primaryIdentity(e); id != nil {
 				name = id.Name
 			}

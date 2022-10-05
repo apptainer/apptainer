@@ -12,6 +12,7 @@ package apptainer
 
 import (
 	"context"
+	"crypto/x509"
 	"encoding/hex"
 	"errors"
 	"os"
@@ -37,6 +38,8 @@ type verifier struct {
 	all       bool
 	legacy    bool
 	cb        VerifyCallback
+
+	x509Cert *x509.Certificate
 }
 
 // VerifyOpt are used to configure v.
@@ -47,6 +50,14 @@ type VerifyOpt func(v *verifier) error
 func OptVerifyUseKeyServer(opts ...client.Option) VerifyOpt {
 	return func(v *verifier) error {
 		v.opts = opts
+		return nil
+	}
+}
+
+// OptVerifyUseX509Cert enables verification of x509 signatures.
+func OptVerifyUseX509Cert(cert *x509.Certificate) VerifyOpt {
+	return func(v *verifier) error {
+		v.x509Cert = cert
 		return nil
 	}
 }
@@ -111,30 +122,35 @@ func (v verifier) getOpts(ctx context.Context, f *sif.FileImage) ([]integrity.Ve
 	var iopts []integrity.VerifierOpt
 
 	// Add keyring.
-	var kr openpgp.KeyRing
-	if v.opts != nil {
-		hkr, err := sypgp.NewHybridKeyRing(ctx, v.opts...)
-		if err != nil {
-			return nil, err
-		}
-		kr = hkr
+	if v.x509Cert != nil {
+		iopts = append(iopts, integrity.OptVerifyWithX509Cert(v.x509Cert))
 	} else {
-		pkr, err := sypgp.PublicKeyRing()
+
+		var kr openpgp.KeyRing
+		if v.opts != nil {
+			hkr, err := sypgp.NewHybridKeyRing(ctx, v.opts...)
+			if err != nil {
+				return nil, err
+			}
+			kr = hkr
+		} else {
+			pkr, err := sypgp.PublicKeyRing()
+			if err != nil {
+				return nil, err
+			}
+			kr = pkr
+		}
+
+		// wrap the global keyring around
+		global := sypgp.NewHandle(buildcfg.APPTAINER_CONFDIR, sypgp.GlobalHandleOpt())
+		gkr, err := global.LoadPubKeyring()
 		if err != nil {
 			return nil, err
 		}
-		kr = pkr
-	}
+		kr = sypgp.NewMultiKeyRing(gkr, kr)
 
-	// wrap the global keyring around
-	global := sypgp.NewHandle(buildcfg.APPTAINER_CONFDIR, sypgp.GlobalHandleOpt())
-	gkr, err := global.LoadPubKeyring()
-	if err != nil {
-		return nil, err
+		iopts = append(iopts, integrity.OptVerifyWithKeyRing(kr))
 	}
-	kr = sypgp.NewMultiKeyRing(gkr, kr)
-
-	iopts = append(iopts, integrity.OptVerifyWithKeyRing(kr))
 
 	// Add group IDs, if applicable.
 	for _, groupID := range v.groupIDs {

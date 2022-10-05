@@ -17,12 +17,16 @@ import (
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/sypgp"
+	"github.com/apptainer/sif/v2/pkg/integrity"
 	"github.com/spf13/cobra"
 )
 
 var (
 	privKey int // -k encryption key (index from 'key list --secret') specification
 	signAll bool
+
+	PKCS8PrivateKey string // -p path to PKCS8 private key specification
+	x509Cert        string // -c path to X509 certificate specification
 )
 
 // -g|--group-id
@@ -86,6 +90,26 @@ var signAllFlag = cmdline.Flag{
 	Deprecated:   "now the default behavior",
 }
 
+// -p|--pkcs8Key
+var signPKCS8KeyFlag = cmdline.Flag{
+	ID:           "signPKCS8PrivateKeyFlag",
+	Value:        &PKCS8PrivateKey,
+	DefaultValue: "~/.apptainer/keys/pkcs8.key",
+	Name:         "pkcs8key",
+	ShortHand:    "p",
+	Usage:        "path to PKCS8 private key to use",
+}
+
+// -c |--x509cert
+var signX509CertFlag = cmdline.Flag{
+	ID:           "signX509CertFlag",
+	Value:        &x509Cert,
+	DefaultValue: "~/.apptainer/keys/cert.pem",
+	Name:         "x509Cert",
+	ShortHand:    "c",
+	Usage:        "path to X509 certificate to use",
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(SignCmd)
@@ -96,6 +120,8 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&signSifDescIDFlag, SignCmd)
 		cmdManager.RegisterFlagForCmd(&signKeyIdxFlag, SignCmd)
 		cmdManager.RegisterFlagForCmd(&signAllFlag, SignCmd)
+		cmdManager.RegisterFlagForCmd(&signPKCS8KeyFlag, SignCmd)
+		cmdManager.RegisterFlagForCmd(&signX509CertFlag, SignCmd)
 	})
 }
 
@@ -118,16 +144,6 @@ var SignCmd = &cobra.Command{
 func doSignCmd(cmd *cobra.Command, cpath string) {
 	var opts []apptainer.SignOpt
 
-	// Set entity selector option, and ensure the entity is decrypted.
-	var f sypgp.EntitySelector
-	if cmd.Flag(signKeyIdxFlag.Name).Changed {
-		f = selectEntityAtIndex(privKey)
-	} else {
-		f = selectEntityInteractive()
-	}
-	f = decryptSelectedEntityInteractive(f)
-	opts = append(opts, apptainer.OptSignEntitySelector(f))
-
 	// Set group option, if applicable.
 	if cmd.Flag(signSifGroupIDFlag.Name).Changed || cmd.Flag(signOldSifGroupIDFlag.Name).Changed {
 		opts = append(opts, apptainer.OptSignGroup(sifGroupID))
@@ -136,6 +152,28 @@ func doSignCmd(cmd *cobra.Command, cpath string) {
 	// Set object option, if applicable.
 	if cmd.Flag(signSifDescSifIDFlag.Name).Changed || cmd.Flag(signSifDescIDFlag.Name).Changed {
 		opts = append(opts, apptainer.OptSignObjects(sifDescID))
+	}
+
+	// Set Signing method
+	switch {
+	case cmd.Flag(signPKCS8KeyFlag.Name).Changed: // Sign using X509
+		signer, err := integrity.GetX509Signer(PKCS8PrivateKey, x509Cert)
+		if err != nil {
+			sylog.Fatalf("Failed to get X509 signer: %s", err)
+		}
+
+		opts = append(opts, apptainer.OptSignX509(signer))
+
+	default: // Sign using PGP
+		// Set entity selector option, and ensure the entity is decrypted.
+		var f sypgp.EntitySelector
+		if cmd.Flag(signKeyIdxFlag.Name).Changed {
+			f = selectEntityAtIndex(privKey)
+		} else {
+			f = selectEntityInteractive()
+		}
+		f = decryptSelectedEntityInteractive(f)
+		opts = append(opts, apptainer.OptSignEntitySelector(f))
 	}
 
 	// Sign the image.

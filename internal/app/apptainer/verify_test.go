@@ -371,7 +371,7 @@ func TestVerify(t *testing.T) {
 					}
 				}
 
-				if got, want := r.Entity().PrimaryKey, tt.wantEntity.PrimaryKey; !reflect.DeepEqual(got, want) {
+				if got, want := r.Entity().(*openpgp.Entity).PrimaryKey, tt.wantEntity.PrimaryKey; !reflect.DeepEqual(got, want) {
 					t.Errorf("got entity public key %+v, want %+v", got, want)
 				}
 
@@ -543,7 +543,7 @@ func TestVerifyFingerPrint(t *testing.T) {
 					}
 				}
 
-				if got, want := r.Entity().PrimaryKey, tt.wantEntity.PrimaryKey; !reflect.DeepEqual(got, want) {
+				if got, want := r.Entity().(*openpgp.Entity).PrimaryKey, tt.wantEntity.PrimaryKey; !reflect.DeepEqual(got, want) {
 					t.Errorf("got entity public key %+v, want %+v", got, want)
 				}
 
