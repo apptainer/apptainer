@@ -225,9 +225,7 @@ func (s *Shell) LookPath(ctx context.Context, cmd string) (string, error) {
 }
 
 // Run runs the shell interpreter.
-func (s *Shell) Run() error {
-	ctx := context.TODO()
-
+func (s *Shell) Run(ctx context.Context) error {
 	parser := syntax.NewParser()
 	node, err := parser.Parse(s.reader, s.name)
 	if err != nil {
@@ -289,7 +287,7 @@ func (e nonExportedEnv) Each(fn func(name string, vr expand.Variable) bool) {
 // EvaluateEnv evaluates the environment variable script and returns
 // the list of variables set in the script. Command execution is disabled
 // along with redirection.
-func EvaluateEnv(script []byte, args []string, envs []string) ([]string, error) {
+func EvaluateEnv(ctx context.Context, script []byte, args []string, envs []string) ([]string, error) {
 	const stopBuiltin = "__stop__"
 
 	var env []string
@@ -324,7 +322,7 @@ func EvaluateEnv(script []byte, args []string, envs []string) ([]string, error) 
 	// set allexport option
 	interp.Params("-a")(shell.runner)
 
-	if err := shell.Run(); err != nil {
+	if err := shell.Run(ctx); err != nil {
 		return nil, fmt.Errorf("while evaluating environment script: %s", err)
 	}
 

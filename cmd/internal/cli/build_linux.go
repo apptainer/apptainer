@@ -212,7 +212,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 		if err != nil {
 			sylog.Fatalf("While handling encryption material: %v", err)
 		}
-		keyInfo = &k
+		keyInfo = k
 	} else {
 		_, passphraseEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PASSPHRASE")
 		_, pemPathEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PEM_PATH")
@@ -364,7 +364,7 @@ func isImage(spec string) bool {
 // passed to the crypt package for handling.
 // This handles the APPTAINER_ENCRYPTION_PASSPHRASE/PEM_PATH envvars outside of cobra in order to
 // enforce the unique flag/env precedence for the encryption flow
-func getEncryptionMaterial(cmd *cobra.Command) (cryptkey.KeyInfo, error) {
+func getEncryptionMaterial(cmd *cobra.Command) (*cryptkey.KeyInfo, error) {
 	passphraseFlag := cmd.Flags().Lookup("passphrase")
 	PEMFlag := cmd.Flags().Lookup("pem-path")
 	passphraseEnv, passphraseEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PASSPHRASE")
@@ -372,7 +372,7 @@ func getEncryptionMaterial(cmd *cobra.Command) (cryptkey.KeyInfo, error) {
 
 	// checks for no flags/envvars being set
 	if !(PEMFlag.Changed || pemPathEnvOK || passphraseFlag.Changed || passphraseEnvOK) {
-		sylog.Fatalf("Unable to use container encryption. Must supply encryption material through environment variables or flags.")
+		return nil, nil
 	}
 
 	// order of precedence:
@@ -405,19 +405,19 @@ func getEncryptionMaterial(cmd *cobra.Command) (cryptkey.KeyInfo, error) {
 			}
 		}
 
-		return cryptkey.KeyInfo{Format: cryptkey.PEM, Path: encryptionPEMPath}, nil
+		return &cryptkey.KeyInfo{Format: cryptkey.PEM, Path: encryptionPEMPath}, nil
 	}
 
 	if passphraseFlag.Changed {
 		sylog.Verbosef("Using interactive passphrase entry for encrypted container")
 		passphrase, err := interactive.AskQuestionNoEcho("Enter encryption passphrase: ")
 		if err != nil {
-			return cryptkey.KeyInfo{}, err
+			return nil, err
 		}
 		if passphrase == "" {
 			sylog.Fatalf("Cannot encrypt container with empty passphrase")
 		}
-		return cryptkey.KeyInfo{Format: cryptkey.Passphrase, Material: passphrase}, nil
+		return &cryptkey.KeyInfo{Format: cryptkey.Passphrase, Material: passphrase}, nil
 	}
 
 	if pemPathEnvOK {
@@ -431,13 +431,13 @@ func getEncryptionMaterial(cmd *cobra.Command) (cryptkey.KeyInfo, error) {
 		}
 
 		sylog.Verbosef("Using pem path environment variable for encrypted container")
-		return cryptkey.KeyInfo{Format: cryptkey.PEM, Path: pemPathEnv}, nil
+		return &cryptkey.KeyInfo{Format: cryptkey.PEM, Path: pemPathEnv}, nil
 	}
 
 	if passphraseEnvOK {
 		sylog.Verbosef("Using passphrase environment variable for encrypted container")
-		return cryptkey.KeyInfo{Format: cryptkey.Passphrase, Material: passphraseEnv}, nil
+		return &cryptkey.KeyInfo{Format: cryptkey.Passphrase, Material: passphraseEnv}, nil
 	}
 
-	return cryptkey.KeyInfo{}, nil
+	return nil, nil
 }
