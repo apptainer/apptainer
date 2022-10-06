@@ -19,6 +19,21 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Support for `DOCKER_HOST` parsing when using `docker-daemon://`
 - `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
 
+## v1.1.2 - \[2022-10-06\]
+
+### Changes since last release
+
+- [CVE-2022-39237](https://github.com/sylabs/sif/security/advisories/GHSA-m5m3-46gj-wch8):
+  The sif dependency included in Apptainer before this release does not
+  verify that the hash algorithm(s) used are cryptographically secure
+  when verifying digital signatures. This release updates to sif v2.8.1
+  which corrects this issue. See the linked advisory for references and
+  a workaround.
+
+## v1.1.1 - \[2022-10-06\]
+
+Accidentally included no code changes.
+
 ## v1.1.0 - \[2022-09-27\]
 
 ### Changed defaults / behaviours
