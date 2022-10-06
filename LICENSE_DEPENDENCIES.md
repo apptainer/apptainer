@@ -383,6 +383,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/apptainer/sif/blob/master/v2/LICENSE.md>
 
+## github.com/cloudflare/circl
+
+**License:** BSD-3-Clause
+
+**License URL:** <https://github.com/cloudflare/circl/blob/master/LICENSE>
+
 ## github.com/cyphar/filepath-securejoin
 
 **License:** BSD-3-Clause
