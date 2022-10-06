@@ -20,6 +20,7 @@
 - Daniele Tamino <daniele.tamino@gmail.com>
 - Dave Godlove <d@sylabs.io>, <davidgodlove@gmail.com>
 - Dave Love <d.love@liverpool.ac.uk>
+- David Rohr <drohr@jwdt.org>
 - David Trudgian <david.trudgian@utsouthwestern.edu>,
   <david.trudgian@sylabs.io>, <dave@trudgian.net>
 - Diana Langenbach <dcl@dcl.sh>

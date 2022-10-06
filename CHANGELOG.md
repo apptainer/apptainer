@@ -18,6 +18,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   point-in-time usage.
 - Support for `DOCKER_HOST` parsing when using `docker-daemon://`
 - `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
+- `--rocm` flag in combination with `-c` / `-C` fixed by forwarding all
+  `/dri/render*` devices into the container.
 
 ## v1.1.0 - \[2022-09-27\]
 
