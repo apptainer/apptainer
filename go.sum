@@ -114,8 +114,8 @@ github.com/apptainer/container-key-client v0.8.0 h1:K181Zrejb53mR2YQZwCathSj8YRe
 github.com/apptainer/container-key-client v0.8.0/go.mod h1:wMeJdiMXlPRiwJfUyae2WRHsZlHG9Af6iPQ9TZcBnS8=
 github.com/apptainer/container-library-client v1.3.3 h1:xd0/27nB8mAtyJAwG/7tTOoWAhjMiZPyZy4fzzQHMak=
 github.com/apptainer/container-library-client v1.3.3/go.mod h1:B+ARx/+WaE/E2pkv2qZUQeoEBO89PUpmLKsTJmbM5eQ=
-github.com/apptainer/sif/v2 v2.8.0 h1:VQXn3t/SOWK/ESvK0tz4H1h8ZqoAGEiyTlT3qF3iM1s=
-github.com/apptainer/sif/v2 v2.8.0/go.mod h1:ELUI9IzDd9fuNN099gwA0bUvoR2I5LSZWYcqCqvLw/0=
+github.com/apptainer/sif/v2 v2.8.1 h1:c8WSyIZ/Jujf3GijgkCLNEvwusvNIGn8fUBgkCv/8F0=
+github.com/apptainer/sif/v2 v2.8.1/go.mod h1:ELUI9IzDd9fuNN099gwA0bUvoR2I5LSZWYcqCqvLw/0=
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
 github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a/go.mod h1:lB+ZfQJz7igIIfQNfa7Ml4HSf2uFQQRzpGGRXenZAgY=
 github.com/aws/aws-sdk-go v1.15.11/go.mod h1:mFuSZ37Z9YOHbQEwBWztmVzqXrEkub65tZoCYDt7FT0=
