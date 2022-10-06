@@ -10,6 +10,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Prefer the `fakeroot-sysv` command over the `fakeroot` command because
   the latter can be linked to either `fakeroot-sysv` or `fakeroot-tcp`,
   but `fakeroot-sysv` is much faster.
+- `--rocm` flag in combination with `-c` / `-C` fixed by forwarding all
+  `/dri/render*` devices into the container.
 
 ### Bug fixes
 
