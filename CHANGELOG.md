@@ -5,6 +5,15 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.1.1 - \[2022-10-06\]
+
+- [CVE-2022-39237](https://github.com/sylabs/sif/security/advisories/GHSA-m5m3-46gj-wch8):
+  The sif dependency included in Apptainer before this release does not
+  verify that the hash algorithm(s) used are cryptographically secure
+  when verifying digital signatures. This release updates to sif v2.8.1
+  which corrects this issue. See the linked advisory for references and
+  a workaround.
+
 ## v1.1.0 - \[2022-09-27\]
 
 ### Changed defaults / behaviours
