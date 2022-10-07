@@ -9,6 +9,7 @@
 package driver
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"os"
@@ -46,6 +47,7 @@ type fuseappsDriver struct {
 	ext3Feature    fuseappsFeature
 	overlayFeature fuseappsFeature
 	cmdPrefix      []string
+	squashSetUID   bool
 }
 
 func (f *fuseappsFeature) init(binNames string, purpose string, desired image.DriverFeature) {
@@ -88,11 +90,42 @@ func InitImageDrivers(register bool, unprivileged bool, fileconf *apptainerconf.
 	ext3Feature.init("fuse2fs", "mount EXT3 filesystems", desiredFeatures&image.ImageFeature)
 	overlayFeature.init("fuse-overlayfs", "use overlay", desiredFeatures&image.OverlayFeature)
 
+	// squashfuse generally supports the -o uid and -o gid options, except
+	// on Debian 18.04, but it doesn't show in the help output so we just
+	// assume that it does support it.  squashfuse_ll doesn't generally
+	// support them, but when it does they are in the help output so we
+	// scan for that.
+	// See https://github.com/apptainer/apptainer/issues/736
+	squashSetUID := true
+	if squashFeature.binName == "squashfuse_ll" {
+		squashSetUID = false
+		cmd := exec.Command(squashFeature.cmdPath)
+		output, err := cmd.StdoutPipe()
+		if err != nil {
+			return fmt.Errorf("error making squashfuse_ll output pipe: %v", err)
+		}
+		cmd.Stderr = cmd.Stdout
+		err = cmd.Start()
+		if err != nil {
+			return fmt.Errorf("error starting squashfuse_ll: %v", err)
+		}
+		scanner := bufio.NewScanner(output)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if strings.Contains(line, "-o uid=") {
+				squashSetUID = true
+				sylog.Debugf("squashfuse_ll supports -o uid")
+				break
+			}
+		}
+		_ = cmd.Wait()
+	}
+
 	if squashFeature.cmdPath != "" || ext3Feature.cmdPath != "" || overlayFeature.cmdPath != "" {
 		sylog.Debugf("Setting ImageDriver to %v", driverName)
 		fileconf.ImageDriver = driverName
 		if register {
-			return image.RegisterDriver(driverName, &fuseappsDriver{squashFeature, ext3Feature, overlayFeature, []string{}})
+			return image.RegisterDriver(driverName, &fuseappsDriver{squashFeature, ext3Feature, overlayFeature, []string{}, squashSetUID})
 		}
 	}
 	return nil
@@ -124,11 +157,7 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 	case "squashfs":
 		f = &d.squashFeature
 		optsStr := ""
-		// squashfuse_ll does not currently support setting the
-		//   uid/gid options, so need to skip those with that.
-		// It only affects the way the ownership of files look
-		//   without fakeroot, it's not very significant.
-		if f.binName == "squashfuse" {
+		if d.squashSetUID {
 			optsStr = fmt.Sprintf("uid=%v,gid=%v", os.Getuid(), os.Getgid())
 		}
 		if params.Offset > 0 {
