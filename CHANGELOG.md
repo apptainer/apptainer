@@ -11,6 +11,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
   the latter can be linked to either `fakeroot-sysv` or `fakeroot-tcp`,
   but `fakeroot-sysv` is much faster.
 
+### Bug fixes
+
+- Updated the included `squashfuse_ll` to have `-o uid=N` and `-o gid=N`
+  options and changed the corresponding image driver to use them when
+  available.  This makes files inside sif files appear to be owned by the
+  user instead of by the nobody id 65534 when running in non-setuid mode.
+
 ## v1.1.2 - \[2022-10-06\]
 
 - [CVE-2022-39237](https://github.com/sylabs/sif/security/advisories/GHSA-m5m3-46gj-wch8):
