@@ -160,6 +160,7 @@ var statusChan = make(chan string, 1)
 //
 // However, most likely this still will be executed as root since `apptainer oci`
 // command set requires privileged execution.
+//
 //nolint:maintidx
 func (e *EngineOperations) CreateContainer(ctx context.Context, pid int, rpcConn net.Conn) error {
 	var err error

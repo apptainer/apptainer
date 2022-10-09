@@ -40,6 +40,7 @@ var (
 // dropped by the time PrepareConfig is called. However, most likely this
 // still will be executed as root since `apptainer oci` command set
 // requires privileged execution.
+//
 //nolint:maintidx
 func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	if e.CommonConfig.EngineName != Name {

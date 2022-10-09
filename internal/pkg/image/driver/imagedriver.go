@@ -345,7 +345,7 @@ func (d *fuseappsDriver) Start(params *image.DriverParams, containerPid int) err
 
 // Stop the process associated with the mount target, if there is one.
 // If kill is not true, an unmount should already have happened so at
-//   first just wait for the process to exit.
+// first just wait for the process to exit.
 func (f *fuseappsFeature) stop(target string, kill bool) error {
 	for _, instance := range f.instances {
 		if instance.params.Target != target {

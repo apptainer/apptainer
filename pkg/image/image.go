@@ -142,7 +142,7 @@ type Image struct {
 }
 
 // ReInit fills in the File object if needed.  This function should be
-//   called after passing an image object between processes using JSON
+// called after passing an image object between processes using JSON
 func (i *Image) ReInit() {
 	if i.File == nil && i.Path != "" {
 		i.File = os.NewFile(i.Fd, i.Path)

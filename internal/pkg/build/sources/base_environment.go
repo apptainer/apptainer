@@ -20,50 +20,62 @@ import (
 )
 
 // Contents of /.singularity.d/actions/exec
+//
 //go:embed exec.sh
 var execFileContent string
 
 // Contents of /.singularity.d/actions/run
+//
 //go:embed run.sh
 var runFileContent string
 
 // Contents of /.singularity.d/actions/shell
+//
 //go:embed shell.sh
 var shellFileContent string
 
 // Contents of /.singularity.d/actions/start
+//
 //go:embed start.sh
 var startFileContent string
 
 // Contents of /.singularity.d/actions/test
+//
 //go:embed test.sh
 var testFileContent string
 
 // Contents of /.singularity.d/env/01-base.sh
+//
 //go:embed 01-base.sh
 var baseShFileContent string
 
 // Contents of /.singularity.d/env/90-environment.sh and /.singularity.d/env/91-environment.sh
+//
 //go:embed 90-environment.sh
 var environmentShFileContent string
 
 // Contents of /.singularity.d/env/95-apps.sh
+//
 //go:embed 95-apps.sh
 var appsShFileContent string
 
 // Contents of /.singularity.d/env/99-base.sh
+//
 //go:embed 99-base.sh
 var base99ShFileContent string
 
 // Contents of /.singularity.d/env/99-runtimevars.sh
+//
 //go:embed 99-runtimevars.sh
 var base99runtimevarsShFileContent string
 
 // Contents of /.singularity.d/runscript
+//
 //go:embed runscript.sh
 var runscriptFileContent string
 
 // Contents of /.singularity.d/startscript
+//
 //go:embed startscript.sh
 var startscriptFileContent string
 

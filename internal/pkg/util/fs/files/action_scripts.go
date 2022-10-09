@@ -12,9 +12,11 @@ package files
 import _ "embed"
 
 // ActionScript is the action script content.
+//
 //go:embed action_script.sh
 var ActionScript string
 
 // RuntimeVars is the runtime variables script.
+//
 //go:embed runtime_vars.sh
 var RuntimeVars string

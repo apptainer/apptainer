@@ -391,7 +391,7 @@ func (b *Build) Full(ctx context.Context) error {
 
 		// copy potential files from previous stage
 		if stage.b.RunSection("files") {
-			if err := stage.copyFilesFrom(b); err != nil {
+			if err := stage.copyFilesFrom(b); err != nil { //nolint:contextcheck
 				return fmt.Errorf("unable to copy files from stage to container fs: %v", err)
 			}
 		}
@@ -402,7 +402,7 @@ func (b *Build) Full(ctx context.Context) error {
 
 		// copy files from host
 		if stage.b.RunSection("files") {
-			if err := stage.copyFiles(); err != nil {
+			if err := stage.copyFiles(); err != nil { //nolint:contextcheck
 				return fmt.Errorf("unable to copy files from host to container fs: %v", err)
 			}
 		}

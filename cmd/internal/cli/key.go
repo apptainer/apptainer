@@ -76,7 +76,7 @@ var keyGlobalPubKeyFlag = cmdline.Flag{
 	Usage:        "manage global public keys (import/pull/remove are restricted to root user or unprivileged installation only)",
 }
 
-//--public
+// --public
 var keyRemovePublicKeyFlag = cmdline.Flag{
 	ID:           "keyRemovePublicKeyFlag",
 	Value:        &keyRemovePublic,
@@ -86,7 +86,7 @@ var keyRemovePublicKeyFlag = cmdline.Flag{
 	Usage:        "remove public keys only",
 }
 
-//--secret
+// --secret
 var keyRemovePrivateKeyFlag = cmdline.Flag{
 	ID:           "keyRemovePrivateKeyFlag",
 	Value:        &keyRemovePrivate,
@@ -96,7 +96,7 @@ var keyRemovePrivateKeyFlag = cmdline.Flag{
 	Usage:        "remove secret keys only",
 }
 
-//--both
+// --both
 var keyRemoveBothKeyFlag = cmdline.Flag{
 	ID:           "keyRemoveBothKeyFlag",
 	Value:        &keyRemoveBoth,
@@ -106,7 +106,7 @@ var keyRemoveBothKeyFlag = cmdline.Flag{
 	Usage:        "remove both public and private keys",
 }
 
-//--keysdir
+// --keysdir
 var keyLocalDirKeyFlag = cmdline.Flag{
 	ID:           "keyLocalDirKeyFlag",
 	Value:        &keyLocalDir,
