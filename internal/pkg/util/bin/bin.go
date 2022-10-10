@@ -51,6 +51,7 @@ func FindBin(name string) (path string, err error) {
 		"debootstrap",
 		"dnf",
 		"fakeroot",
+		"fakeroot-sysv",
 		"fuse-overlayfs",
 		"fuse2fs",
 		"go",

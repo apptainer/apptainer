@@ -19,6 +19,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Support for `DOCKER_HOST` parsing when using `docker-daemon://`
 - `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
 
+### Bug fixes
+
+- Prefer the `fakeroot-sysv` command over the `fakeroot` command because
+  the latter can be linked to either `fakeroot-sysv` or `fakeroot-tcp`,
+  but `fakeroot-sysv` is much faster.
+
 ## v1.1.2 - \[2022-10-06\]
 
 ### Changes since last release
