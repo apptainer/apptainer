@@ -172,6 +172,11 @@ func (m *Manager) UpdateFromFile(path string) error {
 }
 
 // AddProc adds the process with specified pid to the managed cgroup
+//
+// Disable context check as it raises a warning throuch lcmanager.New, which is
+// in a dependency we cannot modify to pass a context.
+//
+// nolint:contextcheck
 func (m *Manager) AddProc(pid int) (err error) {
 	if m.group == "" || m.cgroup == nil {
 		return ErrUnitialized
@@ -257,6 +262,11 @@ func checkRootless(group string, systemd bool) (rootless bool, err error) {
 
 // newManager creates a new Manager, with the associated resources and cgroup.
 // The Manager is ready to manage the cgroup but does not apply limits etc.
+//
+// Disable context check as it raises a warning throuch lcmanager.New, which is
+// in a dependency we cannot modify to pass a context.
+//
+// nolint:contextcheck
 func newManager(resources *specs.LinuxResources, group string, systemd bool) (manager *Manager, err error) {
 	if resources == nil {
 		return nil, fmt.Errorf("non-nil cgroup LinuxResources definition is required")
@@ -385,6 +395,11 @@ func NewManagerWithFile(specPath string, pid int, group string, systemd bool) (m
 // GetManager returns a Manager for the provided cgroup name/path.
 // It can only return a cgroupfs manager, as we aren't wiring back up to systemd
 // through dbus etc.
+//
+// Disable context check as it raises a warning throuch lcmanager.New, which is
+// in a dependency we cannot modify to pass a context.
+//
+// nolint:contextcheck
 func GetManagerForGroup(group string) (manager *Manager, err error) {
 	if group == "" {
 		return nil, fmt.Errorf("cannot load cgroup - no name/path specified")
