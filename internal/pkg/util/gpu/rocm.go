@@ -39,6 +39,12 @@ func RocmDevices(withGPU bool) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not list rocm devices: %v", err)
 	}
+	// render devices needed as well
+	rocmGlob2 := "/dev/dri/render*"
+	devs2, err2 := filepath.Glob(rocmGlob2)
+	if err2 == nil && devs2 != nil {
+		devs = append(devs, devs2...)
+	}
 	// /dev/kfd is also required
 	devs = append(devs, "/dev/kfd")
 	return devs, nil
