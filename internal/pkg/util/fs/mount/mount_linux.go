@@ -91,7 +91,7 @@ const (
 	RootfsTag = "rootfs"
 	// PreLayerTag defines tag to prepare overlay/underlay layer
 	PreLayerTag = "prelayer"
-	// LayerTag defines tag for overlay/underlay final mount point
+	// LayerTag defines tag for overlay/underlay mount point(s)
 	LayerTag = "layer"
 	// SharedTag defines tag for shared mount point between master
 	// and container processes
@@ -129,7 +129,7 @@ var authorizedTags = map[AuthorizedTag]struct {
 	SessionTag:   {false, 0},
 	RootfsTag:    {false, 1},
 	PreLayerTag:  {true, 2},
-	LayerTag:     {false, 3},
+	LayerTag:     {true, 3},
 	SharedTag:    {true, 4},
 	DevTag:       {true, 5},
 	HostfsTag:    {true, 6},

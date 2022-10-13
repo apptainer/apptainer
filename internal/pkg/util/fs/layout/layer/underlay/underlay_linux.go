@@ -45,7 +45,7 @@ func (u *Underlay) Add(session *layout.Session, system *mount.System) error {
 	if err := u.session.AddDir(underlayDir); err != nil {
 		return err
 	}
-	return system.RunBeforeTag(mount.PreLayerTag, u.createUnderlay)
+	return system.RunBeforeTag(mount.LayerTag, u.createUnderlay)
 }
 
 // Dir returns absolute underlay directory within session
@@ -194,7 +194,7 @@ func (u *Underlay) duplicateDir(dir string, system *mount.System, existingPath s
 				return fmt.Errorf("can't add directory %s to underlay: %s", dst, err)
 			}
 			dst, _ = u.session.GetPath(dst)
-			if err := system.Points.AddBind(mount.PreLayerTag, src, dst, syscall.MS_BIND); err != nil {
+			if err := system.Points.AddBind(mount.LayerTag, src, dst, syscall.MS_BIND); err != nil {
 				return fmt.Errorf("can't add bind mount point: %s", err)
 			}
 			binds++
@@ -211,7 +211,7 @@ func (u *Underlay) duplicateDir(dir string, system *mount.System, existingPath s
 				return fmt.Errorf("can't add directory %s to underlay: %s", dst, err)
 			}
 			dst, _ = u.session.GetPath(dst)
-			if err := system.Points.AddBind(mount.PreLayerTag, src, dst, syscall.MS_BIND); err != nil {
+			if err := system.Points.AddBind(mount.LayerTag, src, dst, syscall.MS_BIND); err != nil {
 				return fmt.Errorf("can't add bind mount point: %s", err)
 			}
 			binds++
