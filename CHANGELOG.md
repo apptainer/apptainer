@@ -24,6 +24,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Prefer the `fakeroot-sysv` command over the `fakeroot` command because
   the latter can be linked to either `fakeroot-sysv` or `fakeroot-tcp`,
   but `fakeroot-sysv` is much faster.
+- Fix the locating of shared libraries when running `unsquashfs` from a
+  non-standard location the way conda does.
 
 ## v1.1.2 - \[2022-10-06\]
 
