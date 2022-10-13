@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2020, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -376,32 +376,9 @@ func (c *Config) SetNsPath(nstype specs.LinuxNamespaceType, path string) error {
 func (c *Config) SetNsPathFromSpec(namespaces []specs.LinuxNamespace) error {
 	for _, namespace := range namespaces {
 		if namespace.Path != "" {
-			cpath := unsafe.Pointer(C.CString(namespace.Path))
-			l := len(namespace.Path)
-			size := C.size_t(l)
-
-			if l > C.MAX_PATH_SIZE-1 {
-				return fmt.Errorf("%s namespace path too big", namespace.Type)
+			if err := c.SetNsPath(namespace.Type, namespace.Path); err != nil {
+				return err
 			}
-
-			switch namespace.Type {
-			case specs.UserNamespace:
-				C.memcpy(unsafe.Pointer(&c.config.container.namespace.user[0]), cpath, size)
-			case specs.IPCNamespace:
-				C.memcpy(unsafe.Pointer(&c.config.container.namespace.ipc[0]), cpath, size)
-			case specs.UTSNamespace:
-				C.memcpy(unsafe.Pointer(&c.config.container.namespace.uts[0]), cpath, size)
-			case specs.PIDNamespace:
-				C.memcpy(unsafe.Pointer(&c.config.container.namespace.pid[0]), cpath, size)
-			case specs.NetworkNamespace:
-				C.memcpy(unsafe.Pointer(&c.config.container.namespace.network[0]), cpath, size)
-			case specs.MountNamespace:
-				C.memcpy(unsafe.Pointer(&c.config.container.namespace.mount[0]), cpath, size)
-			case specs.CgroupNamespace:
-				C.memcpy(unsafe.Pointer(&c.config.container.namespace.cgroup[0]), cpath, size)
-			}
-
-			C.free(cpath)
 		}
 	}
 

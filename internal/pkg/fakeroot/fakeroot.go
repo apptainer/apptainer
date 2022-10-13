@@ -71,8 +71,10 @@ type Config struct {
 type GetUserFn func(string) (*user.User, error)
 
 // Wrapped errors
-var errNoMappingEntry = errors.New("no mapping entry found")
-var errRangeTooLow = errors.New("range count lower than")
+var (
+	errNoMappingEntry = errors.New("no mapping entry found")
+	errRangeTooLow    = errors.New("range count lower than")
+)
 
 // GetConfig parses a subuid/subgid configuration file and returns
 // a Config holding all mapping entries, it allows to pass a custom
@@ -380,7 +382,7 @@ func GetIDRange(path string, uid uint32) (*specs.LinuxIDMapping, error) {
 }
 
 // IsUIDMapped returns true if the given uid is mapped in SubUIDFile
-//  and otherwise it returns false
+// and otherwise it returns false
 func IsUIDMapped(uid uint32) bool {
 	config, err := GetConfig(SubUIDFile, false, getPwNam)
 	if err != nil {

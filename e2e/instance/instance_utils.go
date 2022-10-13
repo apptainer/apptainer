@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -31,23 +31,6 @@ type instance struct {
 
 type instanceList struct {
 	Instances []instance `json:"instances"`
-}
-
-func (c *ctx) listInstance(t *testing.T, listArgs ...string) (stdout string, stderr string, success bool) {
-	var args []string
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(c.profile),
-		e2e.WithCommand("instance list"),
-		e2e.WithArgs(args...),
-		e2e.PostRun(func(t *testing.T) {
-			success = !t.Failed()
-		}),
-		e2e.ExpectExit(0, e2e.GetStreams(&stdout, &stderr)),
-	)
-
-	return
 }
 
 func (c *ctx) stopInstance(t *testing.T, instance string, stopArgs ...string) (stdout string, stderr string, success bool) {

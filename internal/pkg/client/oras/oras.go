@@ -64,8 +64,7 @@ const (
 var sifLayerMediaTypes = []string{SifLayerMediaTypeV1, SifLayerMediaTypeProto}
 
 type orasUploadTransport struct {
-	rt    http.RoundTripper
-	scope string
+	rt http.RoundTripper
 }
 
 func (t *orasUploadTransport) RoundTrip(r *http.Request) (*http.Response, error) {

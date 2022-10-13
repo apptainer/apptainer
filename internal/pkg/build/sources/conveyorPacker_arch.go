@@ -41,7 +41,6 @@ var instList = []string{"base"}
 type ArchConveyorPacker struct {
 	b       *types.Bundle
 	confurl string
-	include string
 }
 
 // prepareFakerootEnv prepares a build environment to

@@ -204,21 +204,6 @@ func (h *Handle) CleanCache(cacheType string, dryRun bool, days int) (err error)
 	return err
 }
 
-// cleanAllCaches is an utility function that wipes all files in the
-// cache directory, will return a error if one occurs
-func (h *Handle) cleanAllCaches() {
-	if h.disabled {
-		return
-	}
-
-	for _, ct := range append(FileCacheTypes, OciCacheTypes...) {
-		dir := h.getCacheTypeDir(ct)
-		if err := os.RemoveAll(dir); err != nil {
-			sylog.Verbosef("unable to clean %s cache, directory %s: %v", ct, dir, err)
-		}
-	}
-}
-
 // IsDisabled returns true if the cache is disabled
 func (h *Handle) IsDisabled() bool {
 	return h.disabled
