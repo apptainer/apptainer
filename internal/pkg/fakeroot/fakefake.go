@@ -55,16 +55,21 @@ func UnshareRootMapped(args []string) error {
 	return nil
 }
 
-// This just adds debug messages around bin.FindBin("fakeroot")
+// Look for fakeroot-sysv first and then fakeroot, since fakeroot-sysv
+// is much faster than fakeroot-tcp.
 func FindFake() (string, error) {
-	sylog.Debugf("looking for the fakeroot command")
-	fakerootPath, err := bin.FindBin("fakeroot")
-	if err != nil {
-		sylog.Debugf("failure finding fakeroot: %v", err)
-		return "", err
+	var err error
+	for _, cmd := range []string{"fakeroot-sysv", "fakeroot"} {
+		sylog.Debugf("looking for the %v command", cmd)
+		var fakerootPath string
+		fakerootPath, err = bin.FindBin(cmd)
+		if err == nil {
+			sylog.Debugf("%v found at %v", cmd, fakerootPath)
+			return fakerootPath, nil
+		}
+		sylog.Debugf("failure finding %v: %v", cmd, err)
 	}
-	sylog.Debugf("fakeroot found at %v", fakerootPath)
-	return fakerootPath, nil
+	return "", err
 }
 
 // Get the args needed to execute the fakeroot mapped into the container

@@ -5,6 +5,12 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes Since Last Release
+
+- Prefer the `fakeroot-sysv` command over the `fakeroot` command because
+  the latter can be linked to either `fakeroot-sysv` or `fakeroot-tcp`,
+  but `fakeroot-sysv` is much faster.
+
 ## v1.1.2 - \[2022-10-06\]
 
 - [CVE-2022-39237](https://github.com/sylabs/sif/security/advisories/GHSA-m5m3-46gj-wch8):
