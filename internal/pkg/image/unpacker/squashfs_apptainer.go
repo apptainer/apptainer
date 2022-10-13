@@ -181,6 +181,8 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 		// unsquashfs get available CPU from /sys/devices/system/cpu/online
 		filepath.Join(rootfs, "/sys"),
 		filepath.Join(rootfs, "/dev"),
+		// If unsquashfs has a relative RPATH the ELF interpreter needs /proc
+		filepath.Join(rootfs, "/proc"),
 		filepath.Join(rootfs, rootfsImageDir),
 	}
 
