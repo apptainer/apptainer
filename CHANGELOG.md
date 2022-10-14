@@ -17,6 +17,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   options and changed the corresponding image driver to use them when
   available.  This makes files inside sif files appear to be owned by the
   user instead of by the nobody id 65534 when running in non-setuid mode.
+- Fix the locating of shared libraries when running `unsquashfs` from a
+  non-standard location the way conda does.
 
 ## v1.1.2 - \[2022-10-06\]
 
