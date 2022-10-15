@@ -186,9 +186,10 @@ First, make sure that additional required packages are installed.  On Debian:
 
 ```sh
 apt-get install -y autoconf automake libtool pkg-config libfuse-dev zlib1g-dev
-``
+```
 
 On CentOS/RHEL:
+
 ```sh
 yum install -y autoconf automake libtool pkgconfig fuse3-devel zlib-devel
 ```
