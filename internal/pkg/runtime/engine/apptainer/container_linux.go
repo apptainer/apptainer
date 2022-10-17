@@ -1234,7 +1234,7 @@ func (c *container) addImageBindMount(system *mount.System) error {
 			}
 
 			err := system.Points.AddImage(
-				mount.PreLayerTag,
+				mount.ImageBindTag,
 				img.Source,
 				imgDest,
 				fstype,
