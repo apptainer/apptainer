@@ -1,5 +1,5 @@
 Bootstrap: library
-Library: https://library.sylabs.io
+Library: https://library.production.sycloud.io
 From: alpine:3.11.5
 
 %runscript
