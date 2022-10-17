@@ -42,8 +42,8 @@ func (c ctx) remoteAdd(t *testing.T) {
 		remote string
 		uri    string
 	}{
-		{"AddCloud", "cloud", "cloud.sylabs.io"},
-		{"AddOtherCloud", "other", "cloud.sylabs.io"},
+		{"AddCloud", "cloud", "cloud.sycloud.io"},
+		{"AddOtherCloud", "other", "cloud.sycloud.io"},
 	}
 
 	for _, tt := range testPass {
@@ -63,7 +63,7 @@ func (c ctx) remoteAdd(t *testing.T) {
 		remote string
 		uri    string
 	}{
-		{"AddExistingRemote", "cloud", "cloud.sylabs.io"},
+		{"AddExistingRemote", "cloud", "cloud.sycloud.io"},
 		{"AddExistingRemoteInvalidURI", "other", "anythingcangohere"},
 	}
 
@@ -98,8 +98,8 @@ func (c ctx) remoteRemove(t *testing.T) {
 		remote string
 		uri    string
 	}{
-		{"addCloud", "cloud", "cloud.sylabs.io"},
-		{"addOther", "other", "cloud.sylabs.io"},
+		{"addCloud", "cloud", "cloud.sycloud.io"},
+		{"addOther", "other", "cloud.sycloud.io"},
 	}
 
 	for _, tt := range add {
@@ -190,8 +190,8 @@ func (c ctx) remoteUse(t *testing.T) {
 		remote string
 		uri    string
 	}{
-		{"addCloud", "cloud", "cloud.sylabs.io"},
-		{"addOther", "other", "cloud.sylabs.io"},
+		{"addCloud", "cloud", "cloud.sycloud.io"},
+		{"addOther", "other", "cloud.sycloud.io"},
 	}
 
 	for _, tt := range add {
@@ -245,7 +245,7 @@ func (c ctx) remoteStatus(t *testing.T) {
 		remote string
 		uri    string
 	}{
-		{"addCloud", "cloud", "cloud.sylabs.io"},
+		{"addCloud", "cloud", "cloud.sycloud.io"},
 		{"addInvalidRemote", "invalid", "notarealendpoint"},
 	}
 
@@ -334,8 +334,8 @@ func (c ctx) remoteList(t *testing.T) {
 		remote string
 		uri    string
 	}{
-		{"addCloud", "cloud", "cloud.sylabs.io"},
-		{"addRemote", "remote", "cloud.sylabs.io"},
+		{"addCloud", "cloud", "cloud.sycloud.io"},
+		{"addRemote", "remote", "cloud.sycloud.io"},
 	}
 
 	for _, tt := range add {

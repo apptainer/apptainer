@@ -96,12 +96,12 @@ func (c *ctx) apptainerKeySearch(t *testing.T) {
 		},
 		{
 			name:   "key search 0x<key fingerprint>",
-			args:   []string{"search", "-u", "https://keys.sylabs.io", "0x7605BC2716168DF057D6C600ACEEC62C8BD91BEE"},
+			args:   []string{"search", "-u", "https://keys.production.sycloud.io", "0x7605BC2716168DF057D6C600ACEEC62C8BD91BEE"},
 			stdout: "^Showing 1 results",
 		},
 		{
 			name:   "key search <key fingerprint>",
-			args:   []string{"search", "-u", "https://keys.sylabs.io", "7605BC2716168DF057D6C600ACEEC62C8BD91BEE"},
+			args:   []string{"search", "-u", "https://keys.production.sycloud.io", "7605BC2716168DF057D6C600ACEEC62C8BD91BEE"},
 			stdout: "^Showing 1 results",
 		},
 		{

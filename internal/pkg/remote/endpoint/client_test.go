@@ -20,9 +20,9 @@ func init() {
 }
 
 const (
-	testCloudURI     = "cloud.sylabs.io"
-	testLibraryURI   = "https://library.sylabs.io"
-	testKeyserverURI = "https://keys.sylabs.io"
+	testCloudURI     = "cloud.sycloud.io"
+	testLibraryURI   = "https://library.production.sycloud.io"
+	testKeyserverURI = "https://keys.production.sycloud.io"
 )
 
 func TestKeyserverClientOpts(t *testing.T) {
