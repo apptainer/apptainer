@@ -297,7 +297,7 @@ func (c ctx) checkURLOption(t *testing.T) {
 		t.Fatalf("image file (%s) does not exist", c.successImage)
 	}
 
-	cmdArgs := []string{"--legacy-insecure", "--url", "https://keys.sylabs.io", c.successImage}
+	cmdArgs := []string{"--legacy-insecure", "--url", "https://keys.production.sycloud.io", c.successImage}
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),

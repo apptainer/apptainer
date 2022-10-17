@@ -17,11 +17,11 @@ import (
 )
 
 // If a remote is set to a different endpoint we should be able to pull
-// with `--library https://library.sylabs.io` from the default Sylabs cloud library.
+// with `--library https://library.production.sycloud.io` from the default Sylabs cloud library.
 func (c ctx) issue5808(t *testing.T) {
 	testEndpoint := "issue5808"
-	testEndpointURI := "https://cloud.staging.sylabs.io"
-	defaultLibraryURI := "https://library.sylabs.io"
+	testEndpointURI := "https://cloud.staging.sycloud.io"
+	defaultLibraryURI := "https://library.production.sycloud.io"
 	testImage := "library://sylabs/tests/signed:1.0.0"
 
 	pullDir, cleanup := e2e.MakeTempDir(t, "", "issue5808", "")
