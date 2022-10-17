@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2020, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -380,16 +380,16 @@ func (t *Methods) ReadDir(arguments *args.ReadDirArgs, reply *args.ReadDirReply)
 	if err != nil {
 		return err
 	}
-	infos := make([]os.FileInfo, 0, len(files))
-	for _, file := range files {
-		info, err := file.Info()
+
+	for i, file := range files {
+		files[i], err = args.DirEntry(file)
 		if err != nil {
-			continue
+			return err
 		}
-		infos = append(infos, args.FileInfo(info))
 	}
-	reply.Files = infos
-	return err
+
+	reply.Files = files
+	return nil
 }
 
 // Chown performs a chown with the specified arguments.
