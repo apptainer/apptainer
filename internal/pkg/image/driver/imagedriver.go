@@ -303,7 +303,14 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 			return fmt.Errorf("unable to get wait status on %v: %v: %v", f.binName, err, filterMsg())
 		}
 		if wpid != 0 {
-			return fmt.Errorf("%v exited with status %v: %v", f.binName, ws.ExitStatus(), filterMsg())
+			msg := filterMsg()
+			if strings.Contains(msg, "fusermount") {
+				sylog.Infof("A fusermount error indicates that the kernel is too old")
+				if params.Filesystem == "squashfs" {
+					sylog.Infof("The --unsquash option may work around it")
+				}
+			}
+			return fmt.Errorf("%v exited with status %v: %v", f.binName, ws.ExitStatus(), msg)
 		}
 		// See if mount has succeeded
 		entries, err := proc.GetMountInfoEntry("/proc/self/mountinfo")
