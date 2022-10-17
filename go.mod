@@ -44,11 +44,11 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/sylabs/json-resp v0.8.2
 	github.com/urfave/cli v1.22.5 // indirect
-	github.com/vbauerster/mpb/v8 v8.1.2
+	github.com/vbauerster/mpb/v8 v8.1.4
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
 	github.com/yvasiyarov/gorelic v0.0.6 // indirect
 	github.com/yvasiyarov/newrelic_platform_go v0.0.0-20160601141957-9c099fbc30e9 // indirect
-	golang.org/x/sys v0.0.0-20220919091848-fb04ddd9f9c8
+	golang.org/x/sys v0.0.0-20221013171732-95e765b1cc43
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467
 	golang.org/x/text v0.3.8
 	gopkg.in/yaml.v2 v2.4.0
