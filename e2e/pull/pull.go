@@ -304,13 +304,13 @@ func (c ctx) testPullCmd(t *testing.T) {
 		{
 			desc:             "bad library URI",
 			srcURI:           "oras://ghcr.io/apptainer/bad/busybox:1.31.1",
-			library:          "https://bad-library.sylabs.io",
+			library:          "https://bad-library.production.sycloud.io",
 			expectedExitCode: 255,
 		},
 		{
 			desc:             "default library URI",
 			srcURI:           "oras://ghcr.io/apptainer/busybox:1.31.1",
-			library:          "https://library.sylabs.io",
+			library:          "https://library.production.sycloud.io",
 			force:            true,
 			expectedExitCode: 0,
 		},
