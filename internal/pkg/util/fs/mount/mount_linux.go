@@ -89,6 +89,8 @@ const (
 	SessionTag AuthorizedTag = "sessiondir"
 	// RootfsTag defines tag for container root filesystem
 	RootfsTag = "rootfs"
+	// ImageBindTag defines tag for binding the image
+	ImageBindTag = "imagebind"
 	// PreLayerTag defines tag to prepare overlay/underlay layer
 	PreLayerTag = "prelayer"
 	// LayerTag defines tag for overlay/underlay final mount point
@@ -128,21 +130,22 @@ var authorizedTags = map[AuthorizedTag]struct {
 }{
 	SessionTag:   {false, 0},
 	RootfsTag:    {false, 1},
-	PreLayerTag:  {true, 2},
-	LayerTag:     {false, 3},
-	SharedTag:    {true, 4},
-	DevTag:       {true, 5},
-	HostfsTag:    {true, 6},
-	BindsTag:     {true, 7},
-	KernelTag:    {true, 8},
-	HomeTag:      {false, 9},
-	TmpTag:       {true, 10},
-	ScratchTag:   {true, 11},
-	FilesTag:     {true, 12},
-	UserbindsTag: {true, 13},
-	CwdTag:       {false, 14},
-	OtherTag:     {true, 15},
-	FinalTag:     {true, 16},
+	ImageBindTag: {true, 2},
+	PreLayerTag:  {true, 3},
+	LayerTag:     {false, 4},
+	SharedTag:    {true, 5},
+	DevTag:       {true, 6},
+	HostfsTag:    {true, 7},
+	BindsTag:     {true, 8},
+	KernelTag:    {true, 9},
+	HomeTag:      {false, 10},
+	TmpTag:       {true, 11},
+	ScratchTag:   {true, 12},
+	FilesTag:     {true, 13},
+	UserbindsTag: {true, 14},
+	CwdTag:       {false, 15},
+	OtherTag:     {true, 16},
+	FinalTag:     {true, 17},
 }
 
 var authorizedImage = map[string]fsContext{

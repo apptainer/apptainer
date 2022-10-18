@@ -28,6 +28,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   but `fakeroot-sysv` is much faster.
 - Fix the locating of shared libraries when running `unsquashfs` from a
   non-standard location the way conda does.
+- Fix the creation of missing bind points when using image binding with
+  underlay.
 
 ### Bug fixes
 
