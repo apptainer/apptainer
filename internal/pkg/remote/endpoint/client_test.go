@@ -19,13 +19,27 @@ func init() {
 	useragent.InitValue("apptainer", "0.1.0")
 }
 
-const (
-	testCloudURI     = "cloud.sycloud.io"
-	testLibraryURI   = "https://library.production.sycloud.io"
-	testKeyserverURI = "https://keys.production.sycloud.io"
+const testCloudURI = "cloud.sycloud.io"
+
+var (
+	testLibraryURI   string
+	testKeyserverURI string
 )
 
 func TestKeyserverClientOpts(t *testing.T) {
+	// first figure out the testKeyserverURI
+	cfg := &Config{
+		URI: testCloudURI,
+	}
+	err := cfg.UpdateKeyserversConfig()
+	if err != nil {
+		t.Errorf("unexpected error from UpdateKeyserversConfig: %s", err)
+	} else if len(cfg.Keyservers) == 0 {
+		t.Errorf("no Keyservers found by UpdateKeyserversConfig: %s", err)
+	} else {
+		testKeyserverURI = cfg.Keyservers[0].URI
+	}
+
 	tests := []struct {
 		name          string
 		endpoint      *Config
@@ -142,6 +156,17 @@ func TestKeyserverClientOpts(t *testing.T) {
 
 //nolint:dupl
 func TestLibraryClientConfig(t *testing.T) {
+	// first figure out the testLibraryURI
+	cfg := &Config{
+		URI: testCloudURI,
+	}
+	libCfg, err := cfg.LibraryClientConfig("")
+	if err != nil {
+		t.Errorf("unexpected error from LibraryClientConfig: %s", err)
+	} else {
+		testLibraryURI = libCfg.BaseURL
+	}
+
 	tests := []struct {
 		name          string
 		endpoint      *Config
