@@ -20,6 +20,11 @@ import (
 
 // CopyWithTar is a wrapper around the docker pkg/archive/copy CopyWithTar allowing unprivileged use.
 // It forces ownership to the current uid/gid in unprivileged situations.
+//
+// Disable context check as it raises a warning through the docker dependency we
+// cannot modify to pass a context.
+//
+// nolint:contextcheck
 func CopyWithTar(src, dst string) error {
 	ar := da.NewDefaultArchiver()
 
