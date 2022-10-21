@@ -45,6 +45,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	"github.com/apptainer/apptainer/pkg/util/slice"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/pkg/errors"
 	"golang.org/x/sys/unix"
 	"golang.org/x/term"
 )
@@ -263,7 +264,7 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 
 	sylog.Debugf("Mount all")
 	if err := system.MountAll(); err != nil {
-		return err
+		return errors.Wrap(err, "mount hook function failure")
 	}
 
 	if engine.EngineConfig.GetSessionLayer() == apptainer.UnderlayLayer {
