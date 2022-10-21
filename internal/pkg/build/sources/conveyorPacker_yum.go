@@ -145,19 +145,28 @@ func (c *YumConveyor) getRPMPath() (err error) {
 
 	if rpmDBPath == "" {
 		return fmt.Errorf("could not find dbpath")
-	} else if rpmDBPath != `%{_var}/lib/rpm` {
-		return fmt.Errorf("RPM database is using a weird path: %s\n"+
-			"You are probably running this bootstrap on Debian or Ubuntu.\n"+
-			"There is a way to work around this problem:\n"+
-			"Create a file at path %s/.rpmmacros.\n"+
-			"Place the following lines into the '.rpmmacros' file:\n"+
-			"%s\n"+
-			"%s\n"+
-			"After creating the file, re-run the bootstrap.\n"+
-			"More info: https://github.com/apptainer/singularity/issues/241\n",
-			rpmDBPath, os.Getenv("HOME"), `%_var /var`, `%_dbpath %{_var}/lib/rpm`)
 	}
 
+	// %{_var}/lib/rpm is the 'traditional' dbpath
+	if rpmDBPath != `%{_var}/lib/rpm` {
+		// Fedora 36 now uses a different rpm dbpath, and may fail to bootstrap older distros
+		if rpmDBPath == `%{_usr}/lib/sysimage/rpm` {
+			sylog.Warningf("Your host system is using a new RPM database path: %v", rpmDBPath)
+			sylog.Warningf("Bootstrapping older distributions may require an ~/.rpmmacros file containing:\n" +
+				"\t\t_dbpath %%{_var}/lib/rpm\n")
+		} else {
+			// If we're on a 'foreign' system, with neither old or new paths, and ~/.rpmmacros will be required.
+			return fmt.Errorf("RPM database is using a non-standard path: %s\n"+
+				"You are probably running this bootstrap on Debian or Ubuntu.\n"+
+				"There is a way to work around this problem:\n"+
+				"Create a file at path %s/.rpmmacros.\n"+
+				"Place the following lines into the '.rpmmacros' file:\n"+
+				"%s\n"+
+				"%s\n"+
+				"After creating the file, re-run the bootstrap.\n"+
+				rpmDBPath, os.Getenv("HOME"), `%_var /var`, `%_dbpath %{_var}/lib/rpm`)
+		}
+	}
 	return nil
 }
 
