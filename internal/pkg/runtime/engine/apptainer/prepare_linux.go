@@ -1049,8 +1049,7 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 	// https://github.com/apptainer/singularity/issues/5315
 	userNS, _ := namespaces.IsInsideUserNamespace(os.Getpid())
 
-	// NEED FIX: on ubuntu until 4.15 kernel it was possible to mount overlay
-	// with the current workflow, since 4.18 we get an operation not permitted
+	// Check for explicit user namespace request
 	if !userNS {
 		for _, ns := range e.EngineConfig.OciConfig.Linux.Namespaces {
 			if ns.Type == specs.UserNamespace {
@@ -1074,11 +1073,21 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 			e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
 			return nil
 		}
-		if !e.EngineConfig.File.EnableUnderlay {
-			sylog.Debugf("Not attempting to use underlay with user namespace: disabled by configuration ('enable underlay = no')")
-			return nil
-		}
 		if !writableImage {
+			if e.EngineConfig.File.EnableOverlay == "yes" || e.EngineConfig.File.EnableOverlay == "try" {
+				err := overlay.CheckRootless()
+				if err == nil {
+					e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
+					return nil
+				}
+				if err != nil && err != overlay.ErrNoRootlessOverlay {
+					sylog.Warningf("While checking for rootless overlay support: %s", err)
+				}
+			}
+			if !e.EngineConfig.File.EnableUnderlay {
+				sylog.Debugf("Not attempting to use underlay with user namespace: disabled by configuration ('enable underlay = no')")
+				return nil
+			}
 			sylog.Debugf("Using underlay layer: user namespace requested")
 			e.EngineConfig.SetSessionLayer(apptainerConfig.UnderlayLayer)
 			return nil
@@ -1087,8 +1096,7 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 		return nil
 	}
 
-	// starter was forced to load overlay module, now check if there
-	// is an overlay entry in /proc/filesystems
+	// Now check if there is an overlay entry in /proc/filesystems
 	if has, _ := proc.HasFilesystem("overlay"); has {
 		sylog.Debugf("Overlay seems supported and allowed by kernel")
 		switch e.EngineConfig.File.EnableOverlay {

@@ -7,6 +7,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes Since Last Release
 
+### Changed defaults / behaviours
+
+- When the kernel supports unprivileged overlay mounts in a user
+  namespace, the container will be constructed using an overlay
+  instead of underlay layout.
+
 ### New features / functionalities
 
 - The `--no-mount` flag now accepts the value `bind-paths` to disable mounting
