@@ -34,11 +34,12 @@ func createContainer(ctx context.Context, rpcSocket int, containerPid int, e *en
 		return
 	}
 	rpcConn, err := net.FileConn(comm)
-	comm.Close()
+	defer comm.Close()
 	if err != nil {
 		fatalChan <- fmt.Errorf("failed to copy unix socket descriptor: %s", err)
 		return
 	}
+	defer rpcConn.Close()
 
 	err = e.CreateContainer(ctx, containerPid, rpcConn)
 	if err != nil {
@@ -47,11 +48,15 @@ func createContainer(ctx context.Context, rpcSocket int, containerPid int, e *en
 			err = errors.New("failed to decrypt, ensure you have supplied appropriate key material")
 		}
 
+		// continue with warnings rather than fatal errors
+		if strings.Contains(err.Error(), "mount hook function failure") && strings.Contains(err.Error(), "permission denied") {
+			sylog.Warningf("%s, try adding ':ro' after your overlay.img or adding '--fakeroot'", err)
+			return
+		}
+
 		fatalChan <- fmt.Errorf("container creation failed: %s", err)
 		return
 	}
-
-	rpcConn.Close()
 }
 
 func startContainer(ctx context.Context, masterSocket int, containerPid int, e *engine.Engine, fatalChan chan error) {

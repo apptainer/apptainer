@@ -30,6 +30,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   non-standard location the way conda does.
 - Fix the creation of missing bind points when using image binding with
   underlay.
+- Change the error when an overlay image is not writable into a warning
+  that suggests adding `:ro` to make it read only or using `--fakeroot`.
 
 ### Bug fixes
 
