@@ -175,12 +175,6 @@ func (s *Squashfs) extract(files []string, reader io.Reader, dest string) (err e
 	sylog.Debugf("*** END WRAPPED UNSQUASHFS OUTPUT ***")
 
 	if err != nil {
-		// here we will remove all $TMPDIR/rootfs-*/tmp-rootfs-* like folders if error occurs
-		matches, _ := filepath.Glob(fmt.Sprintf("%s/tmp-rootfs-*", filepath.Dir(dest)))
-		for _, match := range matches {
-			sylog.Debugf("extract command failed and %s folder will be removed", match)
-			os.RemoveAll(match)
-		}
 		return fmt.Errorf("extract command failed: %s: %s", string(o), err)
 	}
 

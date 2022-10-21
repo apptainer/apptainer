@@ -28,6 +28,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/image/unpacker"
 	"github.com/apptainer/apptainer/internal/pkg/instance"
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
 	"github.com/apptainer/apptainer/internal/pkg/security"
@@ -839,11 +840,12 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			sylog.Verbosef("User namespace requested, convert image %s to sandbox", image)
 			sylog.Infof("Converting SIF file to temporary sandbox...")
 			rootfsDir, imageDir, err := convertImage(image, unsquashfsPath, tmpDir)
-			if err != nil {
-				sylog.Fatalf("while extracting %s: %s", image, err)
-			}
 			engineConfig.SetImage(imageDir)
 			engineConfig.SetDeleteTempDir(rootfsDir)
+			if err != nil {
+				sylog.Fatalf("while extracting %s: %s", image, err)
+				defer apptainer.CleanupImageTemp(engineConfig)
+			}
 			generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "CONTAINER", imageDir)
 
 			// if '--disable-cache' flag, then remove original SIF after converting to sandbox

@@ -25,6 +25,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/priv"
 	"github.com/apptainer/apptainer/internal/pkg/util/starter"
 	"github.com/apptainer/apptainer/pkg/build/types"
+	apptainer "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
@@ -53,29 +54,9 @@ func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, st
 		}
 	}
 
-	if tempDir := e.EngineConfig.GetDeleteTempDir(); tempDir != "" {
-		sylog.Verbosef("Removing image tempDir %s", tempDir)
-		sylog.Infof("Cleaning up image...")
-
-		var err error
-
-		if e.EngineConfig.GetFakeroot() && os.Getuid() != 0 {
-			// this is required when we are using SUID workflow
-			// because master process is not in the fakeroot
-			// context and can get permission denied error during
-			// image removal, so we execute "rm -rf /tmp/image" via
-			// the fakeroot engine
-			err = fakerootCleanup(tempDir)
-		} else {
-			err = types.FixPerms(tempDir)
-			if err != nil {
-				sylog.Debugf("FixPerms had a problem: %v", err)
-			}
-			err = os.RemoveAll(tempDir)
-		}
-		if err != nil {
-			sylog.Errorf("failed to delete container image tempDir %s: %s", tempDir, err)
-		}
+	err := CleanupImageTemp(e.EngineConfig)
+	if err != nil {
+		sylog.Errorf("failed to delete container image tempDir %s: %s", e.EngineConfig.GetDeleteTempDir(), err)
 	}
 
 	if networkSetup != nil {
@@ -208,4 +189,28 @@ func fakerootCleanup(path string) error {
 		cfg,
 		starter.UseSuid(true),
 	)
+}
+
+func CleanupImageTemp(engineConfig *apptainer.EngineConfig) error {
+	if tempDir := engineConfig.GetDeleteTempDir(); tempDir != "" {
+		sylog.Verbosef("Removing image tempDir %s", tempDir)
+		sylog.Infof("Cleaning up image...")
+		var err error
+		if engineConfig.GetFakeroot() && os.Getuid() != 0 {
+			// this is required when we are using SUID workflow
+			// because master process is not in the fakeroot
+			// context and can get permission denied error during
+			// image removal, so we execute "rm -rf /tmp/image" via
+			// the fakeroot engine
+			err = fakerootCleanup(tempDir)
+		} else {
+			err = types.FixPerms(tempDir)
+			if err != nil {
+				sylog.Debugf("FixPerms had a problem: %v", err)
+			}
+			err = os.RemoveAll(tempDir)
+		}
+		return err
+	}
+	return nil
 }
