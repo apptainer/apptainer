@@ -12,7 +12,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   but `fakeroot-sysv` is much faster.
 - Fix the `--rocm` flag in combination with `-c` / `-C` by forwarding all
   `/dri/render*` devices into the container.
-- Updated the included `squashfuse_ll` to have `-o uid=N` and `-o gid=N`
+- Update the included `squashfuse_ll` to have `-o uid=N` and `-o gid=N`
   options and changed the corresponding image driver to use them when
   available.  This makes files inside sif files appear to be owned by the
   user instead of by the nobody id 65534 when running in non-setuid mode.
@@ -23,6 +23,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   underlay.
 - Change the error when an overlay image is not writable into a warning
   that suggests adding `:ro` to make it read only or using `--fakeroot`.
+- Avoid permission denied errors during unprivileged builds without
+  `/etc/subuid`-based fakeroot when `/var/lib/containers/sigstore` is
+  readable only by root.
 
 ## v1.1.2 - \[2022-10-06\]
 

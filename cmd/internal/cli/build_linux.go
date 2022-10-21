@@ -75,6 +75,13 @@ func fakerootExec(isDeffile bool) {
 
 	var err error
 	uid := uint32(os.Getuid())
+
+	// Append the user's real UID to the environment as _CONTAINERS_ROOTLESS_UID.
+	// This is required in fakeroot builds that may use containers/image 5.7 and above.
+	// https://github.com/containers/image/issues/1066
+	// https://github.com/containers/image/blob/master/internal/rootless/rootless.go
+	os.Setenv("_CONTAINERS_ROOTLESS_UID", strconv.FormatUint(uint64(uid), 10))
+
 	if uid != 0 && (!fakeroot.IsUIDMapped(uid) || buildArgs.ignoreSubuid) {
 		sylog.Infof("User not listed in %v, trying root-mapped namespace", fakeroot.SubUIDFile)
 		os.Setenv("_APPTAINER_FAKEFAKEROOT", "1")
@@ -106,12 +113,6 @@ func fakerootExec(isDeffile bool) {
 	if err != nil {
 		sylog.Fatalf("failed to retrieve user information: %s", err)
 	}
-
-	// Append the user's real UID to the environment as _CONTAINERS_ROOTLESS_UID.
-	// This is required in fakeroot builds that may use containers/image 5.7 and above.
-	// https://github.com/containers/image/issues/1066
-	// https://github.com/containers/image/blob/master/internal/rootless/rootless.go
-	os.Setenv("_CONTAINERS_ROOTLESS_UID", strconv.FormatUint(uint64(uid), 10))
 
 	engineConfig := &fakerootConfig.EngineConfig{
 		Args:     args,
