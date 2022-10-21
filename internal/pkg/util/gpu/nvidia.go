@@ -52,19 +52,21 @@ var nVDriverDefaultCapabilities = []string{
 
 // nVCLIAmbientCaps is the ambient capability set required by nvidia-container-cli.
 var nVCLIAmbientCaps = []uintptr{
-	uintptr(capabilities.Map["CAP_KILL"].Value),
-	uintptr(capabilities.Map["CAP_SETUID"].Value),
-	uintptr(capabilities.Map["CAP_SETGID"].Value),
-	uintptr(capabilities.Map["CAP_SYS_CHROOT"].Value),
-	uintptr(capabilities.Map["CAP_CHOWN"].Value),
-	uintptr(capabilities.Map["CAP_FOWNER"].Value),
-	uintptr(capabilities.Map["CAP_MKNOD"].Value),
+	// Set by default in starter bounding set
 	uintptr(capabilities.Map["CAP_SYS_ADMIN"].Value),
-	uintptr(capabilities.Map["CAP_DAC_READ_SEARCH"].Value),
-	uintptr(capabilities.Map["CAP_SYS_PTRACE"].Value),
+	uintptr(capabilities.Map["CAP_MKNOD"].Value),
+	// Additionally set in starter with nvCCLICaps
+	uintptr(capabilities.Map["CAP_CHOWN"].Value),
 	uintptr(capabilities.Map["CAP_DAC_OVERRIDE"].Value),
-	uintptr(capabilities.Map["CAP_SETPCAP"].Value),
+	uintptr(capabilities.Map["CAP_DAC_READ_SEARCH"].Value),
+	uintptr(capabilities.Map["CAP_FOWNER"].Value),
+	uintptr(capabilities.Map["CAP_KILL"].Value),
 	uintptr(capabilities.Map["CAP_NET_ADMIN"].Value),
+	uintptr(capabilities.Map["CAP_SETGID"].Value),
+	uintptr(capabilities.Map["CAP_SETPCAP"].Value),
+	uintptr(capabilities.Map["CAP_SETUID"].Value),
+	uintptr(capabilities.Map["CAP_SYS_CHROOT"].Value),
+	uintptr(capabilities.Map["CAP_SYS_PTRACE"].Value),
 }
 
 // NVCLIConfigure calls out to the nvidia-container-cli configure operation.

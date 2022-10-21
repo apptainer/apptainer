@@ -399,7 +399,6 @@ static void set_rpc_privileges(void) {
         priv->capabilities.bounding |= capflag(CAP_DAC_READ_SEARCH);
         priv->capabilities.bounding |= capflag(CAP_FOWNER);
         priv->capabilities.bounding |= capflag(CAP_KILL);
-        priv->capabilities.bounding |= capflag(CAP_MKNOD);
         priv->capabilities.bounding |= capflag(CAP_NET_ADMIN);
         priv->capabilities.bounding |= capflag(CAP_SETGID);
         priv->capabilities.bounding |= capflag(CAP_SETPCAP);
