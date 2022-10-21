@@ -10,17 +10,15 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Prefer the `fakeroot-sysv` command over the `fakeroot` command because
   the latter can be linked to either `fakeroot-sysv` or `fakeroot-tcp`,
   but `fakeroot-sysv` is much faster.
-- `--rocm` flag in combination with `-c` / `-C` fixed by forwarding all
+- Fix the `--rocm` flag in combination with `-c` / `-C` by forwarding all
   `/dri/render*` devices into the container.
-
-### Bug fixes
-
 - Updated the included `squashfuse_ll` to have `-o uid=N` and `-o gid=N`
   options and changed the corresponding image driver to use them when
   available.  This makes files inside sif files appear to be owned by the
   user instead of by the nobody id 65534 when running in non-setuid mode.
 - Fix the locating of shared libraries when running `unsquashfs` from a
   non-standard location the way conda does.
+- Properly clean up temporary files if `unsquashfs` fails.
 - Fix the creation of missing bind points when using image binding with
   underlay.
 
