@@ -21,6 +21,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Properly clean up temporary files if `unsquashfs` fails.
 - Fix the creation of missing bind points when using image binding with
   underlay.
+- Change the error when an overlay image is not writable into a warning
+  that suggests adding `:ro` to make it read only or using `--fakeroot`.
 
 ## v1.1.2 - \[2022-10-06\]
 
