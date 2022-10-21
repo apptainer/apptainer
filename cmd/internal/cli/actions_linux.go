@@ -38,6 +38,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/shell/interpreter"
 	"github.com/apptainer/apptainer/internal/pkg/util/starter"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
+	"github.com/apptainer/apptainer/pkg/build/types"
 	imgutil "github.com/apptainer/apptainer/pkg/image"
 	clicallback "github.com/apptainer/apptainer/pkg/plugin/callback/cli"
 	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
@@ -57,7 +58,7 @@ import (
 // convertImage extracts the image found at filename to directory dir within a temporary directory
 // tempDir. If the unsquashfs binary is not located, the binary at unsquashfsPath is used. It is
 // the caller's responsibility to remove rootfsDir when no longer needed.
-func convertImage(filename string, unsquashfsPath string, tmpDir string) (rootfsDir, imageDir string, err error) {
+func convertImage(filename string, unsquashfsPath string, tmpDir string) (rootfsDir string, imageDir string, err error) {
 	img, err := imgutil.Init(filename, false)
 	if err != nil {
 		return "", "", fmt.Errorf("could not open image %s: %s", filename, err)
@@ -97,11 +98,23 @@ func convertImage(filename string, unsquashfsPath string, tmpDir string) (rootfs
 	if err != nil {
 		return "", "", fmt.Errorf("could not create temporary sandbox: %s", err)
 	}
-	defer func() {
+	// NOTE: can't depend on the rootfsDir variable inside this function
+	// because it is a named return variable and so it gets overridden
+	// by the return statements that set that value to the empty string.
+	// So pass it as a parameter here instead.
+	defer func(rootDir string) {
 		if err != nil {
-			os.RemoveAll(rootfsDir)
+			sylog.Verbosef("Cleaning up %v", rootDir)
+			err2 := types.FixPerms(rootDir)
+			if err2 != nil {
+				sylog.Debugf("FixPerms had a problem: %v", err2)
+			}
+			err2 = os.RemoveAll(rootDir)
+			if err2 != nil {
+				sylog.Debugf("RemoveAll had a problem: %v", err2)
+			}
 		}
-	}()
+	}(rootfsDir)
 
 	// create an inner dir to extract to, so we don't clobber the secure permissions on the tmpDir.
 	imageDir = filepath.Join(rootfsDir, "root")
@@ -836,7 +849,6 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			if err != nil {
 				sylog.Fatalf("while extracting %s: %s", image, err)
 			}
-			sylog.Verbosef("User namespace requested, convert image %s to sandbox", image)
 			sylog.Infof("Converting SIF file to temporary sandbox...")
 			rootfsDir, imageDir, err := convertImage(image, unsquashfsPath, tmpDir)
 			if err != nil {
