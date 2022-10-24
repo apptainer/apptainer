@@ -26,6 +26,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Avoid permission denied errors during unprivileged builds without
   `/etc/subuid`-based fakeroot when `/var/lib/containers/sigstore` is
   readable only by root.
+- Avoid failures with `--writable-tmpfs` in non-setuid mode when using
+  fuse-overlayfs versions 1.8 or greater by adding the fuse-overlayfs
+  `noacl` mount option to disable support for posix Access Control Lists.
 
 ## v1.1.2 - \[2022-10-06\]
 
