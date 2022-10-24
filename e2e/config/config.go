@@ -357,23 +357,6 @@ func (c configTests) configGlobal(t *testing.T) {
 			directiveValue: "no",
 			exit:           1,
 		},
-		// use user namespace profile to force underlay use
-		{
-			name:           "EnableUnderlayNo",
-			argv:           []string{"--bind", "/etc/passwd:/passwd", c.env.ImagePath, "test", "-f", "/passwd"},
-			profile:        e2e.UserNamespaceProfile,
-			directive:      "enable underlay",
-			directiveValue: "no",
-			exit:           255,
-		},
-		{
-			name:           "EnableUnderlayYes",
-			argv:           []string{"--bind", "/etc/passwd:/passwd", c.env.ImagePath, "test", "-f", "/passwd"},
-			profile:        e2e.UserNamespaceProfile,
-			directive:      "enable underlay",
-			directiveValue: "yes",
-			exit:           0,
-		},
 		// test image is owned by root:root
 		{
 			name:           "LimitContainerOwnersUser",
@@ -727,6 +710,28 @@ func (c configTests) configGlobalCombination(t *testing.T) {
 				"allow net users": u.Name,
 			},
 			exit: 255,
+		},
+		// disable overlay to force underlay
+		{
+			name:    "EnableUnderlayNo",
+			argv:    []string{"--bind", "/etc/passwd:/passwd", c.env.ImagePath, "test", "-f", "/passwd"},
+			profile: e2e.UserProfile,
+			directives: map[string]string{
+				"enable overlay":  "no",
+				"enable underlay": "no",
+			},
+
+			exit: 255,
+		},
+		{
+			name:    "EnableUnderlayYes",
+			argv:    []string{"--bind", "/etc/passwd:/passwd", c.env.ImagePath, "test", "-f", "/passwd"},
+			profile: e2e.UserProfile,
+			directives: map[string]string{
+				"enable overlay":  "no",
+				"enable underlay": "yes",
+			},
+			exit: 0,
 		},
 	}
 
