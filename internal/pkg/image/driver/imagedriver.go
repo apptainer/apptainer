@@ -151,6 +151,10 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 	case "overlay":
 		f = &d.overlayFeature
 		optsStr := strings.Join(params.FSOptions, ",")
+		// noacl is needed to avoid failures when the upper layer
+		// filesystem type (for example tmpfs) does not support it,
+		// when the fuse-overlayfs version is 1.8 or greater.
+		optsStr += ",noacl"
 		cmdArgs = append(cmdArgs, f.cmdPath, "-f", "-o", optsStr, params.Target)
 		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
 
