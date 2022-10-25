@@ -136,7 +136,7 @@ To build a specific version of Apptainer, check out a
 for example:
 
 ```sh
-git checkout v1.1.2
+git checkout v1.1.3
 ```
 
 ## Compiling Apptainer
@@ -258,7 +258,7 @@ like this:
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-VERSION=1.1.2  # this is the apptainer version, change as you need
+VERSION=1.1.3  # this is the apptainer version, change as you need
 # Fetch the source
 wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
 ```
@@ -307,7 +307,7 @@ in your PATH:
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-VERSION=1.1.2 # this is the latest apptainer version, change as you need
+VERSION=1.1.3 # this is the latest apptainer version, change as you need
 ./mconfig
 make -C builddir rpm
 sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-$(echo $VERSION|tr - \~)*.x86_64.rpm 
