@@ -19,6 +19,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Support for `DOCKER_HOST` parsing when using `docker-daemon://`
 - `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
 
+### Bug fixes
+
+- Set the `--net` flag if `--network` or `--network-args` is set rather
+  than silently ignoring them if `--net` was not set.
+
 ## v1.1.3 - \[2022-10-25\]
 
 - Prefer the `fakeroot-sysv` command over the `fakeroot` command because
