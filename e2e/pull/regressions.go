@@ -10,7 +10,12 @@
 package pull
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -72,4 +77,36 @@ func (c ctx) issue5808(t *testing.T) {
 		e2e.WithArgs(argv...),
 		e2e.ExpectExit(0),
 	)
+}
+
+// Must be able to pull from an http(s) source that doesn't set content-length correctly
+func (c ctx) issueSylabs1087(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "issue-1087-", "")
+	defer cleanup(t)
+	pullPath := filepath.Join(tmpDir, "test.sif")
+
+	// Start an http server that serves some output without a content-length
+	data := "DATADATADATADATA"
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = fmt.Fprint(w, data)
+	}))
+	defer srv.Close()
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs(pullPath, srv.URL),
+		e2e.ExpectExit(0),
+	)
+
+	content, err := os.ReadFile(pullPath)
+	if err != nil {
+		t.Error(err)
+	}
+	if string(content) != data {
+		t.Errorf("Content of file not correct. Expected %s, got %s", data, content)
+	}
 }

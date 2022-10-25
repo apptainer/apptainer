@@ -665,6 +665,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			t.Run("concurrencyConfig", c.testConcurrencyConfig)
 			t.Run("concurrentPulls", c.testConcurrentPulls)
 		},
+		"issueSylabs1087": c.issueSylabs1087,
 		// Manipulates umask for the process, so must be run alone to avoid
 		// causing permission issues for other tests.
 		"pullUmaskCheck": np(c.testPullUmask),
