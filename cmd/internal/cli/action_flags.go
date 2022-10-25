@@ -226,7 +226,7 @@ var actionHostnameFlag = cmdline.Flag{
 var actionNetworkFlag = cmdline.Flag{
 	ID:           "actionNetworkFlag",
 	Value:        &Network,
-	DefaultValue: "bridge",
+	DefaultValue: "",
 	Name:         "network",
 	Usage:        "specify desired network type separated by commas, each network will bring up a dedicated interface inside container",
 	EnvKeys:      []string{"NETWORK"},
