@@ -19,8 +19,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Properly clean up temporary files if `unsquashfs` fails.
 - Fix the creation of missing bind points when using image binding with
   underlay.
-- Change the error when an overlay image is not writable into a warning
-  that suggests adding `:ro` to make it read only or using `--fakeroot`.
+- Change the error when an overlay image is not writable into an info
+  message that suggests adding `:ro` to make it read only or using
+  `--fakeroot`.
 - Avoid permission denied errors during unprivileged builds without
   `/etc/subuid`-based fakeroot when `/var/lib/containers/sigstore` is
   readable only by root.

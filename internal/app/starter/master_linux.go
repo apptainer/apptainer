@@ -50,7 +50,7 @@ func createContainer(ctx context.Context, rpcSocket int, containerPid int, e *en
 
 		// continue with warnings rather than fatal errors
 		if strings.Contains(err.Error(), "mount hook function failure") && strings.Contains(err.Error(), "permission denied") {
-			sylog.Warningf("%s, try adding ':ro' after your overlay.img or adding '--fakeroot'", err)
+			sylog.Infof("%s, try adding ':ro' after your overlay.img or adding '--fakeroot'", err)
 			return
 		}
 
