@@ -19,30 +19,30 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Support for `DOCKER_HOST` parsing when using `docker-daemon://`
 - `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
 
-### Bug fixes
+## v1.1.3 - \[2022-10-25\]
 
-- Fix the `--rocm` flag in combination with `-c` / `-C` by forwarding all
-  `/dri/render*` devices into the container.
 - Prefer the `fakeroot-sysv` command over the `fakeroot` command because
   the latter can be linked to either `fakeroot-sysv` or `fakeroot-tcp`,
   but `fakeroot-sysv` is much faster.
+- Update the included `squashfuse_ll` to have `-o uid=N` and `-o gid=N`
+  options and changed the corresponding image driver to use them when
+  available.  This makes files inside sif files appear to be owned by the
+  user instead of by the nobody id 65534 when running in non-setuid mode.
 - Fix the locating of shared libraries when running `unsquashfs` from a
-  non-standard location the way conda does.
+  non-standard location.
 - Properly clean up temporary files if `unsquashfs` fails.
 - Fix the creation of missing bind points when using image binding with
   underlay.
 - Change the error when an overlay image is not writable into a warning
   that suggests adding `:ro` to make it read only or using `--fakeroot`.
-- Update the included `squashfuse_ll` to have `-o uid=N` and `-o gid=N`
-  options and changed the corresponding image driver to use them when
-  available.  This makes files inside sif files appear to be owned by the
-  user instead of by the nobody id 65534 when running in non-setuid mode.
 - Avoid permission denied errors during unprivileged builds without
   `/etc/subuid`-based fakeroot when `/var/lib/containers/sigstore` is
   readable only by root.
 - Avoid failures with `--writable-tmpfs` in non-setuid mode when using
   fuse-overlayfs versions 1.8 or greater by adding the fuse-overlayfs
-  `noacl` mount option to disable support for posix Access Control Lists.
+  `noacl` mount option to disable support for POSIX Access Control Lists.
+- Fix the `--rocm` flag in combination with `-c` / `-C` by forwarding all
+  `/dri/render*` devices into the container.
 
 ## v1.1.2 - \[2022-10-06\]
 
