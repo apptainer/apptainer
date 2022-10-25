@@ -1080,7 +1080,7 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 					e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
 					return nil
 				}
-				if err != nil && err != overlay.ErrNoRootlessOverlay {
+				if err != overlay.ErrNoRootlessOverlay {
 					sylog.Warningf("While checking for rootless overlay support: %s", err)
 				}
 			}

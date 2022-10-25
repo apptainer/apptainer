@@ -935,6 +935,73 @@ func (c actionTests) actionBasicProfiles(t *testing.T) {
 	}
 }
 
+// PersistentOverlayUnpriv tests the --overlay function in non-setuid root mode
+func (c actionTests) PersistentOverlayUnpriv(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	require.Filesystem(t, "overlay")
+
+	testdir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "persistent-overlay-", "")
+	defer cleanup(t)
+
+	// create an overlay directory
+	dir, err := os.MkdirTemp(testdir, "overlay-dir-")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name    string
+		argv    []string
+		dir     string
+		exit    int
+		profile e2e.Profile
+	}{
+		{
+			name:    "overlay_create",
+			argv:    []string{"--overlay", dir, c.env.ImagePath, "touch", "/dir_overlay"},
+			exit:    0,
+			profile: e2e.UserNamespaceProfile,
+		},
+		{
+			name:    "overlay_find",
+			argv:    []string{"--overlay", dir, c.env.ImagePath, "test", "-f", "/dir_overlay"},
+			exit:    0,
+			profile: e2e.UserNamespaceProfile,
+		},
+		{
+			name:    "overlay_find_with_writable_fail",
+			argv:    []string{"--overlay", dir, "--writable", c.env.ImagePath, "true"},
+			exit:    255,
+			profile: e2e.UserNamespaceProfile,
+		},
+		{
+			name:    "overlay_find_with_writable_tmpfs",
+			argv:    []string{"--overlay", dir + ":ro", "--writable-tmpfs", c.env.ImagePath, "test", "-f", "/dir_overlay"},
+			exit:    0,
+			profile: e2e.UserNamespaceProfile,
+		},
+		{
+			name:    "overlay_find_with_writable_tmpfs_fail",
+			argv:    []string{"--overlay", dir, "--writable-tmpfs", c.env.ImagePath, "true"},
+			exit:    255,
+			profile: e2e.UserNamespaceProfile,
+		},
+	}
+
+	for _, tt := range tests {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(tt.profile),
+			e2e.WithDir(tt.dir),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(tt.argv...),
+			e2e.ExpectExit(tt.exit),
+		)
+	}
+}
+
 func (c actionTests) actionNetwork(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
@@ -2446,42 +2513,43 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	np := testhelper.NoParallel
 
 	return testhelper.Tests{
-		"action URI":            c.RunFromURI,          // action_URI
-		"singularity link":      c.singularityLink,     // singularity symlink
-		"exec":                  c.actionExec,          // apptainer exec
-		"persistent overlay":    c.PersistentOverlay,   // Persistent Overlay
-		"run":                   c.actionRun,           // apptainer run
-		"shell":                 c.actionShell,         // shell interaction
-		"STDPIPE":               c.STDPipe,             // stdin/stdout pipe
-		"action basic profiles": c.actionBasicProfiles, // run basic action under different profiles
-		"issue 4488":            c.issue4488,           // https://github.com/apptainer/singularity/issues/4488
-		"issue 4587":            c.issue4587,           // https://github.com/apptainer/singularity/issues/4587
-		"issue 4755":            c.issue4755,           // https://github.com/apptainer/singularity/issues/4755
-		"issue 4768":            c.issue4768,           // https://github.com/apptainer/singularity/issues/4768
-		"issue 4797":            c.issue4797,           // https://github.com/apptainer/singularity/issues/4797
-		"issue 4823":            c.issue4823,           // https://github.com/apptainer/singularity/issues/4823
-		"issue 4836":            c.issue4836,           // https://github.com/apptainer/singularity/issues/4836
-		"issue 5211":            c.issue5211,           // https://github.com/apptainer/singularity/issues/5211
-		"issue 5228":            c.issue5228,           // https://github.com/apptainer/singularity/issues/5228
-		"issue 5271":            c.issue5271,           // https://github.com/apptainer/singularity/issues/5271
-		"issue 5399":            c.issue5399,           // https://github.com/apptainer/singularity/issues/5399
-		"issue 5455":            c.issue5455,           // https://github.com/apptainer/singularity/issues/5455
-		"issue 5465":            c.issue5465,           // https://github.com/apptainer/singularity/issues/5465
-		"issue 5599":            c.issue5599,           // https://github.com/apptainer/singularity/issues/5599
-		"issue 5631":            c.issue5631,           // https://github.com/apptainer/singularity/issues/5631
-		"issue 5690":            c.issue5690,           // https://github.com/apptainer/singularity/issues/5690
-		"issue 6165":            c.issue6165,           // https://github.com/apptainer/singularity/issues/6165
-		"issue 619":             c.issue619,            // https://github.com/apptainer/apptainer/issues/619
-		"network":               c.actionNetwork,       // test basic networking
-		"binds":                 c.actionBinds,         // test various binds with --bind and --mount
-		"exit and signals":      c.exitSignals,         // test exit and signals propagation
-		"fuse mount":            c.fuseMount,           // test fusemount option
-		"bind image":            c.bindImage,           // test bind image with --bind and --mount
-		"umask":                 c.actionUmask,         // test umask propagation
-		"unsquash":              c.actionUnsquash,      // test --unsquash
-		"no-mount":              c.actionNoMount,       // test --no-mount
-		"compat":                c.actionCompat,        // test --compat
-		"invalidRemote":         np(c.invalidRemote),   // GHSA-5mv9-q7fq-9394
-		"fakeroot home":         c.actionFakerootHome,  // test home dir in fakeroot
+		"action URI":                c.RunFromURI,              // action_URI
+		"singularity link":          c.singularityLink,         // singularity symlink
+		"exec":                      c.actionExec,              // apptainer exec
+		"persistent overlay":        c.PersistentOverlay,       // Persistent Overlay
+		"persistent overlay unpriv": c.PersistentOverlayUnpriv, // Persistent Overlay Unprivileged
+		"run":                       c.actionRun,               // apptainer run
+		"shell":                     c.actionShell,             // shell interaction
+		"STDPIPE":                   c.STDPipe,                 // stdin/stdout pipe
+		"action basic profiles":     c.actionBasicProfiles,     // run basic action under different profiles
+		"issue 4488":                c.issue4488,               // https://github.com/apptainer/singularity/issues/4488
+		"issue 4587":                c.issue4587,               // https://github.com/apptainer/singularity/issues/4587
+		"issue 4755":                c.issue4755,               // https://github.com/apptainer/singularity/issues/4755
+		"issue 4768":                c.issue4768,               // https://github.com/apptainer/singularity/issues/4768
+		"issue 4797":                c.issue4797,               // https://github.com/apptainer/singularity/issues/4797
+		"issue 4823":                c.issue4823,               // https://github.com/apptainer/singularity/issues/4823
+		"issue 4836":                c.issue4836,               // https://github.com/apptainer/singularity/issues/4836
+		"issue 5211":                c.issue5211,               // https://github.com/apptainer/singularity/issues/5211
+		"issue 5228":                c.issue5228,               // https://github.com/apptainer/singularity/issues/5228
+		"issue 5271":                c.issue5271,               // https://github.com/apptainer/singularity/issues/5271
+		"issue 5399":                c.issue5399,               // https://github.com/apptainer/singularity/issues/5399
+		"issue 5455":                c.issue5455,               // https://github.com/apptainer/singularity/issues/5455
+		"issue 5465":                c.issue5465,               // https://github.com/apptainer/singularity/issues/5465
+		"issue 5599":                c.issue5599,               // https://github.com/apptainer/singularity/issues/5599
+		"issue 5631":                c.issue5631,               // https://github.com/apptainer/singularity/issues/5631
+		"issue 5690":                c.issue5690,               // https://github.com/apptainer/singularity/issues/5690
+		"issue 6165":                c.issue6165,               // https://github.com/apptainer/singularity/issues/6165
+		"issue 619":                 c.issue619,                // https://github.com/apptainer/apptainer/issues/619
+		"network":                   c.actionNetwork,           // test basic networking
+		"binds":                     c.actionBinds,             // test various binds with --bind and --mount
+		"exit and signals":          c.exitSignals,             // test exit and signals propagation
+		"fuse mount":                c.fuseMount,               // test fusemount option
+		"bind image":                c.bindImage,               // test bind image with --bind and --mount
+		"umask":                     c.actionUmask,             // test umask propagation
+		"unsquash":                  c.actionUnsquash,          // test --unsquash
+		"no-mount":                  c.actionNoMount,           // test --no-mount
+		"compat":                    c.actionCompat,            // test --compat
+		"invalidRemote":             np(c.invalidRemote),       // GHSA-5mv9-q7fq-9394
+		"fakeroot home":             c.actionFakerootHome,      // test home dir in fakeroot
 	}
 }
