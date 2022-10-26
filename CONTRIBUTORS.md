@@ -41,6 +41,7 @@
 - Jason Stover <jms@sylabs.io>, <jason.stover@gmail.com>
 - Jeff Kriske <jekriske@gmail.com>
 - Jia Li <jiali@sylabs.io>
+- Jim Phillips <jcphill@users.noreply.github.com>
 - Joana Chavez <joana@sylabs.io>, <j.chavezlavalle@gmail.com>
 - Jonathon Anderson <janderson@ciq.co>
 - Josef Hrabal <josef.hrabal@vsb.cz>

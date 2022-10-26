@@ -5,6 +5,11 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes Since Last Release
+
+- Set the `--net` flag if `--network` or `--network-args` is set rather
+  than silently ignoring them if `--net` was not set.
+
 ## v1.1.3 - \[2022-10-25\]
 
 - Prefer the `fakeroot-sysv` command over the `fakeroot` command because
