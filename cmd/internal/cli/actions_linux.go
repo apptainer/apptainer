@@ -687,7 +687,19 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		procname = "Apptainer runtime parent"
 	}
 
+	if !NetNamespace && Network != "" {
+		sylog.Infof("Setting --net (required by --network)")
+		NetNamespace = true
+	}
+	if !NetNamespace && len(NetworkArgs) != 0 {
+		sylog.Infof("Setting --net (required by --network-args)")
+		NetNamespace = true
+	}
 	if NetNamespace {
+		if Network == "" {
+			Network = "bridge"
+			engineConfig.SetNetwork(Network)
+		}
 		if IsFakeroot && Network != "none" {
 			engineConfig.SetNetwork("fakeroot")
 
