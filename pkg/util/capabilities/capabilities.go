@@ -386,48 +386,76 @@ var (
 		Description: `CAP_AUDIT_READ (since Linux 3.16)
 	Allow reading the audit log via a multicast netlink socket.`,
 	}
+
+	capPerfmon = &capability{
+		Name:  "CAP_PERFMON",
+		Value: 38,
+		Description: `CAP_PERFMON (since Linux 5.8)
+	Employ various performance-monitoring mechanisms, including:
+	* call perf_event_open(2);
+	* employ various BPF operations that have performance implications.`,
+	}
+
+	capBPF = &capability{
+		Name:  "CAP_BPF",
+		Value: 39,
+		Description: `CAP_BPF (since Linux 5.8)
+	Employ privileged BPF operations; see bpf(2) and bpf-helpers(7).`,
+	}
+
+	capCheckpointRestore = &capability{
+		Name:  "CAP_CHECKPOINT_RESTORE",
+		Value: 40,
+		Description: `CAP_CHECKPOINT_RESTORE (since Linux 5.9)
+	* Update /proc/sys/kernel/ns_last_pid (see pid_namespaces(7));
+	* employ the set_tid feature of clone3(2);
+	* read the contents of the symbolic links in /proc/[pid]/map_files for other processes.`,
+	}
 )
 
 // Map maps each capability name to a struct with details about the capability.
 var Map = map[string]*capability{
-	"CAP_CHOWN":            capChown,
-	"CAP_DAC_OVERRIDE":     capDacOverride,
-	"CAP_DAC_READ_SEARCH":  capDacReadSearch,
-	"CAP_FOWNER":           capFowner,
-	"CAP_FSETID":           capFsetid,
-	"CAP_KILL":             capKill,
-	"CAP_SETGID":           capSetgid,
-	"CAP_SETUID":           capSetuid,
-	"CAP_SETPCAP":          capSetpcap,
-	"CAP_LINUX_IMMUTABLE":  capLinuxImmutable,
-	"CAP_NET_BIND_SERVICE": capNetBindService,
-	"CAP_NET_BROADCAST":    capNetBroadcast,
-	"CAP_NET_ADMIN":        capNetAdmin,
-	"CAP_NET_RAW":          capNetRaw,
-	"CAP_IPC_LOCK":         capIpcLock,
-	"CAP_IPC_OWNER":        capIpcOwner,
-	"CAP_SYS_MODULE":       capSysModule,
-	"CAP_SYS_RAWIO":        capSysRawio,
-	"CAP_SYS_CHROOT":       capSysChroot,
-	"CAP_SYS_PTRACE":       capSysPtrace,
-	"CAP_SYS_PACCT":        capSysPacct,
-	"CAP_SYS_ADMIN":        capSysAdmin,
-	"CAP_SYS_BOOT":         capSysBoot,
-	"CAP_SYS_NICE":         capSysNice,
-	"CAP_SYS_RESOURCE":     capSysResource,
-	"CAP_SYS_TIME":         capSysTime,
-	"CAP_SYS_TTY_CONFIG":   capSysTtyConfig,
-	"CAP_MKNOD":            capMknod,
-	"CAP_LEASE":            capLease,
-	"CAP_AUDIT_WRITE":      capAuditWrite,
-	"CAP_AUDIT_CONTROL":    capAuditControl,
-	"CAP_SETFCAP":          capSetfcap,
-	"CAP_MAC_OVERRIDE":     capMacOverride,
-	"CAP_MAC_ADMIN":        capMacAdmin,
-	"CAP_SYSLOG":           capSyslog,
-	"CAP_WAKE_ALARM":       capWakeAlarm,
-	"CAP_BLOCK_SUSPEND":    capBlockSuspend,
-	"CAP_AUDIT_READ":       capAuditRead,
+	"CAP_CHOWN":              capChown,
+	"CAP_DAC_OVERRIDE":       capDacOverride,
+	"CAP_DAC_READ_SEARCH":    capDacReadSearch,
+	"CAP_FOWNER":             capFowner,
+	"CAP_FSETID":             capFsetid,
+	"CAP_KILL":               capKill,
+	"CAP_SETGID":             capSetgid,
+	"CAP_SETUID":             capSetuid,
+	"CAP_SETPCAP":            capSetpcap,
+	"CAP_LINUX_IMMUTABLE":    capLinuxImmutable,
+	"CAP_NET_BIND_SERVICE":   capNetBindService,
+	"CAP_NET_BROADCAST":      capNetBroadcast,
+	"CAP_NET_ADMIN":          capNetAdmin,
+	"CAP_NET_RAW":            capNetRaw,
+	"CAP_IPC_LOCK":           capIpcLock,
+	"CAP_IPC_OWNER":          capIpcOwner,
+	"CAP_SYS_MODULE":         capSysModule,
+	"CAP_SYS_RAWIO":          capSysRawio,
+	"CAP_SYS_CHROOT":         capSysChroot,
+	"CAP_SYS_PTRACE":         capSysPtrace,
+	"CAP_SYS_PACCT":          capSysPacct,
+	"CAP_SYS_ADMIN":          capSysAdmin,
+	"CAP_SYS_BOOT":           capSysBoot,
+	"CAP_SYS_NICE":           capSysNice,
+	"CAP_SYS_RESOURCE":       capSysResource,
+	"CAP_SYS_TIME":           capSysTime,
+	"CAP_SYS_TTY_CONFIG":     capSysTtyConfig,
+	"CAP_MKNOD":              capMknod,
+	"CAP_LEASE":              capLease,
+	"CAP_AUDIT_WRITE":        capAuditWrite,
+	"CAP_AUDIT_CONTROL":      capAuditControl,
+	"CAP_SETFCAP":            capSetfcap,
+	"CAP_MAC_OVERRIDE":       capMacOverride,
+	"CAP_MAC_ADMIN":          capMacAdmin,
+	"CAP_SYSLOG":             capSyslog,
+	"CAP_WAKE_ALARM":         capWakeAlarm,
+	"CAP_BLOCK_SUSPEND":      capBlockSuspend,
+	"CAP_AUDIT_READ":         capAuditRead,
+	"CAP_PERFMON":            capPerfmon,
+	"CAP_BPF":                capBPF,
+	"CAP_CHECKPOINT_RESTORE": capCheckpointRestore,
 }
 
 // Normalize takes a slice of capabilities, normalizes and unwraps CAP_ALL.

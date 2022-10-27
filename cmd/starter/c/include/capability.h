@@ -20,8 +20,8 @@
 
 /* 2.6.32 kernel is the minimal kernel version supported where latest cap is 33 */
 #define CAPSET_MIN  33
-/* 37 is the latest cap since many kernel versions */
-#define CAPSET_MAX  37
+/* 40 is the latest cap since kernel 5.9 */
+#define CAPSET_MAX  40
 
 /* Support only 64 bits sets, since kernel 2.6.26 */
 #ifdef _LINUX_CAPABILITY_VERSION_3

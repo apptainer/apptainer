@@ -18,6 +18,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   point-in-time usage.
 - Support for `DOCKER_HOST` parsing when using `docker-daemon://`
 - `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
+- Add new Linux capabilities: `CAP_PERFMON`, `CAP_BPF`, `CAP_CHECKPOINT_RESTORE`.
 
 ### Bug fixes
 
