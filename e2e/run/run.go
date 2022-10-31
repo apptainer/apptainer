@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -24,6 +25,8 @@ import (
 type ctx struct {
 	env e2e.TestEnv
 }
+
+var busyboxSIF = "testdata/busybox_" + runtime.GOARCH + ".sif"
 
 // testRun555Cache tests the specific case where the cache directory is
 // 0555 for access rights, and we try to run an Apptainer run command
@@ -71,7 +74,7 @@ func (c ctx) testRunPEMEncrypted(t *testing.T) {
 	defer cleanup(t)
 
 	imgPath := filepath.Join(tempDir, "encrypted_cmdline_pem-path.sif")
-	cmdArgs := []string{"--encrypt", "--pem-path", pemPubFile, imgPath, "oras://ghcr.io/apptainer/alpine:3.15.0"}
+	cmdArgs := []string{"--encrypt", "--pem-path", pemPubFile, imgPath, busyboxSIF}
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
@@ -121,7 +124,7 @@ func (c ctx) testRunPassphraseEncrypted(t *testing.T) {
 	defer cleanup(t)
 
 	imgPath := filepath.Join(tempDir, "encrypted_cmdline_passphrase.sif")
-	cmdArgs := []string{"--encrypt", imgPath, "oras://ghcr.io/apptainer/alpine:3.15.0"}
+	cmdArgs := []string{"--encrypt", imgPath, busyboxSIF}
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
