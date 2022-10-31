@@ -22,6 +22,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Bug fixes
 
+- Change the warning when an overlay image is not writable, introduced
+  in v1.1.3, back into a (more informative) fatal error because it doesn't
+  actually enter the container environment.
 - Set the `--net` flag if `--network` or `--network-args` is set rather
   than silently ignoring them if `--net` was not set.
 
