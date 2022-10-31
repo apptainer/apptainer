@@ -12,7 +12,6 @@ package ecl
 
 import (
 	"path/filepath"
-	"runtime"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -21,15 +20,11 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/syecl"
 )
 
-var (
-	// KeyMap contains test keys.
-	KeyMap = map[string]string{
-		"key1": "0C5B8C9A5FFC44E2A0AC79851CD6FA281D476DD1",
-		"key2": "78F8AD36B0DCB84B707F23853D608DAE21C8CA10",
-	}
-
-	busyboxSIF = "testdata/busybox_" + runtime.GOARCH + ".sif"
-)
+// KeyMap contains test keys.
+var KeyMap = map[string]string{
+	"key1": "0C5B8C9A5FFC44E2A0AC79851CD6FA281D476DD1",
+	"key2": "78F8AD36B0DCB84B707F23853D608DAE21C8CA10",
+}
 
 type ctx struct {
 	env e2e.TestEnv
@@ -105,7 +100,7 @@ func (c *ctx) eclConfig(t *testing.T) {
 			name:    "build signed image",
 			command: "build",
 			profile: e2e.UserProfile,
-			args:    []string{signed, busyboxSIF},
+			args:    []string{signed, e2e.BusyboxSIF(t)},
 			exit:    0,
 		},
 		{

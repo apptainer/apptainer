@@ -12,7 +12,6 @@ package sign
 import (
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -27,8 +26,6 @@ type ctx struct {
 }
 
 const imgName = "testImage.sif"
-
-var busyboxSIF = "testdata/busybox_" + runtime.GOARCH + ".sif"
 
 func (c ctx) apptainerSignHelpOption(t *testing.T) {
 	c.env.KeyringDir = c.keyringDir
@@ -52,7 +49,7 @@ func (c *ctx) prepareImage(t *testing.T) (string, func(*testing.T)) {
 	}
 	imgPath := filepath.Join(tempDir, imgName)
 
-	err = fs.CopyFile(busyboxSIF, imgPath, 0o755)
+	err = fs.CopyFile(e2e.BusyboxSIF(t), imgPath, 0o755)
 	if err != nil {
 		t.Fatalf("failed to copy temporary image: %s", err)
 	}

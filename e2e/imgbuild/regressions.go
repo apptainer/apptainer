@@ -411,7 +411,7 @@ func (c *imgBuildTests) issue3848(t *testing.T) {
 		From string
 		File string
 	}{
-		From: busyboxSIF,
+		From: e2e.BusyboxSIF(t),
 		File: tmpfile,
 	}
 

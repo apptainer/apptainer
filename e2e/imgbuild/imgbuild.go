@@ -16,7 +16,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -27,10 +26,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 )
 
-var (
-	testFileContent = "Test file content\n"
-	busyboxSIF      = "testdata/busybox_" + runtime.GOARCH + ".sif"
-)
+var testFileContent = "Test file content\n"
 
 type imgBuildTests struct {
 	env e2e.TestEnv
@@ -177,6 +173,7 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 }
 
 func (c imgBuildTests) nonRootBuild(t *testing.T) {
+	busyboxSIF := e2e.BusyboxSIF(t)
 	tt := []struct {
 		name        string
 		buildSpec   string
@@ -332,6 +329,7 @@ func (c imgBuildTests) badPath(t *testing.T) {
 }
 
 func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
+	busyboxSIF := e2e.BusyboxSIF(t)
 	tmpfile, err := e2e.WriteTempFile(c.env.TestDir, "testFile-", testFileContent)
 	if err != nil {
 		log.Fatal(err)
@@ -541,6 +539,7 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 
 //nolint:maintidx
 func (c imgBuildTests) buildDefinition(t *testing.T) {
+	busyboxSIF := e2e.BusyboxSIF(t)
 	tmpfile, err := e2e.WriteTempFile(c.env.TestDir, "testFile-", testFileContent)
 	if err != nil {
 		log.Fatal(err)
@@ -852,6 +851,8 @@ func (c *imgBuildTests) ensureImageIsEncrypted(t *testing.T, imgPath string) {
 }
 
 func (c imgBuildTests) buildEncryptPemFile(t *testing.T) {
+	busyboxSIF := e2e.BusyboxSIF(t)
+
 	// Expected results for a successful command execution
 	expectedExitCode := 0
 	expectedStderr := ""
@@ -918,6 +919,8 @@ func (c imgBuildTests) buildEncryptPemFile(t *testing.T) {
 // while using a passphrase. Note that it covers both the normal case and when the
 // version of cryptsetup available is not compliant.
 func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
+	busyboxSIF := e2e.BusyboxSIF(t)
+
 	// Expected results for a successful command execution
 	expectedExitCode := 0
 	expectedStderr := ""
@@ -1111,7 +1114,7 @@ func (c imgBuildTests) buildWithFingerprint(t *testing.T) {
 		{
 			name:    "build single signed source image",
 			command: "build",
-			args:    []string{singleSigned, busyboxSIF},
+			args:    []string{singleSigned, e2e.BusyboxSIF(t)},
 		},
 		{
 			name:    "build double signed source image",
