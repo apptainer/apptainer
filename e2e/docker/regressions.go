@@ -75,7 +75,7 @@ func (c ctx) issue4943(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "/dev/null", image),
+		e2e.WithArgs("--disable-cache", "--force", "/dev/null", image),
 		e2e.ExpectExit(0),
 	)
 }
@@ -89,7 +89,7 @@ func (c ctx) issue5172(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--sandbox", imagePath, regImage),
+		e2e.WithArgs("--disable-cache", "--sandbox", imagePath, regImage),
 		e2e.PostRun(func(t *testing.T) {
 			if !t.Failed() {
 				os.RemoveAll(imagePath)
@@ -102,7 +102,7 @@ func (c ctx) issue5172(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs(imagePath, regImage),
+		e2e.WithArgs("--disable-cache", imagePath, regImage),
 		e2e.PostRun(func(t *testing.T) {
 			if !t.Failed() {
 				os.RemoveAll(imagePath)
@@ -144,12 +144,13 @@ From: continuumio/miniconda3:latest
 		t.Fatalf("Unable to create test definition file: %v", err)
 	}
 
+	// Run build with cache disabled, so we can be a parallel test (we are slooow!)
 	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("build"),
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs(imagePath, defFile),
+		e2e.WithArgs("--disable-cache", imagePath, defFile),
 		e2e.ExpectExit(0),
 	)
 	// An exec of `conda info` in the container should show environment active, no errors.

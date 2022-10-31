@@ -57,36 +57,23 @@ func (c ctx) testDockerPulls(t *testing.T) {
 		exit    int
 	}{
 		{
-			name:  "AlpineLatestPull",
+			name:  "BusyboxLatestPull",
 			image: tmpImage,
-			uri:   "docker://alpine:latest",
+			uri:   "docker://busybox:latest",
 			exit:  0,
-		},
-		{
-			name:  "Alpine3.9Pull",
-			image: filepath.Join(tmpPath, "alpine.sif"),
-			uri:   "docker://alpine:3.9",
-			exit:  0,
-		},
-		{
-			name:    "Alpine3.9ForcePull",
-			options: []string{"--force"},
-			image:   tmpImage,
-			uri:     "docker://alpine:3.9",
-			exit:    0,
-		},
-		{
-			name:    "BusyboxLatestPull",
-			options: []string{"--force"},
-			image:   tmpImage,
-			uri:     "docker://busybox:latest",
-			exit:    0,
 		},
 		{
 			name:  "BusyboxLatestPullFail",
 			image: tmpImage,
 			uri:   "docker://busybox:latest",
 			exit:  255,
+		},
+		{
+			name:    "BusyboxLatestPullForce",
+			options: []string{"--force"},
+			image:   tmpImage,
+			uri:     "docker://busybox:latest",
+			exit:    0,
 		},
 		{
 			name:    "Busybox1.28Pull",
@@ -235,7 +222,7 @@ func (c ctx) testDockerHost(t *testing.T) {
 					e2e.AsSubtest(tt.name),
 					e2e.WithProfile(e2e.UserProfile),
 					e2e.WithCommand("pull"),
-					e2e.WithArgs(tmpImage, pullURI),
+					e2e.WithArgs("--disable-cache", tmpImage, pullURI),
 					e2e.ExpectExit(tt.exit),
 				)
 			})
@@ -246,7 +233,7 @@ func (c ctx) testDockerHost(t *testing.T) {
 					e2e.AsSubtest(tt.name),
 					e2e.WithProfile(e2e.UserProfile),
 					e2e.WithCommand("pull"),
-					e2e.WithArgs(tmpImage, pullURI),
+					e2e.WithArgs("--disable-cache", tmpImage, pullURI),
 					e2e.ExpectExit(tt.exit),
 				)
 			})
@@ -405,44 +392,20 @@ func (c ctx) testDockerDefFile(t *testing.T) {
 		archRequired        string
 		from                string
 	}{
-		// This only provides Arch for amd64
 		{
-			name:                "Arch",
+			name:                "Alpine",
+			kernelMajorRequired: 0,
+			from:                "alpine:latest",
+		},
+		{
+			name:                "RockyLinux_9",
 			kernelMajorRequired: 3,
-			archRequired:        "amd64",
-			from:                "dock0/arch:latest",
+			from:                "rockylinux:9",
 		},
 		{
-			name:                "BusyBox",
-			kernelMajorRequired: 0,
-			from:                "busybox:latest",
-		},
-		// CentOS6 is for amd64 (or i386) only
-		{
-			name:                "CentOS_6",
-			kernelMajorRequired: 0,
-			archRequired:        "amd64",
-			from:                "centos:6",
-		},
-		{
-			name:                "CentOS_7",
-			kernelMajorRequired: 0,
-			from:                "centos:7",
-		},
-		{
-			name:                "RockyLinux_8",
+			name:                "Ubuntu_2204",
 			kernelMajorRequired: 3,
-			from:                "rockylinux:8",
-		},
-		{
-			name:                "Ubuntu_1604",
-			kernelMajorRequired: 0,
-			from:                "ubuntu:16.04",
-		},
-		{
-			name:                "Ubuntu_1804",
-			kernelMajorRequired: 3,
-			from:                "ubuntu:18.04",
+			from:                "ubuntu:22.04",
 		},
 	}
 
@@ -525,7 +488,7 @@ func (c ctx) testDockerRegistry(t *testing.T) {
 			t,
 			e2e.WithProfile(e2e.RootProfile),
 			e2e.WithCommand("build"),
-			e2e.WithArgs("--no-https", imagePath, defFile),
+			e2e.WithArgs("--disable-cache", "--no-https", imagePath, defFile),
 			e2e.PostRun(func(t *testing.T) {
 				defer os.Remove(imagePath)
 				defer os.Remove(defFile)
@@ -871,16 +834,14 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		// Run all docker:// source tests sequentially amongst themselves, so we
+		// Run most docker:// source tests sequentially amongst themselves, so we
 		// don't hit DockerHub massively in parallel, and we benefit from
 		// caching as the same images are used frequently.
 		"ordered": func(t *testing.T) {
 			t.Run("AUFS", c.testDockerAUFS)
 			t.Run("def file", c.testDockerDefFile)
-			t.Run("docker host", c.testDockerHost)
 			t.Run("permissions", c.testDockerPermissions)
 			t.Run("pulls", c.testDockerPulls)
-			t.Run("registry", c.testDockerRegistry)
 			t.Run("whiteout symlink", c.testDockerWhiteoutSymlink)
 			t.Run("labels", c.testDockerLabels)
 			t.Run("cmd", c.testDockerCMD)
@@ -889,9 +850,15 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			t.Run("cmd quotes", c.testDockerCMDQuotes)
 			// Regressions
 			t.Run("issue 4524", c.issue4524)
-			t.Run("issue 4943", c.issue4943)
-			t.Run("issue 5172", c.issue5172)
-			t.Run("issue 274", c.issue274) // https://github.com/sylabs/singularity/issues/274
 		},
+		// Tests that are especially slow, or run against a local docker
+		// registry, can be run in parallel, with `--disable-cache` used within
+		// them to avoid docker caching concurrency issues.
+		"docker host": c.testDockerHost,
+		"registry":    c.testDockerRegistry,
+		// Regressions
+		"issue 4943": c.issue4943,
+		"issue 5172": c.issue5172,
+		"issue 274":  c.issue274, // https://github.com/sylabs/singularity/issues/274
 	}
 }
