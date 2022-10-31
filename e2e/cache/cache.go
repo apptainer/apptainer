@@ -10,6 +10,11 @@
 package cache
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"path"
 	"path/filepath"
 	"testing"
@@ -17,7 +22,6 @@ import (
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
-	client "github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 )
 
@@ -25,17 +29,20 @@ type cacheTests struct {
 	env e2e.TestEnv
 }
 
-const (
-	imgName = "alpine_latest.sif"
-	imgURL  = "oras://ghcr.io/apptainer/alpine:latest"
-)
+const imgName = "alpine_latest.sif"
 
-func prepTest(t *testing.T, testEnv e2e.TestEnv, testName string, cacheParentDir string, imagePath string) {
+func prepTest(t *testing.T, testEnv e2e.TestEnv, testName string, cacheParentDir string, imagePath string) (imageURL string, cleanup func()) {
+	// We will pull images from a temporary http server
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, testEnv.ImagePath)
+	}))
+	cleanup = srv.Close
+
 	// If the test imageFile is already present check it's not also in the cache
 	// at the start of our test - we expect to pull it again and then see it
 	// appear in the cache.
 	if fs.IsFile(imagePath) {
-		ensureNotCached(t, testName, imagePath, cacheParentDir)
+		ensureNotCached(t, testName, srv.URL, cacheParentDir)
 	}
 
 	testEnv.UnprivCacheDir = cacheParentDir
@@ -43,11 +50,12 @@ func prepTest(t *testing.T, testEnv e2e.TestEnv, testName string, cacheParentDir
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", imagePath, imgURL}...),
+		e2e.WithArgs([]string{"--force", imagePath, srv.URL}...),
 		e2e.ExpectExit(0),
 	)
 
-	ensureCached(t, testName, imagePath, cacheParentDir)
+	ensureCached(t, testName, srv.URL, cacheParentDir)
+	return srv.URL, cleanup
 }
 
 func (c cacheTests) testNoninteractiveCacheCmds(t *testing.T) {
@@ -99,7 +107,7 @@ func (c cacheTests) testNoninteractiveCacheCmds(t *testing.T) {
 		},
 		{
 			name:               "list type",
-			options:            []string{"list", "--type", "library"},
+			options:            []string{"list", "--type", "net"},
 			needImage:          true,
 			expectedOutput:     "There are 1 container file",
 			expectedEmptyCache: false,
@@ -128,8 +136,11 @@ func (c cacheTests) testNoninteractiveCacheCmds(t *testing.T) {
 			t.Fatalf("Could not create image cache handle: %v", err)
 		}
 
+		imageURL := ""
 		if tt.needImage {
-			prepTest(t, c.env, tt.name, cacheDir, imagePath)
+			var srvCleanup func()
+			imageURL, srvCleanup = prepTest(t, c.env, tt.name, cacheDir, imagePath)
+			defer srvCleanup()
 		}
 
 		c.env.UnprivCacheDir = cacheDir
@@ -143,7 +154,7 @@ func (c cacheTests) testNoninteractiveCacheCmds(t *testing.T) {
 		)
 
 		if tt.needImage && tt.expectedEmptyCache {
-			ensureNotCached(t, tt.name, imagePath, cacheDir)
+			ensureNotCached(t, tt.name, imageURL, cacheDir)
 		}
 	}
 }
@@ -187,7 +198,7 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 		},
 		{
 			name:               "clean type confirmed",
-			options:            []string{"clean", "--type", "oras"},
+			options:            []string{"clean", "--type", "net"},
 			expect:             "Do you want to continue? [N/y]",
 			send:               "y",
 			expectedEmptyCache: true,
@@ -195,7 +206,7 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 		},
 		{
 			name:               "clean type not confirmed",
-			options:            []string{"clean", "--type", "oras"},
+			options:            []string{"clean", "--type", "net"},
 			expect:             "Do you want to continue? [N/y]",
 			send:               "n",
 			expectedEmptyCache: false,
@@ -234,7 +245,8 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 		}
 
 		c.env.UnprivCacheDir = cacheDir
-		prepTest(t, c.env, tc.name, cacheDir, imagePath)
+		imageURL, srvCleanup := prepTest(t, c.env, tc.name, cacheDir, imagePath)
+		defer srvCleanup()
 
 		c.env.RunApptainer(
 			t,
@@ -251,22 +263,22 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 
 		// Check the content of the cache
 		if tc.expectedEmptyCache {
-			ensureNotCached(t, tc.name, imagePath, cacheDir)
+			ensureNotCached(t, tc.name, imageURL, cacheDir)
 		} else {
-			ensureCached(t, tc.name, imagePath, cacheDir)
+			ensureCached(t, tc.name, imageURL, cacheDir)
 		}
 	}
 }
 
 // ensureNotCached checks the entry related to an image is not in the cache
-func ensureNotCached(t *testing.T, testName string, imagePath string, cacheParentDir string) {
-	shasum, err := client.ImageHash(imagePath)
+func ensureNotCached(t *testing.T, testName string, imageURL string, cacheParentDir string) {
+	shasum, err := netHash(imageURL)
 	if err != nil {
-		t.Fatalf("couldn't compute hash of image %s: %v", imagePath, err)
+		t.Fatalf("couldn't compute hash of image %s: %v", imageURL, err)
 	}
 
 	// Where the cached image should be
-	cacheImagePath := path.Join(cacheParentDir, "cache", "oras", shasum)
+	cacheImagePath := path.Join(cacheParentDir, "cache", "net", shasum)
 
 	// The image file shouldn't be present
 	if e2e.PathExists(t, cacheImagePath) {
@@ -275,19 +287,36 @@ func ensureNotCached(t *testing.T, testName string, imagePath string, cacheParen
 }
 
 // ensureCached checks the entry related to an image is really in the cache
-func ensureCached(t *testing.T, testName string, imagePath string, cacheParentDir string) {
-	shasum, err := client.ImageHash(imagePath)
+func ensureCached(t *testing.T, testName string, imageURL string, cacheParentDir string) {
+	shasum, err := netHash(imageURL)
 	if err != nil {
-		t.Fatalf("couldn't compute hash of image %s: %v", imagePath, err)
+		t.Fatalf("couldn't compute hash of image %s: %v", imageURL, err)
 	}
 
 	// Where the cached image should be
-	cacheImagePath := path.Join(cacheParentDir, "cache", "oras", shasum)
+	cacheImagePath := path.Join(cacheParentDir, "cache", "net", shasum)
 
 	// The image file shouldn't be present
 	if !e2e.PathExists(t, cacheImagePath) {
 		t.Fatalf("%s failed: %s is not in the cache (%s)", testName, imgName, cacheImagePath)
 	}
+}
+
+// netHash computes the expected cache hash for the image at url
+func netHash(url string) (hash string, err error) {
+	req, err := http.NewRequest("HEAD", url, nil)
+	if err != nil {
+		return "", fmt.Errorf("error constructing http request: %w", err)
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("error making http request: %w", err)
+	}
+
+	headerDate := res.Header.Get("Last-Modified")
+	h := sha256.New()
+	h.Write([]byte(url + headerDate))
+	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
 // E2ETests is the main func to trigger the test suite
