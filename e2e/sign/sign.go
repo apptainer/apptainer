@@ -12,10 +12,12 @@ package sign
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 )
 
 type ctx struct {
@@ -24,10 +26,9 @@ type ctx struct {
 	passphraseInput []e2e.ApptainerConsoleOp
 }
 
-const (
-	imgURL  = "oras://ghcr.io/apptainer/alpine:3.15.0"
-	imgName = "testImage.sif"
-)
+const imgName = "testImage.sif"
+
+var busyboxSIF = "testdata/busybox_" + runtime.GOARCH + ".sif"
 
 func (c ctx) apptainerSignHelpOption(t *testing.T) {
 	c.env.KeyringDir = c.keyringDir
@@ -50,8 +51,11 @@ func (c *ctx) prepareImage(t *testing.T) (string, func(*testing.T)) {
 		t.Fatalf("failed to create temporary directory: %s", err)
 	}
 	imgPath := filepath.Join(tempDir, imgName)
-	// We should be able to pull an image and sign it on other archs
-	e2e.PullImage(t, c.env, imgURL, "amd64", imgPath)
+
+	err = fs.CopyFile(busyboxSIF, imgPath, 0o755)
+	if err != nil {
+		t.Fatalf("failed to copy temporary image: %s", err)
+	}
 
 	return filepath.Join(tempDir, "testImage.sif"), func(t *testing.T) {
 		err := os.RemoveAll(tempDir)
