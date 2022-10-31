@@ -408,13 +408,15 @@ func (c *imgBuildTests) issue3848(t *testing.T) {
 	defer os.Remove(tmpfile) // clean up
 
 	d := struct {
+		From string
 		File string
 	}{
+		From: busyboxSIF,
 		File: tmpfile,
 	}
 
-	defTmpl := `Bootstrap: oras
-From: ghcr.io/apptainer/alpine:latest
+	defTmpl := `Bootstrap: localimage
+From: {{ .From }}
 
 %files
 	{{ .File }}

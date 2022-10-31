@@ -27,7 +27,10 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 )
 
-var testFileContent = "Test file content\n"
+var (
+	testFileContent = "Test file content\n"
+	busyboxSIF      = "testdata/busybox_" + runtime.GOARCH + ".sif"
+)
 
 type imgBuildTests struct {
 	env e2e.TestEnv
@@ -88,6 +91,10 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 		// 	name:       "ShubDefFile",
 		// 	buildSpec:  "../examples/shub/Apptainer",
 		// },
+		{
+			name:      "LibraryURI",
+			buildSpec: "oras://ghcr.io/apptainer/alpine:latest",
+		},
 		{
 			name:      "LibraryDefFile",
 			buildSpec: "../examples/library/Apptainer",
@@ -178,11 +185,11 @@ func (c imgBuildTests) nonRootBuild(t *testing.T) {
 	}{
 		{
 			name:      "local sif",
-			buildSpec: "testdata/busybox_" + runtime.GOARCH + ".sif",
+			buildSpec: busyboxSIF,
 		},
 		{
 			name:      "local sif to sandbox",
-			buildSpec: "testdata/busybox_" + runtime.GOARCH + ".sif",
+			buildSpec: busyboxSIF,
 			args:      []string{"--sandbox"},
 		},
 		{
@@ -341,8 +348,8 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 			name: "FileCopySimple",
 			dfd: []e2e.DefFileDetails{
 				{
-					Bootstrap: "oras",
-					From:      "ghcr.io/apptainer/alpine:latest",
+					Bootstrap: "localimage",
+					From:      busyboxSIF,
 					Stage:     "one",
 					Files: []e2e.FilePair{
 						{
@@ -356,8 +363,8 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 					},
 				},
 				{
-					Bootstrap: "oras",
-					From:      "ghcr.io/apptainer/alpine:latest",
+					Bootstrap: "localimage",
+					From:      busyboxSIF,
 					FilesFrom: []e2e.FileSection{
 						{
 							Stage: "one",
@@ -393,8 +400,8 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 			name: "FileCopyComplex",
 			dfd: []e2e.DefFileDetails{
 				{
-					Bootstrap: "oras",
-					From:      "ghcr.io/apptainer/alpine:latest",
+					Bootstrap: "localimage",
+					From:      busyboxSIF,
 					Stage:     "one",
 					Files: []e2e.FilePair{
 						{
@@ -408,8 +415,8 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 					},
 				},
 				{
-					Bootstrap: "oras",
-					From:      "ghcr.io/apptainer/alpine:latest",
+					Bootstrap: "localimage",
+					From:      busyboxSIF,
 					Stage:     "two",
 					Files: []e2e.FilePair{
 						{
@@ -423,8 +430,8 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 					},
 				},
 				{
-					Bootstrap: "oras",
-					From:      "ghcr.io/apptainer/alpine:latest",
+					Bootstrap: "localimage",
+					From:      busyboxSIF,
 					Stage:     "three",
 					FilesFrom: []e2e.FileSection{
 						{
@@ -456,8 +463,8 @@ func (c imgBuildTests) buildMultiStageDefinition(t *testing.T) {
 					},
 				},
 				{
-					Bootstrap: "oras",
-					From:      "ghcr.io/apptainer/alpine:latest",
+					Bootstrap: "localimage",
+					From:      busyboxSIF,
 					FilesFrom: []e2e.FileSection{
 						{
 							Stage: "three",
@@ -542,12 +549,12 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 
 	tt := map[string]e2e.DefFileDetails{
 		"Empty": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 		},
 		"Help": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Help: []string{
 				"help info line 1",
 				"help info line 2",
@@ -555,8 +562,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Files": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Files: []e2e.FilePair{
 				{
 					Src: tmpfile,
@@ -569,8 +576,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Test": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Test: []string{
 				"echo testscript line 1",
 				"echo testscript line 2",
@@ -578,8 +585,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Startscript": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			StartScript: []string{
 				"echo startscript line 1",
 				"echo startscript line 2",
@@ -587,8 +594,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Runscript": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			RunScript: []string{
 				"echo runscript line 1",
 				"echo runscript line 2",
@@ -596,8 +603,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Env": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Env: []string{
 				"testvar1=one",
 				"testvar2=two",
@@ -605,8 +612,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Labels": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Labels: map[string]string{
 				"customLabel1": "one",
 				"customLabel2": "two",
@@ -614,29 +621,29 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"Pre": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Pre: []string{
 				filepath.Join(c.env.TestDir, "PreFile1"),
 			},
 		},
 		"Setup": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Setup: []string{
 				filepath.Join(c.env.TestDir, "SetupFile1"),
 			},
 		},
 		"Post": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Post: []string{
 				"PostFile1",
 			},
 		},
 		"AppHelp": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -657,8 +664,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"AppEnv": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -679,8 +686,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"AppLabels": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -701,8 +708,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"AppFiles": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -733,8 +740,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"AppInstall": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -751,8 +758,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"AppRun": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -773,8 +780,8 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			},
 		},
 		"AppTest": {
-			Bootstrap: "oras",
-			From:      "ghcr.io/apptainer/alpine:latest",
+			Bootstrap: "localimage",
+			From:      busyboxSIF,
 			Apps: []e2e.AppDetail{
 				{
 					Name: "foo",
@@ -870,7 +877,7 @@ func (c imgBuildTests) buildEncryptPemFile(t *testing.T) {
 
 	// First with the command line argument
 	imgPath1 := filepath.Join(dn, "encrypted_cmdline_option.sif")
-	cmdArgs := []string{"--encrypt", "--pem-path", pemFile, imgPath1, "oras://ghcr.io/apptainer/alpine:latest"}
+	cmdArgs := []string{"--encrypt", "--pem-path", pemFile, imgPath1, busyboxSIF}
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
@@ -889,7 +896,7 @@ func (c imgBuildTests) buildEncryptPemFile(t *testing.T) {
 	// Second with the environment variable
 	pemEnvVar := fmt.Sprintf("%s=%s", "APPTAINER_ENCRYPTION_PEM_PATH", pemFile)
 	imgPath2 := filepath.Join(dn, "encrypted_env_var.sif")
-	cmdArgs = []string{"--encrypt", imgPath2, "oras://ghcr.io/apptainer/alpine:latest"}
+	cmdArgs = []string{"--encrypt", imgPath2, busyboxSIF}
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
@@ -934,7 +941,7 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 	}
 	cmdlineTestImgPath := filepath.Join(dn, "encrypted_cmdline_option.sif")
 	// The image is deleted during cleanup of the temporary directory
-	cmdArgs := []string{"--passphrase", cmdlineTestImgPath, "oras://ghcr.io/apptainer/alpine:latest"}
+	cmdArgs := []string{"--passphrase", cmdlineTestImgPath, busyboxSIF}
 	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("passphrase flag"),
@@ -954,7 +961,7 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 
 	// With the command line argument, using --encrypt and --passphrase
 	cmdlineTest2ImgPath := filepath.Join(dn, "encrypted_cmdline2_option.sif")
-	cmdArgs = []string{"--encrypt", "--passphrase", cmdlineTest2ImgPath, "oras://ghcr.io/apptainer/alpine:latest"}
+	cmdArgs = []string{"--encrypt", "--passphrase", cmdlineTest2ImgPath, busyboxSIF}
 	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("encrypt and passphrase flags"),
@@ -975,7 +982,7 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 	// With the environment variable
 	passphraseEnvVar := fmt.Sprintf("%s=%s", "APPTAINER_ENCRYPTION_PASSPHRASE", e2e.Passphrase)
 	envvarImgPath := filepath.Join(dn, "encrypted_env_var.sif")
-	cmdArgs = []string{"--encrypt", envvarImgPath, "oras://ghcr.io/apptainer/alpine:latest"}
+	cmdArgs = []string{"--encrypt", envvarImgPath, busyboxSIF}
 	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("passphrase env var"),
@@ -995,7 +1002,7 @@ func (c imgBuildTests) buildEncryptPassphrase(t *testing.T) {
 
 	// Finally a test that must fail: try to specify the passphrase on the command line
 	dummyImgPath := filepath.Join(dn, "dummy_encrypted_env_var.sif")
-	cmdArgs = []string{"--encrypt", "--passphrase", e2e.Passphrase, dummyImgPath, "oras://ghcr.io/apptainer/alpine:latest"}
+	cmdArgs = []string{"--encrypt", "--passphrase", e2e.Passphrase, dummyImgPath, busyboxSIF}
 	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("passphrase on cmdline"),
@@ -1104,7 +1111,7 @@ func (c imgBuildTests) buildWithFingerprint(t *testing.T) {
 		{
 			name:    "build single signed source image",
 			command: "build",
-			args:    []string{singleSigned, "oras://ghcr.io/apptainer/busybox:1.31.1"},
+			args:    []string{singleSigned, busyboxSIF},
 		},
 		{
 			name:    "build double signed source image",
