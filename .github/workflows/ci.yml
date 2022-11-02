@@ -5,7 +5,7 @@ on:
 jobs:
   check_go_mod:
     name: check_go_mod
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container: golang:1.19.3
     steps:
       - uses: actions/checkout@v2
@@ -15,7 +15,7 @@ jobs:
 
   lint_markdown:
     name: lint_markdown
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container: node:18-slim
     steps:
       - uses: actions/checkout@v2
@@ -28,7 +28,7 @@ jobs:
 
   check_source:
     name: check_source
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container: golangci/golangci-lint:v1.50
     steps:
       - uses: actions/checkout@v2
@@ -40,7 +40,7 @@ jobs:
 
   shellcheck:
     name: shellcheck
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container: koalaman/shellcheck-alpine
     steps:
       - uses: actions/checkout@v2
@@ -50,7 +50,7 @@ jobs:
 
   alpine:
     name: alpine
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container: golang:1.19.3-alpine
     steps:
       - name: Fetch deps
@@ -66,7 +66,7 @@ jobs:
 
   oldgo:
     name: oldgo
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     # match the minimum version required by mconfig
     container: golang:1.17-alpine
     steps:
@@ -83,7 +83,7 @@ jobs:
 
   check_license_dependencies:
     name: check_license_dependencies
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container: golang:1.19.3
     steps:
       - uses: actions/checkout@v2
@@ -96,7 +96,7 @@ jobs:
 
   debian:
     name: debian
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       # fetch tags as checkout@v2 doesn't do that by default
@@ -111,7 +111,7 @@ jobs:
         run: ./scripts/ci-docker-run
 
   rpmbuild-centos7:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: rpmbuild-centos7
     steps:
       - uses: actions/checkout@v2
@@ -126,7 +126,7 @@ jobs:
         run: ./scripts/ci-docker-run
 
   rpmbuild-rocky8:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: rpmbuild-rocky8
     steps:
       - uses: actions/checkout@v2
@@ -141,7 +141,7 @@ jobs:
         run: ./scripts/ci-docker-run
 
   rpmbuild-rocky9:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: rpmbuild-rocky9
     steps:
       - uses: actions/checkout@v2
@@ -157,7 +157,7 @@ jobs:
 
   short_unit_tests:
     name: short_unit_tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       # fetch tags as checkout@v2 doesn't do that by default
@@ -169,7 +169,7 @@ jobs:
           go-version: 1.19.3
 
       - name: Fetch deps
-        run: sudo apt-get -q update && sudo apt-get install -y build-essential squashfs-tools squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup
+        run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfs-tools squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
 
       - name: Build and install Apptainer
         run: |
@@ -187,7 +187,7 @@ jobs:
 
   integration_tests:
     name: integration_tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       # fetch tags as checkout@v2 doesn't do that by default
@@ -199,7 +199,7 @@ jobs:
           go-version: 1.19.3
 
       - name: Fetch deps
-        run: sudo apt-get -q update && sudo apt-get install -y build-essential squashfs-tools libseccomp-dev cryptsetup
+        run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfs-tools libseccomp-dev cryptsetup dbus-user-session
 
       - name: Build and install Apptainer
         run: |
@@ -211,6 +211,7 @@ jobs:
 
   e2e_tests:
     name: e2e_tests
+    # update to 22.04 causes fakeroot and cgroup test failures
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -244,7 +245,16 @@ jobs:
 
       - name: Fetch deps
         if: env.run_tests
-        run: sudo apt-get -q update && sudo apt-get install -y build-essential uidmap squashfs-tools squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup
+        run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential uidmap squashfs-tools squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
+
+      - name: Enable full cgroups v2 delegation
+        run: |
+          sudo mkdir -p /etc/systemd/system/user@.service.d
+          cat <<EOF | sudo tee /etc/systemd/system/user@.service.d/delegate.conf
+          [Service]
+          Delegate=cpu cpuset io memory pids
+          EOF
+          sudo systemctl daemon-reload
 
       - name: Build and install Apptainer
         if: env.run_tests
@@ -268,7 +278,7 @@ jobs:
 
   check_pkg_no_buildcfg:
     name: check_pkg_no_buildcfg
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       # fetch tags as checkout@v2 doesn't do that by default
