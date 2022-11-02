@@ -1678,7 +1678,10 @@ func (c actionTests) fuseMount(t *testing.T) {
 	}()
 
 	// terminate ssh server once done
-	defer stdinWriter.Write([]byte("bye"))
+	defer func() {
+		stdinWriter.Write([]byte("bye"))
+		stdinWriter.Close()
+	}()
 
 	// wait until ssh server is up and running
 	retry := 0
