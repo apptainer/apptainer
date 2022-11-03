@@ -536,6 +536,10 @@ func (c *ctx) actionFlagV2(t *testing.T, tt actionFlagTest, profile e2e.Profile)
 	if tt.skipV2 {
 		t.Skip()
 	}
+	// Don't try to test a resource that doesn't exist in our caller cgroup.
+	// E.g. some systems don't have io.bfq.*
+	require.CgroupsResourceExists(t, "", tt.resourceV2)
+
 	// In rootless mode, can only test subsystems that have been delegated
 	if !profile.Privileged() {
 		require.CgroupsV2Delegated(t, tt.delegationV2)
