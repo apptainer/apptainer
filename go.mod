@@ -17,7 +17,7 @@ require (
 	github.com/containerd/containerd v1.6.9
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.1.1
-	github.com/containers/image/v5 v5.23.0
+	github.com/containers/image/v5 v5.23.1
 	github.com/creack/pty v1.1.18
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/docker/docker v20.10.21+incompatible
