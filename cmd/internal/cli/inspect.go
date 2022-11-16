@@ -93,7 +93,7 @@ var inspectAppsListFlag = cmdline.Flag{
 // --app
 var inspectAppNameFlag = cmdline.Flag{
 	ID:           "inspectAppNameFlag",
-	Value:        &AppName,
+	Value:        &appName,
 	DefaultValue: "",
 	Name:         "app",
 	Usage:        "inspect a specific app",
@@ -638,10 +638,10 @@ var InspectCmd = &cobra.Command{
 		if allData {
 			// display all data in JSON format only
 			jsonfmt = true
-			AppName = ""
+			appName = ""
 		}
 
-		inspectCmd := newCommand(allData, AppName, img)
+		inspectCmd := newCommand(allData, appName, img)
 
 		// Try to inspect the label partition, if not, then exec/shell
 		// the container to get the data.
@@ -669,7 +669,7 @@ var InspectCmd = &cobra.Command{
 		}
 
 		if startscript || allData {
-			if AppName == "" {
+			if appName == "" {
 				sylog.Debugf("Inspection of startscript selected.")
 				inspectCmd.addStartscriptCommand()
 			}
@@ -695,7 +695,7 @@ var InspectCmd = &cobra.Command{
 		}
 
 		for app := range inspectData.Data.Attributes.Apps {
-			if !listApps && !allData && AppName != app {
+			if !listApps && !allData && appName != app {
 				delete(inspectData.Data.Attributes.Apps, app)
 			}
 		}
@@ -708,7 +708,7 @@ var InspectCmd = &cobra.Command{
 			}
 			fmt.Printf("%s\n", string(jsonObj))
 		} else {
-			appAttr := inspectData.Data.Attributes.Apps[AppName]
+			appAttr := inspectData.Data.Attributes.Apps[appName]
 
 			if listApps {
 				printSortedApp(inspectData.Data.Attributes.Apps)

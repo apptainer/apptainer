@@ -861,7 +861,7 @@ func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []st
 	// function to execute the command
 	shell.RegisterShellBuiltin("exec", execBuiltin)
 
-	err = shell.Run()
+	err = shell.Run(context.TODO())
 	if err != nil {
 		if shell.Status() != 0 {
 			os.Exit(int(shell.Status()))
@@ -879,7 +879,7 @@ func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []st
 				return nil, nil, err
 			}
 			interp.RegisterShellBuiltin("exec", execBuiltin)
-			err = interp.Run()
+			err = interp.Run(context.TODO())
 			if err != nil {
 				if interp.Status() != 0 {
 					os.Exit(int(interp.Status()))

@@ -30,7 +30,7 @@ func getCgroupsJSON() (string, error) {
 		return "", err
 	}
 
-	if config != nil && CgroupsTOMLFile != "" {
+	if config != nil && cgroupsTOMLFile != "" {
 		return "", fmt.Errorf("cannot apply a cgroups TOML file while using limit flags")
 	}
 
@@ -38,8 +38,8 @@ func getCgroupsJSON() (string, error) {
 		return config.MarshalJSON()
 	}
 
-	if CgroupsTOMLFile != "" {
-		config, err := cgroups.LoadConfig(CgroupsTOMLFile)
+	if cgroupsTOMLFile != "" {
+		config, err := cgroups.LoadConfig(cgroupsTOMLFile)
 		if err != nil {
 			return "", err
 		}
@@ -101,11 +101,11 @@ func getBlkioLimits() (*cgroups.LinuxBlockIO, error) {
 	blkio := cgroups.LinuxBlockIO{}
 	configured := false
 
-	if BlkioWeight > 0 {
-		if BlkioWeight < 10 || BlkioWeight > 1000 {
+	if blkioWeight > 0 {
+		if blkioWeight < 10 || blkioWeight > 1000 {
 			return nil, fmt.Errorf("blkio-weight must be in range 10-1000")
 		}
-		bw := uint16(BlkioWeight)
+		bw := uint16(blkioWeight)
 		blkio.Weight = &bw
 		configured = true
 	}
@@ -114,8 +114,8 @@ func getBlkioLimits() (*cgroups.LinuxBlockIO, error) {
 	//  <device>:<weight>
 	//  /dev/sda:123
 	// We need to translate the path into device major and minor numbers.
-	if len(BlkioWeightDevice) > 0 {
-		for _, val := range BlkioWeightDevice {
+	if len(blkioWeightDevice) > 0 {
+		for _, val := range blkioWeightDevice {
 			fields := strings.SplitN(val, ":", 2)
 			if len(fields) < 2 {
 				return nil, fmt.Errorf("blkio-weight-device specifications must be in <device>:<weight> format")
@@ -158,23 +158,23 @@ func getCPULimits() (*cgroups.LinuxCPU, error) {
 	configured := false
 
 	// Will be converted to cgroups v2 cpu.weight by manager code
-	if CPUShares > 0 {
-		cs := uint64(CPUShares)
+	if cpuShares > 0 {
+		cs := uint64(cpuShares)
 		cpu.Shares = &cs
 		configured = true
 	}
 
-	if CPUSetCPUs != "" {
-		cpu.Cpus = CPUSetCPUs
+	if cpuSetCPUs != "" {
+		cpu.Cpus = cpuSetCPUs
 		configured = true
 	}
 
-	if CPUSetMems != "" {
-		cpu.Mems = CPUSetMems
+	if cpuSetMems != "" {
+		cpu.Mems = cpuSetMems
 		configured = true
 	}
 
-	if CPUs != "" {
+	if cpus != "" {
 		// Compute fractional CPU shares in cgroups v1 quota/period form.
 		// The manager will convert to cgroups v2 cpu.max
 
@@ -190,7 +190,7 @@ func getCPULimits() (*cgroups.LinuxCPU, error) {
 		// Parse cpus values as an arbitrary precision decimal. We will compute
 		// quota at 1e9 precision, and allow fractions of a CPU down to 0.01.
 		// Lower than this gives an invalid argument when setting cpu.max.
-		dCpus, err := decimal.NewFromString(CPUs)
+		dCpus, err := decimal.NewFromString(cpus)
 		if err != nil {
 			return nil, fmt.Errorf("invalid cpus value: %w", err)
 		}
@@ -219,49 +219,49 @@ func getCPULimits() (*cgroups.LinuxCPU, error) {
 
 // getMemoryLimits handles --memory* flags, converting values into a LinuxMemory structure
 func getMemoryLimits() (*cgroups.LinuxMemory, error) {
-	memory := cgroups.LinuxMemory{}
+	mem := cgroups.LinuxMemory{}
 	configured := false
 
-	if Memory != "" {
-		m, err := units.RAMInBytes(Memory)
+	if memory != "" {
+		m, err := units.RAMInBytes(memory)
 		if err != nil {
 			return nil, fmt.Errorf("invalid memory value: %w", err)
 		}
-		memory.Limit = &m
+		mem.Limit = &m
 		configured = true
 	}
 
-	if MemoryReservation != "" {
-		mr, err := units.RAMInBytes(MemoryReservation)
+	if memoryReservation != "" {
+		mr, err := units.RAMInBytes(memoryReservation)
 		if err != nil {
 			return nil, fmt.Errorf("invalid memory-reservation value: %w", err)
 		}
-		memory.Reservation = &mr
+		mem.Reservation = &mr
 		configured = true
 	}
 
 	// -1 is valid here as 'unlimited swap'
-	if MemorySwap == "-1" {
+	if memorySwap == "-1" {
 		ms := int64(-1)
-		memory.Swap = &ms
+		mem.Swap = &ms
 		configured = true
-	} else if MemorySwap != "" {
-		ms, err := units.RAMInBytes(MemorySwap)
+	} else if memorySwap != "" {
+		ms, err := units.RAMInBytes(memorySwap)
 		if err != nil {
 			return nil, fmt.Errorf("invalid memory-swap value: %w", err)
 		}
-		memory.Swap = &ms
+		mem.Swap = &ms
 		configured = true
 	}
 
-	if OomKillDisable {
+	if oomKillDisable {
 		okd := true
-		memory.DisableOOMKiller = &okd
+		mem.DisableOOMKiller = &okd
 		configured = true
 	}
 
 	if configured {
-		return &memory, nil
+		return &mem, nil
 	}
 
 	return nil, nil
@@ -272,12 +272,12 @@ func getPidsLimits() (*cgroups.LinuxPids, error) {
 	pids := cgroups.LinuxPids{}
 	configured := false
 
-	if PidsLimit < -1 {
+	if pidsLimit < -1 {
 		return nil, fmt.Errorf("invalid pids-limit: %d", pids)
 	}
 
-	if PidsLimit != 0 {
-		pl := int64(PidsLimit)
+	if pidsLimit != 0 {
+		pl := int64(pidsLimit)
 		pids.Limit = pl
 		configured = true
 	}

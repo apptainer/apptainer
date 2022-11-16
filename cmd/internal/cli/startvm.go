@@ -27,7 +27,7 @@ func getHypervisorArgs(sifImage, bzImage, initramfs, singAction, cliExtra string
 	// Setup some needed variables
 	appendArgs := fmt.Sprintf("root=/dev/ram0 console=ttyS0 quiet apptainer_action=%s apptainer_arguments=\"%s\"", singAction, cliExtra)
 
-	args := []string{"/usr/libexec/qemu-kvm", "-cpu", "host", "-smp", VMCPU, "-enable-kvm", "-device", "virtio-rng-pci", "-display", "none", "-realtime", "mlock=on", "-hda", sifImage, "-serial", "stdio", "-kernel", bzImage, "-initrd", initramfs, "-m", VMRAM, "-append", appendArgs}
+	args := []string{"/usr/libexec/qemu-kvm", "-cpu", "host", "-smp", vmCPU, "-enable-kvm", "-device", "virtio-rng-pci", "-display", "none", "-realtime", "mlock=on", "-hda", sifImage, "-serial", "stdio", "-kernel", bzImage, "-initrd", initramfs, "-m", vmRAM, "-append", appendArgs}
 
 	return args
 }
@@ -85,7 +85,7 @@ func startVM(sifImage, singAction, cliExtra string, isInternal bool) error {
 	cmd.Env = os.Environ()
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
-	if VMErr || debug {
+	if vmErr || debug {
 		cmd.Stderr = os.Stderr
 	}
 

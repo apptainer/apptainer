@@ -26,7 +26,7 @@ import (
 // --app
 var runHelpAppNameFlag = cmdline.Flag{
 	ID:           "runHelpAppNameFlag",
-	Value:        &AppName,
+	Value:        &appName,
 	DefaultValue: "",
 	Name:         "app",
 	Usage:        "show the help for an app",
@@ -51,9 +51,9 @@ var RunHelpCmd = &cobra.Command{
 		}
 
 		cmdArgs := []string{"inspect", "--helpfile"}
-		if AppName != "" {
-			sylog.Debugf("App specified. Looking for help section of %s", AppName)
-			cmdArgs = append(cmdArgs, "--app", AppName)
+		if appName != "" {
+			sylog.Debugf("App specified. Looking for help section of %s", appName)
+			cmdArgs = append(cmdArgs, "--app", appName)
 		}
 		cmdArgs = append(cmdArgs, args[0])
 

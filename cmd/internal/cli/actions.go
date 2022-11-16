@@ -24,6 +24,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/client/oci"
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/client/shub"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/launch"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -62,12 +63,12 @@ func actionPreRun(cmd *cobra.Command, args []string) {
 	// --compat infers other options that give increased OCI / Docker compatibility
 	// Excludes uts/user/net namespaces as these are restrictive for many Apptainer
 	// installs.
-	if IsCompat {
-		IsContainAll = true
-		IsWritableTmpfs = true
-		NoInit = true
-		NoUmask = true
-		NoEval = true
+	if isCompat {
+		isContainAll = true
+		isWritableTmpfs = true
+		noInit = true
+		noUmask = true
+		noEval = true
 	}
 }
 
@@ -170,7 +171,7 @@ func setVM(cmd *cobra.Command) {
 	}
 
 	// since --syos is a boolean, it cannot be added to the above list
-	if IsSyOS && !VM {
+	if isSyOS && !vm {
 		// let the user know that passing --syos implicitly enables --vm
 		sylog.Warningf("The --syos option requires a virtual machine, automatically enabling --vm option.")
 		cmd.Flags().Set("vm", "true")
@@ -186,12 +187,13 @@ var ExecCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		a := append([]string{"/.singularity.d/actions/exec"}, args[1:]...)
 		setVM(cmd)
-		if VM {
+		if vm {
 			execVM(cmd, args[0], a)
 			return
 		}
-
-		execStarter(cmd, args[0], a, "")
+		if err := launchContainer(cmd, args[0], a, ""); err != nil {
+			sylog.Fatalf("%s", err)
+		}
 	},
 
 	Use:     docs.ExecUse,
@@ -209,11 +211,13 @@ var ShellCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		a := []string{"/.singularity.d/actions/shell"}
 		setVM(cmd)
-		if VM {
+		if vm {
 			execVM(cmd, args[0], a)
 			return
 		}
-		execStarter(cmd, args[0], a, "")
+		if err := launchContainer(cmd, args[0], a, ""); err != nil {
+			sylog.Fatalf("%s", err)
+		}
 	},
 
 	Use:     docs.ShellUse,
@@ -231,11 +235,13 @@ var RunCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		a := append([]string{"/.singularity.d/actions/run"}, args[1:]...)
 		setVM(cmd)
-		if VM {
+		if vm {
 			execVM(cmd, args[0], a)
 			return
 		}
-		execStarter(cmd, args[0], a, "")
+		if err := launchContainer(cmd, args[0], a, ""); err != nil {
+			sylog.Fatalf("%s", err)
+		}
 	},
 
 	Use:     docs.RunUse,
@@ -253,15 +259,96 @@ var TestCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		a := append([]string{"/.singularity.d/actions/test"}, args[1:]...)
 		setVM(cmd)
-		if VM {
+		if vm {
 			execVM(cmd, args[0], a)
 			return
 		}
-		execStarter(cmd, args[0], a, "")
+		if err := launchContainer(cmd, args[0], a, ""); err != nil {
+			sylog.Fatalf("%s", err)
+		}
 	},
 
 	Use:     docs.RunTestUse,
 	Short:   docs.RunTestShort,
 	Long:    docs.RunTestLong,
 	Example: docs.RunTestExample,
+}
+
+func launchContainer(cmd *cobra.Command, image string, args []string, instanceName string) error {
+	ns := launch.Namespaces{
+		User: userNamespace,
+		UTS:  utsNamespace,
+		PID:  pidNamespace,
+		IPC:  ipcNamespace,
+		Net:  netNamespace,
+	}
+
+	cgJSON, err := getCgroupsJSON()
+	if err != nil {
+		return err
+	}
+
+	ki, err := getEncryptionMaterial(cmd)
+	if err != nil {
+		return err
+	}
+
+	opts := []launch.Option{
+		launch.OptWritable(isWritable),
+		launch.OptWritableTmpfs(isWritableTmpfs),
+		launch.OptOverlayPaths(overlayPath),
+		launch.OptScratchDirs(scratchPath),
+		launch.OptWorkDir(workdirPath),
+		launch.OptHome(
+			homePath,
+			cmd.Flag(actionHomeFlag.Name).Changed,
+			noHome,
+		),
+		launch.OptMounts(bindPaths, mounts, fuseMount),
+		launch.OptNoMount(noMount),
+		launch.OptNvidia(nvidia, nvCCLI),
+		launch.OptNoNvidia(noNvidia),
+		launch.OptRocm(rocm),
+		launch.OptNoRocm(noRocm),
+		launch.OptContainLibs(containLibsPath),
+		launch.OptEnv(apptainerEnv, apptainerEnvFile, isCleanEnv),
+		launch.OptNoEval(noEval),
+		launch.OptNamespaces(ns),
+		launch.OptNetwork(network, networkArgs),
+		launch.OptHostname(hostname),
+		launch.OptDNS(dns),
+		launch.OptCaps(addCaps, dropCaps),
+		launch.OptAllowSUID(allowSUID),
+		launch.OptKeepPrivs(keepPrivs),
+		launch.OptNoPrivs(noPrivs),
+		launch.OptSecurity(security),
+		launch.OptNoUmask(noUmask),
+		launch.OptCgroupsJSON(cgJSON),
+		launch.OptConfigFile(configurationFile),
+		launch.OptShellPath(shellPath),
+		launch.OptPwdPath(pwdPath),
+		launch.OptFakeroot(isFakeroot),
+		launch.OptBoot(isBoot),
+		launch.OptNoInit(noInit),
+		launch.OptContain(isContained),
+		launch.OptContainAll(isContainAll),
+		launch.OptAppName(appName),
+		launch.OptKeyInfo(ki),
+		launch.OptCacheDisabled(disableCache),
+		launch.OptDMTCPLaunch(dmtcpLaunch),
+		launch.OptDMTCPRestart(dmtcpRestart),
+		launch.OptUnsquash(unsquash),
+		launch.OptIgnoreSubuid(ignoreSubuid),
+		launch.OptIgnoreFakerootCmd(ignoreFakerootCmd),
+		launch.OptIgnoreUserns(ignoreUserns),
+		launch.OptUseBuildConfig(useBuildConfig),
+		launch.OptTmpDir(tmpDir),
+	}
+
+	l, err := launch.NewLauncher(opts...)
+	if err != nil {
+		return fmt.Errorf("while configuring container: %s", err)
+	}
+
+	return l.Exec(cmd.Context(), image, args, instanceName)
 }

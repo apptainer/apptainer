@@ -119,8 +119,8 @@ func Test_getBlkioLimits(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			BlkioWeight = tt.blkioWeight
-			BlkioWeightDevice = tt.blkioWeightDevice
+			blkioWeight = tt.blkioWeight
+			blkioWeightDevice = tt.blkioWeightDevice
 
 			blkio, err := getBlkioLimits()
 
@@ -235,10 +235,10 @@ func Test_getCpuLimits(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			CPUShares = tt.cpuShares
-			CPUSetCPUs = tt.cpusetCPUs
-			CPUSetMems = tt.cpusetMems
-			CPUs = tt.cpus
+			cpuShares = tt.cpuShares
+			cpuSetCPUs = tt.cpusetCPUs
+			cpuSetMems = tt.cpusetMems
+			cpus = tt.cpus
 
 			cpu, err := getCPULimits()
 
@@ -421,10 +421,10 @@ func Test_getMemoryLimits(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Memory = tt.memory
-			MemoryReservation = tt.memoryReservation
-			MemorySwap = tt.memorySwap
-			OomKillDisable = tt.oomKillDisable
+			memory = tt.memory
+			memoryReservation = tt.memoryReservation
+			memorySwap = tt.memorySwap
+			oomKillDisable = tt.oomKillDisable
 
 			mem, err := getMemoryLimits()
 
@@ -496,7 +496,7 @@ func Test_getPidsLimits(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			PidsLimit = tt.pidsLimit
+			pidsLimit = tt.pidsLimit
 
 			pids, err := getPidsLimits()
 
