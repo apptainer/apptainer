@@ -13,6 +13,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Set the `--net` flag if `--network` or `--network-args` is set rather
   than silently ignoring them if `--net` was not set.
 - Do not hang on pull from http(s) source that doesn't provide a content-length.
+- Avoid hang on fakeroot cleanup under high load seen on some
+  distributions / kernels.
 
 ## v1.1.3 - \[2022-10-25\]
 
