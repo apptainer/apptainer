@@ -12,7 +12,7 @@ require (
 	github.com/apptainer/sif/v2 v2.8.3
 	github.com/blang/semver/v4 v4.0.0
 	github.com/buger/jsonparser v1.1.1
-	github.com/cenkalti/backoff/v4 v4.1.3
+	github.com/cenkalti/backoff/v4 v4.2.0
 	github.com/containerd/containerd v1.6.8
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.1.1
