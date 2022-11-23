@@ -1412,11 +1412,7 @@ __attribute__((constructor)) static void init(void) {
         if ( sconfig->starter.isSuid ) {
             priv_escalate(true);
         } else if ( uid != 0 ) {
-            /*
-             * This case should not be hit because IsSuidInstall() checks
-             * earlier to make sure starter-suid is setuid root
-             */
-            fatalf("installation issue: starter-suid doesn't have setuid bit set\n");
+            fatalf("Installation issue: starter-suid doesn't have setuid bit set\n");
         }
         break;
     case ENTER_NAMESPACE:
