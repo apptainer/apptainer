@@ -376,7 +376,7 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	}
 
 	loadOverlay := false
-	if !l.cfg.Namespaces.User && starter.IsSuidInstall() {
+	if !l.cfg.Namespaces.User && buildcfg.APPTAINER_SUID_INSTALL == 1 {
 		loadOverlay = true
 	}
 
@@ -552,7 +552,7 @@ func (l *Launcher) checkEncryptionKey() error {
 func (l *Launcher) useSuid(insideUserNs bool) (useSuid bool) {
 	// privileged installation by default
 	useSuid = true
-	if !starter.IsSuidInstall() {
+	if buildcfg.APPTAINER_SUID_INSTALL == 0 {
 		// not a privileged installation
 		useSuid = false
 
@@ -573,7 +573,7 @@ func (l *Launcher) useSuid(insideUserNs bool) (useSuid bool) {
 		// fallback to user namespace:
 		// - for non root user with setuid installation and 'allow setuid = no'
 		// - for root user without effective capability CAP_SYS_ADMIN
-		if l.uid != 0 && starter.IsSuidInstall() && !l.engineConfig.File.AllowSetuid {
+		if l.uid != 0 && buildcfg.APPTAINER_SUID_INSTALL == 1 && !l.engineConfig.File.AllowSetuid {
 			sylog.Verbosef("'allow setuid' set to 'no' by configuration, fallback to user namespace")
 			l.cfg.Namespaces.User = true
 		} else if l.uid == 0 && !l.cfg.Namespaces.User {
@@ -770,7 +770,7 @@ func (l *Launcher) SetGPUConfig() error {
 
 		// TODO: In privileged fakeroot mode we don't have the correct namespace context to run nvidia-container-cli
 		// from  starter, so fall back to legacy NV handling until that workflow is refactored heavily.
-		fakeRootPriv := l.cfg.Fakeroot && l.engineConfig.File.AllowSetuid && starter.IsSuidInstall()
+		fakeRootPriv := l.cfg.Fakeroot && l.engineConfig.File.AllowSetuid && buildcfg.APPTAINER_SUID_INSTALL == 1
 		if !fakeRootPriv {
 			return l.setNvCCLIConfig()
 		}
@@ -896,7 +896,7 @@ func (l *Launcher) setNamespaces() {
 			// unprivileged installation could not use fakeroot
 			// network because it requires a setuid installation
 			// so we fallback to none
-			if !starter.IsSuidInstall() || !l.engineConfig.File.AllowSetuid {
+			if buildcfg.APPTAINER_SUID_INSTALL == 0 || !l.engineConfig.File.AllowSetuid {
 				sylog.Warningf(
 					"fakeroot with unprivileged installation or 'allow setuid = no' " +
 						"could not use 'fakeroot' network, fallback to 'none' network",

@@ -36,6 +36,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Do not hang on pull from http(s) source that doesn't provide a content-length.
 - Avoid hang on fakeroot cleanup under high load seen on some
   distributions / kernels.
+- Make the binaries built in the unprivileged `apptainer` package relocatable.
+  When moving the binaries to a new location, the `/usr` at the top of some
+  of the paths needs to be removed.  Relocation is disallowed when the
+  `starter-suid` is present, for security reasons.
 
 ## v1.1.3 - \[2022-10-25\]
 
