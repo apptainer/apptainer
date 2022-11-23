@@ -18,7 +18,6 @@ import (
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
-	"github.com/apptainer/apptainer/internal/pkg/util/starter"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
@@ -160,7 +159,7 @@ func init() {
 }
 
 func checkGlobal(cmd *cobra.Command, args []string) {
-	if !keyGlobalPubKey || os.Geteuid() == 0 || !starter.IsSuidInstall() {
+	if !keyGlobalPubKey || os.Geteuid() == 0 || buildcfg.APPTAINER_SUID_INSTALL == 0 {
 		return
 	}
 	path := cmd.CommandPath()

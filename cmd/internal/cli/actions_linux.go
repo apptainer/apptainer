@@ -360,7 +360,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	// privileged installation by default
 	useSuid := true
 
-	if !starter.IsSuidInstall() {
+	if buildcfg.APPTAINER_SUID_INSTALL == 0 {
 		// not a privileged installation
 		useSuid = false
 
@@ -381,7 +381,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		// fallback to user namespace:
 		// - for non root user with setuid installation and 'allow setuid = no'
 		// - for root user without effective capability CAP_SYS_ADMIN
-		if uid != 0 && starter.IsSuidInstall() && !engineConfig.File.AllowSetuid {
+		if uid != 0 && buildcfg.APPTAINER_SUID_INSTALL == 1 && !engineConfig.File.AllowSetuid {
 			sylog.Verbosef("'allow setuid' set to 'no' by configuration, fallback to user namespace")
 			UserNamespace = true
 		} else if uid == 0 && !UserNamespace {
@@ -687,7 +687,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			// unprivileged installation could not use fakeroot
 			// network because it requires a setuid installation
 			// so we fallback to none
-			if !starter.IsSuidInstall() || !engineConfig.File.AllowSetuid {
+			if buildcfg.APPTAINER_SUID_INSTALL == 0 || !engineConfig.File.AllowSetuid {
 				sylog.Warningf(
 					"fakeroot with unprivileged installation or 'allow setuid = no' " +
 						"could not use 'fakeroot' network, fallback to 'none' network",
@@ -792,7 +792,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 
 	// starter will force the loading of kernel overlay module
 	loadOverlay := false
-	if !UserNamespace && starter.IsSuidInstall() {
+	if !UserNamespace && buildcfg.APPTAINER_SUID_INSTALL == 1 {
 		loadOverlay = true
 	}
 
@@ -970,7 +970,7 @@ func SetGPUConfig(engineConfig *apptainerConfig.EngineConfig) error {
 
 		// TODO: In privileged fakeroot mode we don't have the correct namespace context to run nvidia-container-cli
 		// from  starter, so fall back to legacy NV handling until that workflow is refactored heavily.
-		fakeRootPriv := IsFakeroot && engineConfig.File.AllowSetuid && starter.IsSuidInstall()
+		fakeRootPriv := IsFakeroot && engineConfig.File.AllowSetuid && buildcfg.APPTAINER_SUID_INSTALL == 1
 		if !fakeRootPriv {
 			return setNvCCLIConfig(engineConfig)
 		}

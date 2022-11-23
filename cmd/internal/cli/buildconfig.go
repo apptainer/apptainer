@@ -13,7 +13,6 @@ import (
 	"fmt"
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
-	"github.com/apptainer/apptainer/internal/pkg/util/starter"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/spf13/cobra"
 )
@@ -44,10 +43,6 @@ var BuildConfigCmd = &cobra.Command{
 }
 
 func printParam(name string) error {
-	isSuidInstall := 0
-	if starter.IsSuidInstall() {
-		isSuidInstall = 1
-	}
 	params := []struct {
 		name  string
 		value string
@@ -76,7 +71,7 @@ func printParam(name string) error {
 		{"SESSIONDIR", buildcfg.SESSIONDIR},
 		{"PLUGIN_ROOTDIR", buildcfg.PLUGIN_ROOTDIR},
 		{"APPTAINER_CONF_FILE", buildcfg.APPTAINER_CONF_FILE},
-		{"APPTAINER_SUID_INSTALL", fmt.Sprintf("%d", isSuidInstall)},
+		{"APPTAINER_SUID_INSTALL", fmt.Sprintf("%d", buildcfg.APPTAINER_SUID_INSTALL)},
 	}
 
 	if name != "" {

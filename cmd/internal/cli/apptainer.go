@@ -30,7 +30,6 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
-	"github.com/apptainer/apptainer/internal/pkg/util/starter"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	clicallback "github.com/apptainer/apptainer/pkg/plugin/callback/cli"
 	"github.com/apptainer/apptainer/pkg/syfs"
@@ -469,7 +468,7 @@ func persistentPreRun(*cobra.Command, []string) error {
 		}
 		apptainerconf.ApplyBuildConfig(config)
 	} else {
-		if os.Geteuid() != 0 && starter.IsSuidInstall() {
+		if os.Geteuid() != 0 && buildcfg.APPTAINER_SUID_INSTALL == 1 {
 			if configurationFile != singConfigFileFlag.DefaultValue {
 				return fmt.Errorf("--config requires to be root or an unprivileged installation")
 			}
@@ -788,7 +787,7 @@ func CheckRoot(cmd *cobra.Command, args []string) {
 // CheckRootOrUnpriv ensures that a command is executed with root
 // privileges or that Apptainer is installed unprivileged.
 func CheckRootOrUnpriv(cmd *cobra.Command, args []string) {
-	if os.Geteuid() != 0 && starter.IsSuidInstall() {
+	if os.Geteuid() != 0 && buildcfg.APPTAINER_SUID_INSTALL == 1 {
 		sylog.Fatalf("%q command requires root privileges or an unprivileged installation", cmd.CommandPath())
 	}
 }

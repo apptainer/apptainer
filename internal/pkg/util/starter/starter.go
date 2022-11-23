@@ -16,8 +16,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sync"
-	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
@@ -68,34 +66,6 @@ func UseSuid(suid bool) CommandOp {
 		}
 		c.path = filepath.Join(buildcfg.LIBEXECDIR, "apptainer/bin/starter")
 	}
-}
-
-// IsSuidInstall returns true if the privileged binary is configured and exists.
-// If it exists but is not really privileged, that is a fatal error.
-var (
-	isSuidOnce sync.Once
-	isSuid     bool
-)
-
-func IsSuidInstall() bool {
-	isSuidOnce.Do(func() {
-		if buildcfg.APPTAINER_SUID_INSTALL != 1 {
-			return
-		}
-		path := filepath.Join(buildcfg.LIBEXECDIR, "apptainer/bin/starter-suid")
-		info, err := os.Stat(path)
-		if err != nil {
-			return
-		}
-		if os.Getuid() != 0 {
-			stat := info.Sys().(*syscall.Stat_t)
-			if stat.Uid != 0 || (info.Mode()&os.ModeSetuid) == 0 {
-				sylog.Fatalf("Installation issue: %v is not setuid root", path)
-			}
-		}
-		isSuid = true
-	})
-	return isSuid
 }
 
 // LoadOverlayModule sets LOAD_OVERLAY_MODULE environment variable
