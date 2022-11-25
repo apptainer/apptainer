@@ -32,8 +32,9 @@ var errNotSignedByRequired = errors.New("image not signed by required entities")
 type VerifyCallback func(*sif.FileImage, integrity.VerifyResult) bool
 
 type verifier struct {
-	sv        signature.Verifier
-	opts      []client.Option
+	svs       []signature.Verifier
+	pgp       bool
+	pgpOpts   []client.Option
 	groupIDs  []uint32
 	objectIDs []uint32
 	all       bool
@@ -44,19 +45,20 @@ type verifier struct {
 // VerifyOpt are used to configure v.
 type VerifyOpt func(v *verifier) error
 
-// OptVerifyWithVerifier specifies sv be used to verify signatures.
+// OptVerifyWithVerifier appends sv as a source of key material to verify signatures.
 func OptVerifyWithVerifier(sv signature.Verifier) VerifyOpt {
 	return func(v *verifier) error {
-		v.sv = sv
+		v.svs = append(v.svs, sv)
 		return nil
 	}
 }
 
-// OptVerifyUseKeyServer specifies that the keyserver specified by opts be used as a source of key
-// material, in addition to the local public keyring.
-func OptVerifyUseKeyServer(opts ...client.Option) VerifyOpt {
+// OptVerifyWithPGP adds the local public keyring as a source of key material to verify signatures.
+// If supplied, opts specify a keyserver to use in addition to the local public keyring.
+func OptVerifyWithPGP(opts ...client.Option) VerifyOpt {
 	return func(v *verifier) error {
-		v.opts = opts
+		v.pgp = true
+		v.pgpOpts = opts
 		return nil
 	}
 }
@@ -120,14 +122,16 @@ func newVerifier(opts []VerifyOpt) (verifier, error) {
 func (v verifier) getOpts(ctx context.Context, f *sif.FileImage) ([]integrity.VerifierOpt, error) {
 	var iopts []integrity.VerifierOpt
 
-	if v.sv != nil {
-		// Use explicitly provided key material.
-		iopts = append(iopts, integrity.OptVerifyWithVerifier(v.sv))
-	} else {
-		// Use key material from keyring.
+	// Add explicitly provided key material source(s).
+	for _, sv := range v.svs {
+		iopts = append(iopts, integrity.OptVerifyWithVerifier(sv))
+	}
+
+	// Add PGP key material, if applicable.
+	if v.pgp {
 		var kr openpgp.KeyRing
-		if v.opts != nil {
-			hkr, err := sypgp.NewHybridKeyRing(ctx, v.opts...)
+		if v.pgpOpts != nil {
+			hkr, err := sypgp.NewHybridKeyRing(ctx, v.pgpOpts...)
 			if err != nil {
 				return nil, err
 			}
@@ -192,8 +196,9 @@ func (v verifier) getOpts(ctx context.Context, f *sif.FileImage) ([]integrity.Ve
 
 // Verify verifies digital signature(s) in the SIF image found at path, according to opts.
 //
-// By default, the apptainer public keyring provides key material. To supplement this with a
-// keyserver, use OptVerifyUseKeyServer.
+// To use raw key material, use OptVerifyWithVerifier.
+//
+// To use PGP key material, use OptVerifyWithPGP.
 //
 // By default, non-legacy signatures for all object groups are verified. To override the default
 // behavior, consider using OptVerifyGroup, OptVerifyObject, OptVerifyAll, and/or OptVerifyLegacy.
@@ -224,10 +229,12 @@ func Verify(ctx context.Context, path string, opts ...VerifyOpt) error {
 	return iv.Verify()
 }
 
-// VerifyFingerprints verifies an image and checks it was signed by *all* of the provided fingerprints
+// VerifyFingerprints verifies an image and checks it was signed by *all* of the provided
+// fingerprints.
 //
-// By default, the apptainer public keyring provides key material. To supplement this with a
-// keyserver, use OptVerifyUseKeyServer.
+// To use raw key material, use OptVerifyWithVerifier.
+//
+// To use PGP key material, use OptVerifyWithPGP.
 //
 // By default, non-legacy signatures for all object groups are verified. To override the default
 // behavior, consider using OptVerifyGroup, OptVerifyObject, OptVerifyAll, and/or OptVerifyLegacy.

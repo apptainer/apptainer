@@ -143,7 +143,7 @@ func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pull
 		}
 	}
 
-	if err := apptainer.Verify(ctx, pullTo, apptainer.OptVerifyUseKeyServer(co...)); err != nil {
+	if err := apptainer.Verify(ctx, pullTo, apptainer.OptVerifyWithPGP(co...)); err != nil {
 		sylog.Warningf("%v", err)
 		return pullTo, ErrLibraryPullUnsigned
 	}

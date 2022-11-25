@@ -200,6 +200,26 @@ func (c ctx) apptainerSignKeyidxOption(t *testing.T) {
 	)
 }
 
+func (c ctx) apptainerSignKeyOption(t *testing.T) {
+	imgPath, cleanup := c.prepareImage(t)
+	defer cleanup(t)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("sign"),
+		e2e.WithArgs(
+			"--key",
+			filepath.Join("..", "test", "keys", "private.pem"),
+			imgPath,
+		),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied to "+imgPath),
+		),
+	)
+}
+
 func (c *ctx) generateKeypair(t *testing.T) {
 	keyGenInput := []e2e.ApptainerConsoleOp{
 		e2e.ConsoleSendLine("e2e sign test key"),
@@ -251,6 +271,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			t.Run("apptainerSignIDOption", c.apptainerSignIDOption)
 			t.Run("apptainerSignGroupIDOption", c.apptainerSignGroupIDOption)
 			t.Run("apptainerSignKeyidxOption", c.apptainerSignKeyidxOption)
+			t.Run("apptainerSignKeyOption", c.apptainerSignKeyOption)
 		},
 	}
 }
