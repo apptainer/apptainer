@@ -332,7 +332,7 @@ func TestValidateConfig(t *testing.T) {
 func getTestEntity(t *testing.T) *openpgp.Entity {
 	t.Helper()
 
-	f, err := os.Open(filepath.Join("testdata", "keys", "private.asc"))
+	f, err := os.Open(filepath.Join("..", "..", "..", "test", "keys", "private.asc"))
 	if err != nil {
 		t.Fatal(err)
 	}
