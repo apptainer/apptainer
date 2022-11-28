@@ -311,7 +311,7 @@ func (c ctx) checkURLOption(t *testing.T) {
 }
 
 func (c ctx) apptainerVerifyKeyOption(t *testing.T) {
-	imagePath := filepath.Join("testdata", "images", "one-group-signed-dsse.sif")
+	imagePath := filepath.Join("..", "test", "images", "one-group-signed-dsse.sif")
 
 	c.env.RunApptainer(
 		t,

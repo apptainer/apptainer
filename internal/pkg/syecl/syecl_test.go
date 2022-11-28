@@ -218,7 +218,7 @@ func TestLoadConfig(t *testing.T) {
 }
 
 func TestValidateConfig(t *testing.T) {
-	dirPath, err := filepath.Abs(filepath.Join("testdata", "images"))
+	dirPath, err := filepath.Abs(filepath.Join("..", "..", "..", "test", "images"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -350,7 +350,7 @@ func getTestEntity(t *testing.T) *openpgp.Entity {
 }
 
 func TestShouldRun(t *testing.T) {
-	dirPath, err := filepath.Abs(filepath.Join("testdata", "images"))
+	dirPath, err := filepath.Abs(filepath.Join("..", "..", "..", "test", "images"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -397,8 +397,8 @@ func TestShouldRun(t *testing.T) {
 	}
 
 	unsigned := filepath.Join(dirPath, "one-group.sif")
-	signed := filepath.Join(dirPath, "one-group-signed.sif")
-	legacySigned := filepath.Join(dirPath, "one-group-legacy-signed.sif")
+	signed := filepath.Join(dirPath, "one-group-signed-pgp.sif")
+	legacySigned := filepath.Join(dirPath, "one-group-signed-legacy.sif")
 
 	//nolint:maligned // the aligned form, with eg first, is not as easy to read
 	tests := []struct {

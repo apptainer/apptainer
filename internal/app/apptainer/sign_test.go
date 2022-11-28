@@ -68,27 +68,27 @@ func TestSign(t *testing.T) {
 	}{
 		{
 			name:    "ErrNoKeyMaterial",
-			path:    filepath.Join("testdata", "images", "one-group.sif"),
+			path:    filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
 			wantErr: integrity.ErrNoKeyMaterial,
 		},
 		{
 			name: "OptSignWithSigner",
-			path: filepath.Join("testdata", "images", "one-group.sif"),
+			path: filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
 			opts: []SignOpt{OptSignWithSigner(sv)},
 		},
 		{
 			name: "OptSignEntitySelector",
-			path: filepath.Join("testdata", "images", "one-group.sif"),
+			path: filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
 			opts: []SignOpt{OptSignEntitySelector(es)},
 		},
 		{
 			name: "OptSignGroup",
-			path: filepath.Join("testdata", "images", "one-group.sif"),
+			path: filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
 			opts: []SignOpt{OptSignWithSigner(sv), OptSignGroup(1)},
 		},
 		{
 			name: "OptSignObjects",
-			path: filepath.Join("testdata", "images", "one-group.sif"),
+			path: filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
 			opts: []SignOpt{OptSignWithSigner(sv), OptSignObjects(1)},
 		},
 	}
