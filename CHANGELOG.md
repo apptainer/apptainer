@@ -40,6 +40,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   When moving the binaries to a new location, the `/usr` at the top of some
   of the paths needs to be removed.  Relocation is disallowed when the
   `starter-suid` is present, for security reasons.
+- Remove obsolete pacstrap `-d` in Arch packer
 
 ## v1.1.3 - \[2022-10-25\]
 
