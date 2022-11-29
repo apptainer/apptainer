@@ -20,6 +20,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Instances are started in a cgroup, by default, when run as root or when
   unified cgroups v2 with systemd as manager is configured. This allows
   `apptainer instance stats` to be supported by default when possible.
+- `sessiondir maxsize` in `apptainer.conf` now defaults to 64 MiB for new
+  installations. This is an increase from 16 MiB in prior versions.
 
 ### New features / functionalities
 

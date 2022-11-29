@@ -136,11 +136,11 @@ mount slave = yes
 
 
 # SESSIONDIR MAXSIZE: [STRING]
-# DEFAULT: 16
+# DEFAULT: 64
 # This specifies how large the default sessiondir should be (in MB) and it will
 # only affect users who use the "--contain" options and don't also specify a
 # location to do default read/writes to (e.g. "--workdir" or "--home").
-sessiondir max size = 16
+sessiondir max size = 64
 
 
 # LIMIT CONTAINER OWNERS: [STRING]
