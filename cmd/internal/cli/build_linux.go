@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/build"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/fakeroot"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
@@ -40,7 +41,7 @@ import (
 )
 
 func fakerootExec(isDeffile bool) {
-	useSuid := starter.IsSuidInstall() && !buildArgs.userns
+	useSuid := buildcfg.APPTAINER_SUID_INSTALL == 1 && !buildArgs.userns
 
 	// First remove fakeroot option from args and environment if present
 	short := "-" + buildFakerootFlag.ShortHand
