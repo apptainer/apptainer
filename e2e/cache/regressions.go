@@ -10,13 +10,14 @@
 package cache
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path"
 	"path/filepath"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
-	client "github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 )
 
@@ -31,22 +32,27 @@ func (c cacheTests) issue5097(t *testing.T) {
 	defer imgStoreCleanup(t)
 	imagePath := filepath.Join(tempDir, imgName)
 
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, c.env.ImagePath)
+	}))
+	defer srv.Close()
+
 	// Pull through the cache - will give us a new style file in the cache
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", imagePath, imgURL}...),
+		e2e.WithArgs([]string{"--force", imagePath, srv.URL}...),
 		e2e.ExpectExit(0),
 	)
 
 	// Replace the cache entry with a directory, containing the image,
 	// like in older versions of apptainer
-	hash, err := client.ImageHash(imagePath)
+	hash, err := netHash(srv.URL)
 	if err != nil {
 		t.Fatalf("Could not calculate hash of test image: %v", err)
 	}
-	cachePath := path.Join(imgCacheDir, "cache", "oras", hash)
+	cachePath := path.Join(imgCacheDir, "cache", "net", hash)
 	err = os.Remove(cachePath)
 	if err != nil {
 		t.Fatalf("Could not remove cached image '%s': %v", cachePath, err)
@@ -66,7 +72,7 @@ func (c cacheTests) issue5097(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", imagePath, imgURL}...),
+		e2e.WithArgs([]string{"--force", imagePath, srv.URL}...),
 		e2e.ExpectExit(0),
 	)
 
