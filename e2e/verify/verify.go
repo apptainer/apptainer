@@ -329,6 +329,22 @@ func (c ctx) apptainerVerifyKeyOption(t *testing.T) {
 	)
 }
 
+func (c ctx) apptainerVerifyKeyEnv(t *testing.T) {
+	imagePath := filepath.Join("..", "test", "images", "one-group-signed-dsse.sif")
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithEnv([]string{"APPTAINER_VERIFY_KEY=" + filepath.Join("..", "test", "keys", "public.pem")}),
+		e2e.WithCommand("verify"),
+		e2e.WithArgs(imagePath),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.ContainMatch, "Container verified: "+imagePath),
+		),
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -351,6 +367,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			t.Run("apptainerVerifyIDOption", c.checkIDOption)
 			t.Run("apptainerVerifyURLOption", c.checkURLOption)
 			t.Run("apptainerVerifyKeyOption", c.apptainerVerifyKeyOption)
+			t.Run("apptainerVerifyKeyEnv", c.apptainerVerifyKeyEnv)
 		},
 	}
 }

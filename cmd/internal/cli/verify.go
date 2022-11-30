@@ -92,6 +92,7 @@ var verifyPublicKeyFlag = cmdline.Flag{
 	DefaultValue: "",
 	Name:         "key",
 	Usage:        "path to the public key file",
+	EnvKeys:      []string{"VERIFY_KEY"},
 }
 
 // -l|--local
