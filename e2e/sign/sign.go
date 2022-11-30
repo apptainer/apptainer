@@ -36,7 +36,7 @@ func (c ctx) apptainerSignHelpOption(t *testing.T) {
 		e2e.WithArgs("--help"),
 		e2e.ExpectExit(
 			0,
-			e2e.ExpectOutput(e2e.ContainMatch, "Attach digital signature(s) to an image"),
+			e2e.ExpectOutput(e2e.ContainMatch, "Add digital signature(s) to an image"),
 		),
 	)
 }

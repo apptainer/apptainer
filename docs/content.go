@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2017-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2017-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -740,14 +740,19 @@ Enterprise Performance Computing (EPC)`
 	// sign
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	SignUse   string = `sign [sign options...] <image path>`
-	SignShort string = `Attach digital signature(s) to an image`
+	SignShort string = `Add digital signature(s) to an image`
 	SignLong  string = `
   The sign command allows a user to add one or more digital signatures to a SIF
   image. By default, one digital signature is added for each object group in
   the file.
-  
-  To generate a key pair, see 'apptainer help key newpair'`
+
+  Key material can be provided via PEM-encoded file, or an entity in the PGP
+  keyring. To manage the PGP keyring, see 'apptainer help key'.`
 	SignExample string = `
+  Sign with a private key:
+  $ apptainer sign --key private.pem container.sif
+
+  Sign with PGP:
   $ apptainer sign container.sif`
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
