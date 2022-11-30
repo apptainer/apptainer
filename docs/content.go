@@ -768,15 +768,18 @@ Enterprise Performance Computing (EPC)`
 	// verify
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	VerifyUse   string = `verify [verify options...] <image path>`
-	VerifyShort string = `Verify cryptographic signatures attached to an image`
+	VerifyShort string = `Verify digital signature(s) within an image`
 	VerifyLong  string = `
-  The verify command allows a user to verify cryptographic signatures on SIF 
-  container files. There may be multiple signatures for data objects and 
-  multiple data objects signed. By default the command searches for the primary 
-  partition signature. If found, a list of all verification blocks applied on 
-  the primary partition is gathered so that data integrity (hashing) and 
-  signature verification is done for all those blocks.`
+  The verify command allows a user to verify one or more digital signatures
+  within a SIF image.
+
+  Key material can be provided via PEM-encoded file, or via the PGP keyring. To
+  manage the PGP keyring, see 'apptainer help key'.`
 	VerifyExample string = `
+  Verify with a public key:
+  $ apptainer verify --key public.pem container.sif
+
+  Verify with PGP:
   $ apptainer verify container.sif`
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
