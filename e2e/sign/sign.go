@@ -10,250 +10,161 @@
 package sign
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
-	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 )
 
 type ctx struct {
-	env             e2e.TestEnv
-	keyringDir      string
-	passphraseInput []e2e.ApptainerConsoleOp
+	e2e.TestEnv
 }
 
-const imgName = "testImage.sif"
-
-func (c ctx) apptainerSignHelpOption(t *testing.T) {
-	c.env.KeyringDir = c.keyringDir
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithCommand("sign"),
-		e2e.WithArgs("--help"),
-		e2e.ExpectExit(
-			0,
-			e2e.ExpectOutput(e2e.ContainMatch, "Add digital signature(s) to an image"),
-		),
-	)
-}
-
-func (c *ctx) prepareImage(t *testing.T) (string, func(*testing.T)) {
-	// Get a refresh unsigned image
-	tempDir, err := os.MkdirTemp("", "")
+func getImage(t *testing.T) string {
+	dst, err := os.CreateTemp("", "e2e-sign-keyring-*")
 	if err != nil {
-		t.Fatalf("failed to create temporary directory: %s", err)
+		t.Fatal(err)
 	}
-	imgPath := filepath.Join(tempDir, imgName)
+	defer dst.Close()
 
-	err = fs.CopyFile(e2e.BusyboxSIF(t), imgPath, 0o755)
+	src, err := os.Open(filepath.Join("..", "test", "images", "one-group.sif"))
 	if err != nil {
-		t.Fatalf("failed to copy temporary image: %s", err)
+		t.Fatal(err)
+	}
+	defer src.Close()
+
+	if _, err := io.Copy(dst, src); err != nil {
+		t.Fatal(err)
 	}
 
-	return filepath.Join(tempDir, "testImage.sif"), func(t *testing.T) {
-		err := os.RemoveAll(tempDir)
-		if err != nil {
-			t.Fatalf("failed to delete temporary directory: %s", err)
-		}
-	}
+	return dst.Name()
 }
 
-//nolint:dupl
-func (c ctx) apptainerSignIDOption(t *testing.T) {
-	imgPath, cleanup := c.prepareImage(t)
-	defer cleanup(t)
+func (c *ctx) sign(t *testing.T) {
+	keyPath := filepath.Join("..", "test", "keys", "private.pem")
 
 	tests := []struct {
 		name       string
-		args       []string
-		expectOp   e2e.ApptainerCmdResultOp
-		expectExit int
+		envs       []string
+		flags      []string
+		expectCode int
+		expectOps  []e2e.ApptainerCmdResultOp
 	}{
 		{
-			name:       "sign deffile",
-			args:       []string{"--sif-id", "1", imgPath},
-			expectOp:   e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied to "+imgPath),
-			expectExit: 0,
+			name:  "Help",
+			flags: []string{"--help"},
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ContainMatch, "Add digital signature(s) to an image"),
+			},
 		},
 		{
-			name:       "sign non-existent ID",
-			args:       []string{"--sif-id", "99", imgPath},
-			expectOp:   e2e.ExpectError(e2e.ContainMatch, "integrity: object not found"),
-			expectExit: 255,
+			name: "OK",
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing image with PGP key material"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied"),
+			},
+		},
+		{
+			name:  "ObjectIDFlag",
+			flags: []string{"--sif-id", "1"},
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing image with PGP key material"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied"),
+			},
+		},
+		{
+			name:       "ObjectIDFlagNotFound",
+			flags:      []string{"--sif-id", "9"},
+			expectCode: 255,
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing image with PGP key material"),
+				e2e.ExpectError(e2e.ContainMatch, "integrity: object not found"),
+			},
+		},
+		{
+			name:  "GroupIDFlag",
+			flags: []string{"--group-id", "1"},
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing image with PGP key material"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied"),
+			},
+		},
+		{
+			name:       "GroupIDFlagNotFound",
+			flags:      []string{"--group-id", "5"},
+			expectCode: 255,
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing image with PGP key material"),
+				e2e.ExpectError(e2e.ContainMatch, "integrity: group not found"),
+			},
+		},
+		{
+			name:  "AllFlag",
+			flags: []string{"--all"},
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing image with PGP key material"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied"),
+			},
+		},
+		{
+			name:  "KeyIndexFlag",
+			flags: []string{"--keyidx", "0"},
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing image with PGP key material"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied"),
+			},
+		},
+		{
+			name:       "KeyIndexFlagOutOfRange",
+			flags:      []string{"--keyidx", "1"},
+			expectCode: 255,
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing image with PGP key material"),
+				e2e.ExpectError(e2e.ContainMatch, "Failed to sign container: index out of range"),
+			},
+		},
+		{
+			name:  "KeyFlag",
+			flags: []string{"--key", keyPath},
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing image with key material from '"+keyPath+"'"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied"),
+			},
+		},
+		{
+			name: "KeyEnvVar",
+			envs: []string{"APPTAINER_SIGN_KEY=" + keyPath},
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing image with key material from '"+keyPath+"'"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied"),
+			},
 		},
 	}
 
-	c.env.KeyringDir = c.keyringDir
-
 	for _, tt := range tests {
-		c.env.RunApptainer(
-			t,
+		imgPath := getImage(t)
+		defer os.Remove(imgPath)
+
+		c.RunApptainer(t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.UserProfile),
+			e2e.WithEnv(tt.envs),
 			e2e.WithCommand("sign"),
-			e2e.WithArgs(tt.args...),
-			e2e.ConsoleRun(c.passphraseInput...),
-			e2e.ExpectExit(tt.expectExit, tt.expectOp),
+			e2e.WithArgs(append(tt.flags, imgPath)...),
+			e2e.ExpectExit(tt.expectCode, tt.expectOps...),
 		)
 	}
 }
 
-func (c ctx) apptainerSignAllOption(t *testing.T) {
-	imgPath, cleanup := c.prepareImage(t)
-	defer cleanup(t)
-
-	tests := []struct {
-		name       string
-		args       []string
-		expectOp   e2e.ApptainerCmdResultOp
-		expectExit int
-	}{
-		{
-			name:       "sign default",
-			args:       []string{imgPath},
-			expectOp:   e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied to "+imgPath),
-			expectExit: 0,
-		},
-		{
-			name:       "sign all",
-			args:       []string{"--all", imgPath},
-			expectOp:   e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied to "+imgPath),
-			expectExit: 0,
-		},
-	}
-
-	c.env.KeyringDir = c.keyringDir
-
-	for _, tt := range tests {
-		c.env.RunApptainer(
-			t,
-			e2e.AsSubtest(tt.name),
-			e2e.WithProfile(e2e.UserProfile),
-			e2e.WithCommand("sign"),
-			e2e.WithArgs(tt.args...),
-			e2e.ConsoleRun(c.passphraseInput...),
-			e2e.ExpectExit(tt.expectExit, tt.expectOp),
-		)
-	}
-}
-
-//nolint:dupl
-func (c ctx) apptainerSignGroupIDOption(t *testing.T) {
-	imgPath, cleanup := c.prepareImage(t)
-	defer cleanup(t)
-
-	tests := []struct {
-		name       string
-		args       []string
-		expectOp   e2e.ApptainerCmdResultOp
-		expectExit int
-	}{
-		{
-			name:       "groupID 0",
-			args:       []string{"--group-id", "1", imgPath},
-			expectOp:   e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied to "+imgPath),
-			expectExit: 0,
-		},
-		{
-			name:       "groupID 5",
-			args:       []string{"--group-id", "5", imgPath},
-			expectOp:   e2e.ExpectOutput(e2e.ContainMatch, "integrity: group not found"),
-			expectExit: 255,
-		},
-	}
-
-	c.env.KeyringDir = c.keyringDir
-
-	for _, tt := range tests {
-		c.env.RunApptainer(
-			t,
-			e2e.AsSubtest(tt.name),
-			e2e.WithProfile(e2e.UserProfile),
-			e2e.WithCommand("sign"),
-			e2e.WithArgs(tt.args...),
-			e2e.ConsoleRun(c.passphraseInput...),
-			e2e.ExpectExit(tt.expectExit, tt.expectOp),
-		)
-	}
-}
-
-func (c ctx) apptainerSignKeyidxOption(t *testing.T) {
-	imgPath, cleanup := c.prepareImage(t)
-	defer cleanup(t)
-
-	cmdArgs := []string{"--keyidx", "0", imgPath}
-	c.env.KeyringDir = c.keyringDir
-	c.env.RunApptainer(
+func (c *ctx) importPGPKeypairs(t *testing.T) {
+	c.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithCommand("sign"),
-		e2e.WithArgs(cmdArgs...),
-		e2e.ConsoleRun(c.passphraseInput...),
-		e2e.ExpectExit(
-			0,
-			e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied to "+imgPath),
-		),
-	)
-}
-
-func (c ctx) apptainerSignKeyOption(t *testing.T) {
-	imgPath, cleanup := c.prepareImage(t)
-	defer cleanup(t)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithCommand("sign"),
-		e2e.WithArgs(
-			"--key",
-			filepath.Join("..", "test", "keys", "private.pem"),
-			imgPath,
-		),
-		e2e.ExpectExit(
-			0,
-			e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied to "+imgPath),
-		),
-	)
-}
-
-func (c ctx) apptainerSignKeyEnv(t *testing.T) {
-	imgPath, cleanup := c.prepareImage(t)
-	defer cleanup(t)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithEnv([]string{"APPTAINER_SIGN_KEY=" + filepath.Join("..", "test", "keys", "private.pem")}),
-		e2e.WithCommand("sign"),
-		e2e.WithArgs(imgPath),
-		e2e.ExpectExit(
-			0,
-			e2e.ExpectOutput(e2e.ContainMatch, "Signature created and applied to "+imgPath),
-		),
-	)
-}
-
-func (c *ctx) generateKeypair(t *testing.T) {
-	keyGenInput := []e2e.ApptainerConsoleOp{
-		e2e.ConsoleSendLine("e2e sign test key"),
-		e2e.ConsoleSendLine("jdoe@sylabs.io"),
-		e2e.ConsoleSendLine("sign e2e test"),
-		e2e.ConsoleSendLine("passphrase"),
-		e2e.ConsoleSendLine("passphrase"),
-		e2e.ConsoleSendLine("n"),
-	}
-
-	c.env.KeyringDir = c.keyringDir
-	c.env.RunApptainer(
-		t,
-		e2e.ConsoleRun(keyGenInput...),
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithCommand("key"),
-		e2e.WithArgs("newpair"),
+		e2e.WithCommand("key import"),
+		e2e.WithArgs(filepath.Join("..", "test", "keys", "private.asc")),
 		e2e.ExpectExit(0),
 	)
 }
@@ -261,35 +172,28 @@ func (c *ctx) generateKeypair(t *testing.T) {
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
-		env: env,
+		TestEnv: env,
 	}
 
 	return testhelper.Tests{
 		"ordered": func(t *testing.T) {
 			var err error
-			// We need one single key pair in a single keyring for all the tests
-			c.keyringDir, err = os.MkdirTemp("", "e2e-sign-keyring-")
+
+			// Create a temporary PGP keyring.
+			c.KeyringDir, err = os.MkdirTemp("", "e2e-sign-keyring-")
 			if err != nil {
 				t.Fatalf("failed to create temporary directory: %s", err)
 			}
 			defer func() {
-				err := os.RemoveAll(c.keyringDir)
+				err := os.RemoveAll(c.KeyringDir)
 				if err != nil {
 					t.Fatalf("failed to delete temporary directory: %s", err)
 				}
 			}()
-			c.generateKeypair(t)
 
-			c.passphraseInput = []e2e.ApptainerConsoleOp{
-				e2e.ConsoleSendLine("passphrase"),
-			}
-			t.Run("apptainerSignAllOption", c.apptainerSignAllOption)
-			t.Run("apptainerSignHelpOption", c.apptainerSignHelpOption)
-			t.Run("apptainerSignIDOption", c.apptainerSignIDOption)
-			t.Run("apptainerSignGroupIDOption", c.apptainerSignGroupIDOption)
-			t.Run("apptainerSignKeyidxOption", c.apptainerSignKeyidxOption)
-			t.Run("apptainerSignKeyOption", c.apptainerSignKeyOption)
-			t.Run("apptainerSignKeyEnv", c.apptainerSignKeyEnv)
+			c.importPGPKeypairs(t)
+
+			t.Run("Sign", c.sign)
 		},
 	}
 }
