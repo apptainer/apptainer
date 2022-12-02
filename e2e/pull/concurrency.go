@@ -78,14 +78,11 @@ func (c ctx) testConcurrentPulls(t *testing.T) {
 	}{
 		// test traditional sequential download
 		{"Concurrency1Cfg", map[string]string{"download concurrency": "1"}, nil, 0},
-		// test concurrency 3
-		{"Concurrency3Cfg", map[string]string{"download concurrency": "3"}, nil, 0},
 		// test concurrency 10
 		{"Concurrency10Cfg", map[string]string{"download concurrency": "10"}, nil, 0},
 
-		// test 1/3/10 goroutines (set via env vars)
+		// test 1/10 goroutines (set via env vars)
 		{"Concurrency1Env", nil, []string{"APPTAINER_DOWNLOAD_CONCURRENCY=1"}, 0},
-		{"Concurrency3Env", nil, []string{"APPTAINER_DOWNLOAD_CONCURRENCY=3"}, 0},
 		{"Concurrency10Env", nil, []string{"APPTAINER_DOWNLOAD_CONCURRENCY=10"}, 0},
 
 		// test concurrent download with 1 MiB and 8 MiB part size
