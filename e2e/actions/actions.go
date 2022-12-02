@@ -2184,6 +2184,7 @@ func (c actionTests) bindImage(t *testing.T) {
 }
 
 // actionUmask tests that the within-container umask is correct in action flows
+// Must be run in sequential section as it modifies host process umask.
 func (c actionTests) actionUmask(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
@@ -2411,6 +2412,7 @@ func (c actionTests) actionNoMount(t *testing.T) {
 
 // actionCompat checks that the --compat flag sets up the expected environment
 // for improved oci/docker compatibility
+// Must be run in sequential section as it modifies host process umask.
 func (c actionTests) actionCompat(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
@@ -2548,10 +2550,10 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"exit and signals":          c.exitSignals,             // test exit and signals propagation
 		"fuse mount":                c.fuseMount,               // test fusemount option
 		"bind image":                c.bindImage,               // test bind image with --bind and --mount
-		"umask":                     c.actionUmask,             // test umask propagation
 		"unsquash":                  c.actionUnsquash,          // test --unsquash
 		"no-mount":                  c.actionNoMount,           // test --no-mount
-		"compat":                    c.actionCompat,            // test --compat
+		"compat":                    np(c.actionCompat),        // test --compat
+		"umask":                     np(c.actionUmask),         // test umask propagation
 		"invalidRemote":             np(c.invalidRemote),       // GHSA-5mv9-q7fq-9394
 		"fakeroot home":             c.actionFakerootHome,      // test home dir in fakeroot
 	}
