@@ -14,7 +14,7 @@ require (
 	github.com/buger/goterm v1.0.4
 	github.com/buger/jsonparser v1.1.1
 	github.com/cenkalti/backoff/v4 v4.2.0
-	github.com/containerd/containerd v1.6.10
+	github.com/containerd/containerd v1.6.11
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.1.1
 	github.com/containers/image/v5 v5.23.1
@@ -117,7 +117,7 @@ require (
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mattn/go-shellwords v1.0.12 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
 	github.com/moby/locker v1.0.1 // indirect
 	github.com/moby/sys/mountinfo v0.6.2 // indirect
