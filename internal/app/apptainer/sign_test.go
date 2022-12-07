@@ -10,8 +10,8 @@
 package apptainer
 
 import (
+	"crypto"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -20,7 +20,44 @@ import (
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/apptainer/apptainer/pkg/sypgp"
 	"github.com/apptainer/sif/v2/pkg/integrity"
+	"github.com/sigstore/sigstore/pkg/cryptoutils"
+	"github.com/sigstore/sigstore/pkg/signature"
 )
+
+// getTestSigner returns a fixed test Signer.
+func getTestSigner(t *testing.T, file string) signature.Signer {
+	t.Helper()
+
+	path := filepath.Join("..", "..", "..", "test", "keys", file)
+
+	sv, err := signature.LoadSignerFromPEMFile(path, crypto.SHA256, cryptoutils.SkipPassword)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return sv
+}
+
+// getTestEntity returns a fixed test PGP entity.
+func getTestEntity(t *testing.T) *openpgp.Entity {
+	t.Helper()
+
+	f, err := os.Open(filepath.Join("..", "..", "..", "test", "keys", "pgp-private.asc"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	el, err := openpgp.ReadArmoredKeyRing(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := len(el), 1; got != want {
+		t.Fatalf("got %v entities, want %v", got, want)
+	}
+	return el[0]
+}
 
 // tempFileFrom copies the file at path to a temporary file, and returns a reference to it.
 func tempFileFrom(path string) (string, error) {
@@ -30,12 +67,7 @@ func tempFileFrom(path string) (string, error) {
 	}
 	defer f.Close()
 
-	pattern := "*"
-	if ext := filepath.Ext(path); ext != "" {
-		pattern = fmt.Sprintf("*.%s", ext)
-	}
-
-	tf, err := os.CreateTemp("", pattern)
+	tf, err := os.CreateTemp("", "*.sif")
 	if err != nil {
 		return "", err
 	}
@@ -57,7 +89,9 @@ func mockEntitySelector(t *testing.T) sypgp.EntitySelector {
 }
 
 func TestSign(t *testing.T) {
-	sv := getTestSignerVerifier(t)
+	ecdsa := getTestSigner(t, "ecdsa-private.pem")
+	ed25519 := getTestSigner(t, "ed25519-private.pem")
+	rsa := getTestSigner(t, "rsa-private.pem")
 	es := mockEntitySelector(t)
 
 	tests := []struct {
@@ -72,9 +106,19 @@ func TestSign(t *testing.T) {
 			wantErr: integrity.ErrNoKeyMaterial,
 		},
 		{
-			name: "OptSignWithSigner",
+			name: "OptSignWithSignerECDSA",
 			path: filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
-			opts: []SignOpt{OptSignWithSigner(sv)},
+			opts: []SignOpt{OptSignWithSigner(ecdsa)},
+		},
+		{
+			name: "OptSignWithSignerEd25519",
+			path: filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
+			opts: []SignOpt{OptSignWithSigner(ed25519)},
+		},
+		{
+			name: "OptSignWithSignerRSA",
+			path: filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
+			opts: []SignOpt{OptSignWithSigner(rsa)},
 		},
 		{
 			name: "OptSignEntitySelector",
@@ -84,12 +128,12 @@ func TestSign(t *testing.T) {
 		{
 			name: "OptSignGroup",
 			path: filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
-			opts: []SignOpt{OptSignWithSigner(sv), OptSignGroup(1)},
+			opts: []SignOpt{OptSignWithSigner(ed25519), OptSignGroup(1)},
 		},
 		{
 			name: "OptSignObjects",
 			path: filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
-			opts: []SignOpt{OptSignWithSigner(sv), OptSignObjects(1)},
+			opts: []SignOpt{OptSignWithSigner(ed25519), OptSignObjects(1)},
 		},
 	}
 

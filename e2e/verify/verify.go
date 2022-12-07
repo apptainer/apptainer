@@ -23,7 +23,7 @@ type ctx struct {
 }
 
 func (c *ctx) verify(t *testing.T) {
-	keyPath := filepath.Join("..", "test", "keys", "public.pem")
+	keyPath := filepath.Join("..", "test", "keys", "ed25519-public.pem")
 
 	tests := []struct {
 		name       string
@@ -149,7 +149,7 @@ func (c *ctx) importPGPKeypairs(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("key import"),
-		e2e.WithArgs(filepath.Join("..", "test", "keys", "private.asc")),
+		e2e.WithArgs(filepath.Join("..", "test", "keys", "pgp-public.asc")),
 		e2e.ExpectExit(0),
 	)
 }
