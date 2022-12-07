@@ -52,6 +52,7 @@ Source: https://github.com/%{name}/%{name}/releases/download/v%{package_version}
 Source10: https://github.com/vasi/squashfuse/archive/%{squashfuse_version}/squashfuse-%{squashfuse_version}.tar.gz
 Patch10: https://github.com/vasi/squashfuse/pull/70.patch
 Patch11: https://github.com/vasi/squashfuse/pull/77.patch
+Patch12: https://github.com/vasi/squashfuse/pull/81.patch
 %endif
 # The singularity package was renamed to apptainer after version 3.8.x.
 # The apptainer package reset numbering at 1.0.0, and some singularity
@@ -115,6 +116,7 @@ Provides the optional setuid-root portion of Apptainer.
 %setup -b 10 -n squashfuse-%{squashfuse_version}
 %patch -P 10 -p1
 %patch -P 11 -p1
+%patch -P 12 -p1
 %setup -n %{name}-%{package_version}
 %else
 %autosetup -n %{name}-%{package_version}
