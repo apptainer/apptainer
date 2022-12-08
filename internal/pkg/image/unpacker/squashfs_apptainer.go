@@ -44,9 +44,41 @@ type libBind struct {
 // getLibraryBinds returns the library bind mounts required by an elf binary.
 // The binary path must be absolute.
 func getLibraryBinds(binary string) ([]libBind, error) {
+	var wrapper string
 	exe, err := elf.Open(binary)
 	if err != nil {
-		return nil, err
+		if !strings.Contains(err.Error(), "bad magic number") {
+			return nil, fmt.Errorf("error opening elf binary %s: %v", binary, err)
+		}
+
+		// Likely to instead be a relocating wrapper script.
+		// If it was generated with tools/install-unprivileged.sh,
+		// it will be able to replace the usual "exec" with the
+		// value of "$_WRAPPER_EXEC_CMD", so try that.
+		wrapper = binary
+		cmd := exec.Command(wrapper)
+		buf := new(bytes.Buffer)
+		errBuf := new(bytes.Buffer)
+		cmd.Stdout = buf
+		cmd.Stderr = errBuf
+		cmd.Env = []string{"_WRAPPER_EXEC_CMD=echo"}
+		sylog.Debugf("Running %s %s", cmd.Env[0], wrapper)
+		if err = cmd.Run(); err != nil {
+			if errBuf.Len() > 0 {
+				sylog.Debugf("stderr was: %s", errBuf.String())
+			}
+			return nil, fmt.Errorf("while running %s %s: %s", cmd.Env[0], wrapper, err)
+		}
+		binary = buf.String()
+		if strings.Count(binary, "\n") != 1 {
+			sylog.Debugf("stdout was: %s", binary)
+			return nil, fmt.Errorf("did not receive exactly one line from %s %s", cmd.Env[0], wrapper)
+		}
+		binary = strings.TrimSpace(binary)
+		exe, err = elf.Open(binary)
+		if err != nil {
+			return nil, fmt.Errorf("error opening elf binary %s: %v", binary, err)
+		}
 	}
 	defer exe.Close()
 
@@ -81,21 +113,64 @@ func getLibraryBinds(binary string) ([]libBind, error) {
 	errBuf := new(bytes.Buffer)
 	buf := new(bytes.Buffer)
 
-	cmd := exec.Command(interp, "--list", binary)
-	cmd.Stdout = buf
-	cmd.Stderr = errBuf
-
 	// set an empty environment as LD_LIBRARY_PATH
 	// may mix dependencies, just rely only on the library
 	// cache or its own lookup mechanism, see issue:
 	// https://github.com/apptainer/singularity/issues/5666
-	cmd.Env = []string{}
+	env := []string{}
+
+	var cmd *exec.Cmd
+	if wrapper != "" {
+		env = []string{"_WRAPPER_EXEC_CMD=" + interp + " --list"}
+		cmd = exec.Command(wrapper)
+		sylog.Debugf("Running %s %s", strings.Replace(env[0], "=", "=\"", 1)+"\"", wrapper)
+	} else {
+		cmd = exec.Command(interp, "--list", binary)
+		sylog.Debugf("Running %s --list %s", interp, binary)
+	}
+	cmd.Stdout = buf
+	cmd.Stderr = errBuf
+	cmd.Env = env
 
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("while getting library dependencies: %s\n%s", err, errBuf.String())
 	}
 
-	return parseLibraryBinds(buf)
+	binds, err := parseLibraryBinds(buf)
+	if err != nil {
+		return binds, err
+	}
+	if wrapper != "" {
+		// Add the wrapped binary, bash, and new libraries used by
+		//  bash to the library binds
+		binds = append(binds, []libBind{
+			{
+				source: binary,
+				dest:   binary,
+			},
+			{
+				source: "/bin/bash",
+				dest:   "/bin/bash",
+			},
+		}...)
+		bashbinds, err := getLibraryBinds("/bin/bash")
+		if err != nil {
+			return nil, fmt.Errorf("error getting libraries of /bin/bash: %v", err)
+		}
+		for _, newbind := range bashbinds {
+			gotone := false
+			for _, oldbind := range binds {
+				if oldbind.dest == newbind.dest {
+					gotone = true
+					break
+				}
+			}
+			if !gotone {
+				binds = append(binds, newbind)
+			}
+		}
+	}
+	return binds, nil
 }
 
 // parseLibrary binds parses `ld-linux-x86-64.so.2 --list <binary>` output.
@@ -237,7 +312,7 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 	}
 
 	// Handle binding of libs and generate LD_LIBRARY_PATH
-	libraryPath := make([]string, 0)
+	libraryPath := strings.Split(os.Getenv("LD_LIBRARY_PATH"), string(os.PathListSeparator))
 	for _, l := range libs {
 		// Ensure parent dir and file exist in container
 		rootfsFile := filepath.Join(rootfs, l.dest)
@@ -283,6 +358,7 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 	}
 
 	sylog.Debugf("Calling wrapped unsquashfs: apptainer %v", args)
+	sylog.Debugf("LD_LIBRARY_PATH=%v", strings.Join(libraryPath, string(os.PathListSeparator)))
 	cmd := exec.Command(filepath.Join(buildcfg.BINDIR, "apptainer"), args...)
 	cmd.Dir = "/"
 	cmd.Env = []string{
