@@ -50,6 +50,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Added `Provides: bundled(golang())` statements to the rpm packaging
   for each bundled golang module.
 - Define EUID in %environment alongside UID.
+- In `--rocm` mode, the whole of `/dev/dri` is now bound into the container when
+  `--contain` is in use. This makes `/dev/dri/render` devices available,
+  required for later ROCm versions.
 
 ## v1.1.5 - \[2023-01-10\]
 
