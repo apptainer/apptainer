@@ -1,0 +1,33 @@
+#!/bin/bash -ex
+# Copyright (c) Contributors to the Apptainer project, established as
+#   Apptainer a Series of LF Projects LLC.
+#   For website terms of use, trademark policy, privacy policy and other
+#   project policies see https://lfprojects.org/policies
+
+# this script runs as root under docker --privileged
+
+# install required package(s)
+if [ "$OS_TYPE" = debian ] || [ "$OS_TYPE" = ubuntu ]; then
+  apt-get update
+  apt-get install -y curl rpm2cpio cpio e2fsprogs tzdata
+else
+  yum install -y e2fsprogs cpio
+fi
+
+# switch to an unprivileged user
+useradd -u 1000 --create-home -s /bin/bash testuser
+rm -f /etc/subuid /etc/subgid
+
+# Be careful not to use unescaped single quotes in these commands
+su testuser -c '
+  set -x
+  set -e
+  rm -rf ins image.sif overlay.img
+  tools/install-unprivileged.sh -v apptainer-[1-9]*.$(arch).rpm ins
+
+  ins/bin/apptainer build image.sif docker://'$DOCKER_HUB_URI'
+  truncate -s 1G overlay.img
+  mkfs.ext3 -F -O ^has_journal overlay.img
+  ins/bin/apptainer exec --overlay overlay.img -f image.sif touch /bin/newfile
+  ins/bin/apptainer exec --unsquash image.sif true
+'
