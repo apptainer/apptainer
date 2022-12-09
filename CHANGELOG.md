@@ -28,6 +28,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Bug fixes
 
+- Added tools/install-unprivileged.sh to download and install apptainer
+  binaries and all dependencies into a directory of the user's choice.
+  Works on all currently active el, fedora, debian, and ubuntu versions
+  except ubuntu 18.04, with all architectures supported by epel and fedora.
+  Defaults to the latest version released in epel and fedora.
+  Other apptainer versions can be selected but it only works with apptainer
+  1.1.4 and later.
 - Change the warning when an overlay image is not writable, introduced
   in v1.1.3, back into a (more informative) fatal error because it doesn't
   actually enter the container environment.

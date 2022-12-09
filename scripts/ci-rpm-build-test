@@ -67,6 +67,6 @@ su testuser -c '
 
   apptainer exec oras://ghcr.io/apptainer/alpine:3.15.0 /bin/true
 
-  # copy the rpms into the current directory for the "release_assets" CI
+  # copy the rpms into the current directory for later use
   cp $HOME/rpmbuild/SRPMS/*.rpm $HOME/rpmbuild/RPMS/*/*.rpm .
 '
