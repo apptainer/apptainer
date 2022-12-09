@@ -58,7 +58,7 @@ func (c *ctx) instanceStats(t *testing.T, profile e2e.Profile) {
 	}{
 		{
 			name:           "basic stats create",
-			createArgs:     []string{"--apply-cgroups", "testdata/cgroups/cpu_success.toml", c.env.ImagePath},
+			createArgs:     []string{c.env.ImagePath},
 			statsErrorCode: 0,
 			startErrorCode: 0,
 		},
