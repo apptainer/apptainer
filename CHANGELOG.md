@@ -17,6 +17,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   functionality.
 - Overlay is blocked on the `panfs` filesystem, allowing sandbox directories to be
   run from `panfs` without error.
+- Instances are started in a cgroup, by default, when run as root or when
+  unified cgroups v2 with systemd as manager is configured. This allows
+  `apptainer instance stats` to be supported by default when possible.
 
 ### New features / functionalities
 
