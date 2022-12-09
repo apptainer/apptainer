@@ -3,7 +3,8 @@
 Since you are reading this from the Apptainer source code, it will be assumed
 that you are building/compiling from source.
 
-For more complete instructions on installation options, please check the
+For more complete instructions on installation options, including options
+that install Apptainer from pre-compiled binaries, please check the
 [installation section of the admin guide](https://apptainer.org/docs/admin/main/installation.html).
 
 ## Install system dependencies

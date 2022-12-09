@@ -125,6 +125,13 @@ jobs:
           GO_ARCH: linux-amd64
         run: ./scripts/ci-docker-run
 
+      - name: Install and test unprivileged
+        env:
+          OS_TYPE: centos
+          OS_VERSION: 7
+          TEST_TYPE: unpriv
+        run: ./scripts/ci-docker-run
+
   rpmbuild-rocky8:
     runs-on: ubuntu-20.04
     name: rpmbuild-rocky8
@@ -140,6 +147,27 @@ jobs:
           GO_ARCH: linux-amd64
         run: ./scripts/ci-docker-run
 
+      - name: Install and test unprivileged for rocky 8
+        env:
+          OS_TYPE: rockylinux
+          OS_VERSION: 8
+          TEST_TYPE: unpriv
+        run: ./scripts/ci-docker-run
+
+      - name: Install and test unprivileged for ubuntu 20.04
+        env:
+          OS_TYPE: ubuntu
+          OS_VERSION: 20.04
+          TEST_TYPE: unpriv
+        run: ./scripts/ci-docker-run
+
+      - name: Install and test unprivileged for debian 11
+        env:
+          OS_TYPE: debian
+          OS_VERSION: 11
+          TEST_TYPE: unpriv
+        run: ./scripts/ci-docker-run
+
   rpmbuild-rocky9:
     runs-on: ubuntu-20.04
     name: rpmbuild-rocky9
@@ -153,6 +181,20 @@ jobs:
           OS_TYPE: rockylinux
           OS_VERSION: 9
           GO_ARCH: linux-amd64
+        run: ./scripts/ci-docker-run
+
+      - name: Install and test unprivileged for rocky 9
+        env:
+          OS_TYPE: rockylinux
+          OS_VERSION: 9
+          TEST_TYPE: unpriv
+        run: ./scripts/ci-docker-run
+
+      - name: Install and test unprivileged for ubuntu 22.04
+        env:
+          OS_TYPE: ubuntu
+          OS_VERSION: 22.04
+          TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
   short_unit_tests:
