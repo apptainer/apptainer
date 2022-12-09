@@ -41,6 +41,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   of the paths needs to be removed.  Relocation is disallowed when the
   `starter-suid` is present, for security reasons.
 - Remove obsolete pacstrap `-d` in Arch packer
+- Adjust warning message for deprecated environment variables usage
 
 ## v1.1.3 - \[2022-10-25\]
 

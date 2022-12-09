@@ -45,7 +45,7 @@ var alwaysOmitKeys = map[string]bool{
 type envKeyMap = map[string]string
 
 // setKeyIfNotAlreadyOverridden sets a value for key if not already overridden
-func setKeyIfNotAlreadyOverridden(g *generate.Generator, envKeys envKeyMap, precedence int, prefixedKey, key, value string) {
+func setKeyIfNotAlreadyOverridden(g *generate.Generator, envKeys envKeyMap, prefixedKey, key, value string) {
 	if oldValue, ok := envKeys[key]; ok {
 		if oldValue != value {
 			sylog.Warningf("Skipping environment variable [%s=%s], %s is already overridden with different value [%s]", prefixedKey, value, key, oldValue)
@@ -53,9 +53,6 @@ func setKeyIfNotAlreadyOverridden(g *generate.Generator, envKeys envKeyMap, prec
 			sylog.Debugf("Skipping environment variable [%s=%s], %s is already overridden with the same value", prefixedKey, value, key)
 		}
 	} else {
-		if precedence != 0 {
-			sylog.Warningf("DEPRECATED USAGE: Forwarding %s as environment variable will not be supported in the future, use %s%s instead", prefixedKey, ApptainerEnvPrefix, key)
-		}
 		sylog.Verbosef("Forwarding %s as %s environment variable", prefixedKey, key)
 		envKeys[key] = value
 		g.RemoveProcessEnv(key)
@@ -65,7 +62,7 @@ func setKeyIfNotAlreadyOverridden(g *generate.Generator, envKeys envKeyMap, prec
 // overridesForContainerEnv sets all environment variables which have overrides.
 func overridesForContainerEnv(g *generate.Generator, hostEnvs []string) envKeyMap {
 	envKeys := make(envKeyMap)
-	for precedence, prefix := range ApptainerEnvPrefixes {
+	for _, prefix := range ApptainerEnvPrefixes {
 		for _, env := range hostEnvs {
 			if strings.HasPrefix(env, prefix) {
 				e := strings.SplitN(env, "=", 2)
@@ -76,17 +73,17 @@ func overridesForContainerEnv(g *generate.Generator, hostEnvs []string) envKeyMa
 					if key != "" {
 						switch key {
 						case "PREPEND_PATH":
-							setKeyIfNotAlreadyOverridden(g, envKeys, precedence, e[0], "SING_USER_DEFINED_PREPEND_PATH", e[1])
+							setKeyIfNotAlreadyOverridden(g, envKeys, e[0], "SING_USER_DEFINED_PREPEND_PATH", e[1])
 						case "APPEND_PATH":
-							setKeyIfNotAlreadyOverridden(g, envKeys, precedence, e[0], "SING_USER_DEFINED_APPEND_PATH", e[1])
+							setKeyIfNotAlreadyOverridden(g, envKeys, e[0], "SING_USER_DEFINED_APPEND_PATH", e[1])
 						case "PATH":
-							setKeyIfNotAlreadyOverridden(g, envKeys, precedence, e[0], "SING_USER_DEFINED_PATH", e[1])
+							setKeyIfNotAlreadyOverridden(g, envKeys, e[0], "SING_USER_DEFINED_PATH", e[1])
 						default:
 							if permitted, ok := alwaysOmitKeys[key]; ok && !permitted {
 								sylog.Warningf("Overriding %s environment variable with %s is not permitted", key, e[0])
 								continue
 							}
-							setKeyIfNotAlreadyOverridden(g, envKeys, precedence, e[0], key, e[1])
+							setKeyIfNotAlreadyOverridden(g, envKeys, e[0], key, e[1])
 						}
 					}
 				}
@@ -94,6 +91,23 @@ func overridesForContainerEnv(g *generate.Generator, hostEnvs []string) envKeyMa
 		}
 	}
 	return envKeys
+}
+
+// warning if deprecated keys are set
+func warnDeprecatedEnvUsage(hostEnvs []string) {
+	for _, env := range hostEnvs {
+		if strings.HasPrefix(env, LegacySingularityEnvPrefix) {
+			strs := strings.SplitN(env, "=", 2)
+			if len(strs) == 2 {
+				key := strs[0][len(LegacySingularityEnvPrefix):]
+				if key != "" {
+					legacyEnv := LegacySingularityEnvPrefix + key
+					newEnv := ApptainerEnvPrefix + key
+					sylog.Warningf("DEPRECATED USAGE: Environment variable %s will not be supported in the future, use %s instead", legacyEnv, newEnv)
+				}
+			}
+		}
+	}
 }
 
 // SetContainerEnv cleans environment variables before running the container.
@@ -105,6 +119,7 @@ func SetContainerEnv(g *generate.Generator, hostEnvs []string, cleanEnv bool, ho
 
 	// process overrides first, order of prefix within the slice of prefixes
 	// determines the precedence between various prefixes
+	warnDeprecatedEnvUsage(hostEnvs)
 	envKeys := overridesForContainerEnv(g, hostEnvs)
 
 EnvKeys:

@@ -31,14 +31,20 @@ const (
 
 	// defaultLocalKeyDirName represents the default local key storage folder name
 	defaultLocalKeyDirName = "keys"
+
+	// Legacy singularity prefix
+	LegacySingularityPrefix = "SINGULARITY_"
+
+	// Legacy singularity env prefix
+	LegacySingularityEnvPrefix = "SINGULARITYENV_"
 )
 
 // ApptainerPrefixes the following prefixes are for settings looked at by Apptainer command
-var ApptainerPrefixes = []string{ApptainerPrefix, "SINGULARITY_"}
+var ApptainerPrefixes = []string{ApptainerPrefix, LegacySingularityPrefix}
 
 // ApptainerEnvPrefixes defines the environment variable prefixes for passthru
 // to container
-var ApptainerEnvPrefixes = []string{ApptainerEnvPrefix, "SINGULARITYENV_"}
+var ApptainerEnvPrefixes = []string{ApptainerEnvPrefix, LegacySingularityEnvPrefix}
 
 // SetFromList sets environment variables from environ argument list.
 func SetFromList(environ []string) error {
