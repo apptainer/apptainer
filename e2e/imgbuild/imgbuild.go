@@ -1622,6 +1622,62 @@ func (c *imgBuildTests) testSIFHeaderAndExecute(t *testing.T) {
 	}
 }
 
+// Check that test and runscript that specify a custom #! use it as the interpreter.
+func (c imgBuildTests) buildCustomShebang(t *testing.T) {
+	tmpdir, cleanup := c.tempDir(t, "build-shebang-test")
+	defer cleanup()
+
+	definition := `Bootstrap: localimage
+From: %s
+
+%%test
+#!/bin/busybox sh
+cat /proc/$$/cmdline
+
+%%runscript
+#!/bin/busybox sh
+cat /proc/$$/cmdline`
+
+	definition = fmt.Sprintf(definition, e2e.BusyboxSIF(t))
+
+	defFile := e2e.RawDefFile(t, tmpdir, strings.NewReader(definition))
+	imagePath := filepath.Join(tmpdir, "image-shebang")
+
+	// build time %test script
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("-F", imagePath, defFile),
+		e2e.PostRun(func(t *testing.T) {
+			os.Remove(defFile)
+		}),
+		e2e.ExpectExit(0,
+			e2e.ExpectOutput(e2e.ContainMatch, "/bin/busybox"),
+		),
+	)
+	// runtime %runscript
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("run"),
+		e2e.WithArgs(imagePath),
+		e2e.ExpectExit(0,
+			e2e.ExpectOutput(e2e.ContainMatch, "/bin/busybox"),
+		),
+	)
+	// runtime %test script
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("test"),
+		e2e.WithArgs(imagePath),
+		e2e.ExpectExit(0,
+			e2e.ExpectOutput(e2e.ContainMatch, "/bin/busybox"),
+		),
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := imgBuildTests{
@@ -1641,6 +1697,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"fingerprint check":                 c.buildWithFingerprint,                 // definition file includes fingerprint check
 		"build with bind mount":             c.buildBindMount,                       // build image with bind mount
 		"library host":                      c.buildLibraryHost,                     // build image with hostname in library URI
+		"customShebang":                     c.buildCustomShebang,                   // build image with custom #! in %test and %runscript
 		"test with writable tmpfs":          c.testWritableTmpfs,                    // build image, using writable tmpfs in the test step
 		"test build system environment":     c.testBuildEnvironmentVariables,        // build image with build system environment variables set in definition
 		"test build under fakeroot modes":   c.testContainerBuildUnderFakerootModes, // build image under different fakeroot modes
