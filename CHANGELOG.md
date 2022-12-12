@@ -12,6 +12,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - When the kernel supports unprivileged overlay mounts in a user
   namespace, the container will be constructed using an overlay
   instead of underlay layout.
+- A new `--reproducible` flag for `./mconfig` will configure Apptainer so that
+  its binaries do not contain non-reproducible paths. This disables plugin
+  functionality.
 
 ### New features / functionalities
 

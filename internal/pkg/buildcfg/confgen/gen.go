@@ -193,6 +193,10 @@ func relocatePath(original string) string {
 {{ range $i, $d := .Defines }}
 {{$d.WriteLine -}}
 {{end}}
+
+func IsReproducibleBuild() bool {
+	return SOURCEDIR == "REPRODUCIBLE_BUILD"
+}
 `))
 
 func main() {
