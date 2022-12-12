@@ -5,7 +5,7 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes Since Last Release
+## v1.1.4 - \[2022-12-12\]
 
 - Added tools/install-unprivileged.sh to download and install apptainer
   binaries and all dependencies into a directory of the user's choice.
