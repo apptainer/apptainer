@@ -28,6 +28,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   distributions / kernels.
 - Remove obsolete pacstrap `-d` in Arch packer.
 - Adjust warning message for deprecated environment variables usage.
+- Enable the `--security uid:N` and `--security gid:N` options to work
+  when run in non-suid mode.  In non-suid mode they work with any user,
+  not just root.  Unlike with root and suid mode, however, only one gid
+  may be set in non-suid mode.
 
 ## v1.1.3 - \[2022-10-25\]
 

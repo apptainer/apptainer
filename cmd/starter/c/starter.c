@@ -316,9 +316,11 @@ static void apply_privileges(struct privileges *privileges, struct capabilities 
                 fatalf("Failed to set GID %d: %s\n", targetGID, strerror(errno));
             }
 
-            debugf("Set %d additional group IDs\n", privileges->numGID);
-            if ( setgroups(privileges->numGID, privileges->targetGID) < 0 ) {
-                fatalf("Failed to set additional groups: %s\n", strerror(errno));
+            if ( privileges->numGID > 1 ) {
+                debugf("Set %d additional group IDs\n", privileges->numGID);
+                if ( setgroups(privileges->numGID, privileges->targetGID) < 0 ) {
+                    fatalf("Failed to set additional groups: %s\n", strerror(errno));
+                }
             }
         }
     }

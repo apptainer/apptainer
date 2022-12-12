@@ -259,12 +259,12 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		}
 	}
 
-	checkPrivileges := func(cond bool, desc string, fn func()) {
+	withPrivilege := func(priv bool, cond bool, desc string, fn func()) {
 		if !cond {
 			return
 		}
 
-		if !isPrivileged {
+		if !priv {
 			sylog.Fatalf("%s requires root privileges", desc)
 		}
 
@@ -302,64 +302,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "NO_EVAL", "1")
 	}
 
-	uidParam := security.GetParam(Security, "uid")
-	gidParam := security.GetParam(Security, "gid")
-
-	// handle target UID/GID for root user
-	checkPrivileges(uidParam != "", "uid security feature", func() {
-		u, err := strconv.ParseUint(uidParam, 10, 32)
-		if err != nil {
-			sylog.Fatalf("failed to parse provided UID")
-		}
-		targetUID = int(u)
-		uid = uint32(targetUID)
-
-		engineConfig.SetTargetUID(targetUID)
-	})
-
-	checkPrivileges(gidParam != "", "gid security feature", func() {
-		gids := strings.Split(gidParam, ":")
-		for _, id := range gids {
-			g, err := strconv.ParseUint(id, 10, 32)
-			if err != nil {
-				sylog.Fatalf("failed to parse provided GID")
-			}
-			targetGID = append(targetGID, int(g))
-		}
-		if len(gids) > 0 {
-			gid = uint32(targetGID[0])
-		}
-
-		engineConfig.SetTargetGID(targetGID)
-	})
-
-	if strings.HasPrefix(image, "instance://") {
-		if name != "" {
-			sylog.Fatalf("Starting an instance from another is not allowed")
-		}
-		instanceName := instance.ExtractName(image)
-		file, err := instance.Get(instanceName, instance.AppSubDir)
-		if err != nil {
-			sylog.Fatalf("%s", err)
-		}
-		UserNamespace = file.UserNs
-		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "CONTAINER", file.Image)
-		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "NAME", filepath.Base(file.Image))
-		engineConfig.SetImage(image)
-		engineConfig.SetInstanceJoin(true)
-	} else {
-		abspath, err := filepath.Abs(image)
-		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "CONTAINER", abspath)
-		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "NAME", filepath.Base(abspath))
-		if err != nil {
-			sylog.Fatalf("Failed to determine image absolute path for %s: %s", image, err)
-		}
-		engineConfig.SetImage(abspath)
-	}
-
-	// privileged installation by default
 	useSuid := true
-
 	if buildcfg.APPTAINER_SUID_INSTALL == 0 {
 		// not a privileged installation
 		useSuid = false
@@ -398,6 +341,67 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 
 	// IgnoreUserns is a hidden control flag
 	UserNamespace = UserNamespace && !IgnoreUserns
+
+	uidParam := security.GetParam(Security, "uid")
+	gidParam := security.GetParam(Security, "gid")
+
+	pseudoPriv := isPrivileged
+	if !useSuid {
+		// always allow when not using suid starter
+		pseudoPriv = true
+	}
+
+	// handle target UID/GID for root or non-suid user
+	withPrivilege(pseudoPriv, uidParam != "", "uid security feature with suid mode", func() {
+		u, err := strconv.ParseUint(uidParam, 10, 32)
+		if err != nil {
+			sylog.Fatalf("failed to parse provided UID")
+		}
+		targetUID = int(u)
+		uid = uint32(targetUID)
+
+		engineConfig.SetTargetUID(targetUID)
+	})
+
+	withPrivilege(pseudoPriv, gidParam != "", "gid security feature with suid mode", func() {
+		gids := strings.Split(gidParam, ":")
+		for _, id := range gids {
+			g, err := strconv.ParseUint(id, 10, 32)
+			if err != nil {
+				sylog.Fatalf("failed to parse provided GID")
+			}
+			targetGID = append(targetGID, int(g))
+		}
+		if len(gids) > 0 {
+			gid = uint32(targetGID[0])
+		}
+
+		engineConfig.SetTargetGID(targetGID)
+	})
+
+	if strings.HasPrefix(image, "instance://") {
+		if name != "" {
+			sylog.Fatalf("Starting an instance from another is not allowed")
+		}
+		instanceName := instance.ExtractName(image)
+		file, err := instance.Get(instanceName, instance.AppSubDir)
+		if err != nil {
+			sylog.Fatalf("%s", err)
+		}
+		UserNamespace = file.UserNs
+		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "CONTAINER", file.Image)
+		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "NAME", filepath.Base(file.Image))
+		engineConfig.SetImage(image)
+		engineConfig.SetInstanceJoin(true)
+	} else {
+		abspath, err := filepath.Abs(image)
+		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "CONTAINER", abspath)
+		generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "NAME", filepath.Base(abspath))
+		if err != nil {
+			sylog.Fatalf("Failed to determine image absolute path for %s: %s", image, err)
+		}
+		engineConfig.SetImage(abspath)
+	}
 
 	// early check for key material before we start engine so we can fail fast if missing
 	// we do not need this check when joining a running instance, just for starting a container
@@ -519,11 +523,11 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	engineConfig.SetConfigurationFile(configurationFile)
 	engineConfig.SetUseBuildConfig(useBuildConfig)
 
-	checkPrivileges(AllowSUID, "--allow-setuid", func() {
+	withPrivilege(isPrivileged, AllowSUID, "--allow-setuid", func() {
 		engineConfig.SetAllowSUID(AllowSUID)
 	})
 
-	checkPrivileges(KeepPrivs, "--keep-privs", func() {
+	withPrivilege(isPrivileged, KeepPrivs, "--keep-privs", func() {
 		engineConfig.SetKeepPrivs(KeepPrivs)
 	})
 
@@ -597,7 +601,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		engineConfig.SetHostname(Hostname)
 	}
 
-	checkPrivileges(IsBoot, "--boot", func() {})
+	withPrivilege(isPrivileged, IsBoot, "--boot", func() {})
 
 	if IsContained || IsContainAll || IsBoot {
 		engineConfig.SetContain(true)
@@ -711,8 +715,8 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		generator.AddOrReplaceLinuxNamespace("user", "")
 
 		if !IsFakeroot {
-			generator.AddLinuxUIDMapping(uid, uid, 1)
-			generator.AddLinuxGIDMapping(gid, gid, 1)
+			generator.AddLinuxUIDMapping(uint32(os.Getuid()), uid, 1)
+			generator.AddLinuxGIDMapping(uint32(os.Getgid()), gid, 1)
 		}
 	}
 
