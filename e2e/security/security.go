@@ -33,6 +33,7 @@ func (c ctx) testSecurityUnpriv(t *testing.T) {
 		argv       []string
 		opts       []string
 		preFn      func(*testing.T)
+		userNs     bool
 		expectOp   e2e.ApptainerCmdResultOp
 		expectExit int
 	}{
@@ -42,14 +43,26 @@ func (c ctx) testSecurityUnpriv(t *testing.T) {
 			argv:       []string{"id", "-u"},
 			opts:       []string{"--security", "uid:99"},
 			expectExit: 255,
-			// TODO: add expect stderr for "uid security feature requires root privileges"
-			// pending issue: https://github.com/apptainer/singularity/issues/4280
 		},
 		{
 			name:       "Set_gid",
 			argv:       []string{"id", "-g"},
 			opts:       []string{"--security", "gid:99"},
 			expectExit: 255,
+		},
+		{
+			name:       "Set_uid",
+			argv:       []string{"id", "-u"},
+			opts:       []string{"--security", "uid:99"},
+			userNs:     true,
+			expectExit: 0,
+		},
+		{
+			name:       "Set_gid",
+			argv:       []string{"id", "-g"},
+			opts:       []string{"--security", "gid:99"},
+			userNs:     true,
+			expectExit: 0,
 		},
 		// seccomp from json file
 		{
@@ -99,10 +112,15 @@ func (c ctx) testSecurityUnpriv(t *testing.T) {
 		optArgs = append(optArgs, c.env.ImagePath)
 		optArgs = append(optArgs, tt.argv...)
 
+		profile := e2e.UserProfile
+		if tt.userNs {
+			profile = e2e.UserNamespaceProfile
+		}
+
 		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
-			e2e.WithProfile(e2e.UserProfile),
+			e2e.WithProfile(profile),
 			e2e.WithCommand("exec"),
 			e2e.WithArgs(optArgs...),
 			e2e.PreRun(tt.preFn),

@@ -165,9 +165,16 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	// Set container Umask w.r.t. our own, before any umask manipulation happens.
 	l.setUmask()
 
+	insideUserNs, _ := namespaces.IsInsideUserNamespace(os.Getpid())
+
+	// Will we use the suid starter? If not we need to force the user namespace.
+	useSuid := l.useSuid(insideUserNs)
+	// IgnoreUserns is a hidden control flag
+	l.cfg.Namespaces.User = l.cfg.Namespaces.User && !l.cfg.IgnoreUserns
+
 	// Get our effective uid and gid for container execution.
-	// If root user requests a target uid, gid via --security options, handle them now.
-	err = l.setTargetIDs()
+	// If user requests a target uid, gid via --security options, handle them now.
+	err = l.setTargetIDs(useSuid)
 	if err != nil {
 		sylog.Fatalf("Could not configure target UID/GID: %s", err)
 	}
@@ -196,13 +203,6 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 			sylog.Fatalf("While checking container encryption: %s", err)
 		}
 	}
-
-	insideUserNs, _ := namespaces.IsInsideUserNamespace(os.Getpid())
-
-	// Will we use the suid starter? If not we need to force the user namespace.
-	useSuid := l.useSuid(insideUserNs)
-	// IgnoreUserns is a hidden control flag
-	l.cfg.Namespaces.User = l.cfg.Namespaces.User && !l.cfg.IgnoreUserns
 
 	// In the setuid workflow, set RLIMIT_STACK to its default value, keeping the
 	// original value to restore it before executing the container process.
@@ -415,9 +415,10 @@ func (l *Launcher) setUmask() {
 	}
 }
 
-// setTargetIDs sets engine configuration for any requested target UID and GID (when run as root).
+// setTargetIDs sets engine configuration for any requested target UID and GID
+// when allowed
 // The effective uid and gid we will run under are returned as uid and gid.
-func (l *Launcher) setTargetIDs() (err error) {
+func (l *Launcher) setTargetIDs(useSuid bool) (err error) {
 	// Identify requested uid/gif (if any) from --security options
 	uidParam := security.GetParam(l.cfg.SecurityOpts, "uid")
 	gidParam := security.GetParam(l.cfg.SecurityOpts, "gid")
@@ -425,8 +426,14 @@ func (l *Launcher) setTargetIDs() (err error) {
 	targetUID := 0
 	targetGID := make([]int, 0)
 
-	// If a target uid was requested, and we are root, handle that.
-	err = withPrivilege(l.uid, uidParam != "", "uid security feature", func() error {
+	pseudoRoot := l.uid
+	if !useSuid {
+		// always allow when not using suid starter
+		pseudoRoot = 0
+	}
+
+	// If a target uid was requested, and we are root or non-suid, handle that.
+	err = withPrivilege(pseudoRoot, uidParam != "", "uid security feature with suid mode", func() error {
 		u, err := strconv.ParseUint(uidParam, 10, 32)
 		if err != nil {
 			return fmt.Errorf("failed to parse provided UID: %w", err)
@@ -441,8 +448,8 @@ func (l *Launcher) setTargetIDs() (err error) {
 		return err
 	}
 
-	// If any target gids were requested, and we are root, handle that.
-	err = withPrivilege(l.uid, gidParam != "", "gid security feature", func() error {
+	// If any target gids were requested, and we are root or non-suid, handle that.
+	err = withPrivilege(pseudoRoot, gidParam != "", "gid security feature with suid mode", func() error {
 		gids := strings.Split(gidParam, ":")
 		for _, id := range gids {
 			g, err := strconv.ParseUint(id, 10, 32)
@@ -462,7 +469,6 @@ func (l *Launcher) setTargetIDs() (err error) {
 		return err
 	}
 
-	// Return the effective uid, gid the container will run with
 	return nil
 }
 
@@ -919,8 +925,8 @@ func (l *Launcher) setNamespaces() {
 	if l.cfg.Namespaces.User {
 		l.generator.AddOrReplaceLinuxNamespace("user", "")
 		if !l.cfg.Fakeroot {
-			l.generator.AddLinuxUIDMapping(l.uid, l.uid, 1)
-			l.generator.AddLinuxGIDMapping(l.gid, l.gid, 1)
+			l.generator.AddLinuxUIDMapping(uint32(os.Getuid()), l.uid, 1)
+			l.generator.AddLinuxGIDMapping(uint32(os.Getgid()), l.gid, 1)
 		}
 	}
 }
