@@ -53,6 +53,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	"github.com/apptainer/apptainer/pkg/util/rlimit"
 	lccgroups "github.com/opencontainers/runc/libcontainer/cgroups"
+	"github.com/opencontainers/runtime-spec/specs-go"
 	"golang.org/x/sys/unix"
 )
 
@@ -483,22 +484,39 @@ func (l *Launcher) setImageOrInstance(image string, name string) error {
 		l.engineConfig.SetImage(image)
 		l.engineConfig.SetInstanceJoin(true)
 
-		// If we are running non-root, without a user ns, join the instance cgroup now, as we
-		// can't manipulate the ppid cgroup in the engine
-		// prepareInstanceJoinConfig().
-		//
-		// TODO - consider where /proc/sys/fs/cgroup is mounted in the engine
-		// flow, to move this further down.
-		if file.Cgroup && l.uid != 0 && !l.cfg.Namespaces.User {
+		// If we are running non-root, join the instance cgroup now, as we
+		// can't manipulate the ppid cgroup in the engine prepareInstanceJoinConfig().
+		// This flow is only applicable with the systemd cgroups manager.
+		if file.Cgroup && l.uid != 0 {
+			if !l.engineConfig.File.SystemdCgroups {
+				return fmt.Errorf("joining non-root instance with cgroups requires systemd as cgroups manager")
+			}
+
 			pid := os.Getpid()
-			sylog.Debugf("Adding process %d to instance cgroup", pid)
-			manager, err := cgroups.GetManagerForPid(file.Pid)
+
+			// First, we create a new systemd managed cgroup for ourselves. This is so that we will be
+			// under a common user-owned ancestor, allowing us to move into the instance cgroup next.
+			// See: https://www.kernel.org/doc/html/v4.18/admin-guide/cgroup-v2.html#delegation-containment
+			sylog.Debugf("Adding process %d to sibling cgroup", pid)
+			manager, err := cgroups.NewManagerWithSpec(&specs.LinuxResources{}, pid, "", true)
+			if err != nil {
+				return fmt.Errorf("couldn't create cgroup manager: %w", err)
+			}
+			cgPath, _ := manager.GetCgroupRelPath()
+			sylog.Debugf("In sibling cgroup: %s", cgPath)
+
+			// Now we should be under the user-owned service directory in the cgroupfs,
+			// so we can move into the actual instance cgroup that we want.
+			sylog.Debugf("Moving process %d to instance cgroup", pid)
+			manager, err = cgroups.GetManagerForPid(file.Pid)
 			if err != nil {
 				return fmt.Errorf("couldn't create cgroup manager: %w", err)
 			}
 			if err := manager.AddProc(pid); err != nil {
 				return fmt.Errorf("couldn't add process to instance cgroup: %w", err)
 			}
+			cgPath, _ = manager.GetCgroupRelPath()
+			sylog.Debugf("In instance cgroup: %s", cgPath)
 		}
 	} else {
 		abspath, err := filepath.Abs(image)

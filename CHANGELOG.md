@@ -44,6 +44,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Bug fixes
 
+- Fix non-root instance join with unprivileged systemd managed cgroups, when join is
+  from outside a user-owned cgroup.
+
+### Bug fixes
+
 - Restored the ability for running instances to be tracked when apptainer
   is installed with tools/install-unprivileged.sh.  Instance tracking
   depends on argument 0 of the starter, which was not getting preserved.
