@@ -30,6 +30,6 @@ else
 fi
 
 if test -z "${PS1:-}"; then
-        export PS1="Apptainer> "
+    PS1="Apptainer> "
 fi
 export LD_LIBRARY_PATH PS1
