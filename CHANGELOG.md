@@ -26,7 +26,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
 - Add new Linux capabilities: `CAP_PERFMON`, `CAP_BPF`, `CAP_CHECKPOINT_RESTORE`.
 
-### Bug fixes
+## v1.1.4 - \[2022-12-12\]
 
 - Added tools/install-unprivileged.sh to download and install apptainer
   binaries and all dependencies into a directory of the user's choice.
@@ -35,6 +35,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   Defaults to the latest version released in epel and fedora.
   Other apptainer versions can be selected but it only works with apptainer
   1.1.4 and later.
+- Make the binaries built in the unprivileged `apptainer` package relocatable.
+  When moving the binaries to a new location, the `/usr` at the top of some
+  of the paths needs to be removed.  Relocation is disallowed when the
+  `starter-suid` is present, for security reasons.
 - Change the warning when an overlay image is not writable, introduced
   in v1.1.3, back into a (more informative) fatal error because it doesn't
   actually enter the container environment.
@@ -43,10 +47,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Do not hang on pull from http(s) source that doesn't provide a content-length.
 - Avoid hang on fakeroot cleanup under high load seen on some
   distributions / kernels.
-- Make the binaries built in the unprivileged `apptainer` package relocatable.
-  When moving the binaries to a new location, the `/usr` at the top of some
-  of the paths needs to be removed.  Relocation is disallowed when the
-  `starter-suid` is present, for security reasons.
 - Remove obsolete pacstrap `-d` in Arch packer.
 - Adjust warning message for deprecated environment variables usage.
 - Enable the `--security uid:N` and `--security gid:N` options to work
