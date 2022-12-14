@@ -92,6 +92,7 @@
 - Westley Kurtzer <westley@sylabs.io>, <westleyk@nym.hush.com>
 - Yannick Cote <y@sylabs.io>, <yhcote@gmail.com>
 - Yaroslav Halchenko <debian@onerussian.com>
+- Yoshiaki Senda <yoshiaki@live.it>
 - Onur Yılmaz <csonuryilmaz@gmail.com>
 - Pranathi Locula <locula@deshaw.com>
 - Pedro Alves Batista <pedro.pesquisapb@gmail.com>
