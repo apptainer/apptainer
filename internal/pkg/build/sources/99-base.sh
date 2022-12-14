@@ -29,5 +29,7 @@ else
     LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/.singularity.d/libs"
 fi
 
-PS1="Apptainer> "
+if test -z "${PS1:-}"; then
+        export PS1="Apptainer> "
+fi
 export LD_LIBRARY_PATH PS1
