@@ -293,7 +293,9 @@ cat >utils/bin/.wrapper <<'!EOF!'
 #!/bin/bash
 ME=${0##*/}
 HERE="${0%/*}"
-if [[ "$HERE" != /* ]]; then
+if [ "$HERE" = "." ]; then
+	HERE="$PWD"
+elif [[ "$HERE" != /* ]]; then
 	HERE="$PWD/$HERE"
 fi
 PARENT="${HERE%/*}"
@@ -312,7 +314,9 @@ cat >libexec/apptainer/bin/.wrapper <<'!EOF!'
 #!/bin/bash
 ME=${0##*/}
 HERE="${0%/*}"
-if [[ "$HERE" != /* ]]; then
+if [ "$HERE" = "." ]; then
+	HERE="$PWD"
+elif [[ "$HERE" != /* ]]; then
 	HERE="$PWD/$HERE"
 fi
 PARENT="${HERE%/*}"
@@ -331,7 +335,9 @@ mkdir -p bin
 cat >>bin/apptainer <<'!EOF!'
 #!/bin/bash
 HERE="${0%/*}"
-if [[ "$HERE" != /* ]]; then
+if [ "$HERE" = "." ]; then
+	HERE="$PWD"
+elif [[ "$HERE" != /* ]]; then
 	HERE="$PWD/$HERE"
 fi
 BASEPATH="${HERE%/*}"
