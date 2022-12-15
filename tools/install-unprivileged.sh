@@ -284,6 +284,10 @@ cd ..
 
 set -e
 
+# remove .build-id files seen on el8 or later
+rm -rf lib/.build-id
+rmdir lib 2>/dev/null || true
+
 # move everything needed out of tmp to utils
 mkdir -p utils/bin utils/lib utils/libexec
 mv tmp/usr/lib*/* utils/lib
