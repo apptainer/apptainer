@@ -10,10 +10,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 ### Changed defaults / behaviours
 
 - Make `PS1` envrionment variable changeable via `%environment` section on
-  definition file that used to be only changeable via `APPTAINERENV_PS1` outside
-  of container. This makes container's prompt customizable. The line `export PS1="YOUR_PS1_VALUE> "`
-  on `%environment` section gives you prompt `YOUR_PS1_VALUE> ` inside container.
-  This change is only affect to newly built containers, but not affect to old containers.
+  definition file that used to be only changeable via `APPTAINERENV_PS1`
+  outside of container. This makes container's prompt customizable.
+  The line `export PS1="YOUR_PS1_VALUE>"` on `%environment` section gives
+  you prompt `YOUR_PS1_VALUE>` inside container. This change is only affect
+  to newly built containers, but not affect to old containers.
 - When the kernel supports unprivileged overlay mounts in a user
   namespace, the container will be constructed using an overlay
   instead of underlay layout.
