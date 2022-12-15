@@ -336,7 +336,7 @@ done
 cd ..
 echo "Creating bin/apptainer and bin/singularity"
 mkdir -p bin
-cat >>bin/apptainer <<'!EOF!'
+cat >bin/apptainer <<'!EOF!'
 #!/bin/bash
 HERE="${0%/*}"
 if [ "$HERE" = "." ]; then
