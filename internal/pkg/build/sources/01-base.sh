@@ -22,3 +22,6 @@
 # to reproduce, distribute copies to the public, prepare derivative works, and
 # perform publicly and display publicly, and to permit other to do so.
 #
+if [ -z "$EUID" ]; then
+    EUID="$UID"
+fi
