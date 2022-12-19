@@ -5,6 +5,12 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes Since Last Release
+
+- Make `PS1` envrionment variable changeable via `%environment` section on
+  definition file that used to be only changeable via `APPTAINERENV_PS1`
+  outside of container. This makes container’s prompt customizable.
+
 ## v1.1.5 - \[2023-01-10\]
 
 - Update the rpm packaging to (a) move the Obsoletes of singularity to

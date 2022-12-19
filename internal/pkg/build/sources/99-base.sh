@@ -23,13 +23,13 @@
 # perform publicly and display publicly, and to permit other to do so.
 #
 
-if [ -z "$LD_LIBRARY_PATH" ]; then
+if [ -z "${LD_LIBRARY_PATH:-}" ]; then
     LD_LIBRARY_PATH="/.singularity.d/libs"
 else
     LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/.singularity.d/libs"
 fi
 
-if test -z "${PS1:-}"; then
+if [ -z "${PS1:-}" ]; then
     PS1="Apptainer> "
 fi
 export LD_LIBRARY_PATH PS1
