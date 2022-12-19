@@ -284,6 +284,10 @@ cd ..
 
 set -e
 
+# remove .build-id files seen on el8 or later
+rm -rf lib/.build-id
+rmdir lib 2>/dev/null || true
+
 # move everything needed out of tmp to utils
 mkdir -p utils/bin utils/lib utils/libexec
 mv tmp/usr/lib*/* utils/lib
@@ -293,7 +297,9 @@ cat >utils/bin/.wrapper <<'!EOF!'
 #!/bin/bash
 ME=${0##*/}
 HERE="${0%/*}"
-if [[ "$HERE" != /* ]]; then
+if [ "$HERE" = "." ]; then
+	HERE="$PWD"
+elif [[ "$HERE" != /* ]]; then
 	HERE="$PWD/$HERE"
 fi
 PARENT="${HERE%/*}"
@@ -312,7 +318,9 @@ cat >libexec/apptainer/bin/.wrapper <<'!EOF!'
 #!/bin/bash
 ME=${0##*/}
 HERE="${0%/*}"
-if [[ "$HERE" != /* ]]; then
+if [ "$HERE" = "." ]; then
+	HERE="$PWD"
+elif [[ "$HERE" != /* ]]; then
 	HERE="$PWD/$HERE"
 fi
 PARENT="${HERE%/*}"
@@ -328,10 +336,12 @@ done
 cd ..
 echo "Creating bin/apptainer and bin/singularity"
 mkdir -p bin
-cat >>bin/apptainer <<'!EOF!'
+cat >bin/apptainer <<'!EOF!'
 #!/bin/bash
 HERE="${0%/*}"
-if [[ "$HERE" != /* ]]; then
+if [ "$HERE" = "." ]; then
+	HERE="$PWD"
+elif [[ "$HERE" != /* ]]; then
 	HERE="$PWD/$HERE"
 fi
 BASEPATH="${HERE%/*}"
