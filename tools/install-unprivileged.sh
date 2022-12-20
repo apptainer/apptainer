@@ -66,20 +66,26 @@ if [ -n "$MISSINGCMDS" ]; then
 	fatal "Required command(s)$MISSINGCMDS not found"
 fi
 
+simple_dist() {
+source /etc/os-release
+   	case " $ID $ID_LIKE " in
+		*" rhel "*) echo "el${VERSION_ID%.*}";;
+		*" fedora "*) echo "fc${VERSION_ID%.*}";;
+		# ubuntu has to be before debian because it has
+		# ID_LIKE=debian
+		*" ubuntu "*) echo "ubuntu${VERSION_ID%.*}";;
+		# testing & unstable debian have no VERSION_ID
+		*" debian "*) echo "debian${VERSION_ID%.*}";;
+   		# tumbleweed is  rolling release so a extra entry for it
+   	 	*" opensuse-tumbleweed"*) echo "opensuse-tumbleweed";;
+    esac
+}
+
 if [ -z "$DIST" ]; then
 	if [ ! -f /etc/os-release ]; then
 		fatal "There's no /etc/os-release so cannot determine distribution"
 	fi
-	DIST="$(source /etc/os-release
-        	case " $ID $ID_LIKE " in
-			*" rhel "*) echo "el${VERSION_ID%.*}";;
-			*" fedora "*) echo "fc${VERSION_ID%.*}";;
-			# ubuntu has to be before debian because it has
-			# ID_LIKE=debian
-			*" ubuntu "*) echo "ubuntu${VERSION_ID%.*}";;
-			# testing & unstable debian have no VERSION_ID
-			*" debian "*) echo "debian${VERSION_ID%.*}";;
-        	esac)"
+	DIST=$(simple_dist)
 	if [ -z "$DIST" ]; then
 		fatal "Operating system in /etc/os-release not supported"
 	fi
@@ -107,6 +113,7 @@ case "$DIST" in
 	ubuntu20*|debian10*|debian11*) DIST=el8;;
 	ubuntu*|debian1*|debian) DIST=el9;;
 	el*|fc*);;
+    opensuse-tumbleweed);;
 	*)	fatal "Unrecognized distribution $DIST"
 esac
 
@@ -114,6 +121,8 @@ OSREPOURL=""
 EXTRASREPOURL=""
 EPELREPOURL=""
 OSSPLIT=true
+ELURL=true
+
 case $DIST in
 	el7)
 	    OSREPOURL="https://linux-mirrors.fnal.gov/linux/centos/7/os/$ARCH/Packages"
@@ -142,6 +151,14 @@ case $DIST in
 	    OSREPOURL="https://dl.fedoraproject.org/pub/fedora/linux/updates/$FC/Everything/$ARCH/Packages/"
 	    EPELREPOURL="https://dl.fedoraproject.org/pub/fedora/linux/updates$TESTING/$FC/Everything/$ARCH/Packages/"
 	    ;;
+	opensuse-tumbleweed)
+	    OSREPOURL="https://download.opensuse.org/tumbleweed/repo/oss/$ARCH"
+		# no epel for openSUSE its all in the main repos
+	    EPELREPOURL=$OSREPOURL
+		EXTRASREPOURL=$OSREPOURL
+	    ELURL=false
+	    OSSPLIT=false
+	    ;;
 	*) fatal "$DIST distribution not supported";;
 esac
 
@@ -156,7 +173,7 @@ LASTPKGS=""
 latesturl()
 {
 	typeset URL="$1"
-	if [ "$3" = true ]; then
+	if [ "$3" == true ]; then
 		URL="${URL%/}"
 		URL="$URL/${2:0:1}"
 	fi
@@ -165,7 +182,7 @@ latesturl()
 		LASTURL="$URL"
 		LASTPKGS="$(curl -Ls "$URL")"
 	fi
-	typeset LATEST="$(echo "$LASTPKGS"|sed 's/.*href="//;s/".*//'|grep "^$2-[0-9].*$ARCH"|tail -1)"
+	typeset LATEST="$(echo "$LASTPKGS"|sed -e 's/.*href="//;s/".*//' -e 's/\.mirrorlist//' -e 's/\-32bit//' |grep "^$2-[0-9].*$ARCH"|tail -1)"
 	if [ -n "$LATEST" ]; then
 		echo "$URL/$LATEST"
 	elif [ "$4" = true ]; then
@@ -179,11 +196,10 @@ latesturl()
 	fi
 }
 
-APPTAINERURL="https://kojipkgs.fedoraproject.org/packages/apptainer/"
 LOCALAPPTAINER=false
 if [ -z "$VERSION" ]; then
 	# shellcheck disable=SC2310,SC2311
-	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer true false)"; then
+	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer $ELURL false)"; then
 		fatal "Could not find apptainer version from $APPTAINERURL"
 	fi
 elif [[ "$VERSION" == *.rpm ]]; then
@@ -197,12 +213,15 @@ elif [[ "$VERSION" == *.rpm ]]; then
 		VERSION="$PWD/$VERSION"
 	fi
 else
-	KOJIURL="https://kojipkgs.fedoraproject.org/packages/apptainer/$VERSION"
-	REL="$(curl -Ls "$KOJIURL"|sed 's/.*href="//;s/".*//'|grep "\.$DIST/"|tail -1|sed 's,/$,,')"
-	if [ -z "$REL" ]; then
-		fatal "Could not find latest release in $KOJIURL"
-	fi
-	APPTAINERURL="$KOJIURL/$REL/$ARCH/apptainer-$VERSION-$REL.$ARCH.rpm"
+KOJIURL="https://kojipkgs.fedoraproject.org/packages/apptainer/$VERSION"
+if [ $DIST == "opensuse-tumbleweed" ] ; then
+  KOJIURL="https://download.opensuse.org/repositories/network:/cluster/openSUSE_Tumbleweed/$ARCH"
+fi
+REL="$(curl -Ls "$KOJIURL"|sed 's/.*href="//;s/".*//'|grep "\.$DIST/"|tail -1|sed 's,/$,,')"
+if [ -z "$REL" ]; then
+	fatal "Could not find latest release in $KOJIURL"
+fi
+APPTAINERURL="$KOJIURL/$REL/$ARCH/apptainer-$VERSION-$REL.$ARCH.rpm"
 fi
 
 cd "$DEST"
@@ -231,16 +250,23 @@ fi
 
 mkdir tmp
 cd tmp
-OSUTILS="libseccomp lzo squashfs-tools fuse-libs"
+
+APPTAINERURL="https://kojipkgs.fedoraproject.org/packages/apptainer/"
+OSUTILS=""
 EXTRASUTILS="fuse-overlayfs"
-EPELUTILS="fakeroot fakeroot-libs"
+EPELUTILS="fakeroot"
 if [ "$DIST" = el7 ]; then
-	EPELUTILS="$EPELUTILS libzstd fuse2fs fuse3-libs"
+	OSUTILS="$OSUTILS lzo squashfs-tools libseccomp fuse-libs"
+	EPELUTILS="$EPELUTILS libzstd fuse2fs fuse3-libs fakeroot-libs"
 elif [ "$DIST" = el8 ]; then
-	OSUTILS="$OSUTILS libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
+	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
+	EPELUTILS="$EPELUTILS fakeroot-libs"
+elif [ "$DIST" = "opensuse-tumbleweed" ]; then
+	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 fakeroot"
 else
-	OSUTILS="$OSUTILS libzstd e2fsprogs-libs e2fsprogs"
+	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools libzstd e2fsprogs-libs e2fsprogs"
 	EXTRASUTILS="$EXTRASUTILS fuse3-libs"
+	EPELUTILS="$EPELUTILS fakeroot-libs"
 fi
 FEDORA=false
 if [[ "$DIST" == fc* ]]; then
@@ -269,7 +295,7 @@ extractutils()
 # shellcheck disable=SC2086
 extractutils "$OSREPOURL" "$OSSPLIT" $OSUTILS
 extractutils "$EXTRASREPOURL" "$OSSPLIT" $EXTRASUTILS
-extractutils "$EPELREPOURL" true $EPELUTILS
+extractutils "$EPELREPOURL" "$ELURL" $EPELUTILS
 
 echo "Patching fakeroot-sysv to make it relocatable"
 # shellcheck disable=SC2016
@@ -291,7 +317,9 @@ rmdir lib 2>/dev/null || true
 # move everything needed out of tmp to utils
 mkdir -p utils/bin utils/lib utils/libexec
 mv tmp/usr/lib*/* utils/lib
-mv tmp/usr/bin/fuse-overlayfs tmp/usr/*bin/fuse2fs tmp/usr/*bin/*squashfs utils/libexec
+for file in tmp/usr/bin/fuse-overlayfs tmp/usr/*bin/fuse2fs tmp/usr/*bin/*squashfs ; do
+	test -e $file && mv $file utils/libexec
+done
 mv tmp/usr/bin/fake*sysv utils/bin
 cat >utils/bin/.wrapper <<'!EOF!'
 #!/bin/bash
