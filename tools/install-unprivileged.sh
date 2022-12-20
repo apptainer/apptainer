@@ -154,7 +154,7 @@ case $DIST in
 	opensuse-tumbleweed)
 	    OSREPOURL="https://download.opensuse.org/tumbleweed/repo/oss/$ARCH"
 		# no epel for openSUSE its all in the main repos
-	    EPELREPOURL=$OSREPOURL
+	    EPELREPOURL="https://download.opensuse.org/repositories/network:/cluster/openSUSE_Tumbleweed/$ARCH"
 		EXTRASREPOURL=$OSREPOURL
 	    ELURL=false
 	    OSSPLIT=false
@@ -182,7 +182,8 @@ latesturl()
 		LASTURL="$URL"
 		LASTPKGS="$(curl -Ls "$URL")"
 	fi
-	typeset LATEST="$(echo "$LASTPKGS"|sed -e 's/.*href="//;s/".*//' -e 's/\.mirrorlist//' -e 's/\-32bit//' |grep "^$2-[0-9].*$ARCH"|tail -1)"
+	typeset LATEST="$(echo "$LASTPKGS"|sed -e 's/.*href="//;s/".*//;s/\.mirrorlist//;s/\-32bit//' |grep "^$2-[0-9].*$ARCH"|tail -1)"
+	echo "LATEST $LATEST" 1>&2
 	if [ -n "$LATEST" ]; then
 		echo "$URL/$LATEST"
 	elif [ "$4" = true ]; then
@@ -197,7 +198,7 @@ latesturl()
 }
 
 LOCALAPPTAINER=false
-if [ -z "$VERSION" ]; then
+if test -z "$VERSION" || test $DIST == "opensuse-tumbleweed" ; then
 	# shellcheck disable=SC2310,SC2311
 	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer $ELURL false)"; then
 		fatal "Could not find apptainer version from $APPTAINERURL"
@@ -213,15 +214,12 @@ elif [[ "$VERSION" == *.rpm ]]; then
 		VERSION="$PWD/$VERSION"
 	fi
 else
-KOJIURL="https://kojipkgs.fedoraproject.org/packages/apptainer/$VERSION"
-if [ $DIST == "opensuse-tumbleweed" ] ; then
-  KOJIURL="https://download.opensuse.org/repositories/network:/cluster/openSUSE_Tumbleweed/$ARCH"
-fi
-REL="$(curl -Ls "$KOJIURL"|sed 's/.*href="//;s/".*//'|grep "\.$DIST/"|tail -1|sed 's,/$,,')"
-if [ -z "$REL" ]; then
-	fatal "Could not find latest release in $KOJIURL"
-fi
-APPTAINERURL="$KOJIURL/$REL/$ARCH/apptainer-$VERSION-$REL.$ARCH.rpm"
+	KOJIURL="https://kojipkgs.fedoraproject.org/packages/apptainer/$VERSION"
+	REL="$(curl -Ls "$KOJIURL"|sed 's/.*href="//;s/".*//'|grep "\.$DIST/"|tail -1|sed 's,/$,,')"
+	if [ -z "$REL" ]; then
+		fatal "Could not find latest release in $KOJIURL"
+	fi
+	APPTAINERURL="$KOJIURL/$REL/$ARCH/apptainer-$VERSION-$REL.$ARCH.rpm"
 fi
 
 cd "$DEST"
@@ -262,7 +260,9 @@ elif [ "$DIST" = el8 ]; then
 	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
 	EPELUTILS="$EPELUTILS fakeroot-libs"
 elif [ "$DIST" = "opensuse-tumbleweed" ]; then
-	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 fakeroot"
+	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 fakeroot $EXTRUTILS $EPELUTILS"
+	EXTRASUTILS=""
+	EPELUTILS=""
 else
 	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools libzstd e2fsprogs-libs e2fsprogs"
 	EXTRASUTILS="$EXTRASUTILS fuse3-libs"
