@@ -82,6 +82,7 @@ source /etc/os-release
 		*" debian "*) echo "debian${VERSION_ID%.*}";;
    		# tumbleweed is  rolling release so a extra entry for it
    	 	*" opensuse-tumbleweed"*) echo "opensuse-tumbleweed";;
+		*" suse "*) echo "suse${VERSION%.*}"
     esac
 }
 
@@ -120,6 +121,11 @@ case "$DIST" in
     opensuse-tumbleweed)
 		if [[ "$KOJI" == "true" ]] ; then
 			DIST=el9
+		fi
+	;;
+	suse15)
+		if [[ "$KOJI" == "true" ]] ; then
+			DIST=el8
 		fi
 	;;
 	*)	fatal "Unrecognized distribution $DIST"
@@ -164,6 +170,13 @@ case $DIST in
 		EXTRASREPOURL=$OSREPOURL
 	    OSSPLIT=false
 	    ;;
+	suse15)
+	    #OSREPOURL="https://download.opensuse.org/openSUSE_Leap_15.4/repo/oss/$ARCH"
+		OSREPOURL="https://download.opensuse.org/distribution/leap/15.4/repo/oss/$ARCH"
+	    EPELREPOURL="https://download.opensuse.org/repositories/network:/cluster/openSUSE_Leap_15.4/$ARCH"
+		EXTRASREPOURL="https://download.opensuse.org/repositories/filesystems/15.4/$ARCH"
+	    OSSPLIT=false
+		;;
 	*) fatal "$DIST distribution not supported";;
 esac
 
@@ -268,6 +281,10 @@ elif [ "$DIST" = "opensuse-tumbleweed" ]; then
 	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot fuse2fs $EXTRASUTILS $EPELUTILS"
 	EXTRASUTILS=""
 	EPELUTILS=""
+elif [ "$DIST" = "suse15" ]; then
+	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot $EPELUTILS"
+	EXTRASUTILS="$EXTRASUTILS fuse2fs"
+	EPELUTILS=""
 else
 	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools libzstd e2fsprogs-libs e2fsprogs"
 	EXTRASUTILS="$EXTRASUTILS fuse3-libs"
@@ -300,7 +317,7 @@ extractutils()
 # shellcheck disable=SC2086
 extractutils "$OSREPOURL" "$OSSPLIT" $OSUTILS
 extractutils "$EXTRASREPOURL" "$OSSPLIT" $EXTRASUTILS
-extractutils "$EPELREPOURL" false $EPELUTILS
+extractutils "$EPELREPOURL" true $EPELUTILS
 
 echo "Patching fakeroot-sysv to make it relocatable"
 # shellcheck disable=SC2016
@@ -320,6 +337,7 @@ rm -rf lib/.build-id
 rmdir lib 2>/dev/null || true
 
 # move everything needed out of tmp to utils
+test -e lib/apptainer && (mkdir -p libexec ; ln -s ../lib/apptainer libexec/apptainer )
 mkdir -p utils/bin utils/lib utils/libexec
 mv tmp/usr/lib*/* utils/lib
 mv tmp/usr/bin/fuse-overlayfs tmp/usr/*bin/fuse2fs tmp/usr/*bin/*squashfs utils/libexec
