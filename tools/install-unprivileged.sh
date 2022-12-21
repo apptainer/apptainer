@@ -16,7 +16,7 @@ REQUIREDCMDS="curl rpm2cpio cpio"
 usage()
 {
 	(
-	echo "Usage: install-unprivileged.sh [-d dist] [-a arch] [-v version] installpath"
+	echo "Usage: install-unprivileged.sh [-d dist] [-a arch] [-v version] [-o ] installpath"
 	echo "Installs apptainer version and its dependencies from EPEL+baseOS"
 	echo "   or Fedora."
 	echo " dist can start with el or fc and ends with the major version number,"
@@ -27,6 +27,8 @@ usage()
 	echo "   default based on the current system."
 	echo " version selects a specific apptainer version, default latest release,"
 	echo "   although if it ends in '.rpm' then apptainer will come from there."
+	echo " -o will enforce the use of binaries build with the Open Build Service"
+	echo "   build.opensuse.org"
 	) >&2
 	exit 1
 }
@@ -42,11 +44,13 @@ fatal()
 DIST=""
 ARCH=""
 VERSION=""
+KOJI=true
 while true; do
 	case "$1" in
 		-d) DIST="$2"; shift 2;;
 		-a) ARCH="$2"; shift 2;;
 		-v) VERSION="$2"; shift 2;;
+		-o) KOJI="false"; shift 1;;
 		-*) usage;;
 		*) break;;
 	esac
@@ -113,7 +117,11 @@ case "$DIST" in
 	ubuntu20*|debian10*|debian11*) DIST=el8;;
 	ubuntu*|debian1*|debian) DIST=el9;;
 	el*|fc*);;
-    opensuse-tumbleweed);;
+    opensuse-tumbleweed)
+		if [[ "$KOJI" == "true" ]] ; then
+			DIST=el9
+		fi
+	;;
 	*)	fatal "Unrecognized distribution $DIST"
 esac
 
@@ -121,7 +129,6 @@ OSREPOURL=""
 EXTRASREPOURL=""
 EPELREPOURL=""
 OSSPLIT=true
-ELURL=true
 
 case $DIST in
 	el7)
@@ -153,10 +160,8 @@ case $DIST in
 	    ;;
 	opensuse-tumbleweed)
 	    OSREPOURL="https://download.opensuse.org/tumbleweed/repo/oss/$ARCH"
-		# no epel for openSUSE its all in the main repos
 	    EPELREPOURL="https://download.opensuse.org/repositories/network:/cluster/openSUSE_Tumbleweed/$ARCH"
 		EXTRASREPOURL=$OSREPOURL
-	    ELURL=false
 	    OSSPLIT=false
 	    ;;
 	*) fatal "$DIST distribution not supported";;
@@ -183,7 +188,6 @@ latesturl()
 		LASTPKGS="$(curl -Ls "$URL")"
 	fi
 	typeset LATEST="$(echo "$LASTPKGS"|sed -e 's/.*href="//;s/".*//;s/\.mirrorlist//;s/\-32bit//' |grep "^$2-[0-9].*$ARCH"|tail -1)"
-	echo "LATEST $LATEST" 1>&2
 	if [ -n "$LATEST" ]; then
 		echo "$URL/$LATEST"
 	elif [ "$4" = true ]; then
@@ -198,9 +202,10 @@ latesturl()
 }
 
 LOCALAPPTAINER=false
-if test -z "$VERSION" || test $DIST == "opensuse-tumbleweed" ; then
+#if test -z "$VERSION" || ! test -z $OBSURL ; then
+if test -z "$VERSION" || [[ "$KOJI" == "false" ]]; then
 	# shellcheck disable=SC2310,SC2311
-	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer $ELURL false)"; then
+	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer $KOJI false)"; then
 		fatal "Could not find apptainer version from $APPTAINERURL"
 	fi
 elif [[ "$VERSION" == *.rpm ]]; then
@@ -260,7 +265,7 @@ elif [ "$DIST" = el8 ]; then
 	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
 	EPELUTILS="$EPELUTILS fakeroot-libs"
 elif [ "$DIST" = "opensuse-tumbleweed" ]; then
-	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 fakeroot $EXTRUTILS $EPELUTILS"
+	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot fuse2fs $EXTRASUTILS $EPELUTILS"
 	EXTRASUTILS=""
 	EPELUTILS=""
 else
@@ -295,7 +300,7 @@ extractutils()
 # shellcheck disable=SC2086
 extractutils "$OSREPOURL" "$OSSPLIT" $OSUTILS
 extractutils "$EXTRASREPOURL" "$OSSPLIT" $EXTRASUTILS
-extractutils "$EPELREPOURL" "$ELURL" $EPELUTILS
+extractutils "$EPELREPOURL" false $EPELUTILS
 
 echo "Patching fakeroot-sysv to make it relocatable"
 # shellcheck disable=SC2016
@@ -317,9 +322,7 @@ rmdir lib 2>/dev/null || true
 # move everything needed out of tmp to utils
 mkdir -p utils/bin utils/lib utils/libexec
 mv tmp/usr/lib*/* utils/lib
-for file in tmp/usr/bin/fuse-overlayfs tmp/usr/*bin/fuse2fs tmp/usr/*bin/*squashfs ; do
-	test -e $file && mv $file utils/libexec
-done
+mv tmp/usr/bin/fuse-overlayfs tmp/usr/*bin/fuse2fs tmp/usr/*bin/*squashfs utils/libexec
 mv tmp/usr/bin/fake*sysv utils/bin
 cat >utils/bin/.wrapper <<'!EOF!'
 #!/bin/bash
