@@ -208,7 +208,7 @@ latesturl()
 	typeset LATEST="$(echo "$LASTPKGS"|sed -e 's/.*href="//;s/".*//' -e 's/\.mirrorlist//' -e 's/\-32bit//' -e 's@^\.\/@@' |grep "^$2-[0-9].*$ARCH"|tail -1)"
 	if [ -n "$LATEST" ]; then
 		echo "$URL/$LATEST"
-	elif [ "$4" = true ]; then
+	elif [ "$4" == true ]; then
 		URL="${URL/\/updates\///releases/}"
 		URL="${URL/\/Packages\///os/Packages/}"
 		latesturl "$URL" "$2" false false
@@ -220,7 +220,6 @@ latesturl()
 }
 
 LOCALAPPTAINER=false
-#if test -z "$VERSION" || ! test -z $OBSURL ; then
 if test -z "$VERSION" || [[ "$KOJI" == "false" ]]; then
 	# shellcheck disable=SC2310,SC2311
 	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer $KOJI false)"; then
@@ -276,17 +275,17 @@ APPTAINERURL="https://kojipkgs.fedoraproject.org/packages/apptainer/"
 OSUTILS=""
 EXTRASUTILS="fuse-overlayfs"
 EPELUTILS="fakeroot"
-if [ "$DIST" = el7 ]; then
+if [ "$DIST" == el7 ]; then
 	OSUTILS="$OSUTILS lzo squashfs-tools libseccomp fuse-libs"
 	EPELUTILS="$EPELUTILS libzstd fuse2fs fuse3-libs fakeroot-libs"
-elif [ "$DIST" = el8 ]; then
+elif [ "$DIST" == el8 ]; then
 	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
 	EPELUTILS="$EPELUTILS fakeroot-libs"
-elif [ "$DIST" = "opensuse-tumbleweed" ]; then
+elif [ "$DIST" == "opensuse-tumbleweed" ]; then
 	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot fuse2fs $EXTRASUTILS $EPELUTILS"
 	EXTRASUTILS=""
 	EPELUTILS=""
-elif [ "$DIST" = "suse15" ]; then
+elif [ "$DIST" == "suse15" ]; then
 	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot $EPELUTILS"
 	EXTRASUTILS="$EXTRASUTILS fuse2fs"
 	EPELUTILS=""
