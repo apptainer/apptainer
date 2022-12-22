@@ -175,13 +175,6 @@ jobs:
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
-      - name: Install and test unprivileged for openSUSE tumbleweed
-        env:
-          OS_TYPE: opensuse/tumbleweed
-          OS_VERSION: latest
-          TEST_TYPE: unpriv
-        run: ./scripts/ci-docker-run
-
   rpmbuild-rocky9:
     runs-on: ubuntu-22.04
     name: rpmbuild-rocky9
