@@ -28,7 +28,7 @@ usage()
 	echo " version selects a specific apptainer version, default latest release,"
 	echo "   although if it ends in '.rpm' then apptainer will come from there."
 	echo " -o will enforce the use of binaries build with the Open Build Service"
-	echo "   build.opensuse.org"
+	echo "   build.opensuse.org. This option is only valid for openSUSE based distros."
 	) >&2
 	exit 1
 }
@@ -82,7 +82,8 @@ source /etc/os-release
 		*" debian "*) echo "debian${VERSION_ID%.*}";;
    		# tumbleweed is  rolling release so a extra entry for it
    	 	*" opensuse-tumbleweed"*) echo "opensuse-tumbleweed";;
-		*" suse "*) echo "suse${VERSION%.*}"
+		*" suse "*) echo "suse${VERSION_ID%.*}";;
+		*" sles "*) echo "suse${VERSION_ID%.*}";;
     esac
 }
 
@@ -90,6 +91,7 @@ if [ -z "$DIST" ]; then
 	if [ ! -f /etc/os-release ]; then
 		fatal "There's no /etc/os-release so cannot determine distribution"
 	fi
+	# shellcheck disable=SC2311
 	DIST=$(simple_dist)
 	if [ -z "$DIST" ]; then
 		fatal "Operating system in /etc/os-release not supported"
@@ -128,6 +130,7 @@ case "$DIST" in
 			DIST=el8
 		fi
 	;;
+	suse12) DIST=el7;;
 	*)	fatal "Unrecognized distribution $DIST"
 esac
 
@@ -200,7 +203,7 @@ latesturl()
 		LASTURL="$URL"
 		LASTPKGS="$(curl -Ls "$URL")"
 	fi
-	typeset LATEST="$(echo "$LASTPKGS"|sed -e 's/.*href="//;s/".*//;s/\.mirrorlist//;s/\-32bit//' |grep "^$2-[0-9].*$ARCH"|tail -1)"
+	typeset LATEST="$(echo "$LASTPKGS"|sed -e 's/.*href="//;s/".*//' -e 's/\.mirrorlist//' -e 's/\-32bit//' -e 's@^\.\/@@' |grep "^$2-[0-9].*$ARCH"|tail -1)"
 	if [ -n "$LATEST" ]; then
 		echo "$URL/$LATEST"
 	elif [ "$4" = true ]; then
