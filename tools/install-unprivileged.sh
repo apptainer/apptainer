@@ -220,7 +220,7 @@ latesturl()
 }
 
 LOCALAPPTAINER=false
-if test -z "$VERSION" || [[ "$KOJI" == "false" ]]; then
+if test -z "$VERSION" || test "$KOJI" == "false" ; then
 	# shellcheck disable=SC2310,SC2311
 	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer $KOJI false)"; then
 		fatal "Could not find apptainer version from $APPTAINERURL"
