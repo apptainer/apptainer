@@ -170,15 +170,15 @@ jobs:
 
       - name: Install and test unprivileged for openSUSE leap
         env:
-          OS_TYPE: opensuse
-          OS_VERSION: leap
+          OS_TYPE: opensuse/leap
+          OS_VERSION: latest
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
       - name: Install and test unprivileged for openSUSE tumbleweed
         env:
-          OS_TYPE: opensuse
-          OS_VERSION: tumbleweed
+          OS_TYPE: opensuse/tumbleweed
+          OS_VERSION: latest
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
