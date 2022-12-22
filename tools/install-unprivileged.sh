@@ -276,7 +276,7 @@ OSUTILS=""
 EXTRASUTILS="fuse-overlayfs"
 EPELUTILS="fakeroot"
 if [ "$DIST" == el7 ]; then
-	OSUTILS="$OSUTILS lzo squashfs-tools libseccomp fuse-libs"
+	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs"
 	EPELUTILS="$EPELUTILS libzstd fuse2fs fuse3-libs fakeroot-libs"
 elif [ "$DIST" == el8 ]; then
 	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
@@ -290,7 +290,7 @@ elif [ "$DIST" == "suse15" ]; then
 	EXTRASUTILS="$EXTRASUTILS fuse2fs"
 	EPELUTILS=""
 else
-	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools libzstd e2fsprogs-libs e2fsprogs"
+	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs"
 	EXTRASUTILS="$EXTRASUTILS fuse3-libs"
 	EPELUTILS="$EPELUTILS fakeroot-libs"
 fi
