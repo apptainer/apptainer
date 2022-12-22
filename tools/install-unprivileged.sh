@@ -23,6 +23,8 @@ usage()
 	echo "   e.g. el9 or fc37, default based on the current system."
 	echo "   As a convenience, active debian and ubuntu versions (not counting 18.04)"
 	echo "   get translated into a compatible el version for downloads."
+	echo "   Also openSUSE based distributions are mapped to EL/FC or native openSUSE"
+	echo "   binaries can be used via the -o switch."
 	echo " arch can be any architecture supported by EPEL or Fedora,"
 	echo "   default based on the current system."
 	echo " version selects a specific apptainer version, default latest release,"
