@@ -168,6 +168,20 @@ jobs:
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
+      - name: Install and test unprivileged for openSUSE leap
+        env:
+          OS_TYPE: opensuse
+          OS_VERSION: leap
+          TEST_TYPE: unpriv
+        run: ./scripts/ci-docker-run
+
+      - name: Install and test unprivileged for openSUSE tumbleweed
+        env:
+          OS_TYPE: opensuse
+          OS_VERSION: tumbleweed
+          TEST_TYPE: unpriv
+        run: ./scripts/ci-docker-run
+
   rpmbuild-rocky9:
     runs-on: ubuntu-22.04
     name: rpmbuild-rocky9
