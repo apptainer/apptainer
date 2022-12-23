@@ -9,6 +9,7 @@
 - Ángel Bejarano <abejarano@ontropos.com>
 - Apuã Paquola <apuapaquola@gmail.com>
 - Aron Öfjörð Jóhannesson <aron1991@gmail.com>
+- Bart Oldeman <bart.oldeman@calculquebec.ca>
 - Bernard Li <bernardli@lbl.gov>
 - Brian Bockelman <bbockelm@cse.unl.edu>
 - Carl Madison <carl@sylabs.io>

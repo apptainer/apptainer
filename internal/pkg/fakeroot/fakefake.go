@@ -155,9 +155,9 @@ func GetFakeBinds(fakerootPath string) ([]string, error) {
 	if len(splits) > 1 {
 		// add the faked that corresponds to the preload library
 		src += "-" + splits[1]
-		if _, err = os.Stat(src); err == nil {
-			binds[1] = src + ":" + point
-		}
+	}
+	if _, err = os.Stat(src); err == nil {
+		binds[1] = src + ":" + point
 	}
 	point = binds[2]
 	splits = strings.Split(libraryPath, ":")
