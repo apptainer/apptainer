@@ -707,6 +707,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/rivo/uniseg/blob/master/LICENSE.txt>
 
+## github.com/secure-systems-lab/go-securesystemslib/dsse
+
+**License:** MIT
+
+**License URL:** <https://github.com/secure-systems-lab/go-securesystemslib/blob/master/dsse/LICENSE>
+
 ## github.com/shopspring/decimal
 
 **License:** MIT
