@@ -77,6 +77,7 @@ func createRoot(start time.Time) (crypto.PrivateKey, *x509.Certificate, error) {
 		BasicConstraintsValid: true,
 		IsCA:                  true,
 		MaxPathLen:            2,
+		OCSPServer:            []string{"http://localhost:9999"},
 	}
 
 	c, err := createCertificate(tmpl, tmpl, key.(crypto.Signer).Public(), key)
@@ -103,6 +104,7 @@ func createIntermediate(start time.Time, parentKey crypto.PrivateKey, parent *x5
 		BasicConstraintsValid: true,
 		IsCA:                  true,
 		MaxPathLen:            1,
+		OCSPServer:            []string{"http://localhost:9999"},
 	}
 
 	c, err := createCertificate(tmpl, parent, key.(crypto.Signer).Public(), parentKey)
@@ -130,6 +132,7 @@ func createLeaf(start time.Time, parentKey crypto.PrivateKey, parent *x509.Certi
 			x509.ExtKeyUsageCodeSigning,
 		},
 		MaxPathLenZero: true,
+		OCSPServer:     []string{"http://localhost:9999"},
 	}
 
 	return createCertificate(tmpl, parent, key.(crypto.Signer).Public(), parentKey)

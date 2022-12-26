@@ -15,16 +15,18 @@ import (
 	"crypto"
 	"crypto/x509"
 	"encoding/hex"
-	"errors"
+	"fmt"
 	"os"
 	"strings"
 
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/sypgp"
 	"github.com/apptainer/container-key-client/client"
 	"github.com/apptainer/sif/v2/pkg/integrity"
 	"github.com/apptainer/sif/v2/pkg/sif"
+	"github.com/pkg/errors"
 	"github.com/sigstore/sigstore/pkg/signature"
 )
 
@@ -37,6 +39,7 @@ type verifier struct {
 	certs         []*x509.Certificate
 	intermediates *x509.CertPool
 	roots         *x509.CertPool
+	ocsp          bool
 	svs           []signature.Verifier
 	pgp           bool
 	pgpOpts       []client.Option
@@ -90,6 +93,16 @@ func OptVerifyWithPGP(opts ...client.Option) VerifyOpt {
 	return func(v *verifier) error {
 		v.pgp = true
 		v.pgpOpts = opts
+		return nil
+	}
+}
+
+// OptVerifyWithOCSP subjects the x509 certificate chains to online revocation checks,
+// before the leaf certificate is deemed as trusted for validating the signature.
+func OptVerifyWithOCSP() VerifyOpt {
+	return func(v *verifier) error {
+		v.ocsp = true
+
 		return nil
 	}
 }
@@ -152,7 +165,7 @@ func newVerifier(opts []VerifyOpt) (verifier, error) {
 // verifyCertificate attempts to verify c is a valid code signing certificate by building one or
 // more chains from c to a certificate in roots, using certificates in intermediates if needed.
 // This function does not do any revocation checking.
-func verifyCertificate(c *x509.Certificate, intermediates, roots *x509.CertPool) error {
+func verifyCertificate(c *x509.Certificate, intermediates, roots *x509.CertPool) (chains [][]*x509.Certificate, err error) {
 	opts := x509.VerifyOptions{
 		Intermediates: intermediates,
 		Roots:         roots,
@@ -161,8 +174,7 @@ func verifyCertificate(c *x509.Certificate, intermediates, roots *x509.CertPool)
 		},
 	}
 
-	_, err := c.Verify(opts)
-	return err
+	return c.Verify(opts)
 }
 
 // getOpts returns integrity.VerifierOpt necessary to validate f.
@@ -171,10 +183,28 @@ func (v verifier) getOpts(ctx context.Context, f *sif.FileImage) ([]integrity.Ve
 
 	// Add key material from certificate(s).
 	for _, c := range v.certs {
-		if err := verifyCertificate(c, v.intermediates, v.roots); err != nil {
+		// verify that the leaf certificate is not tampered and that is adequate for signing purposes.
+		chain, err := verifyCertificate(c, v.intermediates, v.roots)
+		if err != nil {
 			return nil, err
 		}
 
+		// Verify that the certificate is issued by a trustworthy CA (i.e the certificate chain is not revoked or expired).
+		if v.ocsp {
+			if len(chain) != 1 {
+				return nil, fmt.Errorf("unhandled OCSP condition, chain length %d != 1", len(chain))
+			}
+
+			ocspErr := OCSPVerify(chain[0]...)
+			if ocspErr != nil {
+				// TODO: We need to decide whether this should be strict or permissive.
+				return nil, ocspErr
+			}
+
+			sylog.Debugf("OCSP validation has passed")
+		}
+
+		// verify the signature by using the certificate.
 		sv, err := signature.LoadVerifier(c.PublicKey, crypto.SHA256)
 		if err != nil {
 			return nil, err
@@ -291,6 +321,7 @@ func Verify(ctx context.Context, path string, opts ...VerifyOpt) error {
 	if err != nil {
 		return err
 	}
+
 	return iv.Verify()
 }
 
