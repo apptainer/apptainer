@@ -14,6 +14,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   debian and nfpm packaging with (d).
 - Fix the use of `fakeroot`, `faked`, and `libfakeroot.so` if they are not
   suffixed by `-sysv`, as is for instance the case on Gentoo Linux.
+- Prevent the use of a `--libexecdir` or `--bindir` mconfig option from
+  making apptainer think it was relocated and so preventing use of suid
+  mode.  The bug was introduced in v1.1.4.
 - Add helpful error message for build `--remote` option.
 - Add more helpful error message when no library endpoint found.
 - Avoid cleanup errors on exit when mountpoints are busy by doing a lazy
