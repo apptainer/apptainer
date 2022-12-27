@@ -101,11 +101,23 @@ func getPrefix() (string) {
 
 		switch base {
 		case "apptainer":
-			// PREFIX/bin/apptainer
-			installPrefix = filepath.Dir(bin)
+			if bin == "{{.Bindir}}" {
+				// apptainer binary was not relocated
+				installPrefix = "{{.Prefix}}"
+			} else {
+				// PREFIX/bin/apptainer
+				installPrefix = filepath.Dir(bin)
+			}
 		case "starter", "starter-suid":
-			// PREFIX/libexec/apptainer/bin/starter{|-suid}
-			installPrefix = filepath.Dir(filepath.Dir(filepath.Dir(bin)))
+			// The default LIBEXECDIR is PREFIX/libexec
+			// LIBEXECDIR/apptainer/bin/starter{|-suid}
+			installLibexecdir := filepath.Dir(filepath.Dir(bin))
+			if installLibexecdir == "{{.Libexecdir}}" {
+				// starter was not relocated
+				installPrefix = "{{.Prefix}}"
+			} else {
+				installPrefix = filepath.Dir(installLibexecdir)
+			}
 		default:
 			// don't relocate unknown base
 			installPrefix = "{{.Prefix}}"
@@ -121,8 +133,13 @@ func getPrefix() (string) {
 // and fool it into using an attacker-controlled configuration file.
 func isSuidInstall() int {
 	isSuidOnce.Do(func() {
-		prefix := getPrefix()
-		path := prefix + "/libexec/apptainer/bin/starter-suid"
+		path := getPrefix()
+		if path == "{{.Prefix}}" {
+			path = "{{.Libexecdir}}"
+		} else {
+			path += "/libexec"
+		}
+		path += "/apptainer/bin/starter-suid"
 		_, err := os.Stat(path)
 		if err == nil {
 			suidInstall = 1
@@ -195,22 +212,30 @@ func main() {
 
 	header := []Define{}
 	s := bufio.NewScanner(bytes.NewReader(inFile))
-	prefix := ""
+	vars := []string{"PREFIX", "BINDIR", "LIBEXECDIR"}
+	vals := []string{"", "", ""}
 	for s.Scan() {
 		d := parseLine(s.Text())
 		if len(d.Words) > 2 && d.Words[0] == "#define" {
-			if d.Words[1] == "PREFIX" {
-				if len(d.Words) != 3 {
-					sylog.Fatalf("Expected PREFIX to contain 3 elements")
+			for idx, configVar := range vars {
+				if d.Words[1] == configVar {
+					if len(d.Words) != 3 {
+						sylog.Fatalf("Expected %s to contain 3 elements", configVar)
+					}
+					vals[idx] = d.Words[2]
 				}
-				prefix = d.Words[2]
 			}
 			header = append(header, d)
 		}
 	}
-	if prefix == "" {
-		sylog.Fatalf("Failed to find value of PREFIX")
+	for idx, configVar := range vars {
+		if vals[idx] == "" {
+			sylog.Fatalf("Failed to find value of %s", configVar)
+		}
 	}
+	prefix := vals[0]
+	bindir := vals[1]
+	libexecdir := vals[2]
 
 	if goBuildTags := os.Getenv("GO_BUILD_TAGS"); goBuildTags != "" {
 		d := Define{
@@ -224,10 +249,14 @@ func main() {
 	}
 
 	data := struct {
-		Prefix  string
-		Defines []Define
+		Prefix     string
+		Bindir     string
+		Libexecdir string
+		Defines    []Define
 	}{
 		prefix[1 : len(prefix)-1],
+		bindir[1 : len(bindir)-1],
+		libexecdir[1 : len(libexecdir)-1],
 		header,
 	}
 	err = confgenTemplate.Execute(outFile, data)
