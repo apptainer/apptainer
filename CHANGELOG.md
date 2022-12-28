@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Fix the use of `fakeroot`, `faked`, and `libfakeroot.so` if they are not
   suffixed by `-sysv`, as is for instance the case on Gentoo Linux.
+- Add helpful error message for build `--remote` option.
+- Add more helpful error message when no library endpoint found.
 
 ## v1.1.4 - \[2022-12-12\]
 

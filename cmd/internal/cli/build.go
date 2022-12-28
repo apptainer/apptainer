@@ -11,6 +11,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -50,6 +51,7 @@ var buildArgs struct {
 	ignoreSubuid      bool // Ignore /etc/subuid entries (hidden)
 	ignoreFakerootCmd bool // Ignore fakeroot command (hidden)
 	ignoreUserns      bool // Ignore user namespace(hidden)
+	remote            bool // Remote flag(hidden, only for helpful error message)
 }
 
 // -s|--sandbox
@@ -274,6 +276,16 @@ var buildIgnoreUsernsFlag = cmdline.Flag{
 	Hidden:       true,
 }
 
+var buildRemoteFlag = cmdline.Flag{
+	ID:           "remoteFlag",
+	Value:        &buildArgs.remote,
+	DefaultValue: false,
+	Name:         "remote",
+	Usage:        "--remote is no longer supported, try building locally without it",
+	EnvKeys:      []string{},
+	Hidden:       true,
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(buildCmd)
@@ -311,6 +323,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildIgnoreSubuidFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildIgnoreFakerootCommand, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildIgnoreUsernsFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildRemoteFlag, buildCmd)
 	})
 }
 
@@ -338,6 +351,11 @@ func preRun(cmd *cobra.Command, args []string) {
 			sylog.Verbosef("Implying --fakeroot because building from Deffile file unprivileged")
 			fakerootExec(isDeffile)
 		}
+	}
+
+	if buildArgs.remote {
+		err := errors.New("--remote is no longer supported, try building locally without it")
+		cobra.CheckErr(err)
 	}
 }
 
