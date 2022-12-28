@@ -12,6 +12,7 @@ arch: {{ .Arch }}
 description: |
   Apptainer provides functionality to make portable
   containers that can be used across host environments.
+  It was formerly known as Singularity.
 
 contents:
   - src: ./builddir/{{ .AppName }}
