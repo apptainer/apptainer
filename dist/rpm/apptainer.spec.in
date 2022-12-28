@@ -36,7 +36,7 @@
 # Uncomment this to include a multithreaded version of squashfuse_ll
 # %%global squashfuse_version 0.1.105
 
-Summary: Application and environment virtualization
+Summary: Application and environment virtualization formerly known as Singularity
 Name: apptainer
 Version: @PACKAGE_RPM_VERSION@
 Release: @PACKAGE_RELEASE@%{?dist}
@@ -54,17 +54,17 @@ Patch10: https://github.com/vasi/squashfuse/pull/70.patch
 Patch11: https://github.com/vasi/squashfuse/pull/77.patch
 Patch12: https://github.com/vasi/squashfuse/pull/81.patch
 %endif
-# The singularity package was renamed to apptainer after version 3.8.x.
-# The apptainer package reset numbering at 1.0.0, and some singularity
-#  packages are in epoch 1, so Provide corresponding singularity versions
-#  in epoch 2.
-Provides: singularity = 2:%{version}-%{release}
-Obsoletes: singularity < 1:4.0
+
 # In the singularity 2.x series there was a singularity-runtime package
 #  that could have been installed independently, but starting in 3.x
 #  there was only one package
-Provides: singularity-runtime = 2:%{version}-%{release}
 Obsoletes: singularity-runtime < 3.0
+
+# Multiple packages contain /usr/bin/singularity and /usr/bin/run-singularity,
+# which are necessary to run SIF images.  Use a pivot provides/conflicts to
+# avoid them all needing to conflict with each other.
+Provides: sif-runtime
+Conflicts: sif-runtime
 
 %if "%{_target_vendor}" == "suse"
 BuildRequires: binutils-gold
@@ -105,6 +105,10 @@ containers that can be used across host environments.
 %package suid
 Summary: Setuid component of Apptainer
 Requires: %{name} = %{version}-%{release}
+# The singularity package was renamed to apptainer.  The Obsoletes is
+# on this subpackage for greater compatibility after an update from the
+# old singularity. 3.8.7-3 was the last release of the old singularity.
+Obsoletes: singularity < 3.8.7-4
 
 %description suid
 Provides the optional setuid-root portion of Apptainer.
