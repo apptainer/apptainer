@@ -831,7 +831,7 @@ func getLibraryClientConfig(uri string) (*libClient.Config, error) {
 		if endpoint.DefaultLibraryURI != "" {
 			sylog.Warningf("no default remote in use, falling back to default library: %s", endpoint.DefaultLibraryURI)
 		} else {
-			return nil, fmt.Errorf("no default remote with library client in use")
+			return nil, fmt.Errorf("no default remote with library client in use (see https://apptainer.org/docs/user/latest/endpoint.html#no-default-remote)")
 		}
 	}
 
