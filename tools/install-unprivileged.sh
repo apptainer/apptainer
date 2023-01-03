@@ -338,12 +338,7 @@ echo "Creating bin/apptainer and bin/singularity"
 mkdir -p bin
 cat >bin/apptainer <<'!EOF!'
 #!/bin/bash
-HERE="${0%/*}"
-if [ "$HERE" = "." ]; then
-	HERE="$PWD"
-elif [[ "$HERE" != /* ]]; then
-	HERE="$PWD/$HERE"
-fi
+HERE="$(cd "${0%/*}" && /bin/pwd)"
 BASEPATH="${HERE%/*}"
 ARCH="$(uname -m)"
 if [ -z "$ARCH" ]; then
