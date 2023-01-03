@@ -922,10 +922,6 @@ if [ "$verbose" = 1 ]; then
 else
 	echo "    - verbose: no"
 fi
-if test "${host}" = "unix" ; then
-	echo "      ---"
-	echo "    - cryptsetup: ${cryptsetup_path}"
-fi
 echo "      ---"
 echo "    - version: $package_version"
 
