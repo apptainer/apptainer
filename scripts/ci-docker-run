@@ -16,7 +16,7 @@
 DOCKER_HUB_URI="$OS_TYPE:$OS_VERSION"
 docker pull "$DOCKER_HUB_URI"
 
-DOCKER_CONTAINER_NAME="test_${OS_TYPE#*/}_${OS_VERSION}"
+DOCKER_CONTAINER_NAME="test_${OS_TYPE##*/}_${OS_VERSION}"
 PKGTYPE=rpm
 if [ "$OS_TYPE" = "debian" ] || [ "$OS_TYPE" = "ubuntu" ]; then
     PKGTYPE=deb

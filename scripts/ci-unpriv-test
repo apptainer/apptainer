@@ -29,5 +29,6 @@ su testuser -c '
   truncate -s 1G overlay.img
   mkfs.ext3 -F -O ^has_journal overlay.img
   ins/bin/apptainer exec --overlay overlay.img -f image.sif touch /bin/newfile
+  ins/bin/apptainer exec -B $PWD -f image.sif ins/bin/apptainer exec --overlay overlay.img image.sif cat /bin/newfile
   ins/bin/apptainer exec --unsquash image.sif true
 '
