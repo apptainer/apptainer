@@ -35,6 +35,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   suffixed by `-sysv`, as is for instance the case on Gentoo Linux.
 - Add helpful error message for build `--remote` option.
 - Add more helpful error message when no library endpoint found.
+- Avoid cleanup errors on exit when mountpoints are busy by doing a lazy
+  unmount if a regular unmount doesn't work after 10 tries.
 
 ## v1.1.4 - \[2022-12-12\]
 
