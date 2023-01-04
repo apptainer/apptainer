@@ -151,11 +151,18 @@ func umount() (err error) {
 			// fail more often with EBUSY, but it's just a matter of
 			// time before resources are released by the kernel so we
 			// retry until the unmount operation succeed (retries 10 times)
-			if err.(syscall.Errno) == syscall.EBUSY && retries < 10 {
-				retries++
-				goto retry
+			if err.(syscall.Errno) == syscall.EBUSY {
+				if retries < 10 {
+					retries++
+					goto retry
+				}
+				// otherwise give up and do a lazy unmount
+				sylog.Debugf("Busy, doing lazy umount %s", p)
+				err = syscall.Unmount(p, syscall.MNT_DETACH)
 			}
-			errs = append(errs, fmt.Sprintf("while unmounting %s directory: %s", p, err))
+			if err != nil {
+				errs = append(errs, fmt.Sprintf("while unmounting %s directory: %s", p, err))
+			}
 		}
 		if imageDriver == nil {
 			continue
