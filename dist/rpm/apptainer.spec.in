@@ -189,9 +189,49 @@ if [ ! -f /usr/bin/fuse2fs ] && [ ! -f /usr/sbin/fuse2fs ]; then
 fi
 %endif
 
+%post
+# $1 in %%posttrans cannot distinguish between fresh installs and upgrades,
+# so check it here and create a file to pass the knowledge to that step
+if [ "$1" -eq 1 ] && [ -d %{_sysconfdir}/singularity ]; then
+	touch %{_sysconfdir}/%{name}/.singularityupgrade
+fi
+
 %posttrans
 # clean out empty directories under /etc/singularity
 rmdir %{_sysconfdir}/singularity/* %{_sysconfdir}/singularity 2>/dev/null || true
+if [ -f %{_sysconfdir}/%{name}/.singularityupgrade ]; then
+	pushd %{_sysconfdir}/%{name} >/dev/null
+	rm .singularityupgrade
+	# This is the first install of apptainer after removal of singularity.
+	# Import any singularity configurations that remain, which were left
+	# because they were non-default.
+	find %{_sysconfdir}/singularity ! -type d 2>/dev/null|while read F; do
+		B="$(echo $F|sed 's,%{_sysconfdir}/singularity/,,;s/\.rpmsave//')"
+		if [ "$B" == singularity.conf ]; then
+			echo "info: renaming $PWD/%{name}.conf to $PWD/%{name}.conf.rpmorig" >&2
+			mv %{name}.conf %{name}.conf.rpmorig
+			echo "info: converting configuration from $F into $PWD/%{name}.conf" >&2
+			%{_bindir}/%{name} confgen $F %{name}.conf
+		elif [ "$B" == remote.yaml ]; then
+			echo "info: renaming $PWD/$B to $PWD/$B.rpmorig" >&2
+			mv $B $B.rpmorig
+			echo "info: merging $F into $PWD/$B" >&2
+			(
+			sed -n '1p' $F
+			sed -n '2,$p' $B.rpmorig
+			sed -n '3,$p' $F
+			) >$B
+		else
+			if [ -f "$B" ]; then
+				echo "info: renaming $PWD/$B to $PWD/$B.rpmorig" >&2
+				mv $B $B.rpmorig
+			fi
+			echo "info: copying $F into $PWD/$B" >&2
+			cp $F $B
+		fi
+	done
+	popd >/dev/null
+fi
 
 # Define `%%license` tag if not already defined.
 # This is needed for EL 7 compatibility.
