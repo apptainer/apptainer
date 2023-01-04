@@ -38,7 +38,7 @@ Depends:
  fuse-overlayfs,
  fakeroot
 Conflicts: singularity-container
-Description: container platform focused on supporting "Mobility of Compute"
+Description: container platform focused on supporting "Mobility of Compute" formerly known as Singularity
  Mobility of Compute encapsulates the development to compute model
  where developers can work in an environment of their choosing and
  creation and when the developer needs additional compute resources,

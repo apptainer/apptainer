@@ -31,6 +31,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Bug fixes
 
+- Update the rpm packaging to (a) move the Obsoletes of singularity to
+  the apptainer-suid packaging, (b) remove the Provides of singularity,
+  (c) add a Provides and Conflicts for sif-runtime, and (d) add
+  "formerly known as Singularity" to the Summary.  Also update the
+  debian and nfpm packaging with (d).
 - Fix the use of `fakeroot`, `faked`, and `libfakeroot.so` if they are not
   suffixed by `-sysv`, as is for instance the case on Gentoo Linux.
 - Add helpful error message for build `--remote` option.
