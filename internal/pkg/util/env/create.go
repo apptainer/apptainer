@@ -103,7 +103,7 @@ func warnDeprecatedEnvUsage(hostEnvs []string) {
 				if key != "" {
 					legacyEnv := LegacySingularityEnvPrefix + key
 					newEnv := ApptainerEnvPrefix + key
-					sylog.Warningf("DEPRECATED USAGE: Environment variable %s will not be supported in the future, use %s instead", legacyEnv, newEnv)
+					sylog.Infof("Environment variable %v is set, but %v is preferred", legacyEnv, newEnv)
 				}
 			}
 		}
