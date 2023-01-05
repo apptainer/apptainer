@@ -23,14 +23,12 @@ usage()
 	echo "   e.g. el9 or fc37, default based on the current system."
 	echo "   As a convenience, active debian and ubuntu versions (not counting 18.04)"
 	echo "   get translated into a compatible el version for downloads."
-	echo "   Also openSUSE based distributions are mapped to EL/FC or native openSUSE"
+	echo "   OpenSUSE based distributions are also mapped to el, or native openSUSE"
 	echo "   binaries can be used via the -o switch."
 	echo " arch can be any architecture supported by EPEL or Fedora,"
 	echo "   default based on the current system."
 	echo " version selects a specific apptainer version, default latest release,"
 	echo "   although if it ends in '.rpm' then apptainer will come from there."
-	echo " -o will enforce the use of binaries build with the Open Build Service"
-	echo "   build.opensuse.org. This option is only valid for openSUSE based distros."
 	) >&2
 	exit 1
 }
@@ -46,13 +44,13 @@ fatal()
 DIST=""
 ARCH=""
 VERSION=""
-KOJI=true
+NOOPENSUSE=true
 while true; do
 	case "$1" in
 		-d) DIST="$2"; shift 2;;
 		-a) ARCH="$2"; shift 2;;
 		-v) VERSION="$2"; shift 2;;
-		-o) KOJI="false"; shift 1;;
+		-o) NOOPENSUSE="false"; shift 1;;
 		-*) usage;;
 		*) break;;
 	esac
@@ -122,13 +120,13 @@ case "$DIST" in
 	ubuntu20*|debian10*|debian11*) DIST=el8;;
 	ubuntu*|debian1*|debian) DIST=el9;;
 	el*|fc*);;
-    opensuse-tumbleweed)
-		if [[ "$KOJI" == "true" ]] ; then
+	opensuse-tumbleweed)
+		if $NOOPENSUSE; then
 			DIST=el9
 		fi
 	;;
 	suse15)
-		if [[ "$KOJI" == "true" ]] ; then
+		if $NOOPENSUSE; then
 			DIST=el8
 		fi
 	;;
@@ -172,16 +170,15 @@ case $DIST in
 	opensuse-tumbleweed)
 	    OSREPOURL="https://download.opensuse.org/tumbleweed/repo/oss/$ARCH"
 	    EPELREPOURL="https://download.opensuse.org/repositories/network:/cluster/openSUSE_Tumbleweed/$ARCH"
-		EXTRASREPOURL=$OSREPOURL
+	    EXTRASREPOURL=$OSREPOURL
 	    OSSPLIT=false
 	    ;;
 	suse15)
-	    #OSREPOURL="https://download.opensuse.org/openSUSE_Leap_15.4/repo/oss/$ARCH"
-		OSREPOURL="https://download.opensuse.org/distribution/leap/15.4/repo/oss/$ARCH"
-	    EPELREPOURL="https://download.opensuse.org/repositories/network:/cluster/openSUSE_Leap_15.4/$ARCH"
-		EXTRASREPOURL="https://download.opensuse.org/repositories/filesystems/15.4/$ARCH"
+	    OSREPOURL="https://download.opensuse.org/distribution/leap/15.4/repo/oss/$ARCH"
+	    EPELREPOURL="https://download.opensuse.org/repositories/network:/cluster/15.4/$ARCH"
+	    EXTRASREPOURL="https://download.opensuse.org/repositories/filesystems/15.4/$ARCH"
 	    OSSPLIT=false
-		;;
+	    ;;
 	*) fatal "$DIST distribution not supported";;
 esac
 
@@ -196,7 +193,7 @@ LASTPKGS=""
 latesturl()
 {
 	typeset URL="$1"
-	if [ "$3" == true ]; then
+	if [ "$3" = true ]; then
 		URL="${URL%/}"
 		URL="$URL/${2:0:1}"
 	fi
@@ -208,7 +205,7 @@ latesturl()
 	typeset LATEST="$(echo "$LASTPKGS"|sed -e 's/.*href="//;s/".*//' -e 's/\.mirrorlist//' -e 's/\-32bit//' -e 's@^\.\/@@' |grep "^$2-[0-9].*$ARCH"|tail -1)"
 	if [ -n "$LATEST" ]; then
 		echo "$URL/$LATEST"
-	elif [ "$4" == true ]; then
+	elif [ "$4" = true ]; then
 		URL="${URL/\/updates\///releases/}"
 		URL="${URL/\/Packages\///os/Packages/}"
 		latesturl "$URL" "$2" false false
@@ -220,9 +217,9 @@ latesturl()
 }
 
 LOCALAPPTAINER=false
-if test -z "$VERSION" || test "$KOJI" == "false" ; then
+if [ -z "$VERSION" ] || ! $NOOPENSUSE; then
 	# shellcheck disable=SC2310,SC2311
-	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer $KOJI false)"; then
+	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer $NOOPENSUSE false)"; then
 		fatal "Could not find apptainer version from $APPTAINERURL"
 	fi
 elif [[ "$VERSION" == *.rpm ]]; then
@@ -275,17 +272,17 @@ APPTAINERURL="https://kojipkgs.fedoraproject.org/packages/apptainer/"
 OSUTILS=""
 EXTRASUTILS="fuse-overlayfs"
 EPELUTILS="fakeroot"
-if [ "$DIST" == el7 ]; then
+if [ "$DIST" = el7 ]; then
 	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs"
 	EPELUTILS="$EPELUTILS libzstd fuse2fs fuse3-libs fakeroot-libs"
-elif [ "$DIST" == el8 ]; then
+elif [ "$DIST" = el8 ]; then
 	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
 	EPELUTILS="$EPELUTILS fakeroot-libs"
-elif [ "$DIST" == "opensuse-tumbleweed" ]; then
+elif [ "$DIST" = "opensuse-tumbleweed" ]; then
 	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot fuse2fs $EXTRASUTILS $EPELUTILS"
 	EXTRASUTILS=""
 	EPELUTILS=""
-elif [ "$DIST" == "suse15" ]; then
+elif [ "$DIST" = "suse15" ]; then
 	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot $EPELUTILS"
 	EXTRASUTILS="$EXTRASUTILS fuse2fs"
 	EPELUTILS=""
@@ -340,8 +337,10 @@ set -e
 rm -rf lib/.build-id
 rmdir lib 2>/dev/null || true
 
+# make lib and libexec equivalent for openSUSE binaries
+[ -e lib/apptainer ] && (mkdir -p libexec ; ln -s ../lib/apptainer libexec/apptainer )
+
 # move everything needed out of tmp to utils
-test -e lib/apptainer && (mkdir -p libexec ; ln -s ../lib/apptainer libexec/apptainer )
 mkdir -p utils/bin utils/lib utils/libexec
 mv tmp/usr/lib*/* utils/lib
 mv tmp/usr/bin/fuse-overlayfs tmp/usr/*bin/fuse2fs tmp/usr/*bin/*squashfs utils/libexec
