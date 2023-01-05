@@ -16,13 +16,15 @@ REQUIREDCMDS="curl rpm2cpio cpio"
 usage()
 {
 	(
-	echo "Usage: install-unprivileged.sh [-d dist] [-a arch] [-v version] installpath"
+	echo "Usage: install-unprivileged.sh [-d dist] [-a arch] [-v version] [-o ] installpath"
 	echo "Installs apptainer version and its dependencies from EPEL+baseOS"
 	echo "   or Fedora."
 	echo " dist can start with el or fc and ends with the major version number,"
 	echo "   e.g. el9 or fc37, default based on the current system."
 	echo "   As a convenience, active debian and ubuntu versions (not counting 18.04)"
 	echo "   get translated into a compatible el version for downloads."
+	echo "   OpenSUSE based distributions are also mapped to el, or native openSUSE"
+	echo "   binaries can be used via the -o switch."
 	echo " arch can be any architecture supported by EPEL or Fedora,"
 	echo "   default based on the current system."
 	echo " version selects a specific apptainer version, default latest release,"
@@ -42,11 +44,13 @@ fatal()
 DIST=""
 ARCH=""
 VERSION=""
+NOOPENSUSE=true
 while true; do
 	case "$1" in
 		-d) DIST="$2"; shift 2;;
 		-a) ARCH="$2"; shift 2;;
 		-v) VERSION="$2"; shift 2;;
+		-o) NOOPENSUSE="false"; shift 1;;
 		-*) usage;;
 		*) break;;
 	esac
@@ -66,20 +70,29 @@ if [ -n "$MISSINGCMDS" ]; then
 	fatal "Required command(s)$MISSINGCMDS not found"
 fi
 
+simple_dist() {
+source /etc/os-release
+   	case " $ID $ID_LIKE " in
+		*" rhel "*) echo "el${VERSION_ID%.*}";;
+		*" fedora "*) echo "fc${VERSION_ID%.*}";;
+		# ubuntu has to be before debian because it has
+		# ID_LIKE=debian
+		*" ubuntu "*) echo "ubuntu${VERSION_ID%.*}";;
+		# testing & unstable debian have no VERSION_ID
+		*" debian "*) echo "debian${VERSION_ID%.*}";;
+   		# tumbleweed is  rolling release so a extra entry for it
+   	 	*" opensuse-tumbleweed"*) echo "opensuse-tumbleweed";;
+		*" suse "*) echo "suse${VERSION_ID%.*}";;
+		*" sles "*) echo "suse${VERSION_ID%.*}";;
+    esac
+}
+
 if [ -z "$DIST" ]; then
 	if [ ! -f /etc/os-release ]; then
 		fatal "There's no /etc/os-release so cannot determine distribution"
 	fi
-	DIST="$(source /etc/os-release
-        	case " $ID $ID_LIKE " in
-			*" rhel "*) echo "el${VERSION_ID%.*}";;
-			*" fedora "*) echo "fc${VERSION_ID%.*}";;
-			# ubuntu has to be before debian because it has
-			# ID_LIKE=debian
-			*" ubuntu "*) echo "ubuntu${VERSION_ID%.*}";;
-			# testing & unstable debian have no VERSION_ID
-			*" debian "*) echo "debian${VERSION_ID%.*}";;
-        	esac)"
+	# shellcheck disable=SC2311
+	DIST=$(simple_dist)
 	if [ -z "$DIST" ]; then
 		fatal "Operating system in /etc/os-release not supported"
 	fi
@@ -107,6 +120,17 @@ case "$DIST" in
 	ubuntu20*|debian10*|debian11*) DIST=el8;;
 	ubuntu*|debian1*|debian) DIST=el9;;
 	el*|fc*);;
+	opensuse-tumbleweed)
+		if $NOOPENSUSE; then
+			DIST=el9
+		fi
+	;;
+	suse15)
+		if $NOOPENSUSE; then
+			DIST=el8
+		fi
+	;;
+	suse12) DIST=el7;;
 	*)	fatal "Unrecognized distribution $DIST"
 esac
 
@@ -114,6 +138,7 @@ OSREPOURL=""
 EXTRASREPOURL=""
 EPELREPOURL=""
 OSSPLIT=true
+
 case $DIST in
 	el7)
 	    OSREPOURL="https://linux-mirrors.fnal.gov/linux/centos/7/os/$ARCH/Packages"
@@ -142,6 +167,18 @@ case $DIST in
 	    OSREPOURL="https://dl.fedoraproject.org/pub/fedora/linux/updates/$FC/Everything/$ARCH/Packages/"
 	    EPELREPOURL="https://dl.fedoraproject.org/pub/fedora/linux/updates$TESTING/$FC/Everything/$ARCH/Packages/"
 	    ;;
+	opensuse-tumbleweed)
+	    OSREPOURL="https://download.opensuse.org/tumbleweed/repo/oss/$ARCH"
+	    EPELREPOURL="https://download.opensuse.org/repositories/network:/cluster/openSUSE_Tumbleweed/$ARCH"
+	    EXTRASREPOURL=$OSREPOURL
+	    OSSPLIT=false
+	    ;;
+	suse15)
+	    OSREPOURL="https://download.opensuse.org/distribution/leap/15.4/repo/oss/$ARCH"
+	    EPELREPOURL="https://download.opensuse.org/repositories/network:/cluster/15.4/$ARCH"
+	    EXTRASREPOURL="https://download.opensuse.org/repositories/filesystems/15.4/$ARCH"
+	    OSSPLIT=false
+	    ;;
 	*) fatal "$DIST distribution not supported";;
 esac
 
@@ -165,7 +202,7 @@ latesturl()
 		LASTURL="$URL"
 		LASTPKGS="$(curl -Ls "$URL")"
 	fi
-	typeset LATEST="$(echo "$LASTPKGS"|sed 's/.*href="//;s/".*//'|grep "^$2-[0-9].*$ARCH"|tail -1)"
+	typeset LATEST="$(echo "$LASTPKGS"|sed -e 's/.*href="//;s/".*//' -e 's/\.mirrorlist//' -e 's/\-32bit//' -e 's@^\.\/@@' |grep "^$2-[0-9].*$ARCH"|tail -1)"
 	if [ -n "$LATEST" ]; then
 		echo "$URL/$LATEST"
 	elif [ "$4" = true ]; then
@@ -179,11 +216,10 @@ latesturl()
 	fi
 }
 
-APPTAINERURL="https://kojipkgs.fedoraproject.org/packages/apptainer/"
 LOCALAPPTAINER=false
-if [ -z "$VERSION" ]; then
+if [ -z "$VERSION" ] || ! $NOOPENSUSE; then
 	# shellcheck disable=SC2310,SC2311
-	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer true false)"; then
+	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer $NOOPENSUSE false)"; then
 		fatal "Could not find apptainer version from $APPTAINERURL"
 	fi
 elif [[ "$VERSION" == *.rpm ]]; then
@@ -231,16 +267,29 @@ fi
 
 mkdir tmp
 cd tmp
-OSUTILS="libseccomp lzo squashfs-tools fuse-libs"
+
+APPTAINERURL="https://kojipkgs.fedoraproject.org/packages/apptainer/"
+OSUTILS=""
 EXTRASUTILS="fuse-overlayfs"
-EPELUTILS="fakeroot fakeroot-libs"
+EPELUTILS="fakeroot"
 if [ "$DIST" = el7 ]; then
-	EPELUTILS="$EPELUTILS libzstd fuse2fs fuse3-libs"
+	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs"
+	EPELUTILS="$EPELUTILS libzstd fuse2fs fuse3-libs fakeroot-libs"
 elif [ "$DIST" = el8 ]; then
-	OSUTILS="$OSUTILS libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
+	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
+	EPELUTILS="$EPELUTILS fakeroot-libs"
+elif [ "$DIST" = "opensuse-tumbleweed" ]; then
+	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot fuse2fs $EXTRASUTILS $EPELUTILS"
+	EXTRASUTILS=""
+	EPELUTILS=""
+elif [ "$DIST" = "suse15" ]; then
+	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot $EPELUTILS"
+	EXTRASUTILS="$EXTRASUTILS fuse2fs"
+	EPELUTILS=""
 else
-	OSUTILS="$OSUTILS libzstd e2fsprogs-libs e2fsprogs"
+	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs"
 	EXTRASUTILS="$EXTRASUTILS fuse3-libs"
+	EPELUTILS="$EPELUTILS fakeroot-libs"
 fi
 FEDORA=false
 if [[ "$DIST" == fc* ]]; then
@@ -287,6 +336,9 @@ set -e
 # remove .build-id files seen on el8 or later
 rm -rf lib/.build-id
 rmdir lib 2>/dev/null || true
+
+# make lib and libexec equivalent for openSUSE binaries
+[ -e lib/apptainer ] && (mkdir -p libexec ; ln -s ../lib/apptainer libexec/apptainer )
 
 # move everything needed out of tmp to utils
 mkdir -p utils/bin utils/lib utils/libexec
