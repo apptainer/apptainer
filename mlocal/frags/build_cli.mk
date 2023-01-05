@@ -76,10 +76,9 @@ config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/apptainer.conf
 # override this to empty to avoid merging old configuration settings
 old_config := $(config_INSTALL)
 
-$(config): $(apptainer_build_config) $(SOURCEDIR)/etc/conf/gen.go $(SOURCEDIR)/pkg/runtime/engine/apptainer/config/config.go
+$(config): $(apptainer)
 	@echo " GEN $@`if [ -n "$(old_config)" ]; then echo " from $(old_config)"; fi`"
-	$(V)$(GO) run $(GO_MODFLAGS) $(SOURCEDIR)/etc/conf/gen.go \
-		$(old_config) $(config)
+	$(V)$(apptainer) confgen $(old_config) $(config)
 
 $(config_INSTALL): $(config)
 	@echo " INSTALL" $@

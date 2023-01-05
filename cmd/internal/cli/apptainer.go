@@ -467,9 +467,15 @@ func migrateGPGPrivate(sypgpDir, legacySypgpDir string) {
 	}
 }
 
-func persistentPreRun(*cobra.Command, []string) error {
+func persistentPreRun(cmd *cobra.Command, args []string) error {
 	setSylogMessageLevel()
 	sylog.Debugf("Apptainer version: %s", buildcfg.PACKAGE_VERSION)
+
+	if cmd.CalledAs() == "confgen" {
+		// This command generates the configuration so it may
+		// not yet be there
+		return nil
+	}
 
 	var config *apptainerconf.File
 	var err error
@@ -491,7 +497,7 @@ func persistentPreRun(*cobra.Command, []string) error {
 		oldconfdir := filepath.Dir(filepath.Dir(configurationFile)) + "/singularity/"
 
 		if _, err := os.Stat(oldconfdir); err == nil {
-			sylog.Warningf("%s exists, migration to apptainer by system administrator is not complete", oldconfdir)
+			sylog.Infof("%s exists; cleanup by system administrator is not complete (see https://apptainer.org/docs/admin/latest/singularity_migration.html)", oldconfdir)
 		}
 
 		sylog.Debugf("Parsing configuration file %s", configurationFile)

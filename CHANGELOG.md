@@ -36,6 +36,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   (c) add a Provides and Conflicts for sif-runtime, and (d) add
   "formerly known as Singularity" to the Summary.  Also update the
   debian and nfpm packaging with (d).
+- Change rpm packaging to automatically import any modified configuration
+  files in `/etc/singularity` when updating from singularity to apptainer,
+  including importing `singularity.conf` using a new hidden `confgen`
+  command.
 - Fix the use of `fakeroot`, `faked`, and `libfakeroot.so` if they are not
   suffixed by `-sysv`, as is for instance the case on Gentoo Linux.
 - Prevent the use of a `--libexecdir` or `--bindir` mconfig option from
