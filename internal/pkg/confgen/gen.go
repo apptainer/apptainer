@@ -7,9 +7,10 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package main
+package confgen
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,23 +18,22 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
 
-func main() {
-	switch len(os.Args) {
-	case 3:
-		inPath := filepath.Clean(os.Args[1])
-		outPath := filepath.Clean(os.Args[2])
-		genConf("", inPath, outPath)
+func Gen(args []string) error {
+	switch len(args) {
 	case 2:
-		outPath := filepath.Clean(os.Args[1])
-		genConf("", "", outPath)
+		inPath := filepath.Clean(args[0])
+		outPath := filepath.Clean(args[1])
+		return genConf("", inPath, outPath)
+	case 1:
+		outPath := filepath.Clean(args[0])
+		return genConf("", "", outPath)
 	default:
-		fmt.Println("Usage: go run ... [infile] <outfile>")
-		os.Exit(1)
+		return errors.New("unexpected number of parameters")
 	}
 }
 
 // genConf produces an apptainer.conf file at out. It retains set configurations from in (leave blank for default)
-func genConf(tmpl, in, out string) {
+func genConf(tmpl, in, out string) error {
 	inFile := in
 	// Parse current apptainer.conf file into c
 	if _, err := os.Stat(in); os.IsNotExist(err) {
@@ -41,18 +41,17 @@ func genConf(tmpl, in, out string) {
 	}
 	c, err := apptainerconf.Parse(inFile)
 	if err != nil {
-		fmt.Printf("Unable to parse apptainer.conf file: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("unable to parse apptainer.conf file: %v", err)
 	}
 
 	newOutFile, err := os.OpenFile(out, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
-		fmt.Printf("Unable to create file %s: %v\n", out, err)
+		return fmt.Errorf("unable to create file %s: %v", out, err)
 	}
 	defer newOutFile.Close()
 
 	if err := apptainerconf.Generate(newOutFile, tmpl, c); err != nil {
-		fmt.Printf("Unable to generate config file: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("unable to generate config file: %v", err)
 	}
+	return nil
 }
