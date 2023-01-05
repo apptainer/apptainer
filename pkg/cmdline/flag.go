@@ -248,7 +248,7 @@ func (m *flagManager) updateCmdFlagFromEnv(cmd *cobra.Command, precedence int, f
 					}
 					continue
 				} else {
-					sylog.Warningf("DEPRECATED USAGE: Environment variable %s will not be supported in the future, use %s instead", prefix+key, env.ApptainerPrefixes[0]+key)
+					sylog.Infof("Environment variable %v is set, but %v is preferred", prefix+key, env.ApptainerPrefixes[0]+key)
 				}
 			}
 			if !withoutPrefix {
