@@ -25,6 +25,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add more helpful error message when no library endpoint found.
 - Avoid cleanup errors on exit when mountpoints are busy by doing a lazy
   unmount if a regular unmount doesn't work after 10 tries.
+- Make messages about using SINGULARITY variables less scary.
 
 ## v1.1.4 - \[2022-12-12\]
 

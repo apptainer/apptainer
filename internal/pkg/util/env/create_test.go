@@ -425,7 +425,7 @@ func TestSetContainerEnv(t *testing.T) {
 				"PRECEDENCE": "second",
 			},
 			outputNeeded: []string{
-				"DEPRECATED USAGE: Environment variable SINGULARITYENV_PRECEDENCE will not be supported in the future, use APPTAINERENV_PRECEDENCE instead",
+				"Environment variable SINGULARITYENV_PRECEDENCE is set, but APPTAINERENV_PRECEDENCE is preferred",
 				"Forwarding SINGULARITYENV_PRECEDENCE as PRECEDENCE environment variable",
 				"Environment variable PRECEDENCE already has value [second], will not forward new value [fifth] from parent process environment",
 			},
@@ -515,7 +515,7 @@ func TestSetContainerEnv(t *testing.T) {
 				"PRECEDENCE": "precedence",
 			},
 			outputNeeded: []string{
-				"DEPRECATED USAGE: Environment variable SINGULARITYENV_PRECEDENCE will not be supported in the future, use APPTAINERENV_PRECEDENCE instead",
+				"Environment variable SINGULARITYENV_PRECEDENCE is set, but APPTAINERENV_PRECEDENCE is preferred",
 				"Forwarding SINGULARITYENV_PRECEDENCE as PRECEDENCE environment variable",
 				"Environment variable PRECEDENCE already has duplicate value [precedence], will not forward from parent process environment",
 			},
@@ -595,7 +595,7 @@ func TestSetContainerEnv(t *testing.T) {
 				"PRECEDENCE": "second",
 			},
 			outputNeeded: []string{
-				"DEPRECATED USAGE: Environment variable SINGULARITYENV_PRECEDENCE will not be supported in the future, use APPTAINERENV_PRECEDENCE instead",
+				"Environment variable SINGULARITYENV_PRECEDENCE is set, but APPTAINERENV_PRECEDENCE is preferred",
 				"Forwarding SINGULARITYENV_PRECEDENCE as PRECEDENCE environment variable",
 			},
 		},
