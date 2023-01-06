@@ -47,6 +47,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   and destinations.
 - Added `Provides: bundled(golang())` statements to the rpm packaging
   for each bundled golang module.
+- Define EUID in %environment alongside UID.
 
 ## v1.1.5 - \[2023-01-10\]
 
