@@ -36,6 +36,9 @@
 # Uncomment this to include a multithreaded version of squashfuse_ll
 # %%global squashfuse_version 0.1.105
 
+# The last singularity version number in EPEL/Fedora
+%global last_singularity_version 3.8.7-3
+
 Summary: Application and environment virtualization formerly known as Singularity
 Name: apptainer
 Version: @PACKAGE_RPM_VERSION@
@@ -54,6 +57,16 @@ Patch10: https://github.com/vasi/squashfuse/pull/70.patch
 Patch11: https://github.com/vasi/squashfuse/pull/77.patch
 Patch12: https://github.com/vasi/squashfuse/pull/81.patch
 %endif
+
+# This Conflicts is in case someone tries to install the main apptainer
+# package when an old singularity package is installed.  An Obsoletes is on
+# the apptainer-suid subpackage below.  If an Obsoletes were here too, it
+# would get different behavior with yum and dnf: a "yum install apptainer"
+# on EL7 would install only apptainer but a "dnf install apptainer" on EL8
+# or greater would install both apptainer and apptainer-suid.  With this
+# Conflicts, both yum and dnf consistently install both apptainer and
+# apptainer-suid when apptainer is requested while singularity is installed.
+Conflicts: singularity <= %{last_singularity_version}
 
 # In the singularity 2.x series there was a singularity-runtime package
 #  that could have been installed independently, but starting in 3.x
@@ -107,8 +120,8 @@ Summary: Setuid component of Apptainer
 Requires: %{name} = %{version}-%{release}
 # The singularity package was renamed to apptainer.  The Obsoletes is
 # on this subpackage for greater compatibility after an update from the
-# old singularity. 3.8.7-3 was the last release of the old singularity.
-Obsoletes: singularity < 3.8.7-4
+# old singularity.
+Obsoletes: singularity <= %{last_singularity_version}
 
 %description suid
 Provides the optional setuid-root portion of Apptainer.

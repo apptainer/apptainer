@@ -33,9 +33,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Update the rpm packaging to (a) move the Obsoletes of singularity to
   the apptainer-suid packaging, (b) remove the Provides of singularity,
-  (c) add a Provides and Conflicts for sif-runtime, and (d) add
-  "formerly known as Singularity" to the Summary.  Also update the
-  debian and nfpm packaging with (d).
+  (c) add a Provides and Conflicts for sif-runtime,
+  (d) add "formerly known as Singularity" to the Summary,
+  and (e) add a Conflicts of singularity to the apptainer package.
+  Also update the debian and nfpm packaging with (d).
 - Change rpm packaging to automatically import any modified configuration
   files in `/etc/singularity` when updating from singularity to apptainer,
   including importing `singularity.conf` using a new hidden `confgen`
