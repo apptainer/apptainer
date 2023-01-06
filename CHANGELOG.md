@@ -51,6 +51,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 ### Bug fixes
 
 - Fix `GOCACHE` settings for golang build on PPA build environment.
+- Ensure `DOCKER_HOST` is honored in non-build flows.
 
 ## v1.1.6 - \[2023-02-14\]
 
