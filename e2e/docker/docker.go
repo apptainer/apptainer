@@ -248,7 +248,7 @@ func (c ctx) testDockerHost(t *testing.T) {
 
 	// Clean up docker image
 	e2e.Privileged(func(t *testing.T) {
-		cmd := exec.Command("docker", "rmi", dockerURI)
+		cmd := exec.Command("docker", "rmi", dockerRef)
 		_, err = cmd.Output()
 		if err != nil {
 			t.Fatalf("Unexpected error while cleaning up docker image.\n%s", err)
