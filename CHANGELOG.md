@@ -5,7 +5,7 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes Since Last Release
+## v1.1.5 - \[2023-01-10\]
 
 - Update the rpm packaging to (a) move the Obsoletes of singularity to
   the apptainer-suid packaging, (b) remove the Provides of singularity,
