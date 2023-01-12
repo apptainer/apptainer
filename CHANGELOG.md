@@ -29,7 +29,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
 - Add new Linux capabilities: `CAP_PERFMON`, `CAP_BPF`, `CAP_CHECKPOINT_RESTORE`.
 
-### Bug fixes
+## v1.1.5 - \[2023-01-10\]
 
 - Update the rpm packaging to (a) move the Obsoletes of singularity to
   the apptainer-suid packaging, (b) remove the Provides of singularity,
