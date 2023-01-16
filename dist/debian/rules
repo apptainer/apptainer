@@ -91,6 +91,7 @@ endif
 		--mandir=/usr/share/man
 
 override_dh_auto_build:
+	mkdir -p /tmp/.cache/go-build ; export GOCACHE=/tmp/.cache/go-build
 	@PATH=$(GOROOT)/bin:$$PATH dh_auto_build -Smakefile --parallel --max-parallel=$(MAKEPARALLEL) -D$(DEB_SC_BUILDDIR)
 
 override_dh_auto_install:
