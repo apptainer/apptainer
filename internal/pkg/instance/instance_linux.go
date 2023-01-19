@@ -20,6 +20,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/syfs"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 const (
@@ -198,6 +199,7 @@ func (i *File) Delete() error {
 	if dir == "." {
 		dir = ""
 	}
+	sylog.Debugf("Deleting %v", dir)
 	return os.RemoveAll(dir)
 }
 
@@ -239,6 +241,7 @@ func (i *File) Update() error {
 		return err
 	}
 
+	sylog.Debugf("Storing instance data to %s", i.Path)
 	path := filepath.Dir(i.Path)
 
 	oldumask := syscall.Umask(0)

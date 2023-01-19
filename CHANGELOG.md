@@ -29,6 +29,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
 - Add new Linux capabilities: `CAP_PERFMON`, `CAP_BPF`, `CAP_CHECKPOINT_RESTORE`.
 
+### Bug fixes
+
+- Restored the ability for running instances to be tracked when apptainer
+  is installed with tools/install-unprivileged.sh.  Instance tracking
+  depends on argument 0 of the starter, which was not getting preserved.
+
 ## v1.1.5 - \[2023-01-10\]
 
 - Update the rpm packaging to (a) move the Obsoletes of singularity to
