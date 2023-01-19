@@ -390,7 +390,8 @@ echo "Creating bin/apptainer and bin/singularity"
 mkdir -p bin
 cat >bin/apptainer <<'!EOF!'
 #!/bin/bash
-HERE="$(cd "${0%/*}" && /bin/pwd)"
+ME="$(/usr/bin/realpath $0)"
+HERE="${ME%/*}"
 BASEPATH="${HERE%/*}"
 ARCH="$(uname -m)"
 if [ -z "$ARCH" ]; then
