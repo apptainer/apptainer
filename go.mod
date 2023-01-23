@@ -22,7 +22,7 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/docker/docker v20.10.23+incompatible
 	github.com/docker/go-units v0.5.0
-	github.com/fatih/color v1.13.0
+	github.com/fatih/color v1.14.0
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-log/log v0.2.0
 	github.com/google/uuid v1.3.0
@@ -114,7 +114,7 @@ require (
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/letsencrypt/boulder v0.0.0-20221109233200-85aa52084eaf // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.16 // indirect
+	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mattn/go-shellwords v1.0.12 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
