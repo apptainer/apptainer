@@ -10,6 +10,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Restored the ability for running instances to be tracked when apptainer
   is installed with tools/install-unprivileged.sh.  Instance tracking
   depends on argument 0 of the starter, which was not getting preserved.
+- Fix `GOCACHE` environment variable settings when building debian source
+  package on PPA build environment.
 - Make `PS1` environment variable changeable via `%environment` section on
   definition file that used to be only changeable via `APPTAINERENV_PS1`
   outside of container. This makes the container's prompt customizable.

@@ -23,6 +23,7 @@ endif
 # For locally compiled go
 MINGO_VERSION = $(shell scripts/get-min-go-version)
 GOROOT = $${TMPDIR:-/tmp}/appdebgo/go
+GOCACHE = $${TMPDIR:-/tmp}/appdebgo/cache
 
 # get version via script
 SC_VERSION = $(shell scripts/get-version )
@@ -91,7 +92,8 @@ endif
 		--mandir=/usr/share/man
 
 override_dh_auto_build:
-	@PATH=$(GOROOT)/bin:$$PATH dh_auto_build -Smakefile --parallel --max-parallel=$(MAKEPARALLEL) -D$(DEB_SC_BUILDDIR)
+	@mkdir -p $(GOCACHE)
+	@PATH=$(GOROOT)/bin:$$PATH GOCACHE=$(GOCACHE) dh_auto_build -Smakefile --parallel --max-parallel=$(MAKEPARALLEL) -D$(DEB_SC_BUILDDIR)
 
 override_dh_auto_install:
 	@dh_auto_install -Smakefile -D$(DEB_SC_BUILDDIR)
