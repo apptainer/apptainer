@@ -291,14 +291,16 @@ mv tmp/usr/bin/fuse-overlayfs tmp/usr/*bin/fuse2fs tmp/usr/*bin/*squashfs utils/
 mv tmp/usr/bin/fake*sysv utils/bin
 cat >utils/bin/.wrapper <<'!EOF!'
 #!/bin/bash
-ME=${0##*/}
+BASEME=${0##*/}
 HERE="${0%/*}"
 if [[ "$HERE" != /* ]]; then
 	HERE="$PWD/$HERE"
 fi
 PARENT="${HERE%/*}"
-#_WRAPPER_EXEC_CMD is sometimes used by apptainer
-LD_LIBRARY_PATH=$PARENT/lib ${_WRAPPER_EXEC_CMD:-exec} $PARENT/libexec/$ME "$@"
+#_WRAPPER_EXEC_CMD and _WRAPPER_ARG0 are sometimes used by apptainer
+REALME=$PARENT/libexec/$BASEME
+ARG0="${_WRAPPER_ARG0:-$REALME}"
+LD_LIBRARY_PATH=$PARENT/lib ${_WRAPPER_EXEC_CMD:-exec -a "$ARG0"} $REALME "$@"
 !EOF!
 chmod +x utils/bin/.wrapper
 for TOOL in utils/libexec/*; do
@@ -310,14 +312,16 @@ rm -rf tmp
 mkdir libexec/apptainer/libexec
 cat >libexec/apptainer/bin/.wrapper <<'!EOF!'
 #!/bin/bash
-ME=${0##*/}
+BASEME=${0##*/}
 HERE="${0%/*}"
 if [[ "$HERE" != /* ]]; then
 	HERE="$PWD/$HERE"
 fi
 PARENT="${HERE%/*}"
 GGPARENT="${PARENT%/*/*}"
-LD_LIBRARY_PATH=$GGPARENT/utils/lib ${_WRAPPER_EXEC_CMD:-exec} $PARENT/libexec/$ME "$@"
+REALME=$PARENT/libexec/$BASEME
+ARG0="${_WRAPPER_ARG0:-$REALME}"
+LD_LIBRARY_PATH=$GGPARENT/utils/lib ${_WRAPPER_EXEC_CMD:-exec -a "$ARG0"} $REALME "$@"
 !EOF!
 chmod +x libexec/apptainer/bin/.wrapper
 for TOOL in libexec/apptainer/bin/*; do
