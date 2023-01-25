@@ -599,8 +599,7 @@ func (l *Launcher) useSuid(insideUserNs bool) (useSuid bool) {
 // setBinds sets engine configuration for requested bind mounts.
 func (l *Launcher) setBinds(fakerootPath string) error {
 	// First get binds from -B/--bind and env var
-	bindPaths := l.cfg.BindPaths
-	binds, err := apptainerConfig.ParseBindPath(bindPaths)
+	binds, err := apptainerConfig.ParseBindPath(l.cfg.BindPaths)
 	if err != nil {
 		return fmt.Errorf("while parsing bind path: %w", err)
 	}
@@ -621,7 +620,6 @@ func (l *Launcher) setBinds(fakerootPath string) error {
 		if err != nil {
 			return fmt.Errorf("while getting fakeroot bindpoints: %w", err)
 		}
-		bindPaths = append(bindPaths, fakebindPaths...)
 		fakebinds, err := apptainerConfig.ParseBindPath(fakebindPaths)
 		if err != nil {
 			return fmt.Errorf("while parsing fakeroot bind paths: %w", err)
@@ -631,21 +629,10 @@ func (l *Launcher) setBinds(fakerootPath string) error {
 
 	l.engineConfig.SetBindPath(binds)
 
-	for i, bindPath := range bindPaths {
-		splits := strings.Split(bindPath, ":")
-		if len(splits) > 1 {
-			// For nesting, change the source to the destination
-			//  because this level is bound at the destination
-			if len(splits) > 2 {
-				// Replace the source with the destination
-				splits[0] = splits[1]
-				bindPath = strings.Join(splits, ":")
-			} else {
-				// leave only the destination
-				bindPath = splits[1]
-			}
-			bindPaths[i] = bindPath
-		}
+	// Pass only the destinations to nested binds
+	bindPaths := make([]string, len(binds))
+	for i, bind := range binds {
+		bindPaths[i] = bind.Destination
 	}
 	l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "BIND", strings.Join(bindPaths, ","))
 	return nil
