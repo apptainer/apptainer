@@ -542,7 +542,7 @@ func TestImport(t *testing.T) {
 		}
 	}
 	if numContext != 1 {
-		t.Errorf("context option is set %d times for /tmp mount point %s", numContext, tmp[0])
+		t.Errorf("context option is set %d times for /tmp mount point %v", numContext, tmp[0])
 	}
 	points.RemoveAll()
 
