@@ -108,7 +108,11 @@ func Run(name string, config *config.Common, ops ...CommandOp) error {
 
 	cmd := exec.Command(c.path)
 	cmd.Args = []string{name}
-	cmd.Env = c.env
+	// Add this variable in case there's a relocating wrapper script,
+	// because arg0 cannot get passed through a #!/bin/bash shebang
+	arg0 := "_WRAPPER_ARG0=" + name
+	sylog.Debugf("Adding to env: %s", arg0)
+	cmd.Env = append(c.env, arg0)
 	cmd.Stdin = c.stdin
 	cmd.Stdout = c.stdout
 	cmd.Stderr = c.stderr
