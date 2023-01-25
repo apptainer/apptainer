@@ -442,8 +442,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	}
 
 	// First get binds from -B/--bind and env var
-	bindPaths := BindPaths
-	binds, err := apptainerConfig.ParseBindPath(bindPaths)
+	binds, err := apptainerConfig.ParseBindPath(BindPaths)
 	if err != nil {
 		sylog.Fatalf("while parsing bind path: %s", err)
 	}
@@ -465,7 +464,6 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		if err != nil {
 			sylog.Fatalf("while getting fakeroot bindpoints: %v", err)
 		}
-		bindPaths = append(bindPaths, fakebindPaths...)
 		fakebinds, err := apptainerConfig.ParseBindPath(fakebindPaths)
 		if err != nil {
 			sylog.Fatalf("while parsing fakeroot bind paths: %s", err)
@@ -475,21 +473,10 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 
 	engineConfig.SetBindPath(binds)
 
-	for i, bindPath := range bindPaths {
-		splits := strings.Split(bindPath, ":")
-		if len(splits) > 1 {
-			// For nesting, change the source to the destination
-			//  because this level is bound at the destination
-			if len(splits) > 2 {
-				// Replace the source with the destination
-				splits[0] = splits[1]
-				bindPath = strings.Join(splits, ":")
-			} else {
-				// leave only the destination
-				bindPath = splits[1]
-			}
-			bindPaths[i] = bindPath
-		}
+	// Pass only the destinations to nested binds
+	bindPaths := make([]string, len(binds))
+	for i, bind := range binds {
+		bindPaths[i] = bind.Destination
 	}
 	generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "BIND", strings.Join(bindPaths, ","))
 

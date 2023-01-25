@@ -12,7 +12,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   depends on argument 0 of the starter, which was not getting preserved.
 - Make `PS1` environment variable changeable via `%environment` section on
   definition file that used to be only changeable via `APPTAINERENV_PS1`
-  outside of container. This makes container’s prompt customizable.
+  outside of container. This makes the container's prompt customizable.
+- Fix the passing of nested bind mounts when there are multiple binds
+  separated by commas and some of them have colons separating sources
+  and destinations.
 
 ## v1.1.5 - \[2023-01-10\]
 
