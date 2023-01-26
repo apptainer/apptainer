@@ -68,7 +68,7 @@ jobs:
     name: oldgo
     runs-on: ubuntu-22.04
     # match the minimum version required by mconfig
-    container: golang:1.17-alpine
+    container: golang:1.18-alpine
     steps:
       - name: Fetch deps
         run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
