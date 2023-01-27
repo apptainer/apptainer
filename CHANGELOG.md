@@ -46,6 +46,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Fix non-root instance join with unprivileged systemd managed cgroups, when
   join is from outside a user-owned cgroup.
+- Avoid UID / GID / EUID readonly var warnings with `--env-file`.
 
 ### Bug fixes
 
