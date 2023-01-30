@@ -79,6 +79,10 @@ if [ $do_go_version_check = 0 ]; then
 	fi
 elif [ "$hstgo" = "" ]; then
 	printf " checking: host Go compiler (at least version $hstgo_version)... "
+	if [ "$hstgo_opts" = "" ]; then
+		echo "\$hstgo_opts is undefined! Cannot check host Go compiler."
+		exit 1
+	fi
 	for go in $hstgo_opts; do
 		if $makeit_scriptsdir/check-min-go-version $go $hstgo_version >/dev/null 2>&1; then
 			hstgo=`command -v $go`
@@ -88,12 +92,17 @@ elif [ "$hstgo" = "" ]; then
 	if [ "$hstgo" != "" ]; then
 		echo $hstgo
 	else
-		echo "not found!"
+        # check-min-go-version has failed for each of $hstgo_opts
+        for go in $hstgo_opts; do
+            # print error message
+            echo "$($makeit_scriptsdir/check-min-go-version $go $hstgo_version)"
+        done
 		usage
 		exit 1
 	fi
 else
 	printf " checking: host Go compiler (at least version $hstgo_version)... "
+    go_check_result=$($makeit_scriptsdir/check-min-go-version $go $hstgo_version)
 	if $makeit_scriptsdir/check-min-go-version $go $hstgo_version >/dev/null 2>&1; then
 		hstgo=`command -v $hstgo`
 		echo $hstgo
