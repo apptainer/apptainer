@@ -79,6 +79,8 @@ Obsoletes: singularity-runtime < 3.0
 Provides: sif-runtime
 Conflicts: sif-runtime
 
+@BUNDLED_PROVIDES@
+
 %if "%{_target_vendor}" == "suse"
 BuildRequires: binutils-gold
 %endif
