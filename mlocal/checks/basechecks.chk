@@ -81,6 +81,7 @@ elif [ "$hstgo" = "" ]; then
 	printf " checking: host Go compiler (at least version $hstgo_version)... "
 	if [ "$hstgo_opts" = "" ]; then
 		echo "\$hstgo_opts is undefined! Cannot check host Go compiler."
+		exit 1
 	fi
 	for go in $hstgo_opts; do
 		if $makeit_scriptsdir/check-min-go-version $go $hstgo_version >/dev/null 2>&1; then
