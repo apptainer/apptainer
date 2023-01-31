@@ -4,10 +4,13 @@ if [ $# != 2 ]; then
     echo "  min_go_version can be either of form x.y or x.y.z" >&2
     exit 1
 fi
-
-GOVERSION="$($1 version)"
+GOVERSION="$($1 version 2> /dev/null)"
 GOVERSION="${GOVERSION//go version go/}"
 GOVERSION="${GOVERSION// *}"
+if [ -z "$GOVERSION" ]; then
+    echo "$1 not found!"
+    exit 1
+fi
 # GOVERSION can also be either form x.y or x.y.z
 GOMAJOR="${GOVERSION/.*}"
 GOMINOR="${GOVERSION#*.}"
@@ -27,6 +30,12 @@ MINVERSION="$2"
 MINMAJOR="${MINVERSION/.*}"
 MINMINOR="${MINVERSION#*.}"
 MINPATCH="${MINMINOR#*.}"
+
+insufficient_go_version(){
+    echo "found go $GOVERSION does not meet minimum requirement $MINVERSION!"
+    exit 1
+}
+
 if [ "$MINMINOR" = "$MINPATCH" ]; then
     MINPATCH=""
 else
@@ -34,13 +43,13 @@ else
 fi
 
 if [ "$GOMAJOR" -lt "$MINMAJOR" ]; then
-    exit 1
+    insufficient_go_version
 fi
 if [ "$GOMAJOR" -gt "$MINMAJOR" ]; then
     exit 0
 fi
 if [ "$GOMINOR" -lt "$MINMINOR" ]; then
-    exit 1
+    insufficient_go_version
 fi
 if [ "$GOMINOR" -gt "$MINMINOR" ]; then
     exit 0
@@ -49,9 +58,9 @@ if [ -z "$MINPATCH" ]; then
     exit 0
 fi
 if [ -z "$GOPATCH" ]; then
-    exit 1
+    insufficient_go_version
 fi
 if [ "$GOPATCH" -lt "$MINPATCH" ]; then
-    exit 1
+    insufficient_go_version
 fi
 exit 0

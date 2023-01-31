@@ -83,6 +83,7 @@
 - Sasha Yakovtseva <sasha@sylabs.io>, <sashayakovtseva@gmail.com>
 - Satish Chebrolu  <satish@sylabs.io>
 - Shane Loretz <sloretz@openrobotics.org>, <shane.loretz@gmail.com>
+- Simon Leary <simon.leary42@gmail.com>
 - Shengjing Zhu <i@zhsj.me>
 - Tarcisio Fedrizzi <tarcisio.fedrizzi@gmail.com>
 - Thomas Hamel <hmlth@t-hamel.fr>
