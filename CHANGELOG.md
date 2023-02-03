@@ -7,6 +7,14 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes Since Last Release
 
+### Security fix
+
+- Included a fix for [CVE-2022-23538](https://github.com/sylabs/scs-library-client/security/advisories/GHSA-7p8m-22h4-9pj7)
+  which potentially leaked user credentials to a third-party S3 storage
+  service when using the `library://` protocol.  See the link for details.
+
+### Other changes
+
 - Restored the ability for running instances to be tracked when apptainer
   is installed with tools/install-unprivileged.sh.  Instance tracking
   depends on argument 0 of the starter, which was not getting preserved.
