@@ -18,6 +18,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix the passing of nested bind mounts when there are multiple binds
   separated by commas and some of them have colons separating sources
   and destinations.
+- Added `Provides: bundled(golang())` statements to the rpm packaging
+  for each bundled golang module.
 
 ## v1.1.5 - \[2023-01-10\]
 
