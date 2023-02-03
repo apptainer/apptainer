@@ -26,6 +26,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
 - Add new Linux capabilities: `CAP_PERFMON`, `CAP_BPF`, `CAP_CHECKPOINT_RESTORE`.
 
+### Security fix
+
+- Included a fix for [CVE-2022-23538](https://github.com/sylabs/scs-library-client/security/advisories/GHSA-7p8m-22h4-9pj7)
+  which potentially leaked user credentials to a third-party S3 storage
+  service when using the `library://` protocol.  See the link for details.
+
 ### Bug fixes
 
 - Restored the ability for running instances to be tracked when apptainer
