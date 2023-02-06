@@ -47,6 +47,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   and destinations.
 - Added `Provides: bundled(golang())` statements to the rpm packaging
   for each bundled golang module.
+- Hide messages about SINGULARITY variables if corresponding APPTAINER
+  variables are defined. Fixes a regression introduced in 1.1.4.
 
 ## v1.1.5 - \[2023-01-10\]
 
