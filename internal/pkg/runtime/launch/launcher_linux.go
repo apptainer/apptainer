@@ -333,6 +333,7 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 
 	// Setup instance specific configuration if required.
 	if instanceName != "" {
+		l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "INSTANCE", instanceName)
 		l.cfg.Namespaces.PID = true
 		l.engineConfig.SetInstance(true)
 		l.engineConfig.SetBootInstance(l.cfg.Boot)
@@ -486,6 +487,7 @@ func (l *Launcher) setImageOrInstance(image string, name string) error {
 		l.cfg.Namespaces.User = file.UserNs
 		l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "CONTAINER", file.Image)
 		l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "NAME", filepath.Base(file.Image))
+		l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "INSTANCE", instanceName)
 		l.engineConfig.SetImage(image)
 		l.engineConfig.SetInstanceJoin(true)
 
