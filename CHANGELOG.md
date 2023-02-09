@@ -15,6 +15,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - A new `--reproducible` flag for `./mconfig` will configure Apptainer so that
   its binaries do not contain non-reproducible paths. This disables plugin
   functionality.
+- Overlay is blocked on the `panfs` filesystem, allowing sandbox directories to be
+  run from `panfs` without error.
 
 ### New features / functionalities
 
