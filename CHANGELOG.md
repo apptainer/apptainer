@@ -60,6 +60,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   required for later ROCm versions.
 - Hide messages about SINGULARITY variables if corresponding APPTAINER
   variables are defined. Fixes a regression introduced in 1.1.4.
+- Print a warning if extra arguments are given to a shell action, and
+  show in the run action usage that arguments may be passed.
 
 ## v1.1.5 - \[2023-01-10\]
 
