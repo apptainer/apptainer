@@ -11,6 +11,7 @@ package gpu
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/paths"
@@ -27,25 +28,16 @@ func RocmPaths(configFilePath string) ([]string, []string, error) {
 	return paths.Resolve(rocmFiles)
 }
 
-// RocmDevices return list of all non-GPU rocm devices present on host. If withGPU
-// is true all GPUs are included in the resulting list as well.
-func RocmDevices(withGPU bool) ([]string, error) {
-	// Must bind in all GPU DRI devices
-	rocmGlob := "/dev/dri/card*"
-	if !withGPU {
-		rocmGlob = "/dev/dri/card[^0-9]*"
+// RocmDevices returns a list of /dev entries required for ROCm functionality.
+func RocmDevices() ([]string, error) {
+	// Use same paths as ROCm Docker container documentation.
+	// Must bind in all GPU DRI devices, and /dev/kfd device.
+	devs := []string{}
+	if _, err := os.Stat("/dev/dri"); err == nil {
+		devs = append(devs, "/dev/dri")
 	}
-	devs, err := filepath.Glob(rocmGlob)
-	if err != nil {
-		return nil, fmt.Errorf("could not list rocm devices: %v", err)
+	if _, err := os.Stat("/dev/kfd"); err == nil {
+		devs = append(devs, "/dev/kfd")
 	}
-	// render devices needed as well
-	rocmGlob2 := "/dev/dri/render*"
-	devs2, err2 := filepath.Glob(rocmGlob2)
-	if err2 == nil && devs2 != nil {
-		devs = append(devs, devs2...)
-	}
-	// /dev/kfd is also required
-	devs = append(devs, "/dev/kfd")
 	return devs, nil
 }
