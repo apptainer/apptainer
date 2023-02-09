@@ -88,6 +88,7 @@ libdir=
 localedir=
 mandir=
 
+reproducible=0
 
 usage () {
 	echo "${0##*/}: could not complete configuration"
@@ -145,6 +146,11 @@ usage_args () {
 	echo "     --libdir         install libraries in \`libdir'"
 	echo "     --localedir      install locale dependent data in \`localedir'"
 	echo "     --mandir         install man documentation in \`mandir'"
+  echo
+  echo "  Reproducible builds:"
+  echo "     --reproducible   set reproducible SOURCEDIR & BUILDDIR values in binaries."
+  echo "                      This will disable plugin build functionality."
+
 	echo
 }
 
@@ -377,6 +383,8 @@ while [ $# -ne 0 ]; do
    with_seccomp_check=0; shift;;
   --only-rpm)
    do_go_version_check=0; shift;;
+  --reproducible)
+   reproducible=1; shift;;
   -V)
    if ! echo "$2" | awk '/^-.*/ || /^$/ { exit 2 }'; then
      echo "error: option requires an argument: $1"

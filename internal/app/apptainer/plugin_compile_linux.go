@@ -45,6 +45,10 @@ type buildToolchain struct {
 
 // getApptainerSrcDir returns the source directory for apptainer.
 func getApptainerSrcDir() (string, error) {
+	if buildcfg.IsReproducibleBuild() {
+		return "", fmt.Errorf("plugin functionality is not available in --reproducible builds of apptainer")
+	}
+
 	dir := buildcfg.SOURCEDIR
 	canary := filepath.Join(dir, canaryFile)
 	sylog.Debugf("Searching source file %s", canary)

@@ -153,6 +153,10 @@ func GetModules(dir string) (*GoMod, error) {
 func PrepareGoModules(pluginDir string, disableMinorCheck bool) ([]byte, error) {
 	var goMod bytes.Buffer
 
+	if buildcfg.IsReproducibleBuild() {
+		return nil, fmt.Errorf("plugin functionality is not available in --reproducible builds of apptainer")
+	}
+
 	singModules, err := GetModules(buildcfg.SOURCEDIR)
 	if err != nil {
 		return nil, fmt.Errorf("while getting Apptainer Go modules: %s", err)
