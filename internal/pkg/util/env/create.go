@@ -95,15 +95,29 @@ func overridesForContainerEnv(g *generate.Generator, hostEnvs []string) envKeyMa
 
 // warning if deprecated keys are set
 func warnDeprecatedEnvUsage(hostEnvs []string) {
+	envMap := make(map[string]string)
+	for _, env := range hostEnvs {
+		strs := strings.SplitN(env, "=", 2)
+		if len(strs) == 2 {
+			envMap[strs[0]] = strs[1]
+		}
+	}
 	for _, env := range hostEnvs {
 		if strings.HasPrefix(env, LegacySingularityEnvPrefix) {
 			strs := strings.SplitN(env, "=", 2)
 			if len(strs) == 2 {
 				key := strs[0][len(LegacySingularityEnvPrefix):]
+				value := strs[1]
 				if key != "" {
 					legacyEnv := LegacySingularityEnvPrefix + key
 					newEnv := ApptainerEnvPrefix + key
-					sylog.Infof("Environment variable %v is set, but %v is preferred", legacyEnv, newEnv)
+					if val, ok := envMap[newEnv]; ok {
+						if val != value {
+							sylog.Warningf("%s and %s have different values, using the latter", legacyEnv, newEnv)
+						}
+					} else {
+						sylog.Infof("Environment variable %v is set, but %v is preferred", legacyEnv, newEnv)
+					}
 				}
 			}
 		}

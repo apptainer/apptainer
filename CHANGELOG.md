@@ -58,6 +58,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - In `--rocm` mode, the whole of `/dev/dri` is now bound into the container when
   `--contain` is in use. This makes `/dev/dri/render` devices available,
   required for later ROCm versions.
+- Hide messages about SINGULARITY variables if corresponding APPTAINER
+  variables are defined. Fixes a regression introduced in 1.1.4.
 
 ## v1.1.5 - \[2023-01-10\]
 
