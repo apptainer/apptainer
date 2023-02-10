@@ -17,6 +17,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   functionality.
 - Overlay is blocked on the `panfs` filesystem, allowing sandbox directories to be
   run from `panfs` without error.
+- Instances are started in a cgroup, by default, when run as root or when
+  unified cgroups v2 with systemd as manager is configured. This allows
+  `apptainer instance stats` to be supported by default when possible.
 
 ### New features / functionalities
 
@@ -38,6 +41,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Included a fix for [CVE-2022-23538](https://github.com/sylabs/scs-library-client/security/advisories/GHSA-7p8m-22h4-9pj7)
   which potentially leaked user credentials to a third-party S3 storage
   service when using the `library://` protocol.  See the link for details.
+
+### Bug fixes
+
+- Fix non-root instance join with unprivileged systemd managed cgroups, when
+  join is from outside a user-owned cgroup.
 
 ### Bug fixes
 
