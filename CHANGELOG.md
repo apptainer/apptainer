@@ -32,6 +32,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   variables are defined. Fixes a regression introduced in 1.1.4.
 - Print a warning if extra arguments are given to a shell action, and
   show in the run action usage that arguments may be passed.
+- Check for the existence of the runtime executable prefix, to avoid
+  issues when running under Slurm's srun. If it doesn't exist, fall
+  back to the compile-time prefix.
 
 ## v1.1.5 - \[2023-01-10\]
 
