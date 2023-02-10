@@ -296,7 +296,8 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 	}
 
 	f.instances = append(f.instances, fuseappsInstance{cmd, params})
-	maxTime := 2 * time.Second
+	maxTime := 10 * time.Second
+	infoTime := 2 * time.Second
 	totTime := 0 * time.Second
 	for totTime < maxTime {
 		sleepTime := 25 * time.Millisecond
@@ -332,7 +333,11 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 				// Haven't seen this happen, but just in case
 				sylog.Infof("%v", msg)
 			}
-			sylog.Debugf("%v mounted in %v", params.Target, totTime)
+			if totTime > infoTime {
+				sylog.Infof("%v mount took an unexpectedly long time: %v", f.binName, totTime)
+			} else {
+				sylog.Debugf("%v mounted in %v", params.Target, totTime)
+			}
 			if params.Filesystem == "overlay" && os.Getuid() == 0 {
 				// Look for unexpectedly readonly overlay
 				hasUpper := false
@@ -363,7 +368,11 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 		}
 	}
 	f.stop(params.Target, true)
-	return fmt.Errorf("%v failed to mount %v in %v: %v", f.binName, params.Target, maxTime, stderr.String())
+	errmsg := stderr.String()
+	if errmsg != "" {
+		errmsg = ": " + errmsg
+	}
+	return fmt.Errorf("%v failed to mount %v in %v%v", f.binName, params.Target, maxTime, errmsg)
 }
 
 func (d *fuseappsDriver) Start(params *image.DriverParams, containerPid int) error {
