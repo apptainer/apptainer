@@ -209,6 +209,10 @@ var ShellCmd = &cobra.Command{
 	Args:                  cobra.MinimumNArgs(1),
 	PreRun:                actionPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) > 1 {
+			sylog.Warningf("Parameters to shell command are ignored")
+		}
+
 		a := []string{"/.singularity.d/actions/shell"}
 		setVM(cmd)
 		if vm {
