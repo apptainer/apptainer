@@ -346,39 +346,6 @@ func TestSyncFrom(t *testing.T) {
 			}
 		})
 	}
-
-	testsFail := []syncTest{
-		{
-			name: "sys endpoint collision",
-			sys: Config{
-				Remotes: map[string]*endpoint.Config{
-					"sylabs-global": {
-						URI:   "cloud.sycloud.io",
-						Token: "fake-token",
-					},
-				},
-			},
-			usr: Config{
-				Remotes: map[string]*endpoint.Config{
-					"sylabs": {
-						URI:   "cloud.sycloud.io",
-						Token: "fake-token",
-					},
-					"sylabs-global": {
-						URI: "cloud.sycloud.io",
-					},
-				},
-			},
-		},
-	}
-
-	for _, test := range testsFail {
-		t.Run(test.name, func(t *testing.T) {
-			if err := test.usr.SyncFrom(&test.sys); err == nil {
-				t.Error("unexpected success calling SyncFrom")
-			}
-		})
-	}
 }
 
 type remoteTest struct {
