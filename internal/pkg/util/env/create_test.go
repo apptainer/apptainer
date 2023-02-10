@@ -30,15 +30,16 @@ func TestSetContainerEnv(t *testing.T) {
 	defer test.ResetPrivilege(t)
 
 	tt := []struct {
-		name         string
-		cleanEnv     bool
-		homeDest     string
-		env          []string
-		processEnv   map[string]string
-		resultEnv    []string
-		apptainerEnv map[string]string
-		outputNeeded []string
-		disabled     bool
+		name            string
+		cleanEnv        bool
+		homeDest        string
+		env             []string
+		processEnv      map[string]string
+		resultEnv       []string
+		apptainerEnv    map[string]string
+		outputNeeded    []string
+		outputNotNeeded []string
+		disabled        bool
 	}{
 		{
 			name:     "no APPTAINERENV_",
@@ -652,6 +653,71 @@ func TestSetContainerEnv(t *testing.T) {
 				"Forwarding PRECEDENCE environment variable",
 			},
 		},
+		{
+			name:     "suppress the info message when both legecy and new env coexist",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env: []string{
+				"SINGULARITYENV_PS1=true",
+				"APPTAINERENV_PS1=true",
+			},
+			resultEnv: []string{
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			outputNotNeeded: []string{
+				"Environment variable SINGULARITYENV_PS1 is set, but APPTAINERENV_PS1 is preferred",
+			},
+		},
+		{
+			name:     "should print info message if only legecy env exists",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env: []string{
+				"SINGULARITYENV_PS1=true",
+			},
+			resultEnv: []string{
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			outputNeeded: []string{
+				"Environment variable SINGULARITYENV_PS1 is set, but APPTAINERENV_PS1 is preferred",
+			},
+		},
+		{
+			name:     "should not print info message if only new env exists",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env: []string{
+				"APPTAINERENV_PS1=true",
+			},
+			resultEnv: []string{
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			outputNotNeeded: []string{
+				"Environment variable SINGULARITYENV_PS1 is set, but APPTAINERENV_PS1 is preferred",
+			},
+		},
+		{
+			name:     "should print warning message if legacy and new env vars have different values",
+			cleanEnv: false,
+			homeDest: "/home/tester",
+			env: []string{
+				"SINGULARITYENV_PS1=true",
+				"APPTAINERENV_PS1=false",
+			},
+			resultEnv: []string{
+				"HOME=/home/tester",
+				"PATH=" + DefaultPath,
+			},
+			outputNeeded: []string{
+				"SINGULARITYENV_PS1 and APPTAINERENV_PS1 have different values, using the latter",
+			},
+			outputNotNeeded: []string{
+				"Environment variable SINGULARITYENV_PS1 is set, but APPTAINERENV_PS1 is preferred",
+			},
+		},
 	}
 	for _, tc := range tt {
 		if tc.disabled {
@@ -682,8 +748,12 @@ func TestSetContainerEnv(t *testing.T) {
 			}()
 			for _, requiredOutput := range tc.outputNeeded {
 				if !strings.Contains(output.String(), requiredOutput) {
-					t.Errorf(" --------------- %s", output.String())
 					t.Errorf("Did not find required output: [%s]", requiredOutput)
+				}
+			}
+			for _, notNeededOutput := range tc.outputNotNeeded {
+				if strings.Contains(output.String(), notNeededOutput) {
+					t.Errorf("[%s] should not exist in the output", notNeededOutput)
 				}
 			}
 			if !equal(t, ociConfig.Process.Env, tc.resultEnv) {
