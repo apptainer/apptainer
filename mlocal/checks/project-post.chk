@@ -16,8 +16,14 @@ config_add_def PACKAGE_VERSION \"$package_version\"
 config_add_def PACKAGE_STRING \"apptainer $package_version\"
 config_add_def PACKAGE_URL \"\"
 
-config_add_def BUILDDIR \"$builddir\"
-config_add_def SOURCEDIR \"$sourcedir\"
+if [ "$reproducible" == "1" ]; then
+   config_add_def BUILDDIR \"REPRODUCIBLE_BUILD\"
+   config_add_def SOURCEDIR \"REPRODUCIBLE_BUILD\"
+else
+   config_add_def SOURCEDIR \"$sourcedir\"
+   config_add_def BUILDDIR \"$builddir\"
+fi
+
 config_add_def PREFIX \"$prefix\"
 config_add_def EXECPREFIX \"$exec_prefix\"
 config_add_def BINDIR \"$bindir\"

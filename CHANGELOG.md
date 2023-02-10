@@ -12,6 +12,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - When the kernel supports unprivileged overlay mounts in a user
   namespace, the container will be constructed using an overlay
   instead of underlay layout.
+- A new `--reproducible` flag for `./mconfig` will configure Apptainer so that
+  its binaries do not contain non-reproducible paths. This disables plugin
+  functionality.
+- Overlay is blocked on the `panfs` filesystem, allowing sandbox directories to be
+  run from `panfs` without error.
 
 ### New features / functionalities
 
@@ -25,6 +30,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Support for `DOCKER_HOST` parsing when using `docker-daemon://`
 - `DOCKER_USERNAME` and `DOCKER_PASSWORD` supported without `APPTAINER_` prefix.
 - Add new Linux capabilities: `CAP_PERFMON`, `CAP_BPF`, `CAP_CHECKPOINT_RESTORE`.
+- Instance name is available inside an instance via the new
+  `APPTAINER_INSTANCE` environment variable.
 
 ### Security fix
 
@@ -47,6 +54,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   and destinations.
 - Added `Provides: bundled(golang())` statements to the rpm packaging
   for each bundled golang module.
+- Define EUID in %environment alongside UID.
+- In `--rocm` mode, the whole of `/dev/dri` is now bound into the container when
+  `--contain` is in use. This makes `/dev/dri/render` devices available,
+  required for later ROCm versions.
 - Hide messages about SINGULARITY variables if corresponding APPTAINER
   variables are defined. Fixes a regression introduced in 1.1.4.
 

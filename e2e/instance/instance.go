@@ -148,6 +148,12 @@ func (c *ctx) testBasicOptions(t *testing.T) {
 				t.Errorf("Hostname is %s, but expected %s", stdout, testHostname)
 			}
 
+			// Verify that the APPTAINER_INSTANCE has been set correctly.
+			stdout, _, success = c.execInstance(t, instanceName, "sh", "-c", "echo $APPTAINER_INSTANCE")
+			if success && !bytes.Equal([]byte(instanceName+"\n"), []byte(stdout)) {
+				t.Errorf("APPTAINER_INSTANCE is %s, but expected %s", stdout, instanceName)
+			}
+
 			// Stop the instance.
 			c.stopInstance(t, instanceName)
 		}),

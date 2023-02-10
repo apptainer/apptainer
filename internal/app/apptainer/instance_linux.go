@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 	"syscall"
 	"text/tabwriter"
@@ -182,6 +181,16 @@ func calculateMemoryUsage(stats *libcgroups.MemoryStats) (float64, float64, floa
 	return memUsage, memLimit, memPercent
 }
 
+func calculateCPUUsage(prevTime, prevCPU uint64, cpuStats *libcgroups.CpuStats) (cpuPercent float64, curTime, curCPU uint64) {
+	// Update 1s interval CPU ns usage
+	curTime = uint64(time.Now().UnixNano())
+	curCPU = cpuStats.CpuUsage.TotalUsage
+	deltaCPU := float64(curCPU - prevCPU)
+	deltaTime := float64(curTime - prevTime)
+	cpuPercent = (deltaCPU / deltaTime) * 100
+	return cpuPercent, curTime, curCPU
+}
+
 // InstanceStats uses underlying cgroups to get statistics for a named instance
 func InstanceStats(ctx context.Context, name, instanceUser string, formatJSON bool, noStream bool) error {
 	ii, err := instanceListOrError(instanceUser, name)
@@ -221,6 +230,15 @@ func InstanceStats(ctx context.Context, name, instanceUser string, formatJSON bo
 	tabWriter := tabwriter.NewWriter(os.Stdout, 0, 8, 4, ' ', 0)
 	defer tabWriter.Flush()
 
+	// Retrieve initial state, for first CPU measurement
+	stats, err := manager.GetStats()
+	if err != nil {
+		return fmt.Errorf("while getting stats for pid: %v", err)
+	}
+	prevCPU := stats.CpuStats.CpuUsage.TotalUsage
+	prevTime := uint64(time.Now().UnixNano())
+	cpuPercent := 0.0
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -256,15 +274,13 @@ func InstanceStats(ctx context.Context, name, instanceUser string, formatJSON bo
 				return fmt.Errorf("could not write stats header: %v", err)
 			}
 
-			// CpuUsage denotes the usage of a CPU, aggregate since container inception.
-			// TODO CPU time needs to be a percentage
-			totalCPUTime := strconv.FormatUint(stats.CpuStats.CpuUsage.TotalUsage, 10) + " ns"
+			cpuPercent, prevTime, prevCPU = calculateCPUUsage(prevTime, prevCPU, &stats.CpuStats)
 			memUsage, memLimit, memPercent := calculateMemoryUsage(&stats.MemoryStats)
 			blockRead, blockWrite := calculateBlockIO(&stats.BlkioStats)
 
 			// Generate a shortened stats list
-			_, err = fmt.Fprintf(tabWriter, "%s\t%s\t%s / %s\t%.2f%s\t%s / %s\t%d\n", i.Name,
-				totalCPUTime, units.BytesSize(memUsage), units.BytesSize(memLimit),
+			_, err = fmt.Fprintf(tabWriter, "%s\t%.2f%%\t%s / %s\t%.2f%s\t%s / %s\t%d\n", i.Name,
+				cpuPercent, units.BytesSize(memUsage), units.BytesSize(memLimit),
 				memPercent, "%", units.BytesSize(blockRead), units.BytesSize(blockWrite),
 				stats.PidsStats.Current)
 			tabWriter.Flush()

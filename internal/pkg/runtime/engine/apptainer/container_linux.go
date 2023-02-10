@@ -1509,7 +1509,7 @@ func (c *container) addDevMount(system *mount.System) error {
 		}
 
 		if c.engine.EngineConfig.GetRocm() {
-			devs, err := gpu.RocmDevices(true)
+			devs, err := gpu.RocmDevices()
 			if err != nil {
 				return fmt.Errorf("failed to get rocm devices: %v", err)
 			}

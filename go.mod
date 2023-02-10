@@ -32,7 +32,7 @@ require (
 	github.com/opencontainers/runc v1.1.4
 	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/opencontainers/runtime-tools v0.9.1-0.20210326182921-59cdde06764b
-	github.com/opencontainers/selinux v1.10.2
+	github.com/opencontainers/selinux v1.11.0
 	github.com/opencontainers/umoci v0.4.7
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
@@ -43,16 +43,16 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/sylabs/json-resp v0.8.2
 	github.com/urfave/cli v1.22.7 // indirect
-	github.com/vbauerster/mpb/v8 v8.1.4
+	github.com/vbauerster/mpb/v8 v8.1.6
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
 	github.com/yvasiyarov/gorelic v0.0.6 // indirect
 	github.com/yvasiyarov/newrelic_platform_go v0.0.0-20160601141957-9c099fbc30e9 // indirect
-	golang.org/x/sys v0.4.0
-	golang.org/x/term v0.4.0
-	golang.org/x/text v0.6.0
+	golang.org/x/sys v0.5.0
+	golang.org/x/term v0.5.0
+	golang.org/x/text v0.7.0
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools/v3 v3.4.0
-	mvdan.cc/sh/v3 v3.6.0
+	mvdan.cc/sh/v3 v3.6.1-0.20221221181323-d3feb15bed3a
 	oras.land/oras-go v1.2.2
 )
 

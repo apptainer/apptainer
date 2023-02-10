@@ -149,6 +149,24 @@ func TestCheckLowerUpper(t *testing.T) {
 			expectedSuccess:       false,
 			expectIncompatibleErr: true,
 		},
+		{
+			name:                  "PANFS mock lower",
+			path:                  "/",
+			fsName:                "PANFS",
+			dir:                   lowerDir,
+			fsType:                Panfs,
+			expectedSuccess:       false,
+			expectIncompatibleErr: true,
+		},
+		{
+			name:                  "PANFS mock upper",
+			path:                  "/",
+			fsName:                "PANFS",
+			dir:                   upperDir,
+			fsType:                Panfs,
+			expectedSuccess:       false,
+			expectIncompatibleErr: true,
+		},
 	}
 
 	if IsIncompatible(nil) {
