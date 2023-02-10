@@ -676,7 +676,7 @@ Enterprise Performance Computing (EPC)`
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// run
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	RunUse   string = `run [run options...] <container>`
+	RunUse   string = `run [run options...] <container> [args...]`
 	RunShort string = `Run the user-defined default command within a container`
 	RunLong  string = `
   This command will launch an Apptainer container and execute a runscript
