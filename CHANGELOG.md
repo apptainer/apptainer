@@ -35,6 +35,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Check for the existence of the runtime executable prefix, to avoid
   issues when running under Slurm's srun. If it doesn't exist, fall
   back to the compile-time prefix.
+- Increase the timeout on image driver (that is, FUSE) mounts from 2
+  seconds to 10 seconds.  Instead, print an INFO message if it takes
+  more than 2 seconds.
 
 ## v1.1.5 - \[2023-01-10\]
 
