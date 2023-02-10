@@ -76,6 +76,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Increase the timeout on image driver (that is, FUSE) mounts from 2
   seconds to 10 seconds.  Instead, print an INFO message if it takes
   more than 2 seconds.
+- If a `remote` is defined both globally (i.e. system-wide) and
+  individually, change `apptainer remote` commands to print an info message
+  instead of exiting with a fatal error and to give precedence to the
+  individual configuration.
 
 ## v1.1.5 - \[2023-01-10\]
 

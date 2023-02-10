@@ -104,13 +104,12 @@ func (c *Config) WriteTo(w io.Writer) (int64, error) {
 
 // SyncFrom updates c with the remotes specified in sys. Typically, this is used
 // to sync a globally-configured remote.Config into a user-specific remote.Config.
-// Currently, SyncFrom will return a name-collision error if there is an EndPoint
-// name which exists in both c & sys, and the EndPoint in c has System == false.
 func (c *Config) SyncFrom(sys *Config) error {
 	for name, eSys := range sys.Remotes {
 		eUsr, err := c.GetRemote(name)
 		if err == nil && !eUsr.System { // usr & sys name collision
-			return fmt.Errorf("name collision while syncing: %s", name)
+			sylog.Infof("%s defined both globally and individually, using individual", name)
+			continue
 		} else if err == nil {
 			eUsr.URI = eSys.URI // update URI just in case
 			eUsr.Exclusive = eSys.Exclusive
