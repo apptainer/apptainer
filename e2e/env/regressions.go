@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2020-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2020-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -122,6 +122,32 @@ func (c ctx) issue43(t *testing.T) {
 		e2e.ExpectExit(
 			0,
 			e2e.ExpectOutput(e2e.ExactMatch, `/foo/bar/$LIB/baz.so`),
+		),
+	)
+}
+
+// https://github.com/sylabs/singularity/issues/1263
+// With --env-file we should avoid any override of UID / GID / EUID that are set readonly by bash.
+func (c ctx) issue1263(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	// An empty env file is sufficient, as UID/GID/EUID come from the mvdan.cc/sh evaluation of it.
+	envFile, err := e2e.WriteTempFile(c.env.TestDir, "env-file", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		os.Remove(envFile)
+	})
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--env-file", envFile, c.env.ImagePath, "/bin/true"),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectError(e2e.UnwantedContainMatch, "readonly variable"),
 		),
 	)
 }
