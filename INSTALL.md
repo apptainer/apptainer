@@ -198,7 +198,7 @@ yum install -y autoconf automake libtool pkgconfig fuse3-devel zlib-devel
 To download the source code do this:
 
 ```sh
-SQUASHFUSEVERSION=0.1.1.6
+SQUASHFUSEVERSION=0.1.105
 SQUASHFUSEPRS="70 77 81"
 curl -L -O https://github.com/vasi/squashfuse/archive/$SQUASHFUSEVERSION/squashfuse-$SQUASHFUSEVERSION.tar.gz
 for PR in $SQUASHFUSEPRS; do
