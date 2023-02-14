@@ -137,7 +137,7 @@ To build a specific version of Apptainer, check out a
 for example:
 
 ```sh
-git checkout v1.1.5
+git checkout v1.1.6
 ```
 
 ## Compiling Apptainer
@@ -198,7 +198,7 @@ yum install -y autoconf automake libtool pkgconfig fuse3-devel zlib-devel
 To download the source code do this:
 
 ```sh
-SQUASHFUSEVERSION=0.1.105
+SQUASHFUSEVERSION=0.1.1.6
 SQUASHFUSEPRS="70 77 81"
 curl -L -O https://github.com/vasi/squashfuse/archive/$SQUASHFUSEVERSION/squashfuse-$SQUASHFUSEVERSION.tar.gz
 for PR in $SQUASHFUSEPRS; do
@@ -259,7 +259,7 @@ like this:
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-VERSION=1.1.5  # this is the apptainer version, change as you need
+VERSION=1.1.6  # this is the apptainer version, change as you need
 # Fetch the source
 wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
 ```
@@ -308,7 +308,7 @@ in your PATH:
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-VERSION=1.1.5 # this is the latest apptainer version, change as you need
+VERSION=1.1.6 # this is the latest apptainer version, change as you need
 ./mconfig
 make -C builddir rpm
 sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-$(echo $VERSION|tr - \~)*.x86_64.rpm 
