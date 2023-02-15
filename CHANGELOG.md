@@ -36,19 +36,25 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Instance name is available inside an instance via the new
   `APPTAINER_INSTANCE` environment variable.
 
+### Other changes
+
+- Fix non-root instance join with unprivileged systemd managed cgroups, when
+  join is from outside a user-owned cgroup.
+- Define EUID in %environment alongside UID.
+- Avoid UID / GID / EUID readonly var warnings with `--env-file`.
+- In `--rocm` mode, the whole of `/dev/dri` is now bound into the container whe
+  `--contain` is in use. This makes `/dev/dri/render` devices available,
+  required for later ROCm versions.
+
+## v1.1.6 - \[2023-02-14\]
+
 ### Security fix
 
 - Included a fix for [CVE-2022-23538](https://github.com/sylabs/scs-library-client/security/advisories/GHSA-7p8m-22h4-9pj7)
   which potentially leaked user credentials to a third-party S3 storage
   service when using the `library://` protocol.  See the link for details.
 
-### Bug fixes
-
-- Fix non-root instance join with unprivileged systemd managed cgroups, when
-  join is from outside a user-owned cgroup.
-- Avoid UID / GID / EUID readonly var warnings with `--env-file`.
-
-### Bug fixes
+### Other changes
 
 - Restored the ability for running instances to be tracked when apptainer
   is installed with tools/install-unprivileged.sh.  Instance tracking
@@ -57,16 +63,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
   package on PPA build environment.
 - Make `PS1` environment variable changeable via `%environment` section on
   definition file that used to be only changeable via `APPTAINERENV_PS1`
-  outside of container. This makes container's prompt customizable.
+  outside of container. This makes the container's prompt customizable.
 - Fix the passing of nested bind mounts when there are multiple binds
   separated by commas and some of them have colons separating sources
   and destinations.
 - Added `Provides: bundled(golang())` statements to the rpm packaging
   for each bundled golang module.
-- Define EUID in %environment alongside UID.
-- In `--rocm` mode, the whole of `/dev/dri` is now bound into the container when
-  `--contain` is in use. This makes `/dev/dri/render` devices available,
-  required for later ROCm versions.
 - Hide messages about SINGULARITY variables if corresponding APPTAINER
   variables are defined. Fixes a regression introduced in 1.1.4.
 - Print a warning if extra arguments are given to a shell action, and
@@ -159,8 +161,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `/dri/render*` devices into the container.
 
 ## v1.1.2 - \[2022-10-06\]
-
-### Changes since last release
 
 - [CVE-2022-39237](https://github.com/sylabs/sif/security/advisories/GHSA-m5m3-46gj-wch8):
   The sif dependency included in Apptainer before this release does not
