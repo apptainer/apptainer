@@ -46,6 +46,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `--contain` is in use. This makes `/dev/dri/render` devices available,
   required for later ROCm versions.
 
+### Bug fixes
+
+- Fix `GOCACHE` settings for golang build on PPA build environment.
+
 ## v1.1.6 - \[2023-02-14\]
 
 ### Security fix
