@@ -79,7 +79,7 @@ override_dh_auto_configure:
 	    cd $(GOROOT)/..; \
 	    tar -xf $$HERE/debian/go$(MINGO_VERSION).src.tar.gz; \
 	    cd go/src; \
-	    ./make.bash; \
+	    GOCACHE=$(GOCACHE) ./make.bash; \
 	  fi
 ifneq ($(NEW_VERSION),)
 	$(warning "Setting new version in debian changelog: $(NEW_VERSION)")
@@ -92,7 +92,6 @@ endif
 		--mandir=/usr/share/man
 
 override_dh_auto_build:
-	@mkdir -p $(GOCACHE)
 	@PATH=$(GOROOT)/bin:$$PATH GOCACHE=$(GOCACHE) dh_auto_build -Smakefile --parallel --max-parallel=$(MAKEPARALLEL) -D$(DEB_SC_BUILDDIR)
 
 override_dh_auto_install:
