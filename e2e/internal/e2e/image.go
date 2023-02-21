@@ -13,7 +13,10 @@ import (
 	"context"
 	"io"
 	"os"
+	"os/exec"
 	"runtime"
+	"strconv"
+	"strings"
 	"sync"
 	"testing"
 
@@ -29,7 +32,7 @@ var (
 	pullMutex   sync.Mutex
 )
 
-// EnsureImage checks if e2e test image is already built or built
+// EnsureImage checks if e2e test image is already built or builds
 // it otherwise.
 func EnsureImage(t *testing.T, env TestEnv) {
 	ensureMutex.Lock()
@@ -60,7 +63,7 @@ func EnsureImage(t *testing.T, env TestEnv) {
 }
 
 // EnsureSingularityImage checks if e2e test singularity image is already
-// built or built it otherwise.
+// built or builds it otherwise.
 func EnsureSingularityImage(t *testing.T, env TestEnv) {
 	ensureMutex.Lock()
 	defer ensureMutex.Unlock()
@@ -85,6 +88,78 @@ func EnsureSingularityImage(t *testing.T, env TestEnv) {
 		WithProfile(RootProfile),
 		WithCommand("build"),
 		WithArgs("--force", env.SingularityImagePath, "testdata/Singularity_legacy.def"),
+		ExpectExit(0),
+	)
+}
+
+// EnsureDebianImage checks if the e2e test Debian-based image, with a libc
+// that is compatible with the host libc, is already built or builds it
+// otherwise.
+func EnsureDebianImage(t *testing.T, env TestEnv) {
+	ensureMutex.Lock()
+	defer ensureMutex.Unlock()
+
+	switch _, err := os.Stat(env.DebianImagePath); {
+	case err == nil:
+		// OK: file exists, return
+		return
+
+	case os.IsNotExist(err):
+		// OK: file does not exist, continue
+
+	default:
+		// FATAL: something else is wrong
+		t.Fatalf("Failed when checking image %q: %+v\n",
+			env.DebianImagePath,
+			err)
+	}
+
+	out, err := exec.Command("ldd", "--version").Output()
+	if err != nil {
+		t.Fatalf("Error running ldd --version while getting image %q: %+v\n",
+			env.DebianImagePath,
+			err)
+	}
+	outstr := string(out)
+	end := strings.Index(outstr, "\n")
+	if end == -1 {
+		t.Fatalf("No newline in ldd output while getting image %q: %+v\n",
+			env.DebianImagePath,
+			err)
+	}
+	dot := strings.LastIndex(outstr[0:end], ".")
+	if dot == -1 {
+		t.Fatalf("No dot in ldd first line while getting image %q: %+v\n",
+			env.DebianImagePath,
+			err)
+	}
+	lddversion, err := strconv.Atoi(outstr[dot+1 : end])
+	if err != nil {
+		t.Fatalf("Could not convert lddversion (%s) to integer while getting image %q: %+v\n",
+			outstr[dot+1:end],
+			env.DebianImagePath,
+			err)
+	}
+	if lddversion < 17 {
+		t.Fatalf("ldd version (%d) not 17 or older while getting image %q: %+v\n",
+			lddversion,
+			env.DebianImagePath,
+			err)
+	}
+
+	imageSource := "docker://ubuntu:20.04"
+	if lddversion >= 35 {
+		imageSource = "docker://ubuntu:22.04"
+	}
+
+	env.RunApptainer(
+		t,
+		// If this is built with the RootProfile, it does not get
+		// built with the umoci rootless mode and the container
+		// becomes too restricted.
+		WithProfile(UserProfile),
+		WithCommand("build"),
+		WithArgs("--force", env.DebianImagePath, imageSource),
 		ExpectExit(0),
 	)
 }

@@ -16,6 +16,7 @@ type TestEnv struct {
 	CmdPath              string // Path to the Apptainer binary to use for the execution of an Apptainer command
 	ImagePath            string // Path to the image that has to be used for the execution of an Apptainer command
 	SingularityImagePath string // Path to a Singularity image for legacy tests
+	DebianImagePath      string // Path to an image containing a Debian distribution with libc compatible to the host libc
 	OrasTestImage        string
 	TestDir              string // Path to the directory from which an Apptainer command needs to be executed
 	TestRegistry         string

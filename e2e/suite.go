@@ -173,6 +173,9 @@ func Run(t *testing.T) {
 	// If you need the test image, add the call at the top of your
 	// own test.
 
+	testenv.DebianImagePath = path.Join(name, "test-debian.sif")
+	defer os.Remove(testenv.DebianImagePath)
+
 	testenv.OrasTestImage = fmt.Sprintf("oras://%s/oras_test_sif:latest", testenv.TestRegistry)
 
 	// provision local registry

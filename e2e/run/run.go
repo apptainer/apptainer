@@ -295,6 +295,8 @@ func (c ctx) testFuseExt3Mount(t *testing.T) {
 }
 
 func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
+	e2e.EnsureDebianImage(t, c.env)
+
 	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
 	defer e2e.Privileged(cleanup)
 
@@ -303,15 +305,7 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 		t.Fatalf("could not create sandbox folder inside tempdir: %s", tempDir)
 	}
 
-	sif := fmt.Sprintf("%s/centos7.sif", tempDir)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithCommand("build"),
-		e2e.WithArgs(sif, "docker://centos:7"),
-		e2e.ExpectExit(0),
-	)
+	sif := c.env.DebianImagePath
 
 	c.env.RunApptainer(
 		t,
@@ -321,7 +315,7 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	// we need to increase sessiondir max size to 32MB
+	// we need to increase sessiondir max size to 1GB
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
@@ -330,12 +324,12 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	// restore sessiondir max size to 16MB
+	// restore sessiondir max size to 64MB on exit
 	defer c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("config"),
-		e2e.WithArgs("global", "-s", "sessiondir max size", "16"),
+		e2e.WithArgs("global", "-s", "sessiondir max size", "64"),
 		e2e.ExpectExit(0),
 	)
 
@@ -344,7 +338,7 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--writable-tmpfs", sif, "yum", "install", "-y", "openssh"),
+		e2e.WithArgs("--writable-tmpfs", sif, "sh", "-c", "apt-get update && apt-get install -y openssh-client"),
 		e2e.ExpectExit(0),
 	)
 
@@ -353,51 +347,68 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--userns", "--writable-tmpfs", sif, "yum", "install", "-y", "openssh"),
+		e2e.WithArgs("--userns", "--writable-tmpfs", sif, "sh", "-c", "apt-get update && apt-get install -y openssh-client"),
 		e2e.ExpectExit(0),
 	)
 
 	// running under the mode 2(https://apptainer.org/docs/user/main/fakeroot.html)
+	// which can't handle installing openssh
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--userns", "--writable-tmpfs", "--ignore-subuid", "--ignore-fakeroot-command", sif, "yum", "install", "-y", "openssh"),
-		e2e.ExpectExit(1),
+		e2e.WithArgs("--userns", "--writable-tmpfs", "--ignore-subuid", "--ignore-fakeroot-command", sif, "sh", "-c", "apt-get update && apt-get install -y openssh-client"),
+		e2e.ExpectExit(100),
 	)
 
+	// mode 2 can't handle installing packages on Debian but it can override permissions
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--userns", "--writable-tmpfs", "--ignore-subuid", "--ignore-fakeroot-command", sif, "yum", "install", "-y", "epel-release"),
+		e2e.WithArgs("--userns", "--writable-tmpfs", "--ignore-subuid", "--ignore-fakeroot-command", sif, "sh", "-c", "mkdir -m 0 /etc/denied && ls /etc/denied"),
 		e2e.ExpectExit(0),
 	)
 
 	// running under the mode 3(https://apptainer.org/docs/user/main/fakeroot.html)
+	overlaydir, err := os.MkdirTemp(tempDir, "overlaymode3")
+	if err != nil {
+		t.Fatalf("could not create overlaymode3 folder inside tempdir: %s", tempDir)
+	}
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--userns", "--writable-tmpfs", "--ignore-subuid", sif, "yum", "install", "-y", "openssh"),
+		// This works with --writable-tmpfs interactively, but somehow
+		// gives postinstall errors about a missing 'diff' command when
+		// using it on ubuntu 22.04, so use overlay instead.
+		// See https://github.com/apptainer/apptainer/issues/1124
+		e2e.WithArgs("--userns", "--overlay", overlaydir, "--ignore-subuid", sif, "sh", "-c", "apt-get update && apt-get install -y openssh-client"),
+		// e2e.WithArgs("--userns", "--writable-tmpfs", "--ignore-subuid", sif, "sh", "-c", "apt-get update && apt-get install -y openssh-client"),
 		e2e.ExpectExit(0),
 	)
 
 	// running under the mode 4(https://apptainer.org/docs/user/main/fakeroot.html)
+	// which can install a simple package, when using --writable
+	// but not when using --writable-tmpfs (because the fuse-overlayfs
+	// in between refuses to accept faking the operations)
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--writable-tmpfs", "--ignore-userns", "--ignore-subuid", sandbox, "yum", "install", "-y", "openssh"),
-		e2e.ExpectExit(1), // because only fakeroot is used. cpio: open failure
+		e2e.WithArgs("--no-home", "--writable", "--ignore-userns", "--ignore-subuid", sandbox, "sh", "-c", "apt-get update && apt-get install -y cpio"),
+		e2e.ExpectExit(0),
 	)
 
+	// mode 4 however cannot install the more complex package openssh-client
+	// NOTE: this must be the last thing attempted to be installed into the
+	// sandbox because subsequent installs will try to complete this
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("exec"),
-		e2e.WithArgs("--writable-tmpfs", "--ignore-userns", "--ignore-subuid", sandbox, "yum", "install", "-y", "epel-release"),
-		e2e.ExpectExit(0),
+		e2e.WithArgs("--no-home", "--writable", "--ignore-userns", "--ignore-subuid", sandbox, "sh", "-c", "apt-get update && apt-get install -y openssh-client"),
+		e2e.ExpectExit(100), // fails because only fakeroot is used. error with addgroup.
 	)
 }
 

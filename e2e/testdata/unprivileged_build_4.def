@@ -1,0 +1,7 @@
+Bootstrap: localimage
+From: test-debian.sif
+
+# mode 4 can't handle openssh-client, so install something simple instead
+%post
+    apt-get update
+    apt-get install -y cpio

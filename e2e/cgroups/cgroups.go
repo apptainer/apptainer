@@ -679,10 +679,14 @@ func (c *ctx) instanceFlagV2(t *testing.T, tt resourceFlagTest, profile e2e.Prof
 		exitFunc = []e2e.ApptainerCmdResultOp{e2e.ExpectOutput(e2e.ContainMatch, tt.expectV2)}
 	}
 
+	execProfile := profile
+	if profile.String() == e2e.FakerootProfile.String() {
+		execProfile = e2e.UserNamespaceProfile
+	}
 	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("exec"),
-		e2e.WithProfile(profile),
+		e2e.WithProfile(execProfile),
 		e2e.WithCommand("exec"),
 		e2e.WithArgs(joinName, "/bin/sh", "-c", shellCmd),
 		e2e.WithDir(profile.HostUser(t).Dir),

@@ -1529,8 +1529,19 @@ echo 'export LEGACY_TEST_ENV=legacy-value' >> $SINGULARITY_ENVIRONMENT
 }
 
 func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
+	e2e.EnsureDebianImage(t, c.env)
+
 	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "test-container-build-under-fakeroot-modes-", "")
 	defer cleanup(t)
+
+	// Make the DebianImagePath available for Bootstrap: localimage
+	sif := c.env.DebianImagePath
+	basesif := filepath.Base(sif)
+	err := os.Symlink(sif, basesif)
+	if err != nil {
+		t.Fatalf("while symlinking %s to %s: %v", sif, basesif, err)
+	}
+	defer os.Remove(basesif)
 
 	// running under the mode 1, 1a (--with-suid) (https://apptainer.org/docs/user/main/fakeroot.html)
 	c.env.RunApptainer(
@@ -1565,7 +1576,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		e2e.WithProfile(e2e.UserNamespaceProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs("--force", "--userns", "--ignore-subuid", "--ignore-fakeroot-command", fmt.Sprintf("%s/openssh-mode2b.sif", tmpDir), "testdata/unprivileged_build_2.def"),
-		e2e.ExpectExit(0), // install epel-release under mode 2 should succeed
+		e2e.ExpectExit(0),
 	)
 
 	// running under the mode 3(https://apptainer.org/docs/user/main/fakeroot.html)
@@ -1582,7 +1593,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--ignore-userns", "--ignore-subuid", fmt.Sprintf("%s/openssh-mode4.sif", tmpDir), "testdata/unprivileged_build.def"),
+		e2e.WithArgs("--force", "--ignore-userns", "--ignore-subuid", fmt.Sprintf("%s/openssh-mode4.sif", tmpDir), "testdata/unprivileged_build_4.def"),
 		e2e.ExpectExit(0),
 	)
 }

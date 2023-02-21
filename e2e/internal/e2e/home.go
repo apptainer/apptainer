@@ -71,7 +71,7 @@ func SetupHomeDirectories(t *testing.T, testRegistry string) {
 
 		// create the temporary filesystem
 		if err := syscall.Mount("tmpfs", sessionDir, "tmpfs", 0, "mode=0777"); err != nil {
-			t.Fatalf("failed to mount temporary filesystem")
+			t.Fatalf("failed to mount temporary filesystem: %v", err)
 		}
 
 		// want the already resolved current working directory
