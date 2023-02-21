@@ -670,6 +670,10 @@ func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Conf
 	gid := os.Getgid()
 	suidRequired := uid != 0 && !file.UserNs
 
+	if e.EngineConfig.GetFakeroot() {
+		sylog.Infof("--fakeroot ignored when joining instance")
+	}
+
 	// basic checks:
 	// 1. a user must not use SUID workflow to join an instance
 	//    started with user namespace
