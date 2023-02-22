@@ -47,6 +47,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - In `--rocm` mode, the whole of `/dev/dri` is now bound into the container when
   `--contain` is in use. This makes `/dev/dri/render` devices available,
   required for later ROCm versions.
+- Build via zypper on SLE systems will use repositories of host via
+  suseconnect-container
 
 ### Bug fixes
 

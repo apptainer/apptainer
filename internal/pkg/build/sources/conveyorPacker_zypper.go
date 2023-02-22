@@ -23,13 +23,18 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/BurntSushi/toml"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 const (
-	zypperConf = "/etc/zypp/zypp.conf"
+	zypperConf         = "/etc/zypp/zypp.conf"
+	osreleaseFile      = "/etc/os-release"
+	ssccredentialsFile = "/etc/zypp/credentials.d/SCCcredentials"
+	gpgKeyid           = "gpg-pubkey-307e3d54-5aaa90a5 gpg-pubkey-39db7c82-5f68629b"
 )
 
 // ZypperConveyorPacker only needs to hold the bundle for the container
@@ -58,6 +63,8 @@ func machine() (string, error) {
 func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err error) {
 	var suseconnectProduct, suseconnectModver string
 	var suseconnectPath string
+	// dependContainer is a container which shares the repos with the host through container-suseconnect
+	dependContainer := false
 	var pgpfile string
 	var iosmajor int
 	var otherurl [20]string
@@ -76,7 +83,6 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err e
 	}
 
 	include := cp.b.Recipe.Header["include"]
-
 	// check for include environment variable and add it to requires string
 	include += ` ` + os.Getenv("INCLUDE")
 
@@ -86,14 +92,22 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err e
 	// add aaa_base to start of include list by default
 	include = `aaa_base ` + include
 
+	suseVars := getSusevars()
 	// get mirrorURL, OSVerison, and Includes components to definition
 	osversion, osversionOk := cp.b.Recipe.Header["osversion"]
+	if !osversionOk {
+		osversion = suseVars.Version
+	}
 	mirrorurl, mirrorurlOk := cp.b.Recipe.Header["mirrorurl"]
 	updateurl, updateurlOk := cp.b.Recipe.Header["updateurl"]
 	sleproduct, sleproductOk := cp.b.Recipe.Header["product"]
 	sleuser, sleuserOk := cp.b.Recipe.Header["user"]
 	sleregcode, sleregcodeOk := cp.b.Recipe.Header["regcode"]
 	slepgp, slepgpOk := cp.b.Recipe.Header["productpgp"]
+	if !slepgpOk && suseVars.GpgKeyOk {
+		slepgpOk = true
+		slepgp = suseVars.GpgKey
+	}
 	sleurl, sleurlOk := cp.b.Recipe.Header["registerurl"]
 	slemodules, slemodulesOk := cp.b.Recipe.Header["modules"]
 	cnt := -1
@@ -116,7 +130,6 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err e
 		}
 	}
 	regex := regexp.MustCompile(`(?i)%{OSVERSION}`)
-
 	if sleproductOk || sleuserOk || sleregcodeOk {
 		if !sleproductOk || !sleuserOk || !sleregcodeOk {
 			return fmt.Errorf("for installation of SLE 'Product', 'User' and 'Regcode' need to be set")
@@ -173,23 +186,9 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err e
 		default:
 			return fmt.Errorf("malformed Product setting")
 		}
-		if slepgpOk {
-			tmpfile, err := os.CreateTemp("/tmp", "apptainer-pgp")
-			if err != nil {
-				return fmt.Errorf("cannot create pgp-file: %v", err)
-			}
-			pgpfile = tmpfile.Name()
-
-			if _, err = tmpfile.WriteString(slepgp + "\n"); err != nil {
-				return fmt.Errorf("cannot write pgp-file: %v", err)
-			}
-			if err = tmpfile.Close(); err != nil {
-				return fmt.Errorf("cannot close pgp-file %v", err)
-			}
-		}
 
 		include = include + ` SUSEConnect`
-	} else {
+	} else if mirrorurlOk {
 		if !mirrorurlOk {
 			return fmt.Errorf("invalid zypper header, no MirrorURL specified")
 		}
@@ -201,6 +200,24 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err e
 			if updateurlOk {
 				updateurl = regex.ReplaceAllString(updateurl, osversion)
 			}
+		}
+	} else if suseVars.HasScc {
+		dependContainer = true
+		include += " container-suseconnect"
+		cp.b.Opts.Binds = append(cp.b.Opts.Binds, ssccredentialsFile+":"+ssccredentialsFile)
+	}
+	if slepgpOk {
+		tmpfile, err := os.CreateTemp("/tmp", "apptainer-pgp")
+		if err != nil {
+			return fmt.Errorf("cannot create pgp-file: %v", err)
+		}
+		pgpfile = tmpfile.Name()
+
+		if _, err = tmpfile.WriteString(slepgp + "\n"); err != nil {
+			return fmt.Errorf("cannot write pgp-file: %v", err)
+		}
+		if err = tmpfile.Close(); err != nil {
+			return fmt.Errorf("cannot close pgp-file %v", err)
 		}
 	}
 
@@ -318,8 +335,26 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err e
 			return fmt.Errorf("while refreshing: %s %v", `repo-`+sID, err)
 		}
 	}
+	args := []string{`--non-interactive`, `-c`, filepath.Join(cp.b.RootfsPath, zypperConf)}
+	if dependContainer {
+		// --installroot will use containers from repo
+		args = append(args, `--installroot`, cp.b.RootfsPath)
+		include += " zypper"
+		if suseVars.HasScc {
+			if err = os.MkdirAll(filepath.Join(cp.b.RootfsPath, "/etc/zypp/credentials.d/"), 0o755); err != nil {
+				return fmt.Errorf("cannot recreate /etc/zypp/credentials.d/ directories: %v", err)
+			}
+			sccF, err := os.Create(filepath.Join(cp.b.RootfsPath, "/etc/zypp/credentials.d/SCCcredentials"))
+			if err != nil {
+				return fmt.Errorf("couldn't create SCCcredentials file: %v", err)
+			}
+			sccF.Close()
+		}
+	} else {
+		args = append(args, `--root`, cp.b.RootfsPath, `--releasever=`+osversion)
+	}
+	args = append(args, `-n`, `install`, `--auto-agree-with-licenses`, `--download-in-advance`)
 
-	args := []string{`--non-interactive`, `-c`, filepath.Join(cp.b.RootfsPath, zypperConf), `--root`, cp.b.RootfsPath, `--releasever=` + osversion, `-n`, `install`, `--auto-agree-with-licenses`, `--download-in-advance`}
 	args = append(args, strings.Fields(include)...)
 
 	// Zypper install command
@@ -392,7 +427,7 @@ func (cp *ZypperConveyorPacker) genZypperConfig() (err error) {
 		return fmt.Errorf("while creating %v: %v", filepath.Join(cp.b.RootfsPath, "/etc/zypp"), err)
 	}
 
-	err = os.WriteFile(filepath.Join(cp.b.RootfsPath, zypperConf), []byte("[main]\ncachedir=/val/cache/zypp-bootstrap\n\n"), 0o664)
+	err = os.WriteFile(filepath.Join(cp.b.RootfsPath, zypperConf), []byte("[main]\ncachedir=/var/cache/zypp-bootstrap\n\n"), 0o664)
 	if err != nil {
 		return
 	}
@@ -468,4 +503,41 @@ func rpmPathCheck() (err error) {
 	}
 
 	return nil
+}
+
+// Parse the /etc/os.release file to a  struct, so that SUSE versions
+// need not to be set on a SLE system
+func getSusevars() (ret struct {
+	osRelease
+	GpgKey   string
+	GpgKeyOk bool
+	HasScc   bool
+},
+) {
+	// ignore errors as we check for empty fields later
+	b, _ := os.ReadFile(osreleaseFile)
+	var osrel osRelease
+	_ = toml.Unmarshal(b, &osrel)
+	ret.osRelease = osrel
+	if ret.Name != "" {
+		ret.Product = ret.Name + "/" + ret.VersionID + "/" + runtime.GOARCH
+	}
+	ret.GpgKeyOk = false
+	args := []string{"-q", "--qf", "'%{PUBKEYS:armor}'"}
+	args = append(args, strings.Split(gpgKeyid, " ")...)
+	out, err := exec.Command("rpm", args...).Output()
+	if err == nil {
+		ret.GpgKeyOk = true
+		ret.GpgKey = string(out)
+	}
+	ret.HasScc = fs.IsFile(ssccredentialsFile)
+	return ret
+}
+
+// hold the os_release vars
+type osRelease struct {
+	Name      string `toml:"NAME"`
+	Version   string `toml:"VERSION"`
+	VersionID string `toml:"VERSION_ID"`
+	Product   string
 }
