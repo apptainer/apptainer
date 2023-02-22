@@ -77,7 +77,15 @@ func handleOCI(ctx context.Context, imgCache *cache.Handle, cmd *cobra.Command, 
 	if err != nil {
 		sylog.Fatalf("While creating Docker credentials: %v", err)
 	}
-	return oci.Pull(ctx, imgCache, pullFrom, tmpDir, ociAuth, noHTTPS, false)
+
+	pullOpts := oci.PullOptions{
+		TmpDir:     tmpDir,
+		OciAuth:    ociAuth,
+		DockerHost: dockerHost,
+		NoHTTPS:    noHTTPS,
+	}
+
+	return oci.Pull(ctx, imgCache, pullFrom, pullOpts)
 }
 
 func handleOras(ctx context.Context, imgCache *cache.Handle, cmd *cobra.Command, pullFrom string) (string, error) {

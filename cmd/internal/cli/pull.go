@@ -268,7 +268,15 @@ func pullRun(cmd *cobra.Command, args []string) {
 			sylog.Fatalf("While creating Docker credentials: %v", err)
 		}
 
-		_, err = oci.PullToFile(ctx, imgCache, pullTo, pullFrom, tmpDir, ociAuth, noHTTPS, buildArgs.noCleanUp)
+		pullOpts := oci.PullOptions{
+			TmpDir:     tmpDir,
+			OciAuth:    ociAuth,
+			DockerHost: dockerHost,
+			NoHTTPS:    noHTTPS,
+			NoCleanUp:  buildArgs.noCleanUp,
+		}
+
+		_, err = oci.PullToFile(ctx, imgCache, pullTo, pullFrom, pullOpts)
 		if err != nil {
 			sylog.Fatalf("While making image from oci registry: %v", err)
 		}

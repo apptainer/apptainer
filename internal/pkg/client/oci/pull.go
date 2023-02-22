@@ -20,27 +20,36 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/build/oci"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	buildtypes "github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	ocitypes "github.com/containers/image/v5/types"
 )
 
+type PullOptions struct {
+	TmpDir     string
+	OciAuth    *ocitypes.DockerAuthConfig
+	DockerHost string
+	NoHTTPS    bool
+	NoCleanUp  bool
+}
+
 // pull will build a SIF image into the cache if directTo="", or a specific file if directTo is set.
-func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, tmpDir string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS, noCleanUp bool) (imagePath string, err error) {
+func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string, opts PullOptions) (imagePath string, err error) {
 	// DockerInsecureSkipTLSVerify is set only if --no-https is specified to honor
 	// configuration from /etc/containers/registries.conf because DockerInsecureSkipTLSVerify
 	// can have three possible values true/false and undefined, so we left it as undefined instead
 	// of forcing it to false in order to delegate decision to /etc/containers/registries.conf:
 	// https://github.com/apptainer/singularity/issues/5172
 	sysCtx := &ocitypes.SystemContext{
-		OCIInsecureSkipTLSVerify: noHTTPS,
-		DockerAuthConfig:         ociAuth,
+		OCIInsecureSkipTLSVerify: opts.NoHTTPS,
+		DockerAuthConfig:         opts.OciAuth,
 		AuthFilePath:             syfs.DockerConf(),
 		DockerRegistryUserAgent:  useragent.Value(),
-		BigFilesTemporaryDir:     tmpDir,
+		BigFilesTemporaryDir:     opts.TmpDir,
 	}
-	if noHTTPS {
+	if opts.NoHTTPS {
 		sysCtx.DockerInsecureSkipTLSVerify = ocitypes.NewOptionalBool(true)
 	}
 
@@ -51,7 +60,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, tmpDi
 
 	if directTo != "" {
 		sylog.Infof("Converting OCI blobs to SIF format")
-		if err := build.ConvertOciToSIF(ctx, imgCache, pullFrom, directTo, tmpDir, noHTTPS, noCleanUp, ociAuth); err != nil {
+		if err := convertOciToSIF(ctx, imgCache, pullFrom, directTo, opts); err != nil {
 			return "", fmt.Errorf("while building SIF from layers: %v", err)
 		}
 		imagePath = directTo
@@ -65,7 +74,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, tmpDi
 		if !cacheEntry.Exists {
 			sylog.Infof("Converting OCI blobs to SIF format")
 
-			if err := build.ConvertOciToSIF(ctx, imgCache, pullFrom, cacheEntry.TmpPath, tmpDir, noHTTPS, noCleanUp, ociAuth); err != nil {
+			if err := convertOciToSIF(ctx, imgCache, pullFrom, cacheEntry.TmpPath, opts); err != nil {
 				return "", fmt.Errorf("while building SIF from layers: %v", err)
 			}
 
@@ -83,12 +92,42 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, tmpDi
 	return imagePath, nil
 }
 
+// convertOciToSIF will convert an OCI source into a SIF using the build routines
+func convertOciToSIF(ctx context.Context, imgCache *cache.Handle, image, cachedImgPath string, opts PullOptions) error {
+	if imgCache == nil {
+		return fmt.Errorf("image cache is undefined")
+	}
+
+	b, err := build.NewBuild(
+		image,
+		build.Config{
+			Dest:      cachedImgPath,
+			Format:    "sif",
+			NoCleanUp: opts.NoCleanUp,
+			Opts: buildtypes.Options{
+				TmpDir:           opts.TmpDir,
+				NoCache:          imgCache.IsDisabled(),
+				NoTest:           true,
+				NoHTTPS:          opts.NoHTTPS,
+				DockerAuthConfig: opts.OciAuth,
+				DockerDaemonHost: opts.DockerHost,
+				ImgCache:         imgCache,
+			},
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("unable to create new build: %v", err)
+	}
+
+	return b.Full(ctx)
+}
+
 // Pull will build a SIF image to the cache or direct to a temporary file if cache is disabled
-func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom, tmpDir string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS, noCleanUp bool) (imagePath string, err error) {
+func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom string, opts PullOptions) (imagePath string, err error) {
 	directTo := ""
 
 	if imgCache.IsDisabled() {
-		file, err := os.CreateTemp(tmpDir, "sbuild-tmp-cache-")
+		file, err := os.CreateTemp(opts.TmpDir, "sbuild-tmp-cache-")
 		if err != nil {
 			return "", fmt.Errorf("unable to create tmp file: %v", err)
 		}
@@ -96,18 +135,18 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom, tmpDir string, 
 		sylog.Infof("Downloading library image to tmp cache: %s", directTo)
 	}
 
-	return pull(ctx, imgCache, directTo, pullFrom, tmpDir, ociAuth, noHTTPS, noCleanUp)
+	return pull(ctx, imgCache, directTo, pullFrom, opts)
 }
 
 // PullToFile will build a SIF image from the specified oci URI and place it at the specified dest
-func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom, tmpDir string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS, noCleanUp bool) (imagePath string, err error) {
+func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom string, opts PullOptions) (imagePath string, err error) {
 	directTo := ""
 	if imgCache.IsDisabled() {
 		directTo = pullTo
 		sylog.Debugf("Cache disabled, pulling directly to: %s", directTo)
 	}
 
-	src, err := pull(ctx, imgCache, directTo, pullFrom, tmpDir, ociAuth, noHTTPS, noCleanUp)
+	src, err := pull(ctx, imgCache, directTo, pullFrom, opts)
 	if err != nil {
 		if strings.Contains(err.Error(), "unsupported image-specific operation on artifact with type \"application/vnd.unknown.config.v1+json\"") {
 			return "", fmt.Errorf("%v; try changing the protocol to oras://", err)
