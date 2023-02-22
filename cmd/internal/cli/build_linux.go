@@ -87,7 +87,7 @@ func fakerootExec(isDeffile bool) {
 		sylog.Infof("User not listed in %v, trying root-mapped namespace", fakeroot.SubUIDFile)
 		os.Setenv("_APPTAINER_FAKEFAKEROOT", "1")
 		if buildArgs.ignoreUserns {
-			err = errors.New("could not start root-mapped namesapce because of --ignore-userns is set")
+			err = errors.New("could not start root-mapped namespace because of --ignore-userns is set")
 		} else {
 			err = fakeroot.UnshareRootMapped(args)
 		}

@@ -108,7 +108,7 @@ func Run(t *testing.T) {
 	testenv.TestRegistry = e2e.StartRegistry(t, testenv)
 	testenv.InsecureRegistry = strings.Replace(testenv.TestRegistry, "localhost", "127.0.0.1.nip.io", 1)
 
-	// Make shared cache dirs for privileged and unpriviliged E2E tests.
+	// Make shared cache dirs for privileged and unprivileged E2E tests.
 	// Individual tests that depend on specific ordered cache behavior, or
 	// directly test the cache, should override the TestEnv values within the
 	// specific test.

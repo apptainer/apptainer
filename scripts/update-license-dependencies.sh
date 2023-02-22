@@ -17,7 +17,7 @@ if [ ! -f "go.mod" ]; then
 fi
 
 # Exclude ourselves, and github.com/vbauerster/mpb for which
-# the tool is not working properly, becuase it uses UNLICENSE
+# the tool is not working properly, because it uses UNLICENSE
 exclude="github.com/apptainer/apptainer|github.com/vbauerster/mpb"
 
 # Ensure a constant sort order

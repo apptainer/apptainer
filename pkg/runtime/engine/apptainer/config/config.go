@@ -61,7 +61,7 @@ type FuseMount struct {
 }
 
 // DMTCPConfig stores the DMTCP-related information required for
-// container process checkpoint/restart behvaior.
+// container process checkpoint/restart behavior.
 type DMTCPConfig struct {
 	Enabled    bool     `json:"enabled,omitempty"`
 	Restart    bool     `json:"restart,omitempty"`

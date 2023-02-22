@@ -34,7 +34,7 @@ type actionTests struct {
 	env e2e.TestEnv
 }
 
-// run tests min fuctionality for singularity symlink using actionRun
+// run tests min functionality for singularity symlink using actionRun
 func (c actionTests) singularityLink(t *testing.T) {
 	saveCmdPath := c.env.CmdPath
 	i := strings.LastIndex(saveCmdPath, "apptainer")
@@ -45,7 +45,7 @@ func (c actionTests) singularityLink(t *testing.T) {
 	c.env.CmdPath = saveCmdPath
 }
 
-// run tests min fuctionality for apptainer run
+// run tests min functionality for apptainer run
 func (c actionTests) actionRun(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
@@ -93,7 +93,7 @@ func (c actionTests) actionRun(t *testing.T) {
 	}
 }
 
-// exec tests min fuctionality for apptainer exec
+// exec tests min functionality for apptainer exec
 func (c actionTests) actionExec(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
@@ -473,7 +473,7 @@ func (c actionTests) STDPipe(t *testing.T) {
 	}
 }
 
-// RunFromURI tests min fuctionality for apptainer run/exec URI://
+// RunFromURI tests min functionality for apptainer run/exec URI://
 func (c actionTests) RunFromURI(t *testing.T) {
 	e2e.EnsureORASImage(t, c.env)
 

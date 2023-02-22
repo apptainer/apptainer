@@ -113,7 +113,7 @@ func LegacyRemoteConf() string {
 	return filepath.Join(LegacyConfigDir(), RemoteConfFile)
 }
 
-// LegacyDockerConf reutrns where singularity stores user oci registry configuration.
+// LegacyDockerConf returns where singularity stores user oci registry configuration.
 // NOTE: this location should only be used for migration/compatibility and
 // never written to by apptainer.
 func LegacyDockerConf() string {

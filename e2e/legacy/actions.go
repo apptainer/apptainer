@@ -37,7 +37,7 @@ func (c legacyTests) singularityCmd(command string, args ...string) []string {
 	return append(apptainerArgs, args...)
 }
 
-// run tests min fuctionality for apptainer run
+// run tests min functionality for apptainer run
 func (c legacyTests) runLegacy(t *testing.T) {
 	require.Arch(t, "amd64")
 
@@ -88,7 +88,7 @@ func (c legacyTests) runLegacy(t *testing.T) {
 	}
 }
 
-// exec tests min fuctionality for apptainer exec
+// exec tests min functionality for apptainer exec
 func (c legacyTests) execLegacy(t *testing.T) {
 	require.Arch(t, "amd64")
 
