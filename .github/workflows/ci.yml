@@ -11,7 +11,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Check go.mod
-        run: ./scripts/check-go.mod
+        run: |
+          git config --global --add safe.directory $(pwd)
+          ./scripts/check-go.mod
 
   lint_markdown:
     name: lint_markdown
@@ -89,7 +91,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Update LICENSE_DEPENDENCIES.md
-        run: ./scripts/update-license-dependencies.sh
+        run: |
+          git config --global --add safe.directory $(pwd)
+          ./scripts/update-license-dependencies.sh
 
       - name: Check License Changes
         run: git diff --exit-code -- LICENSE_DEPENDENCIES.md
@@ -272,6 +276,7 @@ jobs:
           PROJECT_REPOSITORY: ${{ github.repository }}
           PROJECT_PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
+          git config --global --add safe.directory $(pwd)
           rc=0
           ./scripts/should-e2e-run "${PROJECT_REPOSITORY}" "${PROJECT_REF##*/}" "${PROJECT_PR_NUMBER}" || rc=$?
           case $rc in
