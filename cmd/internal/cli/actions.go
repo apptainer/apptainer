@@ -291,6 +291,10 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 	if err != nil {
 		return err
 	}
+	if cgJSON != "" && strings.HasPrefix(image, "instance://") {
+		cgJSON = ""
+		sylog.Warningf("Resource limits & cgroups configuration are only applied to instances at instance start.")
+	}
 
 	ki, err := getEncryptionMaterial(cmd)
 	if err != nil {

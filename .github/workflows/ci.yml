@@ -260,8 +260,7 @@ jobs:
 
   e2e_tests:
     name: e2e_tests
-    # update to 22.04 causes fakeroot and cgroup test failures
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       # fetch tags as checkout@v2 doesn't do that by default
@@ -296,6 +295,14 @@ jobs:
         if: env.run_tests
         run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential uidmap squashfs-tools squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
 
+      # The fuse-overlayfs version from ubuntu-22.04, 1.7, is buggy,
+      # so update to version 1.9
+      # See https://github.com/apptainer/apptainer/issues/796
+      - name: Update fuse-overlayfs version
+        run: |
+          sudo sh -c "echo 'deb http://archive.ubuntu.com/ubuntu kinetic universe' >/etc/apt/sources.list.d/kinetic.list"
+          sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y fuse-overlayfs
+
       - name: Enable full cgroups v2 delegation
         run: |
           sudo mkdir -p /etc/systemd/system/user@.service.d
@@ -315,7 +322,12 @@ jobs:
         if: env.run_tests
         env:
           E2E_PARALLEL: 8
-        run: make -C ./builddir e2e-test
+        run: |
+          # Set up systemd for the rootless cgroups tests
+          systemctl --user daemon-reload
+          systemctl --user start dbus
+          export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$UID/bus"
+          systemd-run --user --scope make -C ./builddir e2e-test
 
       - name: Upload artifacts
         if: env.run_tests

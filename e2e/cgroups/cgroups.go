@@ -356,7 +356,7 @@ func (c *ctx) actionApplyRootless(t *testing.T) {
 	}
 }
 
-type actionFlagTest struct {
+type resourceFlagTest struct {
 	name            string
 	args            []string
 	expectErrorCode int
@@ -372,128 +372,129 @@ type actionFlagTest struct {
 	skipV2     bool
 }
 
+var resourceFlagTests = []resourceFlagTest{
+	{
+		name:            "blkio-weight",
+		args:            []string{"--blkio-weight", "50"},
+		expectErrorCode: 0,
+		controllerV1:    "blkio",
+		// This is the new path. Older kernels may have only `blkio.weight`
+		resourceV1:   "blkio.bfq.weight",
+		expectV1:     "50",
+		delegationV2: "io",
+		resourceV2:   "io.bfq.weight",
+		expectV2:     "default 50",
+	},
+	{
+		name:            "cpus",
+		args:            []string{"--cpus", "0.5"},
+		expectErrorCode: 0,
+		// 0.5 cpus = quota of 50000 with default period 100000
+		controllerV1: "cpu",
+		resourceV1:   "cpu.cfs_quota_us",
+		expectV1:     "50000",
+		delegationV2: "cpu",
+		resourceV2:   "cpu.max",
+		expectV2:     "50000 100000",
+	},
+	{
+		name:            "cpu-shares",
+		args:            []string{"--cpu-shares", "123"},
+		expectErrorCode: 0,
+		controllerV1:    "cpu",
+		resourceV1:      "cpu.shares",
+		expectV1:        "123",
+		// Cgroups v2 has a conversion from shares to weight
+		// weight = (1 + ((cpuShares-2)*9999)/262142)
+		delegationV2: "cpu",
+		resourceV2:   "cpu.weight",
+		expectV2:     "5",
+	},
+	{
+		name:            "cpuset-cpus",
+		args:            []string{"--cpuset-cpus", "0", "--cpuset-mems", "0"},
+		expectErrorCode: 0,
+		controllerV1:    "cpuset",
+		resourceV1:      "cpuset.cpus",
+		expectV1:        "0",
+		delegationV2:    "cpuset",
+		resourceV2:      "cpuset.cpus",
+		expectV2:        "0",
+	},
+	{
+		name:            "cpuset-mems",
+		args:            []string{"--cpuset-cpus", "0", "--cpuset-mems", "0"},
+		expectErrorCode: 0,
+		controllerV1:    "cpuset",
+		resourceV1:      "cpuset.mems",
+		expectV1:        "0",
+		delegationV2:    "cpuset",
+		resourceV2:      "cpuset.mems",
+		expectV2:        "0",
+	},
+	{
+		name:            "memory",
+		args:            []string{"--memory", "500M"},
+		expectErrorCode: 0,
+		controllerV1:    "memory",
+		resourceV1:      "memory.limit_in_bytes",
+		expectV1:        "524288000",
+		delegationV2:    "memory",
+		resourceV2:      "memory.max",
+		expectV2:        "524288000",
+	},
+	{
+		name:            "memory-reservation",
+		args:            []string{"--memory-reservation", "500M"},
+		expectErrorCode: 0,
+		controllerV1:    "memory",
+		resourceV1:      "memory.soft_limit_in_bytes",
+		expectV1:        "524288000",
+		delegationV2:    "memory",
+		resourceV2:      "memory.low",
+		expectV2:        "524288000",
+	},
+	{
+		// The CLI memory-swap value is v1 memory + swap... so this means 250M of swap
+		name:            "memory-swap",
+		args:            []string{"--memory-swap", "500M", "--memory", "250M"},
+		expectErrorCode: 0,
+		controllerV1:    "memory",
+		resourceV1:      "memory.memsw.limit_in_bytes",
+		// V1 shows the 500M combined
+		expectV1: "524288000",
+		// V2 treats the mem & swap separately... shows only 250M of swap (500M memory-swap - 250M memory)
+		delegationV2: "memory",
+		resourceV2:   "memory.swap.max",
+		expectV2:     "262144000",
+	},
+	{
+		name:            "oom-kill-disable",
+		args:            []string{"--oom-kill-disable"},
+		expectErrorCode: 0,
+		controllerV1:    "memory",
+		resourceV1:      "memory.oom_control",
+		expectV1:        "oom_kill_disable 1",
+		// v2 relies on oom_score_adj on /proc/pid instead
+		skipV2: true,
+	},
+	{
+		name:            "pids-limit",
+		args:            []string{"--pids-limit", "123"},
+		expectErrorCode: 0,
+		controllerV1:    "pids",
+		resourceV1:      "pids.max",
+		expectV1:        "123",
+		delegationV2:    "pids",
+		resourceV2:      "pids.max",
+		expectV2:        "123",
+	},
+}
+
 func (c *ctx) actionFlags(t *testing.T, profile e2e.Profile) {
 	e2e.EnsureImage(t, c.env)
-	tests := []actionFlagTest{
-		{
-			name:            "blkio-weight",
-			args:            []string{"--blkio-weight", "50"},
-			expectErrorCode: 0,
-			controllerV1:    "blkio",
-			// This is the new path. Older kernels may have only `blkio.weight`
-			resourceV1:   "blkio.bfq.weight",
-			expectV1:     "50",
-			delegationV2: "io",
-			resourceV2:   "io.bfq.weight",
-			expectV2:     "default 50",
-		},
-		{
-			name:            "cpus",
-			args:            []string{"--cpus", "0.5"},
-			expectErrorCode: 0,
-			// 0.5 cpus = quota of 50000 with default period 100000
-			controllerV1: "cpu",
-			resourceV1:   "cpu.cfs_quota_us",
-			expectV1:     "50000",
-			delegationV2: "cpu",
-			resourceV2:   "cpu.max",
-			expectV2:     "50000 100000",
-		},
-		{
-			name:            "cpu-shares",
-			args:            []string{"--cpu-shares", "123"},
-			expectErrorCode: 0,
-			controllerV1:    "cpu",
-			resourceV1:      "cpu.shares",
-			expectV1:        "123",
-			// Cgroups v2 has a conversion from shares to weight
-			// weight = (1 + ((cpuShares-2)*9999)/262142)
-			delegationV2: "cpu",
-			resourceV2:   "cpu.weight",
-			expectV2:     "5",
-		},
-		{
-			name:            "cpuset-cpus",
-			args:            []string{"--cpuset-cpus", "0", "--cpuset-mems", "0"},
-			expectErrorCode: 0,
-			controllerV1:    "cpuset",
-			resourceV1:      "cpuset.cpus",
-			expectV1:        "0",
-			delegationV2:    "cpuset",
-			resourceV2:      "cpuset.cpus",
-			expectV2:        "0",
-		},
-		{
-			name:            "cpuset-mems",
-			args:            []string{"--cpuset-cpus", "0", "--cpuset-mems", "0"},
-			expectErrorCode: 0,
-			controllerV1:    "cpuset",
-			resourceV1:      "cpuset.mems",
-			expectV1:        "0",
-			delegationV2:    "cpuset",
-			resourceV2:      "cpuset.mems",
-			expectV2:        "0",
-		},
-		{
-			name:            "memory",
-			args:            []string{"--memory", "500M"},
-			expectErrorCode: 0,
-			controllerV1:    "memory",
-			resourceV1:      "memory.limit_in_bytes",
-			expectV1:        "524288000",
-			delegationV2:    "memory",
-			resourceV2:      "memory.max",
-			expectV2:        "524288000",
-		},
-		{
-			name:            "memory-reservation",
-			args:            []string{"--memory-reservation", "500M"},
-			expectErrorCode: 0,
-			controllerV1:    "memory",
-			resourceV1:      "memory.soft_limit_in_bytes",
-			expectV1:        "524288000",
-			delegationV2:    "memory",
-			resourceV2:      "memory.low",
-			expectV2:        "524288000",
-		},
-		{
-			// The CLI memory-swap value is v1 memory + swap... so this means 250M of swap
-			name:            "memory-swap",
-			args:            []string{"--memory-swap", "500M", "--memory", "250M"},
-			expectErrorCode: 0,
-			controllerV1:    "memory",
-			resourceV1:      "memory.memsw.limit_in_bytes",
-			// V1 shows the 500M combined
-			expectV1: "524288000",
-			// V2 treats the mem & swap separately... shows only 250M of swap (500M memory-swap - 250M memory)
-			delegationV2: "memory",
-			resourceV2:   "memory.swap.max",
-			expectV2:     "262144000",
-		},
-		{
-			name:            "oom-kill-disable",
-			args:            []string{"--oom-kill-disable"},
-			expectErrorCode: 0,
-			controllerV1:    "memory",
-			resourceV1:      "memory.oom_control",
-			expectV1:        "oom_kill_disable 1",
-			// v2 relies on oom_score_adj on /proc/pid instead
-			skipV2: true,
-		},
-		{
-			name:            "pids-limit",
-			args:            []string{"--pids-limit", "123"},
-			expectErrorCode: 0,
-			controllerV1:    "pids",
-			resourceV1:      "pids.max",
-			expectV1:        "123",
-			delegationV2:    "pids",
-			resourceV2:      "pids.max",
-			expectV2:        "123",
-		},
-	}
 
-	for _, tt := range tests {
+	for _, tt := range resourceFlagTests {
 		t.Run(tt.name, func(t *testing.T) {
 			if cgroups.IsCgroup2UnifiedMode() {
 				c.actionFlagV2(t, tt, profile)
@@ -504,7 +505,7 @@ func (c *ctx) actionFlags(t *testing.T, profile e2e.Profile) {
 	}
 }
 
-func (c *ctx) actionFlagV1(t *testing.T, tt actionFlagTest, profile e2e.Profile) {
+func (c *ctx) actionFlagV1(t *testing.T, tt resourceFlagTest, profile e2e.Profile) {
 	// Don't try to test a resource that doesn't exist in our caller cgroup.
 	// E.g. some systems don't have memory.memswp, and might not have blkio.bfq
 	require.CgroupsResourceExists(t, tt.controllerV1, tt.resourceV1)
@@ -532,7 +533,7 @@ func (c *ctx) actionFlagV1(t *testing.T, tt actionFlagTest, profile e2e.Profile)
 	)
 }
 
-func (c *ctx) actionFlagV2(t *testing.T, tt actionFlagTest, profile e2e.Profile) {
+func (c *ctx) actionFlagV2(t *testing.T, tt resourceFlagTest, profile e2e.Profile) {
 	if tt.skipV2 {
 		t.Skip()
 	}
@@ -580,6 +581,140 @@ func (c *ctx) actionFlagsRootless(t *testing.T) {
 	}
 }
 
+func (c *ctx) instanceFlags(t *testing.T, profile e2e.Profile) {
+	e2e.EnsureImage(t, c.env)
+
+	for _, tt := range resourceFlagTests {
+		t.Run(tt.name, func(t *testing.T) {
+			if cgroups.IsCgroup2UnifiedMode() {
+				c.instanceFlagV2(t, tt, profile)
+				return
+			}
+			c.instanceFlagV1(t, tt, profile)
+		})
+	}
+}
+
+func (c *ctx) instanceFlagV1(t *testing.T, tt resourceFlagTest, profile e2e.Profile) {
+	// Don't try to test a resource that doesn't exist in our caller cgroup.
+	// E.g. some systems don't have memory.memswp, and might not have blkio.bfq
+	require.CgroupsResourceExists(t, tt.controllerV1, tt.resourceV1)
+
+	instanceName := randomName(t)
+	joinName := fmt.Sprintf("instance://%s", instanceName)
+	startArgs := append(tt.args, "-B", "/sys/fs/cgroup", c.env.ImagePath, instanceName)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("start"),
+		e2e.WithProfile(profile),
+		e2e.WithCommand("instance start"),
+		e2e.WithArgs(startArgs...),
+		e2e.ExpectExit(0),
+	)
+
+	// Use shell in the container to find container cgroup and cat the value for the tested controller & resource.
+	// /proc/self/cgroup is : delimited
+	// controller is the 2nd field in `/proc/self/cgroup`
+	// cgroup path relative to root cgroup mount is the 3rd field in `/proc/self/cgroup`
+	shellCmd := fmt.Sprintf("cat /sys/fs/cgroup/%s$(cat /proc/self/cgroup | grep '[,:]%s[,:]' | cut -d ':' -f 3)/%s", tt.controllerV1, tt.controllerV1, tt.resourceV1)
+	exitFunc := []e2e.ApptainerCmdResultOp{}
+	if tt.expectV1 != "" {
+		exitFunc = []e2e.ApptainerCmdResultOp{e2e.ExpectOutput(e2e.ContainMatch, tt.expectV1)}
+	}
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("exec"),
+		e2e.WithProfile(profile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs(joinName, "/bin/sh", "-c", shellCmd),
+		e2e.WithDir(profile.HostUser(t).Dir),
+		e2e.ExpectExit(tt.expectErrorCode, exitFunc...),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("stop"),
+		e2e.WithProfile(profile),
+		e2e.WithCommand("instance stop"),
+		e2e.WithArgs(instanceName),
+		e2e.ExpectExit(0),
+	)
+}
+
+func (c *ctx) instanceFlagV2(t *testing.T, tt resourceFlagTest, profile e2e.Profile) {
+	if tt.skipV2 {
+		t.Skip()
+	}
+	// Don't try to test a resource that doesn't exist in our caller cgroup.
+	// E.g. some systems don't have io.bfq.*
+	require.CgroupsResourceExists(t, "", tt.resourceV2)
+
+	// In rootless mode, can only test subsystems that have been delegated
+	if !profile.Privileged() {
+		require.CgroupsV2Delegated(t, tt.delegationV2)
+	}
+
+	instanceName := randomName(t)
+	joinName := fmt.Sprintf("instance://%s", instanceName)
+	startArgs := append(tt.args, "-B", "/sys/fs/cgroup", c.env.ImagePath, instanceName)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("start"),
+		e2e.WithProfile(profile),
+		e2e.WithCommand("instance start"),
+		e2e.WithArgs(startArgs...),
+		e2e.ExpectExit(0),
+	)
+
+	// Use shell in the container to find container cgroup and cat the value for the tested controller & resource.
+	// /proc/self/cgroup is : delimited
+	// For V2 the controller is null (field 2), at index 0 (field 1)
+	// cgroup path relative to root cgroup mount is the 3rd field in `/proc/self/cgroup`
+	shellCmd := fmt.Sprintf("cat /sys/fs/cgroup$(cat /proc/self/cgroup | grep '^0::' | cut -d ':' -f 3)/%s", tt.resourceV2)
+	exitFunc := []e2e.ApptainerCmdResultOp{}
+	if tt.expectV2 != "" {
+		exitFunc = []e2e.ApptainerCmdResultOp{e2e.ExpectOutput(e2e.ContainMatch, tt.expectV2)}
+	}
+
+	execProfile := profile
+	if profile.String() == e2e.FakerootProfile.String() {
+		execProfile = e2e.UserNamespaceProfile
+	}
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("exec"),
+		e2e.WithProfile(execProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs(joinName, "/bin/sh", "-c", shellCmd),
+		e2e.WithDir(profile.HostUser(t).Dir),
+		e2e.ExpectExit(tt.expectErrorCode, exitFunc...),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("stop"),
+		e2e.WithProfile(profile),
+		e2e.WithCommand("instance stop"),
+		e2e.WithArgs(instanceName),
+		e2e.ExpectExit(0),
+	)
+}
+
+func (c *ctx) instanceFlagsRoot(t *testing.T) {
+	c.instanceFlags(t, e2e.RootProfile)
+}
+
+func (c *ctx) instanceFlagsRootless(t *testing.T) {
+	for _, profile := range []e2e.Profile{e2e.UserProfile, e2e.UserNamespaceProfile, e2e.FakerootProfile} {
+		t.Run(profile.String(), func(t *testing.T) {
+			c.instanceFlags(t, profile)
+		})
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := &ctx{
@@ -589,13 +724,15 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	np := testhelper.NoParallel
 
 	return testhelper.Tests{
-		"instance stats root":           np(env.WithRootManagers(c.instanceStatsRoot)),
-		"instance stats rootless":       np(env.WithRootlessManagers(c.instanceStatsRootless)),
-		"instance root cgroups":         np(env.WithRootManagers(c.instanceApplyRoot)),
-		"instance rootless cgroups":     np(env.WithRootlessManagers(c.instanceApplyRootless)),
-		"action root cgroups":           np(env.WithRootManagers(c.actionApplyRoot)),
-		"action rootless cgroups":       np(env.WithRootlessManagers(c.actionApplyRootless)),
-		"action flags root cgroups":     np(env.WithRootManagers(c.actionFlagsRoot)),
-		"action flags rootless cgroups": np(env.WithRootlessManagers(c.actionFlagsRootless)),
+		"instance stats root":             np(env.WithRootManagers(c.instanceStatsRoot)),
+		"instance stats rootless":         np(env.WithRootlessManagers(c.instanceStatsRootless)),
+		"instance root cgroups":           np(env.WithRootManagers(c.instanceApplyRoot)),
+		"instance rootless cgroups":       np(env.WithRootlessManagers(c.instanceApplyRootless)),
+		"instance flags root cgroups":     np(env.WithRootManagers(c.instanceFlagsRoot)),
+		"instance flags rootless cgroups": np(env.WithRootlessManagers(c.instanceFlagsRootless)),
+		"action root cgroups":             np(env.WithRootManagers(c.actionApplyRoot)),
+		"action rootless cgroups":         np(env.WithRootlessManagers(c.actionApplyRootless)),
+		"action flags root cgroups":       np(env.WithRootManagers(c.actionFlagsRoot)),
+		"action flags rootless cgroups":   np(env.WithRootlessManagers(c.actionFlagsRootless)),
 	}
 }

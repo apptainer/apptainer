@@ -1,5 +1,8 @@
-BootStrap: docker
-From: centos:centos7
+Bootstrap: localimage
+From: test-debian.sif
 
+# In mode 2 there's no fakeroot command so cannot install any 
+# packages on Debian, since apt-get always does privileged operations
 %post
-    yum -y install epel-release
+    mkdir -m 0 /etc/denied
+    ls /etc/denied

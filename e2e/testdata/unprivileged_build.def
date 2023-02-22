@@ -1,5 +1,6 @@
-BootStrap: docker
-From: centos:centos7
+Bootstrap: localimage
+From: test-debian.sif
 
 %post
-    yum -y install openssh 
+    apt-get update
+    apt-get install -y openssh-client
