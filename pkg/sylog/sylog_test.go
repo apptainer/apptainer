@@ -339,7 +339,7 @@ func TestStderrOutput(t *testing.T) {
 		out  *os.File
 	}{
 		{
-			// We just call a few funtions that output to stderr, not much we can test
+			// We just call a few functions that output to stderr, not much we can test
 			// except make sure that whatever potential modification to the code does
 			// not make the code crash
 			name: "default Stderr",

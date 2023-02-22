@@ -25,7 +25,7 @@ type ctx struct {
 	env e2e.TestEnv
 }
 
-// testSecurityUnpriv tests the security flag fuctionality for apptainer exec without elevated privileges
+// testSecurityUnpriv tests the security flag functionality for apptainer exec without elevated privileges
 func (c ctx) testSecurityUnpriv(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -130,7 +130,7 @@ func (c ctx) testSecurityUnpriv(t *testing.T) {
 	}
 }
 
-// testSecurityPriv tests security flag fuctionality for apptainer exec with elevated privileges
+// testSecurityPriv tests security flag functionality for apptainer exec with elevated privileges
 func (c ctx) testSecurityPriv(t *testing.T) {
 	var caps uint64
 	var err error

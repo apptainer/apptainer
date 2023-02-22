@@ -25,7 +25,7 @@
 - David Trudgian <david.trudgian@utsouthwestern.edu>,
   <david.trudgian@sylabs.io>, <dave@trudgian.net>
 - Diana Langenbach <dcl@dcl.sh>
-- Dimitri Papadopoulos <3234522+DimitriPapadopoulos@users.noreply.github.com>
+- Dimitri Papadopoulos Orfanos <3234522+DimitriPapadopoulos@users.noreply.github.com>
 - Divya Cote <divya.cote@gmail.com>
 - Edita Kizinevič <edita.kizinevic@cern.ch>
 - Eduardo Arango <eduardo@sylabs.io>, <arangogutierrez@gmail.com>

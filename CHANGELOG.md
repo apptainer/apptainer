@@ -44,7 +44,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   join is from outside a user-owned cgroup.
 - Define EUID in %environment alongside UID.
 - Avoid UID / GID / EUID readonly var warnings with `--env-file`.
-- In `--rocm` mode, the whole of `/dev/dri` is now bound into the container whe
+- In `--rocm` mode, the whole of `/dev/dri` is now bound into the container when
   `--contain` is in use. This makes `/dev/dri/render` devices available,
   required for later ROCm versions.
 
@@ -291,7 +291,7 @@ Accidentally included no code changes.
 - Nesting of bind mounts now works even when a `--bind` option specified
   a different source and destination with a colon between them.  Now the
   APPTAINER_BIND environment variable makes sure the bind source is
-  from the bind destination so it will be succesfully re-bound into a
+  from the bind destination so it will be successfully re-bound into a
   nested apptainer container.
 - The warning about more than 50 bind mounts required for an underlay bind
   has been changed to an info message.
@@ -357,7 +357,7 @@ Accidentally included no code changes.
 - `remote add --insecure` may now be used to configure endpoints that are only
   accessible via http. Alternatively the environment variable
   `APPTAINER_ADD_INSECURE` can be set to true to allow http remotes to be
-  added wihtout the `--insecure` flag. Specifying https in the remote URI
+  added without the `--insecure` flag. Specifying https in the remote URI
   overrules both `--insecure` and `APPTAINER_ADD_INSECURE`.
 - Gpu flags `--nv` and `--rocm` can now be used from an apptainer nested
   inside another apptainer container.
@@ -539,7 +539,7 @@ in the next section.
   environment variables `APPTAINER_BIND`, `APPTAINER_BINDPATH`, `APPTAINER_NV`,
   `APPTAINER_ROCM` anymore due to side effects reported by users in this
   [issue](https://github.com/apptainer/singularity/pull/6211),
-  they must be explicitely requested via command line.
+  they must be explicitly requested via command line.
 - Build `--bind` option allows to set multiple bind mounts without specifying
   the `--bind` option for each bindings.
 - Honor image binds and user binds in the order they're given instead of

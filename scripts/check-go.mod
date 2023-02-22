@@ -17,7 +17,7 @@ export GO111MODULE=on
 git update-index --refresh
 
 if ! git diff-index --raw --exit-code HEAD ; then
-	echo "E: Workspace is unexpectly dirty. Abort."
+	echo "E: Workspace is unexpectedly dirty. Abort."
 	exit 2
 fi
 
@@ -42,7 +42,7 @@ fi
 git update-index --refresh
 
 if ! git diff-index --raw --exit-code HEAD ; then
-	echo "E: Workspace became dirty after runnig 'go mod tidy'. Abort."
+	echo "E: Workspace became dirty after running 'go mod tidy'. Abort."
 	exit 6
 fi
 

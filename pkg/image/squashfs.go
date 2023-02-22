@@ -127,7 +127,7 @@ func GetSquashfsComp(b []byte) (string, error) {
 		}
 		return compType, nil
 	} else if sb.Major < 4 {
-		// v3 and eariler super blocks always use gzip comp
+		// v3 and earlier super blocks always use gzip comp
 		// different compressors were introduced after the change
 		// to v4 super blocks
 		return "gzip", nil

@@ -788,7 +788,7 @@ func (c *ctx) apptainerLocalKeyDirFlagRegression(t *testing.T) {
 			exit: 0,
 		},
 		{
-			name:    "key list regression test should succeed but shoud return nothing because keysdir value is invalid",
+			name:    "key list regression test should succeed but should return nothing because keysdir value is invalid",
 			command: "key list",
 			args:    []string{"--secret"},
 			resultOp: []e2e.ApptainerCmdResultOp{

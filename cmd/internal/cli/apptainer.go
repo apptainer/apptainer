@@ -330,7 +330,7 @@ func handleConfDir(confDir, legacyConfigDir string) {
 		return
 	}
 
-	// apptainer user config directory doesnt exist, create it.
+	// apptainer user config directory doesn't exist, create it.
 	err = fs.Mkdir(confDir, 0o700)
 	if err != nil {
 		sylog.Debugf("Could not create %s: %s", confDir, err)
@@ -347,7 +347,7 @@ func handleConfDir(confDir, legacyConfigDir string) {
 		return
 	}
 
-	// singularity user config directory doesnt exist, return
+	// singularity user config directory doesn't exist, return
 	if !ok {
 		return
 	}

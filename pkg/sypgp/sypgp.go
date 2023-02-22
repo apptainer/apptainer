@@ -686,7 +686,7 @@ func max(parts []int) (maxVal int) {
 // format into something readable by people.  If longOutput is set, more
 // detail is included.  See the input format in:
 // https://tools.ietf.org/html/draft-shaw-openpgp-hkp-00#section-5.2
-// Returns the number of keys(int), the formated string
+// Returns the number of keys(int), the formatted string
 // in []bytes, and an error if one occurs.
 func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 	count := 0
@@ -909,7 +909,7 @@ func FetchPubkey(ctx context.Context, fingerprint string, noPrompt bool, opts ..
 		return nil, fmt.Errorf("failed to decode fingerprint: %v", err)
 	}
 
-	// theres probably a better way to do this
+	// there's probably a better way to do this
 	if len(fp) != 4 && len(fp) != 20 {
 		return nil, fmt.Errorf("not a valid key length: only accepts 8, or 40 chars")
 	}
