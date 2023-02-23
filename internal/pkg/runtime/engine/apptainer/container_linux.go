@@ -2382,7 +2382,6 @@ func (c *container) prepareNetworkSetup(system *mount.System, pid int) (func(con
 		sessionNetNs = "/netns"
 	)
 
-	fakeroot := c.engine.EngineConfig.GetFakeroot()
 	net := c.engine.EngineConfig.GetNetwork()
 
 	// If we haven't requested a network namespace, or we have but with no config, we are done here
@@ -2390,10 +2389,21 @@ func (c *container) prepareNetworkSetup(system *mount.System, pid int) (func(con
 		return nil, nil
 	}
 
-	// Otherwise start checking what's permitted for the current user
+	// In fakeroot mode only permit the `fakeroot` CNI config, overriding any other request.
 	euid := os.Geteuid()
+	fakeroot := c.engine.EngineConfig.GetFakeroot()
+	forceFakerootNet := false
+	if fakeroot && euid != 0 {
+		if net != fakerootNet {
+			sylog.Warningf("Only --network=%s is permitted in --fakeroot mode. You requested '%s'.", fakerootNet, net)
+			sylog.Warningf("Overriding with --network=%s", fakerootNet)
+		}
+		forceFakerootNet = true
+		net = fakerootNet
+	}
+
 	allowedNetUnpriv := false
-	if euid != 0 {
+	if euid != 0 && !forceFakerootNet {
 		// Is the user permitted in the list of unpriv users / groups permitted to use CNI?
 		allowedNetUser, err := user.UIDInList(euid, c.engine.EngineConfig.File.AllowNetUsers)
 		if err != nil {
@@ -2406,7 +2416,11 @@ func (c *container) prepareNetworkSetup(system *mount.System, pid int) (func(con
 		// Is/are the requested network(s) in the list of networks allowed for unpriv CNI?
 		allowedNetNetwork := false
 		for _, n := range strings.Split(net, ",") {
-			allowedNetNetwork = slice.ContainsString(c.engine.EngineConfig.File.AllowNetNetworks, n)
+			// Allowed in apptainer.conf
+			adminPermitted := slice.ContainsString(c.engine.EngineConfig.File.AllowNetNetworks, n)
+			// 'fakeroot' network is always allowed in --fakeroot mode
+			fakerootPermitted := fakeroot && net == fakerootNet
+			allowedNetNetwork = adminPermitted || fakerootPermitted
 			// If any one requested network is not allowed, disallow the whole config
 			if !allowedNetNetwork {
 				if !fakeroot {
@@ -2433,14 +2447,7 @@ func (c *container) prepareNetworkSetup(system *mount.System, pid int) (func(con
 	if err := system.Points.AddBind(mount.SharedTag, procNetNs, nspath, 0); err != nil {
 		return nil, fmt.Errorf("could not hold network namespace reference: %s", err)
 	}
-	networks := strings.Split(c.engine.EngineConfig.GetNetwork(), ",")
-
-	// In fakeroot mode only permit the `fakeroot` CNI config
-	if fakeroot && euid != 0 && net != fakerootNet {
-		// set as debug message to avoid annoying warning
-		sylog.Debugf("only '%s' network is allowed for regular user, you requested '%s'", fakerootNet, net)
-		networks = []string{fakerootNet}
-	}
+	networks := strings.Split(net, ",")
 
 	cniPath := &network.CNIPath{}
 

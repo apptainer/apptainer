@@ -673,8 +673,6 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			engineConfig.SetNetwork(Network)
 		}
 		if IsFakeroot && Network != "none" {
-			engineConfig.SetNetwork("fakeroot")
-
 			// unprivileged installation could not use fakeroot
 			// network because it requires a setuid installation
 			// so we fallback to none
