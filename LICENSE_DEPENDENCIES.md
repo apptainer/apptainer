@@ -209,17 +209,23 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/moby/locker/blob/master/LICENSE>
 
-## github.com/moby/sys/mount
+## github.com/moby/patternmatcher
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/moby/sys/blob/master/mount/LICENSE>
+**License URL:** <https://github.com/moby/patternmatcher/blob/master/LICENSE>
 
 ## github.com/moby/sys/mountinfo
 
 **License:** Apache-2.0
 
 **License URL:** <https://github.com/moby/sys/blob/master/mountinfo/LICENSE>
+
+## github.com/moby/sys/sequential
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/moby/sys/blob/master/sequential/LICENSE>
 
 ## github.com/moby/term
 
