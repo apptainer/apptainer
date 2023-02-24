@@ -37,7 +37,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
 	github.com/seccomp/containers-golang v0.6.0
-	github.com/seccomp/libseccomp-golang v0.9.2-0.20220502022130-f33da4d89646
+	github.com/seccomp/libseccomp-golang v0.10.0
 	github.com/shopspring/decimal v1.3.1
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
