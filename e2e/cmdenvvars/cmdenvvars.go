@@ -16,7 +16,7 @@ import (
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
-	client "github.com/apptainer/apptainer/internal/pkg/client/oras"
+	"github.com/apptainer/apptainer/internal/pkg/client/oras"
 )
 
 type ctx struct {
@@ -67,6 +67,7 @@ func (c *ctx) setupTemporaryKeyringDir(t *testing.T) func(*testing.T) {
 // pullTestImage will pull a known image from the network in order to
 // exercise the image cache. It returns the full path to the image.
 func (c ctx) pullTestImage(t *testing.T) string {
+	e2e.EnsureORASImage(t, c.env)
 	// create a temporary directory for the destination image
 	tmpdir, err := os.MkdirTemp(c.env.TestDir, "image-cache.")
 	if err != nil {
@@ -75,7 +76,7 @@ func (c ctx) pullTestImage(t *testing.T) string {
 
 	imgPath := filepath.Join(tmpdir, "testImg.sif")
 
-	cmdArgs := []string{imgPath, "oras://ghcr.io/apptainer/alpine:latest"}
+	cmdArgs := []string{imgPath, c.env.OrasTestImage}
 
 	// Pull the specified image to the temporary location
 	c.env.RunApptainer(
@@ -89,9 +90,9 @@ func (c ctx) pullTestImage(t *testing.T) string {
 	return imgPath
 }
 
-func (c ctx) assertLibraryCacheEntryExists(t *testing.T, imgPath, imgName string) {
+func (c ctx) assertORASCacheEntryExists(t *testing.T, imgPath, imgName string) {
 	// The cache should exist and have the correct entry
-	shasum, err := client.ImageHash(imgPath)
+	shasum, err := oras.ImageHash(imgPath)
 	if err != nil {
 		t.Fatalf("Cannot get the shasum for image %s: %s", imgPath, err)
 	}
@@ -132,7 +133,7 @@ func (c ctx) testApptainerCacheDir(t *testing.T) {
 	imgPath := c.pullTestImage(t)
 
 	// there should be an entry for this image in the library cache
-	c.assertLibraryCacheEntryExists(t, imgPath, "alpine_latest.sif")
+	c.assertORASCacheEntryExists(t, imgPath, "alpine_latest.sif")
 }
 
 func ls(t *testing.T, dir string) {

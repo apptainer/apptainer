@@ -11,18 +11,24 @@ package e2e
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
 	"sync"
 	"testing"
 
+	"github.com/apptainer/apptainer/pkg/syfs"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	"github.com/containers/image/v5/copy"
 	"github.com/containers/image/v5/docker"
+	dockerarchive "github.com/containers/image/v5/docker/archive"
+	ociarchive "github.com/containers/image/v5/oci/archive"
+	ocilayout "github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/types"
 )
@@ -173,6 +179,7 @@ func EnsureORASImage(t *testing.T, env TestEnv) {
 	defer ensureMutex.Unlock()
 
 	orasImageOnce.Do(func() {
+		t.Logf("Pushing %s to %s", env.ImagePath, env.OrasTestImage)
 		env.RunApptainer(
 			t,
 			WithProfile(UserProfile),
@@ -235,11 +242,22 @@ func CopyImage(t *testing.T, source, dest string, insecureSource, insecureDest b
 		DockerRegistryUserAgent:     useragent.Value(),
 	}
 
-	srcRef, err := docker.ParseReference("//" + source)
+	// Use the auth config written out in dockerhub_auth.go - only if source/dest are not insecure.
+	// We don't want to inadvertently send out credentials over http (!)
+	u := CurrentUser(t)
+	configPath := filepath.Join(u.Dir, ".apptainer", syfs.DockerConfFile)
+	if !insecureSource {
+		srcCtx.AuthFilePath = configPath
+	}
+	if !insecureDest {
+		dstCtx.AuthFilePath = configPath
+	}
+
+	srcRef, err := parseRef(source)
 	if err != nil {
 		t.Fatalf("failed to parse %s reference: %s", source, err)
 	}
-	dstRef, err := docker.ParseReference("//" + dest)
+	dstRef, err := parseRef(dest)
 	if err != nil {
 		t.Fatalf("failed to parse %s reference: %s", dest, err)
 	}
@@ -265,4 +283,26 @@ func BusyboxSIF(t *testing.T) string {
 		t.Error(err)
 	}
 	return busyboxSIF
+}
+
+func parseRef(refString string) (ref types.ImageReference, err error) {
+	parts := strings.SplitN(refString, ":", 2)
+	if len(parts) < 2 {
+		return nil, fmt.Errorf("could not parse image ref: %s", refString)
+	}
+
+	switch parts[0] {
+	case "docker":
+		ref, err = docker.ParseReference(parts[1])
+	case "docker-archive":
+		ref, err = dockerarchive.ParseReference(parts[1])
+	case "oci":
+		ref, err = ocilayout.ParseReference(parts[1])
+	case "oci-archive":
+		ref, err = ociarchive.ParseReference(parts[1])
+	default:
+		return nil, fmt.Errorf("cannot create an OCI container from %s source", parts[0])
+	}
+
+	return ref, err
 }
