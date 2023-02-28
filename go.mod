@@ -43,7 +43,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/sylabs/json-resp v0.8.2
 	github.com/urfave/cli v1.22.7 // indirect
-	github.com/vbauerster/mpb/v8 v8.2.0
+	github.com/vbauerster/mpb/v8 v8.2.1
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
 	github.com/yvasiyarov/gorelic v0.0.6 // indirect
 	github.com/yvasiyarov/newrelic_platform_go v0.0.0-20160601141957-9c099fbc30e9 // indirect
@@ -146,7 +146,7 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
-	github.com/rivo/uniseg v0.4.3 // indirect
+	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rootless-containers/proto v0.1.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/safchain/ethtool v0.2.0 // indirect
