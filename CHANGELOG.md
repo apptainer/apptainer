@@ -47,6 +47,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - In `--rocm` mode, the whole of `/dev/dri` is now bound into the container when
   `--contain` is in use. This makes `/dev/dri/render` devices available,
   required for later ROCm versions.
+- Ensure consistent binding of libraries under `--nv/--rocm` when duplicate
+  `<library>.so[.version]` files are listed by `ldconfig -p`.
 
 ### Bug fixes
 

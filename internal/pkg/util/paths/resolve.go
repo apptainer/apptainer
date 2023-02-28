@@ -121,7 +121,7 @@ func Resolve(fileList []string) ([]string, []string, error) {
 				if gotone {
 					continue
 				}
-				for libPath, libName := range ldCache {
+				for libName, libPath := range ldCache {
 					if !strings.HasPrefix(libName, file) {
 						continue
 					}
@@ -158,7 +158,11 @@ func Resolve(fileList []string) ([]string, []string, error) {
 	return libraries, binaries, nil
 }
 
-// ldcache retrieves a map of absolute path of a library to it's bare name using the system ld cache via `ldconfig -p`
+// ldcache retrieves a map of <library>.so[.version] to its absolute path using
+// the system ld cache via `ldconfig -p`. We only take the first instance of
+// each <library>.so[.version] from `ldconfig -p` output. I.E. if `ldconfig -p`
+// lists three variants of libEGL.so.1 that are in different locations, we only
+// report the first, highest priority, variant.
 func ldCache() (map[string]string, error) {
 	// walk through the ldconfig output and add entries which contain the filenames
 	// returned by nvidia-container-cli OR the nvliblist.conf file contents
@@ -186,7 +190,12 @@ func ldCache() (map[string]string, error) {
 			// libPath is the "/usr/lib64/nvidia/libnvidia-ml.so.1" (from the above example)
 			libName := strings.TrimSpace(string(match[1]))
 			libPath := strings.TrimSpace(string(match[2]))
-			ldCache[libPath] = libName
+
+			// Only take the first entry for a given <library>.so[.version] in the ldconfig output
+			if _, ok := ldCache[libName]; !ok {
+				ldCache[libName] = libPath
+			}
+
 		}
 	}
 	return ldCache, nil
