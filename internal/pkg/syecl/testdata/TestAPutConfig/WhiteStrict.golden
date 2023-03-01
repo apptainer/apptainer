@@ -2,7 +2,7 @@ activated = true
 legacyinsecure = false
 
 [[execgroup]]
-  dirpath = "/var/data2"
-  keyfp = ["12045c8c0b1004d058de4beda20c27ee7ff7ba84", "7064B1D6EFF01B1262FED3F03581D99FE87EAFD1"]
-  mode = "whitestrict"
-  tagname = "name"
+tagname = 'name'
+mode = 'whitestrict'
+dirpath = '/var/data2'
+keyfp = ['12045c8c0b1004d058de4beda20c27ee7ff7ba84', '7064B1D6EFF01B1262FED3F03581D99FE87EAFD1']

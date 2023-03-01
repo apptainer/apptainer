@@ -287,12 +287,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/opencontainers/umoci/blob/master/third_party/shared/COPYING>
 
-## github.com/pelletier/go-toml
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/pelletier/go-toml/blob/master/LICENSE>
-
 ## github.com/prometheus/client_golang/prometheus
 
 **License:** Apache-2.0
@@ -820,6 +814,12 @@ The dependencies and their licenses are as follows:
 **License:** MIT
 
 **License URL:** <https://github.com/morikuni/aec/blob/master/LICENSE>
+
+## github.com/pelletier/go-toml/v2
+
+**License:** MIT
+
+**License URL:** <https://github.com/pelletier/go-toml/blob/master/v2/LICENSE>
 
 ## github.com/rivo/uniseg
 

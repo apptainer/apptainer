@@ -22,7 +22,7 @@ import (
 
 //  NOTE
 //  ----
-//  Tests in this package/topic are run in a a mount namespace only. There is
+//  Tests in this package/topic are run in a mount namespace only. There is
 //  no PID namespace, in order that the systemd cgroups manager functionality
 //  can be exercised.
 //
@@ -147,7 +147,7 @@ func (c *ctx) instanceApply(t *testing.T, profile e2e.Profile) {
 			startErrorCode: 255,
 			// e2e test currently only captures the error from the CLI process, not the error displayed by the
 			// starter process, so we check for the generic CLI error.
-			startErrorOut: "parsing error",
+			startErrorOut: "toml: expected character",
 			rootfull:      true,
 			rootless:      true,
 		},
@@ -278,7 +278,7 @@ func (c *ctx) actionApply(t *testing.T, profile e2e.Profile) {
 			name:            "invalid toml",
 			args:            []string{"--apply-cgroups", "testdata/cgroups/invalid.toml", c.env.ImagePath, "/bin/sleep", "5"},
 			expectErrorCode: 255,
-			expectErrorOut:  "parsing error",
+			expectErrorOut:  "toml: expected character",
 			rootfull:        true,
 			rootless:        true,
 		},

@@ -72,6 +72,7 @@
 - Oliver Breitwieser <obreitwi@kip.uni-heidelberg.de>, <oliver@breitwieser.eu>
 - Oliver Freyermuth <freyermuth@physik.uni-bonn.de>
 - Olivier Sallou <olivier.sallou@irisa.fr>
+- Omer Preminger <omer@sylabs.io>
 - Paul Charlton <techguru@byiq.com>
 - Peter Steinbach <steinbach@scionics.de>
 - Petr Votava <votava.petr@gene.com>
