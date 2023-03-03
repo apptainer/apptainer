@@ -45,7 +45,11 @@ func (c ctx) testDockerPulls(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create temporary directory: %+v", err)
 	}
-	defer os.RemoveAll(tmpPath)
+	t.Cleanup(func() {
+		if !t.Failed() {
+			os.RemoveAll(tmpPath)
+		}
+	})
 
 	tmpImage := filepath.Join(tmpPath, tmpContainerFile)
 
@@ -262,7 +266,11 @@ func (c ctx) testDockerHost(t *testing.T) {
 // AUFS sanity tests
 func (c ctx) testDockerAUFS(t *testing.T) {
 	imageDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "aufs-", "")
-	defer cleanup(t)
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup(t)
+		}
+	})
 	imagePath := filepath.Join(imageDir, "container")
 
 	c.env.RunApptainer(
@@ -309,7 +317,11 @@ func (c ctx) testDockerAUFS(t *testing.T) {
 // Check force permissions for user builds #977
 func (c ctx) testDockerPermissions(t *testing.T) {
 	imageDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "perm-", "")
-	defer cleanup(t)
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup(t)
+		}
+	})
 	imagePath := filepath.Join(imageDir, "container")
 
 	c.env.RunApptainer(
@@ -355,7 +367,11 @@ func (c ctx) testDockerPermissions(t *testing.T) {
 // Check whiteout of symbolic links #1592 #1576
 func (c ctx) testDockerWhiteoutSymlink(t *testing.T) {
 	imageDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "whiteout-", "")
-	defer cleanup(t)
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup(t)
+		}
+	})
 	imagePath := filepath.Join(imageDir, "container")
 
 	c.env.RunApptainer(
@@ -375,7 +391,11 @@ func (c ctx) testDockerWhiteoutSymlink(t *testing.T) {
 
 func (c ctx) testDockerDefFile(t *testing.T) {
 	imageDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "def-", "")
-	defer cleanup(t)
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup(t)
+		}
+	})
 	imagePath := filepath.Join(imageDir, "container")
 
 	getKernelMajor := func(t *testing.T) (major int) {
@@ -419,7 +439,7 @@ func (c ctx) testDockerDefFile(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		deffile := e2e.PrepareDefFile(e2e.DefFileDetails{
+		defFile := e2e.PrepareDefFile(e2e.DefFileDetails{
 			Bootstrap: "docker",
 			From:      tt.from,
 		})
@@ -429,7 +449,7 @@ func (c ctx) testDockerDefFile(t *testing.T) {
 			e2e.AsSubtest(tt.name),
 			e2e.WithProfile(e2e.RootProfile),
 			e2e.WithCommand("build"),
-			e2e.WithArgs([]string{imagePath, deffile}...),
+			e2e.WithArgs([]string{imagePath, defFile}...),
 			e2e.PreRun(func(t *testing.T) {
 				require.Arch(t, tt.archRequired)
 				if getKernelMajor(t) < tt.kernelMajorRequired {
@@ -437,14 +457,16 @@ func (c ctx) testDockerDefFile(t *testing.T) {
 				}
 			}),
 			e2e.PostRun(func(t *testing.T) {
-				defer os.Remove(imagePath)
-				defer os.Remove(deffile)
-
 				if t.Failed() {
 					return
 				}
 
 				c.env.ImageVerify(t, imagePath, e2e.RootProfile)
+
+				if !t.Failed() {
+					os.Remove(imagePath)
+					os.Remove(defFile)
+				}
 			}),
 			e2e.ExpectExit(0),
 		)
@@ -453,7 +475,11 @@ func (c ctx) testDockerDefFile(t *testing.T) {
 
 func (c ctx) testDockerRegistry(t *testing.T) {
 	imageDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "registry-", "")
-	defer cleanup(t)
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup(t)
+		}
+	})
 	imagePath := filepath.Join(imageDir, "container")
 
 	tests := []struct {
@@ -499,14 +525,16 @@ func (c ctx) testDockerRegistry(t *testing.T) {
 			e2e.WithCommand("build"),
 			e2e.WithArgs("--disable-cache", "--no-https", imagePath, defFile),
 			e2e.PostRun(func(t *testing.T) {
-				defer os.Remove(imagePath)
-				defer os.Remove(defFile)
-
 				if t.Failed() || tt.exit != 0 {
 					return
 				}
 
 				c.env.ImageVerify(t, imagePath, e2e.RootProfile)
+
+				if !t.Failed() {
+					os.Remove(imagePath)
+					os.Remove(defFile)
+				}
 			}),
 			e2e.ExpectExit(tt.exit),
 		)
@@ -528,7 +556,11 @@ func (c ctx) testDockerCMDQuotes(t *testing.T) {
 
 func (c ctx) testDockerLabels(t *testing.T) {
 	imageDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "labels-", "")
-	defer cleanup(t)
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup(t)
+		}
+	})
 	imagePath := filepath.Join(imageDir, "container")
 
 	// Test container & set labels
@@ -568,7 +600,11 @@ func (c ctx) testDockerLabels(t *testing.T) {
 //nolint:dupl
 func (c ctx) testDockerCMD(t *testing.T) {
 	imageDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "docker-", "")
-	defer cleanup(t)
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup(t)
+		}
+	})
 	imagePath := filepath.Join(imageDir, "container")
 
 	home, err := os.UserHomeDir()
@@ -667,7 +703,11 @@ func (c ctx) testDockerCMD(t *testing.T) {
 //nolint:dupl
 func (c ctx) testDockerENTRYPOINT(t *testing.T) {
 	imageDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "docker-", "")
-	defer cleanup(t)
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup(t)
+		}
+	})
 	imagePath := filepath.Join(imageDir, "container")
 
 	home, err := os.UserHomeDir()
@@ -753,7 +793,11 @@ func (c ctx) testDockerENTRYPOINT(t *testing.T) {
 //nolint:dupl
 func (c ctx) testDockerCMDENTRYPOINT(t *testing.T) {
 	imageDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "docker-", "")
-	defer cleanup(t)
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup(t)
+		}
+	})
 	imagePath := filepath.Join(imageDir, "container")
 
 	home, err := os.UserHomeDir()
