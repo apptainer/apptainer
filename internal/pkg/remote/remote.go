@@ -11,6 +11,7 @@
 package remote
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -23,7 +24,7 @@ import (
 	remoteutil "github.com/apptainer/apptainer/internal/pkg/remote/util"
 	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // ErrNoDefault indicates no default remote being set
@@ -79,7 +80,9 @@ func ReadFrom(r io.Reader) (*Config, error) {
 		// If we had data to read in io.Reader, attempt to unmarshal as YAML.
 		// Also, it will fail if the YAML file does not have the expected
 		// structure.
-		if err := yaml.UnmarshalStrict(b, c); err != nil {
+		dec := yaml.NewDecoder(bytes.NewReader(b))
+		dec.KnownFields(true)
+		if err := dec.Decode(c); err != nil {
 			return nil, fmt.Errorf("failed to decode YAML data from io.Reader: %s", err)
 		}
 	}
