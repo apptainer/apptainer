@@ -122,17 +122,18 @@ func (c ctx) testDockerPulls(t *testing.T) {
 func (c ctx) testDockerHost(t *testing.T) {
 	require.Command(t, "docker")
 
+	// Temporary homedir for docker commands, so invoking docker doesn't create
+	// a ~/.docker that may interfere elsewhere.
+	tmpHome, cleanupHome := e2e.MakeTempDir(t, c.env.TestDir, "docker-", "")
+	t.Cleanup(func() { e2e.Privileged(cleanupHome)(t) })
+
 	// Create a Dockerfile for a small image we can build locally
-	tmpPath, err := fs.MakeTmpDir(c.env.TestDir, "docker-", 0o755)
-	err = errors.Wrapf(err, "creating temporary directory in %q for docker host test", c.env.TestDir)
-	if err != nil {
-		t.Fatalf("failed to create temporary directory: %+v", err)
-	}
-	defer os.RemoveAll(tmpPath)
+	tmpPath, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "docker-", "")
+	t.Cleanup(func() { cleanup(t) })
 
 	dockerfile := filepath.Join(tmpPath, "Dockerfile")
 	dockerfileContent := []byte("FROM alpine:latest\n")
-	err = os.WriteFile(dockerfile, dockerfileContent, 0o644)
+	err := os.WriteFile(dockerfile, dockerfileContent, 0o644)
 	if err != nil {
 		t.Fatalf("failed to create temporary Dockerfile: %+v", err)
 	}
@@ -145,6 +146,7 @@ func (c ctx) testDockerHost(t *testing.T) {
 	e2e.Privileged(func(t *testing.T) {
 		cmd := exec.Command("docker", "build", "-t", dockerRef, tmpPath)
 		cmd.Dir = tmpPath
+		cmd.Env = append(cmd.Env, "HOME="+tmpHome)
 		out, err := cmd.CombinedOutput()
 		t.Log(cmd.Args)
 		if err != nil {
@@ -249,6 +251,7 @@ func (c ctx) testDockerHost(t *testing.T) {
 	// Clean up docker image
 	e2e.Privileged(func(t *testing.T) {
 		cmd := exec.Command("docker", "rmi", dockerRef)
+		cmd.Env = append(cmd.Env, "HOME="+tmpHome)
 		_, err = cmd.Output()
 		if err != nil {
 			t.Fatalf("Unexpected error while cleaning up docker image.\n%s", err)
