@@ -49,7 +49,7 @@ require (
 	github.com/yvasiyarov/newrelic_platform_go v0.0.0-20160601141957-9c099fbc30e9 // indirect
 	golang.org/x/sys v0.6.0
 	golang.org/x/term v0.6.0
-	golang.org/x/text v0.7.0
+	golang.org/x/text v0.8.0
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools/v3 v3.4.0
 	mvdan.cc/sh/v3 v3.6.1-0.20221221181323-d3feb15bed3a
@@ -170,10 +170,10 @@ require (
 	go.mongodb.org/mongo-driver v1.11.1 // indirect
 	go.mozilla.org/pkcs7 v0.0.0-20210826202110-33d05740a352 // indirect
 	golang.org/x/crypto v0.6.0 // indirect
-	golang.org/x/mod v0.7.0 // indirect
+	golang.org/x/mod v0.8.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/tools v0.4.0 // indirect
+	golang.org/x/tools v0.6.0 // indirect
 	google.golang.org/genproto v0.0.0-20221227171554-f9683d7f8bef // indirect
 	google.golang.org/grpc v1.51.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
