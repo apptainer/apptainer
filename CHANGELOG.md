@@ -22,6 +22,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `apptainer instance stats` to be supported by default when possible.
 - `sessiondir maxsize` in `apptainer.conf` now defaults to 64 MiB for new
   installations. This is an increase from 16 MiB in prior versions.
+- Show standard output of yum bootstrap if log level is verbose or higher.
 
 ### New features / functionalities
 
@@ -37,6 +38,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add new Linux capabilities: `CAP_PERFMON`, `CAP_BPF`, `CAP_CHECKPOINT_RESTORE`.
 - Instance name is available inside an instance via the new
   `APPTAINER_INSTANCE` environment variable.
+- Add `setopt` definition file header for the `yum` bootstrap agent. The
+  `setopt` value is passed to `yum / dnf` using the `--setopt` flag. This
+  permits setting e.g. `install_weak_deps=False` to bootstrap recent versions of
+  Fedora, where `systemd` (a weak dependency) cannot install correctly in the
+  container. See `examples/Fedora` for an example defintion file.
+- Warn user that a `yum` bootstrap of an older distro may fail if the host rpm
+  `_db_backend` is not `bdb`.
 
 ### Other changes
 
