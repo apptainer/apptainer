@@ -860,7 +860,7 @@ func getLibraryClientConfig(uri string) (*libClient.Config, error) {
 		return nil, err
 	}
 	if libClientConfig.BaseURL == "" {
-		return nil, fmt.Errorf("remote has no library client")
+		return nil, fmt.Errorf("remote has no library client (see https://apptainer.org/docs/user/latest/endpoint.html#no-default-remote)")
 	}
 	return libClientConfig, nil
 }
