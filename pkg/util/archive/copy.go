@@ -39,9 +39,9 @@ func CopyWithTar(src, dst string) error {
 		// The docker CopytWithTar function assumes it should create the top-level of dst as the
 		// container root user. If we are unprivileged this means setting up an ID mapping
 		// from UID/GID 0 to our host UID/GID.
-		ar.IDMapping = idtools.NewIDMappingsFromMaps(
+		ar.IDMapping = idtools.IdentityMapping{
 			// Single entry mapping of container root (0) to current uid only
-			[]idtools.IDMap{
+			UIDMaps: []idtools.IDMap{
 				{
 					ContainerID: 0,
 					HostID:      euid,
@@ -49,14 +49,14 @@ func CopyWithTar(src, dst string) error {
 				},
 			},
 			// Single entry mapping of container root (0) to current gid only
-			[]idtools.IDMap{
+			GIDMaps: []idtools.IDMap{
 				{
 					ContainerID: 0,
 					HostID:      egid,
 					Size:        1,
 				},
 			},
-		)
+		}
 		// Actual extraction of files needs to be *always* squashed to our current uid & gid.
 		// This requires clearing the IDMaps, and setting a forced UID/GID with ChownOpts for
 		// the lower level Untar func called by the archiver.
@@ -65,8 +65,7 @@ func CopyWithTar(src, dst string) error {
 			GID: egid,
 		}
 		ar.Untar = func(tarArchive io.Reader, dest string, options *da.TarOptions) error {
-			options.UIDMaps = nil
-			options.GIDMaps = nil
+			options.IDMap = idtools.IdentityMapping{}
 			options.ChownOpts = eIdentity
 			return da.Untar(tarArchive, dest, options)
 		}
