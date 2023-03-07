@@ -57,7 +57,8 @@ func mockEntitySelector(t *testing.T) sypgp.EntitySelector {
 }
 
 func TestSign(t *testing.T) {
-	mockEntityOpt := OptSignEntitySelector(mockEntitySelector(t))
+	sv := getTestSignerVerifier(t)
+	es := mockEntitySelector(t)
 
 	tests := []struct {
 		name    string
@@ -67,23 +68,28 @@ func TestSign(t *testing.T) {
 	}{
 		{
 			name:    "ErrNoKeyMaterial",
-			path:    filepath.Join("testdata", "images", "one-group.sif"),
+			path:    filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
 			wantErr: integrity.ErrNoKeyMaterial,
 		},
 		{
-			name: "Defaults",
-			path: filepath.Join("testdata", "images", "one-group.sif"),
-			opts: []SignOpt{mockEntityOpt},
+			name: "OptSignWithSigner",
+			path: filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
+			opts: []SignOpt{OptSignWithSigner(sv)},
+		},
+		{
+			name: "OptSignEntitySelector",
+			path: filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
+			opts: []SignOpt{OptSignEntitySelector(es)},
 		},
 		{
 			name: "OptSignGroup",
-			path: filepath.Join("testdata", "images", "one-group.sif"),
-			opts: []SignOpt{mockEntityOpt, OptSignGroup(1)},
+			path: filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
+			opts: []SignOpt{OptSignWithSigner(sv), OptSignGroup(1)},
 		},
 		{
 			name: "OptSignObjects",
-			path: filepath.Join("testdata", "images", "one-group.sif"),
-			opts: []SignOpt{mockEntityOpt, OptSignObjects(1)},
+			path: filepath.Join("..", "..", "..", "test", "images", "one-group.sif"),
+			opts: []SignOpt{OptSignWithSigner(sv), OptSignObjects(1)},
 		},
 	}
 

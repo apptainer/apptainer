@@ -100,7 +100,7 @@ func LibraryPush(ctx context.Context, pushSpec LibraryPushSpec, libraryConfig *c
 
 	if !pushSpec.AllowUnsigned {
 		// Check if the container has a valid signature.
-		if err := Verify(ctx, pushSpec.SourceFile, OptVerifyUseKeyServer(co...)); err != nil {
+		if err := Verify(ctx, pushSpec.SourceFile, OptVerifyWithPGP(co...)); err != nil {
 			sylog.Warningf("%v", err)
 			return ErrLibraryUnsigned
 		}

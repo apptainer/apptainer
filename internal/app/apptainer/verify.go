@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2020-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2020-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the LICENSE.md file
 // distributed with the sources of this project regarding your rights to use or distribute this
 // software.
@@ -23,6 +23,7 @@ import (
 	"github.com/apptainer/container-key-client/client"
 	"github.com/apptainer/sif/v2/pkg/integrity"
 	"github.com/apptainer/sif/v2/pkg/sif"
+	"github.com/sigstore/sigstore/pkg/signature"
 )
 
 // TODO - error overlaps with ECL - should probably become part of a common errors package at some point.
@@ -31,7 +32,9 @@ var errNotSignedByRequired = errors.New("image not signed by required entities")
 type VerifyCallback func(*sif.FileImage, integrity.VerifyResult) bool
 
 type verifier struct {
-	opts      []client.Option
+	svs       []signature.Verifier
+	pgp       bool
+	pgpOpts   []client.Option
 	groupIDs  []uint32
 	objectIDs []uint32
 	all       bool
@@ -42,11 +45,20 @@ type verifier struct {
 // VerifyOpt are used to configure v.
 type VerifyOpt func(v *verifier) error
 
-// OptVerifyUseKeyServer specifies that the keyserver specified by opts be used as a source of key
-// material, in addition to the local public keyring.
-func OptVerifyUseKeyServer(opts ...client.Option) VerifyOpt {
+// OptVerifyWithVerifier appends sv as a source of key material to verify signatures.
+func OptVerifyWithVerifier(sv signature.Verifier) VerifyOpt {
 	return func(v *verifier) error {
-		v.opts = opts
+		v.svs = append(v.svs, sv)
+		return nil
+	}
+}
+
+// OptVerifyWithPGP adds the local public keyring as a source of key material to verify signatures.
+// If supplied, opts specify a keyserver to use in addition to the local public keyring.
+func OptVerifyWithPGP(opts ...client.Option) VerifyOpt {
+	return func(v *verifier) error {
+		v.pgp = true
+		v.pgpOpts = opts
 		return nil
 	}
 }
@@ -110,31 +122,38 @@ func newVerifier(opts []VerifyOpt) (verifier, error) {
 func (v verifier) getOpts(ctx context.Context, f *sif.FileImage) ([]integrity.VerifierOpt, error) {
 	var iopts []integrity.VerifierOpt
 
-	// Add keyring.
-	var kr openpgp.KeyRing
-	if v.opts != nil {
-		hkr, err := sypgp.NewHybridKeyRing(ctx, v.opts...)
+	// Add explicitly provided key material source(s).
+	for _, sv := range v.svs {
+		iopts = append(iopts, integrity.OptVerifyWithVerifier(sv))
+	}
+
+	// Add PGP key material, if applicable.
+	if v.pgp {
+		var kr openpgp.KeyRing
+		if v.pgpOpts != nil {
+			hkr, err := sypgp.NewHybridKeyRing(ctx, v.pgpOpts...)
+			if err != nil {
+				return nil, err
+			}
+			kr = hkr
+		} else {
+			pkr, err := sypgp.PublicKeyRing()
+			if err != nil {
+				return nil, err
+			}
+			kr = pkr
+		}
+
+		// wrap the global keyring around
+		global := sypgp.NewHandle(buildcfg.APPTAINER_CONFDIR, sypgp.GlobalHandleOpt())
+		gkr, err := global.LoadPubKeyring()
 		if err != nil {
 			return nil, err
 		}
-		kr = hkr
-	} else {
-		pkr, err := sypgp.PublicKeyRing()
-		if err != nil {
-			return nil, err
-		}
-		kr = pkr
-	}
+		kr = sypgp.NewMultiKeyRing(gkr, kr)
 
-	// wrap the global keyring around
-	global := sypgp.NewHandle(buildcfg.APPTAINER_CONFDIR, sypgp.GlobalHandleOpt())
-	gkr, err := global.LoadPubKeyring()
-	if err != nil {
-		return nil, err
+		iopts = append(iopts, integrity.OptVerifyWithKeyRing(kr))
 	}
-	kr = sypgp.NewMultiKeyRing(gkr, kr)
-
-	iopts = append(iopts, integrity.OptVerifyWithKeyRing(kr))
 
 	// Add group IDs, if applicable.
 	for _, groupID := range v.groupIDs {
@@ -177,8 +196,9 @@ func (v verifier) getOpts(ctx context.Context, f *sif.FileImage) ([]integrity.Ve
 
 // Verify verifies digital signature(s) in the SIF image found at path, according to opts.
 //
-// By default, the apptainer public keyring provides key material. To supplement this with a
-// keyserver, use OptVerifyUseKeyServer.
+// To use raw key material, use OptVerifyWithVerifier.
+//
+// To use PGP key material, use OptVerifyWithPGP.
 //
 // By default, non-legacy signatures for all object groups are verified. To override the default
 // behavior, consider using OptVerifyGroup, OptVerifyObject, OptVerifyAll, and/or OptVerifyLegacy.
@@ -209,10 +229,12 @@ func Verify(ctx context.Context, path string, opts ...VerifyOpt) error {
 	return iv.Verify()
 }
 
-// VerifyFingerprints verifies an image and checks it was signed by *all* of the provided fingerprints
+// VerifyFingerprints verifies an image and checks it was signed by *all* of the provided
+// fingerprints.
 //
-// By default, the apptainer public keyring provides key material. To supplement this with a
-// keyserver, use OptVerifyUseKeyServer.
+// To use raw key material, use OptVerifyWithVerifier.
+//
+// To use PGP key material, use OptVerifyWithPGP.
 //
 // By default, non-legacy signatures for all object groups are verified. To override the default
 // behavior, consider using OptVerifyGroup, OptVerifyObject, OptVerifyAll, and/or OptVerifyLegacy.
