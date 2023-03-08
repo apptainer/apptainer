@@ -17,6 +17,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"strings"
 	"syscall"
@@ -165,20 +166,22 @@ func calculateBlockIO(stats *libcgroups.BlkioStats) (float64, float64) {
 // calculateMemoryUsage returns the current usage, limit, and percentage
 func calculateMemoryUsage(stats *libcgroups.MemoryStats) (float64, float64, float64) {
 	// Note that there is also MaxUsage
-	memUsage := float64(stats.Usage.Usage)
-	memLimit := 0.0
+	memUsage := stats.Usage.Usage
+	memLimit := stats.Usage.Limit
 	memPercent := 0.0
 
-	// Calculate total memory of system
-	in := &syscall.Sysinfo_t{}
-	err := syscall.Sysinfo(in)
-	if err == nil {
-		memLimit = float64(in.Totalram) * float64(in.Unit)
+	// If there is no limit, show system RAM instead of max uint64...
+	if memLimit == math.MaxUint64 {
+		in := &syscall.Sysinfo_t{}
+		err := syscall.Sysinfo(in)
+		if err == nil {
+			memLimit = in.Totalram * uint64(in.Unit)
+		}
 	}
 	if memLimit != 0 {
-		memPercent = memUsage / memLimit * 100.0
+		memPercent = float64(memUsage) / float64(memLimit) * 100.0
 	}
-	return memUsage, memLimit, memPercent
+	return float64(memUsage), float64(memLimit), memPercent
 }
 
 func calculateCPUUsage(prevTime, prevCPU uint64, cpuStats *libcgroups.CpuStats) (cpuPercent float64, curTime, curCPU uint64) {

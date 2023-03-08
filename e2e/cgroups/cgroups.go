@@ -58,7 +58,7 @@ func (c *ctx) instanceStats(t *testing.T, profile e2e.Profile) {
 	}{
 		{
 			name:           "basic stats create",
-			createArgs:     []string{c.env.ImagePath},
+			createArgs:     []string{"--memory", "250M", c.env.ImagePath},
 			statsErrorCode: 0,
 			startErrorCode: 0,
 		},
@@ -89,13 +89,18 @@ func (c *ctx) instanceStats(t *testing.T, profile e2e.Profile) {
 				e2e.WithCommand("instance stats"),
 				e2e.WithArgs("--no-stream", instanceName),
 				e2e.ExpectExit(tt.statsErrorCode,
-					e2e.ExpectOutput(e2e.ContainMatch, instanceName),
+					// Header (column spacing varies by content)
 					e2e.ExpectOutput(e2e.ContainMatch, "INSTANCE NAME"),
 					e2e.ExpectOutput(e2e.ContainMatch, "CPU USAGE"),
 					e2e.ExpectOutput(e2e.ContainMatch, "MEM USAGE / LIMIT"),
 					e2e.ExpectOutput(e2e.ContainMatch, "MEM %"),
 					e2e.ExpectOutput(e2e.ContainMatch, "BLOCK I/O"),
 					e2e.ExpectOutput(e2e.ContainMatch, "PIDS"),
+					e2e.ExpectOutput(e2e.ContainMatch, "PIDS"),
+					// Instance name is visible
+					e2e.ExpectOutput(e2e.ContainMatch, instanceName),
+					// Memory limit is visible
+					e2e.ExpectOutput(e2e.ContainMatch, "/ 250MiB"),
 				),
 			)
 			c.env.RunApptainer(
