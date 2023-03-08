@@ -11,7 +11,6 @@ package cli
 
 import (
 	"crypto"
-	"fmt"
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/app/apptainer"
@@ -76,6 +75,7 @@ var signPrivateKeyFlag = cmdline.Flag{
 	DefaultValue: "",
 	Name:         "key",
 	Usage:        "path to the private key file",
+	EnvKeys:      []string{"SIGN_KEY"},
 }
 
 // -k|--keyidx
@@ -135,6 +135,8 @@ func doSignCmd(cmd *cobra.Command, cpath string) {
 	// Set key material.
 	switch {
 	case cmd.Flag(signPrivateKeyFlag.Name).Changed:
+		sylog.Infof("Signing image with key material from '%v'", priKeyPath)
+
 		s, err := signature.LoadSignerFromPEMFile(priKeyPath, crypto.SHA256, cryptoutils.GetPasswordFromStdIn)
 		if err != nil {
 			sylog.Fatalf("Failed to load key material: %v", err)
@@ -142,6 +144,8 @@ func doSignCmd(cmd *cobra.Command, cpath string) {
 		opts = append(opts, apptainer.OptSignWithSigner(s))
 
 	default:
+		sylog.Infof("Signing image with PGP key material")
+
 		// Set entity selector option, and ensure the entity is decrypted.
 		var f sypgp.EntitySelector
 		if cmd.Flag(signKeyIdxFlag.Name).Changed {
@@ -164,9 +168,8 @@ func doSignCmd(cmd *cobra.Command, cpath string) {
 	}
 
 	// Sign the image.
-	fmt.Printf("Signing image: %s\n", cpath)
 	if err := apptainer.Sign(cpath, opts...); err != nil {
-		sylog.Fatalf("Failed to sign container: %s", err)
+		sylog.Fatalf("Failed to sign container: %v", err)
 	}
-	fmt.Printf("Signature created and applied to %s\n", cpath)
+	sylog.Infof("Signature created and applied to %v\n", cpath)
 }
