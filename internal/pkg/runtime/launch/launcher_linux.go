@@ -898,8 +898,6 @@ func (l *Launcher) setNamespaces() {
 			l.engineConfig.SetNetwork(l.cfg.Network)
 		}
 		if l.cfg.Fakeroot && l.cfg.Network != "none" {
-			l.engineConfig.SetNetwork("fakeroot")
-
 			// unprivileged installation could not use fakeroot
 			// network because it requires a setuid installation
 			// so we fallback to none

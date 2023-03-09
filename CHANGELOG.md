@@ -58,6 +58,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   to have no library client.
 - Build via zypper on SLE systems will use repositories of host via
   suseconnect-container
+- Avoid incorrect error when reqesting fakeroot network.
 
 ## v1.1.6 - \[2023-02-14\]
 
