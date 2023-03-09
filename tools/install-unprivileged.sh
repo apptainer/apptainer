@@ -188,8 +188,11 @@ esac
 # $4 -- if true, try replacing "/updates/" with "/releases/" if nothing found
 # If return value 0, succeeded and stdout contains latest url
 # If return value not zero, failed and stdout contains final directory url
+# If a package is not found, the listing will be silently retried up to 3 times,
+# because sometimes not all mirrors are up to date
 LASTURL=""
 LASTPKGS=""
+RETRY=0
 latesturl()
 {
 	typeset URL="$1"
@@ -201,16 +204,25 @@ latesturl()
 		# optimization: re-use last list if it hasn't changed
 		LASTURL="$URL"
 		LASTPKGS="$(curl -Ls "$URL")"
+	elif [ $RETRY -gt 0 ]; then
+		LASTPKGS="$(curl -Ls "$URL")"
 	fi
 	typeset LATEST="$(echo "$LASTPKGS"|sed -e 's/.*href="//;s/".*//' -e 's/\.mirrorlist//' -e 's/\-32bit//' -e 's@^\.\/@@' |grep "^$2-[0-9].*$ARCH"|tail -1)"
 	if [ -n "$LATEST" ]; then
+		RETRY=0
 		echo "$URL/$LATEST"
 	elif [ "$4" = true ]; then
+		RETRY=0
 		URL="${URL/\/updates\///releases/}"
 		URL="${URL/\/Packages\///os/Packages/}"
 		latesturl "$URL" "$2" false false
 		return $?
+	elif [ $RETRY -lt 3 ]; then
+		RETRY=$((RETRY+1))
+		latesturl "$URL" "$2" false "$4"
+		return $?
 	else
+		RETRY=0
 		echo "$URL"
 		return 1
 	fi
