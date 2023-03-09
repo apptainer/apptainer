@@ -61,7 +61,11 @@ func (c *ctx) imagePull(t *testing.T, tt testStruct) {
 	// Use a one-time cache directory specific to this pull. This ensures we are always
 	// testing an entire pull operation, performing the download into an empty cache.
 	cacheDir, cleanup := e2e.MakeCacheDir(t, "")
-	defer cleanup(t)
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup(t)
+		}
+	})
 	c.env.UnprivCacheDir = cacheDir
 
 	// We use a string rather than a slice of strings to avoid having an empty
@@ -366,7 +370,11 @@ func (c ctx) testPullCmd(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create temporary directory for pull test: %+v", err)
 			}
-			defer os.RemoveAll(tmpdir)
+			t.Cleanup(func() {
+				if !t.Failed() {
+					os.RemoveAll(tmpdir)
+				}
+			})
 
 			if tt.setPullDir {
 				tt.pullDir, err = os.MkdirTemp(tmpdir, "pull_dir.")
@@ -496,12 +504,14 @@ func (c ctx) testPullDisableCacheCmd(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create temporary directory: %s", err)
 	}
-	defer func() {
-		err := os.RemoveAll(cacheDir)
-		if err != nil {
-			t.Fatalf("failed to delete temporary directory %s: %s", cacheDir, err)
+	t.Cleanup(func() {
+		if !t.Failed() {
+			err := os.RemoveAll(cacheDir)
+			if err != nil {
+				t.Fatalf("failed to delete temporary directory %s: %s", cacheDir, err)
+			}
 		}
-	}()
+	})
 
 	c.env.UnprivCacheDir = cacheDir
 
