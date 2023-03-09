@@ -15,7 +15,7 @@ import (
 	"path/filepath"
 
 	specs "github.com/opencontainers/runtime-spec/specs-go"
-	"github.com/pelletier/go-toml"
+	"github.com/pelletier/go-toml/v2"
 )
 
 func Int64ptr(i int) *int64 {

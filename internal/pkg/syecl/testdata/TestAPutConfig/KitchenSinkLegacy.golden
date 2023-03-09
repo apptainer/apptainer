@@ -2,19 +2,19 @@ activated = true
 legacyinsecure = true
 
 [[execgroup]]
-  dirpath = "/var/data1"
-  keyfp = ["12045c8c0b1004d058de4beda20c27ee7ff7ba84", "7064B1D6EFF01B1262FED3F03581D99FE87EAFD1"]
-  mode = "whitelist"
-  tagname = "name"
+tagname = 'name'
+mode = 'whitelist'
+dirpath = '/var/data1'
+keyfp = ['12045c8c0b1004d058de4beda20c27ee7ff7ba84', '7064B1D6EFF01B1262FED3F03581D99FE87EAFD1']
 
 [[execgroup]]
-  dirpath = "/var/data2"
-  keyfp = ["12045c8c0b1004d058de4beda20c27ee7ff7ba84", "7064B1D6EFF01B1262FED3F03581D99FE87EAFD1"]
-  mode = "whitestrict"
-  tagname = "name"
+tagname = 'name'
+mode = 'whitestrict'
+dirpath = '/var/data2'
+keyfp = ['12045c8c0b1004d058de4beda20c27ee7ff7ba84', '7064B1D6EFF01B1262FED3F03581D99FE87EAFD1']
 
 [[execgroup]]
-  dirpath = "/var/data3"
-  keyfp = ["12045c8c0b1004d058de4beda20c27ee7ff7ba84"]
-  mode = "blacklist"
-  tagname = "name"
+tagname = 'name'
+mode = 'blacklist'
+dirpath = '/var/data3'
+keyfp = ['12045c8c0b1004d058de4beda20c27ee7ff7ba84']
