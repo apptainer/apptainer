@@ -63,6 +63,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - The `instance start` command now accepts an optional `--app <name>` argument which
   invokes start script within the `%appstart <name>` section in the definition file.
   The `instance stop` command still only requires the instance name.
+- The `remote get-login-password` command allows users to retrieve a remote's
+  token. This enables piping the secret directly into docker login while
+  preventing it from showing up in a shell's history.
 
 ### Other changes
 
