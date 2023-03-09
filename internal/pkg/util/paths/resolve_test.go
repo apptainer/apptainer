@@ -41,7 +41,7 @@ func TestLdCache(t *testing.T) {
 	if len(gotCache) == 0 {
 		t.Error("ldCache() gave no results")
 	}
-	for path, name := range gotCache {
+	for name, path := range gotCache {
 		if strings.HasPrefix(name, "ld-linux") {
 			if strings.Contains(path, "ld-linux") {
 				return
