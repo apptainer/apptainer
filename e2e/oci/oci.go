@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
@@ -38,6 +39,8 @@ type ctx struct {
 }
 
 func (c *ctx) checkOciState(t *testing.T, containerID, state string) {
+	ok := false
+
 	checkStateFn := func(t *testing.T, r *e2e.ApptainerCmdResult) {
 		s := &ociruntime.State{}
 		if err := json.Unmarshal(r.Stdout, s); err != nil {
@@ -46,8 +49,10 @@ func (c *ctx) checkOciState(t *testing.T, containerID, state string) {
 			return
 		}
 		if s.Status != specs.ContainerState(state) {
-			t.Errorf("bad container state returned, got %s instead of %s", s.Status, state)
+			t.Logf("bad container state returned, got %s instead of %s", s.Status, state)
+			return
 		}
+		ok = true
 	}
 
 	c.env.RunApptainer(
@@ -57,6 +62,24 @@ func (c *ctx) checkOciState(t *testing.T, containerID, state string) {
 		e2e.WithArgs(containerID),
 		e2e.ExpectExit(0, checkStateFn),
 	)
+	if ok {
+		return
+	}
+
+	// State transition is slow on EL7/8 ARM64, check again in 1s
+	// https://github.com/sylabs/singularity/issues/1437
+	t.Logf("Retrying state check in 1s...")
+	time.Sleep(time.Second)
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("oci state"),
+		e2e.WithArgs(containerID),
+		e2e.ExpectExit(0, checkStateFn),
+	)
+	if !ok {
+		t.Errorf("Expected state %s not found after retrying", state)
+	}
 }
 
 func genericOciMount(t *testing.T, c *ctx) (string, func()) {
