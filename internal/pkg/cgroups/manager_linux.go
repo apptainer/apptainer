@@ -136,7 +136,7 @@ func (m *Manager) UpdateFromSpec(resources *specs.LinuxResources) (err error) {
 	opts := &lcspecconv.CreateOpts{
 		CgroupName:       m.group,
 		UseSystemdCgroup: false,
-		RootlessCgroups:  false,
+		RootlessCgroups:  os.Getuid() != 0,
 		Spec:             spec,
 	}
 
@@ -145,10 +145,10 @@ func (m *Manager) UpdateFromSpec(resources *specs.LinuxResources) (err error) {
 		return fmt.Errorf("could not create cgroup config: %w", err)
 	}
 
-	// runc/libcontainer/cgroups for v2 defaults to a deny-all policy, while
+	// runc/libcontainer/cgroups defaults to a deny-all policy, while
 	// apptainer has always allowed access to devices by default. If no device
 	// rules are provided in the spec, then skip setting them so the deny-all is
-	// not applied.
+	// not applied when we update the cgroup.
 	if len(resources.Devices) == 0 {
 		lcConfig.SkipDevices = true
 	}
@@ -313,12 +313,15 @@ func newManager(resources *specs.LinuxResources, group string, systemd bool) (ma
 		return nil, fmt.Errorf("could not create cgroup config: %w", err)
 	}
 
-	// runc/libcontainer/cgroups for v2 defaults to a deny-all policy, while
-	// apptainer has always allowed access to devices by default. If no device
-	// rules are provided in the spec, then skip setting them so the deny-all is
-	// not applied.
+	// runc/libcontainer/cgroups defaults to a deny-all policy, while
+	// apptainer has always allowed access to devices by default.
 	if len(resources.Devices) == 0 {
-		lcConfig.SkipDevices = true
+		resources.Devices = []specs.LinuxDeviceCgroup{
+			{
+				Allow:  true,
+				Access: "rwm",
+			},
+		}
 	}
 
 	cgroup, err := lcmanager.New(lcConfig)
