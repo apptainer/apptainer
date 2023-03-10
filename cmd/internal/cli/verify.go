@@ -12,7 +12,6 @@ package cli
 
 import (
 	"crypto"
-	"fmt"
 	"os"
 
 	"github.com/apptainer/apptainer/docs"
@@ -92,6 +91,7 @@ var verifyPublicKeyFlag = cmdline.Flag{
 	DefaultValue: "",
 	Name:         "key",
 	Usage:        "path to the public key file",
+	EnvKeys:      []string{"VERIFY_KEY"},
 }
 
 // -l|--local
@@ -172,6 +172,8 @@ func doVerifyCmd(cmd *cobra.Command, cpath string) {
 
 	switch {
 	case cmd.Flag(verifyPublicKeyFlag.Name).Changed:
+		sylog.Infof("Verifying image with key material from '%v'", pubKeyPath)
+
 		v, err := signature.LoadVerifierFromPEMFile(pubKeyPath, crypto.SHA256)
 		if err != nil {
 			sylog.Fatalf("Failed to load key material: %v", err)
@@ -179,6 +181,8 @@ func doVerifyCmd(cmd *cobra.Command, cpath string) {
 		opts = append(opts, apptainer.OptVerifyWithVerifier(v))
 
 	default:
+		sylog.Infof("Verifying image with PGP key material")
+
 		// Set keyserver option, if applicable.
 		if localVerify {
 			opts = append(opts, apptainer.OptVerifyWithPGP())
@@ -225,17 +229,15 @@ func doVerifyCmd(cmd *cobra.Command, cpath string) {
 		}
 
 		if verifyErr != nil {
-			sylog.Fatalf("Failed to verify container: %s", verifyErr)
+			sylog.Fatalf("Failed to verify container: %v", verifyErr)
 		}
 	} else {
 		opts = append(opts, apptainer.OptVerifyCallback(outputVerify))
 
-		fmt.Printf("Verifying image: %s\n", cpath)
-
 		if err := apptainer.Verify(cmd.Context(), cpath, opts...); err != nil {
-			sylog.Fatalf("Failed to verify container: %s", err)
+			sylog.Fatalf("Failed to verify container: %v", err)
 		}
 
-		fmt.Printf("Container verified: %s\n", cpath)
+		sylog.Infof("Verified signature(s) from image '%v'", cpath)
 	}
 }
