@@ -110,7 +110,7 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 				require.Command(t, "yum")
 				require.RPMMacro(t, "_db_backend", "bdb")
 				require.RPMMacro(t, "_dbpath", "/var/lib/rpm")
-				require.Arch(t, "arm64")
+				require.Arch(t, "amd64")
 			},
 		},
 		{
