@@ -49,6 +49,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   required for later ROCm versions.
 - Ensure consistent binding of libraries under `--nv/--rocm` when duplicate
   `<library>.so[.version]` files are listed by `ldconfig -p`.
+- Fix joining cgroup of instance started as root, with cgroups v1,
+  non-default cgroupfs manager, and no device rules.
 
 ### Bug fixes
 
