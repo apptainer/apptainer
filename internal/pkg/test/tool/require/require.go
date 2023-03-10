@@ -24,6 +24,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
+	"github.com/apptainer/apptainer/internal/pkg/util/rpm"
 	"github.com/apptainer/apptainer/pkg/network"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/apptainer/apptainer/pkg/util/slice"
@@ -319,5 +320,16 @@ func MkfsExt3(t *testing.T) {
 
 	if !strings.Contains(buf.String(), "[-d ") {
 		t.Skipf("mkfs.ext3 is too old and doesn't support -d")
+	}
+}
+
+func RPMMacro(t *testing.T, name, value string) {
+	eval, err := rpm.GetMacro(name)
+	if err != nil {
+		t.Skipf("Couldn't get value of %s: %s", name, err)
+	}
+
+	if eval != value {
+		t.Skipf("Need %s as value of %s, got %s", value, name, eval)
 	}
 }

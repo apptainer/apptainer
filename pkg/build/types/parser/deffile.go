@@ -592,4 +592,5 @@ var validHeaders = map[string]bool{
 	"otherurl&n":   true,
 	"fingerprints": true,
 	"confurl":      true,
+	"setopt":       true,
 }

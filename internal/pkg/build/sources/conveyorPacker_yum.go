@@ -10,8 +10,6 @@
 package sources
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -23,6 +21,7 @@ import (
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/internal/pkg/util/rpm"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
@@ -40,6 +39,7 @@ type YumConveyor struct {
 	osversion string
 	include   string
 	gpg       string
+	setopt    string
 }
 
 // YumConveyorPacker only needs to hold the conveyor to have the needed data to pack
@@ -82,13 +82,19 @@ func (c *YumConveyor) Get(ctx context.Context, b *types.Bundle) (err error) {
 		return fmt.Errorf("while copying pseudo devices: %v", err)
 	}
 
-	args := []string{`--noplugins`, `-c`, filepath.Join(c.b.RootfsPath, yumConf), `--installroot`, c.b.RootfsPath, `--releasever=` + c.osversion, `-y`, `install`}
+	args := []string{`--noplugins`, `-c`, filepath.Join(c.b.RootfsPath, yumConf), `--installroot`, c.b.RootfsPath, `--releasever=` + c.osversion, `-y`}
+	if c.setopt != "" {
+		args = append(args, "--setopt", c.setopt)
+	}
+	args = append(args, "install")
 	args = append(args, strings.Fields(c.include)...)
 
 	// Do the install
-	sylog.Debugf("\n\tInstall Command Path: %s\n\tDetected Arch: %s\n\tOSVersion: %s\n\tMirrorURL: %s\n\tUpdateURL: %s\n\tIncludes: %s\n", installCommandPath, runtime.GOARCH, c.osversion, c.mirrorurl, c.updateurl, c.include)
+	sylog.Debugf("\n\tInstall Command Path: %s\n\tDetected Arch: %s\n\tOSVersion: %s\n\tMirrorURL: %s\n\tUpdateURL: %s\n\tIncludes: %s\n\tSetopt: %s\n", installCommandPath, runtime.GOARCH, c.osversion, c.mirrorurl, c.updateurl, c.include, c.setopt)
 	cmd := exec.Command(installCommandPath, args...)
-	// cmd.Stdout = os.Stdout
+	if sylog.GetLevel() >= int(sylog.VerboseLevel) {
+		cmd.Stdout = os.Stdout
+	}
 	cmd.Stderr = os.Stderr
 	if err = cmd.Run(); err != nil {
 		return fmt.Errorf("while bootstrapping: %v", err)
@@ -116,44 +122,30 @@ func (cp *YumConveyorPacker) Pack(context.Context) (b *types.Bundle, err error) 
 }
 
 func (c *YumConveyor) getRPMPath() (err error) {
-	var output, stderr bytes.Buffer
-
 	c.rpmPath, err = bin.FindBin("rpm")
 	if err != nil {
 		return fmt.Errorf("rpm is not in path: %v", err)
 	}
 
-	cmd := exec.Command("rpm", "--showrc")
-	cmd.Stdout = &output
-	cmd.Stderr = &stderr
-
-	if err = cmd.Run(); err != nil {
-		return fmt.Errorf("%v: %v", err, stderr.String())
+	rpmDBBackend, err := rpm.GetMacro("_db_backend")
+	if err != nil {
+		return err
+	}
+	if rpmDBBackend != "bdb" {
+		sylog.Warningf("Your host system is using the %s RPM database backend.", rpmDBBackend)
+		sylog.Warningf("Bootstrapping of older distributions that use the bdb backend will fail.")
 	}
 
-	rpmDBPath := ""
-	scanner := bufio.NewScanner(&output)
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		// search for dbpath from showrc output
-		if strings.Contains(scanner.Text(), "_dbpath\t") {
-			// second field in the string is the path
-			rpmDBPath = strings.Fields(scanner.Text())[2]
-		}
+	rpmDBPath, err := rpm.GetMacro("_dbpath")
+	if err != nil {
+		return err
 	}
-
-	if rpmDBPath == "" {
-		return fmt.Errorf("could not find dbpath")
-	}
-
 	// %{_var}/lib/rpm is the 'traditional' dbpath
-	if rpmDBPath != `%{_var}/lib/rpm` {
+	if rpmDBPath != `/var/lib/rpm` {
 		// Fedora 36 now uses a different rpm dbpath, and may fail to bootstrap older distros
-		if rpmDBPath == `%{_usr}/lib/sysimage/rpm` {
+		if rpmDBPath == `/usr/lib/sysimage/rpm` {
 			sylog.Warningf("Your host system is using a new RPM database path: %v", rpmDBPath)
-			sylog.Warningf("Bootstrapping older distributions may require an ~/.rpmmacros file containing:\n" +
-				"\t\t_dbpath %%{_var}/lib/rpm\n")
+			sylog.Warningf("Bootstrapping of older distributions that use /var/lib/rpm will fail.")
 		} else {
 			// If we're on a 'foreign' system, with neither old or new paths, and ~/.rpmmacros will be required.
 			return fmt.Errorf("RPM database is using a non-standard path: %s\n"+
@@ -163,7 +155,7 @@ func (c *YumConveyor) getRPMPath() (err error) {
 				"Place the following lines into the '.rpmmacros' file:\n"+
 				"%s\n"+
 				"%s\n"+
-				"After creating the file, re-run the bootstrap.\n"+
+				"After creating the file, re-run the bootstrap.\n",
 				rpmDBPath, os.Getenv("HOME"), `%_var /var`, `%_dbpath %{_var}/lib/rpm`)
 		}
 	}
@@ -207,6 +199,8 @@ func (c *YumConveyor) getBootstrapOptions() (err error) {
 	include = `/etc/redhat-release coreutils ` + include
 
 	c.include = include
+
+	c.setopt = c.b.Recipe.Header["setopt"]
 
 	return nil
 }

@@ -29,6 +29,8 @@ func TestYumConveyor(t *testing.T) {
 	// TODO - Centos puts non-amd64 at a different mirror location
 	// need multiple def files to test on other archs
 	require.Arch(t, "amd64")
+	require.RPMMacro(t, "_db_backend", "bdb")
+	require.RPMMacro(t, "_dbpath", "/var/lib/rpm")
 
 	if testing.Short() {
 		t.SkipNow()
@@ -73,6 +75,8 @@ func TestYumPacker(t *testing.T) {
 	// TODO - Centos puts non-amd64 at a different mirror location
 	// need multiple def files to test on other archs
 	require.Arch(t, "amd64")
+	require.RPMMacro(t, "_db_backend", "bdb")
+	require.RPMMacro(t, "_dbpath", "/var/lib/rpm")
 
 	if testing.Short() {
 		t.SkipNow()
