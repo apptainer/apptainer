@@ -12,6 +12,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix `GOCACHE` settings for golang build on PPA build environment.
 - Make the error message more helpful in another place where a remote is found
   to have no library client.
+- Avoid incorrect error when reqesting fakeroot network.
 
 ## v1.1.6 - \[2023-02-14\]
 
