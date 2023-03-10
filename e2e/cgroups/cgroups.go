@@ -383,8 +383,11 @@ var resourceFlagTests = []resourceFlagTest{
 		args:            []string{"--blkio-weight", "50"},
 		expectErrorCode: 0,
 		controllerV1:    "blkio",
-		// This is the new path. Older kernels may have only `blkio.weight`
-		resourceV1:   "blkio.bfq.weight",
+		// Could be `blkio.bfq.weight` if bfq is available. However, under
+		// cgroups v1 older crun will not set blkio.bfq.weight, so only test
+		// with blkio.weight.
+		// Ref: https://github.com/containers/crun/issues/1157
+		resourceV1:   "blkio.weight",
 		expectV1:     "50",
 		delegationV2: "io",
 		resourceV2:   "io.bfq.weight",
