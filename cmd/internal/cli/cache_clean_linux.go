@@ -119,9 +119,9 @@ func cleanCache() error {
 }
 
 func cleanCachePrompt() (bool, error) {
-	fmt.Print(`This will delete everything in your cache (containers from all sources and OCI blobs). 
+	fmt.Print(`This will delete everything in your cache (containers from all sources and OCI blobs).
 Hint: You can see exactly what would be deleted by canceling and using the --dry-run option.
-Do you want to continue? [N/y] `)
+Do you want to continue? [y/N] `)
 
 	r := bufio.NewReader(os.Stdin)
 	input, err := r.ReadString('\n')

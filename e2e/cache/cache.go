@@ -172,7 +172,7 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 		{
 			name:               "clean normal confirmed",
 			options:            []string{"clean"},
-			expect:             "Do you want to continue? [N/y]",
+			expect:             "Do you want to continue? [y/N]",
 			send:               "y",
 			expectedEmptyCache: true,
 			exit:               0,
@@ -180,7 +180,7 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 		{
 			name:               "clean normal not confirmed",
 			options:            []string{"clean"},
-			expect:             "Do you want to continue? [N/y]",
+			expect:             "Do you want to continue? [y/N]",
 			send:               "n",
 			expectedEmptyCache: false,
 			exit:               0,
@@ -200,7 +200,7 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 		{
 			name:               "clean type confirmed",
 			options:            []string{"clean", "--type", "net"},
-			expect:             "Do you want to continue? [N/y]",
+			expect:             "Do you want to continue? [y/N]",
 			send:               "y",
 			expectedEmptyCache: true,
 			exit:               0,
@@ -208,7 +208,7 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 		{
 			name:               "clean type not confirmed",
 			options:            []string{"clean", "--type", "net"},
-			expect:             "Do you want to continue? [N/y]",
+			expect:             "Do you want to continue? [y/N]",
 			send:               "n",
 			expectedEmptyCache: false,
 			exit:               0,
@@ -216,7 +216,7 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 		{
 			name:               "clean days beyond age",
 			options:            []string{"clean", "--days", "30"},
-			expect:             "Do you want to continue? [N/y]",
+			expect:             "Do you want to continue? [y/N]",
 			send:               "y",
 			expectedEmptyCache: false,
 			exit:               0,
@@ -224,7 +224,7 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 		{
 			name:               "clean days within age",
 			options:            []string{"clean", "--days", "0"},
-			expect:             "Do you want to continue? [N/y]",
+			expect:             "Do you want to continue? [y/N]",
 			send:               "y",
 			expectedEmptyCache: true,
 			exit:               0,

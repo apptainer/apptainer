@@ -119,7 +119,7 @@ func endPointLogin(ep *endpoint.Config, args *LoginArgs) error {
 		// Interactive login
 		// If a token is already set, prompt to see if we want to replace it
 		if ep.Token != "" {
-			input, err := interactive.AskYNQuestion("n", "An access token is already set for this remote. Replace it? [N/y] ")
+			input, err := interactive.AskYNQuestion("n", "An access token is already set for this remote. Replace it? [y/N] ")
 			if err != nil {
 				return fmt.Errorf("while reading input: %s", err)
 			}
