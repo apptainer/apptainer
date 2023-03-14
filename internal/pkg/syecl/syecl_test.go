@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	KeyFP1 = "12045c8c0b1004d058de4beda20c27ee7ff7ba84"
+	KeyFP1 = "F34371D0ACD5D09EB9BD853A80600A5FA11BBD29"
 	KeyFP2 = "7064B1D6EFF01B1262FED3F03581D99FE87EAFD1"
 )
 
@@ -332,7 +332,7 @@ func TestValidateConfig(t *testing.T) {
 func getTestEntity(t *testing.T) *openpgp.Entity {
 	t.Helper()
 
-	f, err := os.Open(filepath.Join("..", "..", "..", "test", "keys", "private.asc"))
+	f, err := os.Open(filepath.Join("..", "..", "..", "test", "keys", "pgp-public.asc"))
 	if err != nil {
 		t.Fatal(err)
 	}

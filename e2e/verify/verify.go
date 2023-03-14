@@ -23,7 +23,7 @@ type ctx struct {
 }
 
 func (c *ctx) verify(t *testing.T) {
-	keyPath := filepath.Join("..", "test", "keys", "public.pem")
+	keyPath := filepath.Join("..", "test", "keys", "ed25519-public.pem")
 
 	tests := []struct {
 		name       string
@@ -46,8 +46,8 @@ func (c *ctx) verify(t *testing.T) {
 			flags:     []string{"--local"},
 			expectOps: []e2e.ApptainerCmdResultOp{
 				e2e.ExpectError(e2e.ContainMatch, "Verifying image with PGP key material"),
-				e2e.ExpectOutput(e2e.ContainMatch, "Signing entity: Unit Test <unit@test.com>"),
-				e2e.ExpectOutput(e2e.ContainMatch, "Fingerprint: 12045C8C0B1004D058DE4BEDA20C27EE7FF7BA84"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing entity: SingularityCE Tests <singularityce@example.com>"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Fingerprint: F34371D0ACD5D09EB9BD853A80600A5FA11BBD29"),
 				e2e.ExpectError(e2e.ContainMatch, "Verified signature(s) from image"),
 			},
 		},
@@ -57,8 +57,8 @@ func (c *ctx) verify(t *testing.T) {
 			imagePath: filepath.Join("..", "test", "images", "one-group-signed-legacy.sif"),
 			expectOps: []e2e.ApptainerCmdResultOp{
 				e2e.ExpectError(e2e.ContainMatch, "Verifying image with PGP key material"),
-				e2e.ExpectOutput(e2e.ContainMatch, "Signing entity: Unit Test <unit@test.com>"),
-				e2e.ExpectOutput(e2e.ContainMatch, "Fingerprint: 12045C8C0B1004D058DE4BEDA20C27EE7FF7BA84"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing entity: SingularityCE Tests <singularityce@example.com>"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Fingerprint: F34371D0ACD5D09EB9BD853A80600A5FA11BBD29"),
 				e2e.ExpectError(e2e.ContainMatch, "Verified signature(s) from image"),
 			},
 		},
@@ -78,8 +78,8 @@ func (c *ctx) verify(t *testing.T) {
 			imagePath: filepath.Join("..", "test", "images", "one-group-signed-legacy-group.sif"),
 			expectOps: []e2e.ApptainerCmdResultOp{
 				e2e.ExpectError(e2e.ContainMatch, "Verifying image with PGP key material"),
-				e2e.ExpectOutput(e2e.ContainMatch, "Signing entity: Unit Test <unit@test.com>"),
-				e2e.ExpectOutput(e2e.ContainMatch, "Fingerprint: 12045C8C0B1004D058DE4BEDA20C27EE7FF7BA84"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing entity: SingularityCE Tests <singularityce@example.com>"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Fingerprint: F34371D0ACD5D09EB9BD853A80600A5FA11BBD29"),
 				e2e.ExpectError(e2e.ContainMatch, "Verified signature(s) from image"),
 			},
 		},
@@ -99,8 +99,8 @@ func (c *ctx) verify(t *testing.T) {
 			imagePath: filepath.Join("..", "test", "images", "one-group-signed-legacy-all.sif"),
 			expectOps: []e2e.ApptainerCmdResultOp{
 				e2e.ExpectError(e2e.ContainMatch, "Verifying image with PGP key material"),
-				e2e.ExpectOutput(e2e.ContainMatch, "Signing entity: Unit Test <unit@test.com>"),
-				e2e.ExpectOutput(e2e.ContainMatch, "Fingerprint: 12045C8C0B1004D058DE4BEDA20C27EE7FF7BA84"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Signing entity: SingularityCE Tests <singularityce@example.com>"),
+				e2e.ExpectOutput(e2e.ContainMatch, "Fingerprint: F34371D0ACD5D09EB9BD853A80600A5FA11BBD29"),
 				e2e.ExpectError(e2e.ContainMatch, "Verified signature(s) from image"),
 			},
 		},
@@ -149,7 +149,7 @@ func (c *ctx) importPGPKeypairs(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("key import"),
-		e2e.WithArgs(filepath.Join("..", "test", "keys", "private.asc")),
+		e2e.WithArgs(filepath.Join("..", "test", "keys", "pgp-public.asc")),
 		e2e.ExpectExit(0),
 	)
 }

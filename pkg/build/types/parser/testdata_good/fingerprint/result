@@ -1,3 +1,3 @@
 from: /path/to/container/file/or/directory
 bootstrap: localimage
-fingerprint: 12045C8C0B1004D058DE4BEDA20C27EE7FF7BA84
+fingerprint: F34371D0ACD5D09EB9BD853A80600A5FA11BBD29
