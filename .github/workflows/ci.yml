@@ -83,6 +83,25 @@ jobs:
           ./mconfig -v -p /usr/local --with-suid
           make -C ./builddir all
 
+  check_test_corpus:
+    name: check_test_corpus
+    runs-on: ubuntu-22.04
+    container: golang:1.19.5
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use bash
+        run: |
+          git config --global --add safe.directory $(pwd)
+          echo "dash dash/sh boolean false" | debconf-set-selections
+          DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+
+      - name: Generate Certificates
+        run: pushd test/certs/ && go run ./gen_certs.go && popd
+
+      - name: Check Test Corpus Tidiness
+        run: git diff --exit-code --
+
   check_license_dependencies:
     name: check_license_dependencies
     runs-on: ubuntu-22.04

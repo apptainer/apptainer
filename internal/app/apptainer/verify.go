@@ -12,6 +12,8 @@ package apptainer
 
 import (
 	"context"
+	"crypto"
+	"crypto/x509"
 	"encoding/hex"
 	"errors"
 	"os"
@@ -32,18 +34,47 @@ var errNotSignedByRequired = errors.New("image not signed by required entities")
 type VerifyCallback func(*sif.FileImage, integrity.VerifyResult) bool
 
 type verifier struct {
-	svs       []signature.Verifier
-	pgp       bool
-	pgpOpts   []client.Option
-	groupIDs  []uint32
-	objectIDs []uint32
-	all       bool
-	legacy    bool
-	cb        VerifyCallback
+	certs         []*x509.Certificate
+	intermediates *x509.CertPool
+	roots         *x509.CertPool
+	svs           []signature.Verifier
+	pgp           bool
+	pgpOpts       []client.Option
+	groupIDs      []uint32
+	objectIDs     []uint32
+	all           bool
+	legacy        bool
+	cb            VerifyCallback
 }
 
 // VerifyOpt are used to configure v.
 type VerifyOpt func(v *verifier) error
+
+// OptVerifyWithCertificate appends c as a source of key material to verify signatures.
+func OptVerifyWithCertificate(c *x509.Certificate) VerifyOpt {
+	return func(v *verifier) error {
+		v.certs = append(v.certs, c)
+		return nil
+	}
+}
+
+// OptVerifyWithIntermediates specifies p as the pool of certificates that can be used to form a
+// chain from the leaf certificate to a root certificate.
+func OptVerifyWithIntermediates(p *x509.CertPool) VerifyOpt {
+	return func(v *verifier) error {
+		v.intermediates = p
+		return nil
+	}
+}
+
+// OptVerifyWithRoots specifies p as the pool of root certificates to use, instead of the system
+// roots or the platform verifier.
+func OptVerifyWithRoots(p *x509.CertPool) VerifyOpt {
+	return func(v *verifier) error {
+		v.roots = p
+		return nil
+	}
+}
 
 // OptVerifyWithVerifier appends sv as a source of key material to verify signatures.
 func OptVerifyWithVerifier(sv signature.Verifier) VerifyOpt {
@@ -118,9 +149,39 @@ func newVerifier(opts []VerifyOpt) (verifier, error) {
 	return v, nil
 }
 
+// verifyCertificate attempts to verify c is a valid code signing certificate by building one or
+// more chains from c to a certificate in roots, using certificates in intermediates if needed.
+// This function does not do any revocation checking.
+func verifyCertificate(c *x509.Certificate, intermediates, roots *x509.CertPool) error {
+	opts := x509.VerifyOptions{
+		Intermediates: intermediates,
+		Roots:         roots,
+		KeyUsages: []x509.ExtKeyUsage{
+			x509.ExtKeyUsageCodeSigning,
+		},
+	}
+
+	_, err := c.Verify(opts)
+	return err
+}
+
 // getOpts returns integrity.VerifierOpt necessary to validate f.
 func (v verifier) getOpts(ctx context.Context, f *sif.FileImage) ([]integrity.VerifierOpt, error) {
 	var iopts []integrity.VerifierOpt
+
+	// Add key material from certificate(s).
+	for _, c := range v.certs {
+		if err := verifyCertificate(c, v.intermediates, v.roots); err != nil {
+			return nil, err
+		}
+
+		sv, err := signature.LoadVerifier(c.PublicKey, crypto.SHA256)
+		if err != nil {
+			return nil, err
+		}
+
+		iopts = append(iopts, integrity.OptVerifyWithVerifier(sv))
+	}
 
 	// Add explicitly provided key material source(s).
 	for _, sv := range v.svs {
@@ -196,6 +257,10 @@ func (v verifier) getOpts(ctx context.Context, f *sif.FileImage) ([]integrity.Ve
 
 // Verify verifies digital signature(s) in the SIF image found at path, according to opts.
 //
+// To use key material from an x.509 certificate, use OptVerifyWithCertificate. The system roots or
+// the platform verifier will be used to verify the certificate, unless OptVerifyWithIntermediates
+// and/or OptVerifyWithRoots are specified.
+//
 // To use raw key material, use OptVerifyWithVerifier.
 //
 // To use PGP key material, use OptVerifyWithPGP.
@@ -231,6 +296,10 @@ func Verify(ctx context.Context, path string, opts ...VerifyOpt) error {
 
 // VerifyFingerprints verifies an image and checks it was signed by *all* of the provided
 // fingerprints.
+//
+// To use key material from an x.509 certificate, use OptVerifyWithCertificate. The system roots or
+// the platform verifier will be used to verify the certificate, unless OptVerifyWithIntermediates
+// and/or OptVerifyWithRoots are specified.
 //
 // To use raw key material, use OptVerifyWithVerifier.
 //

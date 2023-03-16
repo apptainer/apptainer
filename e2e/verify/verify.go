@@ -24,6 +24,9 @@ type ctx struct {
 
 func (c *ctx) verify(t *testing.T) {
 	keyPath := filepath.Join("..", "test", "keys", "ed25519-public.pem")
+	certPath := filepath.Join("..", "test", "certs", "leaf.pem")
+	intPath := filepath.Join("..", "test", "certs", "intermediate.pem")
+	rootPath := filepath.Join("..", "test", "certs", "root.pem")
 
 	tests := []struct {
 		name       string
@@ -127,6 +130,32 @@ func (c *ctx) verify(t *testing.T) {
 			imagePath: filepath.Join("..", "test", "images", "one-group-signed-dsse.sif"),
 			expectOps: []e2e.ApptainerCmdResultOp{
 				e2e.ExpectError(e2e.ContainMatch, "Verifying image with key material from '"+keyPath+"'"),
+				e2e.ExpectError(e2e.ContainMatch, "Verified signature(s) from image"),
+			},
+		},
+		{
+			name: "CertificateFlags",
+			flags: []string{
+				"--certificate", certPath,
+				"--certificate-intermediates", intPath,
+				"--certificate-roots", rootPath,
+			},
+			imagePath: filepath.Join("..", "test", "images", "one-group-signed-dsse.sif"),
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectError(e2e.ContainMatch, "Verifying image with key material from certificate '"+certPath+"'"),
+				e2e.ExpectError(e2e.ContainMatch, "Verified signature(s) from image"),
+			},
+		},
+		{
+			name: "CertificateEnvVars",
+			envs: []string{
+				"APPTAINER_VERIFY_CERTIFICATE=" + certPath,
+				"APPTAINER_VERIFY_INTERMEDIATES=" + intPath,
+				"APPTAINER_VERIFY_ROOTS=" + rootPath,
+			},
+			imagePath: filepath.Join("..", "test", "images", "one-group-signed-dsse.sif"),
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectError(e2e.ContainMatch, "Verifying image with key material from certificate '"+certPath+"'"),
 				e2e.ExpectError(e2e.ContainMatch, "Verified signature(s) from image"),
 			},
 		},
