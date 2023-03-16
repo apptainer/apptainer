@@ -89,6 +89,7 @@
 - Tarcisio Fedrizzi <tarcisio.fedrizzi@gmail.com>
 - Thomas Hamel <hmlth@t-hamel.fr>
 - Tim Wright <7im.Wright@protonmail.com>
+- Tobias Poschwatta <poschwatta@zib.de>
 - Tru Huynh <tru@pasteur.fr>
 - Tyson Whitehead <twhitehead@gmail.com>
 - Vanessa Sochat <vsoch@users.noreply.github.com>

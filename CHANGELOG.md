@@ -62,6 +62,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Bug fixes
 
+- Avoid `unknown option` error when using a bare squashfs image with
+  an unpatched `squashfuse_ll`.
 - Fix `GOCACHE` settings for golang build on PPA build environment.
 - Ensure `DOCKER_HOST` is honored in non-build flows.
 - Make the error message more helpful in another place where a remote is found
