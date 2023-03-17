@@ -10,9 +10,13 @@
 package verify
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
+
+	"github.com/apptainer/apptainer/e2e/verify/ocspresponder"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
@@ -23,10 +27,14 @@ type ctx struct {
 }
 
 func (c *ctx) verify(t *testing.T) {
-	keyPath := filepath.Join("..", "test", "keys", "ed25519-public.pem")
+	pubKeyPath := filepath.Join("..", "test", "keys", "ed25519-public.pem")
+	priKeyPath := filepath.Join("..", "test", "keys", "ed25519-private.pem")
+
 	certPath := filepath.Join("..", "test", "certs", "leaf.pem")
 	intPath := filepath.Join("..", "test", "certs", "intermediate.pem")
 	rootPath := filepath.Join("..", "test", "certs", "root.pem")
+
+	c.startOCSPResponder(priKeyPath, rootPath)
 
 	tests := []struct {
 		name       string
@@ -117,19 +125,19 @@ func (c *ctx) verify(t *testing.T) {
 		},
 		{
 			name:      "KeyFlag",
-			flags:     []string{"--key", keyPath},
+			flags:     []string{"--key", pubKeyPath},
 			imagePath: filepath.Join("..", "test", "images", "one-group-signed-dsse.sif"),
 			expectOps: []e2e.ApptainerCmdResultOp{
-				e2e.ExpectError(e2e.ContainMatch, "Verifying image with key material from '"+keyPath+"'"),
+				e2e.ExpectError(e2e.ContainMatch, "Verifying image with key material from '"+pubKeyPath+"'"),
 				e2e.ExpectError(e2e.ContainMatch, "Verified signature(s) from image"),
 			},
 		},
 		{
 			name:      "KeyEnvVar",
-			envs:      []string{"APPTAINER_VERIFY_KEY=" + keyPath},
+			envs:      []string{"APPTAINER_VERIFY_KEY=" + pubKeyPath},
 			imagePath: filepath.Join("..", "test", "images", "one-group-signed-dsse.sif"),
 			expectOps: []e2e.ApptainerCmdResultOp{
-				e2e.ExpectError(e2e.ContainMatch, "Verifying image with key material from '"+keyPath+"'"),
+				e2e.ExpectError(e2e.ContainMatch, "Verifying image with key material from '"+pubKeyPath+"'"),
 				e2e.ExpectError(e2e.ContainMatch, "Verified signature(s) from image"),
 			},
 		},
@@ -159,6 +167,52 @@ func (c *ctx) verify(t *testing.T) {
 				e2e.ExpectError(e2e.ContainMatch, "Verified signature(s) from image"),
 			},
 		},
+		{
+			name: "OCSPFlags",
+			flags: []string{
+				"--certificate", certPath,
+				"--certificate-intermediates", intPath,
+				"--certificate-roots", rootPath,
+				"--ocsp-verify",
+			},
+			imagePath:  filepath.Join("..", "test", "images", "one-group-signed-dsse.sif"),
+			expectCode: 255,
+			expectOps: []e2e.ApptainerCmdResultOp{
+				// Expect OCSP to fail due to https://github.com/sylabs/singularity/issues/1152
+				e2e.ExpectError(e2e.ContainMatch, "Failed to verify container: OCSP verification has failed"),
+			},
+		},
+		{
+			name: "OCSPEnvVars",
+			envs: []string{
+				"APPTAINER_VERIFY_CERTIFICATE=" + certPath,
+				"APPTAINER_VERIFY_INTERMEDIATES=" + intPath,
+				"APPTAINER_VERIFY_ROOTS=" + rootPath,
+				"APPTAINER_VERIFY_OCSP=true",
+			},
+			imagePath:  filepath.Join("..", "test", "images", "one-group-signed-dsse.sif"),
+			expectCode: 255,
+			expectOps: []e2e.ApptainerCmdResultOp{
+				// Expect OCSP to fail due to https://github.com/sylabs/singularity/issues/1152
+				e2e.ExpectError(e2e.ContainMatch, "Failed to verify container: OCSP verification has failed"),
+			},
+		},
+		{
+			name: "OCSPThirdPartyChain",
+			flags: []string{
+				"--certificate", filepath.Join("./verify", "ocspcertificates", "leaf.pem"),
+				"--certificate-intermediates", filepath.Join("./verify", "ocspcertificates", "intermediate.pem"),
+				"--ocsp-verify",
+			},
+			imagePath:  filepath.Join("..", "test", "images", "one-group-signed-dsse.sif"),
+			expectCode: 255,
+			expectOps: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectError(e2e.ContainMatch, "Failed to verify container: x509: certificate specifies an incompatible key usage"),
+				// https://github.com/sylabs/singularity/pull/1213#pullrequestreview-1240524316
+				// Error Expect OCSP to succeed, but signature verification to fail.
+				// e2e.ExpectError(e2e.ContainMatch, "Failed to verify container: integrity: signature object 3 not valid: dsse: verify envelope failed: Accepted signatures do not match threshold, Found: 0, Expected 1"),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -181,6 +235,25 @@ func (c *ctx) importPGPKeypairs(t *testing.T) {
 		e2e.WithArgs(filepath.Join("..", "test", "keys", "pgp-public.asc")),
 		e2e.ExpectExit(0),
 	)
+}
+
+func (c *ctx) startOCSPResponder(rootKeyPath string, rootCertPath string) {
+	// initiate OCSP responder to validate the apptainer certificate chain
+	go func() {
+		args := ocspresponder.ResponderArgs{
+			IndexFile:    filepath.Join("./verify", "ocspresponder", "index.txt"),
+			ServerPort:   "9999",
+			OCSPKeyPath:  rootKeyPath,
+			OCSPCertPath: rootCertPath,
+			CACertPath:   rootCertPath,
+		}
+
+		if err := ocspresponder.StartOCSPResponder(args); err != nil {
+			panic(fmt.Errorf("responder initialization has failed due to '%s'", err))
+		}
+	}()
+
+	time.Sleep(5 * time.Second)
 }
 
 // E2ETests is the main func to trigger the test suite

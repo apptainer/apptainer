@@ -56,6 +56,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   certificates that are not trust anchors, but can be used to form a
   certificate chain can also be specified via the `--certificate-intermediates`
   flag.
+- Support for online verification checks of x509 certificates using OCSP protocol.
+  (introduced flag: `verify --ocsp-verify`)
 
 ### Other changes
 

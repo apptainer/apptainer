@@ -33,6 +33,7 @@
 - Eng Zer Jun <engzerjun@gmail.com>
 - Eric Müller <mueller@kip.uni-heidelberg.de>
 - Felix Abecassis <fabecassis@nvidia.com>
+- Fotis Nikolaidis <nikolaidis.fotis@gmail.com>
 - Geoffroy Vallee <geoffroy@sylabs.io>, <geoffroy.vallee@gmail.com>
 - George Hartzell <hartzell@alerce.com>
 - Gert Hulselmans <gert.hulselmans@kuleuven.vib.be>
