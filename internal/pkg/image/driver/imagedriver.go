@@ -176,7 +176,11 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 			// this will be passed as the first ExtraFile below, always fd 3
 			srcPath = "/proc/self/fd/3"
 		}
-		cmdArgs = append(cmdArgs, f.cmdPath, "-f", "-o", optsStr, srcPath, params.Target)
+		if optsStr != "" {
+			cmdArgs = append(cmdArgs, f.cmdPath, "-f", "-o", optsStr, srcPath, params.Target)
+		} else {
+			cmdArgs = append(cmdArgs, f.cmdPath, "-f", srcPath, params.Target)
+		}
 		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
 
 	case "ext3":
