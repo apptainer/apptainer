@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2020-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2020-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the LICENSE.md file
 // distributed with the sources of this project regarding your rights to use or distribute this
 // software.
@@ -264,7 +264,7 @@ func Test_verifier_getOpts(t *testing.T) {
 				roots:         roots,
 			},
 			f:        oneGroupImage,
-			wantOpts: 1,
+			wantOpts: 2,
 		},
 		{
 			name: "Verifier",
@@ -274,7 +274,7 @@ func Test_verifier_getOpts(t *testing.T) {
 				},
 			},
 			f:        oneGroupImage,
-			wantOpts: 1,
+			wantOpts: 2,
 		},
 		{
 			name: "PGP",
@@ -282,7 +282,7 @@ func Test_verifier_getOpts(t *testing.T) {
 				pgp: true,
 			},
 			f:        oneGroupImage,
-			wantOpts: 1,
+			wantOpts: 2,
 		},
 		{
 			name: "PGPOpts",
@@ -293,55 +293,55 @@ func Test_verifier_getOpts(t *testing.T) {
 				},
 			},
 			f:        oneGroupImage,
-			wantOpts: 1,
+			wantOpts: 2,
 		},
 		{
 			name:     "Group1",
 			v:        verifier{groupIDs: []uint32{1}},
 			f:        oneGroupImage,
-			wantOpts: 1,
+			wantOpts: 2,
 		},
 		{
 			name:     "Object1",
 			v:        verifier{objectIDs: []uint32{1}},
 			f:        oneGroupImage,
-			wantOpts: 1,
+			wantOpts: 2,
 		},
 		{
 			name:     "All",
 			v:        verifier{all: true},
 			f:        oneGroupImage,
-			wantOpts: 0,
+			wantOpts: 1,
 		},
 		{
 			name:     "Legacy",
 			v:        verifier{legacy: true},
 			f:        oneGroupImage,
-			wantOpts: 2,
+			wantOpts: 3,
 		},
 		{
 			name:     "LegacyGroup1",
 			v:        verifier{legacy: true, groupIDs: []uint32{1}},
 			f:        oneGroupImage,
-			wantOpts: 2,
+			wantOpts: 3,
 		},
 		{
 			name:     "LegacyObject1",
 			v:        verifier{legacy: true, objectIDs: []uint32{1}},
 			f:        oneGroupImage,
-			wantOpts: 2,
+			wantOpts: 3,
 		},
 		{
 			name:     "LegacyAll",
 			v:        verifier{legacy: true, all: true},
 			f:        oneGroupImage,
-			wantOpts: 1,
+			wantOpts: 2,
 		},
 		{
 			name:     "Callback",
 			v:        verifier{cb: cb},
 			f:        oneGroupImage,
-			wantOpts: 1,
+			wantOpts: 2,
 		},
 	}
 

@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -15,6 +15,7 @@
 package syecl
 
 import (
+	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -207,7 +208,7 @@ func checkBlackList(v *integrity.Verifier, egroup *Execgroup) (ok bool, err erro
 	return true, nil
 }
 
-func shouldRun(ecl *EclConfig, fp *os.File, kr openpgp.KeyRing) (ok bool, err error) {
+func shouldRun(ctx context.Context, ecl *EclConfig, fp *os.File, kr openpgp.KeyRing) (ok bool, err error) {
 	var egroup *Execgroup
 
 	// look what execgroup a container is part of
@@ -263,6 +264,7 @@ func shouldRun(ecl *EclConfig, fp *os.File, kr openpgp.KeyRing) (ok bool, err er
 	}
 
 	opts := []integrity.VerifierOpt{
+		integrity.OptVerifyWithContext(ctx),
 		integrity.OptVerifyWithKeyRing(kr),
 		integrity.OptVerifyCallback(verifyCallback),
 	}
@@ -299,7 +301,7 @@ func shouldRun(ecl *EclConfig, fp *os.File, kr openpgp.KeyRing) (ok bool, err er
 }
 
 // ShouldRun determines if a container should run according to its execgroup rules
-func (ecl *EclConfig) ShouldRun(cpath string, kr openpgp.KeyRing) (ok bool, err error) {
+func (ecl *EclConfig) ShouldRun(ctx context.Context, cpath string, kr openpgp.KeyRing) (ok bool, err error) {
 	// look if ECL rules are activated
 	if !ecl.Activated {
 		return true, nil
@@ -311,15 +313,15 @@ func (ecl *EclConfig) ShouldRun(cpath string, kr openpgp.KeyRing) (ok bool, err 
 	}
 	defer fp.Close()
 
-	return shouldRun(ecl, fp, kr)
+	return shouldRun(ctx, ecl, fp, kr)
 }
 
 // ShouldRunFp determines if an already opened container should run according to its execgroup rules
-func (ecl *EclConfig) ShouldRunFp(fp *os.File, kr openpgp.KeyRing) (ok bool, err error) {
+func (ecl *EclConfig) ShouldRunFp(ctx context.Context, fp *os.File, kr openpgp.KeyRing) (ok bool, err error) {
 	// look if ECL rules are activated
 	if !ecl.Activated {
 		return true, nil
 	}
 
-	return shouldRun(ecl, fp, kr)
+	return shouldRun(ctx, ecl, fp, kr)
 }
