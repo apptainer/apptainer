@@ -34,13 +34,18 @@ func (c *ctx) verify(t *testing.T) {
 	intPath := filepath.Join("..", "test", "certs", "intermediate.pem")
 	rootPath := filepath.Join("..", "test", "certs", "root.pem")
 
-	c.startOCSPResponder(priKeyPath, rootPath)
+	ocspOk := true
+	if err := c.startOCSPResponder(priKeyPath, rootPath); err != nil {
+		t.Errorf("OCSP responder could not start: %s", err)
+		ocspOk = false
+	}
 
 	tests := []struct {
 		name       string
 		envs       []string
 		flags      []string
 		imagePath  string
+		needOCSP   bool
 		expectCode int
 		expectOps  []e2e.ApptainerCmdResultOp
 	}{
@@ -176,6 +181,7 @@ func (c *ctx) verify(t *testing.T) {
 				"--ocsp-verify",
 			},
 			imagePath:  filepath.Join("..", "test", "images", "one-group-signed-dsse.sif"),
+			needOCSP:   true,
 			expectCode: 255,
 			expectOps: []e2e.ApptainerCmdResultOp{
 				// Expect OCSP to fail due to https://github.com/sylabs/singularity/issues/1152
@@ -191,6 +197,7 @@ func (c *ctx) verify(t *testing.T) {
 				"APPTAINER_VERIFY_OCSP=true",
 			},
 			imagePath:  filepath.Join("..", "test", "images", "one-group-signed-dsse.sif"),
+			needOCSP:   true,
 			expectCode: 255,
 			expectOps: []e2e.ApptainerCmdResultOp{
 				// Expect OCSP to fail due to https://github.com/sylabs/singularity/issues/1152
@@ -205,6 +212,7 @@ func (c *ctx) verify(t *testing.T) {
 				"--ocsp-verify",
 			},
 			imagePath:  filepath.Join("..", "test", "images", "one-group-signed-dsse.sif"),
+			needOCSP:   true,
 			expectCode: 255,
 			expectOps: []e2e.ApptainerCmdResultOp{
 				e2e.ExpectError(e2e.ContainMatch, "Failed to verify container: x509: certificate specifies an incompatible key usage"),
@@ -218,6 +226,11 @@ func (c *ctx) verify(t *testing.T) {
 	for _, tt := range tests {
 		c.RunApptainer(t,
 			e2e.AsSubtest(tt.name),
+			e2e.PreRun(func(t *testing.T) {
+				if tt.needOCSP && !ocspOk {
+					t.Skip("OCSP responder not available")
+				}
+			}),
 			e2e.WithProfile(e2e.UserProfile),
 			e2e.WithEnv(tt.envs),
 			e2e.WithCommand("verify"),
@@ -237,7 +250,9 @@ func (c *ctx) importPGPKeypairs(t *testing.T) {
 	)
 }
 
-func (c *ctx) startOCSPResponder(rootKeyPath string, rootCertPath string) {
+func (c *ctx) startOCSPResponder(rootKeyPath string, rootCertPath string) error {
+	responderErr := make(chan error, 1)
+
 	// initiate OCSP responder to validate the apptainer certificate chain
 	go func() {
 		args := ocspresponder.ResponderArgs{
@@ -249,11 +264,17 @@ func (c *ctx) startOCSPResponder(rootKeyPath string, rootCertPath string) {
 		}
 
 		if err := ocspresponder.StartOCSPResponder(args); err != nil {
-			panic(fmt.Errorf("responder initialization has failed due to '%s'", err))
+			responderErr <- fmt.Errorf("responder initialization has failed due to '%s'", err)
 		}
 	}()
 
-	time.Sleep(5 * time.Second)
+	// Assume if there's no error after 5 seconds then the responder is running.
+	select {
+	case err := <-responderErr:
+		return err
+	case <-time.After(5 * time.Second):
+		return nil
+	}
 }
 
 // E2ETests is the main func to trigger the test suite
