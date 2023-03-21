@@ -75,6 +75,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Bug fixes
 
+- Allow gpu options such as `--nv` to be nested by always inheriting all
+  libraries bound in to a parent container's `/.singularity.d/libs`.
 - Avoid `unknown option` error when using a bare squashfs image with
   an unpatched `squashfuse_ll`.
 - Fix `GOCACHE` settings for golang build on PPA build environment.

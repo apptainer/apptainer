@@ -70,20 +70,25 @@ func Resolve(fileList []string) ([]string, []string, error) {
 		return nil, nil, fmt.Errorf("could not retrieve ld cache: %v", err)
 	}
 
-	boundLibsDir := "/.singularity.d/libs"
-	boundLibs, err := os.ReadDir(boundLibsDir)
-	if err != nil {
-		boundLibs = nil // just in case
-	}
-
 	// Track processed binaries/libraries to eliminate duplicates
 	bins := make(map[string]struct{})
 	libs := make(map[string]struct{})
 
 	var libraries []string
 	var binaries []string
+
+	boundLibsDir := "/.singularity.d/libs"
+	boundLibs, err := os.ReadDir(boundLibsDir)
+	if err == nil {
+		// Inherit all libraries from a parent
+		for _, boundLib := range boundLibs {
+			libName := boundLib.Name()
+			libs[libName] = struct{}{}
+			libraries = append(libraries, filepath.Join(boundLibsDir, libName))
+		}
+	}
+
 	for _, file := range fileList {
-		// if the file contains an ".so", treat it as a library
 		if strings.Contains(file, ".so") {
 			// If we have an absolute path, add it 'as-is', plus any symlinks that resolve to it
 			if filepath.IsAbs(file) {
@@ -106,21 +111,6 @@ func Resolve(fileList []string) ([]string, []string, error) {
 					sylog.Warningf("Could not close ELIB: %v", err)
 				}
 			} else {
-				// look first in /.singularity.d/libs
-				// this enables using gpu options in nested containers
-				gotone := false
-				for _, boundLib := range boundLibs {
-					libName := boundLib.Name()
-					if !strings.HasPrefix(libName, file) {
-						continue
-					}
-					libraries = append(libraries, filepath.Join(boundLibsDir, libName))
-					gotone = true
-					break
-				}
-				if gotone {
-					continue
-				}
 				for libName, libPath := range ldCache {
 					if !strings.HasPrefix(libName, file) {
 						continue
