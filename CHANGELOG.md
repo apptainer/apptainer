@@ -81,8 +81,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Ensure `DOCKER_HOST` is honored in non-build flows.
 - Make the error message more helpful in another place where a remote is found
   to have no library client.
+- Allow symlinks to the compiled prefix for suid installations.  Fixes a
+  regression introduced in 1.1.4.
 - Build via zypper on SLE systems will use repositories of host via
-  suseconnect-container
+  suseconnect-container.
 - Avoid incorrect error when reqesting fakeroot network.
 
 ## v1.1.6 - \[2023-02-14\]
