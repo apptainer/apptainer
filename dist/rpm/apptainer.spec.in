@@ -89,11 +89,6 @@ BuildRequires: git
 BuildRequires: gcc
 BuildRequires: make
 BuildRequires: libseccomp-devel
-%if "%{_target_vendor}" == "suse"
-Requires: squashfs
-%else
-Requires: squashfs-tools
-%endif
 BuildRequires: cryptsetup
 %if "%{?squashfuse_version}" != ""
 BuildRequires: autoconf
@@ -102,6 +97,11 @@ BuildRequires: libtool
 BuildRequires: pkgconfig
 BuildRequires: fuse3-devel
 BuildRequires: zlib-devel
+%endif
+%if "%{_target_vendor}" == "suse"
+Requires: squashfs
+%else
+Requires: squashfs-tools
 %endif
 Requires: squashfuse
 Requires: fakeroot
