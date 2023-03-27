@@ -11,6 +11,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Allow gpu options such as `--nv` to be nested by always inheriting all
   libraries bound in to a parent container's `/.singularity.d/libs`.
+- Map the user's home directory to the root home directory by default in the
+  non-subuid fakeroot mode like it was in the subuid fakeroot mode, for both
+  action commands and building containers from definition files.
 - Avoid `unknown option` error when using a bare squashfs image with
   an unpatched `squashfuse_ll`.
 - Fix `GOCACHE` settings for golang build on PPA build environment.
