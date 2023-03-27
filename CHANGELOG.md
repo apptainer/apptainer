@@ -19,6 +19,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Allow symlinks to the compiled prefix for suid installations.  Fixes a
   regression introduced in 1.1.4.
 - Avoid incorrect error when requesting fakeroot network.
+- Build via zypper on SLE systems will use repositories of host via
+  suseconnect-container.
 
 ## v1.1.6 - \[2023-02-14\]
 

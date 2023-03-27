@@ -90,6 +90,15 @@ Enterprise Performance Computing (EPC)`
           MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/os/x86_64/
           Include: yum
 
+      SUSE:
+          Bootstrap: zypper # on SLE system registration of build host is used
+          Include: zypper
+      
+      openSUSE:
+          Bootstrap: zypper
+          MirrorURL: http://download.opensuse.org/distribution/openSUSE-stable/repo/oss
+          Include: zypper
+
       Debian/Ubuntu:
           Bootstrap: debootstrap
           OSVersion: trusty
