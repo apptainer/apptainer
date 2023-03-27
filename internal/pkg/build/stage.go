@@ -109,7 +109,11 @@ func (s *stage) runPostScript(sessionResolv, sessionHosts string) error {
 			}
 			cmdArgs = append(cmdArgs, "-B", strings.Join(fakerootBinds[:], ","))
 		}
-
+		if len(s.b.Opts.Binds) != 0 {
+			for _, bind := range s.b.Opts.Binds {
+				cmdArgs = append(cmdArgs, "-B", bind)
+			}
+		}
 		script := s.b.Recipe.BuildData.Post
 		scriptPath := filepath.Join(s.b.RootfsPath, ".post.script")
 		if err = createScript(scriptPath, []byte(script.Script)); err != nil {
@@ -152,6 +156,11 @@ func (s *stage) runTestScript(sessionResolv, sessionHosts string) error {
 		}
 		if sessionHosts != "" {
 			cmdArgs = append(cmdArgs, "-B", sessionHosts+":/etc/hosts")
+		}
+		if len(s.b.Opts.Binds) != 0 {
+			for _, bind := range s.b.Opts.Binds {
+				cmdArgs = append(cmdArgs, "-B", bind)
+			}
 		}
 
 		exe := filepath.Join(buildcfg.BINDIR, "apptainer")

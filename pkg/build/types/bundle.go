@@ -81,6 +81,8 @@ type Options struct {
 	// To warn when the above is needed, we need to know if the target of this
 	// bundle will be a sandbox
 	SandboxTarget bool
+	// Binds stores bind mounts used for the post scripts
+	Binds []string
 }
 
 // NewEncryptedBundle creates an Encrypted Bundle environment.

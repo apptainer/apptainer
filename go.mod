@@ -56,6 +56,7 @@ require (
 )
 
 require (
+	github.com/BurntSushi/toml v1.2.0
 	github.com/docker/distribution v2.8.1+incompatible
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/sirupsen/logrus v1.9.0
@@ -64,7 +65,6 @@ require (
 require (
 	github.com/AdamKorcz/go-fuzz-headers v0.0.0-20210319161527-f761c2329661 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
-	github.com/BurntSushi/toml v1.2.0 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/Microsoft/hcsshim v0.9.4 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
