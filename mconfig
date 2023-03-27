@@ -889,7 +889,7 @@ if [ "$host" = "unix" ]; then
 	    -e "s/@PACKAGE_RELEASE@/${release_info}/" \
 	    -e "s,@PACKAGE_GOLANG_SOURCE@,${package_golang_source}," \
 		$sourcedir/dist/rpm/$RPMSPEC.in | \
-		while read -r; do
+		while IFS='' read -r REPLY; do
 			if [ "$REPLY" = "@BUNDLED_PROVIDES@" ]; then
 				# Calculate bundled provides
 				awk '{if (index($1, "/") != 0 && ($1 != "//")) {print "Provides: bundled(golang("$1")) = "$2}}' go.mod | sed -e 's/-/_/g' | sort | uniq
