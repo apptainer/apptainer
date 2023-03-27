@@ -206,8 +206,22 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		if isPrivileged && namespaces.IsUnprivileged() {
 			// Already running root-mapped unprivileged
 			IsFakeroot = false
+			UserNamespace = true
 			sylog.Debugf("running root-mapped unprivileged")
 			var err error
+			// Try to bind-mount the original user's home directory to /root.
+			// This may be overridden later by custom home directory settings,
+			// but this makes it available later as a source for the what it
+			// thinks of as the "original" user's home directory, if needed.
+			homedir := os.Getenv("HOME")
+			if homedir != "" {
+				err = syscall.Mount(homedir, "/root", "", syscall.MS_BIND, "")
+				if err != nil {
+					sylog.Debugf("Failure bind-mounting %s to /root: %v, skipping", homedir, err)
+				} else {
+					sylog.Debugf("Bind-mounting %s to /root", homedir)
+				}
+			}
 			if IgnoreFakerootCmd {
 				err = errors.New("fakeroot command is ignored because of --ignore-fakeroot-command")
 			} else {
@@ -223,7 +237,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			IsFakeroot = false
 			var err error
 			if IgnoreUserns {
-				err = errors.New("could not start root-mapped namespace because of --ignore-userns is set")
+				err = errors.New("could not start root-mapped namespace because --ignore-userns is set")
 			} else {
 				err = fakeroot.UnshareRootMapped(os.Args)
 			}
@@ -560,6 +574,9 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 	// user's standard $HOME -> /root and we want to respect --contain not mounting
 	// the $HOME in this case.
 	// See https://github.com/apptainer/singularity/pull/5227
+	// Note from dwd on 3/24/22: it's not clear to me that this has
+	// any effect because getHomePaths() appears to ignore the
+	// HomeDir settings if there is no CustomHome
 	if !homeFlag.Changed && IsFakeroot {
 		HomePath = fmt.Sprintf("%s:/root", HomePath)
 	}

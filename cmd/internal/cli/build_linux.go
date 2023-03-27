@@ -18,6 +18,7 @@ import (
 	osExec "os/exec"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/build"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
@@ -87,7 +88,7 @@ func fakerootExec(isDeffile bool) {
 		sylog.Infof("User not listed in %v, trying root-mapped namespace", fakeroot.SubUIDFile)
 		os.Setenv("_APPTAINER_FAKEFAKEROOT", "1")
 		if buildArgs.ignoreUserns {
-			err = errors.New("could not start root-mapped namesapce because of --ignore-userns is set")
+			err = errors.New("could not start root-mapped namespace because --ignore-userns is set")
 		} else {
 			err = fakeroot.UnshareRootMapped(args)
 		}
@@ -142,10 +143,25 @@ func runBuild(cmd *cobra.Command, args []string) {
 
 	fakerootPath := ""
 	if os.Getenv("_APPTAINER_FAKEFAKEROOT") == "1" {
+		var err error
+		uid := os.Getuid()
+		if uid == 0 {
+			// Try to bind-mount the original user's home directory to /root.
+			// This enables things like git clone to work in the %setup section
+			// of a definition file.
+			homedir := os.Getenv("HOME")
+			if homedir != "" {
+				err = syscall.Mount(homedir, "/root", "", syscall.MS_BIND, "")
+				if err != nil {
+					sylog.Debugf("Failure bind-mounting %s to /root: %v, skipping", homedir, err)
+				} else {
+					sylog.Debugf("Bind-mounting %s to /root", homedir)
+				}
+			}
+		}
 		// Try fakeroot command
 		os.Unsetenv("_APPTAINER_FAKEFAKEROOT")
 		buildArgs.fakeroot = false
-		var err error
 		if buildArgs.ignoreFakerootCmd {
 			err = errors.New("fakeroot command is ignored because of --ignore-fakeroot-command")
 		} else {
@@ -153,7 +169,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 		}
 		if err != nil {
 			sylog.Infof("fakeroot command not found")
-			if os.Getuid() != 0 {
+			if uid != 0 {
 				if fs.IsFile(spec) && !isImage(spec) {
 					sylog.Fatalf("Building from a definition file requires root or some kind of fake root")
 				}
@@ -163,7 +179,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 			sylog.Infof("Installing some packages may fail")
 		} else {
 			sylog.Infof("The %%post section will be run under fakeroot")
-			if !buildArgs.fixPerms && os.Getuid() != 0 {
+			if !buildArgs.fixPerms && uid != 0 {
 				sylog.Infof("Using --fix-perms because building from a definition file")
 				sylog.Infof(" without either root user or unprivileged user namespaces")
 				buildArgs.fixPerms = true

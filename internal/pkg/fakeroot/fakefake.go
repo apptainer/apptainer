@@ -25,14 +25,14 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
-// re-exec the command effectively under unshare -r
+// re-exec the command effectively under unshare -rm
 func UnshareRootMapped(args []string) error {
 	cmd := osExec.Command(args[0], args[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	cmd.SysProcAttr = &syscall.SysProcAttr{}
-	cmd.SysProcAttr.Cloneflags = syscall.CLONE_NEWUSER
+	cmd.SysProcAttr.Cloneflags = syscall.CLONE_NEWUSER | syscall.CLONE_NEWNS
 	cmd.SysProcAttr.UidMappings = []syscall.SysProcIDMap{
 		{ContainerID: 0, HostID: syscall.Getuid(), Size: 1},
 	}
