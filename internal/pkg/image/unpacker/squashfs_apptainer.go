@@ -363,6 +363,7 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 	cmd.Dir = "/"
 	cmd.Env = []string{
 		fmt.Sprintf("LD_LIBRARY_PATH=%s", strings.Join(libraryPath, string(os.PathListSeparator))),
+		fmt.Sprintf("APPTAINERENV_LD_LIBRARY_PATH=%s", strings.Join(libraryPath, string(os.PathListSeparator))),
 		fmt.Sprintf("APPTAINER_DEBUG=%s", os.Getenv("APPTAINER_DEBUG")),
 	}
 
