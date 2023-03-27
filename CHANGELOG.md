@@ -91,6 +91,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Build via zypper on SLE systems will use repositories of host via
   suseconnect-container.
 - Avoid incorrect error when reqesting fakeroot network.
+- Pass computed `LD_LIBRARY_PATH` to wrapped unsquashfs. Fixes issues where
+  `unsquashfs` on host uses libraries in non-default paths.
 
 ## v1.1.6 - \[2023-02-14\]
 
