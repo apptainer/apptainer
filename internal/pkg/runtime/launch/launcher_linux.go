@@ -101,8 +101,22 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 		if (l.uid == 0) && namespaces.IsUnprivileged() {
 			// Already running root-mapped unprivileged
 			l.cfg.Fakeroot = false
+			l.cfg.Namespaces.User = true
 			sylog.Debugf("running root-mapped unprivileged")
 			var err error
+			// Try to bind-mount the original user's home directory to /root.
+			// This may be overridden later by custom home directory settings,
+			// but this makes it available later as a source for the what it
+			// thinks of as the "original" user's home directory, if needed.
+			homedir := os.Getenv("HOME")
+			if homedir != "" {
+				err = syscall.Mount(homedir, "/root", "", syscall.MS_BIND, "")
+				if err != nil {
+					sylog.Debugf("Failure bind-mounting %s to /root: %v, skipping", homedir, err)
+				} else {
+					sylog.Debugf("Bind-mounting %s to /root", homedir)
+				}
+			}
 			if l.cfg.IgnoreFakerootCmd {
 				err = errors.New("fakeroot command is ignored because of --ignore-fakeroot-command")
 			} else {
@@ -118,7 +132,7 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 			l.cfg.Fakeroot = false
 			var err error
 			if l.cfg.IgnoreUserns {
-				err = errors.New("could not start root-mapped namespace because of --ignore-userns is set")
+				err = errors.New("could not start root-mapped namespace because --ignore-userns is set")
 			} else {
 				err = fakeroot.UnshareRootMapped(os.Args)
 			}
@@ -711,6 +725,9 @@ func (l *Launcher) setHome() error {
 	// user's standard $HOME -> /root and we want to respect --contain not mounting
 	// the $HOME in this case.
 	// See https://github.com/apptainer/singularity/pull/5227
+	// Note from dwd on 3/24/22: it's not clear to me that this has
+	// any effect because getHomePaths() appears to ignore the
+	// HomeDir settings if there is no CustomHome
 	if !l.cfg.CustomHome && l.cfg.Fakeroot {
 		l.cfg.HomeDir = fmt.Sprintf("%s:/root", l.cfg.HomeDir)
 	}
