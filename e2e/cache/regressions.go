@@ -84,6 +84,7 @@ func (c cacheTests) issue5097(t *testing.T) {
 // issue5350 - need to handle the cache being inside a non-accessible directory
 // e.g. home directory without perms to access
 func (c cacheTests) issue5350(t *testing.T) {
+	e2e.EnsureORASImage(t, c.env)
 	outerDir, cleanupOuter := e2e.MakeTempDir(t, c.env.TestDir, "issue5350-cache-", "")
 	defer e2e.Privileged(cleanupOuter)(t)
 
@@ -102,7 +103,7 @@ func (c cacheTests) issue5350(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs([]string{"--force", "-s", sandboxDir, "oras://ghcr.io/apptainer/alpine:3.15.0"}...),
+		e2e.WithArgs([]string{"--force", "-s", sandboxDir, c.env.OrasTestImage}...),
 		e2e.ExpectExit(0),
 	)
 
