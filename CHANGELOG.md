@@ -63,9 +63,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Fix non-root instance join with unprivileged systemd managed cgroups, when
   join is from outside a user-owned cgroup.
-- Map the user's home directory to the root home directory by default in the
-  non-subuid fakeroot mode like it was in the subuid fakeroot mode, for both
-  action commands and building containers from definition files.
 - Define EUID in %environment alongside UID.
 - Avoid UID / GID / EUID readonly var warnings with `--env-file`.
 - In `--rocm` mode, the whole of `/dev/dri` is now bound into the container when
@@ -77,10 +74,15 @@ For older changes see the [archived Singularity change log](https://github.com/a
   non-default cgroupfs manager, and no device rules.
 - Ensure `DOCKER_HOST` is honored in non-build flows.
 
-### Bug fixes
+## v1.1.7 - \[2023-03-28\]
+
+### Changes since last release
 
 - Allow gpu options such as `--nv` to be nested by always inheriting all
   libraries bound in to a parent container's `/.singularity.d/libs`.
+- Map the user's home directory to the root home directory by default in the
+  non-subuid fakeroot mode like it was in the subuid fakeroot mode, for both
+  action commands and building containers from definition files.
 - Avoid `unknown option` error when using a bare squashfs image with
   an unpatched `squashfuse_ll`.
 - Fix `GOCACHE` settings for golang build on PPA build environment.
@@ -90,7 +92,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   regression introduced in 1.1.4.
 - Build via zypper on SLE systems will use repositories of host via
   suseconnect-container.
-- Avoid incorrect error when reqesting fakeroot network.
+- Avoid incorrect error when requesting fakeroot network.
 - Pass computed `LD_LIBRARY_PATH` to wrapped unsquashfs. Fixes issues where
   `unsquashfs` on host uses libraries in non-default paths.
 
