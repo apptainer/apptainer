@@ -84,7 +84,7 @@ func TestRemoteGetLoginPassword(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				isTokenValid := r.Header.Get("Authorization") == "Bearer "+validToken
 
-				if r.URL.Path == "/v1/rbac/users/current" && isTokenValid {
+				if r.URL.Path == userServicePath && isTokenValid {
 					w.Header().Set("Content-Type", "application/json")
 					fmt.Fprintln(w, tt.jsonResp)
 				} else {

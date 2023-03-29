@@ -12,6 +12,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - `--cwd` is now the preferred form of the flag for setting the container's
   working directory, though `--pwd` is still supported for compatibility.
 
+### New Features & Functionality
+
+- The `remote status` command will now print the username, realname, and email
+  of the logged-in user, if available.
+
 ## Changes since last pre-release
 
 - Upgrade gocryptfs to version 2.4.0, removing the need for fusermount from

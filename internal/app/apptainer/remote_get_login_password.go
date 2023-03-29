@@ -22,7 +22,7 @@ import (
 // RemoteGetLoginPassword retrieves cli token from oci library shim
 func RemoteGetLoginPassword(config *scslibclient.Config) (string, error) {
 	client := http.Client{Timeout: 5 * time.Second}
-	path := "/v1/rbac/users/current"
+	path := userServicePath
 	endPoint := config.BaseURL + path
 
 	req, err := http.NewRequest(http.MethodGet, endPoint, nil)
@@ -44,23 +44,15 @@ func RemoteGetLoginPassword(config *scslibclient.Config) (string, error) {
 		return "", fmt.Errorf("status is not ok: %v", res.StatusCode)
 	}
 
-	var u oUser
-	err = json.NewDecoder(res.Body).Decode(&u)
+	var ud userData
+	err = json.NewDecoder(res.Body).Decode(&ud)
 	if err != nil {
 		return "", fmt.Errorf("error decoding json response: %v", err)
 	}
 
-	if u.OidcUserMeta.Secret == "" {
+	if ud.OidcMeta.Secret == "" {
 		return "", fmt.Errorf("user does not have cli token set")
 	}
 
-	return u.OidcUserMeta.Secret, nil
-}
-
-type oidcUserMeta struct {
-	Secret string `json:"secret"`
-}
-
-type oUser struct {
-	OidcUserMeta oidcUserMeta `json:"oidc_user_meta"`
+	return ud.OidcMeta.Secret, nil
 }
