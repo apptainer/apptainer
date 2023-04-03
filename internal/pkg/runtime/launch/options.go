@@ -115,8 +115,8 @@ type launchOptions struct {
 
 	// ShellPath is a custom shell executable to be launched in the container.
 	ShellPath string
-	// PwdPath is the initial working directory in the container.
-	PwdPath string
+	// CwdPath is the initial working directory in the container.
+	CwdPath string
 
 	// Fakeroot enables the fake root mode, using user namespaces and subuid / subgid mapping.
 	Fakeroot bool
@@ -423,10 +423,10 @@ func OptShellPath(s string) Option {
 	}
 }
 
-// OptPwdPath specifies the initial working directory in the container.
-func OptPwdPath(p string) Option {
+// OptCwdPath specifies the initial working directory in the container.
+func OptCwdPath(p string) Option {
 	return func(lo *launchOptions) error {
-		lo.PwdPath = p
+		lo.CwdPath = p
 		return nil
 	}
 }

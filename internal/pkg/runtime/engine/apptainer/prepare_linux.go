@@ -111,8 +111,8 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 
 	// Save the current working directory if not set
 	if e.EngineConfig.GetCwd() == "" {
-		if pwd, err := os.Getwd(); err == nil {
-			e.EngineConfig.SetCwd(pwd)
+		if cwd, err := os.Getwd(); err == nil {
+			e.EngineConfig.SetCwd(cwd)
 		} else {
 			sylog.Warningf("can't determine current working directory")
 			e.EngineConfig.SetCwd("/")

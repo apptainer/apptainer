@@ -24,7 +24,7 @@ var (
 	overlayPath      []string
 	scratchPath      []string
 	workdirPath      string
-	pwdPath          string
+	cwdPath          string
 	shellPath        string
 	hostname         string
 	network          string
@@ -202,13 +202,25 @@ var actionShellFlag = cmdline.Flag{
 	Tag:          "<path>",
 }
 
+// --cwd
+var actionCwdFlag = cmdline.Flag{
+	ID:           "actionCwdFlag",
+	Value:        &cwdPath,
+	DefaultValue: "",
+	Name:         "cwd",
+	Usage:        "initial working directory for payload process inside the container (synonym for --pwd)",
+	EnvKeys:      []string{"CWD", "TARGET_CWD"},
+	Tag:          "<path>",
+}
+
 // --pwd
 var actionPwdFlag = cmdline.Flag{
 	ID:           "actionPwdFlag",
-	Value:        &pwdPath,
+	Value:        &cwdPath,
 	DefaultValue: "",
 	Name:         "pwd",
-	Usage:        "initial working directory for payload process inside the container",
+	Usage:        "initial working directory for payload process inside the container (synonym for --cwd)",
+	Hidden:       true,
 	EnvKeys:      []string{"PWD", "TARGET_PWD"},
 	Tag:          "<path>",
 }
@@ -917,6 +929,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&commonPromptForPassphraseFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&commonPEMFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionPidNamespaceFlag, actionsCmd...)
+		cmdManager.RegisterFlagForCmd(&actionCwdFlag, actionsCmd...)
 		cmdManager.RegisterFlagForCmd(&actionPwdFlag, actionsCmd...)
 		cmdManager.RegisterFlagForCmd(&actionScratchFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionSecurityFlag, actionsInstanceCmd...)
