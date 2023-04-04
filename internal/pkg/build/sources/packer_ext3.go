@@ -20,6 +20,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/archive"
 	"github.com/apptainer/apptainer/pkg/util/loop"
+	"golang.org/x/sys/unix"
 )
 
 // Ext3Packer holds the locations of where to back from and to, as well as image offset info
@@ -42,10 +43,10 @@ func (p *Ext3Packer) Pack(context.Context) (*types.Bundle, error) {
 
 // unpackExt3 mounts the ext3 image using a loop device and then copies its contents to the bundle
 func unpackExt3(b *types.Bundle, img *image.Image) error {
-	info := &loop.Info64{
+	info := &unix.LoopInfo64{
 		Offset:    img.Partitions[0].Offset,
-		SizeLimit: img.Partitions[0].Size,
-		Flags:     loop.FlagsAutoClear,
+		Sizelimit: img.Partitions[0].Size,
+		Flags:     unix.LO_FLAGS_AUTOCLEAR,
 	}
 
 	var number int

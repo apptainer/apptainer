@@ -15,7 +15,6 @@ import (
 	"os"
 	"syscall"
 	"time"
-	"unsafe"
 
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/fs/lock"
@@ -27,45 +26,9 @@ import (
 type Device struct {
 	MaxLoopDevices int
 	Shared         bool
-	Info           *Info64
+	Info           *unix.LoopInfo64
 	fd             *int
 }
-
-// Loop device flags values
-const (
-	FlagsReadOnly  = 1
-	FlagsAutoClear = 4
-	FlagsPartScan  = 8
-	FlagsDirectIO  = 16
-)
-
-// Loop device encryption types
-const (
-	CryptNone      = 0
-	CryptXor       = 1
-	CryptDes       = 2
-	CryptFish2     = 3
-	CryptBlow      = 4
-	CryptCast128   = 5
-	CryptIdea      = 6
-	CryptDummy     = 9
-	CryptSkipJack  = 10
-	CryptCryptoAPI = 18
-	CryptMax       = 20
-)
-
-// Loop device IOCTL commands
-const (
-	CmdSetFd       = 0x4C00
-	CmdClrFd       = 0x4C01
-	CmdSetStatus   = 0x4C02
-	CmdGetStatus   = 0x4C03
-	CmdSetStatus64 = 0x4C04
-	CmdGetStatus64 = 0x4C05
-	CmdChangeFd    = 0x4C06
-	CmdSetCapacity = 0x4C07
-	CmdSetDirectIO = 0x4C08
-)
 
 // Loop control device IOCTL commands
 const (
@@ -73,23 +36,6 @@ const (
 	CmdCtlRemove  = 0x4C81
 	CmdCtlGetFree = 0x4C82
 )
-
-// Info64 contains information about a loop device.
-type Info64 struct {
-	Device         uint64
-	Inode          uint64
-	Rdevice        uint64
-	Offset         uint64
-	SizeLimit      uint64
-	Number         uint32
-	EncryptType    uint32
-	EncryptKeySize uint32
-	Flags          uint32
-	FileName       [64]byte
-	CryptName      [64]byte
-	EncryptKey     [32]byte
-	Init           [2]uint64
-}
 
 // loop status retry related constants
 const (
@@ -164,8 +110,8 @@ func (loop *Device) shareLoop(imageInfo *syscall.Stat_t, mode int, number *int) 
 		if err != nil {
 			sylog.Debugf("Couldn't get status from loop device %d: %v\n", device, err)
 		} else if status.Inode == imageIno && status.Device == imageDev &&
-			status.Flags&FlagsReadOnly == loop.Info.Flags&FlagsReadOnly &&
-			status.Offset == loop.Info.Offset && status.SizeLimit == loop.Info.SizeLimit {
+			status.Flags&unix.LO_FLAGS_READ_ONLY == loop.Info.Flags&unix.LO_FLAGS_READ_ONLY &&
+			status.Offset == loop.Info.Offset && status.Sizelimit == loop.Info.Sizelimit {
 			// keep the reference to the loop device file descriptor to
 			// be sure that the loop device won't be released between this
 			// check and the mount of the filesystem
@@ -187,7 +133,7 @@ func (loop *Device) shareLoop(imageInfo *syscall.Stat_t, mode int, number *int) 
 func (loop *Device) attachLoop(imageFd uintptr, imageInfo *syscall.Stat_t, mode int, number *int) error {
 	releaseDevice := func(fd int, clear bool, releaseLock func()) {
 		if clear {
-			syscall.Syscall(syscall.SYS_IOCTL, uintptr(fd), CmdClrFd, 0)
+			unix.IoctlSetInt(fd, unix.LOOP_CLR_FD, 0)
 		}
 		syscall.Close(fd)
 		releaseLock()
@@ -207,9 +153,8 @@ func (loop *Device) attachLoop(imageFd uintptr, imageInfo *syscall.Stat_t, mode 
 			return err
 		}
 
-		// On error, we'll move on to try the next loop device
-		_, _, esys := syscall.Syscall(syscall.SYS_IOCTL, uintptr(loopFd), CmdSetFd, imageFd)
-		if esys != 0 {
+		if err := unix.IoctlSetInt(loopFd, unix.LOOP_SET_FD, int(imageFd)); err != nil {
+			// On error, we'll move on to try the next loop device
 			releaseDevice(loopFd, false, releaseLock)
 			continue
 		}
@@ -288,18 +233,13 @@ func openLoopDev(device, mode int, sharedLoop bool, createFn createDeviceFn) (in
 	return loopFd, releaseLock, nil
 }
 
-func setLoopStatus(loopFd int, info *Info64, loopDevice string, retryFn retryStatusFn) error {
+func setLoopStatus(loopFd int, info *unix.LoopInfo64, loopDevice string, retryFn retryStatusFn) error {
 	for retryCount := 0; ; retryCount++ {
-		_, _, esys := syscall.Syscall(
-			syscall.SYS_IOCTL,
-			uintptr(loopFd),
-			CmdSetStatus64,
-			uintptr(unsafe.Pointer(info)),
-		)
-		if esys == 0 {
+		esys := unix.IoctlLoopSetStatus64(loopFd, info)
+		if esys == nil {
 			return nil
 		} else if esys != syscall.EAGAIN {
-			return fmt.Errorf("failed to set loop device status (%s): %s", loopDevice, syscall.Errno(esys))
+			return fmt.Errorf("failed to set loop device status (%s): %s", loopDevice, esys)
 		}
 
 		if err := retryFn(loopDevice, retryCount); err != errStatusTryAgain {
@@ -472,17 +412,16 @@ func (loop *Device) Close() error {
 }
 
 // GetStatusFromFd gets info status about an opened loop device
-func GetStatusFromFd(fd uintptr) (*Info64, error) {
-	info := &Info64{}
-	_, _, err := syscall.Syscall(syscall.SYS_IOCTL, fd, CmdGetStatus64, uintptr(unsafe.Pointer(info)))
-	if err != syscall.ENXIO && err != 0 {
-		return nil, fmt.Errorf("failed to get loop flags for loop device: %s", err.Error())
+func GetStatusFromFd(fd uintptr) (*unix.LoopInfo64, error) {
+	info, err := unix.IoctlLoopGetStatus64(int(fd))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get loop flags for loop device: %s", err)
 	}
 	return info, nil
 }
 
 // GetStatusFromPath gets info status about a loop device from path
-func GetStatusFromPath(path string) (*Info64, error) {
+func GetStatusFromPath(path string) (*unix.LoopInfo64, error) {
 	loop, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open loop device %s: %s", path, err)

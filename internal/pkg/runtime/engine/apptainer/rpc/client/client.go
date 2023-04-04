@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -15,7 +15,7 @@ import (
 	"os"
 
 	args "github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc"
-	"github.com/apptainer/apptainer/pkg/util/loop"
+	"golang.org/x/sys/unix"
 )
 
 // RPC holds the state necessary for remote procedure calls.
@@ -81,7 +81,7 @@ func (t *RPC) Chroot(root string, method string) (int, error) {
 }
 
 // LoopDevice calls the loop device RPC using the supplied arguments.
-func (t *RPC) LoopDevice(image string, mode int, info loop.Info64, maxDevices int, shared bool) (int, error) {
+func (t *RPC) LoopDevice(image string, mode int, info unix.LoopInfo64, maxDevices int, shared bool) (int, error) {
 	arguments := &args.LoopArgs{
 		Image:      image,
 		Mode:       mode,

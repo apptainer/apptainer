@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -25,6 +25,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/fs/lock"
 	"github.com/apptainer/apptainer/pkg/util/loop"
 	"github.com/google/uuid"
+	"golang.org/x/sys/unix"
 )
 
 // Device describes a crypt device
@@ -46,10 +47,10 @@ var (
 func createLoop(path string, offset, size uint64) (string, error) {
 	loopDev := &loop.Device{
 		MaxLoopDevices: loop.GetMaxLoopDevices(),
-		Info: &loop.Info64{
-			SizeLimit: size,
+		Info: &unix.LoopInfo64{
+			Sizelimit: size,
 			Offset:    offset,
-			Flags:     loop.FlagsAutoClear,
+			Flags:     unix.LO_FLAGS_AUTOCLEAR,
 		},
 	}
 	idx := 0
