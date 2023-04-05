@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	remoteutil "github.com/apptainer/apptainer/internal/pkg/remote/util"
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -103,10 +102,11 @@ func (config *Config) LibraryClientConfig(uri string) (*libClient.Config, error)
 	isDefault := uri == ""
 
 	libraryConfig := &libClient.Config{
-		BaseURL:    uri,
-		UserAgent:  useragent.Value(),
-		Logger:     (golog.Logger)(sylog.DebugLogger{}),
-		HTTPClient: &http.Client{Timeout: 5 * time.Second},
+		BaseURL:   uri,
+		UserAgent: useragent.Value(),
+		Logger:    (golog.Logger)(sylog.DebugLogger{}),
+		// TODO - probably should establish an appropriate client timeout here.
+		HTTPClient: &http.Client{},
 	}
 
 	if isDefault {
