@@ -2342,9 +2342,7 @@ func (c *container) addFilesMount(system *mount.System) error {
 }
 
 func (c *container) addIdentityMount(system *mount.System) error {
-	if (os.Geteuid() == 0 && c.engine.EngineConfig.GetTargetUID() == 0) ||
-		c.engine.EngineConfig.GetFakeroot() {
-		sylog.Verbosef("Not updating passwd/group files, running as root!")
+	if c.engine.EngineConfig.GetNoHome() {
 		return nil
 	}
 

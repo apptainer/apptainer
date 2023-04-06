@@ -35,12 +35,14 @@ require (
 	github.com/opencontainers/umoci v0.4.7
 	github.com/pelletier/go-toml/v2 v2.0.8
 	github.com/pkg/errors v0.9.1
+	github.com/revel/cmd v1.1.2
 	github.com/seccomp/containers-golang v0.6.0
 	github.com/seccomp/libseccomp-golang v0.10.0
 	github.com/shopspring/decimal v1.3.1
 	github.com/sigstore/sigstore v1.7.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
+	github.com/stat0s2p/etcpwdparse v0.0.0-20170319193008-f0e5f0779716
 	github.com/sylabs/json-resp v0.8.2
 	github.com/urfave/cli v1.22.12 // indirect
 	github.com/vbauerster/mpb/v8 v8.4.0
@@ -117,6 +119,7 @@ require (
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -147,6 +150,8 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
+	github.com/revel/config v1.1.0 // indirect
+	github.com/revel/log15 v2.11.20+incompatible // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rootless-containers/proto v0.1.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
@@ -181,5 +186,7 @@ require (
 	google.golang.org/grpc v1.55.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/go-jose/go-jose.v2 v2.6.1 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
+	gopkg.in/stack.v0 v0.0.0-20141108040640-9b43fcefddd0 // indirect
 )
