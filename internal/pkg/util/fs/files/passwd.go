@@ -10,11 +10,12 @@
 package files
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 
-	"github.com/revel/cmd/utils"
-	pwd "github.com/stat0s2p/etcpwdparse"
+	pwd "github.com/astromechza/etcpwdparse"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
@@ -36,10 +37,17 @@ func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (co
 	}
 
 	sylog.Verbosef("Creating passwd content")
-	lines, err := utils.ReadLines(path)
+	file, err := os.Open(path)
 	if err != nil {
-		return content, fmt.Errorf("failed to read passwd file content in container: %s", err)
+		return content, fmt.Errorf("error opening passwd file %#v for reading: %v", path, err)
 	}
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+	lines := []string{}
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	file.Close()
 
 	getPwUID := user.GetPwUID
 	if customLookup != nil {

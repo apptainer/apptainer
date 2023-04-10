@@ -13,6 +13,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
   working directory, though `--pwd` is still supported for compatibility.
 - When building RPM, we will now use `/var/lib/apptainer` (rather than
   `/var/apptainer`) to store local state files.
+- The way --home is handled when running as root (e.g. `sudo apptainer`) or
+  with `--fakeroot` has changed. Previously, we were only modifying the `HOME`
+  environment variable in these cases, while leaving the container's
+  `/etc/passwd` file unchanged (with its homedir field pointing to `/root`,
+  regardless of the value passed to `--home`). With this change, both value of
+  `HOME` and the contents of `/etc/passwd` in the container will reflect the
+  value passed to `--home`.
 
 ### New Features & Functionality
 
