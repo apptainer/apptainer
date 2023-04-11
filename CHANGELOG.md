@@ -74,6 +74,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   non-default cgroupfs manager, and no device rules.
 - Ensure `DOCKER_HOST` is honored in non-build flows.
 
+### Bug fixes
+
+- Remove unwanted colors to STDERR.
+
 ## v1.1.7 - \[2023-03-28\]
 
 ### Changes since last release
