@@ -468,7 +468,6 @@ func migrateGPGPrivate(sypgpDir, legacySypgpDir string) {
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) error {
-	setSylogMessageLevel()
 	sylog.Debugf("Apptainer version: %s", buildcfg.PACKAGE_VERSION)
 
 	if cmd.CalledAs() == "confgen" {
@@ -540,6 +539,8 @@ func Init(loadPlugins bool) {
 
 	// set persistent pre run function here to avoid initialization loop error
 	apptainerCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		// call configuring message level method earlier to solve this issue https://github.com/apptainer/apptainer/issues/1259
+		setSylogMessageLevel()
 		var err error
 		foundKeys := make(map[string]string)
 		for precedence := range env.ApptainerPrefixes {
