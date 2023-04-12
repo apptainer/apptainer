@@ -150,8 +150,6 @@ func (loop *Device) shareLoop(imageInfo *syscall.Stat_t, mode int, number *int) 
 	imageDev := uint64(imageInfo.Dev)
 
 	for device := 0; device < loop.MaxLoopDevices; device++ {
-		*number = device
-
 		// Try to open an existing loop device, but don't create a new one
 		loopFd, releaseLock, err := openLoopDev(device, mode, true, nil)
 		if err != nil {
@@ -172,6 +170,7 @@ func (loop *Device) shareLoop(imageInfo *syscall.Stat_t, mode int, number *int) 
 			// be sure that the loop device won't be released between this
 			// check and the mount of the filesystem
 			sylog.Debugf("Sharing loop device %d", device)
+			*number = device
 			loop.fd = &loopFd
 			return true, nil
 		}
@@ -186,22 +185,24 @@ func (loop *Device) shareLoop(imageInfo *syscall.Stat_t, mode int, number *int) 
 // When setting loop device status, some kernel may return EAGAIN, this function would sync
 // workaround this error.
 func (loop *Device) attachLoop(imageFd uintptr, imageInfo *syscall.Stat_t, mode int, number *int) error {
-	releaseDevice := func(fd int, clear bool) {
+	releaseDevice := func(fd int, clear bool, releaseLock func()) {
 		if clear {
 			syscall.Syscall(syscall.SYS_IOCTL, uintptr(fd), CmdClrFd, 0)
 		}
 		syscall.Close(fd)
+		releaseLock()
 	}
 
 	createFn := getCreateDeviceFn()
 	retryFn := getRetryStatusFn(imageFd, imageInfo)
 
 	for device := 0; device < loop.MaxLoopDevices; device++ {
-		*number = device
-
 		// Try to open the loop device, creating the device node if needed
 		loopFd, releaseLock, err := openLoopDev(device, mode, loop.Shared, createFn)
 		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
 			sylog.Debugf("Couldn't open loop device %d: %v", device, err)
 			return err
 		}
@@ -209,24 +210,22 @@ func (loop *Device) attachLoop(imageFd uintptr, imageInfo *syscall.Stat_t, mode 
 		// On error, we'll move on to try the next loop device
 		_, _, esys := syscall.Syscall(syscall.SYS_IOCTL, uintptr(loopFd), CmdSetFd, imageFd)
 		if esys != 0 {
-			releaseDevice(loopFd, false)
-			releaseLock()
+			releaseDevice(loopFd, false, releaseLock)
 			continue
 		}
 
 		if _, _, esys := syscall.Syscall(syscall.SYS_FCNTL, uintptr(loopFd), syscall.F_SETFD, syscall.FD_CLOEXEC); esys != 0 {
-			releaseDevice(loopFd, true)
-			releaseLock()
+			releaseDevice(loopFd, true, releaseLock)
 			return fmt.Errorf("failed to set close-on-exec on loop device %s: error message=%s", getLoopPath(device), esys.Error())
 		}
 
 		if err := setLoopStatus(loopFd, loop.Info, getLoopPath(device), retryFn); err != nil {
-			releaseDevice(loopFd, true)
-			releaseLock()
+			releaseDevice(loopFd, true, releaseLock)
 			return fmt.Errorf("loop device status: %s", err)
 		}
 
 		releaseLock()
+		*number = device
 		loop.fd = &loopFd
 		return nil
 	}
@@ -239,21 +238,29 @@ func (loop *Device) attachLoop(imageFd uintptr, imageInfo *syscall.Stat_t, mode 
 // Returns the fd for the opened device, or -1 if it was not possible to openLoopDev it.
 func openLoopDev(device, mode int, sharedLoop bool, createFn createDeviceFn) (int, func(), error) {
 	path := getLoopPath(device)
-	fi, err := os.Stat(path)
+
+	// loop device can exist but without any device attached to it in kernel,
+	// a stat call couldn't catch ENXIO error in this case, use open
+	loopFd, err := syscall.Open(path, mode, 0o600)
 	if err != nil {
-		if !os.IsNotExist(err) {
-			return -1, nil, fmt.Errorf("could not stat %s: %w", path, err)
+		if errno, ok := err.(syscall.Errno); ok && errno == unix.ENXIO {
+			if createFn == nil {
+				err = os.ErrNotExist
+			}
+		} else if !os.IsNotExist(err) {
+			return -1, nil, fmt.Errorf("could not open %s: %w", path, err)
 		}
 		// device doesn't exist but no create function passed ... done
 		if createFn == nil {
 			return -1, nil, err
 		}
 		// create the device node if we need to
-		if err := createFn(device); err != nil {
+		err := createFn(device)
+		if err != nil {
 			return -1, nil, fmt.Errorf("could not create %s: %w", path, err)
 		}
-	} else if fi.Mode()&os.ModeDevice == 0 {
-		return -1, nil, fmt.Errorf("%s is not a block device", path)
+	} else {
+		_ = syscall.Close(loopFd)
 	}
 
 	releaseLock := func() {}
@@ -272,10 +279,8 @@ func openLoopDev(device, mode int, sharedLoop bool, createFn createDeviceFn) (in
 		}
 	}
 
-	// Now open the loop device
-	loopFd, err := syscall.Open(path, mode, 0o600)
+	loopFd, err = syscall.Open(path, mode, 0o600)
 	if err != nil {
-		releaseLock()
 		return -1, nil, fmt.Errorf("could not open %s: %w", path, err)
 	}
 
