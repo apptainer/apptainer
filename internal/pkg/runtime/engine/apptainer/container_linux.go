@@ -722,6 +722,10 @@ mount:
 				sylog.Verbosef("Overlay mount failed with %s, mounting with index=off", err)
 				optsString = fmt.Sprintf("%s,index=off", optsString)
 				goto mount
+			} else if mnt.Type == "overlay" && err == syscall.EINVAL {
+				sylog.Verbosef("Overlay mount failed with %s, mounting without xino option", err)
+				optsString = strings.Replace(optsString, ",xino=on", "", -1)
+				goto mount
 			} else if mnt.Type == "overlay" && tag == mount.LayerTag {
 				if imageDriver != nil && imageDriver.Features()&image.OverlayFeature != 0 {
 
