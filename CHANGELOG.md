@@ -23,8 +23,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - `sessiondir maxsize` in `apptainer.conf` now defaults to 64 MiB for new
   installations. This is an increase from 16 MiB in prior versions.
 - Show standard output of yum bootstrap if log level is verbose or higher.
-- Add `xino=on` mount option for writable kernel overlay mount points to fix
-  inode numbers consistency after kernel cache flush (not applicable to fuse-overlayfs).
 
 ### New features / functionalities
 
@@ -75,11 +73,14 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix joining cgroup of instance started as root, with cgroups v1,
   non-default cgroupfs manager, and no device rules.
 - Ensure `DOCKER_HOST` is honored in non-build flows.
-- Fix loop device 'no such device or address' spurious errors when using shared
-  loop devices.
 
 ### Bug fixes
 
+- Fix loop device 'no such device or address' spurious errors when using shared
+  loop devices.
+- Add `xino=on` mount option for writable kernel overlay mount points to fix
+  inode numbers consistency after kernel cache flush (not applicable to
+  fuse-overlayfs).
 - Remove unwanted colors to STDERR.
 
 ## v1.1.7 - \[2023-03-28\]
