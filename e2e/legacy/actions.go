@@ -266,9 +266,13 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		env: env,
 	}
 
+	// legacy tests run sequentially due to loop device issue,
+	// see https://github.com/apptainer/apptainer/issues/1272
+	np := testhelper.NoParallel
+
 	return testhelper.Tests{
-		"run legacy":   c.runLegacy,
-		"shell legacy": c.shellLegacy,
-		"exec legacy":  c.execLegacy,
+		"run legacy":   np(c.runLegacy),
+		"shell legacy": np(c.shellLegacy),
+		"exec legacy":  np(c.execLegacy),
 	}
 }
