@@ -23,6 +23,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - `sessiondir maxsize` in `apptainer.conf` now defaults to 64 MiB for new
   installations. This is an increase from 16 MiB in prior versions.
 - Show standard output of yum bootstrap if log level is verbose or higher.
+- Add `xino=on` mount option for writable kernel overlay mount points to fix
+  inode numbers consistency after kernel cache flush (not applicable to fuse-overlayfs).
 
 ### New features / functionalities
 
