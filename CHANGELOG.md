@@ -5,6 +5,13 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes Since Last Release
+
+### Other changes
+
+- Fix loop device 'no such device or address' spurious errors when using shared
+  loop devices.
+
 ## v1.1.7 - \[2023-03-28\]
 
 ### Changes since last release
