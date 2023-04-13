@@ -47,7 +47,6 @@ var (
 func createLoop(path string, offset, size uint64) (string, error) {
 	loopDev := &loop.Device{
 		MaxLoopDevices: loop.GetMaxLoopDevices(),
-		Shared:         true,
 		Info: &loop.Info64{
 			SizeLimit: size,
 			Offset:    offset,
