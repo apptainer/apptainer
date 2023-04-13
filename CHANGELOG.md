@@ -12,6 +12,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix loop device 'no such device or address' spurious errors when using shared
   loop devices.
 - Remove unwanted colors to STDERR.
+- Add `xino=on` mount option for writable kernel overlay mount points to fix
+  inode numbers consistency after kernel cache flush (not applicable to fuse-overlayfs).
 
 ## v1.1.7 - \[2023-03-28\]
 
