@@ -395,6 +395,12 @@ The dependencies and their licenses are as follows:
 
 **Project URL:** <https://google.golang.org/grpc>
 
+## gopkg.in/go-jose/go-jose.v2
+
+**License:** Apache-2.0
+
+**Project URL:** <https://gopkg.in/go-jose/go-jose.v2>
+
 ## gopkg.in/square/go-jose.v2
 
 **License:** Apache-2.0
@@ -581,6 +587,12 @@ The dependencies and their licenses are as follows:
 
 **Project URL:** <https://golang.org/x/crypto>
 
+## golang.org/x/exp
+
+**License:** BSD-3-Clause
+
+**Project URL:** <https://golang.org/x/exp>
+
 ## golang.org/x/net
 
 **License:** BSD-3-Clause
@@ -616,6 +628,12 @@ The dependencies and their licenses are as follows:
 **License:** BSD-3-Clause
 
 **Project URL:** <https://google.golang.org/protobuf>
+
+## gopkg.in/go-jose/go-jose.v2/json
+
+**License:** BSD-3-Clause
+
+**Project URL:** <https://gopkg.in/go-jose/go-jose.v2/json>
 
 ## gopkg.in/square/go-jose.v2/json
 
@@ -742,12 +760,6 @@ The dependencies and their licenses are as follows:
 **License:** MIT
 
 **License URL:** <https://github.com/felixge/httpsnoop/blob/master/LICENSE.txt>
-
-## github.com/ghodss/yaml
-
-**License:** MIT
-
-**License URL:** <https://github.com/ghodss/yaml/blob/master/LICENSE>
 
 ## github.com/go-log/log
 
