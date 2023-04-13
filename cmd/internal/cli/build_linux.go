@@ -337,6 +337,8 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 				EncryptionKeyInfo: keyInfo,
 				FixPerms:          buildArgs.fixPerms,
 				SandboxTarget:     sandboxTarget,
+				ResolvConfPath:    buildArgs.resolvConfPath,
+				HostsPath:         buildArgs.hostsPath,
 			},
 		})
 	if err != nil {

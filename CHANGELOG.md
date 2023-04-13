@@ -58,6 +58,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   flag.
 - Support for online verification checks of x509 certificates using OCSP protocol.
   (introduced flag: `verify --ocsp-verify`)
+- `apptainer build` now supports the `--resolv` and `--hosts` flags that
+  specifies the path to bind to the `/etc/resolv.conf` and `/etc/hosts` files
+  inside the container during the image build. When passing an empty string
+  (`""`), Apptainer will not bind to the corresponding guest path.
 
 ### Other changes
 

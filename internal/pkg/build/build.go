@@ -408,17 +408,23 @@ func (b *Build) Full(ctx context.Context) error {
 		}
 
 		// create stage file for /etc/resolv.conf and /etc/hosts
-		sessionResolv, err := createStageFile("/etc/resolv.conf", stage.b, "Name resolution could fail")
-		if err != nil {
-			return err
-		} else if sessionResolv != "" {
-			defer os.Remove(sessionResolv)
+		sessionResolv := ""
+		if stage.b.Opts.ResolvConfPath != "" {
+			sessionResolv, err = createStageFile(stage.b.Opts.ResolvConfPath, "/etc/resolv.conf", stage.b, "Name resolution could fail")
+			if err != nil {
+				return err
+			} else if sessionResolv != "" {
+				defer os.Remove(sessionResolv)
+			}
 		}
-		sessionHosts, err := createStageFile("/etc/hosts", stage.b, "Host resolution could fail")
-		if err != nil {
-			return err
-		} else if sessionHosts != "" {
-			defer os.Remove(sessionHosts)
+		sessionHosts := ""
+		if stage.b.Opts.HostsPath != "" {
+			sessionHosts, err = createStageFile(stage.b.Opts.HostsPath, "/etc/hosts", stage.b, "Host resolution could fail")
+			if err != nil {
+				return err
+			} else if sessionHosts != "" {
+				defer os.Remove(sessionHosts)
+			}
 		}
 
 		if stage.b.Recipe.BuildData.Post.Script != "" {

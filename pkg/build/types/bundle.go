@@ -60,6 +60,8 @@ type Options struct {
 	// encryption if applicable.
 	// A nil value indicates encryption should not occur.
 	EncryptionKeyInfo *cryptkey.KeyInfo
+	// Path to the hosts file, default to /etc/hosts. Empty string disables its mounting.
+	HostsPath string `json:"HostsPath"`
 	// ImgCache stores a pointer to the image cache to use.
 	ImgCache *cache.Handle
 	// NoTest indicates if build should skip running the test script.
@@ -79,6 +81,8 @@ type Options struct {
 	// to preserve <=3.4 behavior.
 	// TODO: Deprecate in 3.6, remove in 3.8
 	FixPerms bool
+	// Path to the resolv.conf file, default to /etc/resolv.conf. Empty string disables its mounting.
+	ResolvConfPath string `json:"resolvConfPath"`
 	// To warn when the above is needed, we need to know if the target of this
 	// bundle will be a sandbox
 	SandboxTarget bool

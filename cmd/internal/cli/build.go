@@ -37,6 +37,7 @@ var buildArgs struct {
 	encrypt           bool
 	fakeroot          bool
 	fixPerms          bool
+	hostsPath         string
 	isJSON            bool
 	noCleanUp         bool
 	noTest            bool
@@ -44,6 +45,7 @@ var buildArgs struct {
 	update            bool
 	nvidia            bool
 	nvccli            bool
+	resolvConfPath    string
 	rocm              bool
 	writableTmpfs     bool // For test section only
 	userns            bool // Enable user namespaces
@@ -222,6 +224,26 @@ var buildMountFlag = cmdline.Flag{
 	EnvHandler:   cmdline.EnvAppendValue,
 }
 
+// --resolv
+var buildResolvFlag = cmdline.Flag{
+	ID:           "buildResolvFlag",
+	Value:        &buildArgs.resolvConfPath,
+	DefaultValue: "/etc/resolv.conf",
+	Name:         "resolv",
+	Usage:        "specify the path to the resolv.conf file for domain name resolution, or empty string (\"\") to disable resolv.conf mounting",
+	EnvKeys:      []string{"RESOLV_CONF_FILE"},
+}
+
+// --hosts
+var buildHostsFlag = cmdline.Flag{
+	ID:           "buildHostsFlag",
+	Value:        &buildArgs.hostsPath,
+	DefaultValue: "/etc/hosts",
+	Name:         "hosts",
+	Usage:        "specify the path to the hosts file for host name resolution, or empty string (\"\") to disable hosts mounting",
+	EnvKeys:      []string{"HOSTS_FILE"},
+}
+
 // --writable-tmpfs
 var buildWritableTmpfsFlag = cmdline.Flag{
 	ID:           "buildWritableTmpfsFlag",
@@ -317,6 +339,8 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildRocmFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildBindFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildMountFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildResolvFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildHostsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildWritableTmpfsFlag, buildCmd)
 
 		cmdManager.RegisterFlagForCmd(&buildUsernsFlag, buildCmd)
