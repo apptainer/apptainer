@@ -14,7 +14,7 @@ require (
 	github.com/buger/goterm v1.0.4
 	github.com/buger/jsonparser v1.1.1
 	github.com/cenkalti/backoff/v4 v4.2.0
-	github.com/containerd/containerd v1.6.19
+	github.com/containerd/containerd v1.7.0
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.2.0
 	github.com/containers/image/v5 v5.25.0
@@ -27,10 +27,10 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gosimple/slug v1.13.1
 	github.com/opencontainers/go-digest v1.0.0
-	github.com/opencontainers/image-spec v1.1.0-rc2
+	github.com/opencontainers/image-spec v1.1.0-rc2.0.20221005185240-3a7f492d3f1b
 	github.com/opencontainers/runc v1.1.6
 	github.com/opencontainers/runtime-spec v1.1.0-rc.1
-	github.com/opencontainers/runtime-tools v0.9.1-0.20210326182921-59cdde06764b
+	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626
 	github.com/opencontainers/selinux v1.11.0
 	github.com/opencontainers/umoci v0.4.7
 	github.com/pelletier/go-toml/v2 v2.0.7
@@ -64,6 +64,7 @@ require (
 )
 
 require (
+	github.com/AdaLogics/go-fuzz-headers v0.0.0-20230106234847-43070de90fa1 // indirect
 	github.com/AdamKorcz/go-fuzz-headers v0.0.0-20210319161527-f761c2329661 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
@@ -72,11 +73,10 @@ require (
 	github.com/alexflint/go-filemutex v1.2.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/bugsnag/bugsnag-go v1.5.1 // indirect
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/cilium/ebpf v0.7.0 // indirect
+	github.com/cilium/ebpf v0.9.1 // indirect
 	github.com/cloudflare/circl v1.1.0 // indirect
 	github.com/containers/libtrust v0.0.0-20230121012942-c1716e8a8d01 // indirect
 	github.com/containers/ocicrypt v1.1.7 // indirect
@@ -94,6 +94,8 @@ require (
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/garyburd/redigo v0.0.0-20150301180006-535138d7bcd7 // indirect
+	github.com/go-logr/logr v1.2.3 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.21.4 // indirect
 	github.com/go-openapi/errors v0.20.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
@@ -168,6 +170,8 @@ require (
 	go.etcd.io/bbolt v1.3.7 // indirect
 	go.mongodb.org/mongo-driver v1.11.3 // indirect
 	go.mozilla.org/pkcs7 v0.0.0-20210826202110-33d05740a352 // indirect
+	go.opentelemetry.io/otel v1.14.0 // indirect
+	go.opentelemetry.io/otel/trace v1.14.0 // indirect
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
 	golang.org/x/mod v0.9.0 // indirect
 	golang.org/x/net v0.9.0 // indirect
