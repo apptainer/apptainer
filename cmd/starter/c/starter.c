@@ -873,14 +873,14 @@ static int shared_mount_namespace_init(struct namespace *nsconfig) {
 static bool is_suid(void) {
     unsigned long auxval;
 
-    verbosef("Check if we are running as setuid\n");
-
     errno = 0;
     auxval = getauxval(AT_SECURE);
 
     if( errno != 0 ) {
         fatalf("Cannot obtain AT_SECURE auxval: %s\n", strerror(errno));
     }
+
+    verbosef("Check if we are running as setuid: %d\n", auxval != 0);
 
     return auxval != 0;
 }

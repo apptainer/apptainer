@@ -58,6 +58,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   flag.
 - Support for online verification checks of x509 certificates using OCSP protocol.
   (introduced flag: `verify --ocsp-verify`)
+- Support for unprivileged encryption of SIF files using gocryptfs.
 
 ### Other changes
 
