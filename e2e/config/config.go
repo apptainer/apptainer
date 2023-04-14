@@ -104,24 +104,8 @@ func (c configTests) configGlobal(t *testing.T) {
 	cleanup := c.prepImages(t)
 	defer cleanup(t)
 
-	setDirective := func(t *testing.T, directive, value string) {
-		c.env.RunApptainer(
-			t,
-			e2e.WithProfile(e2e.RootProfile),
-			e2e.WithCommand("config global"),
-			e2e.WithArgs("--set", directive, value),
-			e2e.ExpectExit(0),
-		)
-	}
-	resetDirective := func(t *testing.T, directive string) {
-		c.env.RunApptainer(
-			t,
-			e2e.WithProfile(e2e.RootProfile),
-			e2e.WithCommand("config global"),
-			e2e.WithArgs("--reset", directive),
-			e2e.ExpectExit(0),
-		)
-	}
+	e2e.SetDirective(t, c.env, "allow setuid-mount extfs", "yes")
+	defer e2e.ResetDirective(t, c.env, "allow setuid-mount extfs")
 
 	u := e2e.UserProfile.HostUser(t)
 	g, err := user.GetGrGID(u.GID)
@@ -537,10 +521,10 @@ func (c configTests) configGlobal(t *testing.T) {
 				if tt.addRequirementsFn != nil {
 					tt.addRequirementsFn(t)
 				}
-				setDirective(t, tt.directive, tt.directiveValue)
+				e2e.SetDirective(t, c.env, tt.directive, tt.directiveValue)
 			}),
 			e2e.PostRun(func(t *testing.T) {
-				resetDirective(t, tt.directive)
+				e2e.ResetDirective(t, c.env, tt.directive)
 			}),
 			e2e.WithCommand("exec"),
 			e2e.WithArgs(tt.argv...),
@@ -553,26 +537,14 @@ func (c configTests) configGlobal(t *testing.T) {
 func (c configTests) configGlobalCombination(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
-	setDirective := func(t *testing.T, directives map[string]string) {
+	setDirectives := func(t *testing.T, directives map[string]string) {
 		for k, v := range directives {
-			c.env.RunApptainer(
-				t,
-				e2e.WithProfile(e2e.RootProfile),
-				e2e.WithCommand("config global"),
-				e2e.WithArgs("--set", k, v),
-				e2e.ExpectExit(0),
-			)
+			e2e.SetDirective(t, c.env, k, v)
 		}
 	}
-	resetDirective := func(t *testing.T, directives map[string]string) {
+	resetDirectives := func(t *testing.T, directives map[string]string) {
 		for k := range directives {
-			c.env.RunApptainer(
-				t,
-				e2e.WithProfile(e2e.RootProfile),
-				e2e.WithCommand("config global"),
-				e2e.WithArgs("--reset", k),
-				e2e.ExpectExit(0),
-			)
+			e2e.ResetDirective(t, c.env, k)
 		}
 	}
 
@@ -741,10 +713,10 @@ func (c configTests) configGlobalCombination(t *testing.T) {
 				if tt.addRequirementsFn != nil {
 					tt.addRequirementsFn(t)
 				}
-				setDirective(t, tt.directives)
+				setDirectives(t, tt.directives)
 			}),
 			e2e.PostRun(func(t *testing.T) {
-				resetDirective(t, tt.directives)
+				resetDirectives(t, tt.directives)
 			}),
 			e2e.WithCommand("exec"),
 			e2e.WithArgs(tt.argv...),

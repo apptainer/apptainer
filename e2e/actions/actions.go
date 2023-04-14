@@ -790,6 +790,9 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
+	e2e.SetDirective(t, c.env, "allow setuid-mount extfs", "yes")
+	defer e2e.ResetDirective(t, c.env, "allow setuid-mount extfs")
+
 	tests := []struct {
 		name    string
 		argv    []string
@@ -1933,6 +1936,9 @@ func (c actionTests) bindImage(t *testing.T) {
 		}...),
 		e2e.ExpectExit(0),
 	)
+
+	e2e.SetDirective(t, c.env, "allow setuid-mount extfs", "yes")
+	defer e2e.ResetDirective(t, c.env, "allow setuid-mount extfs")
 
 	tests := []struct {
 		name    string
