@@ -152,6 +152,7 @@ var authorizedImage = map[string]fsContext{
 	"encryptfs": {true},
 	"ext3":      {true},
 	"squashfs":  {true},
+	"gocryptfs": {true},
 }
 
 var authorizedFS = map[string]fsContext{

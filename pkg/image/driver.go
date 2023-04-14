@@ -33,14 +33,15 @@ type MountFunc func(source string, target string, filesystem string, flags uintp
 // MountParams defines parameters passed to driver interface
 // while mounting images.
 type MountParams struct {
-	Source     string   // image source
-	Target     string   // image target mount point
-	Filesystem string   // image filesystem type
-	Flags      uintptr  // mount flags
-	Offset     uint64   // offset where start filesystem
-	Size       uint64   // size of image filesystem
-	Key        []byte   // filesystem decryption key
-	FSOptions  []string // filesystem mount options
+	Source           string   // image source
+	Target           string   // image target mount point
+	Filesystem       string   // image filesystem type
+	Flags            uintptr  // mount flags
+	Offset           uint64   // offset where start filesystem
+	Size             uint64   // size of image filesystem
+	Key              []byte   // filesystem decryption key
+	FSOptions        []string // filesystem mount options
+	DontElevatePrivs bool     // omit cmd.SysProcAttr, currently only used by gocryptfs
 }
 
 // DriverParams defines parameters passed to driver interface

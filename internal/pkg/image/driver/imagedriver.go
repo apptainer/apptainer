@@ -29,7 +29,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 )
 
-const driverName = "fuseapps"
+const DriverName = "fuseapps"
 
 type fuseappsInstance struct {
 	cmd    *exec.Cmd
@@ -43,11 +43,12 @@ type fuseappsFeature struct {
 }
 
 type fuseappsDriver struct {
-	squashFeature  fuseappsFeature
-	ext3Feature    fuseappsFeature
-	overlayFeature fuseappsFeature
-	cmdPrefix      []string
-	squashSetUID   bool
+	squashFeature    fuseappsFeature
+	ext3Feature      fuseappsFeature
+	overlayFeature   fuseappsFeature
+	gocryptfsFeature fuseappsFeature
+	cmdPrefix        []string
+	squashSetUID     bool
 }
 
 func (f *fuseappsFeature) init(binNames string, purpose string, desired image.DriverFeature) {
@@ -68,14 +69,14 @@ func (f *fuseappsFeature) init(binNames string, purpose string, desired image.Dr
 }
 
 func InitImageDrivers(register bool, unprivileged bool, fileconf *apptainerconf.File, desiredFeatures image.DriverFeature) error {
-	if fileconf.ImageDriver != "" && fileconf.ImageDriver != driverName {
-		sylog.Debugf("skipping installing %v image driver because %v already configured", driverName, fileconf.ImageDriver)
+	if fileconf.ImageDriver != "" && fileconf.ImageDriver != DriverName {
+		sylog.Debugf("skipping installing %v image driver because %v already configured", DriverName, fileconf.ImageDriver)
 		// allow a configured driver to take precedence
 		return nil
 	}
 	if !unprivileged {
 		// no need for these features if running privileged
-		if fileconf.ImageDriver == driverName {
+		if fileconf.ImageDriver == DriverName {
 			// must have been incorrectly thought to be unprivileged
 			// at an earlier point (e.g. TestLibraryPacker unit-test)
 			fileconf.ImageDriver = ""
@@ -86,9 +87,11 @@ func InitImageDrivers(register bool, unprivileged bool, fileconf *apptainerconf.
 	var squashFeature fuseappsFeature
 	var ext3Feature fuseappsFeature
 	var overlayFeature fuseappsFeature
+	var gocryptfsFeature fuseappsFeature
 	squashFeature.init("squashfuse_ll|squashfuse", "mount SIF", desiredFeatures&image.ImageFeature)
 	ext3Feature.init("fuse2fs", "mount EXT3 filesystems", desiredFeatures&image.ImageFeature)
 	overlayFeature.init("fuse-overlayfs", "use overlay", desiredFeatures&image.OverlayFeature)
+	gocryptfsFeature.init("gocryptfs", "use gocryptfs", desiredFeatures&image.ImageFeature)
 
 	// squashfuse generally supports the -o uid and -o gid options, except
 	// on Debian 18.04, but it doesn't show in the help output so we just
@@ -121,11 +124,11 @@ func InitImageDrivers(register bool, unprivileged bool, fileconf *apptainerconf.
 		_ = cmd.Wait()
 	}
 
-	if squashFeature.cmdPath != "" || ext3Feature.cmdPath != "" || overlayFeature.cmdPath != "" {
-		sylog.Debugf("Setting ImageDriver to %v", driverName)
-		fileconf.ImageDriver = driverName
+	if squashFeature.cmdPath != "" || ext3Feature.cmdPath != "" || overlayFeature.cmdPath != "" || gocryptfsFeature.cmdPath != "" {
+		sylog.Debugf("Setting ImageDriver to %v", DriverName)
+		fileconf.ImageDriver = DriverName
 		if register {
-			return image.RegisterDriver(driverName, &fuseappsDriver{squashFeature, ext3Feature, overlayFeature, []string{}, squashSetUID})
+			return image.RegisterDriver(DriverName, &fuseappsDriver{squashFeature, ext3Feature, overlayFeature, gocryptfsFeature, []string{}, squashSetUID})
 		}
 	}
 	return nil
@@ -133,7 +136,7 @@ func InitImageDrivers(register bool, unprivileged bool, fileconf *apptainerconf.
 
 func (d *fuseappsDriver) Features() image.DriverFeature {
 	var features image.DriverFeature
-	if d.squashFeature.cmdPath != "" || d.ext3Feature.cmdPath != "" {
+	if d.squashFeature.cmdPath != "" || d.ext3Feature.cmdPath != "" || d.gocryptfsFeature.cmdPath != "" {
 		features |= image.ImageFeature
 	}
 	if d.overlayFeature.cmdPath != "" {
@@ -181,7 +184,11 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 			cmdArgs = append(cmdArgs, f.cmdPath, "-f", srcPath, params.Target)
 		}
 		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
-
+	case "gocryptfs":
+		f = &d.gocryptfsFeature
+		cmdArgs = append(cmdArgs, f.cmdPath, "-fg", params.Source, params.Target)
+		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
+		cmd.Stdin = strings.NewReader(fmt.Sprintf("%s\n", string(params.Key)))
 	case "ext3":
 		f = &d.ext3Feature
 		srcPath := params.Source
@@ -245,17 +252,22 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 		targetFd, _ := strconv.Atoi(path.Base(params.Source))
 		cmd.ExtraFiles[0] = os.NewFile(uintptr(targetFd), params.Source)
 	}
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		AmbientCaps: []uintptr{
-			uintptr(capabilities.Map["CAP_SYS_ADMIN"].Value),
-			// Needed for nsenter
-			//  https://stackoverflow.com/a/69724124/10457761
-			uintptr(capabilities.Map["CAP_SYS_PTRACE"].Value),
-		},
+
+	// when using gocryptfs for build step, we should not use SysProcAttr
+	if !params.DontElevatePrivs {
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			AmbientCaps: []uintptr{
+				uintptr(capabilities.Map["CAP_SYS_ADMIN"].Value),
+				// Needed for nsenter
+				//  https://stackoverflow.com/a/69724124/10457761
+				uintptr(capabilities.Map["CAP_SYS_PTRACE"].Value),
+			},
+		}
 	}
+
 	var err error
 	if err = cmd.Start(); err != nil {
-		return fmt.Errorf("%v Start failed: %v: %v", f.binName, err, stderr.String())
+		return fmt.Errorf("%v Start failed: %v, stderr: %v", f.binName, err, stderr.String())
 	}
 	process := cmd.Process
 	if process == nil {
@@ -269,6 +281,10 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 		// from squashfuse_ll
 		"failed to clone device fd",
 		"continue without -o clone_fd",
+		// from gocryptfs
+		"Reading Password from stdin",
+		"Decrypting master key",
+		"Filesystem mounted and ready.",
 	}
 	filterMsg := func() string {
 		var errstr string
@@ -308,9 +324,10 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 		totTime += sleepTime
 		var ws syscall.WaitStatus
 		wpid, err := syscall.Wait4(process.Pid, &ws, syscall.WNOHANG, nil)
-		if err != nil {
+		if err != nil && err != syscall.ECHILD {
 			return fmt.Errorf("unable to get wait status on %v: %v: %v", f.binName, err, filterMsg())
 		}
+
 		if wpid != 0 {
 			msg := filterMsg()
 			if strings.Contains(msg, "fusermount") {
@@ -321,6 +338,7 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 			}
 			return fmt.Errorf("%v exited with status %v: %v", f.binName, ws.ExitStatus(), msg)
 		}
+
 		// See if mount has succeeded
 		entries, err := proc.GetMountInfoEntry("/proc/self/mountinfo")
 		if err != nil {
@@ -362,7 +380,7 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 					sylog.Infof("/usr/bin not writable in container")
 					sylog.Infof("Consider using a different overlay upper layer filesystem type")
 				} else {
-					sylog.Debugf("successfully created %v", tmpfile.Name())
+					sylog.Debugf("Successfully created %v", tmpfile.Name())
 					tmpfile.Close()
 					os.Remove(tmpfile.Name())
 				}
@@ -434,7 +452,7 @@ func (f *fuseappsFeature) stop(target string, kill bool) error {
 			if kill {
 				kill = false
 				killed = true
-				process.Kill()
+				syscall.Kill(process.Pid, syscall.SIGTERM)
 				continue
 			}
 			sleepTime := 10 * time.Millisecond
@@ -457,6 +475,9 @@ func (d *fuseappsDriver) Stop(target string) error {
 		return err
 	}
 	if err = d.overlayFeature.stop(target, false); err != nil {
+		return err
+	}
+	if err = d.gocryptfsFeature.stop(target, false); err != nil {
 		return err
 	}
 	return nil

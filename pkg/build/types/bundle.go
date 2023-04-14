@@ -84,6 +84,8 @@ type Options struct {
 	SandboxTarget bool
 	// Binds stores bind mounts used for the post scripts
 	Binds []string
+	// whether using gocryptfs to build and run encrypted containers
+	Unprivilege bool
 }
 
 // NewEncryptedBundle creates an Encrypted Bundle environment.

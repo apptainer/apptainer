@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -413,6 +414,104 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 	)
 }
 
+func (c ctx) testExecGocryptfsEncryptedSIF(t *testing.T) {
+	pemPubFile, pemPrivFile := e2e.GeneratePemFiles(t, c.env.TestDir)
+	// We create a temporary directory to store the image, making sure tests
+	// will not pollute each other
+	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
+	defer cleanup(t)
+
+	imgPath := filepath.Join(tempDir, "encrypted_pem.sif")
+	cmdArgs := []string{"--pem-path", pemPubFile, imgPath, e2e.BusyboxSIF(t)}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs(cmdArgs...),
+		e2e.ExpectExit(0),
+	)
+
+	// Using command line
+	cmdArgs = []string{"--userns", "--pem-path", pemPrivFile, imgPath, "sh", "-c", "echo 'hi'"}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs(cmdArgs...),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.ExactMatch, "hi"),
+		),
+	)
+
+	// Using environment variables
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs(cmdArgs...),
+		e2e.WithEnv([]string{fmt.Sprintf("APPTAINER_ENCRYPTION_PEM_PATH=%s", pemPrivFile)}),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.ExactMatch, "hi"),
+		),
+	)
+
+	imgPassPath := filepath.Join(tempDir, "encrypted_pass.sif")
+	cmdArgs = []string{"--userns", "--passphrase", imgPassPath, e2e.BusyboxSIF(t)}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithStdin(strings.NewReader("1234\n")),
+		e2e.WithArgs(cmdArgs...),
+		e2e.ExpectExit(0),
+	)
+
+	// Using command line
+	cmdArgs = []string{"--userns", "--passphrase", imgPassPath, "sh", "-c", "echo 'hi'"}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithStdin(strings.NewReader("1234\n")),
+		e2e.WithArgs(cmdArgs...),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.ContainMatch, "hi"),
+		),
+	)
+
+	// Using environment variables
+	cmdArgs = []string{"--userns", imgPassPath, "sh", "-c", "echo 'hi'"}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs(cmdArgs...),
+		e2e.WithEnv([]string{"APPTAINER_ENCRYPTION_PASSPHRASE=1234"}),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.ExactMatch, "hi"),
+		),
+	)
+
+	// Using both command line and environment variables
+	cmdArgs = []string{"--userns", "--passphrase", imgPassPath, "sh", "-c", "echo 'hi'"}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs(cmdArgs...),
+		e2e.WithEnv([]string{"APPTAINER_ENCRYPTION_PASSPHRASE=1234"}),
+		e2e.WithStdin(strings.NewReader("1234\n")),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.ContainMatch, "hi"),
+		),
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -428,5 +527,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"fuse squash mount":                   c.testFuseSquashMount,
 		"fuse ext3 mount":                     c.testFuseExt3Mount,
 		"add package with fakeroot and tmpfs": c.testAddPackageWithFakerootAndTmpfs,
+		"gocryptfs sif executation":           c.testExecGocryptfsEncryptedSIF,
 	}
 }

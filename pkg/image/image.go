@@ -36,6 +36,8 @@ const (
 	ENCRYPTSQUASHFS
 	// RAW constant for raw format
 	RAW
+	// GOCRYPTFS constant for encrypted gocryptfs format
+	GOCRYPTFSSQUASHFS
 )
 
 type Usage uint8
@@ -266,7 +268,7 @@ func (i *Image) HasEncryptedRootFs() (encrypted bool, err error) {
 	}
 
 	for _, p := range rootFsParts {
-		if p.Type == ENCRYPTSQUASHFS {
+		if p.Type == ENCRYPTSQUASHFS || p.Type == GOCRYPTFSSQUASHFS {
 			return true, nil
 		}
 	}

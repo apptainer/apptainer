@@ -560,7 +560,7 @@ func (l *Launcher) checkEncryptionKey() error {
 		return fmt.Errorf("while getting root filesystem in %s: %w", l.engineConfig.GetImage(), err)
 	}
 
-	if part.Type == imgutil.ENCRYPTSQUASHFS {
+	if part.Type == imgutil.ENCRYPTSQUASHFS || part.Type == imgutil.GOCRYPTFSSQUASHFS {
 		sylog.Debugf("Encrypted container filesystem detected")
 
 		if l.cfg.KeyInfo == nil {

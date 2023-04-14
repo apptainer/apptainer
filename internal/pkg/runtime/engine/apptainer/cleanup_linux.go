@@ -139,9 +139,14 @@ func umount() (err error) {
 		}
 	}()
 
+	// gocryptfs related temp folders
+	var gocryptfsTmp []string
 	for i := len(umountPoints) - 1; i >= 0; i-- {
 		p := umountPoints[i]
 		sylog.Debugf("Umount %s", p)
+		if strings.Contains(p, "gocryptfs-") {
+			gocryptfsTmp = append(gocryptfsTmp, p)
+		}
 		retries := 0
 	retry:
 		err = syscall.Unmount(p, 0)
@@ -173,6 +178,10 @@ func umount() (err error) {
 		}
 	}
 
+	if len(gocryptfsTmp) > 0 {
+		dir := filepath.Dir(gocryptfsTmp[0])
+		defer os.RemoveAll(dir)
+	}
 	if len(errs) == 0 {
 		return nil
 	}

@@ -44,6 +44,8 @@ const (
 	Passphrase
 	// PEM indicates the key material is formatted as a PEM file.
 	PEM
+	// hash size for encryption (Bytes)
+	Hash = 32
 )
 
 // KeyInfo contains information for passing around
@@ -88,14 +90,28 @@ func EncryptKey(k KeyInfo, plaintext []byte) ([]byte, error) {
 			return nil, fmt.Errorf("loading public key for key encryption: %v", err)
 		}
 
-		ciphertext, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, pubKey, plaintext, nil)
-		if err != nil {
-			return nil, fmt.Errorf("encrypting key: %v", err)
+		msglen := len(plaintext)
+		step := pubKey.Size() - 2*Hash - 2
+		var cipherText bytes.Buffer
+
+		for start := 0; start < msglen; start = start + step {
+			finish := start + step
+			if finish > msglen {
+				finish = msglen
+			}
+			ciphertext, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, pubKey, plaintext[start:finish], nil)
+			if err != nil {
+				return nil, fmt.Errorf("encrypting key: %v", err)
+			}
+			_, err = cipherText.Write(ciphertext)
+			if err != nil {
+				return nil, fmt.Errorf("could not write encrypted message to buf: %v", err)
+			}
 		}
 
 		var buf bytes.Buffer
 
-		if err := savePEMMessage(&buf, ciphertext); err != nil {
+		if err := savePEMMessage(&buf, cipherText.Bytes()); err != nil {
 			return nil, fmt.Errorf("serializing encrypted key: %v", err)
 		}
 
@@ -129,12 +145,27 @@ func PlaintextKey(k KeyInfo, image string) ([]byte, error) {
 			return nil, fmt.Errorf("could not unpack LUKS PEM from SIF: %v", err)
 		}
 
-		plaintext, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, privateKey, encKey, nil)
-		if err != nil {
-			return nil, fmt.Errorf("could not decrypt LUKS key: %v", err)
+		msglen := len(encKey)
+		step := privateKey.PublicKey.Size()
+		var plainText bytes.Buffer
+
+		for start := 0; start < msglen; start = start + step {
+			finish := start + step
+			if finish > msglen {
+				finish = msglen
+			}
+			plaintext, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, privateKey, encKey[start:finish], nil)
+			if err != nil {
+				return nil, fmt.Errorf("could not decrypt LUKS key: %v", err)
+			}
+
+			_, err = plainText.Write(plaintext)
+			if err != nil {
+				return nil, fmt.Errorf("could not write decrypt LUKS key to buffer: %v", err)
+			}
 		}
 
-		return plaintext, nil
+		return plainText.Bytes(), nil
 
 	case Passphrase:
 		return []byte(k.Material), nil

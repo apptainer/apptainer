@@ -319,6 +319,9 @@ jobs:
         if: env.run_tests
         run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential uidmap squashfs-tools squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
 
+      - name: Fetch gocryptfs
+        run: wget -O gocryptfs.tar.gz https://github.com/rfjakob/gocryptfs/releases/download/v2.3/gocryptfs_v2.3_linux-static_amd64.tar.gz && sudo tar xzvf gocryptfs.tar.gz -C /usr/local/bin gocryptfs
+
       # The fuse-overlayfs version from ubuntu-22.04, 1.7, is buggy,
       # so update to version 1.9
       # See https://github.com/apptainer/apptainer/issues/796

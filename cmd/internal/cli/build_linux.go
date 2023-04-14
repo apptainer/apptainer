@@ -41,7 +41,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func fakerootExec(isDeffile bool) {
+func fakerootExec(isDeffile, unprivEncrypt bool) {
 	useSuid := buildcfg.APPTAINER_SUID_INSTALL == 1 && !buildArgs.userns
 
 	// First remove fakeroot option from args and environment if present
@@ -100,6 +100,9 @@ func fakerootExec(isDeffile bool) {
 		sylog.Infof("Could not start root-mapped namespace")
 		if !useSuid && isDeffile {
 			sylog.Fatalf("Building from a definition file unprivileged requires either a suid installation or unprivileged user namespaces")
+		}
+		if unprivEncrypt {
+			sylog.Fatalf("Building with encryption unprivileged requires unprivileged user namespaces")
 		}
 		// Returning from here at this point will go on to try
 		// the fakeroot command below
@@ -220,9 +223,10 @@ func runBuild(cmd *cobra.Command, args []string) {
 
 func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fakerootPath string) {
 	var keyInfo *cryptkey.KeyInfo
+	unprivilege := false
 	if buildArgs.encrypt || promptForPassphrase || cmd.Flags().Lookup("pem-path").Changed {
 		if namespaces.IsUnprivileged() {
-			sylog.Fatalf("You must be root to build an encrypted container")
+			unprivilege = true
 		}
 
 		k, err := getEncryptionMaterial(cmd)
@@ -230,6 +234,11 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 			sylog.Fatalf("While handling encryption material: %v", err)
 		}
 		keyInfo = k
+
+		if keyInfo == nil && unprivilege {
+			sylog.Errorf("Missing encryption info, please add `--passphrase` or `--pem-path` or corresponding environment variable")
+			return
+		}
 	} else {
 		_, passphraseEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PASSPHRASE")
 		_, pemPathEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PEM_PATH")
@@ -337,6 +346,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 				EncryptionKeyInfo: keyInfo,
 				FixPerms:          buildArgs.fixPerms,
 				SandboxTarget:     sandboxTarget,
+				Unprivilege:       unprivilege,
 			},
 		})
 	if err != nil {

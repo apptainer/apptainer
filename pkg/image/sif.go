@@ -50,6 +50,8 @@ func checkPartitionType(img *Image, fstype sif.FSType, offset int64) (uint32, er
 		return ENCRYPTSQUASHFS, nil
 	case sif.FsRaw:
 		return RAW, nil
+	case sif.FsGocryptfsSquashfs:
+		return GOCRYPTFSSQUASHFS, nil
 	}
 
 	return 0, fmt.Errorf("unknown filesystem type %v", fstype)

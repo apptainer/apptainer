@@ -796,25 +796,33 @@ func (c *container) mountImage(mnt *mount.Point) error {
 
 	mountType := mnt.Type
 
-	if mountType == "encryptfs" {
+	if mountType == "encryptfs" || mountType == "gocryptfs" {
 		key, err = mount.GetKey(mnt.InternalOptions)
 		if err != nil {
 			return err
 		}
 	}
 
+	params := &image.MountParams{
+		Source:     mnt.Source,
+		Target:     mnt.Destination,
+		Filesystem: mountType,
+		Flags:      flags,
+		Offset:     offset,
+		Size:       sizelimit,
+		Key:        key,
+		FSOptions:  opts,
+	}
+
 	if imageDriver != nil && imageDriver.Features()&image.ImageFeature != 0 {
-		params := &image.MountParams{
-			Source:     mnt.Source,
-			Target:     mnt.Destination,
-			Filesystem: mountType,
-			Flags:      flags,
-			Offset:     offset,
-			Size:       sizelimit,
-			Key:        key,
-			FSOptions:  opts,
+		if mountType == "gocryptfs" {
+			return gocryptfsMount(params, c.rpcOps.Mount)
 		}
 		return imageDriver.Mount(params, c.rpcOps.Mount)
+	}
+
+	if imageDriver == nil && mountType == "gocryptfs" {
+		return fmt.Errorf("gocryptfs requires user namespace, please add `--userns` option")
 	}
 
 	attachFlag := os.O_RDWR
@@ -913,6 +921,9 @@ func (c *container) addRootfsMount(system *mount.System) error {
 		mountType = "ext3"
 	case image.ENCRYPTSQUASHFS:
 		mountType = "encryptfs"
+		key = c.engine.EngineConfig.GetEncryptionKey()
+	case image.GOCRYPTFSSQUASHFS:
+		mountType = "gocryptfs"
 		key = c.engine.EngineConfig.GetEncryptionKey()
 	case image.SANDBOX:
 		sylog.Debugf("Mounting directory rootfs: %v\n", rootfs)
@@ -2736,4 +2747,82 @@ func (c *container) getBindFlags(source string, defaultFlags uintptr) (uintptr, 
 	}
 
 	return defaultFlags | addFlags, nil
+}
+
+func gocryptfsMount(params *image.MountParams, mfunc image.MountFunc) error {
+	// Prepare gocryptfs decryption info
+	tmpDir, err := os.MkdirTemp(os.TempDir(), "gocryptfs-")
+	if err != nil {
+		return err
+	}
+	cipherDir := filepath.Join(tmpDir, "cipher")
+	err = os.Mkdir(cipherDir, 0o700)
+	if err != nil {
+		return err
+	}
+	plainDir := filepath.Join(tmpDir, "plain")
+	err = os.Mkdir(plainDir, 0o700)
+	if err != nil {
+		return err
+	}
+
+	origTarget := params.Target
+	params.Target = cipherDir
+	params.Filesystem = "squashfs"
+
+	// Mount using squashfs
+	err = imageDriver.Mount(params, mfunc)
+	if err != nil {
+		return err
+	}
+	umountPoints = append(umountPoints, params.Target)
+
+	// Verify mounted files
+	files, err := os.ReadDir(cipherDir)
+	if err != nil || len(files) == 0 {
+		return fmt.Errorf("previous squashfs mount failed, no files in %s", cipherDir)
+	}
+
+	var targetfile string
+	for _, file := range files {
+		info, err := file.Info()
+		if err != nil {
+			return err
+		}
+		sylog.Debugf("File name: %s, file size: %d\n", info.Name(), info.Size())
+		if info.Size() == 0 {
+			return fmt.Errorf("%s file size should not be 0", file.Name())
+		}
+		if strings.HasPrefix(file.Name(), "squashfs-") {
+			targetfile = file.Name()
+			break
+		}
+	}
+
+	if targetfile == "" {
+		return fmt.Errorf("could not find mounted squashfs file")
+	}
+
+	// Mount using gocryptfs
+	params.Source = cipherDir
+	params.Target = plainDir
+	params.Filesystem = "gocryptfs"
+	err = imageDriver.Mount(params, mfunc)
+	if err != nil {
+		return err
+	}
+	umountPoints = append(umountPoints, params.Target)
+
+	// Mount using squashfs
+	params.Source = fmt.Sprintf("%s/%s", plainDir, targetfile)
+	params.Target = origTarget
+	params.Offset = 0
+	params.Filesystem = "squashfs"
+
+	// Verify if the target file exists
+	_, err = os.Stat(params.Source)
+	if err != nil && errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("could not locate the decrypted squashfs file, previous gocryptfs mount failed")
+	}
+	return imageDriver.Mount(params, mfunc)
 }
