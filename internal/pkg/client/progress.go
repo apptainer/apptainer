@@ -24,21 +24,21 @@ func initProgressBar(totalSize int64) (*mpb.Progress, *mpb.Bar) {
 	if totalSize > 0 {
 		return p, p.AddBar(totalSize,
 			mpb.PrependDecorators(
-				decor.Counters(decor.UnitKiB, "%.1f / %.1f"),
+				decor.Counters(decor.SizeB1024(0), "%.1f / %.1f"),
 			),
 			mpb.AppendDecorators(
 				decor.Percentage(),
-				decor.AverageSpeed(decor.UnitKiB, " % .1f "),
+				decor.AverageSpeed(decor.SizeB1024(0), " % .1f "),
 				decor.AverageETA(decor.ET_STYLE_GO),
 			),
 		)
 	}
 	return p, p.AddBar(totalSize,
 		mpb.PrependDecorators(
-			decor.Current(decor.UnitKiB, "%.1f / ???"),
+			decor.Current(decor.SizeB1024(0), "%.1f / ???"),
 		),
 		mpb.AppendDecorators(
-			decor.AverageSpeed(decor.UnitKiB, " % .1f "),
+			decor.AverageSpeed(decor.SizeB1024(0), " % .1f "),
 		),
 	)
 }
