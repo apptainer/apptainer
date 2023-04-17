@@ -43,7 +43,7 @@ for the current stable major.minor version of Apptainer.
    incorporating `CHANGELOG.md` information.
 1. Notify the community about the release via the Google Group and Slack.
 
-## After the Patch Release
+### After the Patch Release
 
 1. Create and merge a PR from the `release-XXX` branch into `main`, so that the
    changelog is synchronized etc.
@@ -54,7 +54,7 @@ A Major release (e.g. 1.1 -> 2.0), or minor release (e.g. 1.1 -> 1.2)
 requires a minimum of two weeks to complete. This allows time for feedback on at
 least one release candidate to be received from the user community.
 
-## Prior to Release
+### Prior to Release
 
 1. Set a target date for the release candidate (if required) and release.
    Generally 2 weeks from RC -> release is appropriate for new 1.X minor
@@ -71,7 +71,7 @@ least one release candidate to be received from the user community.
    addressing patch release fixes that require dependency updates, as we use
    several dependencies that move quickly.
 
-## Creating the Release Branch and Release Candidate
+### Creating the Release Branch and Release Candidate
 
 When a new major or minor version of Apptainer is issued the release
 process begins by branching, and then issuing, a release candidate for
@@ -102,7 +102,7 @@ broader testing.
 There will often be multiple release candidates issued prior to the final
 release of a new major or minor version. Each new RC follows step 5 and above.
 
-## Creating a Final Major / Minor Release
+### Creating a Final Major / Minor Release
 
 1. Ensure the user and admin documentation is up-to-date for the new
    version, has been branched, and tagged.
@@ -137,7 +137,7 @@ release of a new major or minor version. Each new RC follows step 5 and above.
 1. Notify the community about the release candidate via the announce Google Group
    and the Slack #general channel.
 
-## After the Release
+### After the Release
 
 1. Create and merge a PR from the `release-XXX` branch into `main`, so that
    history from the RC process etc. is captured on `main`.
