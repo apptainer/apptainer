@@ -39,7 +39,6 @@ for the current stable major.minor version of Apptainer.
 1. After all PRs are merged, apply an annotated tag to the HEAD of the release
    branch via `git tag -a -m "Apptainer v1.1.9" v1.1.9`.
 1. Push the tag to the GitHub repository via `git push upstream v1.1.9`.
-1. (Re-)trigger the CI workflow against the tag.
 1. Create a GitHub release, using the previous release as a guide and
    incorporating `CHANGELOG.md` information.
 1. Notify the community about the release via the Google Group and Slack.
