@@ -58,11 +58,11 @@ func (c *progressCallback) InitUpload(totalSize int64, r io.Reader) {
 	c.progress = mpb.New()
 	c.bar = c.progress.AddBar(totalSize,
 		mpb.PrependDecorators(
-			decor.Counters(decor.UnitKiB, "%.1f / %.1f"),
+			decor.Counters(decor.SizeB1024(0), "%.1f / %.1f"),
 		),
 		mpb.AppendDecorators(
 			decor.Percentage(),
-			decor.AverageSpeed(decor.UnitKiB, " % .1f "),
+			decor.AverageSpeed(decor.SizeB1024(0), " % .1f "),
 			decor.AverageETA(decor.ET_STYLE_GO),
 		),
 	)
