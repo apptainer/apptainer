@@ -59,6 +59,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Support for online verification checks of x509 certificates using OCSP protocol.
   (introduced flag: `verify --ocsp-verify`)
 - Support for unprivileged encryption of SIF files using gocryptfs.
+- The `instance start` command now accepts an optional `--app <name>` argument which
+  invokes start script within the `%appstart <name>` section in the definition file.
+  The `instance stop` command still only requires the instance name.
 
 ### Other changes
 

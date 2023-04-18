@@ -567,6 +567,7 @@ var appSections = map[string]bool{
 	"apptest":    true,
 	"apphelp":    true,
 	"apprun":     true,
+	"appstart":   true,
 }
 
 // validHeaders just contains a list of all the valid headers a definition file

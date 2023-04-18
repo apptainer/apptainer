@@ -870,7 +870,7 @@ func init() {
 
 		cmdManager.RegisterFlagForCmd(&actionAddCapsFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionAllowSetuidFlag, actionsInstanceCmd...)
-		cmdManager.RegisterFlagForCmd(&actionAppFlag, actionsCmd...)
+		cmdManager.RegisterFlagForCmd(&actionAppFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionApplyCgroupsFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionBindFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionCleanEnvFlag, actionsInstanceCmd...)
