@@ -37,6 +37,9 @@ exec "$@"
 %apprun hello
 echo "hello"
 
+%appstart hello
+exec "$@"
+
 %apphelp hello
 This is the help for hello!
 

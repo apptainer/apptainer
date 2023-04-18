@@ -57,6 +57,10 @@ export HELLOTHISIS
 %apprun foo
     echo "RUNNING FOO"
 
+%appstart foo
+    echo "STARTING FOO"
+    exec nc -l -k -p $1 -e /bin/cat
+
 %startscript
     exec nc -l -k -p $1 -e /bin/cat
 

@@ -17,6 +17,7 @@ type AppAttributes struct {
 	Environment map[string]string `json:"environment,omitempty"`
 	Labels      map[string]string `json:"labels,omitempty"`
 	Runscript   string            `json:"runscript,omitempty"`
+	Startscript string            `json:"startscript,omitempty"`
 	Test        string            `json:"test,omitempty"`
 	Helpfile    string            `json:"helpfile,omitempty"`
 }

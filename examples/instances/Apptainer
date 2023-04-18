@@ -3,3 +3,7 @@ From: ghcr.io/apptainer/busybox:1.31.1
 
 %startscript
     exec nc -ll -p $1 -e /bin/cat 2>/dev/null
+
+%appstart foo
+    echo "STARTING FOO"
+    exec nc -ll -p $1 -e /bin/cat 2>/dev/null

@@ -146,6 +146,13 @@ Stage: {{.Stage}}
     {{$l}}
 {{- end}}
 
+{{- if $app.Start}}
+%apprun {{$app.Name}}
+{{- end}}
+{{- range $l := $app.Start}}
+    {{$l}}
+{{- end}}
+
 {{- if $app.Test}}
 %apptest {{$app.Name}}
 {{- end}}
