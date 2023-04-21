@@ -78,6 +78,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   non-default cgroupfs manager, and no device rules.
 - Ensure `DOCKER_HOST` is honored in non-build flows.
 - Remove duplicated group ids.
+- Corrected `apptainer.conf` comment, to refer to correct file as source
+  of default capabilities when `root default capabilities = file`.
 
 ## v1.1.8 - \[2023-04-25\]
 
