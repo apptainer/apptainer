@@ -25,14 +25,15 @@ import (
 )
 
 type configTests struct {
-	env            e2e.TestEnv
-	sifImage       string
-	encryptedImage string
-	squashfsImage  string
-	ext3Image      string
-	sandboxImage   string
-	pemPublic      string
-	pemPrivate     string
+	env              e2e.TestEnv
+	sifImage         string
+	encryptedImage   string
+	squashfsImage    string
+	ext3Image        string
+	ext3OverlayImage string
+	sandboxImage     string
+	pemPublic        string
+	pemPrivate       string
 }
 
 // prepImages creates containers covering all image formats to test the
@@ -96,6 +97,20 @@ func (c *configTests) prepImages(t *testing.T) (cleanup func(t *testing.T)) {
 		}
 	})
 
+	// An ext3 overlay embedded in a SIF
+	c.ext3OverlayImage = filepath.Join(tmpDir, "ext3Overlay.img")
+	if err := fs.CopyFile(c.sifImage, c.ext3OverlayImage, 0o755); err != nil {
+		t.Fatalf("Could not copy test image file: %v", err)
+	}
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("PrepareExt3Overlay"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("overlay"),
+		e2e.WithArgs("create", c.ext3OverlayImage),
+		e2e.ExpectExit(0),
+	)
+
 	return cleanup
 }
 
@@ -104,24 +119,8 @@ func (c configTests) configGlobal(t *testing.T) {
 	cleanup := c.prepImages(t)
 	defer cleanup(t)
 
-	setDirective := func(t *testing.T, directive, value string) {
-		c.env.RunApptainer(
-			t,
-			e2e.WithProfile(e2e.RootProfile),
-			e2e.WithCommand("config global"),
-			e2e.WithArgs("--set", directive, value),
-			e2e.ExpectExit(0),
-		)
-	}
-	resetDirective := func(t *testing.T, directive string) {
-		c.env.RunApptainer(
-			t,
-			e2e.WithProfile(e2e.RootProfile),
-			e2e.WithCommand("config global"),
-			e2e.WithArgs("--reset", directive),
-			e2e.ExpectExit(0),
-		)
-	}
+	e2e.SetDirective(t, c.env, "allow setuid-mount extfs", "yes")
+	defer e2e.ResetDirective(t, c.env, "allow setuid-mount extfs")
 
 	u := e2e.UserProfile.HostUser(t)
 	g, err := user.GetGrGID(u.GID)
@@ -504,6 +503,169 @@ func (c configTests) configGlobal(t *testing.T) {
 			directiveValue: "yes",
 			exit:           0,
 		},
+		// NOTE: the "allow setuid-mount" tests have to stay after the
+		// "allow container" tests because they will be left in their
+		// default settings which can interfere with "allow container" tests.
+		{
+			name:           "AllowSetuidMountEncryptedNo",
+			argv:           []string{"--pem-path", c.pemPrivate, c.encryptedImage, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount encrypted",
+			directiveValue: "no",
+			exit:           255,
+		},
+		{
+			name:           "AllowSetuidMountEncryptedYes",
+			argv:           []string{"--pem-path", c.pemPrivate, c.encryptedImage, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount encrypted",
+			directiveValue: "yes",
+			exit:           0,
+		},
+		{
+			name:           "AllowSetuidMountSquashfsNo",
+			argv:           []string{c.squashfsImage, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount squashfs",
+			directiveValue: "no",
+			exit:           255,
+		},
+		{
+			name:           "AllowSetuidMountSquashfsNoSif",
+			argv:           []string{c.sifImage, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount squashfs",
+			directiveValue: "no",
+			exit:           255,
+		},
+		{
+			name:           "AllowSetuidMountSquashfsNoBind",
+			argv:           []string{"-B", c.squashfsImage + ":/sqsh:image-src=/", c.sifImage, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount squashfs",
+			directiveValue: "no",
+			exit:           255,
+		},
+		{
+			name:           "AllowSetuidMountSquashfsNoUserns",
+			argv:           []string{c.squashfsImage, "true"},
+			profile:        e2e.UserNamespaceProfile,
+			directive:      "allow setuid-mount squashfs",
+			directiveValue: "no",
+			exit:           0,
+		},
+		{
+			name:           "AllowSetuidMountSquashfsNoUsernsSif",
+			argv:           []string{c.sifImage, "true"},
+			profile:        e2e.UserNamespaceProfile,
+			directive:      "allow setuid-mount squashfs",
+			directiveValue: "no",
+			exit:           0,
+		},
+		{
+			name:           "AllowSetuidMountSquashfsNoUsernsBind",
+			argv:           []string{"-B", c.squashfsImage + ":/sqsh:image-src=/", c.sifImage, "true"},
+			profile:        e2e.UserNamespaceProfile,
+			directive:      "allow setuid-mount squashfs",
+			directiveValue: "no",
+			exit:           0,
+		},
+		{
+			name:           "AllowSetuidMountSquashfsYes",
+			argv:           []string{c.squashfsImage, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount squashfs",
+			directiveValue: "yes",
+			exit:           0,
+		},
+		{
+			name:           "AllowSetuidMountSquashfsYesSif",
+			argv:           []string{c.sifImage, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount squashfs",
+			directiveValue: "yes",
+			exit:           0,
+		},
+		{
+			name:           "AllowSetuidMountSquashfsYesBind",
+			argv:           []string{"-B", c.squashfsImage + ":/sqsh:image-src=/", c.sifImage, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount squashfs",
+			directiveValue: "yes",
+			exit:           0,
+		},
+		{
+			name:           "AllowSetuidMountExtfsNo",
+			argv:           []string{c.ext3Image, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount extfs",
+			directiveValue: "no",
+			exit:           255,
+		},
+		{
+			name:           "AllowSetuidMountExtfsNoSif",
+			argv:           []string{c.ext3OverlayImage, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount extfs",
+			directiveValue: "no",
+			exit:           255,
+		},
+		{
+			name:           "AllowSetuidMountExtfsNoBind",
+			argv:           []string{"-B", c.ext3Image + ":/ext3:image-src=/", c.sifImage, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount extfs",
+			directiveValue: "no",
+			exit:           255,
+		},
+		{
+			name:           "AllowSetuidMountExtfsNoUserns",
+			argv:           []string{c.ext3Image, "true"},
+			profile:        e2e.UserNamespaceProfile,
+			directive:      "allow setuid-mount extfs",
+			directiveValue: "no",
+			exit:           0,
+		},
+		{
+			name:           "AllowSetuidMountExtfsNoUsernsSif",
+			argv:           []string{c.ext3OverlayImage, "true"},
+			profile:        e2e.UserNamespaceProfile,
+			directive:      "allow setuid-mount extfs",
+			directiveValue: "no",
+			exit:           0,
+		},
+		{
+			name:           "AllowSetuidMountExtfsNoUsernsBind",
+			argv:           []string{"-B", c.ext3Image + ":/ext3:image-src=/", c.sifImage, "true"},
+			profile:        e2e.UserNamespaceProfile,
+			directive:      "allow setuid-mount extfs",
+			directiveValue: "no",
+			exit:           0,
+		},
+		{
+			name:           "AllowSetuidMountExtfsYes",
+			argv:           []string{c.ext3Image, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount extfs",
+			directiveValue: "yes",
+			exit:           0,
+		},
+		{
+			name:           "AllowSetuidMountExtfsYesSif",
+			argv:           []string{c.ext3OverlayImage, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount extfs",
+			directiveValue: "yes",
+			exit:           0,
+		},
+		{
+			name:           "AllowSetuidMountExtfsYesBind",
+			argv:           []string{"-B", c.ext3Image + ":/ext3:image-src=/", c.sifImage, "true"},
+			profile:        e2e.UserProfile,
+			directive:      "allow setuid-mount extfs",
+			directiveValue: "yes",
+			exit:           0,
+		},
 		// FIXME
 		// The e2e tests currently run inside a PID namespace.
 		//   (see internal/init/init_linux.go)
@@ -537,10 +699,10 @@ func (c configTests) configGlobal(t *testing.T) {
 				if tt.addRequirementsFn != nil {
 					tt.addRequirementsFn(t)
 				}
-				setDirective(t, tt.directive, tt.directiveValue)
+				e2e.SetDirective(t, c.env, tt.directive, tt.directiveValue)
 			}),
 			e2e.PostRun(func(t *testing.T) {
-				resetDirective(t, tt.directive)
+				e2e.ResetDirective(t, c.env, tt.directive)
 			}),
 			e2e.WithCommand("exec"),
 			e2e.WithArgs(tt.argv...),
@@ -553,26 +715,14 @@ func (c configTests) configGlobal(t *testing.T) {
 func (c configTests) configGlobalCombination(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
-	setDirective := func(t *testing.T, directives map[string]string) {
+	setDirectives := func(t *testing.T, directives map[string]string) {
 		for k, v := range directives {
-			c.env.RunApptainer(
-				t,
-				e2e.WithProfile(e2e.RootProfile),
-				e2e.WithCommand("config global"),
-				e2e.WithArgs("--set", k, v),
-				e2e.ExpectExit(0),
-			)
+			e2e.SetDirective(t, c.env, k, v)
 		}
 	}
-	resetDirective := func(t *testing.T, directives map[string]string) {
+	resetDirectives := func(t *testing.T, directives map[string]string) {
 		for k := range directives {
-			c.env.RunApptainer(
-				t,
-				e2e.WithProfile(e2e.RootProfile),
-				e2e.WithCommand("config global"),
-				e2e.WithArgs("--reset", k),
-				e2e.ExpectExit(0),
-			)
+			e2e.ResetDirective(t, c.env, k)
 		}
 	}
 
@@ -741,10 +891,10 @@ func (c configTests) configGlobalCombination(t *testing.T) {
 				if tt.addRequirementsFn != nil {
 					tt.addRequirementsFn(t)
 				}
-				setDirective(t, tt.directives)
+				setDirectives(t, tt.directives)
 			}),
 			e2e.PostRun(func(t *testing.T) {
-				resetDirective(t, tt.directives)
+				resetDirectives(t, tt.directives)
 			}),
 			e2e.WithCommand("exec"),
 			e2e.WithArgs(tt.argv...),
