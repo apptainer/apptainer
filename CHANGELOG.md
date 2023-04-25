@@ -9,7 +9,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Security fix
 
-- Included a fix for [CVE-2023-30549](https://github.com/sylabs/scs-library-client/security/advisories/GHSA-7p8m-22h4-9pj7)
+- Included a fix for [CVE-2023-30549](https://github.com/apptainer/apptainer/security/advisories/GHSA-j4rf-7357-f4cg)
   which is a vulnerability in setuid-root installations of Apptainer
   and Singularity that causes an elevation in severity of an existing
   ext4 filesystem driver vulnerability that is unpatched in several
