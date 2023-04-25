@@ -527,6 +527,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"fuse squash mount":                   c.testFuseSquashMount,
 		"fuse ext3 mount":                     c.testFuseExt3Mount,
 		"add package with fakeroot and tmpfs": c.testAddPackageWithFakerootAndTmpfs,
-		"gocryptfs sif executation":           c.testExecGocryptfsEncryptedSIF,
+		"gocryptfs sif execution":             c.testExecGocryptfsEncryptedSIF,
 	}
 }
