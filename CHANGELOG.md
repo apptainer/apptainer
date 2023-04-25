@@ -5,9 +5,24 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes Since Last Release
+## v1.1.8 - \[2023-04-25\]
 
-### Bug fixes
+### Security fix
+
+- Included a fix for [CVE-2023-30549](https://github.com/sylabs/scs-library-client/security/advisories/GHSA-7p8m-22h4-9pj7)
+  which is a vulnerability in setuid-root installations of Apptainer
+  and Singularity that causes an elevation in severity of an existing
+  ext4 filesystem driver vulnerability that is unpatched in several
+  older but still actively supported operating systems including RHEL7,
+  Debian 10, Ubuntu 18.04 and Ubuntu 20.04.
+  The fix adds `allow setuid-mount` configuration options `encrypted`,
+  `squashfs`, and `extfs`, and makes the default for `extfs` be "no".
+  That disables the use of extfs mounts including for overlays or
+  binds while in the setuid-root mode, while leaving it enabled for
+  unprivileged user namespace mode.
+  The default for `encrypted` and `squashfs` is "yes".  
+
+### Other changes
 
 - Fix loop device 'no such device or address' spurious errors when using shared
   loop devices.
