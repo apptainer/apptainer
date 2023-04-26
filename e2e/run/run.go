@@ -287,6 +287,9 @@ func (c ctx) testFuseExt3Mount(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
+	e2e.SetDirective(t, c.env, "allow setuid-mount extfs", "yes")
+	defer e2e.ResetDirective(t, c.env, "allow setuid-mount extfs")
+
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
