@@ -83,6 +83,10 @@ case "${TARGET_BRANCH}" in
 		require_e2e=true
 		;;
 
+	null)
+		# Failed to read api, could be private repo.  Run tests.
+		require_e2e=true
+		;;
 	*)
 		# The branch is not master or release, skip e2e
 		require_e2e=false

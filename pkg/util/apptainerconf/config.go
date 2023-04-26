@@ -76,46 +76,49 @@ func SetBinaryPath(libexecDir string, nonSuid bool) {
 
 // File describes the apptainer.conf file options
 type File struct {
-	AllowSetuid             bool     `default:"yes" authorized:"yes,no" directive:"allow setuid"`
-	AllowPidNs              bool     `default:"yes" authorized:"yes,no" directive:"allow pid ns"`
-	ConfigPasswd            bool     `default:"yes" authorized:"yes,no" directive:"config passwd"`
-	ConfigGroup             bool     `default:"yes" authorized:"yes,no" directive:"config group"`
-	ConfigResolvConf        bool     `default:"yes" authorized:"yes,no" directive:"config resolv_conf"`
-	MountProc               bool     `default:"yes" authorized:"yes,no" directive:"mount proc"`
-	MountSys                bool     `default:"yes" authorized:"yes,no" directive:"mount sys"`
-	MountDevPts             bool     `default:"yes" authorized:"yes,no" directive:"mount devpts"`
-	MountHome               bool     `default:"yes" authorized:"yes,no" directive:"mount home"`
-	MountTmp                bool     `default:"yes" authorized:"yes,no" directive:"mount tmp"`
-	MountHostfs             bool     `default:"no" authorized:"yes,no" directive:"mount hostfs"`
-	UserBindControl         bool     `default:"yes" authorized:"yes,no" directive:"user bind control"`
-	EnableFusemount         bool     `default:"yes" authorized:"yes,no" directive:"enable fusemount"`
-	EnableUnderlay          bool     `default:"yes" authorized:"yes,no" directive:"enable underlay"`
-	MountSlave              bool     `default:"yes" authorized:"yes,no" directive:"mount slave"`
-	AllowContainerSIF       bool     `default:"yes" authorized:"yes,no" directive:"allow container sif"`
-	AllowContainerEncrypted bool     `default:"yes" authorized:"yes,no" directive:"allow container encrypted"`
-	AllowContainerSquashfs  bool     `default:"yes" authorized:"yes,no" directive:"allow container squashfs"`
-	AllowContainerExtfs     bool     `default:"yes" authorized:"yes,no" directive:"allow container extfs"`
-	AllowContainerDir       bool     `default:"yes" authorized:"yes,no" directive:"allow container dir"`
-	AlwaysUseNv             bool     `default:"no" authorized:"yes,no" directive:"always use nv"`
-	UseNvCCLI               bool     `default:"no" authorized:"yes,no" directive:"use nvidia-container-cli"`
-	AlwaysUseRocm           bool     `default:"no" authorized:"yes,no" directive:"always use rocm"`
-	SharedLoopDevices       bool     `default:"no" authorized:"yes,no" directive:"shared loop devices"`
-	MaxLoopDevices          uint     `default:"256" directive:"max loop devices"`
-	SessiondirMaxSize       uint     `default:"64" directive:"sessiondir max size"`
-	MountDev                string   `default:"yes" authorized:"yes,no,minimal" directive:"mount dev"`
-	EnableOverlay           string   `default:"try" authorized:"yes,no,try,driver" directive:"enable overlay"`
-	BindPath                []string `default:"/etc/localtime,/etc/hosts" directive:"bind path"`
-	LimitContainerOwners    []string `directive:"limit container owners"`
-	LimitContainerGroups    []string `directive:"limit container groups"`
-	LimitContainerPaths     []string `directive:"limit container paths"`
-	AllowNetUsers           []string `directive:"allow net users"`
-	AllowNetGroups          []string `directive:"allow net groups"`
-	AllowNetNetworks        []string `directive:"allow net networks"`
-	RootDefaultCapabilities string   `default:"full" authorized:"full,file,no" directive:"root default capabilities"`
-	MemoryFSType            string   `default:"tmpfs" authorized:"tmpfs,ramfs" directive:"memory fs type"`
-	CniConfPath             string   `directive:"cni configuration path"`
-	CniPluginPath           string   `directive:"cni plugin path"`
-	BinaryPath              string   `default:"$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" directive:"binary path"`
+	AllowSetuid               bool     `default:"yes" authorized:"yes,no" directive:"allow setuid"`
+	AllowPidNs                bool     `default:"yes" authorized:"yes,no" directive:"allow pid ns"`
+	ConfigPasswd              bool     `default:"yes" authorized:"yes,no" directive:"config passwd"`
+	ConfigGroup               bool     `default:"yes" authorized:"yes,no" directive:"config group"`
+	ConfigResolvConf          bool     `default:"yes" authorized:"yes,no" directive:"config resolv_conf"`
+	MountProc                 bool     `default:"yes" authorized:"yes,no" directive:"mount proc"`
+	MountSys                  bool     `default:"yes" authorized:"yes,no" directive:"mount sys"`
+	MountDevPts               bool     `default:"yes" authorized:"yes,no" directive:"mount devpts"`
+	MountHome                 bool     `default:"yes" authorized:"yes,no" directive:"mount home"`
+	MountTmp                  bool     `default:"yes" authorized:"yes,no" directive:"mount tmp"`
+	MountHostfs               bool     `default:"no" authorized:"yes,no" directive:"mount hostfs"`
+	UserBindControl           bool     `default:"yes" authorized:"yes,no" directive:"user bind control"`
+	EnableFusemount           bool     `default:"yes" authorized:"yes,no" directive:"enable fusemount"`
+	EnableUnderlay            bool     `default:"yes" authorized:"yes,no" directive:"enable underlay"`
+	MountSlave                bool     `default:"yes" authorized:"yes,no" directive:"mount slave"`
+	AllowContainerSIF         bool     `default:"yes" authorized:"yes,no" directive:"allow container sif"`
+	AllowContainerEncrypted   bool     `default:"yes" authorized:"yes,no" directive:"allow container encrypted"`
+	AllowContainerSquashfs    bool     `default:"yes" authorized:"yes,no" directive:"allow container squashfs"`
+	AllowContainerExtfs       bool     `default:"yes" authorized:"yes,no" directive:"allow container extfs"`
+	AllowContainerDir         bool     `default:"yes" authorized:"yes,no" directive:"allow container dir"`
+	AllowSetuidMountEncrypted bool     `default:"yes" authorized:"yes,no" directive:"allow setuid-mount encrypted"`
+	AllowSetuidMountSquashfs  bool     `default:"yes" authorized:"yes,no" directive:"allow setuid-mount squashfs"`
+	AllowSetuidMountExtfs     bool     `default:"no" authorized:"yes,no" directive:"allow setuid-mount extfs"`
+	AlwaysUseNv               bool     `default:"no" authorized:"yes,no" directive:"always use nv"`
+	UseNvCCLI                 bool     `default:"no" authorized:"yes,no" directive:"use nvidia-container-cli"`
+	AlwaysUseRocm             bool     `default:"no" authorized:"yes,no" directive:"always use rocm"`
+	SharedLoopDevices         bool     `default:"no" authorized:"yes,no" directive:"shared loop devices"`
+	MaxLoopDevices            uint     `default:"256" directive:"max loop devices"`
+	SessiondirMaxSize         uint     `default:"64" directive:"sessiondir max size"`
+	MountDev                  string   `default:"yes" authorized:"yes,no,minimal" directive:"mount dev"`
+	EnableOverlay             string   `default:"try" authorized:"yes,no,try,driver" directive:"enable overlay"`
+	BindPath                  []string `default:"/etc/localtime,/etc/hosts" directive:"bind path"`
+	LimitContainerOwners      []string `directive:"limit container owners"`
+	LimitContainerGroups      []string `directive:"limit container groups"`
+	LimitContainerPaths       []string `directive:"limit container paths"`
+	AllowNetUsers             []string `directive:"allow net users"`
+	AllowNetGroups            []string `directive:"allow net groups"`
+	AllowNetNetworks          []string `directive:"allow net networks"`
+	RootDefaultCapabilities   string   `default:"full" authorized:"full,file,no" directive:"root default capabilities"`
+	MemoryFSType              string   `default:"tmpfs" authorized:"tmpfs,ramfs" directive:"memory fs type"`
+	CniConfPath               string   `directive:"cni configuration path"`
+	CniPluginPath             string   `directive:"cni plugin path"`
+	BinaryPath                string   `default:"$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" directive:"binary path"`
 	// SuidBinaryPath is hidden; it is not referenced below, and overwritten
 	SuidBinaryPath      string `directive:"suidbinary path"`
 	MksquashfsProcs     uint   `default:"0" directive:"mksquashfs procs"`
@@ -126,6 +129,18 @@ type File struct {
 	DownloadBufferSize  uint   `default:"32768" directive:"download buffer size"`
 	SystemdCgroups      bool   `default:"yes" authorized:"yes,no" directive:"systemd cgroups"`
 }
+
+// NOTE: if you think that we may want to change the default for any
+// configuration parameter in the future, it is a good idea to conditionally
+// insert a comment before the default setting when the setting is equal
+// to the current default.  That enables the defaults to get updated in
+// a new release even if an administrator has changed one of the *other*
+// settings.  This gets around the problem of packagers such as rpm
+// refusing to overwrite a configuration file if any change has been made.
+// This technique is used for example in the "allow setuid-mount" options
+// below.  If a default is changed in a future release, both the default
+// setting above and the expression for the conditional comment below need
+// to change at the same time.
 
 const TemplateAsset = `# APPTAINER.CONF
 # This is the global configuration file for Apptainer. This file controls
@@ -321,7 +336,9 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 # ALLOW CONTAINER ${TYPE}: [BOOL]
 # DEFAULT: yes
 # This feature limits what kind of containers that Apptainer will allow
-# users to use (note this does not apply for root).
+# users to use (note this does not apply for root).  Note that some of the
+# same operations can be limited in setuid mode by the ALLOW SETUID-MOUNT
+# feature below; both types need to be "yes" to be allowed.
 #
 # Allow use of unencrypted SIF containers
 allow container sif = {{ if eq .AllowContainerSIF true}}yes{{ else }}no{{ end }}
@@ -333,6 +350,32 @@ allow container encrypted = {{ if eq .AllowContainerEncrypted true }}yes{{ else 
 allow container squashfs = {{ if eq .AllowContainerSquashfs true }}yes{{ else }}no{{ end }}
 allow container extfs = {{ if eq .AllowContainerExtfs true }}yes{{ else }}no{{ end }}
 allow container dir = {{ if eq .AllowContainerDir true }}yes{{ else }}no{{ end }}
+
+# ALLOW SETUID-MOUNT ${TYPE}: [BOOL]
+# DEFAULT: yes, except no for extfs
+# This feature limits what types of mounts that Apptainer will allow
+# unprivileged users to use in setuid mode.  Normally these operations
+# require the elevated privileges of setuid mode, although Apptainer
+# has unprivileged alternatives for squashfs and extfs.  Note that some of
+# the same operations can also be limited by the ALLOW CONTAINER feature
+# above; both types need to be "yes" to be allowed.
+#
+# Allow mounting of SIF encryption (using the kernel device-mapper) in
+# setuid mode
+{{ if eq .AllowSetuidMountEncrypted true}}# {{ end }}allow setuid-mount encrypted = {{ if eq .AllowSetuidMountEncrypted true}}yes{{ else }}no{{ end }}
+#
+# Allow mounting of squashfs filesystem types in setuid mode, both inside and
+# outside of SIF files
+{{ if eq .AllowSetuidMountSquashfs true}}# {{ end }}allow setuid-mount squashfs = {{ if eq .AllowSetuidMountSquashfs true}}yes{{ else }}no{{ end }}
+#
+# Allow mounting of extfs filesystem types in setuid mode, both inside and
+# outside of SIF files.  WARNING: this filesystem type frequently has
+# relevant CVEs that take a very long time for vendors to patch because they
+# are not considered to be High severity since normally unprivileged users do
+# not have write access to the raw filesystem data.  This is why this option
+# defaults to "no".  Change it at your own risk and consider using the
+# LIMIT CONTAINER features above if you do.
+{{ if eq .AllowSetuidMountExtfs false}}# {{ end }}allow setuid-mount extfs = {{ if eq .AllowSetuidMountExtfs true}}yes{{ else }}no{{ end }}
 
 # ALLOW NET USERS: [STRING]
 # DEFAULT: NULL

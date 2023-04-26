@@ -43,3 +43,23 @@ func SetupDefaultConfig(t *testing.T, path string) {
 		}
 	})(t)
 }
+
+func SetDirective(t *testing.T, env TestEnv, directive, value string) {
+	env.RunApptainer(
+		t,
+		WithProfile(RootProfile),
+		WithCommand("config global"),
+		WithArgs("--set", directive, value),
+		ExpectExit(0),
+	)
+}
+
+func ResetDirective(t *testing.T, env TestEnv, directive string) {
+	env.RunApptainer(
+		t,
+		WithProfile(RootProfile),
+		WithCommand("config global"),
+		WithArgs("--reset", directive),
+		ExpectExit(0),
+	)
+}
