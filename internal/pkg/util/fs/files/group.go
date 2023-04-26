@@ -73,6 +73,9 @@ func Group(path string, uid int, gids []int) (content []byte, err error) {
 		content = append(content, '\n')
 	}
 
+	// https://github.com/apptainer/apptainer/issues/1254
+	// only deduplicate newly added groups
+	deduplicateStrs := make(map[string]bool)
 	for _, gid := range groups {
 		grInfo, err := user.GetGrGID(uint32(gid))
 		if err != nil || grInfo == nil {
@@ -80,7 +83,10 @@ func Group(path string, uid int, gids []int) (content []byte, err error) {
 			continue
 		}
 		groupLine := fmt.Sprintf("%s:x:%d:%s\n", grInfo.Name, grInfo.GID, pwInfo.Name)
-		content = append(content, []byte(groupLine)...)
+		if _, ok := deduplicateStrs[groupLine]; !ok {
+			deduplicateStrs[groupLine] = true
+			content = append(content, []byte(groupLine)...)
+		}
 	}
 	return content, nil
 }

@@ -77,6 +77,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix joining cgroup of instance started as root, with cgroups v1,
   non-default cgroupfs manager, and no device rules.
 - Ensure `DOCKER_HOST` is honored in non-build flows.
+- Remove duplicated group ids.
 
 ### Bug fixes
 
