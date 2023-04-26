@@ -42,7 +42,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `setopt` value is passed to `yum / dnf` using the `--setopt` flag. This
   permits setting e.g. `install_weak_deps=False` to bootstrap recent versions of
   Fedora, where `systemd` (a weak dependency) cannot install correctly in the
-  container. See `examples/Fedora` for an example defintion file.
+  container. See `examples/Fedora` for an example definition file.
 - Warn user that a `yum` bootstrap of an older distro may fail if the host rpm
   `_db_backend` is not `bdb`.
 - The `sign` command now supports signing with non-PGP key material by
