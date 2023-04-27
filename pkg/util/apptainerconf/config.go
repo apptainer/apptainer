@@ -437,7 +437,8 @@ always use rocm = {{ if eq .AlwaysUseRocm true }}yes{{ else }}no{{ end }}
 # DEFAULT: full
 # Define default root capability set kept during runtime
 # - full: keep all capabilities (same as --keep-privs)
-# - file: keep capabilities configured in ${prefix}/etc/apptainer/capabilities/user.root
+# - file: keep capabilities configured for root in
+#         ${prefix}/etc/apptainer/capability.json
 # - no: no capabilities (same as --no-privs)
 root default capabilities = {{ .RootDefaultCapabilities }}
 
