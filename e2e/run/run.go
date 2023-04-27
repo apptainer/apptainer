@@ -1,4 +1,3 @@
-// Copyright (c) Contributors to the Apptainer project, established as
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
@@ -286,9 +285,6 @@ func (c ctx) testFuseExt3Mount(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-
-	e2e.SetDirective(t, c.env, "allow setuid-mount extfs", "yes")
-	defer e2e.ResetDirective(t, c.env, "allow setuid-mount extfs")
 
 	c.env.RunApptainer(
 		t,
