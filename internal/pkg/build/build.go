@@ -411,7 +411,7 @@ func (b *Build) Full(ctx context.Context) error {
 		// create stage file for /etc/resolv.conf and /etc/hosts
 		sessionResolv, err := createStageFile("/etc/resolv.conf", stage.b, "Name resolution could fail")
 		if err != nil {
-			return err
+			sylog.Warningf("Failed to create stage file /etc/resolv.conf. Name resolution could fail!")
 		} else if sessionResolv != "" {
 			defer os.Remove(sessionResolv)
 		}
