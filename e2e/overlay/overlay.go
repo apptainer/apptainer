@@ -74,9 +74,6 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	e2e.SetDirective(t, c.env, "allow setuid-mount extfs", "yes")
-	defer e2e.ResetDirective(t, c.env, "allow setuid-mount extfs")
-
 	type test struct {
 		name    string
 		profile e2e.Profile
