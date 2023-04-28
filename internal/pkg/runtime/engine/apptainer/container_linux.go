@@ -2342,10 +2342,6 @@ func (c *container) addFilesMount(system *mount.System) error {
 }
 
 func (c *container) addIdentityMount(system *mount.System) error {
-	if c.engine.EngineConfig.GetNoHome() {
-		return nil
-	}
-
 	rootfs := c.session.RootFsPath()
 	defer c.session.Update()
 
