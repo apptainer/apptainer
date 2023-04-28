@@ -26,6 +26,8 @@ func SetupDefaultConfig(t *testing.T, path string) {
 	apptainerconf.SetCurrentConfig(c)
 	apptainerconf.SetBinaryPath(buildcfg.LIBEXECDIR, true)
 
+	c.AllowSetuidMountExtfs = true
+
 	Privileged(func(t *testing.T) {
 		f, err := os.Create(path)
 		if err != nil {
