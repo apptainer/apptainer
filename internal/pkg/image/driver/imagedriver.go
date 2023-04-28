@@ -232,7 +232,7 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 		}
 
 	case "encryptfs":
-		return fmt.Errorf("mounting an encrypted filesystem requires root or a suid installation")
+		return fmt.Errorf("reading a root-encrypted SIF requires root or a suid installation")
 
 	default:
 		return fmt.Errorf("filesystem type %v not recognized by image driver", params.Filesystem)
