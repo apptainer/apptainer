@@ -63,7 +63,7 @@ func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (co
 	if home != "" {
 		homeDir = home
 	}
-	userInfo := fmt.Sprintf("%s:x:%d:%d:%s:%s:%s\n", pwInfo.Name, pwInfo.UID, pwInfo.GID, pwInfo.Gecos, homeDir, pwInfo.Shell)
+	userInfo := makePasswdLine(pwInfo.Name, pwInfo.UID, pwInfo.GID, pwInfo.Gecos, homeDir, pwInfo.Shell)
 
 	sylog.Verbosef("Creating template passwd file and injecting user data: %s", path)
 	userExists := false
@@ -78,7 +78,8 @@ func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (co
 		}
 		if entry.Uid() == uid {
 			userExists = true
-			lines[i] = userInfo
+			// If user already exists in container, rebuild their passwd info preserving their original shell value
+			lines[i] = makePasswdLine(pwInfo.Name, pwInfo.UID, pwInfo.GID, pwInfo.Gecos, homeDir, entry.Shell())
 			break
 		}
 	}
@@ -86,5 +87,12 @@ func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (co
 		lines = append(lines, userInfo)
 	}
 
+	// Add this so that the following strings.Join call will result in text that ends in a newline
+	lines = append(lines, "")
+
 	return []byte(strings.Join(lines, "\n")), nil
+}
+
+func makePasswdLine(name string, uid uint32, gid uint32, gecos string, homedir string, shell string) string {
+	return fmt.Sprintf("%s:x:%d:%d:%s:%s:%s", name, uid, gid, gecos, homedir, shell)
 }
