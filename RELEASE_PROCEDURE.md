@@ -35,7 +35,8 @@ for the current stable major.minor version of Apptainer.
 ### Creating the Patch Release
 
 1. Modify the `INSTALL.md` and `CHANGELOG.md` via PR against the
-   release branch, so that they reflect the version to be released.
+   release branch, so that they reflect the version to be released. Also modify
+   Go version mentioned in `INSTALL.md`, if that has changed since last release.
 1. After all PRs are merged, apply an annotated tag to the HEAD of the release
    branch via `git tag -a -m "Apptainer v1.1.9" v1.1.9`.
 1. Push the tag to the GitHub repository via `git push upstream v1.1.9`.
@@ -90,7 +91,8 @@ broader testing.
    the final release of a new version.
 1. Modify the `INSTALL.md` and `CHANGELOG.md` via PR against
    the release branch, so that they reflect the release candidate version to be
-   issued.
+   issued. Also modify Go version mentioned in `INSTALL.md`, if that has changed
+   since last release.
 1. Apply an annotated tag via
    `git tag -a -m "Apptainer v1.2.0 Release Candidate 1" v1.2.0-rc.1`.
 1. Push the tag via `git push upstream v1.2.0-rc.1`.
@@ -128,7 +130,9 @@ release of a new major or minor version. Each new RC follows step 5 and above.
 1. Ensure the user and admin documentation has been deployed to the
    apptainer.org website.
 1. Modify the `INSTALL.md` and `CHANGELOG.md` via PR against
-   the release-1.Y branch, so that they reflect the version to be released.
+   the release-1.Y branch, so that they reflect the version to be released. Also
+   modify Go version mentioned in `INSTALL.md`, if that has changed since last
+   release.
 1. Apply an annotated tag via `git tag -a -m "Apptainer v1.2.0" v1.2.0`.
 1. Push the tag via `git push upstream v1.2.0`.
 1. Create a GitHub release, using the previous release as a guide and
