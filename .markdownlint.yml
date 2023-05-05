@@ -5,3 +5,5 @@ MD010: false
 # Allow mixing of asterisks and underscores for emphasis
 MD049: false
 MD050: false
+# Allow bare urls
+MD034: false
