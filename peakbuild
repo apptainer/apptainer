@@ -1,0 +1,8 @@
+#!/bin/bash
+
+module load gcc/9.1.0
+rm -rf builddir
+export PATH=/gpfs/alpine/stf007/scratch/subil/containerstuff/apptainertests/mpitests/apptainervariants/install/peak/go/bin:$PATH
+./mconfig --prefix=/gpfs/alpine/stf007/scratch/subil/containerstuff/apptainertests/mpitests/apptainervariants/install/peak/apptainer1.1.8 # --without-suid
+cd `pwd`/builddir
+make -C builddir test
