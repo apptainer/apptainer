@@ -81,6 +81,7 @@
 - Satish Chebrolu  <satish@sylabs.io>
 - Shane Loretz <sloretz@openrobotics.org>, <shane.loretz@gmail.com>
 - Shengjing Zhu <i@zhsj.me>
+- Subil Abraham <abrahams@ornl.gov>
 - Tarcisio Fedrizzi <tarcisio.fedrizzi@gmail.com>
 - Thomas Hamel <hmlth@t-hamel.fr>
 - Tim Wright <7im.Wright@protonmail.com>
