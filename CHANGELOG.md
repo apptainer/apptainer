@@ -82,6 +82,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   of default capabilities when `root default capabilities = file`.
 - Add an `--underlay` action option to prefer underlay instead of overlay
   for bind mounts.
+- Fix not being able to handle multiple entries in `LD_PRELOAD` when
+  binding fakeroot into container during apptainer startup for --fakeroot
+  with fakeroot command.
 
 ## v1.1.8 - \[2023-04-25\]
 
