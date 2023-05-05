@@ -8,6 +8,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 ### Bug fixes
 
 - Remove duplicated group ids.
+- Fix not being able to handle multiple entries in `LD_PRELOAD` when
+  binding fakeroot into container during apptainer startup for --fakeroot
+  with fakeroot command.
 
 ## v1.1.8 - \[2023-04-25\]
 
