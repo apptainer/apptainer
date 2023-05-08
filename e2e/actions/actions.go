@@ -1186,8 +1186,29 @@ func (c actionTests) actionBinds(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "SimpleFileUnderlay",
+			args: []string{
+				"--underlay",
+				"--bind", canaryFileBind,
+				sandbox,
+				"test", "-f", contCanaryFile,
+			},
+			exit: 0,
+		},
+		{
 			name: "SimpleFilePwd",
 			args: []string{
+				"--bind", canaryFileBind,
+				"--pwd", contCanaryDir,
+				sandbox,
+				"test", "-f", "file",
+			},
+			exit: 0,
+		},
+		{
+			name: "SimpleFilePwdUnderlay",
+			args: []string{
+				"--underlay",
 				"--bind", canaryFileBind,
 				"--pwd", contCanaryDir,
 				sandbox,
@@ -1215,8 +1236,40 @@ func (c actionTests) actionBinds(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "SimpleDirUnderlay",
+			args: []string{
+				"--underlay",
+				"--bind", canaryDirBind,
+				sandbox,
+				"test", "-f", contCanaryFile,
+			},
+			exit: 0,
+		},
+		{
+			name: "SimpleDirPwdUnderlay",
+			args: []string{
+				"--underlay",
+				"--bind", canaryDirBind,
+				"--pwd", contCanaryDir,
+				sandbox,
+				"test", "-f", "file",
+			},
+			exit: 0,
+		},
+		{
 			name: "SimpleFileWritableOK",
 			args: []string{
+				"--writable",
+				"--bind", hostCanaryFile,
+				sandbox,
+				"test", "-f", hostCanaryFile,
+			},
+			exit: 0,
+		},
+		{
+			name: "SimpleFileWritableUnderlayOK",
+			args: []string{
+				"--underlay",
 				"--writable",
 				"--bind", hostCanaryFile,
 				sandbox,
@@ -1265,8 +1318,30 @@ func (c actionTests) actionBinds(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "HomeContainOverrideUnderlay",
+			args: []string{
+				"--underlay",
+				"--contain",
+				"--bind", hostCanaryDir + ":/home",
+				sandbox,
+				"test", "-f", "/home/file",
+			},
+			exit: 0,
+		},
+		{
 			name: "TmpContainOverride",
 			args: []string{
+				"--contain",
+				"--bind", hostCanaryDir + ":/tmp",
+				sandbox,
+				"test", "-f", "/tmp/file",
+			},
+			exit: 0,
+		},
+		{
+			name: "TmpContainOverrideUnderlay",
+			args: []string{
+				"--underlay",
 				"--contain",
 				"--bind", hostCanaryDir + ":/tmp",
 				sandbox,
@@ -1285,8 +1360,29 @@ func (c actionTests) actionBinds(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "VarTmpContainOverrideUnderlay",
+			args: []string{
+				"--underlay",
+				"--contain",
+				"--bind", hostCanaryDir + ":/var/tmp",
+				sandbox,
+				"test", "-f", "/var/tmp/file",
+			},
+			exit: 0,
+		},
+		{
 			name: "SymlinkOneLevelFileBind",
 			args: []string{
+				"--bind", hostCanaryFile + ":/var/etc/symlink1",
+				sandbox,
+				"test", "-f", "/etc/symlink1",
+			},
+			exit: 0,
+		},
+		{
+			name: "SymlinkOneLevelFileBindUnderlay",
+			args: []string{
+				"--underlay",
 				"--bind", hostCanaryFile + ":/var/etc/symlink1",
 				sandbox,
 				"test", "-f", "/etc/symlink1",
@@ -1303,8 +1399,28 @@ func (c actionTests) actionBinds(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "SymlinkTwoLevelFileBindUnderlay",
+			args: []string{
+				"--underlay",
+				"--bind", hostCanaryFile + ":/var/etc/madness/symlink2",
+				sandbox,
+				"test", "-f", "/madness/symlink2",
+			},
+			exit: 0,
+		},
+		{
 			name: "SymlinkOneLevelDirBind",
 			args: []string{
+				"--bind", hostCanaryDir + ":/var/etc",
+				sandbox,
+				"test", "-f", "/etc/file",
+			},
+			exit: 0,
+		},
+		{
+			name: "SymlinkOneLevelDirBindUnderlay",
+			args: []string{
+				"--underlay",
 				"--bind", hostCanaryDir + ":/var/etc",
 				sandbox,
 				"test", "-f", "/etc/file",
@@ -1321,6 +1437,16 @@ func (c actionTests) actionBinds(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "SymlinkTwoLevelDirBindUnderlay",
+			args: []string{
+				"--underlay",
+				"--bind", hostCanaryDir + ":/var/etc/madness",
+				sandbox,
+				"test", "-f", "/madness/file",
+			},
+			exit: 0,
+		},
+		{
 			name: "SymlinkOneLevelNewDirBind",
 			args: []string{
 				"--bind", hostCanaryDir + ":/var/etc/new",
@@ -1330,8 +1456,28 @@ func (c actionTests) actionBinds(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "SymlinkOneLevelNewDirBindUnderlay",
+			args: []string{
+				"--underlay",
+				"--bind", hostCanaryDir + ":/var/etc/new",
+				sandbox,
+				"test", "-f", "/etc/new/file",
+			},
+			exit: 0,
+		},
+		{
 			name: "SymlinkTwoLevelNewDirBind",
 			args: []string{
+				"--bind", hostCanaryDir + ":/var/etc/madness/new",
+				sandbox,
+				"test", "-f", "/madness/new/file",
+			},
+			exit: 0,
+		},
+		{
+			name: "SymlinkTwoLevelNewDirBindUnderlay",
+			args: []string{
+				"--underlay",
 				"--bind", hostCanaryDir + ":/var/etc/madness/new",
 				sandbox,
 				"test", "-f", "/madness/new/file",
@@ -1350,8 +1496,32 @@ func (c actionTests) actionBinds(t *testing.T) {
 			exit:    0,
 		},
 		{
+			name: "NestedBindFileUnderlay",
+			args: []string{
+				"--underlay",
+				"--bind", canaryDirBind,
+				"--bind", hostCanaryFile + ":" + filepath.Join(contCanaryDir, "file2"),
+				sandbox,
+				"test", "-f", "/canary/file2",
+			},
+			postRun: checkHostFile(filepath.Join(hostCanaryDir, "file2")),
+			exit:    0,
+		},
+		{
 			name: "NestedBindDir",
 			args: []string{
+				"--bind", canaryDirBind,
+				"--bind", hostCanaryDir + ":" + filepath.Join(contCanaryDir, "dir2"),
+				sandbox,
+				"test", "-d", "/canary/dir2",
+			},
+			postRun: checkHostDir(filepath.Join(hostCanaryDir, "dir2")),
+			exit:    0,
+		},
+		{
+			name: "NestedBindDirUnderlay",
+			args: []string{
+				"--underlay",
 				"--bind", canaryDirBind,
 				"--bind", hostCanaryDir + ":" + filepath.Join(contCanaryDir, "dir2"),
 				sandbox,
@@ -1373,6 +1543,19 @@ func (c actionTests) actionBinds(t *testing.T) {
 			exit:    0,
 		},
 		{
+			name: "MultipleNestedBindDirUnderlay",
+			args: []string{
+				"--underlay",
+				"--bind", canaryDirBind,
+				"--bind", hostCanaryDir + ":" + filepath.Join(contCanaryDir, "dir2"),
+				"--bind", hostCanaryFile + ":" + filepath.Join(filepath.Join(contCanaryDir, "dir2"), "nested"),
+				sandbox,
+				"test", "-f", "/canary/dir2/nested",
+			},
+			postRun: checkHostFile(filepath.Join(hostCanaryDir, "nested")),
+			exit:    0,
+		},
+		{
 			name: "CustomHomeOneToOne",
 			args: []string{
 				"--home", hostHomeDir,
@@ -1384,8 +1567,32 @@ func (c actionTests) actionBinds(t *testing.T) {
 			exit:    0,
 		},
 		{
+			name: "CustomHomeOneToOneUnderlay",
+			args: []string{
+				"--underlay",
+				"--home", hostHomeDir,
+				"--bind", hostCanaryDir + ":" + filepath.Join(hostHomeDir, "canary121RO"),
+				sandbox,
+				"test", "-f", filepath.Join(hostHomeDir, "canary121RO/file"),
+			},
+			postRun: checkHostDir(filepath.Join(hostHomeDir, "canary121RO")),
+			exit:    0,
+		},
+		{
 			name: "CustomHomeBind",
 			args: []string{
+				"--home", hostHomeDir + ":/home/e2e",
+				"--bind", hostCanaryDir + ":/home/e2e/canaryRO",
+				sandbox,
+				"test", "-f", "/home/e2e/canaryRO/file",
+			},
+			postRun: checkHostDir(filepath.Join(hostHomeDir, "canaryRO")),
+			exit:    0,
+		},
+		{
+			name: "CustomHomeBindUnderlay",
+			args: []string{
+				"--underlay",
 				"--home", hostHomeDir + ":/home/e2e",
 				"--bind", hostCanaryDir + ":/home/e2e/canaryRO",
 				sandbox,
@@ -1429,6 +1636,19 @@ func (c actionTests) actionBinds(t *testing.T) {
 			exit:    0,
 		},
 		{
+			name: "WorkdirTmpBindUnderlay",
+			args: []string{
+				"--underlay",
+				"--workdir", hostWorkDir,
+				"--contain",
+				"--bind", hostCanaryDir + ":/tmp/canary/dir",
+				sandbox,
+				"test", "-f", "/tmp/canary/dir/file",
+			},
+			postRun: checkHostDir(filepath.Join(hostWorkDir, "tmp", "canary/dir")),
+			exit:    0,
+		},
+		{
 			name: "WorkdirTmpBindWritable",
 			args: []string{
 				"--writable",
@@ -1444,6 +1664,19 @@ func (c actionTests) actionBinds(t *testing.T) {
 		{
 			name: "WorkdirVarTmpBind",
 			args: []string{
+				"--workdir", hostWorkDir,
+				"--contain",
+				"--bind", hostCanaryDir + ":/var/tmp/canary/dir",
+				sandbox,
+				"test", "-f", "/var/tmp/canary/dir/file",
+			},
+			postRun: checkHostDir(filepath.Join(hostWorkDir, "var_tmp", "canary/dir")),
+			exit:    0,
+		},
+		{
+			name: "WorkdirVarTmpBindUnderlay",
+			args: []string{
+				"--underlay",
 				"--workdir", hostWorkDir,
 				"--contain",
 				"--bind", hostCanaryDir + ":/var/tmp/canary/dir",
@@ -1477,6 +1710,17 @@ func (c actionTests) actionBinds(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "ScratchTmpfsBindUnderlay",
+			args: []string{
+				"--underlay",
+				"--scratch", "/scratch",
+				"--bind", hostCanaryDir + ":/scratch/dir",
+				sandbox,
+				"test", "-f", "/scratch/dir/file",
+			},
+			exit: 0,
+		},
+		{
 			name: "ScratchWorkdirBind",
 			args: []string{
 				"--workdir", hostWorkDir,
@@ -1489,8 +1733,31 @@ func (c actionTests) actionBinds(t *testing.T) {
 			exit:    0,
 		},
 		{
+			name: "ScratchWorkdirBindUnderlay",
+			args: []string{
+				"--underlay",
+				"--workdir", hostWorkDir,
+				"--scratch", "/scratch",
+				"--bind", hostCanaryDir + ":/scratch/dir",
+				sandbox,
+				"test", "-f", "/scratch/dir/file",
+			},
+			postRun: checkHostDir(filepath.Join(hostWorkDir, "scratch/scratch", "dir")),
+			exit:    0,
+		},
+		{
 			name: "BindFileWithCommaOK",
 			args: []string{
+				"--bind", strings.ReplaceAll(hostCanaryFileWithComma, ",", "\\,") + ":" + contCanaryFile,
+				sandbox,
+				"test", "-f", contCanaryFile,
+			},
+			exit: 0,
+		},
+		{
+			name: "BindFileWithCommaUnderlayOK",
+			args: []string{
+				"--underlay",
 				"--bind", strings.ReplaceAll(hostCanaryFileWithComma, ",", "\\,") + ":" + contCanaryFile,
 				sandbox,
 				"test", "-f", contCanaryFile,

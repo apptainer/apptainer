@@ -359,6 +359,7 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 		launch.OptIgnoreUserns(ignoreUserns),
 		launch.OptUseBuildConfig(useBuildConfig),
 		launch.OptTmpDir(tmpDir),
+		launch.OptUnderlay(underlay),
 	}
 
 	l, err := launch.NewLauncher(opts...)

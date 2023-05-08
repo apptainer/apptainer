@@ -139,6 +139,7 @@ type JSONConfig struct {
 	XdgRuntimeDir         string            `json:"xdgRuntimeDir,omitempty"`
 	DbusSessionBusAddress string            `json:"dbusSessionBusAddress,omitempty"`
 	NoEval                bool              `json:"noEval,omitempty"`
+	Underlay              bool              `json:"underlay,omitempty"`
 }
 
 // SetImage sets the container image path to be used by EngineConfig.JSON.
@@ -881,4 +882,14 @@ func (e *EngineConfig) SetNoEval(noEval bool) {
 // runscripts generated from OCI containers CMD/ENTRYPOINT.
 func (e *EngineConfig) GetNoEval() bool {
 	return e.JSON.NoEval
+}
+
+// SetUnderlay sets whether to use underlay instead of overlay
+func (e *EngineConfig) SetUnderlay(underlay bool) {
+	e.JSON.Underlay = underlay
+}
+
+// GetUnderlay gets the value of whether to use underlay instead of overlay
+func (e *EngineConfig) GetUnderlay() bool {
+	return e.JSON.Underlay
 }
