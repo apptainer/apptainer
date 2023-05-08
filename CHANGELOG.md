@@ -80,6 +80,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Remove duplicated group ids.
 - Corrected `apptainer.conf` comment, to refer to correct file as source
   of default capabilities when `root default capabilities = file`.
+- Add an `--underlay` action option to prefer underlay instead of overlay
+  for bind mounts.
 
 ## v1.1.8 - \[2023-04-25\]
 

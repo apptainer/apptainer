@@ -93,6 +93,8 @@ var (
 	ignoreSubuid      bool
 	ignoreFakerootCmd bool
 	ignoreUserns      bool
+
+	underlay bool // whether using underlay instead of overlay
 )
 
 // --app
@@ -850,6 +852,17 @@ var actionIgnoreUsernsFlag = cmdline.Flag{
 	Hidden:       true,
 }
 
+// --underlay
+var actionUnderlayFlag = cmdline.Flag{
+	ID:           "underlayFlag",
+	Value:        &underlay,
+	DefaultValue: false,
+	Name:         "underlay",
+	Usage:        "use underlay",
+	EnvKeys:      []string{"UNDERLAY"},
+	Hidden:       false,
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(ExecCmd)
@@ -945,5 +958,6 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&actionIgnoreSubuidFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionIgnoreFakerootCommand, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionIgnoreUsernsFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionUnderlayFlag, actionsInstanceCmd...)
 	})
 }

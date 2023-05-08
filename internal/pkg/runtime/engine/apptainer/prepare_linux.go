@@ -1080,6 +1080,11 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 		}
 		if !writableImage {
 			if e.EngineConfig.File.EnableOverlay == "yes" || e.EngineConfig.File.EnableOverlay == "try" {
+				if e.EngineConfig.GetUnderlay() && e.EngineConfig.File.EnableUnderlay {
+					sylog.Debugf("Attempting to use 'underlay' over 'overlay': '--underlay' is set")
+					e.EngineConfig.SetSessionLayer(apptainerConfig.UnderlayLayer)
+					return nil
+				}
 				err := overlay.CheckRootless()
 				if err == nil {
 					e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)

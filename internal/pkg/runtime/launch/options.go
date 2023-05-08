@@ -150,6 +150,7 @@ type launchOptions struct {
 	IgnoreUserns      bool
 	UseBuildConfig    bool
 	TmpDir            string
+	Underlay          bool // whether prefer underlay over overlay
 }
 
 type Launcher struct {
@@ -554,6 +555,14 @@ func OptUseBuildConfig(b bool) Option {
 func OptTmpDir(a string) Option {
 	return func(lo *launchOptions) error {
 		lo.TmpDir = a
+		return nil
+	}
+}
+
+// OptUnderlay
+func OptUnderlay(b bool) Option {
+	return func(lo *launchOptions) error {
+		lo.Underlay = b
 		return nil
 	}
 }

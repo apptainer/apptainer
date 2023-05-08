@@ -204,6 +204,9 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	l.engineConfig.SetOverlayImage(l.cfg.OverlayPaths)
 	l.engineConfig.SetWritableImage(l.cfg.Writable)
 
+	// Prefer underlay for bind
+	l.engineConfig.SetUnderlay(l.cfg.Underlay)
+
 	// Check key is available for encrypted image, if applicable.
 	// If we are joining an instance, then any encrypted image is already mounted.
 	if !l.engineConfig.GetInstanceJoin() {
