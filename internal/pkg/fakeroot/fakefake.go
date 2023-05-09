@@ -142,6 +142,13 @@ func GetFakeBinds(fakerootPath string) ([]string, error) {
 	if libraryPath == "" {
 		return binds, fmt.Errorf("No LD_LIBRARY_PATH in fakeroot environment")
 	}
+	preloadEntries := strings.Split(preload, ":")
+	for _, entry := range preloadEntries {
+		if strings.HasPrefix(entry, "libfakeroot") {
+			preload = entry
+			break
+		}
+	}
 
 	src := fakerootPath
 	point := binds[0]
