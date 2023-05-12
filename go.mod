@@ -59,7 +59,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.2.1
-	github.com/docker/distribution v2.8.1+incompatible
+	github.com/docker/distribution v2.8.2+incompatible
 	github.com/sirupsen/logrus v1.9.0
 )
 
