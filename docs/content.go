@@ -638,6 +638,7 @@ Enterprise Performance Computing (EPC)`
 
   From Docker
   $ apptainer pull tensorflow.sif docker://tensorflow/tensorflow:latest
+  $ apptainer pull --arch arm --arch-variant 6 alpine.sif docker://alpine:latest
 
   From Shub
   $ apptainer pull apptainer-images.sif shub://vsoch/apptainer-images

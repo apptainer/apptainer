@@ -16,6 +16,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/cache"
@@ -181,7 +182,7 @@ func TestParseURI(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := parseURI(tt.uri)
+			_, _, err := parseURI(tt.uri)
 			if tt.shouldPass == false && err == nil {
 				t.Fatal("invalid test passed")
 			}
@@ -206,6 +207,7 @@ func createValidSysCtx() *types.SystemContext {
 		OCIInsecureSkipTLSVerify:    opts.NoHTTPS,
 		DockerInsecureSkipTLSVerify: types.NewOptionalBool(opts.NoHTTPS),
 		OSChoice:                    "linux",
+		ArchitectureChoice:          runtime.GOARCH,
 	}
 
 	return validSysCtx

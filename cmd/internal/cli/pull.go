@@ -16,6 +16,7 @@ import (
 	"runtime"
 
 	"github.com/apptainer/apptainer/docs"
+	build_oci "github.com/apptainer/apptainer/internal/pkg/build/oci"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/client/library"
 	"github.com/apptainer/apptainer/internal/pkg/client/net"
@@ -54,6 +55,8 @@ var (
 	// pullArch is the architecture for which containers will be pulled from the
 	// SCS library.
 	pullArch string
+	// pullArchVariant is the architecture variant, e.g., arm32v5, arm32v6, arm32v7, v5,v6,v7 are variants
+	pullArchVariant string
 )
 
 // --arch
@@ -64,6 +67,16 @@ var pullArchFlag = cmdline.Flag{
 	Name:         "arch",
 	Usage:        "architecture to pull from library",
 	EnvKeys:      []string{"PULL_ARCH"},
+}
+
+// --arch
+var pullArchVariantFlag = cmdline.Flag{
+	ID:           "pullArchVariantFlag",
+	Value:        &pullArchVariant,
+	DefaultValue: "",
+	Name:         "arch-variant",
+	Usage:        "architecture variant to pull from library",
+	EnvKeys:      []string{"PULL_ARCH_VARIANT"},
 }
 
 // --library
@@ -152,6 +165,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&pullAllowUnsignedFlag, PullCmd)
 		cmdManager.RegisterFlagForCmd(&pullAllowUnauthenticatedFlag, PullCmd)
 		cmdManager.RegisterFlagForCmd(&pullArchFlag, PullCmd)
+		cmdManager.RegisterFlagForCmd(&pullArchVariantFlag, PullCmd)
 	})
 }
 
@@ -268,12 +282,18 @@ func pullRun(cmd *cobra.Command, args []string) {
 			sylog.Fatalf("While creating Docker credentials: %v", err)
 		}
 
+		arch, err := build_oci.ConvertArch(pullArch, pullArchVariant)
+		if err != nil {
+			sylog.Fatalf("While processing the arch and arch variant: %v", err)
+			return
+		}
 		pullOpts := oci.PullOptions{
 			TmpDir:     tmpDir,
 			OciAuth:    ociAuth,
 			DockerHost: dockerHost,
 			NoHTTPS:    noHTTPS,
 			NoCleanUp:  buildArgs.noCleanUp,
+			Pullarch:   arch,
 		}
 
 		_, err = oci.PullToFile(ctx, imgCache, pullTo, pullFrom, pullOpts)
