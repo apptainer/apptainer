@@ -319,7 +319,11 @@ func ConvertArch(arch, archVariant string) (string, error) {
 		return tmpArch, nil
 	case "arm":
 		if archVariant == "" {
-			return "", fmt.Errorf("arch: %s needs variant specification, supported variants are [5, 6, 7], please set --arch-variant option", arch)
+			armVal, ok := os.LookupEnv("GOARM")
+			if !ok {
+				return "", fmt.Errorf("arch: %s needs variant specification, supported variants are [5, 6, 7], please set --arch-variant option", arch)
+			}
+			archVariant = armVal
 		}
 		tmpArch := ""
 		if strings.HasPrefix(archVariant, "v") {
