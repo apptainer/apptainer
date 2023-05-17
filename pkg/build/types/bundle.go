@@ -86,6 +86,8 @@ type Options struct {
 	Binds []string
 	// whether using gocryptfs to build and run encrypted containers
 	Unprivilege bool
+	// Arch info
+	Arch string
 }
 
 // NewEncryptedBundle creates an Encrypted Bundle environment.

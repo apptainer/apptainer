@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"text/template"
 
@@ -152,6 +153,7 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 	// can have three possible values true/false and undefined, so we left it as undefined instead
 	// of forcing it to false in order to delegate decision to /etc/containers/registries.conf:
 	// https://github.com/apptainer/singularity/issues/5172
+
 	cp.sysCtx = &types.SystemContext{
 		OCIInsecureSkipTLSVerify: cp.b.Opts.NoHTTPS,
 		DockerAuthConfig:         cp.b.Opts.DockerAuthConfig,
@@ -160,6 +162,15 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 		AuthFilePath:             syfs.DockerConf(),
 		DockerRegistryUserAgent:  useragent.Value(),
 		BigFilesTemporaryDir:     b.TmpDir,
+	}
+	if cp.b.Opts.Arch != "" {
+		if arch, ok := oci.ArchMap[cp.b.Opts.Arch]; ok {
+			cp.sysCtx.ArchitectureChoice = arch.Arch
+			cp.sysCtx.VariantChoice = arch.Var
+		} else {
+			keys := reflect.ValueOf(oci.ArchMap).MapKeys()
+			return fmt.Errorf("failed to parse the arch value: %s, should be one of %v", cp.b.Opts.Arch, keys)
+		}
 	}
 
 	if cp.b.Opts.NoHTTPS {

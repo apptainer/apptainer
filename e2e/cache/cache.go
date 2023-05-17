@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path"
 	"path/filepath"
 	"testing"
@@ -270,6 +271,196 @@ func (c cacheTests) testInteractiveCacheCmds(t *testing.T) {
 	}
 }
 
+func (c cacheTests) testMultipleArch(t *testing.T) {
+	tempDir, tempcleanup := e2e.MakeTempDir(t, "", "", "sif build")
+	defer tempcleanup(t)
+
+	cacheDir, cleanup := e2e.MakeCacheDir(t, "")
+	defer cleanup(t)
+	_, err := cache.New(cache.Config{ParentDir: cacheDir})
+	if err != nil {
+		t.Fatalf("Could not create image cache handle: %v", err)
+	}
+	c.env.UnprivCacheDir = cacheDir
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("list cache"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("cache"),
+		e2e.WithArgs([]string{"list", "all"}...),
+		e2e.ExpectExit(0),
+	)
+
+	shamap := map[string]string{
+		"arm64":      "028a3acf50e5ffcd0a9ffc03bce653cc8e4c02d2806c948a48d7bd78136b7372",
+		"amd64":      "f1e77e061bf131e87f08d82529dabf0bb66a2f3efb689ff4b549b7dec3c3c75a",
+		"arm32v6":    "36233c7f3991566ba4c66136cacfed14e86d0bfdd6a69b03630b086df25476fd",
+		"amd64uri":   "35eb2d9f1e1e57bd5e0c8e68fd71f5eb2c56d11ec043573f97b0a305cf0b1442",
+		"arm64v8uri": "36565d1375ac4446e7651bef2344c9cfc53839ec659bf6dc59b82dca1af22a5d",
+	}
+
+	files := retrieveFileNames(t, cacheDir)
+	if len(files) != 0 {
+		t.Fatalf("Unexpected cache files: %v", files)
+		t.FailNow()
+	}
+
+	sifname := fmt.Sprintf("%s/build.sif", tempDir)
+
+	// ko cases
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("pull image failure because of wrong --arch"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", "--arch", "amd", sifname, "docker://alpine:3.17"}...),
+		e2e.ExpectExit(255, e2e.ExpectError(e2e.ContainMatch, "arch: amd is not valid")),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("pull image failure because --arch-variant is required"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", "--arch", "arm", sifname, "docker://alpine:3.17"}...),
+		e2e.ExpectExit(255, e2e.ExpectError(e2e.ContainMatch, "arm needs variant specification")),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("pull image failure because of wrong --arch-variant"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", "--arch", "arm64", "--arch-variant", "v9", sifname, "docker://alpine:3.17"}...),
+		e2e.ExpectExit(255, e2e.ExpectError(e2e.ContainMatch, "arch: arm64v9 is not valid")),
+	)
+
+	// ok cases
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("pull amd64 image"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", "--arch", "amd64", sifname, "docker://alpine:3.17"}...),
+		e2e.ExpectExit(0),
+	)
+	ensureCachedWithSha(t, cacheDir, shamap["amd64"])
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("pull arm64 image"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", "--arch", "arm64", sifname, "docker://alpine:3.17"}...),
+		e2e.ExpectExit(0),
+	)
+	ensureCachedWithSha(t, cacheDir, shamap["arm64"])
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("pull arm32v6 image"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", "--arch", "arm", "--arch-variant", "6", sifname, "docker://alpine:3.17"}...),
+		e2e.ExpectExit(0),
+	)
+	ensureCachedWithSha(t, cacheDir, shamap["arm32v6"])
+
+	files = retrieveFileNames(t, cacheDir)
+	if len(files) != 3 {
+		t.Fatalf("Unexpected cache files: %v", files)
+		t.FailNow()
+	}
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("pull amd64 image by explicitly defining arch"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", sifname, "docker://amd64/alpine:3.17"}...),
+		e2e.ExpectExit(0),
+	)
+	ensureCachedWithSha(t, cacheDir, shamap["amd64uri"])
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("pull arm64 image by explicitly defining arch"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", sifname, "docker://arm64v8/alpine:3.17"}...),
+		e2e.ExpectExit(0),
+	)
+	ensureCachedWithSha(t, cacheDir, shamap["arm64v8"])
+
+	files = retrieveFileNames(t, cacheDir)
+	if len(files) != 5 {
+		t.Fatalf("Unexpected cache files: %v", files)
+		t.FailNow()
+	}
+
+	// from now on, the cache should be hit when pulling
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("pull amd64 image using different arch and uri"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", "--arch", "386", sifname, "docker://amd64/alpine:3.17"}...),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("pull amd64 image using different arch and uri with docker.io prefix"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", "--arch", "386", sifname, "docker://docker.io/amd64/alpine:3.17"}...),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("pull arm64 image using different arch and uri"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", "--arch", "amd64", sifname, "docker://arm64v8/alpine:3.17"}...),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("pull arm64 image using different arch and uri with docker.io prefix"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", "--arch", "amd64", sifname, "docker://docker.io/arm64v8/alpine:3.17"}...),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("build arm64 image using uri"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs([]string{"--force", sifname, "docker://arm64v8/alpine:3.17"}...),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("build amd64 image using uri"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs([]string{"--force", sifname, "docker://amd64/alpine:3.17"}...),
+		e2e.ExpectExit(0),
+	)
+
+	files = retrieveFileNames(t, cacheDir)
+	if len(files) != 5 {
+		t.Fatalf("Unexpected cache files: %v", files)
+		t.FailNow()
+	}
+}
+
 // ensureNotCached checks the entry related to an image is not in the cache
 func ensureNotCached(t *testing.T, testName string, imageURL string, cacheParentDir string) {
 	shasum, err := netHash(imageURL)
@@ -302,6 +493,30 @@ func ensureCached(t *testing.T, testName string, imageURL string, cacheParentDir
 	}
 }
 
+func ensureCachedWithSha(t *testing.T, cacheParentDir, shaval string) {
+	cachePath := path.Join(cacheParentDir, "cache", "oci-tmp", shaval)
+	if !e2e.PathExists(t, cachePath) {
+		t.Fatalf("%s cache file does not exit", cachePath)
+		t.FailNow()
+	}
+}
+
+func retrieveFileNames(t *testing.T, cacheParentDir string) []string {
+	cachePath := path.Join(cacheParentDir, "cache", "oci-tmp")
+	infos, err := os.ReadDir(cachePath)
+	if err != nil {
+		t.Fatalf("Failed to read the cache dir: %s", cachePath)
+		t.FailNow()
+	}
+
+	var names []string
+	for _, info := range infos {
+		names = append(names, info.Name())
+	}
+
+	return names
+}
+
 // netHash computes the expected cache hash for the image at url
 func netHash(url string) (hash string, err error) {
 	req, err := http.NewRequest("HEAD", url, nil)
@@ -332,5 +547,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"non-interactive commands": np(c.testNoninteractiveCacheCmds),
 		"issue5097":                np(c.issue5097),
 		"issue5350":                np(c.issue5350),
+		"test multiple archs":      np(c.testMultipleArch),
 	}
 }

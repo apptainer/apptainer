@@ -14,6 +14,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/build"
@@ -33,6 +34,7 @@ type PullOptions struct {
 	DockerHost string
 	NoHTTPS    bool
 	NoCleanUp  bool
+	Pullarch   string
 }
 
 // pull will build a SIF image into the cache if directTo="", or a specific file if directTo is set.
@@ -49,6 +51,16 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 		DockerRegistryUserAgent:  useragent.Value(),
 		BigFilesTemporaryDir:     opts.TmpDir,
 	}
+	if opts.Pullarch != "" {
+		if arch, ok := oci.ArchMap[opts.Pullarch]; ok {
+			sysCtx.ArchitectureChoice = arch.Arch
+			sysCtx.VariantChoice = arch.Var
+		} else {
+			keys := reflect.ValueOf(oci.ArchMap).MapKeys()
+			return "", fmt.Errorf("failed to parse the arch value: %s, should be one of %v", opts.Pullarch, keys)
+		}
+	}
+
 	if opts.NoHTTPS {
 		sysCtx.DockerInsecureSkipTLSVerify = ocitypes.NewOptionalBool(true)
 	}
@@ -112,6 +124,7 @@ func convertOciToSIF(ctx context.Context, imgCache *cache.Handle, image, cachedI
 				DockerAuthConfig: opts.OciAuth,
 				DockerDaemonHost: opts.DockerHost,
 				ImgCache:         imgCache,
+				Arch:             opts.Pullarch,
 			},
 		},
 	)
