@@ -31,6 +31,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Added ability to change log level through environment variables,
   `APPTAINER_SILENT`, `APPTAINER_QUIET`, and `APPTAINER_VERBOSE`. Added
   `APPTAINER_NOCOLOR` environment variable for `--nocolor` option.
+- Fix interaction between `--workdir` when given relative path and `--scratch`.
 
 ### New Features & Functionality
 
