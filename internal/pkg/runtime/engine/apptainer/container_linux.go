@@ -2035,9 +2035,12 @@ func (c *container) addScratchMount(system *mount.System) error {
 
 	workdir := c.engine.EngineConfig.GetWorkdir()
 	hasWorkdir := workdir != ""
-
+	var err error
 	if hasWorkdir {
-		workdir = filepath.Clean(workdir)
+		workdir, err = filepath.Abs(filepath.Clean(workdir))
+		if err != nil {
+			sylog.Warningf("Can't determine absolute path of workdir %s", workdir)
+		}
 		sourceDir := filepath.Join(workdir, scratchSessionDir)
 		if err := fs.MkdirAll(sourceDir, 0o750); err != nil {
 			return fmt.Errorf("could not create scratch working directory %s: %s", sourceDir, err)
