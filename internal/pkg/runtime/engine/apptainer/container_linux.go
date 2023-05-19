@@ -1963,7 +1963,7 @@ func (c *container) addTmpMount(system *mount.System) error {
 
 			workdir, err := filepath.Abs(filepath.Clean(workdir))
 			if err != nil {
-				sylog.Warningf("Can't determine absolute path of workdir %s", workdir)
+				return fmt.Errorf("can't determine absolute path of workdir %s: %s", workdir, err)
 			}
 
 			tmpSource = filepath.Join(workdir, tmpSource)
@@ -2039,7 +2039,7 @@ func (c *container) addScratchMount(system *mount.System) error {
 	if hasWorkdir {
 		workdir, err = filepath.Abs(filepath.Clean(workdir))
 		if err != nil {
-			sylog.Warningf("Can't determine absolute path of workdir %s", workdir)
+			return fmt.Errorf("can't determine absolute path of workdir %s: %s", workdir, err)
 		}
 		sourceDir := filepath.Join(workdir, scratchSessionDir)
 		if err := fs.MkdirAll(sourceDir, 0o750); err != nil {
