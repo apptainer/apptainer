@@ -12,6 +12,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix seccomp filters to allow mknod/mknodat syscalls to create pipe/socket
   and character devices with device number 0 for fakeroot builds.
 
+### New Features & Functionality
+
+- Added ability to set a custom config directory via the new
+  `APPTAINER_CONFIGDIR` environment variable.
+
 ## v1.2.0-rc.1 - \[2023-06-07\]
 
 ### Changed defaults / behaviours

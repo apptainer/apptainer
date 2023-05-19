@@ -33,7 +33,6 @@ import (
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/ProtonMail/go-crypto/openpgp/armor"
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
-	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/pkg/syfs"
@@ -118,7 +117,7 @@ func NewHandle(path string, opts ...HandleOpt) *Handle {
 		if newHandle.global {
 			panic("global public keyring requires a path")
 		}
-		newHandle.path = env.DefaultLocalKeyDirPath()
+		newHandle.path = syfs.DefaultLocalKeyDirPath()
 	}
 
 	return newHandle

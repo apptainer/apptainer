@@ -17,8 +17,8 @@ import (
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
-	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/pkg/cmdline"
+	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/spf13/cobra"
 )
@@ -109,7 +109,7 @@ var keyRemoveBothKeyFlag = cmdline.Flag{
 var keyLocalDirKeyFlag = cmdline.Flag{
 	ID:           "keyLocalDirKeyFlag",
 	Value:        &keyLocalDir,
-	DefaultValue: env.DefaultLocalKeyDirPath(),
+	DefaultValue: syfs.DefaultLocalKeyDirPath(),
 	Name:         "keysdir",
 	ShortHand:    "d",
 	Usage:        "set local keyring dir path, an alternative way is to set environment variable 'APPTAINER_KEYSDIR'",
