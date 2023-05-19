@@ -2796,7 +2796,7 @@ func (c actionTests) relWorkdirScratch(t *testing.T) {
 	testdir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "persistent-overlay-", "")
 	t.Cleanup(func() {
 		if !t.Failed() {
-			cleanup(t)
+			e2e.Privileged(cleanup)
 		}
 	})
 
