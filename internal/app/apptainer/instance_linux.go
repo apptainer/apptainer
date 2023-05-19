@@ -175,7 +175,7 @@ func calculateMemoryUsage(stats *libcgroups.MemoryStats) (float64, float64, floa
 		in := &syscall.Sysinfo_t{}
 		err := syscall.Sysinfo(in)
 		if err == nil {
-			memLimit = in.Totalram * uint64(in.Unit)
+			memLimit = uint64(in.Totalram) * uint64(in.Unit)
 		}
 	}
 	if memLimit != 0 {
