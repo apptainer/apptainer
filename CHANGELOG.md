@@ -86,6 +86,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix not being able to handle multiple entries in `LD_PRELOAD` when
   binding fakeroot into container during apptainer startup for --fakeroot
   with fakeroot command.
+- Fix memory usage calculation during apptainer compilation on RaspberryPi.
 
 ## v1.1.8 - \[2023-04-25\]
 
