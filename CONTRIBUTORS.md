@@ -42,6 +42,7 @@
 - Hugo Meiland <hugo.meiland@microsoft.com>
 - Jack Morrison <morrisonjc@ornl.gov>, <jack@rescale.com>
 - Jacob Chappell <chappellind@gmail.com>, <jacob.chappell@uky.edu>
+- Jarrett Dixon <jarrett@sylabs.io>
 - Jarrod Johnson <jjohnson2@lenovo.com>
 - Jason Stover <jms@sylabs.io>, <jason.stover@gmail.com>
 - Jeff Kriske <jekriske@gmail.com>

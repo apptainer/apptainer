@@ -11,6 +11,7 @@
 package cli
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -179,6 +180,7 @@ func init() {
 		cmdManager.RegisterSubCmd(RemoteCmd, RemoteStatusCmd)
 		cmdManager.RegisterSubCmd(RemoteCmd, RemoteAddKeyserverCmd)
 		cmdManager.RegisterSubCmd(RemoteCmd, RemoteRemoveKeyserverCmd)
+		cmdManager.RegisterSubCmd(RemoteCmd, RemoteGetLoginPasswordCmd)
 
 		// default location of the remote.yaml file is the user directory
 		cmdManager.RegisterFlagForCmd(&remoteConfigFlag, RemoteCmd)
@@ -234,6 +236,33 @@ func setKeyserver(_ *cobra.Command, _ []string) {
 	if uint32(os.Getuid()) != 0 {
 		sylog.Fatalf("Unable to modify keyserver configuration: not root user")
 	}
+}
+
+// RemoteGetLoginPasswordCmd singularity remote get-login-password
+var RemoteGetLoginPasswordCmd = &cobra.Command{
+	DisableFlagsInUseLine: true,
+
+	Use:     docs.RemoteGetLoginPasswordUse,
+	Short:   docs.RemoteGetLoginPasswordShort,
+	Long:    docs.RemoteGetLoginPasswordLong,
+	Example: docs.RemoteGetLoginPasswordExample,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		defaultConfig := ""
+
+		config, err := getLibraryClientConfig(defaultConfig)
+		if err != nil {
+			sylog.Errorf("Error initializing config: %v", err)
+		}
+
+		password, err := apptainer.RemoteGetLoginPassword(config)
+		if err != nil {
+			sylog.Errorf("error: %v", err)
+		}
+		if password != "" {
+			fmt.Println(password)
+		}
+	},
 }
 
 // RemoteAddCmd apptainer remote add [remoteName] [remoteURI]
