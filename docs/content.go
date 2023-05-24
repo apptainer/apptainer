@@ -548,11 +548,44 @@ Enterprise Performance Computing (EPC)`
   existing container image that will begin running in the background. If a
   startscript is defined in the container metadata the commands in that script
   will be executed with the instance start command as well. You can optionally
-  pass arguments to startscript
+  pass arguments to startscript.
 
   apptainer instance start accepts the following container formats` + formats
 	InstanceStartExample string = `
   $ apptainer instance start /tmp/my-sql.sif mysql
+
+  $ apptainer shell instance://mysql
+  Apptainer my-sql.sif> pwd
+  /home/mibauer/mysql
+  Apptainer my-sql.sif> ps
+  PID TTY          TIME CMD
+    1 pts/0    00:00:00 appinit
+    2 pts/0    00:00:00 bash
+    3 pts/0    00:00:00 ps
+  Apptainer my-sql.sif>
+
+  $ apptainer instance stop /tmp/my-sql.sif mysql
+  Stopping /tmp/my-sql.sif mysql`
+
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// instance run
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	InstanceRunUse   string = `run [start options...] <container path> <instance name> [runscript args...]`
+	InstanceRunShort string = `Run a named instance of the given container image`
+	InstanceRunLong  string = `
+  The instance run command allows you to create a new named instance from an
+  existing container image that will begin running in the background. If a
+  runscript is defined in the container metadata the commands in that script
+  will be executed with the instance run command as well. You can optionally
+  pass arguments to runscript.
+
+  NOTE: This command was added to Apptainer significantly later than the other 
+  action commands and will not work with older containers. In that case, you may
+  need to rebuild the container. 
+
+  apptainer instance run accepts the following container formats` + formats
+	InstanceRunExample string = `
+  $ apptainer instance run /tmp/my-sql.sif mysql
 
   $ apptainer shell instance://mysql
   Apptainer my-sql.sif> pwd
@@ -638,7 +671,6 @@ Enterprise Performance Computing (EPC)`
 
   From Docker
   $ apptainer pull tensorflow.sif docker://tensorflow/tensorflow:latest
-  $ apptainer pull --arch arm --arch-variant 6 alpine.sif docker://alpine:latest
 
   From Shub
   $ apptainer pull apptainer-images.sif shub://vsoch/apptainer-images

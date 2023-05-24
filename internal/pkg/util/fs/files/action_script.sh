@@ -222,6 +222,21 @@ start)
 
     sylog info "No instance start script found in container"
     exit 0 ;;
+instance_run)
+    if test -n "${SINGULARITY_APPNAME:-}"; then
+        if test -x "/scif/apps/${SINGULARITY_APPNAME:-}/scif/runscript"; then
+            exec "/scif/apps/${SINGULARITY_APPNAME:-}/scif/runscript" "$@"
+		elif test -x "/scif/apps/singularity/scif/test"; then
+            exec "/scif/apps/singularity/scif/test" "$@"
+        fi
+        sylog error "No runscript for contained app: ${SINGULARITY_APPNAME:-}"
+        exit 1
+    elif test -x "/.singularity.d/runscript"; then
+        exec "/.singularity.d/runscript" "$@"
+    fi
+
+    sylog info "No instance run runscript found in container"
+    exit 0 ;;
 *)
     sylog error "Unknown action ${__apptainer_cmd__}"
     exit 1 ;;

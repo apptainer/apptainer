@@ -39,6 +39,11 @@ var shellFileContent string
 //go:embed start.sh
 var startFileContent string
 
+// Contents of /.singularity.d/actions/start_run
+//
+//go:embed instance_run.sh
+var instanceRunFileContent string
+
 // Contents of /.singularity.d/actions/test
 //
 //go:embed test.sh
@@ -185,6 +190,9 @@ func makeFiles(rootPath string) error {
 		return err
 	}
 	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "start"), 0o755, startFileContent); err != nil {
+		return err
+	}
+	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "instance_run"), 0o755, instanceRunFileContent); err != nil {
 		return err
 	}
 	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "test"), 0o755, testFileContent); err != nil {

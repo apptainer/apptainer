@@ -874,8 +874,8 @@ func init() {
 		actionsCmd := cmdManager.GetCmdGroup("actions")
 
 		if instanceStartCmd != nil {
-			cmdManager.SetCmdGroup("actions_instance", ExecCmd, ShellCmd, RunCmd, TestCmd, instanceStartCmd)
-			cmdManager.RegisterFlagForCmd(&actionBootFlag, instanceStartCmd)
+			cmdManager.SetCmdGroup("actions_instance", ExecCmd, ShellCmd, RunCmd, TestCmd, instanceStartCmd, instanceRunCmd)
+			cmdManager.RegisterFlagForCmd(&actionBootFlag, instanceStartCmd, instanceRunCmd)
 		} else {
 			cmdManager.SetCmdGroup("actions_instance", actionsCmd...)
 		}
