@@ -1577,7 +1577,7 @@ func (c imgBuildTests) buildLibraryHost(t *testing.T) {
 			os.Remove(defFile)
 		}),
 		e2e.ExpectExit(255,
-			e2e.ExpectError(e2e.ContainMatch, "dial tcp: lookup library.example.com: no such host"),
+			e2e.ExpectError(e2e.ContainMatch, "no such host"),
 		),
 	)
 }

@@ -1,6 +1,6 @@
 module github.com/apptainer/apptainer
 
-go 1.18
+go 1.19
 
 require (
 	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2
