@@ -65,7 +65,7 @@ export APPTAINER_CACHEDIR=$(pkgdir)/var/lib/apptainer/cache
 
 override_dh_auto_configure:
 	@SQUASHFUSETGZ="`echo debian/squashfuse-*.tar.gz`"; \
-	  if [ -f $$SQUASHFUSETGZ ]; then \
+	  if [ -f "$$SQUASHFUSETGZ" ]; then \
 	    set -x; \
 	    tar -C debian -xf $$SQUASHFUSETGZ; \
 	    cd $${SQUASHFUSETGZ%.tar.gz}; \
@@ -87,6 +87,13 @@ override_dh_auto_configure:
 	    cd go/src; \
 	    GOCACHE=$(GOCACHE) ./make.bash; \
 	  fi
+	@GOCRYPTFSTGZ="`echo debian/gocryptfs-*.tar.gz`"; \
+	  if [ -f "$$GOCRYPTFSTGZ" ]; then \
+	    set -x; \
+	    tar -C debian -xf $$GOCRYPTFSTGZ; \
+	    cd $${GOCRYPTFSTGZ%.tar.gz}; \
+	    PATH=$(GOROOT)/bin:$$PATH GOCACHE=$(GOCACHE) ./build-without-openssl.bash; \
+	  fi
 ifneq ($(NEW_VERSION),)
 	$(warning "Setting new version in debian changelog: $(NEW_VERSION)")
 	@debchange -v $(NEW_VERSION)$(VERSION_POSTFIX) "Version $(NEW_VERSION)" && debchange -m -r ""
@@ -102,7 +109,7 @@ override_dh_auto_build:
 
 override_dh_auto_install:
 	@dh_auto_install -Smakefile -D$(DEB_SC_BUILDDIR)
-	cp debian/squashfuse-*/squashfuse_ll debian/tmp/usr/libexec/apptainer/bin
+	cp debian/squashfuse-*/squashfuse_ll debian/gocryptfs-*/gocryptfs debian/tmp/usr/libexec/apptainer/bin
 
 override_dh_install:
 	@dh_install -papptainer-suid usr/libexec/apptainer/bin/starter-suid
