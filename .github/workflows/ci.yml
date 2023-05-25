@@ -37,6 +37,7 @@ jobs:
 
       - name: Check apptainer source
         run: |
+          git config --global --add safe.directory $(pwd)
           ./mconfig -v -p /usr/local --with-suid
           make -C ./builddir check
 
