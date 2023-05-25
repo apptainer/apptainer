@@ -66,6 +66,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Other changes
 
+- Update minimum go version to 1.19.
 - Fix non-root instance join with unprivileged systemd managed cgroups, when
   join is from outside a user-owned cgroup.
 - Define EUID in %environment alongside UID.
