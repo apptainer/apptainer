@@ -41,8 +41,9 @@ su testuser -c '
     fi
   fi
   go version
-  # enable the multithreading squashfuse
+  # enable the multithreading squashfuse and gocryptfs
   sed -i "s/^# %\(%global squashfuse_version\)/\1/" apptainer.spec
+  sed -i "s/^# %\(%global gocryptfs_version\)/\1/" apptainer.spec
   # download any additional source & patch urls
   DOWNLOADURL="$(sed -n "s/^Source[1-9][0-9]*: //p" apptainer.spec)"
   DOWNLOADURL="$DOWNLOADURL $(sed -n "s/^Patch[1-9][0-9]*: //p" apptainer.spec)"

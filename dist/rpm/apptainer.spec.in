@@ -33,6 +33,8 @@
 # For example, it has dash instead of tilde for release candidates.
 %global package_version @PACKAGE_VERSION@
 
+# Uncomment this to include gocryptfs
+# %%global gocryptfs_version 2.3.2
 # Uncomment this to include a multithreaded version of squashfuse_ll
 # %%global squashfuse_version 0.1.105
 
@@ -51,8 +53,15 @@ License: BSD and LBNL BSD and ASL 2.0
 URL: https://apptainer.org
 Source: https://github.com/%{name}/%{name}/releases/download/v%{package_version}/%{name}-%{package_version}.tar.gz
 @PACKAGE_GOLANG_SOURCE@
+%if "%{?gocryptfs_version}" != ""
+# In order to build offline, this source tarball needs to have the "vendor"
+# directory added, which can be done by unpacking it, doing the command
+#   go mod vendor
+# and then recreating the tarball.
+Source10: https://github.com/rfjakob/gocryptfs/archive/v%{gocryptfs_version}/gocryptfs-%{gocryptfs_version}.tar.gz
+%endif
 %if "%{?squashfuse_version}" != ""
-Source10: https://github.com/vasi/squashfuse/archive/%{squashfuse_version}/squashfuse-%{squashfuse_version}.tar.gz
+Source11: https://github.com/vasi/squashfuse/archive/%{squashfuse_version}/squashfuse-%{squashfuse_version}.tar.gz
 Patch10: https://github.com/vasi/squashfuse/pull/70.patch
 Patch11: https://github.com/vasi/squashfuse/pull/77.patch
 Patch12: https://github.com/vasi/squashfuse/pull/81.patch
@@ -107,6 +116,8 @@ Requires: squashfuse
 Requires: fakeroot
 Requires: fuse-overlayfs
 Requires: e2fsprogs
+# only gocryptfs requires fuse
+Requires: fuse
 # Uncomment this for the epel build, but we don't want it for the Apptainer
 #  release build because there the same rpm is shared across OS versions
 #%%if 0%{?el7}
@@ -131,10 +142,14 @@ Provides: alternative-for(singularity)
 Provides the optional setuid-root portion of Apptainer.
 
 %prep
+%if "%{?gocryptfs_version}" != ""
+%setup -b 10 -n gocryptfs-%{gocryptfs_version}
+%endif
+
 %if "%{?squashfuse_version}" != ""
 # the default directory for other steps is where the %%prep section ends
 # so do main package last
-%setup -b 10 -n squashfuse-%{squashfuse_version}
+%setup -b 11 -n squashfuse-%{squashfuse_version}
 %patch -P 10 -p1
 %patch -P 11 -p1
 %patch -P 12 -p1
@@ -144,6 +159,22 @@ Provides the optional setuid-root portion of Apptainer.
 %endif
 
 %build
+%if "%{?gocryptfs_version}" != ""
+pushd ../gocryptfs-%{gocryptfs_version}
+if [ ! -d vendor ]; then
+    (
+    export GOPATH="`pwd`/gopath"
+    go mod vendor
+    go clean -modcache
+    )
+fi
+# GOPROXY=off makes sure we fail instead of making network requests
+# the -B ldflags prevent rpm complaints about "No build ID note found"
+CGO_ENABLED=0 GOPROXY=off ./build.bash -mod=vendor -tags without_openssl \
+    -ldflags="-X main.GitVersion=%{gocryptfs_version} -B 0x`head -c20 /dev/urandom|od -An -tx1|tr -d ' \n'`" 
+popd
+%endif
+
 %if "%{?squashfuse_version}" != ""
 pushd ../squashfuse-%{squashfuse_version}
 ./autogen.sh
@@ -191,6 +222,11 @@ export PATH=$PWD/go/bin:$PATH
 %endif
 
 %make_install -C builddir V=
+
+%if "%{?gocryptfs_version}" != ""
+install -m 755 ../gocryptfs-%{gocryptfs_version}/gocryptfs %{buildroot}%{_libexecdir}/%{name}/bin/gocryptfs
+%endif
+
 %if "%{?squashfuse_version}" != ""
 install -m 755 ../squashfuse-%{squashfuse_version}/squashfuse_ll %{buildroot}%{_libexecdir}/%{name}/bin/squashfuse_ll
 %endif
@@ -261,6 +297,9 @@ fi
 %dir %{_libexecdir}/%{name}
 %dir %{_libexecdir}/%{name}/bin
 %{_libexecdir}/%{name}/bin/starter
+%if "%{?gocryptfs_version}" != ""
+%{_libexecdir}/%{name}/bin/gocryptfs
+%endif
 %if "%{?squashfuse_version}" != ""
 %{_libexecdir}/%{name}/bin/squashfuse_ll
 %endif

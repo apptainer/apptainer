@@ -220,6 +220,42 @@ make squashfuse_ll
 sudo cp squashfuse_ll /usr/local/libexec/apptainer/bin
 ```
 
+## Installing gocryptfs
+
+If you want to support SIF encryption and/or decryption in unprivileged
+mode, then gocryptfs needs to installed.  It is available as a package
+install on some operating systems as described in its
+[documentation](https://nuetzlich.net/gocryptfs/quickstart/), but
+otherwise to compile it from source follow these instructions.
+
+First, make sure that the additional required package is installed.  On Debian:
+
+```sh
+apt-get install -y fuse3
+```
+
+On CentOS/RHEL:
+
+```sh
+yum install -y fuse
+```
+
+To download the source code do this:
+
+```sh
+GOCRYPTFSVERSION=2.3.2
+curl -L -O https://github.com/rfjakob/gocryptfs/archive/v$GOCRYPTFSVERSION/gocryptfs-$GOCRYPTFSVERSION.tar.gz
+```
+
+Then to compile and install do this:
+
+```sh
+tar xzf gocryptfs-$GOCRYPTFSVERSION.tar.gz
+cd gocryptfs-$GOCRYPTFSVERSION
+./build-without-openssl.bash
+sudo cp gocryptfs /usr/local/libexec/apptainer/bin
+```
+
 ## Building & Installing from RPM
 
 On a RHEL / CentOS / Fedora machine you can build an Apptainer into rpm
@@ -264,20 +300,23 @@ VERSION=1.1.8  # this is the apptainer version, change as you need
 wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
 ```
 
-At this point if you don't care about improved squashfuse performance
-then skip down to the rpmbuild command below.
-If you do want it then you need to modify the tarball.
-First unpack it and uncomment one line like this:
+Next we need to include the source of squashfuse_ll and gocryptfs.
+The easiest way to do that is to modify the apptainer tarball and
+include them inside of it.  First unpack it like this:
 
 ```sh
 tar xf apptainer-${VERSION}.tar.gz
 cd apptainer-${VERSION}
-sed -i 's/^# %\(%global squashfuse_version\)/\1/' apptainer.spec
 ```
 
-Then install the extra packages and download the source code as shown at
-[the above link](#installing-improved-performance-squashfuse_ll)
-and recreate the tarball like this:
+Then install the extra packages and download the source code into the
+current directory as shown at
+[the above squashfuse link](#installing-improved-performance-squashfuse_ll)
+and [the above gocryptfs link](#installing-gocryptfs).
+(If the rpm needs to be built offline from the internet see
+additional instructions for the gocryptfs source code in
+dist/rpm/apptainer.spec.in).
+Then recreate the apptainer tarball like this:
 
 ```sh
 cd ..
@@ -317,6 +356,10 @@ sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-suid-$(echo $VERSION|tr - \~)*.x8
 ```
 
 <!-- markdownlint-enable MD013 -->
+
+That will not include squashfuse_ll and gocryptfs in the rpm unless you
+uncomment the %global definitions of their version numbers in apptainer.spec
+first and have their source tarballs available in the current directory.
 
 By default, the rpms will be built so that Apptainer is installed in
 standard Linux paths under ``/``.

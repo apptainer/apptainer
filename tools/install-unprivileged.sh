@@ -285,10 +285,10 @@ OSUTILS=""
 EXTRASUTILS="fuse-overlayfs"
 EPELUTILS="fakeroot"
 if [ "$DIST" = el7 ]; then
-	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs"
+	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs fuse"
 	EPELUTILS="$EPELUTILS libzstd fuse2fs fuse3-libs fakeroot-libs"
 elif [ "$DIST" = el8 ]; then
-	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
+	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs fuse libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
 	EPELUTILS="$EPELUTILS fakeroot-libs"
 elif [ "$DIST" = "opensuse-tumbleweed" ]; then
 	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot fuse2fs $EXTRASUTILS $EPELUTILS"
@@ -299,7 +299,7 @@ elif [ "$DIST" = "suse15" ]; then
 	EXTRASUTILS="$EXTRASUTILS fuse2fs"
 	EPELUTILS=""
 else
-	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs"
+	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs fuse libzstd e2fsprogs-libs e2fsprogs"
 	EXTRASUTILS="$EXTRASUTILS fuse3-libs"
 	EPELUTILS="$EPELUTILS fakeroot-libs"
 fi
@@ -355,7 +355,7 @@ rmdir lib 2>/dev/null || true
 # move everything needed out of tmp to utils
 mkdir -p utils/bin utils/lib utils/libexec
 mv tmp/usr/lib*/* utils/lib
-mv tmp/usr/bin/fuse-overlayfs tmp/usr/*bin/fuse2fs tmp/usr/*bin/*squashfs utils/libexec
+mv tmp/usr/*bin/fuse* tmp/usr/*bin/*squashfs utils/libexec
 mv tmp/usr/bin/fake*sysv utils/bin
 cat >utils/bin/.wrapper <<'!EOF!'
 #!/bin/bash
@@ -393,7 +393,7 @@ PARENT="${HERE%/*}"
 GGPARENT="${PARENT%/*/*}"
 REALME=$PARENT/libexec/$BASEME
 ARG0="${_WRAPPER_ARG0:-$REALME}"
-LD_LIBRARY_PATH=$GGPARENT/utils/lib ${_WRAPPER_EXEC_CMD:-exec -a "$ARG0"} $REALME "$@"
+LD_LIBRARY_PATH=$GGPARENT/utils/lib PATH=$PATH:$GGPARENT/utils/bin ${_WRAPPER_EXEC_CMD:-exec -a "$ARG0"} $REALME "$@"
 !EOF!
 chmod +x libexec/apptainer/bin/.wrapper
 for TOOL in libexec/apptainer/bin/*; do
