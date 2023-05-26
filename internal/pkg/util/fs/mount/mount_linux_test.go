@@ -335,7 +335,7 @@ func TestImport(t *testing.T) {
 		t.Fatalf("%s != %s", mountLabel, points.GetContext())
 	}
 
-	validImport := map[AuthorizedTag][]Point{
+	validImport := map[AuthorizedTag]PointList{
 		UserbindsTag: {
 			{
 				Mount: specs.Mount{
@@ -467,7 +467,7 @@ func TestImport(t *testing.T) {
 	}
 	points.RemoveAll()
 
-	invalidImport := map[AuthorizedTag][]Point{
+	invalidImport := map[AuthorizedTag]PointList{
 		UserbindsTag: {
 			{
 				Mount: specs.Mount{
@@ -483,7 +483,7 @@ func TestImport(t *testing.T) {
 		t.Errorf("import should failed: %s", err)
 	}
 
-	validForceContextImport := map[AuthorizedTag][]Point{
+	validForceContextImport := map[AuthorizedTag]PointList{
 		SessionTag: {
 			{
 				Mount: specs.Mount{
@@ -515,7 +515,7 @@ func TestImport(t *testing.T) {
 	}
 	points.RemoveAll()
 
-	validContextImport := map[AuthorizedTag][]Point{
+	validContextImport := map[AuthorizedTag]PointList{
 		SessionTag: {
 			{
 				Mount: specs.Mount{

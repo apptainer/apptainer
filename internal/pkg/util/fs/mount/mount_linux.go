@@ -12,7 +12,9 @@ package mount
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"syscall"
 
@@ -125,27 +127,28 @@ const (
 )
 
 var authorizedTags = map[AuthorizedTag]struct {
-	multiPoint bool
-	order      int
+	multiPoint  bool
+	sortedMount bool
+	order       int
 }{
-	SessionTag:   {false, 0},
-	RootfsTag:    {false, 1},
-	ImageBindTag: {true, 2},
-	PreLayerTag:  {true, 3},
-	LayerTag:     {false, 4},
-	SharedTag:    {true, 5},
-	DevTag:       {true, 6},
-	HostfsTag:    {true, 7},
-	BindsTag:     {true, 8},
-	KernelTag:    {true, 9},
-	HomeTag:      {false, 10},
-	TmpTag:       {true, 11},
-	ScratchTag:   {true, 12},
-	FilesTag:     {true, 13},
-	UserbindsTag: {true, 14},
-	CwdTag:       {false, 15},
-	OtherTag:     {true, 16},
-	FinalTag:     {true, 17},
+	SessionTag:   {false, false, 0},
+	RootfsTag:    {false, false, 1},
+	ImageBindTag: {true, false, 2},
+	PreLayerTag:  {true, false, 3},
+	LayerTag:     {false, false, 4},
+	SharedTag:    {true, false, 5},
+	DevTag:       {true, false, 6},
+	HostfsTag:    {true, false, 7},
+	BindsTag:     {true, false, 8},
+	KernelTag:    {true, false, 9},
+	HomeTag:      {false, false, 10},
+	TmpTag:       {true, false, 11},
+	ScratchTag:   {true, false, 12},
+	FilesTag:     {true, false, 13},
+	UserbindsTag: {true, true, 14},
+	CwdTag:       {false, false, 15},
+	OtherTag:     {true, false, 16},
+	FinalTag:     {true, false, 17},
 }
 
 var authorizedImage = map[string]fsContext{
@@ -170,7 +173,7 @@ var authorizedFS = map[string]fsContext{
 
 var internalOptions = []string{"loop", "offset", "sizelimit", "key", "skip-on-error"}
 
-// Point describes a mount point
+// Point describes a mount point.
 type Point struct {
 	specs.Mount
 	InternalOptions []string `json:"internalOptions"`
@@ -179,7 +182,37 @@ type Point struct {
 // Points defines and stores a set of mount points by tag
 type Points struct {
 	context string
-	points  map[AuthorizedTag][]Point
+	points  map[AuthorizedTag]PointList
+}
+
+const pathSeparator = string(os.PathSeparator)
+
+// PointList holds a mount point list and implements the sort interface
+// to sort destination mount point by their shortest path depth first.
+type PointList []Point
+
+func (p PointList) Len() int {
+	return len(p)
+}
+
+func (p PointList) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
+}
+
+func (p PointList) Less(i, j int) bool {
+	iDest := filepath.Clean(p[i].Destination)
+	jDest := filepath.Clean(p[j].Destination)
+	iDepth := strings.Count(iDest, pathSeparator)
+	jDepth := strings.Count(jDest, pathSeparator)
+	if iDepth == jDepth {
+		return len(iDest) < len(jDest)
+	}
+	return iDepth < jDepth
+}
+
+// Sort sorts the mount points by the shortest path depth first.
+func (p PointList) Sort() {
+	sort.Stable(p)
 }
 
 // ConvertOptions converts an options string into a pair of mount flags and mount options
@@ -206,8 +239,8 @@ func ConvertOptions(options []string) (uintptr, []string) {
 }
 
 // ConvertSpec converts an OCI Mount spec into an importable mount points list
-func ConvertSpec(mounts []specs.Mount) (map[AuthorizedTag][]Point, error) {
-	points := make(map[AuthorizedTag][]Point)
+func ConvertSpec(mounts []specs.Mount) (map[AuthorizedTag]PointList, error) {
+	points := make(map[AuthorizedTag]PointList)
 	for _, m := range mounts {
 		var tag AuthorizedTag
 		var options []string
@@ -353,7 +386,7 @@ func getPropagationFlags() uintptr {
 
 func (p *Points) init() {
 	if p.points == nil {
-		p.points = make(map[AuthorizedTag][]Point)
+		p.points = make(map[AuthorizedTag]PointList)
 	}
 }
 
@@ -443,15 +476,15 @@ func (p *Points) add(tag AuthorizedTag, source string, dest string, fstype strin
 }
 
 // GetAll returns all registered mount points
-func (p *Points) GetAll() map[AuthorizedTag][]Point {
+func (p *Points) GetAll() map[AuthorizedTag]PointList {
 	p.init()
 	return p.points
 }
 
 // GetByDest returns registered mount points with the matched destination
-func (p *Points) GetByDest(dest string) []Point {
+func (p *Points) GetByDest(dest string) PointList {
 	p.init()
-	mounts := []Point{}
+	mounts := PointList{}
 	for tag := range p.points {
 		for _, point := range p.points[tag] {
 			if point.Destination == dest {
@@ -463,9 +496,9 @@ func (p *Points) GetByDest(dest string) []Point {
 }
 
 // GetBySource returns registered mount points with the matched source
-func (p *Points) GetBySource(source string) []Point {
+func (p *Points) GetBySource(source string) PointList {
 	p.init()
-	mounts := []Point{}
+	mounts := PointList{}
 	for tag := range p.points {
 		for _, point := range p.points[tag] {
 			if point.Source == source {
@@ -477,7 +510,7 @@ func (p *Points) GetBySource(source string) []Point {
 }
 
 // GetByTag returns mount points attached to a tag
-func (p *Points) GetByTag(tag AuthorizedTag) []Point {
+func (p *Points) GetByTag(tag AuthorizedTag) PointList {
 	p.init()
 	return p.points[tag]
 }
@@ -521,7 +554,7 @@ func (p *Points) RemoveByTag(tag AuthorizedTag) {
 }
 
 // Import imports a mount point list
-func (p *Points) Import(points map[AuthorizedTag][]Point) error {
+func (p *Points) Import(points map[AuthorizedTag]PointList) error {
 	for tag := range points {
 		for _, point := range points[tag] {
 			var err error
@@ -637,9 +670,9 @@ func (p *Points) AddImage(tag AuthorizedTag, source string, dest string, fstype 
 }
 
 // GetAllImages returns a list of all registered image mount points
-func (p *Points) GetAllImages() []Point {
+func (p *Points) GetAllImages() PointList {
 	p.init()
-	images := []Point{}
+	images := PointList{}
 	for tag := range p.points {
 		for _, point := range p.points[tag] {
 			if _, ok := authorizedImage[point.Type]; ok {
@@ -664,9 +697,9 @@ func (p *Points) AddBind(tag AuthorizedTag, source string, dest string, flags ui
 }
 
 // GetAllBinds returns a list of all registered bind mount points
-func (p *Points) GetAllBinds() []Point {
+func (p *Points) GetAllBinds() PointList {
 	p.init()
-	binds := []Point{}
+	binds := PointList{}
 	for tag := range p.points {
 		for _, point := range p.points[tag] {
 			for _, option := range point.Options {
@@ -710,9 +743,9 @@ func (p *Points) AddOverlay(tag AuthorizedTag, dest string, flags uintptr, lower
 }
 
 // GetAllOverlays returns a list of all registered overlay mount points
-func (p *Points) GetAllOverlays() []Point {
+func (p *Points) GetAllOverlays() PointList {
 	p.init()
-	fs := []Point{}
+	fs := PointList{}
 	for tag := range p.points {
 		for _, point := range p.points[tag] {
 			if point.Type == "overlay" {
@@ -740,9 +773,9 @@ func (p *Points) AddFSWithSource(tag AuthorizedTag, source string, dest string, 
 }
 
 // GetAllFS returns a list of all registered filesystem mount points
-func (p *Points) GetAllFS() []Point {
+func (p *Points) GetAllFS() PointList {
 	p.init()
-	fs := []Point{}
+	fs := PointList{}
 	for tag := range p.points {
 		for _, point := range p.points[tag] {
 			for fstype := range authorizedFS {

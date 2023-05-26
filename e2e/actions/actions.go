@@ -2396,7 +2396,7 @@ func (c actionTests) bindImage(t *testing.T) {
 				c.env.ImagePath,
 				"test", "-f", filepath.Join("/scratch/bin", squashMarkerFile),
 			},
-			exit: 1,
+			exit: 0,
 		},
 		{
 			name:    "ScratchBeforeSquashfs",

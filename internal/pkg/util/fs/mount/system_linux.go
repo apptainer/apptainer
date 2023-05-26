@@ -78,6 +78,9 @@ func (b *System) MountAll() error {
 				return fmt.Errorf("hook function for tag %s returns error: %s", tag, err)
 			}
 		}
+		if authorizedTags[tag].sortedMount {
+			b.Points.GetByTag(tag).Sort()
+		}
 		for _, point := range b.Points.GetByTag(tag) {
 			if b.Mount != nil {
 				if err := b.Mount(&point, b); err != nil {
