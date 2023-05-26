@@ -2093,58 +2093,74 @@ func (c *container) addCwdMount(system *mount.System) error {
 		sylog.Debugf("Skipping current directory mount by user request.")
 		return nil
 	}
-	cwd := c.engine.EngineConfig.GetCwd()
-	if cwd == "" {
+	cwdHost := filepath.Clean(c.engine.EngineConfig.GetCwd())
+	if cwdHost == "" {
 		sylog.Warningf("No current working directory set: skipping mount")
 	}
 
-	current, err := filepath.EvalSymlinks(cwd)
+	cwdHostResolved, err := filepath.EvalSymlinks(cwdHost)
 	if err != nil {
 		return fmt.Errorf("could not obtain current directory path: %s", err)
 	}
-	sylog.Debugf("Using %s as current working directory", cwd)
+	sylog.Debugf("Using %s as current working directory", cwdHost)
 
-	switch current {
-	case "/", "/etc", "/bin", "/mnt", "/usr", "/var", "/opt", "/sbin", "/lib", "/lib64":
-		sylog.Verbosef("Not mounting CWD within operating system directory: %s", current)
-		return nil
-	}
-	if strings.HasPrefix(current, "/sys") || strings.HasPrefix(current, "/proc") || strings.HasPrefix(current, "/dev") {
-		sylog.Verbosef("Not mounting CWD within virtual directory: %s", current)
-		return nil
+	cwdPaths := []string{cwdHost}
+	cwdHostSymlink := cwdHost != cwdHostResolved
+
+	// handle new symlink /bin -> usr/bin, /sbin -> usr/sbin ...
+	if cwdHostSymlink {
+		cwdPaths = append(cwdPaths, cwdHostResolved)
 	}
 
-	dest := fs.EvalRelative(cwd, c.session.FinalPath())
-	dest = filepath.Join(c.session.FinalPath(), dest)
+	for _, cwdPath := range cwdPaths {
+		switch cwdPath {
+		case "/", "/etc", "/bin", "/mnt", "/usr", "/var", "/opt", "/sbin", "/lib", "/lib64":
+			sylog.Verbosef("Not mounting CWD within operating system directory: %s", cwdPath)
+			return nil
+		}
+		if strings.HasPrefix(cwdPath, "/sys") || strings.HasPrefix(cwdPath, "/proc") || strings.HasPrefix(cwdPath, "/dev") {
+			sylog.Verbosef("Not mounting CWD within virtual directory: %s", cwdPath)
+			return nil
+		}
+	}
 
-	fi, err := c.rpcOps.Stat(dest)
+	cwdContainerResolved := fs.EvalRelative(cwdHost, c.session.FinalPath())
+	cwdContainerResolved = filepath.Join(c.session.FinalPath(), cwdContainerResolved)
+	cwdContainerSymlink := cwdContainerResolved != cwdHost
+
+	fi, err := c.rpcOps.Stat(cwdContainerResolved)
 	if err != nil {
 		if os.IsNotExist(err) {
-			sylog.Verbosef("Not mounting CWD, %s doesn't exist within container", cwd)
+			sylog.Verbosef("Not mounting CWD, %s doesn't exist within container", cwdContainerResolved)
 		}
-		sylog.Verbosef("Not mounting CWD, while getting %s information: %s", cwd, err)
+		sylog.Verbosef("Not mounting CWD, while getting %s information: %s", cwdContainerResolved, err)
 		return nil
 	}
 	cst := fi.Sys().(*syscall.Stat_t)
 
 	var hst syscall.Stat_t
-	if err := syscall.Stat(cwd, &hst); err != nil {
+	if err := syscall.Stat(cwdHost, &hst); err != nil {
 		return err
 	}
+
 	// same ino/dev, the current working directory is available within the container
 	if hst.Dev == cst.Dev && hst.Ino == cst.Ino {
-		sylog.Verbosef("%s found within container", cwd)
+		sylog.Verbosef("%s found within container", cwdHost)
 		return nil
-	} else if c.isMounted(dest) {
-		sylog.Verbosef("Not mounting CWD (already mounted in container): %s", cwd)
+	} else if c.isMounted(cwdContainerResolved) {
+		sylog.Verbosef("Not mounting CWD (already mounted in container): %s", cwdHost)
+		return nil
+	} else if cwdHostSymlink && cwdContainerSymlink && cwdContainerResolved != cwdHostResolved {
+		// symlink case when both destination exists on host and in container but are differents
+		sylog.Verbosef("Not mounting CWD, detected symlinks with different destination between host/container")
 		return nil
 	}
 
 	flags := uintptr(syscall.MS_BIND | c.suidFlag | syscall.MS_NODEV | syscall.MS_REC)
-	if err := system.Points.AddBind(mount.CwdTag, cwd, cwd, flags); err != nil {
-		return fmt.Errorf("could not bind cwd directory %s into container: %s", cwd, err)
+	if err := system.Points.AddBind(mount.CwdTag, cwdHost, cwdHost, flags); err != nil {
+		return fmt.Errorf("could not bind cwd directory %s into container: %s", cwdHost, err)
 	}
-	return system.Points.AddRemount(mount.CwdTag, cwd, flags)
+	return system.Points.AddRemount(mount.CwdTag, cwdHost, flags)
 }
 
 func (c *container) addLibsMount(system *mount.System) error {

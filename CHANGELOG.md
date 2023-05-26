@@ -24,6 +24,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   installations. This is an increase from 16 MiB in prior versions.
 - Show standard output of yum bootstrap if log level is verbose or higher.
 - Add architecture aware support for apptainer cache.
+- Handle current working directory path containing symlink boths on host and
+  container but pointing to different destinations, if detected the current
+  working directory is not mounted when the destination directory in container exists.
 
 ### New features / functionalities
 
