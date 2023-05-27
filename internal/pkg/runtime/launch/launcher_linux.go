@@ -567,7 +567,7 @@ func (l *Launcher) checkEncryptionKey() error {
 		sylog.Debugf("Encrypted container filesystem detected")
 
 		if l.cfg.KeyInfo == nil {
-			return fmt.Errorf("no key was provided, cannot access encrypted container")
+			return fmt.Errorf("required option --passphrase or --pem-path missing")
 		}
 
 		plaintextKey, err := cryptkey.PlaintextKey(*l.cfg.KeyInfo, l.engineConfig.GetImage())
