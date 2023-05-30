@@ -131,11 +131,13 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 
 	uid := e.EngineConfig.GetTargetUID()
 	gids := e.EngineConfig.GetTargetGID()
+	useTargetIDs := false
 
 	if os.Getuid() == 0 && (uid != 0 || len(gids) > 0) {
 		starterConfig.SetTargetUID(uid)
 		starterConfig.SetTargetGID(gids)
 		e.EngineConfig.OciConfig.SetProcessNoNewPrivileges(true)
+		useTargetIDs = true
 	}
 
 	userNS := !starterConfig.GetIsSUID() || e.EngineConfig.GetFakeroot()
@@ -147,6 +149,8 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 			return err
 		}
 	} else {
+		e.setUserInfo(useTargetIDs)
+
 		if err := e.prepareContainerConfig(starterConfig); err != nil {
 			return err
 		}
@@ -1485,4 +1489,52 @@ func (e *EngineOperations) loadImage(path string, writable bool, userNS bool) (*
 	}
 
 	return imgObject, imgErr
+}
+
+func (e *EngineOperations) setUserInfo(useTargetIDs bool) {
+	var gids []int
+
+	pw, err := user.Current()
+	if err != nil {
+		return
+	}
+
+	e.EngineConfig.JSON.UserInfo.Home = pw.Dir
+
+	if useTargetIDs {
+		pw, err = user.GetPwUID(uint32(e.EngineConfig.GetTargetUID()))
+		if err == nil {
+			e.EngineConfig.JSON.UserInfo.Username = pw.Name
+			e.EngineConfig.JSON.UserInfo.Gecos = pw.Gecos
+			e.EngineConfig.JSON.UserInfo.UID = int(pw.UID)
+			e.EngineConfig.JSON.UserInfo.GID = int(pw.GID)
+		}
+	} else {
+		e.EngineConfig.JSON.UserInfo.Username = pw.Name
+		e.EngineConfig.JSON.UserInfo.Gecos = pw.Gecos
+		e.EngineConfig.JSON.UserInfo.UID = int(pw.UID)
+		e.EngineConfig.JSON.UserInfo.GID = int(pw.GID)
+	}
+
+	e.EngineConfig.JSON.UserInfo.Groups = make(map[int]string)
+
+	if useTargetIDs {
+		gids = e.EngineConfig.GetTargetGID()
+	} else {
+		gids, err = os.Getgroups()
+		if err != nil {
+			return
+		}
+	}
+
+	if pw != nil {
+		gids = append(gids, int(pw.GID))
+	}
+
+	for _, gid := range gids {
+		group, err := user.GetGrGID(uint32(gid))
+		if err == nil {
+			e.EngineConfig.JSON.UserInfo.Groups[gid] = group.Name
+		}
+	}
 }

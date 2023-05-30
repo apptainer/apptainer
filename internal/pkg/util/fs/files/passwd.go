@@ -18,9 +18,15 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
+type UserGroupLookup interface {
+	GetPwUID(uint32) (*user.User, error)
+	GetGrGID(uint32) (*user.Group, error)
+	Getgroups() ([]int, error)
+}
+
 // Passwd creates a passwd template based on content of file provided in path,
 // updates content with current user information and returns content.
-func Passwd(path string, home string, uid int) (content []byte, err error) {
+func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (content []byte, err error) {
 	sylog.Verbosef("Checking for template passwd file: %s", path)
 	if !fs.IsFile(path) {
 		return content, fmt.Errorf("passwd file doesn't exist in container, not updating")
@@ -32,7 +38,12 @@ func Passwd(path string, home string, uid int) (content []byte, err error) {
 		return content, fmt.Errorf("failed to read passwd file content in container: %s", err)
 	}
 
-	pwInfo, err := user.GetPwUID(uint32(uid))
+	getPwUID := user.GetPwUID
+	if customLookup != nil {
+		getPwUID = customLookup.GetPwUID
+	}
+
+	pwInfo, err := getPwUID(uint32(uid))
 	if err != nil {
 		return content, err
 	}
