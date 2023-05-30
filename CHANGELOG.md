@@ -91,6 +91,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   binding fakeroot into container during apptainer startup for --fakeroot
   with fakeroot command.
 - Fix memory usage calculation during apptainer compilation on RaspberryPi.
+- Fix misleading error when an overlay is requested by the root user while the
+  overlay kernel module is not loaded.
 
 ## v1.1.8 - \[2023-04-25\]
 
