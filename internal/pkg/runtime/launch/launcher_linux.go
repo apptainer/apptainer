@@ -389,8 +389,14 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	}
 
 	loadOverlay := false
-	if !l.cfg.Namespaces.User && buildcfg.APPTAINER_SUID_INSTALL == 1 {
-		loadOverlay = true
+	if !l.cfg.Namespaces.User && (buildcfg.APPTAINER_SUID_INSTALL == 1 || os.Getuid() == 0) {
+		has, err := proc.HasFilesystem("overlay")
+		if err != nil {
+			return fmt.Errorf("while checking whether overlay filesystem is loaded: %w", err)
+		}
+		if !has {
+			loadOverlay = true
+		}
 	}
 
 	cfg := &config.Common{
