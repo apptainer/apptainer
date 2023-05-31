@@ -101,6 +101,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix misleading error when an overlay is requested by the root user while the
   overlay kernel module is not loaded.
 
+### Bug fixes
+
+- Remove warning about unknown `xino=on` option from fuse-overlayfs,
+  introduced in 1.1.8.
+- Ignore extraneous warning from fuse-overlayfs about a readonly `/proc`.
+
 ## v1.1.8 - \[2023-04-25\]
 
 ### Security fix

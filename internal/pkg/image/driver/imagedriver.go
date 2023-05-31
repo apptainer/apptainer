@@ -154,6 +154,8 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 	case "overlay":
 		f = &d.overlayFeature
 		optsStr := strings.Join(params.FSOptions, ",")
+		// Ignore xino=on option with fuse-overlayfs
+		optsStr = strings.Replace(optsStr, ",xino=on", "", -1)
 		// noacl is needed to avoid failures when the upper layer
 		// filesystem type (for example tmpfs) does not support it,
 		// when the fuse-overlayfs version is 1.8 or greater.
@@ -281,6 +283,9 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 		// from squashfuse_ll
 		"failed to clone device fd",
 		"continue without -o clone_fd",
+		// from fuse-overlayfs due to a bug
+		// (see https://github.com/containers/fuse-overlayfs/issues/397)
+		"/proc seems to be mounted as readonly",
 		// from gocryptfs
 		"Reading Password from stdin",
 		"Decrypting master key",
