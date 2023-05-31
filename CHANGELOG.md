@@ -30,6 +30,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Lookup and store user/group information in stage one prior to entering any
   namespaces to fix issue with winbind not correctly lookup user/group information
   when using user namespace.
+- Destination mount points are now sorted by shortest path first to ensure that
+  a user bind doesn't override a previous bind path when set in arbitrary order
+  on CLI, this is also applied to image binds.
 
 ### New features / functionalities
 
