@@ -56,10 +56,11 @@ type Data struct {
 
 // Scripts defines scripts that are used at build time.
 type Scripts struct {
-	Pre   Script `json:"pre"`
-	Setup Script `json:"setup"`
-	Post  Script `json:"post"`
-	Test  Script `json:"test"`
+	Pre       Script `json:"pre"`
+	Setup     Script `json:"setup"`
+	Post      Script `json:"post"`
+	Test      Script `json:"test"`
+	Arguments Script `json:"arguments"`
 }
 
 // Files describes a %files section of a definition.
@@ -125,6 +126,20 @@ func NewDefinitionFromJSON(r io.Reader) (d Definition, err error) {
 	}
 
 	return d, nil
+}
+
+func UpdateDefinitionRaw(defs []Definition) {
+	var buf []byte
+	for _, def := range defs {
+		var tmp bytes.Buffer
+		populateRaw(&def, &tmp)
+		buf = append(buf, tmp.Bytes()...)
+	}
+
+	for idx := range defs {
+		def := &defs[idx]
+		def.Raw = buf
+	}
 }
 
 func writeSectionIfExists(w io.Writer, ident string, s Script) {
@@ -193,4 +208,5 @@ func populateRaw(d *Definition, w io.Writer) {
 	writeSectionIfExists(w, "pre", d.BuildData.Pre)
 	writeSectionIfExists(w, "setup", d.BuildData.Setup)
 	writeSectionIfExists(w, "post", d.BuildData.Post)
+	writeSectionIfExists(w, "arguments", d.BuildData.Arguments)
 }

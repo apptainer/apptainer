@@ -66,6 +66,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - The `remote get-login-password` command allows users to retrieve a remote's
   token. This enables piping the secret directly into docker login while
   preventing it from showing up in a shell's history.
+- Templating support for definition files. Users can now define variables in definition
+  files via a matching pair of double curly brackets. Variables of the form
+  `{{ variable }}` will be replaced by a value defined either by a `variable=value`
+  entry in the `%arguments` section of the definition file or through new build options
+  `--build-arg` or `--build-arg-file`.
 
 ### Other changes
 

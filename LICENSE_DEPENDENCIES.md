@@ -425,6 +425,12 @@ The dependencies and their licenses are as follows:
 
 **Project URL:** <https://oras.land/oras-go/pkg>
 
+## github.com/emirpasic/gods
+
+**License:** BSD-2-Clause
+
+**License URL:** <https://github.com/emirpasic/gods/blob/master/LICENSE>
+
 ## github.com/godbus/dbus/v5
 
 **License:** BSD-2-Clause

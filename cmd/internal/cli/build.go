@@ -45,12 +45,14 @@ var buildArgs struct {
 	nvidia            bool
 	nvccli            bool
 	rocm              bool
-	writableTmpfs     bool // For test section only
-	userns            bool // Enable user namespaces
-	ignoreSubuid      bool // Ignore /etc/subuid entries (hidden)
-	ignoreFakerootCmd bool // Ignore fakeroot command (hidden)
-	ignoreUserns      bool // Ignore user namespace(hidden)
-	remote            bool // Remote flag(hidden, only for helpful error message)
+	writableTmpfs     bool     // For test section only
+	userns            bool     // Enable user namespaces
+	ignoreSubuid      bool     // Ignore /etc/subuid entries (hidden)
+	ignoreFakerootCmd bool     // Ignore fakeroot command (hidden)
+	ignoreUserns      bool     // Ignore user namespace(hidden)
+	remote            bool     // Remote flag(hidden, only for helpful error message)
+	buildVarArgs      []string // Variables passed to build procedure.
+	buildVarArgFile   string   // Variables file passed to build procedure.
 }
 
 // -s|--sandbox
@@ -285,6 +287,22 @@ var buildRemoteFlag = cmdline.Flag{
 	Hidden:       true,
 }
 
+var buildVarArgsFlag = cmdline.Flag{
+	ID:           "buildVarArgsFlag",
+	Value:        &buildArgs.buildVarArgs,
+	DefaultValue: []string{},
+	Name:         "build-arg",
+	Usage:        "defines variable=value to replace {{ variable }} entries in build definition file",
+}
+
+var buildVarArgFileFlag = cmdline.Flag{
+	ID:           "buildVarArgFileFlag",
+	Value:        &buildArgs.buildVarArgFile,
+	DefaultValue: "",
+	Name:         "build-arg-file",
+	Usage:        "specifies a file containing variable=value lines to replace '{{ variable }}' with value in build definition files",
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(buildCmd)
@@ -324,6 +342,9 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildIgnoreFakerootCommand, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildIgnoreUsernsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildRemoteFlag, buildCmd)
+
+		cmdManager.RegisterFlagForCmd(&buildVarArgsFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildVarArgFileFlag, buildCmd)
 	})
 }
 

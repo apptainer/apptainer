@@ -1,0 +1,44 @@
+Bootstrap: localimage
+From: {{ IMAGE }}
+
+%arguments
+    AUTHOR=jason
+    VERSION=1
+    DEMO=this is a demo build definition file
+    TMP_FILE=tmpfile
+
+%setup
+    touch ${APPTAINER_ROOTFS}/{{ TMP_FILE }}
+
+%files
+    {{ SCRIPT_PATH }}
+
+%environment
+    export AUTHOR={{ AUTHOR }}
+    export VERSION={{ VERSION }}
+
+%post
+    NOW=`date`
+    {{ SCRIPT_PATH }}
+
+%runscript
+    echo "Container was created $NOW"
+
+%startscript
+    wget --help
+
+%test
+    /bin/busybox | grep BusyBox
+    if [ $? -eq 0 ]; then
+        echo "Container base is BusyBox as expected."
+    else
+        echo "Container base is not BusyBox."
+        exit 1
+    fi
+
+%labels
+    Author {{ AUTHOR }}
+    Version {{ VERSION }}
+
+%help
+    This is a {{ DEMO }} for templating definition file
