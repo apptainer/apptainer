@@ -1,0 +1,38 @@
+Bootstrap: docker
+From: {{ DEVEL_IMAGE }}
+Stage: devel
+
+%arguments
+    HOME=/root
+
+%post
+  # prep environment
+  export PATH="/go/bin:/usr/local/go/bin:$PATH"
+  export HOME={{ HOME }}
+  cd {{ HOME }}
+
+  # insert source code, could also be copied from the host with %files
+  cat << EOF > hello.go
+  package main
+  import "fmt"
+
+  func main() {
+    fmt.Printf("Hello World!\n")
+  }
+EOF
+
+  go build -o hello hello.go
+
+
+# Install binary into the final image
+Bootstrap: docker
+From: {{ FINAL_IMAGE }}
+Stage: final
+
+%arguments
+    FINAL_IMAGE=alpine:3.17
+    HOME=/root
+
+# install binary from stage one
+%files from devel
+  {{ HOME }}/hello /bin/hello

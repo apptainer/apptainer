@@ -10,6 +10,7 @@
 package imgbuild
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -943,6 +944,170 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 			}
 		})
 	}
+}
+
+//nolint:maintidx
+func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
+	busyboxSIF := e2e.BusyboxSIF(t)
+	fileContent := "HOME=/root"
+	argfile, err := e2e.WriteTempFile(c.env.TestDir, "argfile-", fileContent)
+	if err != nil {
+		log.Fatal(err)
+	}
+	t.Cleanup(func() {
+		os.Remove(argfile)
+	})
+
+	tests := []struct {
+		name         string
+		buildArgs    []string
+		buildArgFile string
+		verify       []string
+		deffile      string
+		exit         int
+		err          string
+		output       string
+	}{
+		{
+			name: "ok case single stage build",
+			buildArgs: []string{
+				fmt.Sprintf("IMAGE=%s", busyboxSIF),
+				fmt.Sprintf("SCRIPT_PATH=%s", path.Join("testdata", "build-template", "script.sh")),
+			},
+			verify: []string{
+				fmt.Sprintf("from: %s", busyboxSIF),
+				"export AUTHOR=jason",
+				"export VERSION=1",
+				"Author jason",
+				"Version 1",
+				"testdata/build-template/script.sh",
+			},
+			deffile: path.Join("testdata", "build-template", "single-stage.def"),
+			exit:    0,
+			err:     "",
+		},
+		{
+			name: "ko case single stage build",
+			buildArgs: []string{
+				fmt.Sprintf("SCRIPT_PATH=%s", path.Join("testdata", "build-template", "script.sh")),
+			},
+			verify:  []string{},
+			deffile: path.Join("testdata", "build-template", "single-stage.def"),
+			exit:    255,
+			err:     "IMAGE is not defined",
+		},
+		{
+			name: "ok case multiple stage build",
+			buildArgs: []string{
+				"DEVEL_IMAGE=golang:1.12.3-alpine3.9",
+				"FINAL_IMAGE=alpine:3.9",
+				"HOME=/root",
+			},
+			verify: []string{
+				"from: golang:1.12.3-alpine3.9",
+				"from: alpine:3.9",
+				"cd /root",
+			},
+			deffile: path.Join("testdata", "build-template", "multiple-stage.def"),
+			exit:    0,
+			err:     "",
+		},
+		{
+			name: "ok case multiple stage build with arg file",
+			buildArgs: []string{
+				"DEVEL_IMAGE=golang:1.12.3-alpine3.9",
+				"FINAL_IMAGE=alpine:3.9",
+			},
+			buildArgFile: argfile,
+			verify: []string{
+				"from: golang:1.12.3-alpine3.9",
+				"from: alpine:3.9",
+				"cd /root",
+			},
+			deffile: path.Join("testdata", "build-template", "multiple-stage.def"),
+			exit:    0,
+			err:     "",
+		},
+		{
+			name: "ko case multiple stage build",
+			buildArgs: []string{
+				"DEVEL_IMAGE=golang:1.12.3-alpine3.9",
+				"FINAL_IMAGE=alpine:3.9",
+			},
+			verify:  []string{},
+			deffile: path.Join("testdata", "build-template", "multiple-stage.def"),
+			exit:    255,
+			err:     "HOME is not defined",
+		},
+	}
+
+	t.Run("build definition", func(t *testing.T) {
+		for _, tt := range tests {
+			dn, cleanup := c.tempDir(t, "build-definition-template")
+			t.Cleanup(func() {
+				if !t.Failed() {
+					cleanup()
+				}
+			})
+
+			imagePath := path.Join(dn, "container")
+			args := []string{}
+
+			if tt.buildArgs != nil {
+				for _, arg := range tt.buildArgs {
+					args = append(args, "--build-arg")
+					args = append(args, arg)
+				}
+			}
+
+			if tt.buildArgFile != "" {
+				args = append(args, "--build-arg-file")
+				args = append(args, tt.buildArgFile)
+			}
+
+			args = append(args, imagePath)
+			args = append(args, tt.deffile)
+
+			expects := []e2e.ApptainerCmdResultOp{}
+			if tt.verify != nil {
+				for _, v := range tt.verify {
+					expects = append(expects, e2e.ExpectOutput(e2e.ContainMatch, v))
+				}
+			}
+			expects = append(expects, e2e.ExpectOutput(e2e.UnwantedExactMatch, "{{"))
+			expects = append(expects, e2e.ExpectOutput(e2e.UnwantedExactMatch, "}}"))
+			c.env.RunApptainer(
+				t,
+				e2e.AsSubtest(tt.name),
+				e2e.WithProfile(e2e.UserProfile),
+				e2e.WithCommand("build"),
+				e2e.WithArgs(args...),
+				e2e.PostRun(func(t *testing.T) {
+					if t.Failed() {
+						return
+					}
+
+					if _, err := os.Stat(imagePath); errors.Is(err, os.ErrNotExist) {
+						return
+					}
+
+					c.env.RunApptainer(
+						t,
+						e2e.AsSubtest(tt.name+" verification"),
+						e2e.WithProfile(e2e.UserProfile),
+						e2e.WithCommand("sif"),
+						e2e.WithArgs("dump", "1", imagePath),
+						e2e.ExpectExit(0,
+							expects...,
+						),
+					)
+				}),
+				e2e.ExpectExit(tt.exit,
+					e2e.ExpectError(e2e.ContainMatch, tt.err),
+				),
+			)
+		}
+	})
 }
 
 func (c *imgBuildTests) ensureImageIsEncrypted(t *testing.T, imgPath string) {
@@ -1971,37 +2136,38 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"bad path":                          c.badPath,                              // try to build from a non existent path
-		"build encrypt with PEM file":       c.buildEncryptPemFile,                  // build encrypted images with certificate
-		"build encrypted with passphrase":   c.buildEncryptPassphrase,               // build encrypted images with passphrase
-		"definition":                        c.buildDefinition,                      // builds from definition template
-		"from local image":                  c.buildLocalImage,                      // build and image from an existing image
-		"from":                              c.buildFrom,                            // builds from definition file and URI
-		"multistage":                        c.buildMultiStageDefinition,            // multistage build from definition templates
-		"non-root build":                    c.nonRootBuild,                         // build sifs from non-root
-		"build and update sandbox":          c.buildUpdateSandbox,                   // build/update sandbox
-		"fingerprint check":                 c.buildWithFingerprint,                 // definition file includes fingerprint check
-		"build with bind mount":             c.buildBindMount,                       // build image with bind mount
-		"library host":                      c.buildLibraryHost,                     // build image with hostname in library URI
-		"customShebang":                     c.buildCustomShebang,                   // build image with custom #! in %test and %runscript
-		"test with writable tmpfs":          c.testWritableTmpfs,                    // build image, using writable tmpfs in the test step
-		"test build system environment":     c.testBuildEnvironmentVariables,        // build image with build system environment variables set in definition
-		"test build under fakeroot modes":   c.testContainerBuildUnderFakerootModes, // build image under different fakeroot modes
-		"issue 3848":                        c.issue3848,                            // https://github.com/apptainer/singularity/issues/3848
-		"issue 4203":                        c.issue4203,                            // https://github.com/apptainer/singularity/issues/4203
-		"issue 4407":                        c.issue4407,                            // https://github.com/apptainer/singularity/issues/4407
-		"issue 4583":                        c.issue4583,                            // https://github.com/apptainer/singularity/issues/4583
-		"issue 4820":                        c.issue4820,                            // https://github.com/apptainer/singularity/issues/4820
-		"issue 4837":                        c.issue4837,                            // https://github.com/apptainer/singularity/issues/4837
-		"issue 4967":                        c.issue4967,                            // https://github.com/apptainer/singularity/issues/4967
-		"issue 4969":                        c.issue4969,                            // https://github.com/apptainer/singularity/issues/4969
-		"issue 5166":                        c.issue5166,                            // https://github.com/apptainer/singularity/issues/5166
-		"issue 5250":                        c.issue5250,                            // https://github.com/apptainer/singularity/issues/5250
-		"issue 5315":                        c.issue5315,                            // https://github.com/apptainer/singularity/issues/5315
-		"issue 5435":                        c.issue5435,                            // https://github.com/apptainer/singularity/issues/5435
-		"issue 5668":                        c.issue5668,                            // https://github.com/apptainer/singularity/issues/5435
-		"issue 5690":                        c.issue5690,                            // https://github.com/apptainer/singularity/issues/5690
-		"test sif header and execute image": c.testSIFHeaderAndExecute,              // https://github.com/apptainer/apptainer/issues/211
-		"build sif image using gocryptfs":   c.testGocryptfsSIFBuild,                // https://github.com/apptainer/apptainer/issues/484
+		"bad path":                               c.badPath,                              // try to build from a non existent path
+		"build encrypt with PEM file":            c.buildEncryptPemFile,                  // build encrypted images with certificate
+		"build encrypted with passphrase":        c.buildEncryptPassphrase,               // build encrypted images with passphrase
+		"definition":                             c.buildDefinition,                      // builds from definition template
+		"from local image":                       c.buildLocalImage,                      // build and image from an existing image
+		"from":                                   c.buildFrom,                            // builds from definition file and URI
+		"multistage":                             c.buildMultiStageDefinition,            // multistage build from definition templates
+		"non-root build":                         c.nonRootBuild,                         // build sifs from non-root
+		"build and update sandbox":               c.buildUpdateSandbox,                   // build/update sandbox
+		"fingerprint check":                      c.buildWithFingerprint,                 // definition file includes fingerprint check
+		"build with bind mount":                  c.buildBindMount,                       // build image with bind mount
+		"library host":                           c.buildLibraryHost,                     // build image with hostname in library URI
+		"customShebang":                          c.buildCustomShebang,                   // build image with custom #! in %test and %runscript
+		"test with writable tmpfs":               c.testWritableTmpfs,                    // build image, using writable tmpfs in the test step
+		"test build system environment":          c.testBuildEnvironmentVariables,        // build image with build system environment variables set in definition
+		"test build under fakeroot modes":        c.testContainerBuildUnderFakerootModes, // build image under different fakeroot modes
+		"issue 3848":                             c.issue3848,                            // https://github.com/apptainer/singularity/issues/3848
+		"issue 4203":                             c.issue4203,                            // https://github.com/apptainer/singularity/issues/4203
+		"issue 4407":                             c.issue4407,                            // https://github.com/apptainer/singularity/issues/4407
+		"issue 4583":                             c.issue4583,                            // https://github.com/apptainer/singularity/issues/4583
+		"issue 4820":                             c.issue4820,                            // https://github.com/apptainer/singularity/issues/4820
+		"issue 4837":                             c.issue4837,                            // https://github.com/apptainer/singularity/issues/4837
+		"issue 4967":                             c.issue4967,                            // https://github.com/apptainer/singularity/issues/4967
+		"issue 4969":                             c.issue4969,                            // https://github.com/apptainer/singularity/issues/4969
+		"issue 5166":                             c.issue5166,                            // https://github.com/apptainer/singularity/issues/5166
+		"issue 5250":                             c.issue5250,                            // https://github.com/apptainer/singularity/issues/5250
+		"issue 5315":                             c.issue5315,                            // https://github.com/apptainer/singularity/issues/5315
+		"issue 5435":                             c.issue5435,                            // https://github.com/apptainer/singularity/issues/5435
+		"issue 5668":                             c.issue5668,                            // https://github.com/apptainer/singularity/issues/5435
+		"issue 5690":                             c.issue5690,                            // https://github.com/apptainer/singularity/issues/5690
+		"test sif header and execute image":      c.testSIFHeaderAndExecute,              // https://github.com/apptainer/apptainer/issues/211
+		"build sif image using gocryptfs":        c.testGocryptfsSIFBuild,                // https://github.com/apptainer/apptainer/issues/484
+		"definition build with template support": c.buildDefinitionWithBuildArgs,         // builds from definition with build args (build arg file) support
 	}
 }

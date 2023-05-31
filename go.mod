@@ -60,6 +60,7 @@ require (
 require (
 	github.com/BurntSushi/toml v1.2.1
 	github.com/docker/distribution v2.8.2+incompatible
+	github.com/emirpasic/gods v1.18.1
 	github.com/sirupsen/logrus v1.9.2
 )
 
