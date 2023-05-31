@@ -24,11 +24,11 @@ func TestGroup(t *testing.T) {
 	var gids []int
 	uid := os.Getuid()
 
-	_, err := Group("/fake", uid, gids)
+	_, err := Group("/fake", uid, gids, nil)
 	if err == nil {
 		t.Errorf("should have failed with bad group file")
 	}
-	_, err = Group("/etc/group", uid, gids)
+	_, err = Group("/etc/group", uid, gids, nil)
 	if err != nil {
 		t.Errorf("should have passed with correct group file")
 	}
@@ -41,7 +41,7 @@ func TestGroup(t *testing.T) {
 	defer os.Remove(emptyGroup)
 	f.Close()
 
-	_, err = Group(emptyGroup, uid, gids)
+	_, err = Group(emptyGroup, uid, gids, nil)
 	if err != nil {
 		t.Error(err)
 	}
@@ -53,11 +53,11 @@ func TestPasswd(t *testing.T) {
 
 	uid := os.Getuid()
 
-	_, err := Passwd("/fake", "/fake", uid)
+	_, err := Passwd("/fake", "/fake", uid, nil)
 	if err == nil {
 		t.Errorf("should have failed with bad passwd file")
 	}
-	_, err = Passwd("/etc/passwd", "/home", uid)
+	_, err = Passwd("/etc/passwd", "/home", uid, nil)
 	if err != nil {
 		t.Errorf("should have passed with correct passwd file")
 	}
@@ -70,7 +70,7 @@ func TestPasswd(t *testing.T) {
 	defer os.Remove(emptyPasswd)
 	f.Close()
 
-	_, err = Passwd(emptyPasswd, "/home", uid)
+	_, err = Passwd(emptyPasswd, "/home", uid, nil)
 	if err != nil {
 		t.Error(err)
 	}

@@ -27,6 +27,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Handle current working directory path containing symlink boths on host and
   container but pointing to different destinations, if detected the current
   working directory is not mounted when the destination directory in container exists.
+- Lookup and store user/group information in stage one prior to entering any
+  namespaces to fix issue with winbind not correctly lookup user/group information
+  when using user namespace.
 
 ### New features / functionalities
 

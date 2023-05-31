@@ -69,6 +69,16 @@ type DMTCPConfig struct {
 	Args       []string `json:"args,omitempty"`
 }
 
+type UserInfo struct {
+	Username string         `json:"username,omitempty"`
+	Home     string         `json:"home,omitempty"`
+	UID      int            `json:"uid,omitempty"`
+	GID      int            `json:"gid,omitempty"`
+	Groups   map[int]string `json:"groups,omitempty"`
+	Gecos    string         `json:"gecos,omitempty"`
+	Shell    string         `json:"shell,omitempty"`
+}
+
 // JSONConfig stores engine specific configuration that is allowed to be set by the user.
 type JSONConfig struct {
 	ScratchDir            []string          `json:"scratchdir,omitempty"`
@@ -140,6 +150,7 @@ type JSONConfig struct {
 	DbusSessionBusAddress string            `json:"dbusSessionBusAddress,omitempty"`
 	NoEval                bool              `json:"noEval,omitempty"`
 	Underlay              bool              `json:"underlay,omitempty"`
+	UserInfo              UserInfo          `json:"userInfo,omitempty"`
 }
 
 // SetImage sets the container image path to be used by EngineConfig.JSON.
