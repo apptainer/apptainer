@@ -999,13 +999,13 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 		{
 			name: "ok case multiple stage build",
 			buildArgs: []string{
-				"DEVEL_IMAGE=golang:1.12.3-alpine3.9",
-				"FINAL_IMAGE=alpine:3.9",
+				"DEVEL_IMAGE=alpine:3.9",
+				"FINAL_IMAGE=alpine:3.17",
 				"HOME=/root",
 			},
 			verify: []string{
-				"from: golang:1.12.3-alpine3.9",
 				"from: alpine:3.9",
+				"from: alpine:3.17",
 				"cd /root",
 			},
 			deffile: path.Join("testdata", "build-template", "multiple-stage.def"),
@@ -1015,13 +1015,13 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 		{
 			name: "ok case multiple stage build with arg file",
 			buildArgs: []string{
-				"DEVEL_IMAGE=golang:1.12.3-alpine3.9",
-				"FINAL_IMAGE=alpine:3.9",
+				"DEVEL_IMAGE=alpine:3.9",
+				"FINAL_IMAGE=alpine:3.17",
 			},
 			buildArgFile: argfile,
 			verify: []string{
-				"from: golang:1.12.3-alpine3.9",
 				"from: alpine:3.9",
+				"from: alpine:3.17",
 				"cd /root",
 			},
 			deffile: path.Join("testdata", "build-template", "multiple-stage.def"),
@@ -1031,8 +1031,8 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 		{
 			name: "ko case multiple stage build",
 			buildArgs: []string{
-				"DEVEL_IMAGE=golang:1.12.3-alpine3.9",
-				"FINAL_IMAGE=alpine:3.9",
+				"DEVEL_IMAGE=alpine:3.9",
+				"FINAL_IMAGE=alpine:3.17",
 			},
 			verify:  []string{},
 			deffile: path.Join("testdata", "build-template", "multiple-stage.def"),
@@ -1041,8 +1041,8 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 		},
 	}
 
-	t.Run("build definition", func(t *testing.T) {
-		for _, tt := range tests {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			dn, cleanup := c.tempDir(t, "build-definition-template")
 			t.Cleanup(func() {
 				if !t.Failed() {
@@ -1078,7 +1078,6 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 			expects = append(expects, e2e.ExpectOutput(e2e.UnwantedExactMatch, "}}"))
 			c.env.RunApptainer(
 				t,
-				e2e.AsSubtest(tt.name),
 				e2e.WithProfile(e2e.UserProfile),
 				e2e.WithCommand("build"),
 				e2e.WithArgs(args...),
@@ -1106,8 +1105,8 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 					e2e.ExpectError(e2e.ContainMatch, tt.err),
 				),
 			)
-		}
-	})
+		})
+	}
 }
 
 func (c *imgBuildTests) ensureImageIsEncrypted(t *testing.T, imgPath string) {
