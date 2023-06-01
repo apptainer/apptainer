@@ -238,22 +238,25 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 		// Grab the modified source ref from the cache
 		cp.srcRef, err = oci.ConvertReference(ctx, b.Opts.ImgCache, cp.srcRef, cp.sysCtx)
 		if err != nil {
-			return err
+			return fmt.Errorf("while converting reference: %w", err)
 		}
 	}
 
 	// To to do the RootFS extraction we also have to have a location that
 	// contains *only* this image
 	cp.tmpfsRef, err = ocilayout.ParseReference(cp.b.TmpDir + ":" + "tmp")
+	if err != nil {
+		return fmt.Errorf("while parsing reference: %w", err)
+	}
 
 	err = cp.fetch(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("while fetching image: %w", err)
 	}
 
 	cp.imgConfig, err = cp.getConfig(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("while getting config: %w", err)
 	}
 
 	return nil

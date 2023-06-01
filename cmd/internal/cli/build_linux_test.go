@@ -215,19 +215,19 @@ func TestProcessDefsMultipleDef(t *testing.T) {
 	assert.NilError(t, err)
 
 	args := []string{
-		"DEVEL_IMAGE=golang:1.12.3-alpine3.9",
-		"FINAL_IMAGE=alpine:3.9",
+		"DEVEL_IMAGE=alpine:3.9",
+		"FINAL_IMAGE=alpine:3.17",
 	}
 
 	d, err = processDefs(args, "", d)
 	assert.NilError(t, err)
-	assert.Equal(t, d[0].Header["from"], "golang:1.12.3-alpine3.9")
+	assert.Equal(t, d[0].Header["from"], "alpine:3.9")
 	rt := strings.Contains(d[0].BuildData.Post.Script, "export HOME=/root")
 	assert.Equal(t, rt, true)
 	rt = strings.Contains(d[0].BuildData.Post.Script, "cd /root")
 	assert.Equal(t, rt, true)
 
-	assert.Equal(t, d[1].Header["from"], "alpine:3.9")
+	assert.Equal(t, d[1].Header["from"], "alpine:3.17")
 	rt = strings.Contains(d[1].BuildData.Files[0].Files[0].Src, "/root/hello")
 	assert.Equal(t, rt, true)
 }
