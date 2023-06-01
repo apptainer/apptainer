@@ -2595,6 +2595,17 @@ func (c actionTests) actionNoMount(t *testing.T) {
 			testDefault:   true,
 			testContained: true,
 			exit:          0,
+			// run from / to avoid /home mount via CWD mount
+			cwd: "/",
+		},
+		{
+			// test by excluding both home and cwd without chdir
+			name:          "home,cwd",
+			noMount:       "home,cwd",
+			noMatch:       "on /home",
+			testDefault:   true,
+			testContained: true,
+			exit:          0,
 		},
 		{
 			// /srv is an LSB directory we should be able to rely on for our CWD test

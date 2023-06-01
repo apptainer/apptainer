@@ -33,6 +33,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Destination mount points are now sorted by shortest path first to ensure that
   a user bind doesn't override a previous bind path when set in arbitrary order
   on CLI, this is also applied to image binds.
+- Create current working directory in container when it doesn't exist,
+  as a result, using `--no-mount home` won't have any effects when running
+  apptainer from a home directory and will require `--no-mount home,cwd` to
+  obtain the same behavior as with previous releases.
 
 ### New features / functionalities
 
