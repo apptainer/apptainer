@@ -39,7 +39,7 @@ func TestDebootstrapConveyor(t *testing.T) {
 
 	b.Recipe.Header = map[string]string{
 		"bootstrap": "debootstrap",
-		"osversion": "bionic",
+		"osversion": "jammy",
 		"mirrorurl": "http://us.archive.ubuntu.com/ubuntu/",
 		"include":   "apt python ",
 	}
@@ -72,7 +72,7 @@ func TestDebootstrapPacker(t *testing.T) {
 
 	b.Recipe.Header = map[string]string{
 		"bootstrap": "debootstrap",
-		"osversion": "bionic",
+		"osversion": "jammy",
 		"mirrorurl": "http://us.archive.ubuntu.com/ubuntu/",
 		"include":   "apt python ",
 	}
