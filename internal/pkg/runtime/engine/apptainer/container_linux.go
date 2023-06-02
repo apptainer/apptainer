@@ -90,6 +90,7 @@ type container struct {
 	skippedMount  []string
 	suidFlag      uintptr
 	devSourcePath string
+	skipCwd       bool
 }
 
 //nolint:maintidx
@@ -178,6 +179,14 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 
 	p := &mount.Points{}
 	system := &mount.System{Points: p, Mount: c.mount}
+
+	createCwdDirTag := mount.AuthorizedTag(mount.LayerTag)
+	if c.engine.EngineConfig.GetSessionLayer() == apptainer.UnderlayLayer {
+		createCwdDirTag = mount.PreLayerTag
+	}
+	if err := system.RunBeforeTag(createCwdDirTag, c.createCwdDir); err != nil {
+		return err
+	}
 
 	if err := c.setupSessionLayout(system); err != nil {
 		return err
@@ -2073,48 +2082,22 @@ func (c *container) isMounted(dest string) bool {
 }
 
 func (c *container) addCwdMount(system *mount.System) error {
-	if c.engine.EngineConfig.GetContain() {
-		sylog.Verbosef("Not mounting current directory: contain was requested")
+	if c.skipCwd {
 		return nil
 	}
-	if !c.engine.EngineConfig.File.UserBindControl {
-		sylog.Warningf("Not mounting current directory: user bind control is disabled by system administrator")
-		return nil
-	}
-	if c.engine.EngineConfig.GetNoCwd() {
-		sylog.Debugf("Skipping current directory mount by user request.")
-		return nil
-	}
+
 	cwdHost := filepath.Clean(c.engine.EngineConfig.GetCwd())
 	if cwdHost == "" {
 		sylog.Warningf("No current working directory set: skipping mount")
+		return nil
 	}
 
 	cwdHostResolved, err := filepath.EvalSymlinks(cwdHost)
 	if err != nil {
 		return fmt.Errorf("could not obtain current directory path: %s", err)
 	}
-	sylog.Debugf("Using %s as current working directory", cwdHost)
 
-	cwdPaths := []string{cwdHost}
 	cwdHostSymlink := cwdHost != cwdHostResolved
-
-	// handle new symlink /bin -> usr/bin, /sbin -> usr/sbin ...
-	if cwdHostSymlink {
-		cwdPaths = append(cwdPaths, cwdHostResolved)
-	}
-
-	for _, cwdPath := range cwdPaths {
-		switch cwdPath {
-		case "/", "/etc", "/bin", "/mnt", "/usr", "/var", "/opt", "/sbin", "/lib", "/lib64":
-			sylog.Verbosef("Not mounting CWD within operating system directory: %s", cwdPath)
-			return nil
-		}
-		if strings.HasPrefix(cwdPath, "/sys") || strings.HasPrefix(cwdPath, "/proc") || strings.HasPrefix(cwdPath, "/dev") {
-			sylog.Verbosef("Not mounting CWD within virtual directory: %s", cwdPath)
-			return nil
-		}
-	}
 
 	cwdContainerResolved := fs.EvalRelative(cwdHost, c.session.FinalPath())
 	cwdContainerResolved = filepath.Join(c.session.FinalPath(), cwdContainerResolved)
@@ -2150,9 +2133,112 @@ func (c *container) addCwdMount(system *mount.System) error {
 
 	flags := uintptr(syscall.MS_BIND | c.suidFlag | syscall.MS_NODEV | syscall.MS_REC)
 	if err := system.Points.AddBind(mount.CwdTag, cwdHost, cwdHost, flags); err != nil {
+		if errors.Is(err, mount.ErrMountExists) {
+			return nil
+		}
 		return fmt.Errorf("could not bind cwd directory %s into container: %s", cwdHost, err)
 	}
 	return system.Points.AddRemount(mount.CwdTag, cwdHost, flags)
+}
+
+func (c *container) createCwdDir(system *mount.System) error {
+	if c.engine.EngineConfig.GetContain() {
+		c.skipCwd = true
+		sylog.Verbosef("Not mounting current directory: contain was requested")
+		return nil
+	}
+	if !c.engine.EngineConfig.File.UserBindControl {
+		c.skipCwd = true
+		sylog.Warningf("Not mounting current directory: user bind control is disabled by system administrator")
+		return nil
+	}
+	if c.engine.EngineConfig.GetNoCwd() {
+		c.skipCwd = true
+		sylog.Debugf("Skipping current directory mount by user request.")
+		return nil
+	}
+
+	cwdHost := filepath.Clean(c.engine.EngineConfig.GetCwd())
+	if cwdHost == "" || cwdHost == "/" {
+		c.skipCwd = true
+		sylog.Warningf("No current working directory set: skipping mount")
+		return nil
+	} else if cwdHost[0] != '/' {
+		return fmt.Errorf("current working directory %s is not an absolute path", cwdHost)
+	}
+
+	cwdHostResolved, err := filepath.EvalSymlinks(cwdHost)
+	if err != nil {
+		return fmt.Errorf("could not obtain current directory path: %s", err)
+	}
+	sylog.Debugf("Using %s as current working directory", cwdHost)
+
+	cwdPaths := []string{cwdHost}
+	cwdHostSymlink := cwdHost != cwdHostResolved
+
+	// handle new symlink /bin -> usr/bin, /sbin -> usr/sbin ...
+	if cwdHostSymlink {
+		cwdPaths = append(cwdPaths, cwdHostResolved)
+	}
+
+	for _, cwdPath := range cwdPaths {
+		switch cwdPath {
+		case "/", "/etc", "/bin", "/mnt", "/usr", "/var", "/opt", "/sbin", "/lib", "/lib64":
+			sylog.Verbosef("Not mounting CWD within operating system directory: %s", cwdPath)
+			c.skipCwd = true
+			return nil
+		}
+		if strings.HasPrefix(cwdPath, "/sys") || strings.HasPrefix(cwdPath, "/proc") || strings.HasPrefix(cwdPath, "/dev") {
+			sylog.Verbosef("Not mounting CWD within virtual directory: %s", cwdPath)
+			c.skipCwd = true
+			return nil
+		}
+	}
+
+	pathComponents := strings.Split(cwdHost, string(os.PathSeparator))
+	existingPath := false
+	path := ""
+
+	// check if first or last path component exists in container either
+	// in container image or via user/home binds
+	for i, pathComponent := range pathComponents[1:] {
+		if i == 0 {
+			path = filepath.Join(string(os.PathSeparator), pathComponent)
+		} else {
+			path = filepath.Join(path, pathComponent)
+		}
+		_, err := c.session.GetOverridePath(path)
+		existingPath = err == nil
+		if err != nil {
+			pathContainerResolved := fs.EvalRelative(path, c.session.RootFsPath())
+			if pathContainerResolved != path {
+				return nil
+			}
+			info, err := c.rpcOps.Lstat(filepath.Join(c.session.RootFsPath(), pathContainerResolved))
+			if err != nil {
+				existingPath = false
+			} else if !info.IsDir() {
+				existingPath = true
+			}
+		}
+	}
+
+	if !existingPath && c.session.Layer != nil {
+		if c.engine.EngineConfig.GetSessionLayer() == apptainer.UnderlayLayer {
+			flags := uintptr(syscall.MS_BIND | c.suidFlag | syscall.MS_NODEV | syscall.MS_REC)
+			if err := system.Points.AddBind(mount.CwdTag, cwdHost, cwdHost, flags); err != nil {
+				return fmt.Errorf("could not bind cwd directory %s into container: %s", cwdHost, err)
+			}
+			return system.Points.AddRemount(mount.CwdTag, cwdHost, flags)
+		}
+		sessionPath := filepath.Join(c.session.Layer.Dir(), cwdHost)
+		// ignore error and let addCwdMount failing properly
+		if err := c.session.AddDir(sessionPath); err != nil {
+			sylog.Warningf("Not creating container current working directory: %s", err)
+		}
+	}
+
+	return nil
 }
 
 func (c *container) addLibsMount(system *mount.System) error {
