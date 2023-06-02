@@ -246,7 +246,8 @@ func newCommand(allData bool, appName string, img *image.Image) *command {
 	cat_file() {
 		echo "%[3]s $1:$2"
 
-		local IFS=$'\n'
+		local IFS="
+"
 		while read -r content; do
 			printf "%%s\n" "$content"
 		done < "$2"

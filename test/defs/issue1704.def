@@ -1,0 +1,10 @@
+bootstrap: docker
+from: ubuntu:22.04
+
+%setup
+    #an
+    #abn
+    #nn
+    #ann
+    #nan
+    #anan
