@@ -114,6 +114,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Remove warning about unknown `xino=on` option from fuse-overlayfs,
   introduced in 1.1.8.
 - Ignore extraneous warning from fuse-overlayfs about a readonly `/proc`.
+- Fix dropped "n" characters on some platforms in definition file stored as part
+  of SIF metadata.
 
 ## v1.1.8 - \[2023-04-25\]
 
