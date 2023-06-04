@@ -11,7 +11,6 @@ package instance
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -99,7 +98,7 @@ func (c *ctx) testInstanceRun(t *testing.T) {
 				t.Fatal(err)
 			}
 			ilog := filepath.Join(d, ".apptainer", "instances", "logs", h, u.Username, instanceName+".out")
-			b, err := ioutil.ReadFile(ilog)
+			b, err := os.ReadFile(ilog)
 			if err != nil {
 				t.Fatal(err)
 			}
