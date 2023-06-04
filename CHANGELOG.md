@@ -24,6 +24,19 @@ For older changes see the [archived Singularity change log](https://github.com/a
   installations. This is an increase from 16 MiB in prior versions.
 - Show standard output of yum bootstrap if log level is verbose or higher.
 - Add architecture aware support for apptainer cache.
+- Handle current working directory path containing symlink boths on host and
+  container but pointing to different destinations, if detected the current
+  working directory is not mounted when the destination directory in container exists.
+- Lookup and store user/group information in stage one prior to entering any
+  namespaces to fix issue with winbind not correctly lookup user/group information
+  when using user namespace.
+- Destination mount points are now sorted by shortest path first to ensure that
+  a user bind doesn't override a previous bind path when set in arbitrary order
+  on CLI, this is also applied to image binds.
+- Create current working directory in container when it doesn't exist,
+  as a result, using `--no-mount home` won't have any effects when running
+  apptainer from a home directory and will require `--no-mount home,cwd` to
+  obtain the same behavior as with previous releases.
 
 ### New features / functionalities
 
@@ -59,16 +72,23 @@ For older changes see the [archived Singularity change log](https://github.com/a
   flag.
 - Support for online verification checks of x509 certificates using OCSP protocol.
   (introduced flag: `verify --ocsp-verify`)
-- Support for unprivileged encryption of SIF files using gocryptfs.
+- Support for unprivileged encryption of SIF files using gocryptfs.  The
+  gocryptfs command is included in rpm and debian packaging.
 - The `instance start` command now accepts an optional `--app <name>` argument which
   invokes start script within the `%appstart <name>` section in the definition file.
   The `instance stop` command still only requires the instance name.
 - The `remote get-login-password` command allows users to retrieve a remote's
   token. This enables piping the secret directly into docker login while
   preventing it from showing up in a shell's history.
+- Templating support for definition files. Users can now define variables in definition
+  files via a matching pair of double curly brackets. Variables of the form
+  `{{ variable }}` will be replaced by a value defined either by a `variable=value`
+  entry in the `%arguments` section of the definition file or through new build options
+  `--build-arg` or `--build-arg-file`.
 
 ### Other changes
 
+- Update minimum go version to 1.19.
 - Fix non-root instance join with unprivileged systemd managed cgroups, when
   join is from outside a user-owned cgroup.
 - Define EUID in %environment alongside UID.
@@ -90,6 +110,16 @@ For older changes see the [archived Singularity change log](https://github.com/a
   binding fakeroot into container during apptainer startup for --fakeroot
   with fakeroot command.
 - Fix memory usage calculation during apptainer compilation on RaspberryPi.
+- Fix misleading error when an overlay is requested by the root user while the
+  overlay kernel module is not loaded.
+
+### Bug fixes
+
+- Remove warning about unknown `xino=on` option from fuse-overlayfs,
+  introduced in 1.1.8.
+- Ignore extraneous warning from fuse-overlayfs about a readonly `/proc`.
+- Fix dropped "n" characters on some platforms in definition file stored as part
+  of SIF metadata.
 
 ## v1.1.8 - \[2023-04-25\]
 

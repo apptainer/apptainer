@@ -1,0 +1,32 @@
+Bootstrap: docker
+From: {{ DEVEL_IMAGE }}
+Stage: devel
+
+%arguments
+    HOME=/root
+
+%post
+  # prep environment
+  export HOME={{ HOME }}
+  cd {{ HOME }}
+
+  # insert source code, could also be copied from the host with %files
+  cat << EOF > hello.sh
+  #!/bin/sh
+
+  echo "hello"
+  EOF
+
+  chmod a+x hello.sh
+
+# Install binary into the final image
+Bootstrap: docker
+From: {{ FINAL_IMAGE }}
+Stage: final
+
+%arguments
+    FINAL_IMAGE=alpine:3.17
+
+# install binary from stage one
+%files from devel
+  {{ HOME }}/hello.sh /bin/hello

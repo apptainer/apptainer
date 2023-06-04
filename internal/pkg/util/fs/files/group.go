@@ -21,7 +21,7 @@ import (
 
 // Group creates a group template based on content of file provided in path,
 // updates content with current user information and returns content
-func Group(path string, uid int, gids []int) (content []byte, err error) {
+func Group(path string, uid int, gids []int, customLookup UserGroupLookup) (content []byte, err error) {
 	duplicate := false
 	var groups []int
 
@@ -37,16 +37,26 @@ func Group(path string, uid int, gids []int) (content []byte, err error) {
 	}
 	defer groupFile.Close()
 
-	pwInfo, err := user.GetPwUID(uint32(uid))
+	getPwUID := user.GetPwUID
+	getGrGID := user.GetGrGID
+	getGroups := os.Getgroups
+
+	if customLookup != nil {
+		getPwUID = customLookup.GetPwUID
+		getGrGID = customLookup.GetGrGID
+		getGroups = customLookup.Getgroups
+	}
+
+	pwInfo, err := getPwUID(uint32(uid))
 	if err != nil || pwInfo == nil {
 		return content, err
 	}
 	if len(gids) == 0 {
-		grInfo, err := user.GetGrGID(pwInfo.GID)
+		grInfo, err := getGrGID(pwInfo.GID)
 		if err != nil || grInfo == nil {
 			return content, err
 		}
-		groups, err = os.Getgroups()
+		groups, err = getGroups()
 		if err != nil {
 			return content, err
 		}
@@ -77,7 +87,7 @@ func Group(path string, uid int, gids []int) (content []byte, err error) {
 	// only deduplicate newly added groups
 	deduplicateStrs := make(map[string]bool)
 	for _, gid := range groups {
-		grInfo, err := user.GetGrGID(uint32(gid))
+		grInfo, err := getGrGID(uint32(gid))
 		if err != nil || grInfo == nil {
 			sylog.Verbosef("Skipping GID %d as group entry doesn't exist.\n", gid)
 			continue

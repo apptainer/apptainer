@@ -18,7 +18,9 @@ import (
 
 func TestCreateConfDir(t *testing.T) {
 	// create a random name for a directory
-	rand.Seed(time.Now().UnixNano())
+	// TODO - go 1.20 initializes seed randomly by default, so can drop this
+	// deprecated call in future.
+	rand.Seed(time.Now().UnixNano()) //nolint:staticcheck
 	bytes := make([]byte, 8)
 	for i := 0; i < 8; i++ {
 		bytes[i] = byte(65 + rand.Intn(25))

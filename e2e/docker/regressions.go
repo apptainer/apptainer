@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -165,5 +166,47 @@ From: continuumio/miniconda3:latest
 			e2e.ExpectOutput(e2e.ContainMatch, "active environment : env"),
 			e2e.ExpectError(e2e.ExactMatch, ""),
 		),
+	)
+}
+
+// https://github.com/sylabs/singularity/issues/1704 Ensure that trailing "n"s
+// aren't lopped off by the internal sandbox inspect call that is part of the
+// SIF-building process.
+func (c ctx) issue1704(t *testing.T) {
+	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "issue1704-", "")
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup(t)
+		}
+	})
+
+	defPath := filepath.Join("..", "test", "defs", "issue1704.def")
+	sifPath := filepath.Join(tmpDir, "issue1704.sif")
+	bytes, err := os.ReadFile(defPath)
+	if err != nil {
+		t.Fatalf("could not read contents of def file %q: %s", defPath, err)
+	}
+	defFileContents := string(bytes)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("Build"),
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs(sifPath, defPath),
+		e2e.ExpectExit(0),
+	)
+
+	if t.Failed() {
+		return
+	}
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("Inspect"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("inspect"),
+		e2e.WithArgs("-d", sifPath),
+		e2e.ExpectExit(0, e2e.ExpectOutput(e2e.ContainMatch, strings.TrimSpace(defFileContents))),
 	)
 }

@@ -2396,7 +2396,7 @@ func (c actionTests) bindImage(t *testing.T) {
 				c.env.ImagePath,
 				"test", "-f", filepath.Join("/scratch/bin", squashMarkerFile),
 			},
-			exit: 1,
+			exit: 0,
 		},
 		{
 			name:    "ScratchBeforeSquashfs",
@@ -2591,6 +2591,17 @@ func (c actionTests) actionNoMount(t *testing.T) {
 		{
 			name:          "home",
 			noMount:       "home",
+			noMatch:       "on /home",
+			testDefault:   true,
+			testContained: true,
+			exit:          0,
+			// run from / to avoid /home mount via CWD mount
+			cwd: "/",
+		},
+		{
+			// test by excluding both home and cwd without chdir
+			name:          "home,cwd",
+			noMount:       "home,cwd",
 			noMatch:       "on /home",
 			testDefault:   true,
 			testContained: true,
