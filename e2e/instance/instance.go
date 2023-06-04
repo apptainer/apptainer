@@ -11,7 +11,9 @@ package instance
 
 import (
 	"bytes"
+	"io/ioutil"
 	"os"
+	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -66,6 +68,52 @@ func (c *ctx) testBasicEchoServer(t *testing.T) {
 	)
 }
 
+// Test that instance run command executes the runscript
+func (c *ctx) testInstanceRun(t *testing.T) {
+	const instanceName = "testtrue"
+
+	args := []string{c.env.ImagePath, instanceName, "true"}
+
+	// Start the instance.
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(c.profile),
+		e2e.WithCommand("instance run"),
+		e2e.WithArgs(args...),
+		e2e.PostRun(func(t *testing.T) {
+			if t.Failed() {
+				return
+			}
+			// read the log file to see if runscript was used. (It should record
+			// the text "Running command: true")
+			d, err := os.UserHomeDir()
+			if err != nil {
+				t.Fatal(err)
+			}
+			h, err := os.Hostname()
+			if err != nil {
+				t.Fatal(err)
+			}
+			u, err := user.Current()
+			if err != nil {
+				t.Fatal(err)
+			}
+			ilog := filepath.Join(d, ".apptainer", "instances", "logs", h, u.Username, instanceName+".out")
+			b, err := ioutil.ReadFile(ilog)
+			if err != nil {
+				t.Fatal(err)
+			}
+			s := string(b)
+			echo(t, instanceStartPort)
+			c.stopInstance(t, instanceName)
+			if !strings.Contains(s, "Running command: true") {
+				t.Fatal()
+			}
+		}),
+		e2e.ExpectExit(0),
+	)
+}
+
 // Test creating many instances, but don't stop them.
 func (c *ctx) testCreateManyInstances(t *testing.T) {
 	const n = 10
@@ -101,6 +149,7 @@ func (c *ctx) testBasicOptions(t *testing.T) {
 	const fileName = "hello"
 	const instanceName = "testbasic"
 	const testHostname = "echoserver99"
+	cmdList := [2]string{"instance start", "instance run"}
 	fileContents := []byte("world")
 
 	// Create a temporary directory to serve as a home directory.
@@ -118,53 +167,57 @@ func (c *ctx) testBasicOptions(t *testing.T) {
 		t.Fatalf("Failed to create file: %+v", err)
 	}
 
-	// Start an instance with the temporary directory as the home directory.
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(c.profile),
-		e2e.WithCommand("instance start"),
-		e2e.WithArgs(
-			"-H", dir+":/home/temp",
-			"--hostname", testHostname,
-			"-e",
-			c.env.ImagePath,
-			instanceName,
-			strconv.Itoa(instanceStartPort),
-		),
-		e2e.PostRun(func(t *testing.T) {
-			if t.Failed() {
-				return
-			}
+	// Start and Run an instance with the temporary directory as the home
+	// directory.
+	for _, cmd := range cmdList {
+		c.env.RunApptainer(
+			t,
+			e2e.WithProfile(c.profile),
+			e2e.WithCommand(cmd),
+			e2e.WithArgs(
+				"-H", dir+":/home/temp",
+				"--hostname", testHostname,
+				"-e",
+				c.env.ImagePath,
+				instanceName,
+				strconv.Itoa(instanceStartPort),
+			),
+			e2e.PostRun(func(t *testing.T) {
+				if t.Failed() {
+					return
+				}
 
-			// Verify we can see the file's contents from within the container.
-			stdout, _, success := c.execInstance(t, instanceName, "cat", "/home/temp/"+fileName)
-			if success && !bytes.Equal(fileContents, []byte(stdout)) {
-				t.Errorf("File contents were %s, but expected %s", stdout, string(fileContents))
-			}
+				// Verify we can see the file's contents from within the container.
+				stdout, _, success := c.execInstance(t, instanceName, "cat", "/home/temp/"+fileName)
+				if success && !bytes.Equal(fileContents, []byte(stdout)) {
+					t.Errorf("File contents were %s, but expected %s", stdout, string(fileContents))
+				}
 
-			// Verify that the hostname has been set correctly.
-			stdout, _, success = c.execInstance(t, instanceName, "hostname")
-			if success && !bytes.Equal([]byte(testHostname+"\n"), []byte(stdout)) {
-				t.Errorf("Hostname is %s, but expected %s", stdout, testHostname)
-			}
+				// Verify that the hostname has been set correctly.
+				stdout, _, success = c.execInstance(t, instanceName, "hostname")
+				if success && !bytes.Equal([]byte(testHostname+"\n"), []byte(stdout)) {
+					t.Errorf("Hostname is %s, but expected %s", stdout, testHostname)
+				}
 
-			// Verify that the APPTAINER_INSTANCE has been set correctly.
-			stdout, _, success = c.execInstance(t, instanceName, "sh", "-c", "echo $APPTAINER_INSTANCE")
-			if success && !bytes.Equal([]byte(instanceName+"\n"), []byte(stdout)) {
-				t.Errorf("APPTAINER_INSTANCE is %s, but expected %s", stdout, instanceName)
-			}
+				// Verify that the APPTAINER_INSTANCE has been set correctly.
+				stdout, _, success = c.execInstance(t, instanceName, "sh", "-c", "echo $APPTAINER_INSTANCE")
+				if success && !bytes.Equal([]byte(instanceName+"\n"), []byte(stdout)) {
+					t.Errorf("APPTAINER_INSTANCE is %s, but expected %s", stdout, instanceName)
+				}
 
-			// Stop the instance.
-			c.stopInstance(t, instanceName)
-		}),
-		e2e.ExpectExit(0),
-	)
+				// Stop the instance.
+				c.stopInstance(t, instanceName)
+			}),
+			e2e.ExpectExit(0),
+		)
+	}
 }
 
 // Test that contain works.
 func (c *ctx) testContain(t *testing.T) {
 	const instanceName = "testcontain"
 	const fileName = "thegreattestfile"
+	cmdList := [2]string{"instance start", "instance run"}
 
 	// Create a temporary directory to serve as a contain directory.
 	dir, err := os.MkdirTemp("", "TestInstance")
@@ -173,37 +226,39 @@ func (c *ctx) testContain(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	// Start the instance.
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(c.profile),
-		e2e.WithCommand("instance start"),
-		e2e.WithArgs(
-			"-c",
-			"-W", dir,
-			c.env.ImagePath,
-			instanceName,
-			strconv.Itoa(instanceStartPort),
-		),
-		e2e.PostRun(func(t *testing.T) {
-			if t.Failed() {
-				return
-			}
-
-			// Touch a file within /tmp.
-			_, _, success := c.execInstance(t, instanceName, "touch", "/tmp/"+fileName)
-			if success {
-				// Verify that the touched file exists outside the container.
-				if _, err = os.Stat(filepath.Join(dir, "tmp", fileName)); os.IsNotExist(err) {
-					t.Errorf("The temp file doesn't exist.")
+	// Start and Run the instance.
+	for _, cmd := range cmdList {
+		c.env.RunApptainer(
+			t,
+			e2e.WithProfile(c.profile),
+			e2e.WithCommand(cmd),
+			e2e.WithArgs(
+				"-c",
+				"-W", dir,
+				c.env.ImagePath,
+				instanceName,
+				strconv.Itoa(instanceStartPort),
+			),
+			e2e.PostRun(func(t *testing.T) {
+				if t.Failed() {
+					return
 				}
-			}
 
-			// Stop the container.
-			c.stopInstance(t, instanceName)
-		}),
-		e2e.ExpectExit(0),
-	)
+				// Touch a file within /tmp.
+				_, _, success := c.execInstance(t, instanceName, "touch", "/tmp/"+fileName)
+				if success {
+					// Verify that the touched file exists outside the container.
+					if _, err = os.Stat(filepath.Join(dir, "tmp", fileName)); os.IsNotExist(err) {
+						t.Errorf("The temp file doesn't exist.")
+					}
+				}
+
+				// Stop the container.
+				c.stopInstance(t, instanceName)
+			}),
+			e2e.ExpectExit(0),
+		)
+	}
 }
 
 // Test by running directly from URI
@@ -211,91 +266,98 @@ func (c *ctx) testInstanceFromURI(t *testing.T) {
 	e2e.EnsureORASImage(t, c.env)
 	name := "test_from_uri"
 	args := []string{c.env.OrasTestImage, name}
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(c.profile),
-		e2e.WithCommand("instance start"),
-		e2e.WithArgs(args...),
-		e2e.PostRun(func(t *testing.T) {
-			if t.Failed() {
-				return
-			}
-			c.execInstance(t, name, "id")
-			c.stopInstance(t, name)
-		}),
-		e2e.ExpectExit(0),
-	)
+	cmdList := [2]string{"instance start", "instance run"}
+	for _, cmd := range cmdList {
+		c.env.RunApptainer(
+			t,
+			e2e.WithProfile(c.profile),
+			e2e.WithCommand(cmd),
+			e2e.WithArgs(args...),
+			e2e.PostRun(func(t *testing.T) {
+				if t.Failed() {
+					return
+				}
+				c.execInstance(t, name, "id")
+				c.stopInstance(t, name)
+			}),
+			e2e.ExpectExit(0),
+		)
+	}
 }
 
 // Execute an instance process, kill master process
 // and try to start another instance with same name
 func (c *ctx) testGhostInstance(t *testing.T) {
-	// pick up a random name
-	instanceName := randomName(t)
-	pidfile := filepath.Join(c.env.TestDir, instanceName)
+	cmdList := [2]string{"instance start", "instance run"}
 
-	postFn := func(t *testing.T) {
-		defer os.Remove(pidfile)
+	for _, cmd := range cmdList {
+		// pick up a random name
+		instanceName := randomName(t)
+		pidfile := filepath.Join(c.env.TestDir, instanceName)
 
-		if t.Failed() {
-			t.Fatalf("instance %s failed to start correctly", instanceName)
+		postFn := func(t *testing.T) {
+			defer os.Remove(pidfile)
+
+			if t.Failed() {
+				t.Fatalf("instance %s failed to start correctly", instanceName)
+			}
+
+			d, err := os.ReadFile(pidfile)
+			if err != nil {
+				t.Fatalf("failed to read pid file: %s", err)
+			}
+			trimmed := strings.TrimSuffix(string(d), "\n")
+			pid, err := strconv.ParseInt(trimmed, 10, 32)
+			if err != nil {
+				t.Fatalf("failed to convert PID %s in %s: %s", trimmed, pidfile, err)
+			}
+			ppid, err := proc.Getppid(int(pid))
+			if err != nil {
+				t.Fatalf("failed to get parent process ID for process %d: %s", pid, err)
+			}
+
+			// starting same instance twice must return an error
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(c.profile),
+				e2e.WithCommand(cmd),
+				e2e.WithArgs(c.env.ImagePath, instanceName),
+				e2e.ExpectExit(
+					255,
+					e2e.ExpectErrorf(e2e.ContainMatch, "instance %s already exists", instanceName),
+				),
+			)
+
+			// kill master process
+			if err := syscall.Kill(int(ppid), syscall.SIGKILL); err != nil {
+				t.Fatalf("failed to send KILL signal to %d: %s", ppid, err)
+			}
+
+			// now check we are deleting ghost instance files correctly
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(c.profile),
+				e2e.WithCommand(cmd),
+				e2e.WithArgs(c.env.ImagePath, instanceName),
+				e2e.PostRun(func(t *testing.T) {
+					if t.Failed() {
+						return
+					}
+					c.stopInstance(t, instanceName)
+				}),
+				e2e.ExpectExit(0),
+			)
 		}
 
-		d, err := os.ReadFile(pidfile)
-		if err != nil {
-			t.Fatalf("failed to read pid file: %s", err)
-		}
-		trimmed := strings.TrimSuffix(string(d), "\n")
-		pid, err := strconv.ParseInt(trimmed, 10, 32)
-		if err != nil {
-			t.Fatalf("failed to convert PID %s in %s: %s", trimmed, pidfile, err)
-		}
-		ppid, err := proc.Getppid(int(pid))
-		if err != nil {
-			t.Fatalf("failed to get parent process ID for process %d: %s", pid, err)
-		}
-
-		// starting same instance twice must return an error
 		c.env.RunApptainer(
 			t,
 			e2e.WithProfile(c.profile),
-			e2e.WithCommand("instance start"),
-			e2e.WithArgs(c.env.ImagePath, instanceName),
-			e2e.ExpectExit(
-				255,
-				e2e.ExpectErrorf(e2e.ContainMatch, "instance %s already exists", instanceName),
-			),
-		)
-
-		// kill master process
-		if err := syscall.Kill(int(ppid), syscall.SIGKILL); err != nil {
-			t.Fatalf("failed to send KILL signal to %d: %s", ppid, err)
-		}
-
-		// now check we are deleting ghost instance files correctly
-		c.env.RunApptainer(
-			t,
-			e2e.WithProfile(c.profile),
-			e2e.WithCommand("instance start"),
-			e2e.WithArgs(c.env.ImagePath, instanceName),
-			e2e.PostRun(func(t *testing.T) {
-				if t.Failed() {
-					return
-				}
-				c.stopInstance(t, instanceName)
-			}),
+			e2e.WithCommand(cmd),
+			e2e.WithArgs("--pid-file", pidfile, c.env.ImagePath, instanceName),
+			e2e.PostRun(postFn),
 			e2e.ExpectExit(0),
 		)
 	}
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(c.profile),
-		e2e.WithCommand("instance start"),
-		e2e.WithArgs("--pid-file", pidfile, c.env.ImagePath, instanceName),
-		e2e.PostRun(postFn),
-		e2e.ExpectExit(0),
-	)
 }
 
 // E2ETests is the main func to trigger the test suite
@@ -323,6 +385,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 				{"Contain", c.testContain},
 				{"InstanceFromURI", c.testInstanceFromURI},
 				{"CreateManyInstances", c.testCreateManyInstances},
+				{"InstanceRun", c.testInstanceRun},
 				{"StopAll", c.testStopAll},
 				{"GhostInstance", c.testGhostInstance},
 				{"CheckpointInstance", c.testCheckpointInstance},
