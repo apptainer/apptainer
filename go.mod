@@ -59,7 +59,7 @@ require (
 	github.com/BurntSushi/toml v1.2.0
 	github.com/docker/distribution v2.8.1+incompatible
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.3
 )
 
 require (
