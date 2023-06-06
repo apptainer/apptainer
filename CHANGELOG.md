@@ -5,6 +5,20 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes since last release
+
+### Bug fixes
+
+- Remove warning about unknown `xino=on` option from fuse-overlayfs,
+  introduced in 1.1.8.
+- Ignore extraneous warning from fuse-overlayfs about a readonly `/proc`.
+- Fix dropped "n" characters on some platforms in definition file stored as part
+  of SIF metadata.
+- Remove duplicated group ids.
+- Fix not being able to handle multiple entries in `LD_PRELOAD` when
+  binding fakeroot into container during apptainer startup for --fakeroot
+  with fakeroot command.
+
 ## v1.1.8 - \[2023-04-25\]
 
 ### Security fix
