@@ -5,6 +5,8 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes since last release
+
 ### Bug fixes
 
 - Remove warning about unknown `xino=on` option from fuse-overlayfs,
