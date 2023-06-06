@@ -37,35 +37,54 @@ var instanceStartPidFileFlag = cmdline.Flag{
 	EnvKeys:      []string{"PID_FILE"},
 }
 
+// execute either the instance start or run command
+func instanceAction(cmd *cobra.Command, args []string) {
+	image := args[0]
+	name := args[1]
+	cmdName := cmd.Name()
+	script := "start"
+
+	if cmdName == "run" {
+		script = "instance_run"
+	}
+	a := append([]string{"/.singularity.d/actions/" + script}, args[2:]...)
+	setVM(cmd)
+	if vm {
+		execVM(cmd, image, a)
+		return
+	}
+	if err := launchContainer(cmd, image, a, name); err != nil {
+		sylog.Fatalf("%s", err)
+	}
+
+	if instanceStartPidFile != "" {
+		err := apptainer.WriteInstancePidFile(name, instanceStartPidFile)
+		if err != nil {
+			sylog.Warningf("Failed to write pid file: %v", err)
+		}
+	}
+}
+
 // apptainer instance start
 var instanceStartCmd = &cobra.Command{
 	Args:                  cobra.MinimumNArgs(2),
 	PreRun:                actionPreRun,
 	DisableFlagsInUseLine: true,
-	Run: func(cmd *cobra.Command, args []string) {
-		image := args[0]
-		name := args[1]
+	Run:                   instanceAction,
+	Use:                   docs.InstanceStartUse,
+	Short:                 docs.InstanceStartShort,
+	Long:                  docs.InstanceStartLong,
+	Example:               docs.InstanceStartExample,
+}
 
-		a := append([]string{"/.singularity.d/actions/start"}, args[2:]...)
-		setVM(cmd)
-		if vm {
-			execVM(cmd, image, a)
-			return
-		}
-		if err := launchContainer(cmd, image, a, name); err != nil {
-			sylog.Fatalf("%s", err)
-		}
-
-		if instanceStartPidFile != "" {
-			err := apptainer.WriteInstancePidFile(name, instanceStartPidFile)
-			if err != nil {
-				sylog.Warningf("Failed to write pid file: %v", err)
-			}
-		}
-	},
-
-	Use:     docs.InstanceStartUse,
-	Short:   docs.InstanceStartShort,
-	Long:    docs.InstanceStartLong,
-	Example: docs.InstanceStartExample,
+// apptainer instance run
+var instanceRunCmd = &cobra.Command{
+	Args:                  cobra.MinimumNArgs(2),
+	PreRun:                actionPreRun,
+	DisableFlagsInUseLine: true,
+	Run:                   instanceAction,
+	Use:                   docs.InstanceRunUse,
+	Short:                 docs.InstanceRunShort,
+	Long:                  docs.InstanceRunLong,
+	Example:               docs.InstanceRunExample,
 }
