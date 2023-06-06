@@ -19,9 +19,9 @@ import (
 
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
-		cmdManager.RegisterFlagForCmd(&instanceStartPidFileFlag, instanceStartCmd)
-		cmdManager.RegisterFlagForCmd(&actionDMTCPLaunchFlag, instanceStartCmd)
-		cmdManager.RegisterFlagForCmd(&actionDMTCPRestartFlag, instanceStartCmd)
+		cmdManager.RegisterFlagForCmd(&instanceStartPidFileFlag, instanceStartCmd, instanceRunCmd)
+		cmdManager.RegisterFlagForCmd(&actionDMTCPLaunchFlag, instanceStartCmd, instanceRunCmd)
+		cmdManager.RegisterFlagForCmd(&actionDMTCPRestartFlag, instanceStartCmd, instanceRunCmd)
 	})
 }
 
