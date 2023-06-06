@@ -21,6 +21,7 @@ func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(instanceCmd)
 		cmdManager.RegisterSubCmd(instanceCmd, instanceStartCmd)
+		cmdManager.RegisterSubCmd(instanceCmd, instanceRunCmd)
 		cmdManager.RegisterSubCmd(instanceCmd, instanceStopCmd)
 		cmdManager.RegisterSubCmd(instanceCmd, instanceListCmd)
 		cmdManager.RegisterSubCmd(instanceCmd, instanceStatsCmd)
