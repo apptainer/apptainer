@@ -40,6 +40,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### New features / functionalities
 
+- Added a new `instance run` command that will execute the runscript when an
+  instance is initiated instead of executing the startscript.
 - The `--no-mount` flag now accepts the value `bind-paths` to disable mounting
   of all `bind path` entries in `apptainer.conf`.
 - Instances started by a non-root user can use `--apply-cgroups` to apply
