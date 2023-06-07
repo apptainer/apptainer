@@ -101,25 +101,25 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix joining cgroup of instance started as root, with cgroups v1,
   non-default cgroupfs manager, and no device rules.
 - Ensure `DOCKER_HOST` is honored in non-build flows.
-- Remove duplicated group ids.
 - Corrected `apptainer.conf` comment, to refer to correct file as source
   of default capabilities when `root default capabilities = file`.
 - Add an `--underlay` action option to prefer underlay instead of overlay
   for bind mounts.
-- Fix not being able to handle multiple entries in `LD_PRELOAD` when
-  binding fakeroot into container during apptainer startup for --fakeroot
-  with fakeroot command.
 - Fix memory usage calculation during apptainer compilation on RaspberryPi.
 - Fix misleading error when an overlay is requested by the root user while the
   overlay kernel module is not loaded.
 
-### Bug fixes
+## v1.1.9 - \[2023-06-07\]
 
 - Remove warning about unknown `xino=on` option from fuse-overlayfs,
   introduced in 1.1.8.
 - Ignore extraneous warning from fuse-overlayfs about a readonly `/proc`.
 - Fix dropped "n" characters on some platforms in definition file stored as part
   of SIF metadata.
+- Remove duplicated group ids.
+- Fix not being able to handle multiple entries in `LD_PRELOAD` when
+  binding fakeroot into container during apptainer startup for --fakeroot
+  with fakeroot command.
 
 ## v1.1.8 - \[2023-04-25\]
 
