@@ -43,11 +43,13 @@ func instanceAction(cmd *cobra.Command, args []string) {
 	name := args[1]
 	cmdName := cmd.Name()
 	script := "start"
+	killCont := ""
 
 	if cmdName == "run" {
-		script = "instance_run"
+		script = "run"
+		killCont = "/bin/sh -c kill -CONT 1; "
 	}
-	a := append([]string{"/.singularity.d/actions/" + script}, args[2:]...)
+	a := append([]string{killCont + "/.singularity.d/actions/" + script}, args[2:]...)
 	setVM(cmd)
 	if vm {
 		execVM(cmd, image, a)
