@@ -119,6 +119,18 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/docker/libtrust/blob/master/LICENSE>
 
+## github.com/go-logr/logr
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/go-logr/logr/blob/master/LICENSE>
+
+## github.com/go-logr/stdr
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/go-logr/stdr/blob/master/LICENSE>
+
 ## github.com/go-openapi/analysis
 
 **License:** Apache-2.0
@@ -382,6 +394,18 @@ The dependencies and their licenses are as follows:
 **License:** Apache-2.0
 
 **Project URL:** <https://go.mongodb.org/mongo-driver>
+
+## go.opentelemetry.io/otel
+
+**License:** Apache-2.0
+
+**Project URL:** <https://go.opentelemetry.io/otel>
+
+## go.opentelemetry.io/otel/trace
+
+**License:** Apache-2.0
+
+**Project URL:** <https://go.opentelemetry.io/otel/trace>
 
 ## google.golang.org/genproto/googleapis/rpc/status
 
