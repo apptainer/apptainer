@@ -12,6 +12,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - `--cwd` is now the preferred form of the flag for setting the container's
   working directory, though `--pwd` is still supported for compatibility.
 
+## Changes since last pre-release
+
+- Upgrade gocryptfs to version 2.4.0, removing the need for fusermount from
+  the fuse package.
+
 ## v1.2.0-rc.1 - \[2023-06-07\]
 
 ### Changed defaults / behaviours

@@ -228,22 +228,10 @@ install on some operating systems as described in its
 [documentation](https://nuetzlich.net/gocryptfs/quickstart/), but
 otherwise to compile it from source follow these instructions.
 
-First, make sure that the additional required package is installed.  On Debian:
-
-```sh
-apt-get install -y fuse3
-```
-
-On CentOS/RHEL:
-
-```sh
-yum install -y fuse
-```
-
 To download the source code do this:
 
 ```sh
-GOCRYPTFSVERSION=2.3.2
+GOCRYPTFSVERSION=2.4.0
 curl -L -O https://github.com/rfjakob/gocryptfs/archive/v$GOCRYPTFSVERSION/gocryptfs-$GOCRYPTFSVERSION.tar.gz
 ```
 
