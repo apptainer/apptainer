@@ -183,8 +183,3 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-// Temporarily force an image-spec that has the main branch commits not in 1.0.2 which is being brought in by oras-go
-// These commits are needed by containers/image/v5 and the replace is necessary given how image-spec v1.0.2 has been
-// tagged / rebased.
-replace github.com/opencontainers/image-spec => github.com/opencontainers/image-spec v1.0.2-0.20211117181255-693428a734f5
