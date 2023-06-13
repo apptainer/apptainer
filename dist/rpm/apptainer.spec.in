@@ -34,7 +34,7 @@
 %global package_version @PACKAGE_VERSION@
 
 # Uncomment this to include gocryptfs
-# %%global gocryptfs_version 2.3.2
+# %%global gocryptfs_version 2.4.0
 # Uncomment this to include a multithreaded version of squashfuse_ll
 # %%global squashfuse_version 0.1.105
 

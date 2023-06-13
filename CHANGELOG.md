@@ -5,6 +5,11 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes since last pre-release
+
+- Upgrade gocryptfs to version 2.4.0, removing the need for fusermount from
+  the fuse package.
+
 ## v1.2.0-rc.1 - \[2023-06-07\]
 
 ### Changed defaults / behaviours
