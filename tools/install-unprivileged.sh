@@ -21,7 +21,7 @@ usage()
 	echo "   or Fedora."
 	echo " dist can start with el or fc and ends with the major version number,"
 	echo "   e.g. el9 or fc37, default based on the current system."
-	echo "   As a convenience, active debian and ubuntu versions (not counting 18.04)"
+	echo "   As a convenience, active debian and ubuntu versions"
 	echo "   get translated into a compatible el version for downloads."
 	echo "   OpenSUSE based distributions are also mapped to el, or native openSUSE"
 	echo "   binaries can be used via the -o switch."
@@ -285,10 +285,10 @@ OSUTILS=""
 EXTRASUTILS="fuse-overlayfs"
 EPELUTILS="fakeroot"
 if [ "$DIST" = el7 ]; then
-	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs fuse"
+	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs"
 	EPELUTILS="$EPELUTILS libzstd fuse2fs fuse3-libs fakeroot-libs"
 elif [ "$DIST" = el8 ]; then
-	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs fuse libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
+	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
 	EPELUTILS="$EPELUTILS fakeroot-libs"
 elif [ "$DIST" = "opensuse-tumbleweed" ]; then
 	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot fuse2fs $EXTRASUTILS $EPELUTILS"
@@ -299,7 +299,7 @@ elif [ "$DIST" = "suse15" ]; then
 	EXTRASUTILS="$EXTRASUTILS fuse2fs"
 	EPELUTILS=""
 else
-	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs fuse libzstd e2fsprogs-libs e2fsprogs"
+	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs"
 	EXTRASUTILS="$EXTRASUTILS fuse3-libs"
 	EPELUTILS="$EPELUTILS fakeroot-libs"
 fi
