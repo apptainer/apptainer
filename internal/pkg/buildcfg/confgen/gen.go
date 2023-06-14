@@ -172,7 +172,8 @@ func relocatePath(original string) string {
 	rootPrefix := false
 	if !strings.HasPrefix(original, "{{.Prefix}}") {
 		if strings.HasPrefix(original, "/etc/apptainer") ||
-			strings.HasPrefix(original, "/var/apptainer") {
+			strings.HasPrefix(original, "/var/apptainer") ||
+			strings.HasPrefix(original, "/var/lib/apptainer") {
 			// These are typically the only pieces not under
 			// "/usr" (which is the prefix) in packages
 			rootPrefix = true
