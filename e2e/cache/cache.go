@@ -293,11 +293,11 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 	)
 
 	shamap := map[string]string{
-		"arm64":      "028a3acf50e5ffcd0a9ffc03bce653cc8e4c02d2806c948a48d7bd78136b7372",
-		"amd64":      "f1e77e061bf131e87f08d82529dabf0bb66a2f3efb689ff4b549b7dec3c3c75a",
-		"arm32v6":    "36233c7f3991566ba4c66136cacfed14e86d0bfdd6a69b03630b086df25476fd",
-		"amd64uri":   "35eb2d9f1e1e57bd5e0c8e68fd71f5eb2c56d11ec043573f97b0a305cf0b1442",
-		"arm64v8uri": "36565d1375ac4446e7651bef2344c9cfc53839ec659bf6dc59b82dca1af22a5d",
+		"arm64":      "d715de5d9a2e1542c095a0f60145e23ec8b436fe1ff7b5d65da5a631d7ffac11",
+		"amd64":      "6cf8f2587c2cfe28a808632580a02e3bbb4367061eeeee9b9a2386f4f841b1e9",
+		"arm32v6":    "8ccd8f775eb6236695f649d396643a3f4ff5775ff2b2327417bf1e2c006615f7",
+		"amd64uri":   "285fa2a74d0b116c214ff958d80bfe00db2dad1e0c3e6602b63d304490646d37",
+		"arm64v8uri": "292623b2234c665b6409a8c249efcce087428e2ccf347fa440d97c35772e5741",
 	}
 
 	files := retrieveFileNames(t, cacheDir)
