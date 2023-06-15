@@ -11,7 +11,7 @@ if [ "$OS_TYPE" = debian ] || [ "$OS_TYPE" = ubuntu ]; then
   apt-get update
   apt-get install -y curl rpm2cpio cpio e2fsprogs tzdata
 elif [ "$OS_TYPE" = "opensuse/leap" ] || [ "$OS_TYPE" = "opensuse/tumbleweed" ]; then
-  zypper install -y e2fsprogs cpio util-linux
+  zypper install -y e2fsprogs curl cpio util-linux timezone
 else
   yum install -y e2fsprogs cpio
 fi
