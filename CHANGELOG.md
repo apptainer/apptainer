@@ -11,6 +11,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - `--cwd` is now the preferred form of the flag for setting the container's
   working directory, though `--pwd` is still supported for compatibility.
+- When building RPM, we will now use `/var/lib/apptainer` (rather than
+  `/var/apptainer`) to store local state files.
 
 ## Changes since last pre-release
 

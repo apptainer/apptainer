@@ -209,7 +209,7 @@ fi
         --includedir=%{_includedir} \
         --libdir=%{_libdir} \
         --libexecdir=%{_libexecdir} \
-        --localstatedir=%{_localstatedir} \
+        --localstatedir=%{_sharedstatedir} \
         --sharedstatedir=%{_sharedstatedir} \
         --mandir=%{_mandir} \
         --infodir=%{_infodir}
@@ -308,9 +308,9 @@ fi
 %dir %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/*
 %{_datadir}/bash-completion/completions/*
-%dir %{_localstatedir}/%{name}
-%dir %{_localstatedir}/%{name}/mnt
-%dir %{_localstatedir}/%{name}/mnt/session
+%dir %{_sharedstatedir}/%{name}
+%dir %{_sharedstatedir}/%{name}/mnt
+%dir %{_sharedstatedir}/%{name}/mnt/session
 %{_mandir}/man1/%{name}*
 %{_mandir}/man1/singularity*
 %license LICENSE.md
