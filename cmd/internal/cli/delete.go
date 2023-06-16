@@ -131,7 +131,7 @@ var deleteImageCmd = &cobra.Command{
 		r := fmt.Sprintf("%s:%s", imageRef.Path, imageRef.Tags[0])
 
 		if !deleteForce {
-			y, err := interactive.AskYNQuestion("n", "Are you sure you want to delete %s (%s) [N/y] ", r, deleteImageArch)
+			y, err := interactive.AskYNQuestion("n", "Are you sure you want to delete %s (%s) [y/N] ", r, deleteImageArch)
 			if err != nil {
 				sylog.Fatalf(err.Error())
 			}

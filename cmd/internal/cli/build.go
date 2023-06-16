@@ -426,7 +426,7 @@ func checkBuildTarget(path string) error {
 				return fmt.Errorf("build target '%s' already exists. Use --force if you want to overwrite it", f.Name())
 			}
 
-			question := fmt.Sprintf("Build target '%s' already exists and will be deleted during the build process. Do you want to continue? [N/y] ", f.Name())
+			question := fmt.Sprintf("Build target '%s' already exists and will be deleted during the build process. Do you want to continue? [y/N] ", f.Name())
 
 			img, err := image.Init(abspath, false)
 			if err != nil {
@@ -434,7 +434,7 @@ func checkBuildTarget(path string) error {
 					return fmt.Errorf("while determining '%s' format: %s", f.Name(), err)
 				}
 				// unknown image file format
-				question = fmt.Sprintf("Build target '%s' may be a definition file or a text/binary file that will be overwritten. Do you still want to overwrite it? [N/y] ", f.Name())
+				question = fmt.Sprintf("Build target '%s' may be a definition file or a text/binary file that will be overwritten. Do you still want to overwrite it? [y/N] ", f.Name())
 			} else {
 				img.File.Close()
 			}
