@@ -11,6 +11,7 @@ package endpoint
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	remoteutil "github.com/apptainer/apptainer/internal/pkg/remote/util"
@@ -104,6 +105,8 @@ func (config *Config) LibraryClientConfig(uri string) (*libClient.Config, error)
 		BaseURL:   uri,
 		UserAgent: useragent.Value(),
 		Logger:    (golog.Logger)(sylog.DebugLogger{}),
+		// TODO - probably should establish an appropriate client timeout here.
+		HTTPClient: &http.Client{},
 	}
 
 	if isDefault {
