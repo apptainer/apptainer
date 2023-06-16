@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -16,15 +16,16 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
+	"golang.org/x/sys/unix"
 )
 
 func TestLoop(t *testing.T) {
 	test.EnsurePrivilege(t)
 
-	var i1 *Info64
+	var i1 *unix.LoopInfo64
 
-	info := &Info64{
-		Flags: FlagsAutoClear | FlagsReadOnly,
+	info := &unix.LoopInfo64{
+		Flags: unix.LO_FLAGS_AUTOCLEAR | unix.LO_FLAGS_READ_ONLY,
 	}
 	loopDevOne := &Device{
 		MaxLoopDevices: GetMaxLoopDevices(),
