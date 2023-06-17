@@ -165,10 +165,70 @@ func (e *EngineOperations) CreateContainer(context.Context, int, net.Conn) error
 // set the return value to 0 for mknod and mknodat syscalls. It
 // allows build bootstrap like yum to work with fakeroot.
 func fakerootSeccompProfile() *specs.LinuxSeccomp {
+	// sets filters allowing to create file/pipe/socket
+	// and turns mknod/mknodat as no-op syscalls for block
+	// devices and character devices having a device number
+	// greater than 0
 	syscalls := []specs.LinuxSyscall{
 		{
-			Names:  []string{"mknod", "mknodat"},
+			Names:  []string{"mknod"},
 			Action: specs.ActErrno,
+			Args: []specs.LinuxSeccompArg{
+				{
+					Index:    1,
+					Value:    syscall.S_IFBLK,
+					ValueTwo: syscall.S_IFBLK,
+					Op:       specs.OpMaskedEqual,
+				},
+			},
+		},
+		{
+			Names:  []string{"mknod"},
+			Action: specs.ActErrno,
+			Args: []specs.LinuxSeccompArg{
+				{
+					Index:    1,
+					Value:    syscall.S_IFCHR,
+					ValueTwo: syscall.S_IFCHR,
+					Op:       specs.OpMaskedEqual,
+				},
+				{
+					Index:    2,
+					Value:    0,
+					ValueTwo: 0,
+					Op:       specs.OpNotEqual,
+				},
+			},
+		},
+		{
+			Names:  []string{"mknodat"},
+			Action: specs.ActErrno,
+			Args: []specs.LinuxSeccompArg{
+				{
+					Index:    2,
+					Value:    syscall.S_IFBLK,
+					ValueTwo: syscall.S_IFBLK,
+					Op:       specs.OpMaskedEqual,
+				},
+			},
+		},
+		{
+			Names:  []string{"mknodat"},
+			Action: specs.ActErrno,
+			Args: []specs.LinuxSeccompArg{
+				{
+					Index:    2,
+					Value:    syscall.S_IFCHR,
+					ValueTwo: syscall.S_IFCHR,
+					Op:       specs.OpMaskedEqual,
+				},
+				{
+					Index:    3,
+					Value:    0,
+					ValueTwo: 0,
+					Op:       specs.OpNotEqual,
+				},
+			},
 		},
 	}
 	return &specs.LinuxSeccomp{
