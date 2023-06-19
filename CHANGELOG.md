@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Upgrade gocryptfs to version 2.4.0, removing the need for fusermount from
   the fuse package.
+- Fix seccomp filters to allow mknod/mknodat syscalls to create pipe/socket
+  and character devices with device number 0 for fakeroot builds.
 
 ## v1.2.0-rc.1 - \[2023-06-07\]
 
