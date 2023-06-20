@@ -41,8 +41,8 @@ github.com/apptainer/container-key-client v0.8.0 h1:K181Zrejb53mR2YQZwCathSj8YRe
 github.com/apptainer/container-key-client v0.8.0/go.mod h1:wMeJdiMXlPRiwJfUyae2WRHsZlHG9Af6iPQ9TZcBnS8=
 github.com/apptainer/container-library-client v1.4.5 h1:zESpm9aLqELb0zr3isDspYU+iyaH0rk8Y2587RTSpp0=
 github.com/apptainer/container-library-client v1.4.5/go.mod h1:EA5bDsL/dxzAxFh3zBszSdVpB25wIwv/66M1qLOzrNU=
-github.com/apptainer/sif/v2 v2.11.4 h1:HT10EePvMY95yRC3H5PMYy5JrEbJqEyBF6rsuV3eyso=
-github.com/apptainer/sif/v2 v2.11.4/go.mod h1:AGT1mh0wgRdpTHXomZYr7JFVO3glsHfkwzzi0cLzqsU=
+github.com/apptainer/sif/v2 v2.11.5 h1:EhSvg+eTDwlp5FNGdF7WBtr6LlHEIYmunewaTKimmrQ=
+github.com/apptainer/sif/v2 v2.11.5/go.mod h1:xSD5/qc/M+tS0K20RMexmTbqM4EOQMjN+hcPW6vJYg4=
 github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 h1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
