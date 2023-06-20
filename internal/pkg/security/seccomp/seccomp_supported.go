@@ -152,7 +152,7 @@ func LoadSeccompConfig(config *specs.LinuxSeccomp, noNewPrivs bool, errNo int16)
 					return fmt.Errorf("failed adding seccomp rule for syscall %s: %s", sysName, err)
 				}
 			} else {
-				conditions, err := addSyscallRuleContitions(syscall.Args)
+				conditions, err := addSyscallRuleConditions(syscall.Args)
 				if err != nil {
 					return err
 				}
@@ -170,7 +170,7 @@ func LoadSeccompConfig(config *specs.LinuxSeccomp, noNewPrivs bool, errNo int16)
 	return nil
 }
 
-func addSyscallRuleContitions(args []specs.LinuxSeccompArg) ([]lseccomp.ScmpCondition, error) {
+func addSyscallRuleConditions(args []specs.LinuxSeccompArg) ([]lseccomp.ScmpCondition, error) {
 	var maxIndex uint = 6
 	conditions := make([]lseccomp.ScmpCondition, 0)
 
