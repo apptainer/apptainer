@@ -374,7 +374,7 @@ var (
 	}
 
 	capBlockSuspend = &capability{
-		Name:  "CAP_WAKE_ALARM",
+		Name:  "CAP_BLOCK_SUSPEND",
 		Value: 36,
 		Description: `CAP_BLOCK_SUSPEND (since Linux 3.5)
 	Employ features that can block system suspend (epoll(7) EPOLLWAKEUP, /proc/sys/wake_lock).`,
