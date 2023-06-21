@@ -13,6 +13,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
   and character devices with device number 0 for fakeroot builds.
 - New option `--warn-unused-build-args` is provided to output warnings rather than
   fatals for any additional variables given in --build-arg or --build-arg-file.
+- Use fuse-overlayfs instead of the kernel overlayfs when a lower dir is
+  a FUSE filesystem, even when the overlay layer is not writable.  That
+  always used to be done when the overlay layer was writable, but this
+  fixes a problem seen when squashfuse (which is read-only) was used for
+  the overlay layer.
 
 ## v1.2.0-rc.1 - \[2023-06-07\]
 
