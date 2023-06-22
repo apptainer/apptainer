@@ -18,6 +18,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - The `remote status` command will now print the username, realname, and email
   of the logged-in user, if available.
+- New option `--warn-unused-build-args` is provided to output warnings rather than
+  fatal errors for any unused variables given in --build-arg or --build-arg-file.
 
 ## Changes since last pre-release
 
