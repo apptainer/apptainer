@@ -30,6 +30,7 @@
 - Edita Kizinevič <edita.kizinevic@cern.ch>
 - Eduardo Arango <eduardo@sylabs.io>, <arangogutierrez@gmail.com>
 - Egbert Eich <eich@suse.com>
+- Emmanuel Ferdman <emmanuelferdman@gmail.com>
 - Eng Zer Jun <engzerjun@gmail.com>
 - Eric Müller <mueller@kip.uni-heidelberg.de>
 - Felix Abecassis <fabecassis@nvidia.com>
