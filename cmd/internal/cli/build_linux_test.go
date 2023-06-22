@@ -243,5 +243,20 @@ func TestProcessWithAdditionalArgs(t *testing.T) {
 	}
 
 	_, err = processDefs(args, "", d)
-	assert.ErrorContains(t, err, "there are unmatched ADDITION variables")
+	assert.ErrorContains(t, err, "unused build args: ADDITION. Use option --warn-unused-build-args to show a warning instead of a fatal message")
+}
+
+func TestProcessWithAdditionalArgsNoErrorReturn(t *testing.T) {
+	buildArgs.buildArgsUnusedWarn = true
+	d, err := build.MakeAllDefs("../../../e2e/testdata/build-template/single-stage-unit-test.def")
+	assert.NilError(t, err)
+
+	args := []string{
+		"OS_VER=1",
+		"AUTHOR=jason",
+		"ADDITION=1",
+	}
+
+	_, err = processDefs(args, "", d)
+	assert.NilError(t, err)
 }
