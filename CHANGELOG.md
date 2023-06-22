@@ -19,6 +19,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - The `remote status` command will now print the username, realname, and email
   of the logged-in user, if available.
 
+### New Features & Functionality
+
+- Added ability to set a custom config directory via the new
+  `APPTAINER_CONFIGDIR` environment variable.
+
 ## Changes since last pre-release
 
 - Upgrade gocryptfs to version 2.4.0, removing the need for fusermount from
