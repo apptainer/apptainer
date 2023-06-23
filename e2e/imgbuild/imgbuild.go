@@ -967,6 +967,7 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 		exit         int
 		err          string
 		output       string
+		unusedWarn   bool
 	}{
 		{
 			name: "ok case single stage build",
@@ -995,6 +996,31 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 			deffile: path.Join("testdata", "build-template", "single-stage.def"),
 			exit:    255,
 			err:     "IMAGE is not defined",
+		},
+		{
+			name: "ko case single stage build with additional args provided",
+			buildArgs: []string{
+				fmt.Sprintf("ADDITION=%d", 1),
+				fmt.Sprintf("IMAGE=%s", busyboxSIF),
+				fmt.Sprintf("SCRIPT_PATH=%s", path.Join("testdata", "build-template", "script.sh")),
+			},
+			verify:  []string{},
+			deffile: path.Join("testdata", "build-template", "single-stage.def"),
+			exit:    255,
+			err:     "unused build args: ADDITION. Use option --warn-unused-build-args to show a warning instead of a fatal message",
+		},
+		{
+			name: "ok case single stage build with additional args provided",
+			buildArgs: []string{
+				fmt.Sprintf("ADDITION=%d", 1),
+				fmt.Sprintf("IMAGE=%s", busyboxSIF),
+				fmt.Sprintf("SCRIPT_PATH=%s", path.Join("testdata", "build-template", "script.sh")),
+			},
+			verify:     []string{},
+			deffile:    path.Join("testdata", "build-template", "single-stage.def"),
+			exit:       0,
+			err:        "",
+			unusedWarn: true,
 		},
 		{
 			name: "ok case multiple stage build",
@@ -1039,6 +1065,41 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 			exit:    255,
 			err:     "HOME is not defined",
 		},
+		{
+			name: "ko case multiple stage build with arg file with additional args provided",
+			buildArgs: []string{
+				"DEVEL_IMAGE=alpine:3.9",
+				"FINAL_IMAGE=alpine:3.17",
+				"ADDITION=1",
+			},
+			buildArgFile: argfile,
+			verify: []string{
+				"from: alpine:3.9",
+				"from: alpine:3.17",
+				"cd /root",
+			},
+			deffile: path.Join("testdata", "build-template", "multiple-stage.def"),
+			exit:    255,
+			err:     "unused build args: ADDITION. Use option --warn-unused-build-args to show a warning instead of a fatal message",
+		},
+		{
+			name: "ok case multiple stage build with arg file with additional args provided",
+			buildArgs: []string{
+				"DEVEL_IMAGE=alpine:3.9",
+				"FINAL_IMAGE=alpine:3.17",
+				"ADDITION=1",
+			},
+			buildArgFile: argfile,
+			verify: []string{
+				"from: alpine:3.9",
+				"from: alpine:3.17",
+				"cd /root",
+			},
+			deffile:    path.Join("testdata", "build-template", "multiple-stage.def"),
+			exit:       0,
+			err:        "",
+			unusedWarn: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -1052,6 +1113,10 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 
 			imagePath := path.Join(dn, "container")
 			args := []string{}
+
+			if tt.unusedWarn {
+				args = append(args, "--warn-unused-build-args")
+			}
 
 			if tt.buildArgs != nil {
 				for _, arg := range tt.buildArgs {

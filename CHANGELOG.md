@@ -11,6 +11,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   the fuse package.
 - Fix seccomp filters to allow mknod/mknodat syscalls to create pipe/socket
   and character devices with device number 0 for fakeroot builds.
+- New option `--warn-unused-build-args` is provided to output warnings rather than
+  fatals for any additional variables given in --build-arg or --build-arg-file.
 
 ## v1.2.0-rc.1 - \[2023-06-07\]
 

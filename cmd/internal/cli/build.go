@@ -28,31 +28,32 @@ import (
 )
 
 var buildArgs struct {
-	sections          []string
-	bindPaths         []string
-	mounts            []string
-	libraryURL        string
-	keyServerURL      string
-	webURL            string
-	encrypt           bool
-	fakeroot          bool
-	fixPerms          bool
-	isJSON            bool
-	noCleanUp         bool
-	noTest            bool
-	sandbox           bool
-	update            bool
-	nvidia            bool
-	nvccli            bool
-	rocm              bool
-	writableTmpfs     bool     // For test section only
-	userns            bool     // Enable user namespaces
-	ignoreSubuid      bool     // Ignore /etc/subuid entries (hidden)
-	ignoreFakerootCmd bool     // Ignore fakeroot command (hidden)
-	ignoreUserns      bool     // Ignore user namespace(hidden)
-	remote            bool     // Remote flag(hidden, only for helpful error message)
-	buildVarArgs      []string // Variables passed to build procedure.
-	buildVarArgFile   string   // Variables file passed to build procedure.
+	sections            []string
+	bindPaths           []string
+	mounts              []string
+	libraryURL          string
+	keyServerURL        string
+	webURL              string
+	encrypt             bool
+	fakeroot            bool
+	fixPerms            bool
+	isJSON              bool
+	noCleanUp           bool
+	noTest              bool
+	sandbox             bool
+	update              bool
+	nvidia              bool
+	nvccli              bool
+	rocm                bool
+	writableTmpfs       bool     // For test section only
+	userns              bool     // Enable user namespaces
+	ignoreSubuid        bool     // Ignore /etc/subuid entries (hidden)
+	ignoreFakerootCmd   bool     // Ignore fakeroot command (hidden)
+	ignoreUserns        bool     // Ignore user namespace(hidden)
+	remote              bool     // Remote flag(hidden, only for helpful error message)
+	buildVarArgs        []string // Variables passed to build procedure.
+	buildVarArgFile     string   // Variables file passed to build procedure.
+	buildArgsUnusedWarn bool     // Variables passed to build procedure to turn fatal error to warn.
 }
 
 // -s|--sandbox
@@ -303,6 +304,14 @@ var buildVarArgFileFlag = cmdline.Flag{
 	Usage:        "specifies a file containing variable=value lines to replace '{{ variable }}' with value in build definition files",
 }
 
+var buildArgUnusedWarn = cmdline.Flag{
+	ID:           "buildArgUnusedWarnFlag",
+	Value:        &buildArgs.buildArgsUnusedWarn,
+	DefaultValue: false,
+	Name:         "warn-unused-build-args",
+	Usage:        "shows warning instead of fatal message when build args are not exact matched",
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(buildCmd)
@@ -345,6 +354,7 @@ func init() {
 
 		cmdManager.RegisterFlagForCmd(&buildVarArgsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildVarArgFileFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildArgUnusedWarn, buildCmd)
 	})
 }
 

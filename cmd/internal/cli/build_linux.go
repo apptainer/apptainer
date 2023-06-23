@@ -510,7 +510,13 @@ func processDefs(args []string, argFile string, defs []types.Definition) ([]type
 	diff := provideKeys.Difference(matchedKeys)
 	if !diff.Empty() {
 		vars := strings.Fields(strings.TrimPrefix(diff.String(), "HashSet"))
-		return defs, fmt.Errorf("while matching all variables, there are unmatched %s variables", strings.Join(vars, ""))
+
+		// All mismatched keys are in provided keys
+		if buildArgs.buildArgsUnusedWarn {
+			sylog.Warningf("Unused build args: %s", strings.Join(vars, " "))
+		} else {
+			return defs, fmt.Errorf("unused build args: %s. Use option --warn-unused-build-args to show a warning instead of a fatal message", strings.Join(vars, " "))
+		}
 	}
 
 	types.UpdateDefinitionRaw(defs)
