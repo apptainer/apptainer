@@ -22,16 +22,18 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // Configuration files/directories.
 const (
-	RemoteConfFile = "remote.yaml"
-	RemoteCache    = "remote-cache"
-	DockerConfFile = "docker-config.json"
-	apptainerDir   = ".apptainer"
-	legacyDir      = ".singularity"
+	RemoteConfFile         = "remote.yaml"
+	RemoteCache            = "remote-cache"
+	DockerConfFile         = "docker-config.json"
+	apptainerDir           = ".apptainer"
+	legacyDir              = ".singularity"
+	defaultLocalKeyDirName = "keys" // defaultLocalKeyDirName represents the default local key storage folder name
 )
 
 // cache contains the information for the current user
@@ -52,6 +54,12 @@ func ConfigDir() string {
 }
 
 func configDir(dir string) string {
+	envKey := "CONFIGDIR"
+	configDir := env.GetenvLegacy(envKey, envKey)
+	if configDir != "" {
+		return configDir
+	}
+
 	homedir := os.Getenv("HOME")
 	if homedir == "" {
 		user, err := user.Current()
@@ -118,4 +126,12 @@ func LegacyRemoteConf() string {
 // never written to by apptainer.
 func LegacyDockerConf() string {
 	return filepath.Join(LegacyConfigDir(), DockerConfFile)
+}
+
+func DefaultLocalKeyDirPath() string {
+	// read this as: look for APPTAINER_KEYSDIR and/or SINGULARITY_SYPGPDIR
+	if dir := env.GetenvLegacy("KEYSDIR", "SYPGPDIR"); dir != "" {
+		return dir
+	}
+	return filepath.Join(ConfigDir(), defaultLocalKeyDirName)
 }

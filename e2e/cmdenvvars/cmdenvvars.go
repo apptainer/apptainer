@@ -10,6 +10,7 @@
 package cmdenvvars
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -263,6 +264,39 @@ func (c ctx) testApptainerKeysDir(t *testing.T) {
 	}
 }
 
+func (c ctx) testApptainerConfigDir(t *testing.T) {
+	// Test plan:
+	//
+	// - create a temporary directory to be the configuration directory
+	// - run 'apptainer remote list' to create the remote.yaml
+	//   file inside the configuration directory, with the
+	//   APPTAINER_CONFIGDIR environment variables set to that temporary
+	//   directory
+	// - assert that the file has been created
+	//
+	// If the file is in the temporary directory, it means
+	// apptainer followed the APPTAINER_CONFIGDIR environment
+	// variable (checked in pkg/syfs) to set the configuration directory.
+
+	configDir, cleanup := setupTemporaryDir(t, c.env.TestDir, "config-dir")
+	defer cleanup(t)
+
+	environ := append(os.Environ(), fmt.Sprintf("APPTAINER_CONFIGDIR=%s", configDir))
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("remote"),
+		e2e.WithArgs("list"),
+		e2e.WithEnv(environ),
+		e2e.ExpectExit(0),
+	)
+
+	remotePath := filepath.Join(configDir, "remote.yaml")
+	if _, err := os.Stat(remotePath); os.IsNotExist(err) {
+		t.Fatalf("failed to find remote.yaml (expected: %s)", remotePath)
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -274,5 +308,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"APPTAINER_CACHEDIR":        c.testApptainerCacheDir,
 		"apptainer disable cache":   c.testApptainerDisableCache,
 		"APPTAINER_KEYSDIR":         c.testApptainerKeysDir,
+		"config directory":          c.testApptainerConfigDir,
 	}
 }

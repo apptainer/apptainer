@@ -58,6 +58,7 @@
 - Kundan Kumar <iamkundankumar28@gmail.com>
 - Maciej Sieczka <msieczka@sieczka.org>
 - Marcelo Magallon <marcelo@sylabs.io>
+- Marco Rubin <marco.rubin@protonmail.com>
 - Mark Egan-Fuller <markeganfuller@googlemail.com>
 - Matthias Gerstner <matthias.gerstner@suse.com>
 - Matt Wiens <mwiens91@gmail.com>
