@@ -667,29 +667,33 @@ mount:
 	if !bindMount && !remount && mnt.Type == "overlay" && tag == mount.LayerTag &&
 		imageDriver != nil && imageDriver.Features()&image.OverlayFeature != 0 {
 		lowerdirs := ""
-		hasUpper := false
 		for _, opt := range opts {
 			if strings.HasPrefix(opt, "lowerdir=") {
 				lowerdirs = opt[len("lowerdir="):]
-			} else if strings.HasPrefix(opt, "upperdir=") {
-				hasUpper = true
 			}
 		}
-		if hasUpper {
-			// This is a writable overlay and there is an overlay
-			//  image driver.  When the lower layer is of type FUSE
-			//  we want to skip trying the kernel overlayfs. That's
-			//  because sometimes the mount succeeds but the
-			//  operation doesn't work, due to a kernel regression
-			//  related to fuse under overlayfs that first showed up
-			//  in kernel version 5.15, as discussed at
-			//   https://lore.kernel.org/lkml/CAJfpegvaUyCUkucNwP0P419hC8v78PEM25pW5mBho94HRCgO3Q@mail.gmail.com/
+		// This is an overlay and there is an overlay image
+		//  driver.  When a lower layer is of type FUSE
+		//  we want to skip trying the kernel overlayfs. That's
+		//  because sometimes the mount succeeds but the
+		//  operation doesn't work, due to a kernel regression
+		//  related to fuse under overlayfs that first showed up
+		//  in kernel version 5.15, as discussed at
+		//   https://lore.kernel.org/lkml/CAJfpegvaUyCUkucNwP0P419hC8v78PEM25pW5mBho94HRCgO3Q@mail.gmail.com/
+		// At first we checked only for a writable overlay
+		//  (which is specified as an "upperdir"), but there
+		//  were also problems seen when the overlay was
+		//  squashfuse, so we changed this to also check
+		//  non-writable overlays.  See
+		//  https://github.com/apptainer/apptainer/issues/1459
+		//  Unfortunately this also affects read-only fuse2fs
+		//  overlays even though no problems had been seen with
+		//  those using the kernel overlayfs.
 
-			for _, ldir := range strings.Split(lowerdirs, ":") {
-				err = fsoverlay.CheckFuse(ldir)
-				if err != nil {
-					break
-				}
+		for _, ldir := range strings.Split(lowerdirs, ":") {
+			err = fsoverlay.CheckFuse(ldir)
+			if err != nil {
+				break
 			}
 		}
 	}
