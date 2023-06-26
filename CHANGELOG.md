@@ -21,6 +21,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add another patch to the included squashfuse_ll to prevent it from
   triggering 'No data available' errors on overlays of SIF files that
   were built on machines with SELinux enabled.
+- Fix a minor regression in 1.2.0-rc.1 where starting up under `unshare -r`
+  stopped mapping the user's home directory to the fake root's home directory.
 
 ### New Features & Functionality
 
