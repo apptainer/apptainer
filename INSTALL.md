@@ -199,7 +199,7 @@ To download the source code do this:
 
 ```sh
 SQUASHFUSEVERSION=0.1.105
-SQUASHFUSEPRS="70 77 81"
+SQUASHFUSEPRS="70 77 81 83"
 curl -L -O https://github.com/vasi/squashfuse/archive/$SQUASHFUSEVERSION/squashfuse-$SQUASHFUSEVERSION.tar.gz
 for PR in $SQUASHFUSEPRS; do
     curl -L -O https://github.com/vasi/squashfuse/pull/$PR.patch
