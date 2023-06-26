@@ -65,6 +65,7 @@ Source11: https://github.com/vasi/squashfuse/archive/%{squashfuse_version}/squas
 Patch10: https://github.com/vasi/squashfuse/pull/70.patch
 Patch11: https://github.com/vasi/squashfuse/pull/77.patch
 Patch12: https://github.com/vasi/squashfuse/pull/81.patch
+Patch13: https://github.com/vasi/squashfuse/pull/83.patch
 %endif
 
 # This Conflicts is in case someone tries to install the main apptainer
@@ -153,6 +154,7 @@ Provides the optional setuid-root portion of Apptainer.
 %patch -P 10 -p1
 %patch -P 11 -p1
 %patch -P 12 -p1
+%patch -P 13 -p1
 %setup -n %{name}-%{package_version}
 %else
 %autosetup -n %{name}-%{package_version}
