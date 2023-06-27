@@ -16,7 +16,7 @@ config_add_def PACKAGE_VERSION \"$package_version\"
 config_add_def PACKAGE_STRING \"apptainer $package_version\"
 config_add_def PACKAGE_URL \"\"
 
-if [ "$reproducible" == "1" ]; then
+if [ "$reproducible" -eq "1" ]; then
    config_add_def BUILDDIR \"REPRODUCIBLE_BUILD\"
    config_add_def SOURCEDIR \"REPRODUCIBLE_BUILD\"
 else
