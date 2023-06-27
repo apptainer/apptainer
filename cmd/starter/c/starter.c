@@ -1398,10 +1398,10 @@ __attribute__((constructor)) static void init(void) {
      * the host libc library used by this starter binary.
      */
     if (getpwuid(0) == NULL) {
-        fatalf("Failed to retrieve root user information: %s\n", strerror(errno));
+        fatalf("Failed to retrieve root user information: %s\n", errno == 0 ? "root user not found" : strerror(errno));
     }
     if (getgrgid(0) == NULL) {
-        fatalf("Failed to retrieve root group information: %s\n", strerror(errno));
+        fatalf("Failed to retrieve root group information: %s\n", errno == 0 ? "root group not found" : strerror(errno));
     }
 
     userns = user_namespace_init(&sconfig->container.namespace);
@@ -1463,7 +1463,7 @@ __attribute__((constructor)) static void init(void) {
 
             /* wait parent write user namespace mappings */
             if ( wait_event(master_socket[1]) < 0 ) {
-                fatalf("Error while waiting event for user namespace mappings: %s\n", strerror(errno));
+                fatalf("Error while waiting event for user namespace mappings: %s\n", errno == 0 ? "no event received" : strerror(errno));
             }
         }
 
