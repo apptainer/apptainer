@@ -48,6 +48,7 @@ su testuser -c '
   DOWNLOADURL="$(sed -n "s/^Source[1-9][0-9]*: //p" apptainer.spec)"
   DOWNLOADURL="$DOWNLOADURL $(sed -n "s/^Patch[1-9][0-9]*: //p" apptainer.spec)"
   SUBS="$(sed -n "s/^%global //p" apptainer.spec)"
+  DOWNLOADEDFILES=""
   for URL in $DOWNLOADURL; do
       if [[ "$URL" != http* ]]; then
 	  continue
@@ -57,6 +58,7 @@ su testuser -c '
 	    done
 	    echo $URL))
       curl -f -L -sS -O $URL
+      DOWNLOADEDFILES="$DOWNLOADEDFILES $(basename $URL)"
   done
   # eliminate the "dist" part in the rpm name, for the release_assets
   echo "%dist %{nil}" >$HOME/.rpmmacros
@@ -70,4 +72,7 @@ su testuser -c '
 
   # copy the rpms into the current directory for later use
   cp $HOME/rpmbuild/SRPMS/*.rpm $HOME/rpmbuild/RPMS/*/*.rpm .
+
+  # remove any downloaded files so tar files do not get into release assets
+  rm -f $DOWNLOADEDFILES
 '
