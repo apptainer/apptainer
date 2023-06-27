@@ -870,7 +870,7 @@ var actionUnderlayFlag = cmdline.Flag{
 	Value:        &underlay,
 	DefaultValue: false,
 	Name:         "underlay",
-	Usage:        "use underlay",
+	Usage:        "use underlay instead of overlay for bind mounts",
 	EnvKeys:      []string{"UNDERLAY"},
 	Hidden:       false,
 }
