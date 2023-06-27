@@ -1494,7 +1494,10 @@ func (e *EngineOperations) loadImage(path string, writable bool, userNS bool) (*
 func (e *EngineOperations) setUserInfo(useTargetIDs bool) {
 	var gids []int
 
-	pw, err := user.Current()
+	// Use CurrentOriginal() here instead of Current() because that
+	// works better for mapping in the user's home directory when
+	// running in a root-mapped unprivileged user namespace (unshare -r)
+	pw, err := user.CurrentOriginal()
 	if err != nil {
 		return
 	}
