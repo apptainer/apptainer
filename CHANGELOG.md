@@ -73,23 +73,37 @@ Changes since v1.1.9
 
 ### Changed defaults / behaviours
 
-- Create the current working directory in a container when it doesn't exist.
-  This restores behavior as it was before singularity 3.6.0.
-  As a result, using `--no-mount home` won't have any effect when running
-  apptainer from a home directory and will require `--no-mount home,cwd` to
-  avoid mounting that directory.
-- Handle current working directory paths containing symlinks both on the
-  host and in a container but pointing to different destinations.
-  If detected, the current working directory is not mounted when the
-  destination directory in the container exists.
-- Destination mount points are now sorted by shortest path first to ensure that
-  a user bind doesn't override a previous bind path when set in arbitrary order
-  on the CLI.  This is also applied to image binds.
-- When the kernel supports unprivileged overlayfs mounts in a user namespace,
-  the container will be constructed by default using an overlay instead
-  of an underlay layout for bind mounts.
-  A new `--underlay` action option can be used to prefer underlay instead
-  of overlay.
+- `--cwd` is now the preferred form of the flag for setting the container's
+  working directory, though `--pwd` is still supported for compatibility.
+- When building RPM, we will now use `/var/lib/apptainer` (rather than
+  `/var/apptainer`) to store local state files.
+
+### New Features & Functionality
+
+- The `remote status` command will now print the username, realname, and email
+  of the logged-in user, if available.
+- New option `--warn-unused-build-args` is provided to output warnings rather than
+  fatal errors for any unused variables given in --build-arg or --build-arg-file.
+
+### New Features & Functionality
+
+- Added ability to set a custom config directory via the new
+  `APPTAINER_CONFIGDIR` environment variable.
+
+### Developer / API
+
+- Changes in pkg/build/types.Definition struct. New `.FullRaw` field introduced,
+  which always contains the raw data for the entire definition file. Behavior of
+  `.Raw` field has changed: for multi-stage builds parsed with
+  pkg/build/types/parser.All(), `.Raw` contains the raw content of a single
+  build stage. Otherwise, it is equal to `.FullRaw`.
+
+## Changes since last pre-release
+
+- Upgrade gocryptfs to version 2.4.0, removing the need for fusermount from
+  the fuse package.
+- Fix seccomp filters to allow mknod/mknodat syscalls to create pipe/socket
+  and character devices with device number 0 for fakeroot builds.
 - Use fuse-overlayfs instead of the kernel overlayfs when a lower dir is
   a FUSE filesystem, even when the overlay layer is not writable.  That
   always used to be done when the overlay layer was writable, but this

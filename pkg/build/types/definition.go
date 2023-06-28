@@ -23,7 +23,16 @@ type Definition struct {
 	ImageData  `json:"imageData"`
 	BuildData  Data              `json:"buildData"`
 	CustomData map[string]string `json:"customData"`
-	Raw        []byte            `json:"raw"`
+
+	// Raw contains the raw definition file content that is applied when this
+	// Definition is built. For multi-stage builds parsed with parser.All(),
+	// this is the content of a single build stage. Otherwise, it will be equal
+	// to FullRaw.
+	Raw []byte `json:"raw"`
+
+	// FullRaw contains the raw data for the entire definition file.
+	FullRaw []byte `json:"fullraw"`
+
 	// SCIF app sections must be processed in order from the definition file,
 	// so we need to record the order of the items as they are parsed from the
 	// file into unordered maps.
@@ -101,7 +110,7 @@ func NewDefinitionFromURI(uri string) (d Definition, err error) {
 
 	var buf bytes.Buffer
 	populateRaw(&d, &buf)
-	d.Raw = buf.Bytes()
+	d.FullRaw = buf.Bytes()
 
 	return d, nil
 }
@@ -119,10 +128,10 @@ func NewDefinitionFromJSON(r io.Reader) (d Definition, err error) {
 	}
 
 	// if JSON definition doesn't have a raw data section, add it
-	if len(d.Raw) == 0 {
+	if len(d.FullRaw) == 0 {
 		var buf bytes.Buffer
 		populateRaw(&d, &buf)
-		d.Raw = buf.Bytes()
+		d.FullRaw = buf.Bytes()
 	}
 
 	return d, nil
