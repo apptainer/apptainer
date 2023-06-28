@@ -969,7 +969,7 @@ func (l *Launcher) setEnvVars(ctx context.Context, args []string) error {
 			return fmt.Errorf("could not read %q environment file: %w", l.cfg.EnvFile, err)
 		}
 
-		envvars, err := interpreter.EvaluateEnv(ctx, content, args, currentEnv)
+		shellEnv, err := interpreter.EvaluateEnv(ctx, content, args, currentEnv)
 		if err != nil {
 			return fmt.Errorf("while processing %s: %w", l.cfg.EnvFile, err)
 		}
@@ -978,7 +978,7 @@ func (l *Launcher) setEnvVars(ctx context.Context, args []string) error {
 		sylog.Debugf("Setting environment variables from file %s", l.cfg.EnvFile)
 
 		// Update Env with those from file
-		for _, envar := range envvars {
+		for _, envar := range shellEnv {
 			e := strings.SplitN(envar, "=", 2)
 			if len(e) != 2 {
 				sylog.Warningf("Ignore environment variable %q: '=' is missing", envar)
@@ -986,7 +986,7 @@ func (l *Launcher) setEnvVars(ctx context.Context, args []string) error {
 			}
 			// Don't attempt to overwrite bash builtin readonly vars
 			// https://github.com/sylabs/singularity/issues/1263
-			if e[0] == "UID" || e[0] == "GID" || e[0] == "EUID" {
+			if _, ok := env.ReadOnlyVars[e[0]]; ok {
 				continue
 			}
 			// Ensure we don't overwrite --env variables with environment file

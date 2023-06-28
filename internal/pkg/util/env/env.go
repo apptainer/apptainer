@@ -41,6 +41,16 @@ var ApptainerPrefixes = []string{ApptainerPrefix, LegacySingularityPrefix}
 // to container
 var ApptainerEnvPrefixes = []string{ApptainerEnvPrefix, LegacySingularityEnvPrefix}
 
+var ReadOnlyVars = map[string]bool{
+	"EUID":   true,
+	"GID":    true,
+	"HOME":   true,
+	"IFS":    true,
+	"OPTIND": true,
+	"PWD":    true,
+	"UID":    true,
+}
+
 // SetFromList sets environment variables from environ argument list.
 func SetFromList(environ []string) error {
 	for _, env := range environ {
