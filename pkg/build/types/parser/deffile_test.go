@@ -14,12 +14,12 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
-	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	"github.com/apptainer/apptainer/pkg/build/types"
+	"gotest.tools/v3/assert"
 )
 
 func TestScanDefinitionFile(t *testing.T) {
@@ -219,13 +219,7 @@ func TestParseDefinitionFile(t *testing.T) {
 				t.Fatal("failed to parse JSON:", err)
 			}
 
-			if !reflect.DeepEqual(defTest, defCorrect) {
-				b, _ := json.MarshalIndent(defCorrect, "", "  ")
-				t.Logf("Expected:\n%s", string(b))
-				b, _ = json.MarshalIndent(defTest, "", "  ")
-				t.Logf("Got:\n%s", string(b))
-				t.Fatal("parsed definition did not match reference")
-			}
+			assert.DeepEqual(t, defTest, defCorrect)
 		}))
 	}
 }
@@ -444,9 +438,7 @@ func TestParseAll(t *testing.T) {
 				t.Fatal("failed to parse JSON:", err)
 			}
 
-			if !reflect.DeepEqual(defTest, defCorrect) {
-				t.Fatal("parsed definition did not match reference")
-			}
+			assert.DeepEqual(t, defTest, defCorrect)
 		}))
 	}
 }

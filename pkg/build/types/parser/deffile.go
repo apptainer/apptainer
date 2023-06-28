@@ -422,12 +422,15 @@ func doHeader(h string, d *types.Definition) error {
 // and parse it into a Definition struct or return error if
 // the definition file has a bad section.
 func ParseDefinitionFile(r io.Reader) (d types.Definition, err error) {
-	d.Raw, err = io.ReadAll(r)
+	raw, err := io.ReadAll(r)
 	if err != nil {
 		return d, fmt.Errorf("while attempting to read in definition: %v", err)
 	}
 
-	s := bufio.NewScanner(bytes.NewReader(d.Raw))
+	d.FullRaw = raw
+	d.Raw = raw
+
+	s := bufio.NewScanner(bytes.NewReader(raw))
 	s.Split(scanDefinitionFile)
 
 	// advance scanner until it returns a useful token or errors
@@ -494,15 +497,13 @@ func All(r io.Reader) ([]types.Definition, error) {
 			return nil, err
 		}
 
+		d.FullRaw = raw
 		stages = append(stages, d)
 	}
 
 	if len(stages) == 0 {
 		return nil, errors.New("no stages found in definition file")
 	}
-
-	// set raw of last stage to be entire specification
-	stages[len(stages)-1].Raw = raw
 
 	return stages, nil
 }
@@ -535,6 +536,7 @@ func IsValidDefinition(source string) (valid bool, err error) {
 func isEmpty(d types.Definition) bool {
 	// clear raw data for comparison
 	d.Raw = nil
+	d.FullRaw = nil
 
 	// initialize empty definition fully
 	emptyDef := types.Definition{}

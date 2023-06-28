@@ -46,7 +46,7 @@ func createSIF(path string, b *types.Bundle, squashfile string, encOpts *encrypt
 	var dis []sif.DescriptorInput
 
 	// data we need to create a definition file descriptor
-	definput, err := sif.NewDescriptorInput(sif.DataDeffile, bytes.NewReader(b.Recipe.Raw))
+	definput, err := sif.NewDescriptorInput(sif.DataDeffile, bytes.NewReader(b.Recipe.FullRaw))
 	if err != nil {
 		return fmt.Errorf("sif id generation failed: %v", err)
 	}

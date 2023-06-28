@@ -26,6 +26,14 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Added ability to set a custom config directory via the new
   `APPTAINER_CONFIGDIR` environment variable.
 
+### Developer / API
+
+- Changes in pkg/build/types.Definition struct. New `.FullRaw` field introduced,
+  which always contains the raw data for the entire definition file. Behavior of
+  `.Raw` field has changed: for multi-stage builds parsed with
+  pkg/build/types/parser.All(), `.Raw` contains the raw content of a single
+  build stage. Otherwise, it is equal to `.FullRaw`.
+
 ## Changes since last pre-release
 
 - Upgrade gocryptfs to version 2.4.0, removing the need for fusermount from
