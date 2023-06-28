@@ -42,8 +42,8 @@ ALL += $(apptainer)
 
 
 # bash_completion files
-bash_completion1 :=  $(BUILDDIR)/etc/bash_completion.d/apptainer
-bash_completion2 :=  $(BUILDDIR)/etc/bash_completion.d/singularity
+bash_completion1 :=  $(BUILDDIR)/bash-completion/completions/apptainer
+bash_completion2 :=  $(BUILDDIR)/bash-completion/completions/singularity
 bash_completions := $(bash_completion1) $(bash_completion2)
 $(bash_completions): $(apptainer_build_config)
 	@echo " GEN" $@
