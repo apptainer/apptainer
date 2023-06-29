@@ -16,6 +16,20 @@ import (
 	"os"
 )
 
+var (
+	noColorLevel messageLevel = 90
+	loggerLevel               = InfoLevel
+)
+
+func getLoggerLevel() messageLevel {
+	if loggerLevel <= -noColorLevel {
+		return loggerLevel + noColorLevel
+	} else if loggerLevel >= noColorLevel {
+		return loggerLevel - noColorLevel
+	}
+	return loggerLevel
+}
+
 // Fatalf is a dummy function exiting with code 255. This
 // function must not be used in public packages.
 func Fatalf(format string, a ...interface{}) {
@@ -38,14 +52,24 @@ func Verbosef(format string, a ...interface{}) {}
 func Debugf(format string, a ...interface{}) {}
 
 // SetLevel is a dummy function doing nothing.
-func SetLevel(l int, color bool) {}
+func SetLevel(l int, color bool) {
+	// Here we do not check term.IsTerminal to explicitly control the color
+	loggerLevel = messageLevel(l)
+	if !color {
+		if loggerLevel >= InfoLevel {
+			loggerLevel = loggerLevel + noColorLevel
+		} else if loggerLevel <= LogLevel {
+			loggerLevel = loggerLevel - noColorLevel
+		}
+	}
+}
 
 // DisableColor for the logger
 func DisableColor() {}
 
 // GetLevel is a dummy function returning lowest message level.
 func GetLevel() int {
-	return int(-1)
+	return int(getLoggerLevel())
 }
 
 // GetEnvVar is a dummy function returning environment variable
