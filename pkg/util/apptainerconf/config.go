@@ -498,9 +498,11 @@ shared loop devices = {{ if eq .SharedLoopDevices true }}yes{{ else }}no{{ end }
 # IMAGE DRIVER: [STRING]
 # DEFAULT: Undefined
 # This option specifies the name of an image driver provided by a plugin that
-# will be used to handle image mounts. If the 'enable overlay' option is set
-# to 'driver' the driver name specified here will also be used to handle
-# overlay mounts.
+# will be used to handle image mounts. This will override the builtin image
+# driver which provides unprivileged image mounts for squashfs, extfs, 
+# overlayfs, and gocryptfs.  The overlayfs image driver will only be used
+# if the kernel overlayfs is not usable, but if the 'enable overlay' option
+# above is set to 'driver', the image driver will always be used for overlay.
 # If the driver name specified has not been registered via a plugin installation
 # the run-time will abort.
 image driver = {{ .ImageDriver }}
