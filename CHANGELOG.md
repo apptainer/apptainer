@@ -18,6 +18,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   always used to be done when the overlay layer was writable, but this
   fixes a problem seen when squashfuse (which is read-only) was used for
   the overlay layer.
+- Fix the `enable overlay = driver` configuration option to always use
+  the overlay image driver (that is, fuse-overlayfs) even when the kernel
+  overlayfs is usable.
 - Add another patch to the included squashfuse_ll to prevent it from
   triggering 'No data available' errors on overlays of SIF files that
   were built on machines with SELinux enabled.
