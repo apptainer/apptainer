@@ -142,12 +142,13 @@ func UpdateDefinitionRaw(defs []Definition) {
 	for _, def := range defs {
 		var tmp bytes.Buffer
 		populateRaw(&def, &tmp)
+		def.Raw = tmp.Bytes()
 		buf = append(buf, tmp.Bytes()...)
 	}
 
 	for idx := range defs {
 		def := &defs[idx]
-		def.Raw = buf
+		def.FullRaw = buf
 	}
 }
 
