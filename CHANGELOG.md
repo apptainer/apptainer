@@ -26,6 +26,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   were built on machines with SELinux enabled.
 - Fix a minor regression in 1.2.0-rc.1 where starting up under `unshare -r`
   stopped mapping the user's home directory to the fake root's home directory.
+- Added ability to change log level through environment variables,
+  `APPTAINER_SILENT`, `APPTAINER_QUIET`, and `APPTAINER_VERBOSE`. Added
+  `APPTAINER_NOCOLOR` environment variable for `--nocolor` option.
 
 ### New Features & Functionality
 

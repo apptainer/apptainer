@@ -25,8 +25,8 @@ func TestGetLevel(t *testing.T) {
 	defer test.ResetPrivilege(t)
 
 	l := GetLevel()
-	if l != -1 {
-		t.Fatalf("%d was returned instead of -1", l)
+	if l != 1 {
+		t.Fatalf("%d was returned instead of 1", l)
 	}
 }
 

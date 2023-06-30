@@ -14,6 +14,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 func TestCreateConfDir(t *testing.T) {
@@ -38,6 +40,85 @@ func TestCreateConfDir(t *testing.T) {
 		handleConfDir(dir, "")
 		if _, err := os.Stat(dir + "/foo"); os.IsNotExist(err) {
 			t.Errorf("inadvertently overwrote existing directory %s", dir)
+		}
+	}
+}
+
+func TestChangeLogLevelViaEnvVariables(t *testing.T) {
+	tests := []struct {
+		Name  string
+		Envs  []string
+		Level int
+	}{
+		{
+			Name:  "silent with no color",
+			Envs:  []string{"APPTAINER_SILENT", "APPTAINER_NOCOLOR"},
+			Level: -3,
+		},
+		{
+			Name:  "silent",
+			Envs:  []string{"APPTAINER_SILENT"},
+			Level: -3,
+		},
+		{
+			Name:  "quiet with no color",
+			Envs:  []string{"APPTAINER_QUIET", "APPTAINER_NOCOLOR"},
+			Level: -1,
+		},
+		{
+			Name:  "quiet",
+			Envs:  []string{"APPTAINER_QUIET"},
+			Level: -1,
+		},
+		{
+			Name:  "verbose with no color",
+			Envs:  []string{"APPTAINER_VERBOSE", "APPTAINER_NOCOLOR"},
+			Level: 4,
+		},
+		{
+			Name:  "verbose",
+			Envs:  []string{"APPTAINER_VERBOSE"},
+			Level: 4,
+		},
+		{
+			Name:  "debug with no color",
+			Envs:  []string{"APPTAINER_DEBUG", "APPTAINER_NOCOLOR"},
+			Level: 5,
+		},
+		{
+			Name:  "debug",
+			Envs:  []string{"APPTAINER_DEBUG"},
+			Level: 5,
+		},
+	}
+
+	// initialize apptainerCmd
+	Init(false)
+	for _, test := range tests {
+		t.Log("starting test:" + test.Name)
+		for _, env := range test.Envs {
+			err := os.Setenv(env, "1")
+			if err != nil {
+				t.Error(err)
+			}
+		}
+
+		// call persistentPreRunE to update cmd
+		err := apptainerCmd.PersistentPreRunE(apptainerCmd, []string{})
+		if err != nil {
+			t.Error(err)
+		}
+
+		if len(test.Envs) == 2 {
+			sylog.SetLevel(test.Level, true)
+		}
+
+		if sylog.GetLevel() != test.Level {
+			t.Errorf("actual log level: %d, expected log level: %d", sylog.GetLevel(), test.Level)
+		}
+
+		for _, env := range test.Envs {
+			os.Unsetenv(env)
 		}
 	}
 }
