@@ -21,6 +21,7 @@ import (
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/build"
+	"github.com/apptainer/apptainer/internal/pkg/build/args"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/fakeroot"
@@ -263,7 +264,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 	}
 
 	// parse definition to determine build source
-	buildArgsMap, err := build.ReadBuildArgs(buildArgs.buildVarArgs, buildArgs.buildVarArgFile)
+	buildArgsMap, err := args.ReadBuildArgs(buildArgs.buildVarArgs, buildArgs.buildVarArgFile)
 	if err != nil {
 		sylog.Fatalf("While processing the definition file: %v", err)
 	}

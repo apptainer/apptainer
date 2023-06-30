@@ -424,7 +424,7 @@ func doHeader(h string, d *types.Definition) error {
 func ParseDefinitionFile(r io.Reader) (d types.Definition, err error) {
 	raw, err := io.ReadAll(r)
 	if err != nil {
-		return d, fmt.Errorf("while attempting to read in definition: %v", err)
+		return d, fmt.Errorf("while attempting to read definition file: %v", err)
 	}
 
 	d.FullRaw = raw
@@ -459,7 +459,7 @@ func All(r io.Reader) ([]types.Definition, error) {
 
 	raw, err := io.ReadAll(r)
 	if err != nil {
-		return nil, fmt.Errorf("while attempting to read in definition: %v", err)
+		return nil, fmt.Errorf("while attempting to read definition file: %v", err)
 	}
 
 	// copy raw data for parsing

@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -10,14 +10,12 @@
 package build
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"syscall"
 
@@ -25,6 +23,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 
 	"github.com/apptainer/apptainer/internal/pkg/build/apps"
+	"github.com/apptainer/apptainer/internal/pkg/build/args"
 	"github.com/apptainer/apptainer/internal/pkg/build/assemblers"
 	"github.com/apptainer/apptainer/internal/pkg/build/sources"
 	"github.com/apptainer/apptainer/internal/pkg/image/packer"
@@ -35,7 +34,6 @@ import (
 	"github.com/apptainer/apptainer/pkg/image"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/samber/lo"
-	"golang.org/x/text/transform"
 )
 
 // Build is an abstracted way to look at the entire build process.
@@ -512,21 +510,23 @@ func MakeAllDefs(spec string, buildArgsMap map[string]string) ([]types.Definitio
 	revisedDefs := make([]types.Definition, 0, nDefs)
 	var overallConsumedArgs []string
 	for _, def := range defsPreBuildArgs {
-		defaultArgsMap := readDefaultArgs(def)
+		defaultArgsMap := args.ReadDefaults(def)
 
-		var consumedArgs []string
-		transformer := buildArgsTransformer{
-			buildArgsMap:   buildArgsMap,
-			defaultArgsMap: defaultArgsMap,
-			consumedArgs:   &consumedArgs,
+		reader, err := args.NewReader(
+			bytes.NewReader(def.Raw),
+			buildArgsMap,
+			defaultArgsMap,
+			&overallConsumedArgs,
+		)
+		if err != nil {
+			return nil, nil, err
 		}
-		reader := transform.NewReader(bytes.NewReader(def.Raw), transformer)
+
 		revisedDef, err := parser.ParseDefinitionFile(reader)
 		if err != nil {
 			return nil, nil, err
 		}
 		revisedDefs = append(revisedDefs, revisedDef)
-		overallConsumedArgs = append(overallConsumedArgs, consumedArgs...)
 	}
 
 	totalRawLength := 0
@@ -546,134 +546,6 @@ func MakeAllDefs(spec string, buildArgsMap map[string]string) ([]types.Definitio
 	unusedArgs, _ := lo.Difference(lo.Keys(buildArgsMap), lo.Uniq(overallConsumedArgs))
 	return revisedDefs, unusedArgs, nil
 }
-
-// readDefaultArgs reads in the '%arguments' section of (one build stage of) a
-// definition file, and returns the default argument values specified in that
-// section as a map. If file contained no '%arguments' section, an empty map is
-// returned.
-func readDefaultArgs(def types.Definition) map[string]string {
-	defaultArgsMap := make(map[string]string)
-	if def.BuildData.Arguments.Script != "" {
-		scanner := bufio.NewScanner(strings.NewReader(def.BuildData.Arguments.Script))
-		for scanner.Scan() {
-			text := strings.TrimSpace(scanner.Text())
-			if text != "" && !strings.HasPrefix(text, "#") {
-				k, v, err := getKeyVal(text)
-				if err != nil {
-					sylog.Warningf("Skipping %q in 'arguments' section: %s", text, err)
-					continue
-				}
-				defaultArgsMap[k] = v
-			}
-		}
-	}
-
-	return defaultArgsMap
-}
-
-func getKeyVal(text string) (string, string, error) {
-	if !strings.Contains(text, "=") {
-		return "", "", fmt.Errorf("%q is not a key=value pair", text)
-	}
-
-	matches := strings.SplitN(text, "=", 2)
-	if len(matches) != 2 {
-		return "", "", fmt.Errorf("%q is not a key=value pair", text)
-	}
-
-	key := strings.TrimSpace(matches[0])
-	if key == "" {
-		return "", "", fmt.Errorf("missing key portion in %q", text)
-	}
-	val := strings.TrimSpace(matches[1])
-	if val == "" {
-		return "", "", fmt.Errorf("missing value portion in %q", text)
-	}
-	return key, val, nil
-}
-
-func ReadBuildArgs(args []string, argFile string) (map[string]string, error) {
-	buildVarsMap := make(map[string]string)
-	if argFile != "" {
-		file, err := os.Open(argFile)
-		if err != nil {
-			return buildVarsMap, fmt.Errorf("error while opening file %q: %s", argFile, err)
-		}
-		defer file.Close()
-
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			text := scanner.Text()
-			k, v, err := getKeyVal(text)
-			if err != nil {
-				sylog.Warningf("Skipping %q in build arg file: %s", text, err)
-				continue
-			}
-
-			buildVarsMap[k] = v
-		}
-
-		if err := scanner.Err(); err != nil {
-			return buildVarsMap, fmt.Errorf("error reading build arg file %q: %s", argFile, err)
-		}
-	}
-
-	for _, arg := range args {
-		k, v, err := getKeyVal(arg)
-		if err != nil {
-			return nil, err
-		}
-
-		buildVarsMap[k] = v
-	}
-
-	return buildVarsMap, nil
-}
-
-type buildArgsTransformer struct {
-	buildArgsMap   map[string]string
-	defaultArgsMap map[string]string
-	consumedArgs   *[]string
-}
-
-var buildArgsRegexp = regexp.MustCompile(`{{\s*(\w+)\s*}}`)
-
-func (t buildArgsTransformer) Transform(dst, src []byte, atEOF bool) (int, int, error) {
-	sylog.Debugf("src is %#v", string(src))
-	nSrc := len(src)
-	matches := buildArgsRegexp.FindAllSubmatchIndex(src, -1)
-	sylog.Debugf("matches are %#v", matches)
-	if matches == nil && !atEOF {
-		return 0, 0, transform.ErrShortSrc
-	}
-
-	draft := src
-	for _, match := range matches {
-		argFull := src[match[0]:match[1]]
-		argName := string(src[match[2]:match[3]])
-		if val, ok := t.buildArgsMap[argName]; ok {
-			draft = bytes.ReplaceAll(draft, argFull, []byte(val))
-		} else if val, ok := t.defaultArgsMap[argName]; ok {
-			draft = bytes.ReplaceAll(draft, argFull, []byte(val))
-		} else {
-			return 0, 0, fmt.Errorf("build var %s is not defined through either --build-arg (--build-arg-file) or 'arguments' section", argName)
-		}
-		*t.consumedArgs = append(*t.consumedArgs, argName)
-	}
-
-	sylog.Debugf("draft is %#v", string(draft))
-
-	nDst := len(draft)
-	if len(dst) < nDst {
-		return 0, 0, transform.ErrShortDst
-	}
-
-	copy(dst, draft)
-
-	return nDst, nSrc, nil
-}
-
-func (t buildArgsTransformer) Reset() {}
 
 func (b *Build) findStageIndex(name string) (int, error) {
 	for i, s := range b.stages {
