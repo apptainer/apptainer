@@ -174,14 +174,10 @@ See the output of `./mconfig -h` for available options.
 
 If you want to have the best performance for unprivileged mounts of SIF
 files for multi-core applications, you can optionally install an improved
-performance version of `squashfuse_ll`.
-
-As of this writing there is a patch pending to the squashfuse project to
-add multithreading support that significantly improves performance for
-applications that access a lot of small files from many cores at once.
-There's also another `squashfuse_ll` patch for supporting options to make
-files appear to be owned by the user
-(the same options that exist in `squashfuse`).
+performance version of `squashfuse_ll`.  That version has been released as
+version 0.2.0 but as of this writing it is not yet very widely distributed,
+and it does not have multithreading enabled in the default compilation options.
+Instructions for installing it from source follow here.
 
 First, make sure that additional required packages are installed.  On Debian:
 
@@ -198,12 +194,8 @@ yum install -y autoconf automake libtool pkgconfig fuse3-devel zlib-devel
 To download the source code do this:
 
 ```sh
-SQUASHFUSEVERSION=0.1.105
-SQUASHFUSEPRS="70 77 81 83"
+SQUASHFUSEVERSION=0.2.0
 curl -L -O https://github.com/vasi/squashfuse/archive/$SQUASHFUSEVERSION/squashfuse-$SQUASHFUSEVERSION.tar.gz
-for PR in $SQUASHFUSEPRS; do
-    curl -L -O https://github.com/vasi/squashfuse/pull/$PR.patch
-done
 ```
 
 Then to compile and install do this:
@@ -211,9 +203,6 @@ Then to compile and install do this:
 ```sh
 tar xzf squashfuse-$SQUASHFUSEVERSION.tar.gz
 cd squashfuse-$SQUASHFUSEVERSION
-for PR in $SQUASHFUSEPRS; do
-    patch -p1 <../$PR.patch
-done
 ./autogen.sh
 CFLAGS=-std=c99 ./configure --enable-multithreading
 make squashfuse_ll
