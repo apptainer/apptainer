@@ -2819,6 +2819,48 @@ func (c actionTests) actionFakerootHome(t *testing.T) {
 	}
 }
 
+// Make sure --workdir and --scratch work together nicely even when workdir is a
+// relative path. Test needs to be run in non-parallel mode, because it changes
+// the current working directory of the host.
+func (c actionTests) relWorkdirScratch(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	testdir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "persistent-overlay-", "")
+	t.Cleanup(func() {
+		if !t.Failed() {
+			e2e.Privileged(cleanup)
+		}
+	})
+
+	const subdirName string = "mysubdir"
+	if err := os.Mkdir(filepath.Join(testdir, subdirName), 0o777); err != nil {
+		t.Fatalf("could not create subdirectory %q in %q: %s", subdirName, testdir, err)
+	}
+
+	// Change current working directory, with deferred undoing of change.
+	prevCwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("could not get current working directory: %s", err)
+	}
+	defer os.Chdir(prevCwd)
+	if err = os.Chdir(testdir); err != nil {
+		t.Fatalf("could not change cwd to %q: %s", testdir, err)
+	}
+
+	profiles := []e2e.Profile{e2e.UserProfile, e2e.RootProfile, e2e.FakerootProfile, e2e.UserNamespaceProfile}
+
+	for _, p := range profiles {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(p.String()),
+			e2e.WithProfile(p),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs("--contain", "--workdir", "./"+subdirName, "--scratch", "/myscratch", c.env.ImagePath, "true"),
+			e2e.ExpectExit(0),
+		)
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := actionTests{
@@ -2866,5 +2908,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"umask":                     np(c.actionUmask),         // test umask propagation
 		"invalidRemote":             np(c.invalidRemote),       // GHSA-5mv9-q7fq-9394
 		"fakeroot home":             c.actionFakerootHome,      // test home dir in fakeroot
+		"relWorkdirScratch":         np(c.relWorkdirScratch),   // test relative --workdir with --scratch
 	}
 }
