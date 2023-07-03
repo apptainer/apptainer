@@ -66,10 +66,9 @@ su testuser -c '
     fi
   fi
   go version
-  # download additional source & patch urls listed in rpm
+  # download additional source urls listed in rpm
   SPEC=dist/rpm/apptainer.spec.in
   DOWNLOADURL="$(sed -n "s/^Source[1-9][0-9]*: //p" $SPEC)"
-  DOWNLOADURL="$DOWNLOADURL $(sed -n "s/^Patch[1-9][0-9]*: //p" $SPEC)"
   SUBS="$(sed -n "s/.*%global //p" $SPEC)"
   for URL in $DOWNLOADURL; do
       if [[ "$URL" != http* ]]; then

@@ -69,9 +69,6 @@ override_dh_auto_configure:
 	    set -x; \
 	    tar -C debian -xf $$SQUASHFUSETGZ; \
 	    cd $${SQUASHFUSETGZ%.tar.gz}; \
-	    for PATCH in ../*.patch; do \
-	      patch -p1 <$$PATCH; \
-	    done; \
 	    ./autogen.sh; \
 	    FLAGS=-std=c99 ./configure --enable-multithreading; \
 	    make squashfuse_ll; \
