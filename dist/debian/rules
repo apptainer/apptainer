@@ -92,7 +92,9 @@ override_dh_auto_configure:
 	    set -x; \
 	    tar -C debian -xf $$GOCRYPTFSTGZ; \
 	    cd $${GOCRYPTFSTGZ%.tar.gz}; \
-	    PATH=$(GOROOT)/bin:$$PATH GOCACHE=$(GOCACHE) ./build-without-openssl.bash; \
+	    export GOCACHE=$(GOCACHE); \
+	    export GOPATH=$(GOROOT)/bin; \
+	    PATH=$(GOROOT)/bin:$$PATH ./build-without-openssl.bash; \
 	  fi
 ifneq ($(NEW_VERSION),)
 	$(warning "Setting new version in debian changelog: $(NEW_VERSION)")
