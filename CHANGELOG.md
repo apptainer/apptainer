@@ -10,7 +10,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Upgrade gocryptfs to version 2.4.0, removing the need for fusermount from
   the fuse package.
 - Upgraded squashfuse_ll to version 0.2.0, removing the need for applying
-  patches during compilation.
+  patches during compilation.  The new version includes a fix to prevent
+  it from triggering 'No data available errors' on overlays of SIF files that
+  were built on machines with SELinux enabled.
+- Add discussion of using TMPDIR or APPTAINER_TMPDIR in the build help.
 - Fix seccomp filters to allow mknod/mknodat syscalls to create pipe/socket
   and character devices with device number 0 for fakeroot builds.
 - New option `--warn-unused-build-args` is provided to output warnings rather than
@@ -23,9 +26,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix the `enable overlay = driver` configuration option to always use
   the overlay image driver (that is, fuse-overlayfs) even when the kernel
   overlayfs is usable.
-- Add another patch to the included squashfuse_ll to prevent it from
-  triggering 'No data available' errors on overlays of SIF files that
-  were built on machines with SELinux enabled.
 - Fix a minor regression in 1.2.0-rc.1 where starting up under `unshare -r`
   stopped mapping the user's home directory to the fake root's home directory.
 - Added ability to change log level through environment variables,
