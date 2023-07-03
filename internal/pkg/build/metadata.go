@@ -201,7 +201,7 @@ func insertDefinition(b *types.Bundle) error {
 		}
 	}
 
-	err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity"), b.Recipe.Raw, 0o644)
+	err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity"), b.Recipe.FullRaw, 0o644)
 	if err != nil {
 		return err
 	}
