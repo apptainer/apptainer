@@ -157,6 +157,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix memory usage calculation during apptainer compilation on RaspberryPi.
 - Fix misleading error when an overlay is requested by the root user while the
   overlay kernel module is not loaded.
+- Fix gocryptfs build procedures for deb package.
 
 ## v1.1.9 - \[2023-06-07\]
 
