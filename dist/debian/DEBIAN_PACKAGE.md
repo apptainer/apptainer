@@ -42,7 +42,7 @@ wget -O debian/$TARBALL https://dl.google.com/go/$TARBALL
 
 Finally, install the additional dependencies in the section on the
 [improved performance squashfuse](../../INSTALL.md##installing-improved-performance-squashfuse_ll)
-and download the additional files listed there into the debian directory.
+and download the additional file listed there into the debian directory.
 Also install the additional file from the section on
 [installing gocryptfs)(../../INSTALL.md##installing-gocryptfs)
 into the debian directory.

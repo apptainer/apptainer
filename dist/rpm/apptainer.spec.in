@@ -36,7 +36,7 @@
 # Uncomment this to include gocryptfs
 # %%global gocryptfs_version 2.4.0
 # Uncomment this to include a multithreaded version of squashfuse_ll
-# %%global squashfuse_version 0.1.105
+# %%global squashfuse_version 0.2.0
 
 # The last singularity version number in EPEL/Fedora
 %global last_singularity_version 3.8.7-3
@@ -62,10 +62,6 @@ Source10: https://github.com/rfjakob/gocryptfs/archive/v%{gocryptfs_version}/goc
 %endif
 %if "%{?squashfuse_version}" != ""
 Source11: https://github.com/vasi/squashfuse/archive/%{squashfuse_version}/squashfuse-%{squashfuse_version}.tar.gz
-Patch10: https://github.com/vasi/squashfuse/pull/70.patch
-Patch11: https://github.com/vasi/squashfuse/pull/77.patch
-Patch12: https://github.com/vasi/squashfuse/pull/81.patch
-Patch13: https://github.com/vasi/squashfuse/pull/83.patch
 %endif
 
 # This Conflicts is in case someone tries to install the main apptainer
@@ -151,10 +147,6 @@ Provides the optional setuid-root portion of Apptainer.
 # the default directory for other steps is where the %%prep section ends
 # so do main package last
 %setup -b 11 -n squashfuse-%{squashfuse_version}
-%patch -P 10 -p1
-%patch -P 11 -p1
-%patch -P 12 -p1
-%patch -P 13 -p1
 %setup -n %{name}-%{package_version}
 %else
 %autosetup -n %{name}-%{package_version}
