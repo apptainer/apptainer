@@ -461,7 +461,7 @@ func (m *Setup) command(ctx context.Context, command string) error {
 		defer env.SetFromList(backupEnv)
 	}
 
-	config := &libcni.CNIConfig{Path: []string{m.cniPath.Plugin}}
+	config := libcni.NewCNIConfig([]string{m.cniPath.Plugin}, nil)
 
 	// set a timeout context for the execution of the CNI plugin
 	// to interrupt its execution if it takes more than 5 seconds
