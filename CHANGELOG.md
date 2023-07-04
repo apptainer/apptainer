@@ -36,6 +36,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   on a local unsigned SIF file.
 - Set real UID to zero when escalating privileges for CNI plugins to fix
   issue appeared with RHEL 9.X.
+- Add 32-bit architectures compatiblity mode for 64-bit architectures to
+  fakeroot seccomp filter
 
 ### New Features & Functionality
 
