@@ -11,6 +11,7 @@ package sources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -18,6 +19,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/image"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/sif/v2/pkg/integrity"
 )
 
 // LocalConveyor only needs to hold the conveyor to have the needed data to pack
@@ -69,8 +71,13 @@ func GetLocalPacker(ctx context.Context, src string, b *types.Bundle) (LocalPack
 			// Otherwise do a verification and make failures warn, like for push
 			err := verifySIF(ctx, src, b.Opts.KeyServerOpts...)
 			if err != nil {
-				sylog.Warningf("%s", err)
-				sylog.Warningf("Bootstrap image could not be verified, but build will continue.")
+				if errors.Is(err, &integrity.SignatureNotFoundError{}) {
+					// Ignore missing signature
+					sylog.Debugf("%s", err)
+				} else {
+					sylog.Warningf("%s", err)
+					sylog.Warningf("Bootstrap image could not be verified, but build will continue.")
+				}
 			}
 		}
 		return &SIFPacker{
