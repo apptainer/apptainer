@@ -65,7 +65,18 @@ Enterprise Performance Computing (EPC)`
       library://  an image library (no default)
       docker://   a Docker/OCI registry (default Docker Hub)
       shub://     an Apptainer registry (default Singularity Hub)
-      oras://     an OCI registry that holds SIF files using ORAS`
+      oras://     an OCI registry that holds SIF files using ORAS
+
+  Temporary files:
+  
+  The location used for temporary directories defaults to '/tmp' but
+  can be overridden by the TMPDIR environment variable, and that can be
+  overridden by the APPTAINER_TMPDIR environment variable.  The
+  temporary directory used during a build must be on a filesystem that
+  has enough space to hold the entire container image, uncompressed,
+  including any temporary files that are created and later removed
+  during the build. You may need to set APPTAINER_TMPDIR or TMPDIR when
+  building a large container on a system that has a small /tmp filesystem.`
 
 	BuildExample string = `
 
