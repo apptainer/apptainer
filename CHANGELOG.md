@@ -34,6 +34,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix interaction between `--workdir` when given relative path and `--scratch`.
 - Remove the warning about a missing signature when building an image based
   on a local unsigned SIF file.
+- Set real UID to zero when escalating privileges for CNI plugins to fix
+  issue appeared with RHEL 9.X.
 
 ### New Features & Functionality
 

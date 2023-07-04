@@ -21,7 +21,7 @@ import (
 func Escalate() error {
 	runtime.LockOSThread()
 	uid := os.Getuid()
-	return syscall.Setresuid(uid, 0, uid)
+	return syscall.Setresuid(0, 0, uid)
 }
 
 // Drop drops privileges of the thread or process.
