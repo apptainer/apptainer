@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"runtime"
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
@@ -231,10 +232,29 @@ func fakerootSeccompProfile() *specs.LinuxSeccomp {
 			},
 		},
 	}
-	return &specs.LinuxSeccomp{
+
+	lseccomp := &specs.LinuxSeccomp{
 		DefaultAction: specs.ActAllow,
 		Syscalls:      syscalls,
 	}
+
+	// assume 32-bit mode compatibility with 64-bit architectures
+	switch runtime.GOARCH {
+	case "amd64":
+		lseccomp.Architectures = []specs.Arch{specs.ArchX86_64, specs.ArchX86, specs.ArchX32}
+	case "arm64":
+		lseccomp.Architectures = []specs.Arch{specs.ArchAARCH64, specs.ArchARM}
+	case "mips64":
+		lseccomp.Architectures = []specs.Arch{specs.ArchMIPS64, specs.ArchMIPS, specs.ArchMIPS64N32}
+	case "mips64le":
+		lseccomp.Architectures = []specs.Arch{specs.ArchMIPSEL64, specs.ArchMIPSEL, specs.ArchMIPSEL64N32}
+	case "ppc64":
+		lseccomp.Architectures = []specs.Arch{specs.ArchPPC64, specs.ArchPPC}
+	case "s390x":
+		lseccomp.Architectures = []specs.Arch{specs.ArchS390X, specs.ArchS390}
+	}
+
+	return lseccomp
 }
 
 // StartProcess is called during stage2 after RPC server finished
@@ -301,7 +321,7 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 
 	if seccomp.Enabled() {
 		if err := seccomp.LoadSeccompConfig(fakerootSeccompProfile(), false, 0); err != nil {
-			sylog.Warningf("Could not apply seccomp filter, some bootstrap may not work correctly")
+			sylog.Warningf("Could not apply seccomp filter due to error (%s). Some bootstrap may not work correctly", err)
 		}
 	} else {
 		sylog.Warningf("Not compiled with seccomp, fakeroot may not work correctly, " +

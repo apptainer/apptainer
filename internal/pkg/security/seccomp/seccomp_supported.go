@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
@@ -100,74 +101,119 @@ func LoadSeccompConfig(config *specs.LinuxSeccomp, noNewPrivs bool, errNo int16)
 		sylog.Warningf("seccomp rule conditions are not supported with libseccomp under 2.2.1")
 	}
 
-	scmpAction, ok := scmpActionMap[config.DefaultAction]
+	scmpDefaultAction, ok := scmpActionMap[config.DefaultAction]
 	if !ok {
 		return fmt.Errorf("invalid action '%s' specified", config.DefaultAction)
 	}
-	if scmpAction == lseccomp.ActErrno {
-		scmpAction = scmpAction.SetReturnCode(errNo)
+	if scmpDefaultAction == lseccomp.ActErrno {
+		scmpDefaultAction = scmpDefaultAction.SetReturnCode(errNo)
 	}
 
-	filter, err := lseccomp.NewFilter(scmpAction)
+	scmpNativeArch, err := lseccomp.GetNativeArch()
 	if err != nil {
-		return fmt.Errorf("error creating new filter: %s", err)
+		return fmt.Errorf("failed to get seccomp native architecture: %s", err)
 	}
 
-	if err := filter.SetNoNewPrivsBit(noNewPrivs); err != nil {
-		return fmt.Errorf("failed to set no new priv flag: %s", err)
-	}
+	scmpArchitectures := []lseccomp.ScmpArch{scmpNativeArch}
 
 	for _, arch := range config.Architectures {
 		scmpArch, ok := scmpArchMap[arch]
 		if !ok {
 			return fmt.Errorf("invalid architecture '%s' specified", arch)
-		}
-
-		if err := filter.AddArch(scmpArch); err != nil {
-			return fmt.Errorf("error adding architecture: %s", err)
+		} else if scmpArch != scmpNativeArch {
+			scmpArchitectures = append(scmpArchitectures, scmpArch)
 		}
 	}
 
-	for _, syscall := range config.Syscalls {
-		if len(syscall.Names) == 0 {
-			return fmt.Errorf("no syscall specified for the rule")
+	var mergeFilter *lseccomp.ScmpFilter
+
+	for _, scmpArch := range scmpArchitectures {
+		filter, err := lseccomp.NewFilter(scmpDefaultAction)
+		if err != nil {
+			return fmt.Errorf("error creating new filter: %s", err)
 		}
 
-		scmpAction, ok = scmpActionMap[syscall.Action]
-		if !ok {
-			return fmt.Errorf("invalid action '%s' specified", syscall.Action)
-		}
-		if scmpAction == lseccomp.ActErrno {
-			scmpAction = scmpAction.SetReturnCode(errNo)
+		if err := filter.SetNoNewPrivsBit(noNewPrivs); err != nil {
+			return fmt.Errorf("failed to set no new priv flag: %s", err)
 		}
 
-		for _, sysName := range syscall.Names {
-			sysNr, err := lseccomp.GetSyscallFromName(sysName)
-			if err != nil {
-				continue
+		if scmpArch != scmpNativeArch {
+			if err := filter.AddArch(scmpArch); err != nil {
+				return fmt.Errorf("error adding architecture: %s", err)
 			}
 
-			if len(syscall.Args) == 0 || !supportCondition {
-				if err := filter.AddRule(sysNr, scmpAction); err != nil {
-					return fmt.Errorf("failed adding seccomp rule for syscall %s: %s", sysName, err)
-				}
-			} else {
-				conditions, err := addSyscallRuleConditions(syscall.Args)
+			if err := filter.RemoveArch(scmpNativeArch); err != nil {
+				return fmt.Errorf("error removing architecture: %s", err)
+			}
+		}
+
+		ignoreArchFilter := false
+
+		for _, syscall := range config.Syscalls {
+			if len(syscall.Names) == 0 {
+				return fmt.Errorf("no syscall specified for the rule")
+			}
+
+			scmpAction, ok := scmpActionMap[syscall.Action]
+			if !ok {
+				return fmt.Errorf("invalid action '%s' specified", syscall.Action)
+			}
+			if scmpAction == lseccomp.ActErrno {
+				scmpAction = scmpAction.SetReturnCode(errNo)
+			}
+
+			for _, sysName := range syscall.Names {
+				sysNr, err := lseccomp.GetSyscallFromNameByArch(sysName, scmpArch)
 				if err != nil {
-					return err
+					continue
 				}
-				if err := filter.AddRuleConditional(sysNr, scmpAction, conditions); err != nil {
-					return fmt.Errorf("failed adding rule condition for syscall %s: %s", sysName, err)
+
+				if len(syscall.Args) == 0 || !supportCondition {
+					if err := filter.AddRule(sysNr, scmpAction); err != nil {
+						if isUnrecognizedSyscall(err) {
+							ignoreArchFilter = true
+							break
+						}
+						return fmt.Errorf("failed adding seccomp rule for syscall %s: %s", sysName, err)
+					}
+				} else {
+					conditions, err := addSyscallRuleConditions(syscall.Args)
+					if err != nil {
+						return err
+					}
+					if err := filter.AddRuleConditional(sysNr, scmpAction, conditions); err != nil {
+						if isUnrecognizedSyscall(err) {
+							ignoreArchFilter = true
+							break
+						}
+						return fmt.Errorf("failed adding rule condition for syscall %s: %s", sysName, err)
+					}
+				}
+			}
+		}
+
+		if !ignoreArchFilter {
+			if mergeFilter == nil {
+				mergeFilter = filter
+			} else {
+				if err := mergeFilter.Merge(filter); err != nil {
+					return fmt.Errorf("failed to merge seccomp filter for architecture %s: %s", scmpArch, err)
 				}
 			}
 		}
 	}
 
-	if err = filter.Load(); err != nil {
+	if mergeFilter == nil {
+		return fmt.Errorf("seccomp filter not applied due to error")
+	} else if err := mergeFilter.Load(); err != nil {
 		return fmt.Errorf("failed loading seccomp filter: %s", err)
 	}
 
 	return nil
+}
+
+func isUnrecognizedSyscall(err error) bool {
+	return strings.Contains(err.Error(), "unrecognized syscall")
 }
 
 func addSyscallRuleConditions(args []specs.LinuxSeccompArg) ([]lseccomp.ScmpCondition, error) {
