@@ -56,6 +56,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `APPTAINER_SILENT`, `APPTAINER_QUIET`, and `APPTAINER_VERBOSE`. Added
   `APPTAINER_NOCOLOR` environment variable for `--nocolor` option.
 - Fix interaction between `--workdir` when given relative path and `--scratch`.
+- Remove the warning about a missing signature when building an image based
+  on a local unsigned SIF file.
 
 ## v1.2.0-rc.1 - \[2023-06-07\]
 
