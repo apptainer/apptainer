@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -10,6 +10,7 @@
 package imgbuild
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -476,4 +477,146 @@ From: {{ .From }}
 		}),
 		e2e.ExpectExit(0),
 	)
+}
+
+// Check that commands that modify /etc/passwd and/or /etc/group on writable
+// filesystems are able to do so, and that the changes survive from build to
+// run, and across separate runs (i.e., that the changes don't go into a
+// later-discarded tmpfs).
+func (c *imgBuildTests) issue1812(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	defFileContents := fmt.Sprintf(`
+Bootstrap: localimage
+from: %s
+
+%%post
+	adduser -D leela
+	addgroup planetexpress
+	addgroup leela planetexpress
+`, c.env.ImagePath)
+
+	defFileName, err := e2e.WriteTempFile(c.env.TestDir, "defFile-", defFileContents)
+	if err != nil {
+		log.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if !t.Failed() {
+			os.Remove(defFileName)
+		}
+	})
+
+	err = os.WriteFile(defFileName, []byte(defFileContents), 0o644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	validateResult := func(t *testing.T, profile e2e.Profile, containerArg string) {
+		c.env.RunApptainer(
+			t,
+			e2e.WithProfile(profile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(
+				containerArg, "/bin/sh", "-c",
+				"grep leela /etc/passwd; grep planetexpress /etc/group"),
+			e2e.ExpectExit(
+				0,
+				e2e.ExpectOutput(e2e.RegexMatch, `^leela:x`),
+				e2e.ExpectOutput(e2e.RegexMatch, `\nplanetexpress:x:1001:leela\b`),
+			),
+		)
+	}
+	var testName string
+	for _, profile := range []e2e.Profile{e2e.RootProfile, e2e.FakerootProfile} {
+		testName = profile.String() + "SifToRun"
+		t.Run(testName, func(t *testing.T) {
+			sifPath := filepath.Join(c.env.TestDir, testName+".sif")
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(profile),
+				e2e.WithCommand("build"),
+				e2e.WithArgs("-F", sifPath, defFileName),
+				e2e.ExpectExit(0),
+			)
+
+			validateResult(t, profile, sifPath)
+		})
+
+		testName = profile.String() + "SandboxToRun"
+		t.Run(testName, func(t *testing.T) {
+			sandboxDir, cleanup := e2e.MakeTempDir(
+				t, c.env.TestDir, fmt.Sprintf("issue1812-sandbox-%s-", testName), "")
+			t.Cleanup(func() {
+				if !t.Failed() {
+					e2e.Privileged(cleanup)
+				}
+			})
+
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(profile),
+				e2e.WithCommand("build"),
+				e2e.WithArgs("--sandbox", "-F", sandboxDir, defFileName),
+				e2e.ExpectExit(0),
+			)
+
+			validateResult(t, profile, sandboxDir)
+		})
+
+		testName = profile.String() + "RunToRun"
+		t.Run(testName, func(t *testing.T) {
+			sandboxDir, cleanup := e2e.MakeTempDir(
+				t, c.env.TestDir, fmt.Sprintf("issue1812-sandbox-%s-", testName), "")
+			t.Cleanup(func() {
+				if !t.Failed() {
+					e2e.Privileged(cleanup)
+				}
+			})
+
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(profile),
+				e2e.WithCommand("build"),
+				e2e.WithArgs("--sandbox", "-F", sandboxDir, c.env.ImagePath),
+				e2e.ExpectExit(0),
+			)
+
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(profile),
+				e2e.WithCommand("exec"),
+				e2e.WithArgs(
+					"--writable", sandboxDir, "/bin/sh", "-c",
+					"adduser -D leela; addgroup planetexpress; addgroup leela planetexpress"),
+				e2e.ExpectExit(0),
+			)
+
+			validateResult(t, profile, sandboxDir)
+		})
+
+		testName = profile.String() + "SifRunToRun"
+		t.Run(testName, func(t *testing.T) {
+			sifPath := filepath.Join(c.env.TestDir, testName+".sif")
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(profile),
+				e2e.WithCommand("build"),
+				e2e.WithArgs("-F", sifPath, c.env.ImagePath),
+				e2e.ExpectExit(0),
+			)
+
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(profile),
+				e2e.WithCommand("exec"),
+				e2e.WithArgs(
+					sifPath, "/bin/sh", "-c",
+					"adduser -D leela; addgroup planetexpress; addgroup leela planetexpress"),
+				e2e.ExpectExit(
+					1,
+					e2e.ExpectError(e2e.ContainMatch, "Read-only file system"),
+				),
+			)
+		})
+	}
 }
