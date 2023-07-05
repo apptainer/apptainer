@@ -5,19 +5,25 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.2.0-rc.2 - \[2023-07-05\]
+
 ## Changes since last pre-release
 
 - Upgrade gocryptfs to version 2.4.0, removing the need for fusermount from
   the fuse package.
-- Upgraded squashfuse_ll to version 0.2.0, removing the need for applying
+- Upgrade squashfuse_ll to version 0.2.0, removing the need for applying
   patches during compilation.  The new version includes a fix to prevent
   it from triggering 'No data available errors' on overlays of SIF files that
   were built on machines with SELinux enabled.
+- Add ability to set a custom config directory via the new
+  `APPTAINER_CONFIGDIR` environment variable.
+- Add ability to change log level through environment variables,
+  `APPTAINER_SILENT`, `APPTAINER_QUIET`, and `APPTAINER_VERBOSE`.
+  Also add `APPTAINER_NOCOLOR` for the `--nocolor` option.
 - Add discussion of using TMPDIR or APPTAINER_TMPDIR in the build help.
-- Fix seccomp filters to allow mknod/mknodat syscalls to create pipe/socket
-  and character devices with device number 0 for fakeroot builds.
-- New option `--warn-unused-build-args` is provided to output warnings rather than
-  fatals for any additional variables given in --build-arg or --build-arg-file.
+- Add new option `--warn-unused-build-args` to output warnings rather than
+  fatal errors for any additional variables given in --build-arg or
+  --build-arg-file.
 - Use fuse-overlayfs instead of the kernel overlayfs when a lower dir is
   a FUSE filesystem, even when the overlay layer is not writable.  That
   always used to be done when the overlay layer was writable, but this
@@ -28,21 +34,16 @@ For older changes see the [archived Singularity change log](https://github.com/a
   overlayfs is usable.
 - Fix a minor regression in 1.2.0-rc.1 where starting up under `unshare -r`
   stopped mapping the user's home directory to the fake root's home directory.
-- Added ability to change log level through environment variables,
-  `APPTAINER_SILENT`, `APPTAINER_QUIET`, and `APPTAINER_VERBOSE`. Added
-  `APPTAINER_NOCOLOR` environment variable for `--nocolor` option.
-- Fix interaction between `--workdir` when given relative path and `--scratch`.
+- Fix interaction between `--workdir` and `--scratch` options when the
+  former is given a relative path.
 - Remove the warning about a missing signature when building an image based
   on a local unsigned SIF file.
 - Set real UID to zero when escalating privileges for CNI plugins to fix
   issue appeared with RHEL 9.X.
-- Add 32-bit architectures compatiblity mode for 64-bit architectures to
-  fakeroot seccomp filter
-
-### New Features & Functionality
-
-- Added ability to set a custom config directory via the new
-  `APPTAINER_CONFIGDIR` environment variable.
+- Fix seccomp filters to allow mknod/mknodat syscalls to create pipe/socket
+  and character devices with device number 0 for fakeroot builds.
+- Add 32-bit compatibility mode for 64-bit architectures in the fakeroot
+  seccomp filter.
 
 ## v1.2.0-rc.1 - \[2023-06-07\]
 
