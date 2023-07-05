@@ -449,12 +449,6 @@ The dependencies and their licenses are as follows:
 
 **Project URL:** <https://oras.land/oras-go/pkg>
 
-## github.com/emirpasic/gods
-
-**License:** BSD-2-Clause
-
-**License URL:** <https://github.com/emirpasic/gods/blob/master/LICENSE>
-
 ## github.com/godbus/dbus/v5
 
 **License:** BSD-2-Clause
@@ -868,6 +862,12 @@ The dependencies and their licenses are as follows:
 **License:** MIT
 
 **License URL:** <https://github.com/rivo/uniseg/blob/master/LICENSE.txt>
+
+## github.com/samber/lo
+
+**License:** MIT
+
+**License URL:** <https://github.com/samber/lo/blob/master/LICENSE>
 
 ## github.com/secure-systems-lab/go-securesystemslib/dsse
 

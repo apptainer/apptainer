@@ -128,16 +128,16 @@ func NewDefinitionFromJSON(r io.Reader) (d Definition, err error) {
 	return d, nil
 }
 
-func UpdateDefinitionRaw(defs []Definition) {
+func UpdateDefinitionRaw(defs *[]Definition) {
 	var buf []byte
-	for _, def := range defs {
+	for _, def := range *defs {
 		var tmp bytes.Buffer
 		populateRaw(&def, &tmp)
 		buf = append(buf, tmp.Bytes()...)
 	}
 
-	for idx := range defs {
-		def := &defs[idx]
+	for i := range *defs {
+		def := &(*defs)[i]
 		def.Raw = buf
 	}
 }
