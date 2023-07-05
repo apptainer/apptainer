@@ -949,13 +949,17 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 //nolint:maintidx
 func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 	busyboxSIF := e2e.BusyboxSIF(t)
-	fileContent := "HOME=/root"
+	fileContent := `HOME=/root
+DEMO=demo=with===equals==signs
+`
 	argfile, err := e2e.WriteTempFile(c.env.TestDir, "argfile-", fileContent)
 	if err != nil {
 		log.Fatal(err)
 	}
 	t.Cleanup(func() {
-		os.Remove(argfile)
+		if !t.Failed() {
+			os.Remove(argfile)
+		}
 	})
 
 	tests := []struct {
@@ -967,143 +971,114 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 		exit         int
 		err          string
 		output       string
-		unusedWarn   bool
 	}{
 		{
 			name: "ok case single stage build",
 			buildArgs: []string{
 				fmt.Sprintf("IMAGE=%s", busyboxSIF),
-				fmt.Sprintf("SCRIPT_PATH=%s", path.Join("testdata", "build-template", "script.sh")),
+				fmt.Sprintf("SCRIPT_PATH=%s", filepath.Join("..", "test", "build-args", "script.sh")),
 			},
 			verify: []string{
-				fmt.Sprintf("from: %s", busyboxSIF),
+				fmt.Sprintf("From: %s", busyboxSIF),
 				"export AUTHOR=jason",
 				"export VERSION=1",
 				"Author jason",
 				"Version 1",
-				"testdata/build-template/script.sh",
+				"../test/build-args/script.sh",
 			},
-			deffile: path.Join("testdata", "build-template", "single-stage.def"),
+			deffile: filepath.Join("..", "test", "build-args", "single-stage.def"),
 			exit:    0,
 			err:     "",
 		},
 		{
 			name: "ko case single stage build",
 			buildArgs: []string{
-				fmt.Sprintf("SCRIPT_PATH=%s", path.Join("testdata", "build-template", "script.sh")),
+				fmt.Sprintf("SCRIPT_PATH=%s", filepath.Join("..", "test", "build-args", "script.sh")),
 			},
 			verify:  []string{},
-			deffile: path.Join("testdata", "build-template", "single-stage.def"),
+			deffile: filepath.Join("..", "test", "build-args", "single-stage.def"),
 			exit:    255,
 			err:     "IMAGE is not defined",
 		},
 		{
-			name: "ko case single stage build with additional args provided",
-			buildArgs: []string{
-				fmt.Sprintf("ADDITION=%d", 1),
-				fmt.Sprintf("IMAGE=%s", busyboxSIF),
-				fmt.Sprintf("SCRIPT_PATH=%s", path.Join("testdata", "build-template", "script.sh")),
-			},
-			verify:  []string{},
-			deffile: path.Join("testdata", "build-template", "single-stage.def"),
-			exit:    255,
-			err:     "unused build args: ADDITION. Use option --warn-unused-build-args to show a warning instead of a fatal message",
-		},
-		{
-			name: "ok case single stage build with additional args provided",
-			buildArgs: []string{
-				fmt.Sprintf("ADDITION=%d", 1),
-				fmt.Sprintf("IMAGE=%s", busyboxSIF),
-				fmt.Sprintf("SCRIPT_PATH=%s", path.Join("testdata", "build-template", "script.sh")),
-			},
-			verify:     []string{},
-			deffile:    path.Join("testdata", "build-template", "single-stage.def"),
-			exit:       0,
-			err:        "",
-			unusedWarn: true,
-		},
-		{
 			name: "ok case multiple stage build",
 			buildArgs: []string{
-				"DEVEL_IMAGE=alpine:3.9",
-				"FINAL_IMAGE=alpine:3.17",
+				"DEVEL_IMAGE=golang:1.12.3-alpine3.9",
+				"FINAL_IMAGE=alpine:3.9",
 				"HOME=/root",
 			},
 			verify: []string{
-				"from: alpine:3.9",
-				"from: alpine:3.17",
+				"From: golang:1.12.3-alpine3.9",
+				"From: alpine:3.9",
 				"cd /root",
 			},
-			deffile: path.Join("testdata", "build-template", "multiple-stage.def"),
+			deffile: filepath.Join("..", "test", "build-args", "multiple-stage.def"),
 			exit:    0,
 			err:     "",
 		},
 		{
 			name: "ok case multiple stage build with arg file",
 			buildArgs: []string{
-				"DEVEL_IMAGE=alpine:3.9",
-				"FINAL_IMAGE=alpine:3.17",
+				"DEVEL_IMAGE=golang:1.12.3-alpine3.9",
+				"FINAL_IMAGE=alpine:3.9",
 			},
 			buildArgFile: argfile,
 			verify: []string{
-				"from: alpine:3.9",
-				"from: alpine:3.17",
+				"From: golang:1.12.3-alpine3.9",
+				"From: alpine:3.9",
 				"cd /root",
 			},
-			deffile: path.Join("testdata", "build-template", "multiple-stage.def"),
+			deffile: filepath.Join("..", "test", "build-args", "multiple-stage.def"),
 			exit:    0,
 			err:     "",
 		},
 		{
 			name: "ko case multiple stage build",
 			buildArgs: []string{
-				"DEVEL_IMAGE=alpine:3.9",
-				"FINAL_IMAGE=alpine:3.17",
+				"DEVEL_IMAGE=golang:1.12.3-alpine3.9",
+				"FINAL_IMAGE=alpine:3.9",
 			},
 			verify:  []string{},
-			deffile: path.Join("testdata", "build-template", "multiple-stage.def"),
+			deffile: filepath.Join("..", "test", "build-args", "multiple-stage.def"),
 			exit:    255,
 			err:     "HOME is not defined",
 		},
 		{
-			name: "ko case multiple stage build with arg file with additional args provided",
+			name: "equal signs in vals",
 			buildArgs: []string{
-				"DEVEL_IMAGE=alpine:3.9",
-				"FINAL_IMAGE=alpine:3.17",
-				"ADDITION=1",
+				fmt.Sprintf("IMAGE=%s", busyboxSIF),
+				fmt.Sprintf("SCRIPT_PATH=%s", filepath.Join("..", "test", "build-args", "script.sh")),
+				"AUTHOR=Equals=In=My=Name",
+				"DEMO=demo=with===equals==signs",
 			},
-			buildArgFile: argfile,
 			verify: []string{
-				"from: alpine:3.9",
-				"from: alpine:3.17",
-				"cd /root",
+				"Author Equals=In=My=Name",
+				"This is a demo=with===equals==signs for templating definition file",
 			},
-			deffile: path.Join("testdata", "build-template", "multiple-stage.def"),
-			exit:    255,
-			err:     "unused build args: ADDITION. Use option --warn-unused-build-args to show a warning instead of a fatal message",
+			deffile: filepath.Join("..", "test", "build-args", "single-stage.def"),
+			exit:    0,
+			err:     "",
 		},
 		{
-			name: "ok case multiple stage build with arg file with additional args provided",
+			name: "equal signs in argfile vals",
 			buildArgs: []string{
-				"DEVEL_IMAGE=alpine:3.9",
-				"FINAL_IMAGE=alpine:3.17",
-				"ADDITION=1",
+				fmt.Sprintf("IMAGE=%s", busyboxSIF),
+				fmt.Sprintf("SCRIPT_PATH=%s", filepath.Join("..", "test", "build-args", "script.sh")),
+				"AUTHOR=Equals=In=My=Name",
 			},
 			buildArgFile: argfile,
 			verify: []string{
-				"from: alpine:3.9",
-				"from: alpine:3.17",
-				"cd /root",
+				"Author Equals=In=My=Name",
+				"This is a demo=with===equals==signs for templating definition file",
 			},
-			deffile:    path.Join("testdata", "build-template", "multiple-stage.def"),
-			exit:       0,
-			err:        "",
-			unusedWarn: true,
+			deffile: filepath.Join("..", "test", "build-args", "single-stage.def"),
+			exit:    0,
+			err:     "",
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	t.Run("build definition", func(t *testing.T) {
+		for _, tt := range tests {
 			dn, cleanup := c.tempDir(t, "build-definition-template")
 			t.Cleanup(func() {
 				if !t.Failed() {
@@ -1113,10 +1088,6 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 
 			imagePath := path.Join(dn, "container")
 			args := []string{}
-
-			if tt.unusedWarn {
-				args = append(args, "--warn-unused-build-args")
-			}
 
 			if tt.buildArgs != nil {
 				for _, arg := range tt.buildArgs {
@@ -1143,7 +1114,8 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 			expects = append(expects, e2e.ExpectOutput(e2e.UnwantedExactMatch, "}}"))
 			c.env.RunApptainer(
 				t,
-				e2e.WithProfile(e2e.UserProfile),
+				e2e.AsSubtest(tt.name),
+				e2e.WithProfile(e2e.RootProfile),
 				e2e.WithCommand("build"),
 				e2e.WithArgs(args...),
 				e2e.PostRun(func(t *testing.T) {
@@ -1158,7 +1130,7 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 					c.env.RunApptainer(
 						t,
 						e2e.AsSubtest(tt.name+" verification"),
-						e2e.WithProfile(e2e.UserProfile),
+						e2e.WithProfile(e2e.RootProfile),
 						e2e.WithCommand("sif"),
 						e2e.WithArgs("dump", "1", imagePath),
 						e2e.ExpectExit(0,
@@ -1170,8 +1142,8 @@ func (c imgBuildTests) buildDefinitionWithBuildArgs(t *testing.T) {
 					e2e.ExpectError(e2e.ContainMatch, tt.err),
 				),
 			)
-		})
-	}
+		}
+	})
 }
 
 func (c *imgBuildTests) ensureImageIsEncrypted(t *testing.T, imgPath string) {

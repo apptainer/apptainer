@@ -1,10 +1,15 @@
-package cli
+package build
 
 import (
+	"bytes"
+	"io"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/apptainer/apptainer/internal/pkg/build"
+	"github.com/apptainer/apptainer/pkg/build/types/parser"
+	"golang.org/x/text/transform"
 	"gotest.tools/v3/assert"
 )
 
@@ -51,55 +56,19 @@ func TestGetKeyVal(t *testing.T) {
 			name:   "wrong case because of missing =",
 			input:  "\n  k1 v1\n",
 			expect: []string{},
-			err:    "is not `key=value` pair format",
+			err:    "is not a key=value pair",
 		},
 		{
 			name:   "wrong case because of missing key",
 			input:  "\n  =v1\n",
 			expect: []string{},
-			err:    "key field is missing in text:",
+			err:    "missing key portion in",
 		},
 		{
 			name:   "ok case with empty value",
 			input:  "\n  k1 =\n",
-			expect: []string{"k1", ""},
-			err:    "",
-		},
-		{
-			name:   "ok case empty value with multiple space",
-			input:  "\n  k1 =  \n",
-			expect: []string{"k1", ""},
-			err:    "",
-		},
-		{
-			name:   "ok case single quote",
-			input:  "\n  k1 =''\n",
-			expect: []string{"k1", "''"},
-			err:    "",
-		},
-		{
-			name:   "ok case single quote with multiple space",
-			input:  "\n  k1 ='  '\n",
-			expect: []string{"k1", "'  '"},
-			err:    "",
-		},
-		{
-			name:   "ok case double quote",
-			input:  "\n  k1 =\"\"\n",
-			expect: []string{"k1", "\"\""},
-			err:    "",
-		},
-		{
-			name:   "ok case double quote with multiple space",
-			input:  "\n  k1 =\"   \"\n",
-			expect: []string{"k1", "\"   \""},
-			err:    "",
-		},
-		{
-			name:   "wrong case because of multiple ==",
-			input:  "\n  k1 == v1\n",
 			expect: []string{},
-			err:    "is not `key=value` pair format",
+			err:    "missing value portion in",
 		},
 	}
 
@@ -115,14 +84,14 @@ func TestGetKeyVal(t *testing.T) {
 	}
 }
 
-func TestReplaceVar(t *testing.T) {
+func TestTransformer(t *testing.T) {
 	tests := []struct {
-		name        string
-		input       string
-		output      string
-		argsMap     map[string]string
-		deffArgsMap map[string]string
-		err         string
+		name           string
+		input          string
+		output         string
+		argsMap        map[string]string
+		defaultArgsMap map[string]string
+		err            string
 	}{
 		{
 			name:   "normal case",
@@ -132,8 +101,8 @@ func TestReplaceVar(t *testing.T) {
 				"OS_VER":  "1",
 				"APP_VER": "1.0",
 			},
-			deffArgsMap: map[string]string{},
-			err:         "",
+			defaultArgsMap: map[string]string{},
+			err:            "",
 		},
 		{
 			name:   "normal case 2",
@@ -143,16 +112,16 @@ func TestReplaceVar(t *testing.T) {
 				"OS_VER":  "1",
 				"APP_VER": "1.0",
 			},
-			deffArgsMap: map[string]string{},
-			err:         "",
+			defaultArgsMap: map[string]string{},
+			err:            "",
 		},
 		{
-			name:        "normal case 3",
-			input:       "/script-1.sh 1.0",
-			output:      "",
-			argsMap:     map[string]string{},
-			deffArgsMap: map[string]string{},
-			err:         "no change to text",
+			name:           "normal case 3",
+			input:          "/script-1.sh 1.0",
+			output:         "/script-1.sh 1.0",
+			argsMap:        map[string]string{},
+			defaultArgsMap: map[string]string{},
+			err:            "",
 		},
 		{
 			name:   "normal case 4",
@@ -161,7 +130,7 @@ func TestReplaceVar(t *testing.T) {
 			argsMap: map[string]string{
 				"OS_VER": "1",
 			},
-			deffArgsMap: map[string]string{
+			defaultArgsMap: map[string]string{
 				"APP_VER": "1.0",
 			},
 			err: "",
@@ -174,7 +143,7 @@ func TestReplaceVar(t *testing.T) {
 				"OS_VER":  "1",
 				"APP_VER": "1.0",
 			},
-			deffArgsMap: map[string]string{
+			defaultArgsMap: map[string]string{
 				"APP_VER": "0.0",
 			},
 			err: "",
@@ -187,8 +156,8 @@ func TestReplaceVar(t *testing.T) {
 				"OS_VER":  "1",
 				"APP_VER": "1.0",
 			},
-			deffArgsMap: map[string]string{},
-			err:         "",
+			defaultArgsMap: map[string]string{},
+			err:            "",
 		},
 		{
 			name:   "wrong case because of missing variable",
@@ -197,8 +166,8 @@ func TestReplaceVar(t *testing.T) {
 			argsMap: map[string]string{
 				"OS_VER": "1",
 			},
-			deffArgsMap: map[string]string{},
-			err:         "is not defined through either --build-arg (--build-arg-file) or 'arguments' section",
+			defaultArgsMap: map[string]string{},
+			err:            "is not defined through either --build-arg (--build-arg-file) or 'arguments' section",
 		},
 		{
 			name:   "wrong case because of missing variable 2",
@@ -207,14 +176,21 @@ func TestReplaceVar(t *testing.T) {
 			argsMap: map[string]string{
 				"OS_VE": "1",
 			},
-			deffArgsMap: map[string]string{},
-			err:         "is not defined through either --build-arg (--build-arg-file) or 'arguments' section",
+			defaultArgsMap: map[string]string{},
+			err:            "is not defined through either --build-arg (--build-arg-file) or 'arguments' section",
 		},
 	}
 
 	for _, test := range tests {
 		t.Logf("Starting %s", test.name)
-		output, _, err := replaceVar([]byte(test.input), test.argsMap, test.deffArgsMap)
+		var consumedArgs []string
+		transformer := buildArgsTransformer{
+			buildArgsMap:   test.argsMap,
+			defaultArgsMap: test.defaultArgsMap,
+			consumedArgs:   &consumedArgs,
+		}
+		reader := transform.NewReader(bytes.NewReader([]byte(test.input)), transformer)
+		output, err := io.ReadAll(reader)
 		if test.err != "" {
 			assert.ErrorContains(t, err, test.err)
 		} else {
@@ -224,15 +200,14 @@ func TestReplaceVar(t *testing.T) {
 }
 
 func TestProcessDefsSingleDef(t *testing.T) {
-	d, err := build.MakeAllDefs("../../../e2e/testdata/build-template/single-stage-unit-test.def")
-	assert.NilError(t, err)
+	d, err := MakeAllDefs(
+		filepath.Join("..", "..", "..", "test", "build-args", "single-stage-unit-test.def"),
+		map[string]string{
+			"OS_VER": "1",
+			"AUTHOR": "jason",
+		},
+	)
 
-	args := []string{
-		"OS_VER=1",
-		"AUTHOR=jason",
-	}
-
-	d, err = processDefs(args, "", d)
 	assert.NilError(t, err)
 	assert.Equal(t, d[0].Header["from"], "alpine:1")
 	assert.Equal(t, strings.TrimSpace(d[0].Help.Script), "This is a demo for templating definition file")
@@ -241,52 +216,63 @@ func TestProcessDefsSingleDef(t *testing.T) {
 }
 
 func TestProcessDefsMultipleDef(t *testing.T) {
-	d, err := build.MakeAllDefs("../../../e2e/testdata/build-template/multiple-stage-unit-test.def")
-	assert.NilError(t, err)
+	d, err := MakeAllDefs(
+		filepath.Join("..", "..", "..", "test", "build-args", "multiple-stage-unit-test.def"),
+		map[string]string{
+			"DEVEL_IMAGE": "golang:1.12.3-alpine3.9",
+			"FINAL_IMAGE": "alpine:3.9",
+		},
+	)
 
-	args := []string{
-		"DEVEL_IMAGE=alpine:3.9",
-		"FINAL_IMAGE=alpine:3.17",
-	}
-
-	d, err = processDefs(args, "", d)
 	assert.NilError(t, err)
-	assert.Equal(t, d[0].Header["from"], "alpine:3.9")
+	assert.Equal(t, d[0].Header["from"], "golang:1.12.3-alpine3.9")
 	rt := strings.Contains(d[0].BuildData.Post.Script, "export HOME=/root")
 	assert.Equal(t, rt, true)
 	rt = strings.Contains(d[0].BuildData.Post.Script, "cd /root")
 	assert.Equal(t, rt, true)
 
-	assert.Equal(t, d[1].Header["from"], "alpine:3.17")
+	assert.Equal(t, d[1].Header["from"], "alpine:3.9")
 	rt = strings.Contains(d[1].BuildData.Files[0].Files[0].Src, "/root/hello")
 	assert.Equal(t, rt, true)
 }
 
-func TestProcessWithAdditionalArgs(t *testing.T) {
-	d, err := build.MakeAllDefs("../../../e2e/testdata/build-template/single-stage-unit-test.def")
-	assert.NilError(t, err)
-
-	args := []string{
-		"OS_VER=1",
-		"AUTHOR=jason",
-		"ADDITION=1",
+func TestReadDefaultArgs(t *testing.T) {
+	defFilePath := filepath.Join("..", "..", "..", "test", "build-args", "single-stage-unit-test.def")
+	defFile, err := os.Open(defFilePath)
+	if err != nil {
+		t.Fatalf("while trying to open def file %q: %s", defFilePath, err)
 	}
-
-	_, err = processDefs(args, "", d)
-	assert.ErrorContains(t, err, "unused build args: ADDITION. Use option --warn-unused-build-args to show a warning instead of a fatal message")
-}
-
-func TestProcessWithAdditionalArgsNoErrorReturn(t *testing.T) {
-	buildArgs.buildArgsUnusedWarn = true
-	d, err := build.MakeAllDefs("../../../e2e/testdata/build-template/single-stage-unit-test.def")
-	assert.NilError(t, err)
-
-	args := []string{
-		"OS_VER=1",
-		"AUTHOR=jason",
-		"ADDITION=1",
+	defer defFile.Close()
+	defs, err := parser.All(defFile)
+	if err != nil {
+		t.Fatalf("while trying to read def file %q: %s", defFilePath, err)
 	}
+	assert.Equal(t, len(defs), 1)
+	defaultArgsMap := readDefaultArgs(defs[0])
+	assert.DeepEqual(t, defaultArgsMap, map[string]string{
+		"OS_VER": "3.17",
+		"DEMO":   "a demo",
+		"AUTHOR": "jason",
+	})
 
-	_, err = processDefs(args, "", d)
-	assert.NilError(t, err)
+	defFilePath = filepath.Join("..", "..", "..", "test", "build-args", "multiple-stage-unit-test.def")
+	defFile, err = os.Open(defFilePath)
+	if err != nil {
+		t.Fatalf("while trying to open def file %q: %s", defFilePath, err)
+	}
+	defer defFile.Close()
+	defs, err = parser.All(defFile)
+	if err != nil {
+		t.Fatalf("while trying to read def file %q: %s", defFilePath, err)
+	}
+	assert.Equal(t, len(defs), 2)
+	defaultArgsMap = readDefaultArgs(defs[0])
+	assert.DeepEqual(t, defaultArgsMap, map[string]string{
+		"HOME": "/root",
+	})
+	defaultArgsMap = readDefaultArgs(defs[1])
+	assert.DeepEqual(t, defaultArgsMap, map[string]string{
+		"FINAL_IMAGE": "alpine:3.17",
+		"HOME":        "/root",
+	})
 }

@@ -11,15 +11,11 @@
 package cli
 
 import (
-	"bufio"
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	osExec "os/exec"
-	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
@@ -42,7 +38,6 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	keyClient "github.com/apptainer/container-key-client/client"
-	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/spf13/cobra"
 )
 
@@ -268,7 +263,11 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 	}
 
 	// parse definition to determine build source
-	defs, err := build.MakeAllDefs(spec)
+	buildArgsMap, err := build.ReadBuildArgs(buildArgs.buildVarArgs, buildArgs.buildVarArgFile)
+	if err != nil {
+		sylog.Fatalf("While processing the definition file: %v", err)
+	}
+	defs, err := build.MakeAllDefs(spec, buildArgsMap)
 	if err != nil {
 		sylog.Fatalf("Unable to build from %s: %v", spec, err)
 	}
@@ -291,11 +290,6 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 		if d.Header["bootstrap"] == "localimage" || d.Header["bootstrap"] == "oras" || d.Header["bootstrap"] == "shub" {
 			hasSIF = true
 		}
-	}
-
-	defs, err = processDefs(buildArgs.buildVarArgs, buildArgs.buildVarArgFile, defs)
-	if err != nil {
-		sylog.Fatalf("While processing the definition file: %v", err)
 	}
 
 	// We only need to initialize the library client if we have a library source
@@ -477,171 +471,4 @@ func getEncryptionMaterial(cmd *cobra.Command) (*cryptkey.KeyInfo, error) {
 	}
 
 	return nil, nil
-}
-
-func processDefs(args []string, argFile string, defs []types.Definition) ([]types.Definition, error) {
-	// --build-arg and content in --build-arg-file are applied to all stages
-	buildArgMap, err := readBuildArgs(args, argFile)
-	if err != nil {
-		return defs, err
-	}
-
-	provideKeys := hashset.New()
-	matchedKeys := hashset.New()
-	for k := range buildArgMap {
-		provideKeys.Add(k)
-	}
-	// start replacing the variable defined in the definition file
-	for idx, def := range defs {
-		d, dmap, matched, err := updateDef(&def, buildArgMap)
-		if err != nil {
-			return defs, fmt.Errorf("while updating the definition file with build args, err: %w", err)
-		}
-
-		for k := range dmap {
-			provideKeys.Add(k)
-		}
-		for _, k := range matched {
-			matchedKeys.Add(k)
-		}
-		defs[idx] = *d
-	}
-
-	diff := provideKeys.Difference(matchedKeys)
-	if !diff.Empty() {
-		vars := strings.Fields(strings.TrimPrefix(diff.String(), "HashSet"))
-
-		// All mismatched keys are in provided keys
-		if buildArgs.buildArgsUnusedWarn {
-			sylog.Warningf("Unused build args: %s", strings.Join(vars, " "))
-		} else {
-			return defs, fmt.Errorf("unused build args: %s. Use option --warn-unused-build-args to show a warning instead of a fatal message", strings.Join(vars, " "))
-		}
-	}
-
-	types.UpdateDefinitionRaw(defs)
-
-	return defs, nil
-}
-
-func readBuildArgs(args []string, argFile string) (map[string]string, error) {
-	buildVarsMap := make(map[string]string)
-	if argFile != "" {
-		file, err := os.Open(argFile)
-		if err != nil {
-			return buildVarsMap, fmt.Errorf("while opening the file %s, err: %w", argFile, err)
-		}
-		defer file.Close()
-
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			text := scanner.Text()
-			k, v, err := getKeyVal(text)
-			if err != nil {
-				sylog.Warningf("Skipping the line, err: %v", err)
-				continue
-			}
-
-			buildVarsMap[k] = v
-		}
-
-		if err := scanner.Err(); err != nil {
-			return buildVarsMap, fmt.Errorf("while scanning the content of target file %s, err: %w", argFile, err)
-		}
-	}
-
-	for _, arg := range args {
-		k, v, err := getKeyVal(arg)
-		if err != nil {
-			sylog.Warningf("Skipping the line, err: %v", err)
-			continue
-		}
-
-		buildVarsMap[k] = v
-	}
-
-	return buildVarsMap, nil
-}
-
-func getKeyVal(text string) (string, string, error) {
-	if !strings.Contains(text, "=") {
-		return "", "", fmt.Errorf("text: %s is not `key=value` pair format", text)
-	}
-
-	matches := strings.SplitN(text, "=", -1)
-	if len(matches) != 2 {
-		return "", "", fmt.Errorf("text: %s is not `key=value` pair format", text)
-	}
-
-	key := strings.TrimSpace(matches[0])
-	if key == "" {
-		return "", "", fmt.Errorf("key field is missing in text: %s", text)
-	}
-	val := strings.TrimSpace(matches[1])
-	return key, val, nil
-}
-
-var errNoChange = errors.New("no change to text")
-
-func replaceVar(text []byte, buildArgsMap map[string]string, deffArgsMap map[string]string) ([]byte, []string, error) {
-	r := regexp.MustCompile(`{{\s*(\w+)\s*}}`)
-	matches := r.FindAllSubmatch(text, -1)
-	if matches == nil {
-		return text, nil, errNoChange
-	}
-
-	var matchedKeys []string
-	for _, match := range matches {
-		if val, ok := buildArgsMap[string(match[1])]; ok {
-			text = bytes.ReplaceAll(text, match[0], []byte(val))
-			matchedKeys = append(matchedKeys, string(match[1]))
-		} else if val, ok := deffArgsMap[string(match[1])]; ok {
-			text = bytes.ReplaceAll(text, match[0], []byte(val))
-			matchedKeys = append(matchedKeys, string(match[1]))
-		} else {
-			return text, matchedKeys, fmt.Errorf("build var %s is not defined through either --build-arg (--build-arg-file) or 'arguments' section", match[1])
-		}
-	}
-
-	return text, matchedKeys, nil
-}
-
-func updateDef(def *types.Definition, buildArgsMap map[string]string) (*types.Definition, map[string]string, []string, error) {
-	deffArgsMap := make(map[string]string)
-	if def.BuildData.Arguments.Script != "" {
-		scanner := bufio.NewScanner(strings.NewReader(def.BuildData.Arguments.Script))
-		for scanner.Scan() {
-			text := strings.TrimSpace(scanner.Text())
-			if text != "" && !strings.HasPrefix(text, "#") {
-				k, v, err := getKeyVal(text)
-				if err != nil {
-					sylog.Warningf("Skipping the line, err: %v", err)
-					continue
-				}
-				deffArgsMap[k] = v
-			}
-		}
-
-		if scanner.Err() != nil {
-			return nil, deffArgsMap, nil, fmt.Errorf("while scanning string from 'arguments' section, err: %w", scanner.Err())
-		}
-	}
-
-	data, err := json.Marshal(def)
-	if err != nil {
-		return nil, deffArgsMap, nil, fmt.Errorf("while marshaling the Definition struct, err: %w", err)
-	}
-
-	content, matchedKeys, err := replaceVar(data, buildArgsMap, deffArgsMap)
-	if err != nil && err != errNoChange {
-		return nil, deffArgsMap, nil, fmt.Errorf("while replacing var marshaled definition struct, err: %w", err)
-	}
-
-	var d types.Definition
-	err = json.Unmarshal([]byte(content), &d)
-	if err != nil {
-		return nil, deffArgsMap, nil, fmt.Errorf("while unmarshal into definition struct, err: %w", err)
-	}
-
-	return &d, deffArgsMap, matchedKeys, nil
 }
