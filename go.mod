@@ -51,7 +51,7 @@ require (
 	golang.org/x/text v0.11.0
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools/v3 v3.5.0
-	mvdan.cc/sh/v3 v3.6.1-0.20221221181323-d3feb15bed3a
+	mvdan.cc/sh/v3 v3.7.0
 	oras.land/oras-go v1.2.3
 )
 
@@ -174,7 +174,7 @@ require (
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.11.0 // indirect
-	golang.org/x/sync v0.1.0 // indirect
+	golang.org/x/sync v0.2.0 // indirect
 	golang.org/x/tools v0.8.0 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
 	google.golang.org/grpc v1.55.0 // indirect
