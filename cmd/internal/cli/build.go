@@ -306,6 +306,7 @@ var buildVarArgFileFlag = cmdline.Flag{
 	Usage:        "specifies a file containing variable=value lines to replace '{{ variable }}' with value in build definition files",
 }
 
+// --warn-unused-build-args
 var buildArgUnusedWarn = cmdline.Flag{
 	ID:           "buildArgUnusedWarnFlag",
 	Value:        &buildArgs.buildArgsUnusedWarn,
