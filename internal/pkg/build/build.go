@@ -482,31 +482,31 @@ func makeDef(spec string) (types.Definition, error) {
 }
 
 // MakeAllDefs gets a definition object from a spec
-func MakeAllDefs(spec string, buildArgsMap map[string]string) ([]types.Definition, error) {
+func MakeAllDefs(spec string, buildArgsMap map[string]string) ([]types.Definition, []string, error) {
 	if ok, err := uri.IsValid(spec); ok && err == nil {
 		// URI passed as spec
 		d, err := types.NewDefinitionFromURI(spec)
-		return []types.Definition{d}, err
+		return []types.Definition{d}, nil, err
 	}
 
 	// check if spec is an image/sandbox
 	if i, err := image.Init(spec, false); err == nil {
 		_ = i.File.Close()
 		d, err := types.NewDefinitionFromURI("localimage://" + spec)
-		return []types.Definition{d}, err
+		return []types.Definition{d}, nil, err
 	}
 
 	// default to reading file as definition
 	defFile, err := os.Open(spec)
 	if err != nil {
-		return nil, fmt.Errorf("unable to open file %s: %w", spec, err)
+		return nil, nil, fmt.Errorf("unable to open file %s: %w", spec, err)
 	}
 	defer defFile.Close()
 
 	defsPreBuildArgs, err := parser.All(defFile)
 	nDefs := len(defsPreBuildArgs)
 	if err != nil {
-		return nil, fmt.Errorf("while parsing definition: %s: %w", spec, err)
+		return nil, nil, fmt.Errorf("while parsing definition: %s: %w", spec, err)
 	}
 
 	revisedDefs := make([]types.Definition, 0, nDefs)
@@ -523,7 +523,7 @@ func MakeAllDefs(spec string, buildArgsMap map[string]string) ([]types.Definitio
 		reader := transform.NewReader(bytes.NewReader(def.Raw), transformer)
 		revisedDef, err := parser.ParseDefinitionFile(reader)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		revisedDefs = append(revisedDefs, revisedDef)
 		overallConsumedArgs = append(overallConsumedArgs, consumedArgs...)
@@ -544,11 +544,7 @@ func MakeAllDefs(spec string, buildArgsMap map[string]string) ([]types.Definitio
 	}
 
 	unusedArgs, _ := lo.Difference(lo.Keys(buildArgsMap), lo.Uniq(overallConsumedArgs))
-	if len(unusedArgs) > 0 {
-		sylog.Warningf("Unused build variables: %s", strings.Join(unusedArgs, ", "))
-	}
-
-	return revisedDefs, nil
+	return revisedDefs, unusedArgs, nil
 }
 
 // readDefaultArgs reads in the '%arguments' section of (one build stage of) a
