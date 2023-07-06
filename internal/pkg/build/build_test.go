@@ -200,7 +200,7 @@ func TestTransformer(t *testing.T) {
 }
 
 func TestProcessDefsSingleDef(t *testing.T) {
-	d, err := MakeAllDefs(
+	d, _, err := MakeAllDefs(
 		filepath.Join("..", "..", "..", "test", "build-args", "single-stage-unit-test.def"),
 		map[string]string{
 			"OS_VER": "1",
@@ -216,7 +216,7 @@ func TestProcessDefsSingleDef(t *testing.T) {
 }
 
 func TestProcessDefsMultipleDef(t *testing.T) {
-	d, err := MakeAllDefs(
+	d, _, err := MakeAllDefs(
 		filepath.Join("..", "..", "..", "test", "build-args", "multiple-stage-unit-test.def"),
 		map[string]string{
 			"DEVEL_IMAGE": "golang:1.12.3-alpine3.9",
@@ -275,4 +275,18 @@ func TestReadDefaultArgs(t *testing.T) {
 		"FINAL_IMAGE": "alpine:3.17",
 		"HOME":        "/root",
 	})
+}
+
+func TestProcessWithAdditionalArgs(t *testing.T) {
+	_, unusedArgs, err := MakeAllDefs(
+		filepath.Join("..", "..", "..", "test", "build-args", "single-stage-unit-test.def"),
+		map[string]string{
+			"OS_VER":   "1",
+			"AUTHOR":   "jason",
+			"ADDITION": "1",
+		},
+	)
+	assert.NilError(t, err)
+	assert.Equal(t, len(unusedArgs), 1)
+	assert.Equal(t, "ADDITION", unusedArgs[0])
 }

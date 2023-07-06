@@ -971,6 +971,7 @@ DEMO=demo=with===equals==signs
 		exit         int
 		err          string
 		output       string
+		unusedWarn   bool
 	}{
 		{
 			name: "ok case single stage build",
@@ -1001,6 +1002,31 @@ DEMO=demo=with===equals==signs
 			err:     "IMAGE is not defined",
 		},
 		{
+			name: "ko case single stage build with additional args provided",
+			buildArgs: []string{
+				fmt.Sprintf("ADDITION=%d", 1),
+				fmt.Sprintf("IMAGE=%s", busyboxSIF),
+				fmt.Sprintf("SCRIPT_PATH=%s", filepath.Join("..", "test", "build-args", "script.sh")),
+			},
+			verify:  []string{},
+			deffile: filepath.Join("..", "test", "build-args", "single-stage.def"),
+			exit:    255,
+			err:     "unused build args: ADDITION. Use option --warn-unused-build-args to show a warning instead of a fatal message",
+		},
+		{
+			name: "ok case single stage build with additional args provided",
+			buildArgs: []string{
+				fmt.Sprintf("ADDITION=%d", 1),
+				fmt.Sprintf("IMAGE=%s", busyboxSIF),
+				fmt.Sprintf("SCRIPT_PATH=%s", filepath.Join("..", "test", "build-args", "script.sh")),
+			},
+			verify:     []string{},
+			deffile:    filepath.Join("..", "test", "build-args", "single-stage.def"),
+			exit:       0,
+			err:        "",
+			unusedWarn: true,
+		},
+		{
 			name: "ok case multiple stage build",
 			buildArgs: []string{
 				"DEVEL_IMAGE=golang:1.12.3-alpine3.9",
@@ -1028,9 +1054,10 @@ DEMO=demo=with===equals==signs
 				"From: alpine:3.9",
 				"cd /root",
 			},
-			deffile: filepath.Join("..", "test", "build-args", "multiple-stage.def"),
-			exit:    0,
-			err:     "",
+			deffile:    filepath.Join("..", "test", "build-args", "multiple-stage.def"),
+			exit:       0,
+			err:        "",
+			unusedWarn: true,
 		},
 		{
 			name: "ko case multiple stage build",
@@ -1071,9 +1098,45 @@ DEMO=demo=with===equals==signs
 				"Author Equals=In=My=Name",
 				"This is a demo=with===equals==signs for templating definition file",
 			},
-			deffile: filepath.Join("..", "test", "build-args", "single-stage.def"),
-			exit:    0,
-			err:     "",
+			deffile:    filepath.Join("..", "test", "build-args", "single-stage.def"),
+			exit:       0,
+			err:        "",
+			unusedWarn: true,
+		},
+		{
+			name: "ko case multiple stage build with arg file with additional args provided",
+			buildArgs: []string{
+				"DEVEL_IMAGE=alpine:3.9",
+				"FINAL_IMAGE=alpine:3.17",
+				"ADDITION=1",
+			},
+			buildArgFile: argfile,
+			verify: []string{
+				"From: alpine:3.9",
+				"From: alpine:3.17",
+				"cd /root",
+			},
+			deffile: filepath.Join("..", "test", "build-args", "multiple-stage.def"),
+			exit:    255,
+			err:     "Use option --warn-unused-build-args to show a warning instead of a fatal message",
+		},
+		{
+			name: "ok case multiple stage build with arg file with additional args provided",
+			buildArgs: []string{
+				"DEVEL_IMAGE=alpine:3.9",
+				"FINAL_IMAGE=alpine:3.17",
+				"ADDITION=1",
+			},
+			buildArgFile: argfile,
+			verify: []string{
+				"From: alpine:3.9",
+				"From: alpine:3.17",
+				"cd /root",
+			},
+			deffile:    filepath.Join("..", "test", "build-args", "multiple-stage.def"),
+			exit:       0,
+			err:        "",
+			unusedWarn: true,
 		},
 	}
 
@@ -1088,6 +1151,10 @@ DEMO=demo=with===equals==signs
 
 			imagePath := path.Join(dn, "container")
 			args := []string{}
+
+			if tt.unusedWarn {
+				args = append(args, "--warn-unused-build-args")
+			}
 
 			if tt.buildArgs != nil {
 				for _, arg := range tt.buildArgs {
@@ -1115,7 +1182,7 @@ DEMO=demo=with===equals==signs
 			c.env.RunApptainer(
 				t,
 				e2e.AsSubtest(tt.name),
-				e2e.WithProfile(e2e.RootProfile),
+				e2e.WithProfile(e2e.UserProfile),
 				e2e.WithCommand("build"),
 				e2e.WithArgs(args...),
 				e2e.PostRun(func(t *testing.T) {
@@ -1130,7 +1197,7 @@ DEMO=demo=with===equals==signs
 					c.env.RunApptainer(
 						t,
 						e2e.AsSubtest(tt.name+" verification"),
-						e2e.WithProfile(e2e.RootProfile),
+						e2e.WithProfile(e2e.UserProfile),
 						e2e.WithCommand("sif"),
 						e2e.WithArgs("dump", "1", imagePath),
 						e2e.ExpectExit(0,
