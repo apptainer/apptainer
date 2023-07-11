@@ -27,6 +27,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
   pkg/build/types/parser.All(), `.Raw` contains the raw content of a single
   build stage. Otherwise, it is equal to `.FullRaw`.
 
+## Changes since last pre-release
+
+- Fix the check for rootless overlay on Ubuntu 22.04 so it will use overlay
+  instead of underlay by default like all other tested operating systems.
+
 ## v1.2.0-rc.2 - \[2023-07-05\]
 
 ## Changes since last pre-release
