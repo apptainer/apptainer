@@ -5,6 +5,11 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes since last pre-release
+
+- Fix the check for rootless overlay on Ubuntu 22.04 so it will use overlay
+  instead of underlay by default like all other tested operating systems.
+
 ## v1.2.0-rc.2 - \[2023-07-05\]
 
 ## Changes since last pre-release
