@@ -1343,6 +1343,8 @@ func (e *EngineOperations) loadOverlayImages(starterConfig *starter.Config, writ
 			writableOverlayPath = img.Path
 		}
 
+		e.EngineConfig.SetWritableOverlay(writableOverlay)
+
 		if err := starterConfig.KeepFileDescriptor(int(img.Fd)); err != nil {
 			return nil, err
 		}

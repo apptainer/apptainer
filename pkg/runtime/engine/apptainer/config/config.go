@@ -151,6 +151,7 @@ type JSONConfig struct {
 	NoEval                bool              `json:"noEval,omitempty"`
 	Underlay              bool              `json:"underlay,omitempty"`
 	UserInfo              UserInfo          `json:"userInfo,omitempty"`
+	WritableOverlay       bool              `json:"writableOverlay,omitempty"`
 }
 
 // SetImage sets the container image path to be used by EngineConfig.JSON.
@@ -903,4 +904,14 @@ func (e *EngineConfig) SetUnderlay(underlay bool) {
 // GetUnderlay gets the value of whether to use underlay instead of overlay
 func (e *EngineConfig) GetUnderlay() bool {
 	return e.JSON.Underlay
+}
+
+// SetWritableOverlay sets whether the overlay is writable or not
+func (e *EngineConfig) SetWritableOverlay(writableOverlay bool) {
+	e.JSON.WritableOverlay = writableOverlay
+}
+
+// GetWritableOverlay gets the value of whether the overlay is writable or not
+func (e *EngineConfig) GetWritableOverlay() bool {
+	return e.JSON.WritableOverlay
 }

@@ -2342,9 +2342,6 @@ func (c *container) addFilesMount(system *mount.System) error {
 }
 
 func (c *container) addIdentityMount(system *mount.System) error {
-	rootfs := c.session.RootFsPath()
-	defer c.session.Update()
-
 	uid := os.Getuid()
 	if uid == 0 && c.engine.EngineConfig.GetTargetUID() != 0 {
 		uid = c.engine.EngineConfig.GetTargetUID()
@@ -2353,11 +2350,15 @@ func (c *container) addIdentityMount(system *mount.System) error {
 	}
 
 	if (uid == 0) &&
-		c.engine.EngineConfig.GetWritableImage() &&
-		(!c.engine.EngineConfig.GetWritableTmpfs()) {
-		sylog.Verbosef("skipping bind-mount of /etc/passwd and /etc/group (rootfs is writable and not a tmpfs, and container is running as root)")
+		(c.engine.EngineConfig.GetWritableImage() ||
+			c.engine.EngineConfig.GetWritableTmpfs()) ||
+		c.engine.EngineConfig.GetWritableOverlay() {
+		sylog.Verbosef("skipping bind-mount of /etc/passwd and /etc/group (container is writable running as root)")
 		return nil
 	}
+
+	rootfs := c.session.RootFsPath()
+	defer c.session.Update()
 
 	if c.engine.EngineConfig.File.ConfigPasswd {
 		passwd := filepath.Join(rootfs, "/etc/passwd")

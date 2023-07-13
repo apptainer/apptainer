@@ -19,7 +19,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `/etc/passwd` file unchanged (with its homedir field pointing to `/root`,
   regardless of the value passed to `--home`). With this change, both value of
   `HOME` and the contents of `/etc/passwd` in the container will reflect the
-  value passed to `--home`.
+  value passed to `--home` if the container is readonly.  If the container
+  is writable, the `/etc/passwd` file is left alone because it can interfere
+  with commands that want to modify it.
 
 ### New Features & Functionality
 
