@@ -19,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/apptainer/apptainer/internal/pkg/signature"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	keyClient "github.com/apptainer/container-key-client/client"
@@ -100,7 +101,7 @@ func LibraryPush(ctx context.Context, pushSpec LibraryPushSpec, libraryConfig *c
 
 	if !pushSpec.AllowUnsigned {
 		// Check if the container has a valid signature.
-		if err := Verify(ctx, pushSpec.SourceFile, OptVerifyWithPGP(co...)); err != nil {
+		if err := signature.Verify(ctx, pushSpec.SourceFile, signature.OptVerifyWithPGP(co...)); err != nil {
 			sylog.Warningf("%v", err)
 			return ErrLibraryUnsigned
 		}

@@ -22,7 +22,7 @@ import (
 
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
-	"github.com/apptainer/apptainer/internal/app/apptainer"
+	sifsignature "github.com/apptainer/apptainer/internal/pkg/signature"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/sypgp"
@@ -224,8 +224,8 @@ type keyList struct {
 	SignerKeys []*key
 }
 
-// getJSONCallback returns an apptainer.VerifyCallback that appends to kl.
-func getJSONCallback(kl *keyList) apptainer.VerifyCallback {
+// getJSONCallback returns a signature.VerifyCallback that appends to kl.
+func getJSONCallback(kl *keyList) sifsignature.VerifyCallback {
 	return func(f *sif.FileImage, r integrity.VerifyResult) bool {
 		name, fp := "unknown", ""
 		var keyLocal, keyCheck bool

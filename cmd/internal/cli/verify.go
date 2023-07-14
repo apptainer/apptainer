@@ -15,8 +15,8 @@ import (
 	"os"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
+	sifsignature "github.com/apptainer/apptainer/internal/pkg/signature"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/sigstore/sigstore/pkg/signature"
@@ -216,7 +216,7 @@ var VerifyCmd = &cobra.Command{
 }
 
 func doVerifyCmd(cmd *cobra.Command, cpath string) {
-	var opts []apptainer.VerifyOpt
+	var opts []sifsignature.VerifyOpt
 
 	switch {
 	case cmd.Flag(verifyCertificateFlag.Name).Changed:
@@ -226,14 +226,14 @@ func doVerifyCmd(cmd *cobra.Command, cpath string) {
 		if err != nil {
 			sylog.Fatalf("Failed to load certificate: %v", err)
 		}
-		opts = append(opts, apptainer.OptVerifyWithCertificate(c))
+		opts = append(opts, sifsignature.OptVerifyWithCertificate(c))
 
 		if cmd.Flag(verifyCertificateIntermediatesFlag.Name).Changed {
 			p, err := loadCertificatePool(certificateIntermediatesPath)
 			if err != nil {
 				sylog.Fatalf("Failed to load intermediate certificates: %v", err)
 			}
-			opts = append(opts, apptainer.OptVerifyWithIntermediates(p))
+			opts = append(opts, sifsignature.OptVerifyWithIntermediates(p))
 		}
 
 		if cmd.Flag(verifyCertificateRootsFlag.Name).Changed {
@@ -241,11 +241,11 @@ func doVerifyCmd(cmd *cobra.Command, cpath string) {
 			if err != nil {
 				sylog.Fatalf("Failed to load root certificates: %v", err)
 			}
-			opts = append(opts, apptainer.OptVerifyWithRoots(p))
+			opts = append(opts, sifsignature.OptVerifyWithRoots(p))
 		}
 
 		if cmd.Flag(verifyOCSPFlag.Name).Changed {
-			opts = append(opts, apptainer.OptVerifyWithOCSP())
+			opts = append(opts, sifsignature.OptVerifyWithOCSP())
 		}
 
 	case cmd.Flag(verifyPublicKeyFlag.Name).Changed:
@@ -255,50 +255,50 @@ func doVerifyCmd(cmd *cobra.Command, cpath string) {
 		if err != nil {
 			sylog.Fatalf("Failed to load key material: %v", err)
 		}
-		opts = append(opts, apptainer.OptVerifyWithVerifier(v))
+		opts = append(opts, sifsignature.OptVerifyWithVerifier(v))
 
 	default:
 		sylog.Infof("Verifying image with PGP key material")
 
 		// Set keyserver option, if applicable.
 		if localVerify {
-			opts = append(opts, apptainer.OptVerifyWithPGP())
+			opts = append(opts, sifsignature.OptVerifyWithPGP())
 		} else {
 			co, err := getKeyserverClientOpts(keyServerURI, endpoint.KeyserverVerifyOp)
 			if err != nil {
 				sylog.Fatalf("Error while getting keyserver client config: %v", err)
 			}
-			opts = append(opts, apptainer.OptVerifyWithPGP(co...))
+			opts = append(opts, sifsignature.OptVerifyWithPGP(co...))
 		}
 	}
 
 	// Set group option, if applicable.
 	if cmd.Flag(verifySifGroupIDFlag.Name).Changed || cmd.Flag(verifyOldSifGroupIDFlag.Name).Changed {
-		opts = append(opts, apptainer.OptVerifyGroup(sifGroupID))
+		opts = append(opts, sifsignature.OptVerifyGroup(sifGroupID))
 	}
 
 	// Set object option, if applicable.
 	if cmd.Flag(verifySifDescSifIDFlag.Name).Changed || cmd.Flag(verifySifDescIDFlag.Name).Changed {
-		opts = append(opts, apptainer.OptVerifyObject(sifDescID))
+		opts = append(opts, sifsignature.OptVerifyObject(sifDescID))
 	}
 
 	// Set all option, if applicable.
 	if verifyAll {
-		opts = append(opts, apptainer.OptVerifyAll())
+		opts = append(opts, sifsignature.OptVerifyAll())
 	}
 
 	// Set legacy option, if applicable.
 	if verifyLegacy {
-		opts = append(opts, apptainer.OptVerifyLegacy())
+		opts = append(opts, sifsignature.OptVerifyLegacy())
 	}
 
 	// Set callback option.
 	if jsonVerify {
 		var kl keyList
 
-		opts = append(opts, apptainer.OptVerifyCallback(getJSONCallback(&kl)))
+		opts = append(opts, sifsignature.OptVerifyCallback(getJSONCallback(&kl)))
 
-		verifyErr := apptainer.Verify(cmd.Context(), cpath, opts...)
+		verifyErr := sifsignature.Verify(cmd.Context(), cpath, opts...)
 
 		// Always output JSON.
 		if err := outputJSON(os.Stdout, kl); err != nil {
@@ -309,9 +309,9 @@ func doVerifyCmd(cmd *cobra.Command, cpath string) {
 			sylog.Fatalf("Failed to verify container: %v", verifyErr)
 		}
 	} else {
-		opts = append(opts, apptainer.OptVerifyCallback(outputVerify))
+		opts = append(opts, sifsignature.OptVerifyCallback(outputVerify))
 
-		if err := apptainer.Verify(cmd.Context(), cpath, opts...); err != nil {
+		if err := sifsignature.Verify(cmd.Context(), cpath, opts...); err != nil {
 			sylog.Fatalf("Failed to verify container: %v", err)
 		}
 

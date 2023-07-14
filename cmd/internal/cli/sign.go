@@ -13,7 +13,7 @@ import (
 	"crypto"
 
 	"github.com/apptainer/apptainer/docs"
-	"github.com/apptainer/apptainer/internal/app/apptainer"
+	sifsignature "github.com/apptainer/apptainer/internal/pkg/signature"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/sypgp"
@@ -130,7 +130,7 @@ var SignCmd = &cobra.Command{
 }
 
 func doSignCmd(cmd *cobra.Command, cpath string) {
-	var opts []apptainer.SignOpt
+	var opts []sifsignature.SignOpt
 
 	// Set key material.
 	switch {
@@ -141,7 +141,7 @@ func doSignCmd(cmd *cobra.Command, cpath string) {
 		if err != nil {
 			sylog.Fatalf("Failed to load key material: %v", err)
 		}
-		opts = append(opts, apptainer.OptSignWithSigner(s))
+		opts = append(opts, sifsignature.OptSignWithSigner(s))
 
 	default:
 		sylog.Infof("Signing image with PGP key material")
@@ -154,21 +154,21 @@ func doSignCmd(cmd *cobra.Command, cpath string) {
 			f = selectEntityInteractive()
 		}
 		f = decryptSelectedEntityInteractive(f)
-		opts = append(opts, apptainer.OptSignEntitySelector(f))
+		opts = append(opts, sifsignature.OptSignEntitySelector(f))
 	}
 
 	// Set group option, if applicable.
 	if cmd.Flag(signSifGroupIDFlag.Name).Changed || cmd.Flag(signOldSifGroupIDFlag.Name).Changed {
-		opts = append(opts, apptainer.OptSignGroup(sifGroupID))
+		opts = append(opts, sifsignature.OptSignGroup(sifGroupID))
 	}
 
 	// Set object option, if applicable.
 	if cmd.Flag(signSifDescSifIDFlag.Name).Changed || cmd.Flag(signSifDescIDFlag.Name).Changed {
-		opts = append(opts, apptainer.OptSignObjects(sifDescID))
+		opts = append(opts, sifsignature.OptSignObjects(sifDescID))
 	}
 
 	// Sign the image.
-	if err := apptainer.Sign(cmd.Context(), cpath, opts...); err != nil {
+	if err := sifsignature.Sign(cmd.Context(), cpath, opts...); err != nil {
 		sylog.Fatalf("Failed to sign container: %v", err)
 	}
 	sylog.Infof("Signature created and applied to image '%v'", cpath)
