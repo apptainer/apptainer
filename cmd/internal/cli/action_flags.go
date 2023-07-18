@@ -32,9 +32,6 @@ var (
 	dns              string
 	security         []string
 	cgroupsTOMLFile  string
-	vmRAM            string
-	vmCPU            string
-	vmIP             string
 	containLibsPath  []string
 	fuseMount        []string
 	apptainerEnv     map[string]string
@@ -60,9 +57,6 @@ var (
 	noNvidia        bool
 	noRocm          bool
 	noUmask         bool
-	vm              bool
-	vmErr           bool
-	isSyOS          bool
 	disableCache    bool
 
 	netNamespace  bool
@@ -288,39 +282,6 @@ var actionApplyCgroupsFlag = cmdline.Flag{
 	EnvKeys:      []string{"APPLY_CGROUPS"},
 }
 
-// --vm-ram
-var actionVMRAMFlag = cmdline.Flag{
-	ID:           "actionVMRAMFlag",
-	Value:        &vmRAM,
-	DefaultValue: "1024",
-	Name:         "vm-ram",
-	Usage:        "amount of RAM in MiB to allocate to Virtual Machine (implies --vm)",
-	Tag:          "<size>",
-	EnvKeys:      []string{"VM_RAM"},
-}
-
-// --vm-cpu
-var actionVMCPUFlag = cmdline.Flag{
-	ID:           "actionVMCPUFlag",
-	Value:        &vmCPU,
-	DefaultValue: "1",
-	Name:         "vm-cpu",
-	Usage:        "number of CPU cores to allocate to Virtual Machine (implies --vm)",
-	Tag:          "<CPU #>",
-	EnvKeys:      []string{"VM_CPU"},
-}
-
-// --vm-ip
-var actionVMIPFlag = cmdline.Flag{
-	ID:           "actionVMIPFlag",
-	Value:        &vmIP,
-	DefaultValue: "dhcp",
-	Name:         "vm-ip",
-	Usage:        "IP Address to assign for container usage. Defaults to DHCP within bridge network.",
-	Tag:          "<IP Address>",
-	EnvKeys:      []string{"VM_IP"},
-}
-
 // hidden flag to handle APPTAINER_CONTAINLIBS environment variable
 var actionContainLibsFlag = cmdline.Flag{
 	ID:           "actionContainLibsFlag",
@@ -515,37 +476,6 @@ var actionNoRocmFlag = cmdline.Flag{
 	Name:         "no-rocm",
 	Hidden:       true,
 	EnvKeys:      []string{"ROCM_OFF", "NO_ROCM"},
-}
-
-// --vm
-var actionVMFlag = cmdline.Flag{
-	ID:           "actionVMFlag",
-	Value:        &vm,
-	DefaultValue: false,
-	Name:         "vm",
-	Usage:        "enable VM support",
-	EnvKeys:      []string{"VM"},
-}
-
-// --vm-err
-var actionVMErrFlag = cmdline.Flag{
-	ID:           "actionVMErrFlag",
-	Value:        &vmErr,
-	DefaultValue: false,
-	Name:         "vm-err",
-	Usage:        "enable attaching stderr from VM",
-	EnvKeys:      []string{"VMERROR"},
-}
-
-// --syos
-// TODO: Keep this in production?
-var actionSyOSFlag = cmdline.Flag{
-	ID:           "actionSyOSFlag",
-	Value:        &isSyOS,
-	DefaultValue: false,
-	Name:         "syos",
-	Usage:        "execute SyOS shell",
-	EnvKeys:      []string{"SYOS"},
 }
 
 // -p|--pid
@@ -934,15 +864,9 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&actionScratchFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionSecurityFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionShellFlag, ShellCmd)
-		cmdManager.RegisterFlagForCmd(&actionSyOSFlag, ShellCmd)
 		cmdManager.RegisterFlagForCmd(&actionTmpDirFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionUserNamespaceFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionUtsNamespaceFlag, actionsInstanceCmd...)
-		cmdManager.RegisterFlagForCmd(&actionVMCPUFlag, actionsCmd...)
-		cmdManager.RegisterFlagForCmd(&actionVMErrFlag, actionsCmd...)
-		cmdManager.RegisterFlagForCmd(&actionVMFlag, actionsCmd...)
-		cmdManager.RegisterFlagForCmd(&actionVMIPFlag, actionsCmd...)
-		cmdManager.RegisterFlagForCmd(&actionVMRAMFlag, actionsCmd...)
 		cmdManager.RegisterFlagForCmd(&actionWorkdirFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionWritableFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionWritableTmpfsFlag, actionsInstanceCmd...)

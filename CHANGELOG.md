@@ -22,6 +22,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   value passed to `--home` if the container is readonly.  If the container
   is writable, the `/etc/passwd` file is left alone because it can interfere
   with commands that want to modify it.
+- The `--vm` and related flags to start apptainer inside a VM have been
+  removed. This functionality was related to the retired Singularity Desktop /
+  SyOS projects.
 
 ### New Features & Functionality
 

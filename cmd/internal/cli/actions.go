@@ -167,25 +167,6 @@ func replaceURIWithImage(ctx context.Context, cmd *cobra.Command, args []string)
 	args[0] = image
 }
 
-// setVM will set the --vm option if needed by other options
-func setVM(cmd *cobra.Command) {
-	// check if --vm-ram or --vm-cpu changed from default value
-	for _, flagName := range []string{"vm-ram", "vm-cpu"} {
-		if flag := cmd.Flag(flagName); flag != nil && flag.Changed {
-			// this option requires the VM setting to be enabled
-			cmd.Flags().Set("vm", "true")
-			return
-		}
-	}
-
-	// since --syos is a boolean, it cannot be added to the above list
-	if isSyOS && !vm {
-		// let the user know that passing --syos implicitly enables --vm
-		sylog.Warningf("The --syos option requires a virtual machine, automatically enabling --vm option.")
-		cmd.Flags().Set("vm", "true")
-	}
-}
-
 // ExecCmd represents the exec command
 var ExecCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
@@ -194,11 +175,6 @@ var ExecCmd = &cobra.Command{
 	PreRun:                actionPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
 		a := append([]string{"/.singularity.d/actions/exec"}, args[1:]...)
-		setVM(cmd)
-		if vm {
-			execVM(cmd, args[0], a)
-			return
-		}
 		if err := launchContainer(cmd, args[0], a, ""); err != nil {
 			sylog.Fatalf("%s", err)
 		}
@@ -222,11 +198,6 @@ var ShellCmd = &cobra.Command{
 		}
 
 		a := []string{"/.singularity.d/actions/shell"}
-		setVM(cmd)
-		if vm {
-			execVM(cmd, args[0], a)
-			return
-		}
 		if err := launchContainer(cmd, args[0], a, ""); err != nil {
 			sylog.Fatalf("%s", err)
 		}
@@ -246,11 +217,6 @@ var RunCmd = &cobra.Command{
 	PreRun:                actionPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
 		a := append([]string{"/.singularity.d/actions/run"}, args[1:]...)
-		setVM(cmd)
-		if vm {
-			execVM(cmd, args[0], a)
-			return
-		}
 		if err := launchContainer(cmd, args[0], a, ""); err != nil {
 			sylog.Fatalf("%s", err)
 		}
@@ -270,11 +236,6 @@ var TestCmd = &cobra.Command{
 	PreRun:                actionPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
 		a := append([]string{"/.singularity.d/actions/test"}, args[1:]...)
-		setVM(cmd)
-		if vm {
-			execVM(cmd, args[0], a)
-			return
-		}
 		if err := launchContainer(cmd, args[0], a, ""); err != nil {
 			sylog.Fatalf("%s", err)
 		}
