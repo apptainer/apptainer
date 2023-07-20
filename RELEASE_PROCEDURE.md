@@ -106,27 +106,6 @@ release of a new major or minor version. Each new RC follows step 5 and above.
 
 ### Creating a Final Major / Minor Release
 
-1. Ensure the user and admin documentation is up-to-date for the new
-   version, has been branched, and tagged.
-   * [User Docs](https://apptainer.org/docs/user/main/) can be
-     edited [here](https://github.com/apptainer/apptainer-userdocs).
-     Be sure that the `apptainer_source` submodule is up to date by
-     doing the following commands followed by making an update with
-     a pull request:
-      * `git submodule deinit -f .`
-      * `git submodule update --init`
-      * `cd apptainer_source`
-      * `git fetch`
-      * `git checkout v1.2.0-rc.1`
-      * `cd ..`
-      * `git add apptainer_source`
-   * [Admin Docs](https://apptainer.org/docs/admin/main/) can be
-     edited [here](https://github.com/apptainer/apptainer-admindocs)
-   * Look in replacements.py in both the User Docs and Admin Docs for
-     any needed updates to the `variable_replacements` and also update
-     `version` in conf.py.
-   * If a new branch was created, add it to the docsVersion list in the
-     [web page](https://github.com/apptainer/apptainer.org/blob/master/src/pages/docs.js)
 1. Ensure the user and admin documentation has been deployed to the
    apptainer.org website.
 1. Modify the `INSTALL.md` and `CHANGELOG.md` via PR against
@@ -140,6 +119,30 @@ release of a new major or minor version. Each new RC follows step 5 and above.
    `sha256sums` to it.
 1. Notify the community about the release candidate via the announce Google Group
    and the Slack #general channel.
+1. Ensure the user and admin documentation is up-to-date for the new
+   version, has been branched, and tagged.
+   * [User Docs](https://apptainer.org/docs/user/main/) can be
+     edited [here](https://github.com/apptainer/apptainer-userdocs).
+     Be sure that the `apptainer_source` submodule is up to date by
+     doing the following commands followed by making an update with
+     a pull request:
+      * `git submodule deinit -f .`
+      * `git submodule update --init`
+      * `cd apptainer_source`
+      * `git fetch`
+      * `git checkout v1.2.0`
+      * `cd ..`
+      * `git add apptainer_source`
+   * [Admin Docs](https://apptainer.org/docs/admin/main/) can be
+     edited [here](https://github.com/apptainer/apptainer-admindocs)
+   * Look in replacements.py in both the User Docs and Admin Docs for
+     any needed updates to the `variable_replacements` and also update
+     `version` in conf.py.
+   * If a new branch was created, add it to the docsVersion list in the
+     [web page](https://github.com/apptainer/apptainer.org/blob/master/src/pages/docs.js).
+     The `latest` symlinks in `static/docs/user` and `static/docs/admin`
+     should get automatically updated.
+   * Make a web announcement of the new release at `src/posts`.
 
 ### After the Release
 
