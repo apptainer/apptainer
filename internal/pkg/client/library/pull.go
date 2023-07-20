@@ -17,9 +17,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/client"
+	"github.com/apptainer/apptainer/internal/pkg/signature"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	keyClient "github.com/apptainer/container-key-client/client"
@@ -143,7 +143,7 @@ func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pull
 		}
 	}
 
-	if err := apptainer.Verify(ctx, pullTo, apptainer.OptVerifyWithPGP(co...)); err != nil {
+	if err := signature.Verify(ctx, pullTo, signature.OptVerifyWithPGP(co...)); err != nil {
 		sylog.Warningf("%v", err)
 		return pullTo, ErrLibraryPullUnsigned
 	}
