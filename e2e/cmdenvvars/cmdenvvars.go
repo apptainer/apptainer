@@ -98,7 +98,7 @@ func (c ctx) assertORASCacheEntryExists(t *testing.T, imgPath, imgName string) {
 		t.Fatalf("Cannot get the shasum for image %s: %s", imgPath, err)
 	}
 
-	cacheEntryPath := filepath.Join(c.env.UnprivCacheDir, "cache", "oras", shasum)
+	cacheEntryPath := filepath.Join(c.env.UnprivCacheDir, "cache", "oras", shasum.String())
 	if _, err := os.Stat(cacheEntryPath); os.IsNotExist(err) {
 		ls(t, c.env.TestDir)
 		ls(t, c.env.UnprivCacheDir)

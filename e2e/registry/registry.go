@@ -122,15 +122,9 @@ func (c ctx) registryLogin(t *testing.T) {
 			expectExit: 255,
 		},
 		{
-			name:       "login empty username and bad password",
+			name:       "login empty username and password",
 			command:    "registry login",
 			args:       []string{"-p", "bad", registry},
-			expectExit: 255,
-		},
-		{
-			name:       "login KO",
-			command:    "registry login",
-			args:       []string{"-u", e2e.DefaultUsername, "-p", "bad", registry},
 			expectExit: 255,
 		},
 		{

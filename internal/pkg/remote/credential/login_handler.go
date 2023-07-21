@@ -12,18 +12,24 @@ package credential
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
-	"oras.land/oras-go/pkg/auth"
-
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/pkg/syfs"
 
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
-	"oras.land/oras-go/pkg/auth/docker"
+	"github.com/docker/cli/cli/config"
+	"github.com/docker/cli/cli/config/configfile"
+	"github.com/docker/cli/cli/config/types"
+	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
 )
 
 // loginHandlers contains the registered handlers by scheme.
@@ -68,6 +74,11 @@ func ensurePassword(password string) (string, error) {
 type ociHandler struct{}
 
 func (h *ociHandler) login(u *url.URL, username, password string, insecure bool) (*Config, error) {
+	if u == nil {
+		return nil, fmt.Errorf("URL not provided for login")
+	}
+	regName := u.Host + u.Path
+
 	if username == "" {
 		return nil, fmt.Errorf("Docker/OCI registry requires a username")
 	}
@@ -75,44 +86,106 @@ func (h *ociHandler) login(u *url.URL, username, password string, insecure bool)
 	if err != nil {
 		return nil, err
 	}
-	cli, err := docker.NewClientWithDockerFallback(syfs.DockerConf())
-	if err != nil {
+
+	if err := checkOCILogin(regName, username, password, insecure); err != nil {
 		return nil, err
 	}
 
-	switch insecure {
-	case true:
-		if err := cli.LoginWithOpts(
-			auth.WithLoginContext(context.TODO()),
-			auth.WithLoginHostname(u.Host+u.Path),
-			auth.WithLoginUsername(username),
-			auth.WithLoginSecret(pass),
-			auth.WithLoginInsecure(),
-		); err != nil {
+	ociConfig := syfs.DockerConf()
+	ociConfigNew := syfs.DockerConf() + ".new"
+
+	cf := configfile.New(syfs.DockerConf())
+	if fs.IsFile(ociConfig) {
+		f, err := os.Open(ociConfig)
+		if err != nil {
 			return nil, err
 		}
-	case false:
-		if err := cli.LoginWithOpts(
-			auth.WithLoginContext(context.TODO()),
-			auth.WithLoginHostname(u.Host+u.Path),
-			auth.WithLoginUsername(username),
-			auth.WithLoginSecret(pass),
-		); err != nil {
+		defer f.Close()
+		cf, err = config.LoadFromReader(f)
+		if err != nil {
 			return nil, err
 		}
 	}
+
+	cf.AuthConfigs[regName] = types.AuthConfig{
+		Username: username,
+		Password: pass,
+	}
+
+	configData, err := json.Marshal(cf)
+	if err != nil {
+		return nil, err
+	}
+	if err := os.WriteFile(ociConfigNew, configData, 0o600); err != nil {
+		return nil, err
+	}
+	if err := os.Rename(ociConfigNew, ociConfig); err != nil {
+		return nil, err
+	}
+
 	return &Config{
 		URI:      u.String(),
 		Insecure: insecure,
 	}, nil
 }
 
-func (h *ociHandler) logout(u *url.URL) error {
-	cli, err := docker.NewClientWithDockerFallback(syfs.DockerConf())
+func checkOCILogin(regName string, username, password string, insecure bool) error {
+	regOpts := []name.Option{}
+	if insecure {
+		regOpts = []name.Option{name.Insecure}
+	}
+	reg, err := name.NewRegistry(regName, regOpts...)
 	if err != nil {
 		return err
 	}
-	return cli.Logout(context.TODO(), u.Host+u.Path)
+
+	auth := authn.FromConfig(authn.AuthConfig{
+		Username: username,
+		Password: password,
+	})
+
+	scopes := []string{reg.Scope("")}
+
+	// Creating a new transport pings the registry and works through auth flow.
+	_, err = transport.NewWithContext(context.TODO(), reg, auth, http.DefaultTransport, scopes)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *ociHandler) logout(u *url.URL) error {
+	ociConfig := syfs.DockerConf()
+	ociConfigNew := syfs.DockerConf() + ".new"
+	cf := configfile.New(syfs.DockerConf())
+	if fs.IsFile(ociConfig) {
+		f, err := os.Open(ociConfig)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		cf, err = config.LoadFromReader(f)
+		if err != nil {
+			return err
+		}
+	}
+
+	registry := u.Host + u.Path
+	if _, ok := cf.AuthConfigs[registry]; !ok {
+		return fmt.Errorf("%q is not logged in", registry)
+	}
+
+	delete(cf.AuthConfigs, registry)
+
+	configData, err := json.Marshal(cf)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(ociConfigNew, configData, 0o600); err != nil {
+		return err
+	}
+	return os.Rename(ociConfigNew, ociConfig)
 }
 
 // keyserverHandler handle login/logout for keyserver service.

@@ -10,15 +10,15 @@
 package e2e
 
 import (
-	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/syfs"
-	"oras.land/oras-go/pkg/auth"
-	"oras.land/oras-go/pkg/auth/docker"
+	"github.com/docker/cli/cli/config/configfile"
+	"github.com/docker/cli/cli/config/types"
 )
 
 const dockerHub = "docker.io"
@@ -44,16 +44,20 @@ func SetupDockerHubCredentials(t *testing.T) {
 
 func writeDockerHubCredentials(t *testing.T, dir, username, pass string) {
 	configPath := filepath.Join(dir, ".apptainer", syfs.DockerConfFile)
-	cli, err := docker.NewClient(configPath)
+
+	cf := configfile.ConfigFile{
+		AuthConfigs: map[string]types.AuthConfig{
+			dockerHub: {
+				Username: username,
+				Password: pass,
+			},
+		},
+	}
+
+	configData, err := json.Marshal(cf)
 	if err != nil {
-		t.Fatalf("failed to get docker auth client: %v", err)
+		t.Error(err)
 	}
-	if err := cli.LoginWithOpts(
-		auth.WithLoginContext(context.Background()),
-		auth.WithLoginHostname(dockerHub),
-		auth.WithLoginUsername(username),
-		auth.WithLoginSecret(pass),
-	); err != nil {
-		t.Fatalf("failed to login to dockerhub: %v", err)
-	}
+
+	os.WriteFile(configPath, configData, 0o600)
 }
