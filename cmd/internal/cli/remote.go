@@ -2,8 +2,8 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
+// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -137,7 +137,7 @@ var remoteUseExclusiveFlag = cmdline.Flag{
 	Usage:        "set the endpoint as exclusive (root user only, imply --global)",
 }
 
-// -o|--order
+// -o|--order (deprecated)
 var remoteKeyserverOrderFlag = cmdline.Flag{
 	ID:           "remoteKeyserverOrderFlag",
 	Value:        &remoteKeyserverOrder,
@@ -145,9 +145,10 @@ var remoteKeyserverOrderFlag = cmdline.Flag{
 	Name:         "order",
 	ShortHand:    "o",
 	Usage:        "define the keyserver order",
+	Deprecated:   "use 'keyserver' subcommand instead of 'remote', see the output of 'apptainer help keyserver' for more information",
 }
 
-// -i|--insecure
+// -i|--insecure (deprecated)
 var remoteKeyserverInsecureFlag = cmdline.Flag{
 	ID:           "remoteKeyserverInsecureFlag",
 	Value:        &remoteKeyserverInsecure,
@@ -155,6 +156,7 @@ var remoteKeyserverInsecureFlag = cmdline.Flag{
 	Name:         "insecure",
 	ShortHand:    "i",
 	Usage:        "allow insecure connection to keyserver",
+	Deprecated:   "use 'keyserver' subcommand instead of 'remote', see the output of 'apptainer help keyserver' for more information",
 }
 
 // -i|--insecure
@@ -230,12 +232,6 @@ func setGlobalRemoteConfig(_ *cobra.Command, _ []string) {
 
 	// set remoteConfig value to the location of the global remote.yaml file
 	remoteConfig = remote.SystemConfigPath
-}
-
-func setKeyserver(_ *cobra.Command, _ []string) {
-	if uint32(os.Getuid()) != 0 {
-		sylog.Fatalf("Unable to modify keyserver configuration: not root user")
-	}
 }
 
 // RemoteGetLoginPasswordCmd singularity remote get-login-password
@@ -459,26 +455,10 @@ var RemoteAddKeyserverCmd = &cobra.Command{
 	Args:   cobra.RangeArgs(1, 2),
 	PreRun: setKeyserver,
 	Run: func(cmd *cobra.Command, args []string) {
-		uri := args[0]
-		name := ""
-		if len(args) > 1 {
-			name = args[0]
-			uri = args[1]
-		}
-
-		if cmd.Flag(remoteKeyserverOrderFlag.Name).Changed && remoteKeyserverOrder == 0 {
-			sylog.Fatalf("order must be > 0")
-		}
-
-		if err := apptainer.RemoteAddKeyserver(name, uri, remoteKeyserverOrder, remoteKeyserverInsecure); err != nil {
-			sylog.Fatalf("%s", err)
+		if cmd.Flag(remoteKeyserverOrderFlag.Name).Changed {
+			sylog.Fatalf("use 'keyserver' subcommand instead of 'remote', see the output of 'apptainer help keyserver' for more information")
 		}
 	},
-
-	Use:     docs.RemoteAddKeyserverUse,
-	Short:   docs.RemoteAddKeyserverShort,
-	Long:    docs.RemoteAddKeyserverLong,
-	Example: docs.RemoteAddKeyserverExample,
 
 	DisableFlagsInUseLine: true,
 }
@@ -488,22 +468,10 @@ var RemoteRemoveKeyserverCmd = &cobra.Command{
 	Args:   cobra.RangeArgs(1, 2),
 	PreRun: setKeyserver,
 	Run: func(cmd *cobra.Command, args []string) {
-		uri := args[0]
-		name := ""
-		if len(args) > 1 {
-			name = args[0]
-			uri = args[1]
-		}
-
-		if err := apptainer.RemoteRemoveKeyserver(name, uri); err != nil {
-			sylog.Fatalf("%s", err)
+		if cmd.Flag(remoteKeyserverOrderFlag.Name).Changed {
+			sylog.Fatalf("use 'keyserver' subcommand instead of 'remote', see the output of 'apptainer help keyserver' for more information")
 		}
 	},
-
-	Use:     docs.RemoteRemoveKeyserverUse,
-	Short:   docs.RemoteRemoveKeyserverShort,
-	Long:    docs.RemoteRemoveKeyserverLong,
-	Example: docs.RemoteRemoveKeyserverExample,
 
 	DisableFlagsInUseLine: true,
 }

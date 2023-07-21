@@ -20,7 +20,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 )
 
-func RemoteRemoveKeyserver(name, uri string) error {
+func KeyserverAdd(name, uri string, order uint32, insecure bool) error {
 	// Explicit handling of corner cases: name and uri must be valid strings
 	if strings.TrimSpace(uri) == "" {
 		return fmt.Errorf("invalid URI: cannot have empty URI")
@@ -53,7 +53,7 @@ func RemoteRemoveKeyserver(name, uri string) error {
 		return fmt.Errorf("current endpoint is not a system defined endpoint")
 	}
 
-	if err := ep.RemoveKeyserver(uri); err != nil {
+	if err := ep.AddKeyserver(uri, order, insecure); err != nil {
 		return err
 	}
 

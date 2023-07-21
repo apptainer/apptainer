@@ -26,6 +26,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   removed. This functionality was related to the retired Singularity Desktop /
   SyOS projects.
 - The `--nv` and `--rocm` flags can now be used simultaneously.
+- The keyserver-related commands that were under `remote` have been moved to
+  their own, dedicated `keyserver` command. Run `apptainer help keyserver` for
+  more information.
 
 ### New Features & Functionality
 
