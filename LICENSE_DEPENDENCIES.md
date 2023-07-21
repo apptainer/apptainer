@@ -713,6 +713,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/asaskevich/govalidator/blob/master/LICENSE>
 
+## github.com/astromechza/etcpwdparse
+
+**License:** MIT
+
+**License URL:** <https://github.com/astromechza/etcpwdparse/blob/master/LICENSE.md>
+
 ## github.com/beorn7/perks/quantile
 
 **License:** MIT

@@ -2355,19 +2355,23 @@ func (c *container) addFilesMount(system *mount.System) error {
 }
 
 func (c *container) addIdentityMount(system *mount.System) error {
-	if (os.Geteuid() == 0 && c.engine.EngineConfig.GetTargetUID() == 0) ||
-		c.engine.EngineConfig.GetFakeroot() {
-		sylog.Verbosef("Not updating passwd/group files, running as root!")
+	uid := os.Getuid()
+	if uid == 0 && c.engine.EngineConfig.GetTargetUID() != 0 {
+		uid = c.engine.EngineConfig.GetTargetUID()
+	} else if c.engine.EngineConfig.GetFakeroot() {
+		uid = 0
+	}
+
+	if (uid == 0) &&
+		(c.engine.EngineConfig.GetWritableImage() ||
+			c.engine.EngineConfig.GetWritableTmpfs()) ||
+		c.engine.EngineConfig.GetWritableOverlay() {
+		sylog.Verbosef("skipping bind-mount of /etc/passwd and /etc/group (container is writable running as root)")
 		return nil
 	}
 
 	rootfs := c.session.RootFsPath()
 	defer c.session.Update()
-
-	uid := os.Getuid()
-	if uid == 0 && c.engine.EngineConfig.GetTargetUID() != 0 {
-		uid = c.engine.EngineConfig.GetTargetUID()
-	}
 
 	if c.engine.EngineConfig.File.ConfigPasswd {
 		passwd := filepath.Join(rootfs, "/etc/passwd")
