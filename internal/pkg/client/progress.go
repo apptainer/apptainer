@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -104,41 +104,77 @@ func CopyWithContext(ctx context.Context, dst io.Writer, src io.Reader) (written
 	return written, err
 }
 
-// DownloadProgressBar is used for chunked container-library-client downloads.
+// DownloadProgressBar is a progress bar that implements the container-library-client ProgressBar interface.
 type DownloadProgressBar struct {
 	bar *mpb.Bar
 	p   *mpb.Progress
 }
 
-func (pb *DownloadProgressBar) Init(contentLength int64) {
+func (dpb *DownloadProgressBar) Init(contentLength int64) {
 	if sylog.GetLevel() <= -1 {
 		// we don't need a bar visible
 		return
 	}
-	pb.p, pb.bar = initProgressBar(contentLength)
+	dpb.p, dpb.bar = initProgressBar(contentLength)
 }
 
-func (pb *DownloadProgressBar) ProxyReader(r io.Reader) io.ReadCloser {
-	return pb.bar.ProxyReader(r)
+func (dpb *DownloadProgressBar) ProxyReader(r io.Reader) io.ReadCloser {
+	return dpb.bar.ProxyReader(r)
 }
 
-func (pb *DownloadProgressBar) IncrBy(n int) {
-	if pb.bar == nil {
+func (dpb *DownloadProgressBar) IncrBy(n int) {
+	if dpb.bar == nil {
 		return
 	}
-	pb.bar.IncrBy(n)
+	dpb.bar.IncrBy(n)
 }
 
-func (pb *DownloadProgressBar) Abort(drop bool) {
-	if pb.bar == nil {
+func (dpb *DownloadProgressBar) Abort(drop bool) {
+	if dpb.bar == nil {
 		return
 	}
-	pb.bar.Abort(drop)
+	dpb.bar.Abort(drop)
 }
 
-func (pb *DownloadProgressBar) Wait() {
-	if pb.bar == nil {
+func (dpb *DownloadProgressBar) Wait() {
+	if dpb.bar == nil {
 		return
 	}
-	pb.p.Wait()
+	dpb.p.Wait()
+}
+
+// UploadProgressBar is a progress bar that implements the scs-library-client UploadCallback interface.
+type UploadProgressBar struct {
+	progress *mpb.Progress
+	bar      *mpb.Bar
+	r        io.Reader
+}
+
+func (upb *UploadProgressBar) InitUpload(totalSize int64, r io.Reader) {
+	if sylog.GetLevel() <= -1 {
+		// we don't need a bar visible
+		upb.r = r
+		return
+	}
+	upb.progress, upb.bar = initProgressBar(totalSize)
+	upb.r = upb.bar.ProxyReader(r)
+}
+
+func (upb *UploadProgressBar) GetReader() io.Reader {
+	return upb.r
+}
+
+func (upb *UploadProgressBar) Terminate() {
+	if upb.bar == nil {
+		return
+	}
+	upb.bar.Abort(true)
+}
+
+func (upb *UploadProgressBar) Finish() {
+	if upb.progress == nil {
+		return
+	}
+	// wait for our bar to complete and flush
+	upb.progress.Wait()
 }
