@@ -2604,8 +2604,11 @@ func (c *container) prepareNetworkSetup(system *mount.System, pid int) (func(con
 				}
 			}
 			if euid != 0 {
-				priv.Escalate()
-				defer priv.Drop()
+				dropPrivilege, err := priv.Escalate()
+				if err != nil {
+					return err
+				}
+				defer dropPrivilege()
 			}
 		}
 
