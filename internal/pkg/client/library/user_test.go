@@ -7,7 +7,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package apptainer
+package library
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ const (
 	invalidToken = "not valid"
 )
 
-func TestRemoteGetLoginPassword(t *testing.T) {
+func TestGetOCIToken(t *testing.T) {
 	tests := []struct {
 		name      string
 		password  string
@@ -99,7 +99,7 @@ func TestRemoteGetLoginPassword(t *testing.T) {
 				BaseURL:   srv.URL,
 				AuthToken: tt.authToken,
 			}
-			actual, err := RemoteGetLoginPassword(config)
+			actual, err := GetOCIToken(config)
 			assert.Equal(t, actual, tt.password)
 			if tt.shallPass == true && err != nil {
 				t.Fatalf("valid case failed: %s\n", err)

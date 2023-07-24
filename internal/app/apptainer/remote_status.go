@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -11,17 +11,16 @@
 package apptainer
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
 	"sort"
 	"text/tabwriter"
 
+	"github.com/apptainer/apptainer/internal/pkg/client/library"
 	"github.com/apptainer/apptainer/internal/pkg/remote"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	scslibclient "github.com/apptainer/container-library-client/client"
+	containerclient "github.com/apptainer/container-library-client/client"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -124,9 +123,8 @@ func RemoteStatus(usrConfigFile, name string) (err error) {
 	if err != nil {
 		return fmt.Errorf("could not get library client configuration: %v", err)
 	}
-	if err := printLoggedInIdentity(libClientConfig); err != nil {
-		return err
-	}
+
+	printLoggedInIdentity(libClientConfig)
 
 	return doTokenCheck(e)
 }
@@ -143,45 +141,12 @@ func doStatusCheck(name string, sp endpoint.Service) *status {
 	return &status{name: name, uri: uri, status: "OK", version: version}
 }
 
-func printLoggedInIdentity(config *scslibclient.Config) error {
-	path := userServicePath
-	endPoint := config.BaseURL + path
+func printLoggedInIdentity(config *containerclient.Config) {
+	username, email, err := library.GetIdentity(config)
 
-	req, err := http.NewRequest(http.MethodGet, endPoint, nil)
-	if err != nil {
-		return fmt.Errorf("error creating new request: %v", err)
+	if err == nil && len(username) > 0 {
+		fmt.Printf("\nLogged in as: %s <%s>\n\n", username, email)
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", config.AuthToken))
-	res, err := config.HTTPClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("error making request: %v", err)
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		sylog.Debugf("Status Code: %v", res.StatusCode)
-		if res.StatusCode == http.StatusUnauthorized {
-			// This simply means we are not logged in, which in this context is not an error condition.
-			return nil
-		} else if res.StatusCode == http.StatusNotFound {
-			sylog.Warningf("endpoint for retrieving logged-in user's username/email is not available on the current remote library")
-			return nil
-		} else {
-			return fmt.Errorf("encountered error while trying to retrieve logged-in user's username/email: %v", res.StatusCode)
-		}
-	}
-
-	var ud userData
-	if err := json.NewDecoder(res.Body).Decode(&ud); err != nil {
-		return fmt.Errorf("error decoding json response: %v", err)
-	}
-
-	if len(ud.Username) > 0 {
-		// TODO: Right now, it doesn't seem like the realname field ever contains anything different than the username field, so it would be redundant to print them both. If this ever changes, we can add another %s to the format string and output ud.Realname, as well. (It's already in the struct.)
-		fmt.Printf("\nLogged in as: %s <%s>\n\n", ud.Username, ud.Email)
-	}
-
-	return nil
 }
 
 func doTokenCheck(e *endpoint.Config) error {

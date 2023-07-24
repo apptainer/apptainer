@@ -18,6 +18,7 @@ import (
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/app/apptainer"
+	"github.com/apptainer/apptainer/internal/pkg/client/library"
 	"github.com/apptainer/apptainer/internal/pkg/remote"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/syfs"
@@ -249,7 +250,7 @@ var RemoteGetLoginPasswordCmd = &cobra.Command{
 			sylog.Errorf("Error initializing config: %v", err)
 		}
 
-		password, err := apptainer.RemoteGetLoginPassword(config)
+		password, err := library.GetOCIToken(config)
 		if err != nil {
 			sylog.Errorf("error: %v", err)
 		}
