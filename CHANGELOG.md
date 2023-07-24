@@ -5,6 +5,18 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.2.1 - \[2023-07-24\]
+
+### Security fix
+
+- Included a fix for
+  [security advisory GHSA-mmx5-32m4-wxvx](https://github.com/apptainer/apptainer/security/advisories/GHSA-mmx5-32m4-wxvx)
+  which describes an ineffective privilege drop when requesting a
+  container network with a setuid installation of Apptainer.
+  The vulnerability allows an attacker to delete any directory on the
+  host filesystems with a crafted starter config.
+  Only affects v1.2.0-rc.2 and v1.2.0.
+
 ## v1.2.0 - \[2023-07-18\]
 
 Changes since v1.1.9
