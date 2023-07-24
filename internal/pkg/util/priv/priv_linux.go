@@ -15,20 +15,31 @@ import (
 	"syscall"
 )
 
-// Escalate escalates privileges of the thread or process.
-// Since Go 1.16 syscall.Setresuid is an all-thread operation.
-// A runtime.LockOSThread operation remains for older versions of Go.
-func Escalate() error {
-	runtime.LockOSThread()
-	uid := os.Getuid()
-	return syscall.Setresuid(0, 0, uid)
-}
+type DropPrivFunc func() error
 
-// Drop drops privileges of the thread or process.
-// Since Go 1.16 syscall.Setresuid is an all-thread operation.
-// A runtime.LockOSThread operation remains for older versions of Go.
-func Drop() error {
-	defer runtime.UnlockOSThread()
+// Escalate escalates privileges of the thread or process.
+// Since Go 1.16 syscall.Setresuid is an all-thread operation,
+// keep calling syscall directly to restore old behavior of
+// changing the UID for the locked thread only.
+func Escalate() (DropPrivFunc, error) {
+	runtime.LockOSThread()
+
 	uid := os.Getuid()
-	return syscall.Setresuid(uid, uid, 0)
+
+	_, _, errno := syscall.Syscall(syscall.SYS_SETRESUID, 0, 0, uintptr(uid))
+	if errno != 0 {
+		return nil, errno
+	}
+
+	return func() error {
+		_, _, errno := syscall.Syscall(syscall.SYS_SETRESUID, uintptr(uid), uintptr(uid), 0)
+
+		runtime.UnlockOSThread()
+
+		if errno != 0 {
+			return errno
+		}
+
+		return nil
+	}, nil
 }
