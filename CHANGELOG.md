@@ -39,6 +39,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
   pkg/build/types/parser.All(), `.Raw` contains the raw content of a single
   build stage. Otherwise, it is equal to `.FullRaw`.
 
+## Changes since last release
+
+### Bug fixes
+
+- Fix `$APPTAINER_MESSAGELEVEL` to correctly set the logging level.
+
 ## v1.2.0 - \[2023-07-18\]
 
 Changes since v1.1.9
