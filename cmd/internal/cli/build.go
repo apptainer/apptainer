@@ -384,7 +384,7 @@ func preRun(cmd *cobra.Command, args []string) {
 		if os.Getuid() != 0 {
 			if isDeffile {
 				sylog.Verbosef("Implying --fakeroot because building from definition file unprivileged")
-				fakerootExec(isDeffile, true)
+				fakerootExec(isDeffile, buildArgs.encrypt)
 			} else if buildArgs.encrypt {
 				sylog.Verbosef("Implying --fakeroot because using unprivileged encryption")
 				fakerootExec(isDeffile, true)

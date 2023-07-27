@@ -2001,7 +2001,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 	// running under the mode 2(https://apptainer.org/docs/user/main/fakeroot.html)
 	c.env.RunApptainer(
 		t,
-		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs("--force", "--userns", "--ignore-subuid", "--ignore-fakeroot-command", fmt.Sprintf("%s/openssh-mode2a.sif", tmpDir), "testdata/unprivileged_build.def"),
 		e2e.ExpectExit(255), // because chown will fail
@@ -2010,7 +2010,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 	// running under the mode 2(https://apptainer.org/docs/user/main/fakeroot.html)
 	c.env.RunApptainer(
 		t,
-		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs("--force", "--userns", "--ignore-subuid", "--ignore-fakeroot-command", fmt.Sprintf("%s/openssh-mode2b.sif", tmpDir), "testdata/unprivileged_build_2.def"),
 		e2e.ExpectExit(0),
@@ -2019,7 +2019,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 	// running under the mode 3(https://apptainer.org/docs/user/main/fakeroot.html)
 	c.env.RunApptainer(
 		t,
-		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs("--force", "--userns", "--ignore-subuid", fmt.Sprintf("%s/openssh-mode3.sif", tmpDir), "testdata/unprivileged_build.def"),
 		e2e.ExpectExit(0),
@@ -2028,7 +2028,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 	// running under the mode 4(https://apptainer.org/docs/user/main/fakeroot.html)
 	c.env.RunApptainer(
 		t,
-		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs("--force", "--ignore-userns", "--ignore-subuid", fmt.Sprintf("%s/openssh-mode4.sif", tmpDir), "testdata/unprivileged_build_4.def"),
 		e2e.ExpectExit(0),
