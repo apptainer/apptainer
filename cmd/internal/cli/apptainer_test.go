@@ -12,11 +12,14 @@ package cli
 import (
 	"math/rand"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
+
+const messageLevelEnv = "APPTAINER_MESSAGELEVEL"
 
 func TestCreateConfDir(t *testing.T) {
 	// create a random name for a directory
@@ -44,81 +47,145 @@ func TestCreateConfDir(t *testing.T) {
 	}
 }
 
-func TestChangeLogLevelViaEnvVariables(t *testing.T) {
-	tests := []struct {
-		Name  string
-		Envs  []string
-		Level int
-	}{
-		{
-			Name:  "silent with no color",
-			Envs:  []string{"APPTAINER_SILENT", "APPTAINER_NOCOLOR"},
-			Level: -3,
-		},
-		{
-			Name:  "silent",
-			Envs:  []string{"APPTAINER_SILENT"},
-			Level: -3,
-		},
-		{
-			Name:  "quiet with no color",
-			Envs:  []string{"APPTAINER_QUIET", "APPTAINER_NOCOLOR"},
-			Level: -1,
-		},
-		{
-			Name:  "quiet",
-			Envs:  []string{"APPTAINER_QUIET"},
-			Level: -1,
-		},
-		{
-			Name:  "verbose with no color",
-			Envs:  []string{"APPTAINER_VERBOSE", "APPTAINER_NOCOLOR"},
-			Level: 4,
-		},
-		{
-			Name:  "verbose",
-			Envs:  []string{"APPTAINER_VERBOSE"},
-			Level: 4,
-		},
-		{
-			Name:  "debug with no color",
-			Envs:  []string{"APPTAINER_DEBUG", "APPTAINER_NOCOLOR"},
-			Level: 5,
-		},
-		{
-			Name:  "debug",
-			Envs:  []string{"APPTAINER_DEBUG"},
-			Level: 5,
-		},
-	}
-
-	// initialize apptainerCmd
+func TestLogEnvSuite(t *testing.T) {
 	Init(false)
-	for _, test := range tests {
-		t.Log("starting test:" + test.Name)
-		for _, env := range test.Envs {
-			err := os.Setenv(env, "1")
+
+	t.Run("TestMessageLevelEnv", func(t *testing.T) {
+		tests := []struct {
+			Name         string
+			Envs         []string
+			MessageLevel int
+			Level        int
+		}{
+			{
+				Name:         "default InfoLevel",
+				Envs:         []string{},
+				MessageLevel: 0,
+				Level:        1,
+			},
+			{
+				Name:         "use MessageLevel",
+				Envs:         []string{},
+				MessageLevel: 5,
+				Level:        5,
+			},
+			{
+				Name:         "ignore MessageLevel, uses level env",
+				Envs:         []string{"APPTAINER_SILENT"},
+				MessageLevel: 5,
+				Level:        -3,
+			},
+		}
+
+		for _, test := range tests {
+			t.Log("starting test:" + test.Name)
+			err := os.Setenv(messageLevelEnv, strconv.Itoa(test.MessageLevel))
 			if err != nil {
 				t.Error(err)
 			}
+
+			for _, env := range test.Envs {
+				err := os.Setenv(env, "1")
+				if err != nil {
+					t.Error(err)
+				}
+			}
+
+			// call persistentPreRunE to update cmd
+			err = apptainerCmd.PersistentPreRunE(apptainerCmd, []string{})
+			if err != nil {
+				t.Error(err)
+			}
+
+			if len(test.Envs) == 2 {
+				sylog.SetLevel(test.Level, true)
+			}
+
+			if sylog.GetLevel() != test.Level {
+				t.Errorf("actual log level: %d, expected log level: %d", sylog.GetLevel(), test.Level)
+			}
+
+			os.Unsetenv(messageLevelEnv)
+			for _, env := range test.Envs {
+				os.Unsetenv(env)
+			}
+		}
+	})
+
+	t.Run("TestChangeLogLevelViaEnvVariables", func(t *testing.T) {
+		tests := []struct {
+			Name  string
+			Envs  []string
+			Level int
+		}{
+			{
+				Name:  "silent with no color",
+				Envs:  []string{"APPTAINER_SILENT", "APPTAINER_NOCOLOR"},
+				Level: -3,
+			},
+			{
+				Name:  "silent",
+				Envs:  []string{"APPTAINER_SILENT"},
+				Level: -3,
+			},
+			{
+				Name:  "quiet with no color",
+				Envs:  []string{"APPTAINER_QUIET", "APPTAINER_NOCOLOR"},
+				Level: -1,
+			},
+			{
+				Name:  "quiet",
+				Envs:  []string{"APPTAINER_QUIET"},
+				Level: -1,
+			},
+			{
+				Name:  "verbose with no color",
+				Envs:  []string{"APPTAINER_VERBOSE", "APPTAINER_NOCOLOR"},
+				Level: 4,
+			},
+			{
+				Name:  "verbose",
+				Envs:  []string{"APPTAINER_VERBOSE"},
+				Level: 4,
+			},
+			{
+				Name:  "debug with no color",
+				Envs:  []string{"APPTAINER_DEBUG", "APPTAINER_NOCOLOR"},
+				Level: 5,
+			},
+			{
+				Name:  "debug",
+				Envs:  []string{"APPTAINER_DEBUG"},
+				Level: 5,
+			},
 		}
 
-		// call persistentPreRunE to update cmd
-		err := apptainerCmd.PersistentPreRunE(apptainerCmd, []string{})
-		if err != nil {
-			t.Error(err)
-		}
+		for _, test := range tests {
+			t.Log("starting test:" + test.Name)
+			for _, env := range test.Envs {
+				err := os.Setenv(env, "1")
+				if err != nil {
+					t.Error(err)
+				}
+			}
 
-		if len(test.Envs) == 2 {
-			sylog.SetLevel(test.Level, true)
-		}
+			// call persistentPreRunE to update cmd
+			err := apptainerCmd.PersistentPreRunE(apptainerCmd, []string{})
+			if err != nil {
+				t.Error(err)
+			}
 
-		if sylog.GetLevel() != test.Level {
-			t.Errorf("actual log level: %d, expected log level: %d", sylog.GetLevel(), test.Level)
-		}
+			if len(test.Envs) == 2 {
+				sylog.SetLevel(test.Level, true)
+			}
 
-		for _, env := range test.Envs {
-			os.Unsetenv(env)
+			if sylog.GetLevel() != test.Level {
+				t.Errorf("actual log level: %d, expected log level: %d", sylog.GetLevel(), test.Level)
+			}
+
+			for _, env := range test.Envs {
+				os.Unsetenv(env)
+			}
 		}
-	}
+	})
 }
