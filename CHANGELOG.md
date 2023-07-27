@@ -5,7 +5,7 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes since last release
+## Changes for v1.3.x
 
 ### Changed defaults / behaviours
 
@@ -39,9 +39,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   pkg/build/types/parser.All(), `.Raw` contains the raw content of a single
   build stage. Otherwise, it is equal to `.FullRaw`.
 
-## Changes since last release
+## Changes for v1.2.x
 
-### Bug fixes
+## v1.2.2 - \[2023-07-27\]
 
 - Fix `$APPTAINER_MESSAGELEVEL` to correctly set the logging level.
 - Fix build failures when in setuid mode and unprivileged user namespaces
