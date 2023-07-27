@@ -14,12 +14,20 @@ package sylog
 import (
 	"io"
 	"os"
+	"strconv"
 )
 
 var (
 	noColorLevel messageLevel = 90
 	loggerLevel               = InfoLevel
 )
+
+func init() {
+	l, err := strconv.Atoi(os.Getenv("APPTAINER_MESSAGELEVEL"))
+	if err == nil {
+		loggerLevel = messageLevel(l)
+	}
+}
 
 func getLoggerLevel() messageLevel {
 	if loggerLevel <= -noColorLevel {

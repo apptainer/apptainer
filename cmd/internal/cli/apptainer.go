@@ -15,11 +15,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"os/exec"
 	"os/signal"
 	"os/user"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -271,18 +273,26 @@ func addCmdInit(cmdInit func(*cmdline.CommandManager)) {
 func setSylogMessageLevel() {
 	var level int
 
+	l, err := strconv.Atoi(env.GetenvLegacy("MESSAGELEVEL", "MESSAGELEVEL"))
+	if err == nil {
+		level = l
+	}
+
 	if debug {
 		level = 5
 		// Propagate debug flag to nested `apptainer` calls.
 		os.Setenv("APPTAINER_DEBUG", "1")
 	} else if verbose {
 		level = 4
+		os.Setenv("APPTAINER_VERBOSE", "1")
 	} else if quiet {
 		level = -1
+		os.Setenv("APPTAINER_QUIET", "1")
 	} else if silent {
 		level = -3
+		os.Setenv("APPTAINER_SILENT", "1")
 	} else {
-		level = 1
+		level = int(math.Max(float64(level), 1))
 	}
 
 	color := true

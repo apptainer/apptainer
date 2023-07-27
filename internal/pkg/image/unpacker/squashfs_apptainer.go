@@ -364,6 +364,10 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 		fmt.Sprintf("LD_LIBRARY_PATH=%s", strings.Join(libraryPath, string(os.PathListSeparator))),
 		fmt.Sprintf("APPTAINERENV_LD_LIBRARY_PATH=%s", strings.Join(libraryPath, string(os.PathListSeparator))),
 		fmt.Sprintf("APPTAINER_DEBUG=%s", os.Getenv("APPTAINER_DEBUG")),
+		fmt.Sprintf("APPTAINER_VERBOSE=%s", os.Getenv("APPTAINER_VERBOSE")),
+		fmt.Sprintf("APPTAINER_QUIET=%s", os.Getenv("APPTAINER_QUIET")),
+		fmt.Sprintf("APPTAINER_SILENT=%s", os.Getenv("APPTAINER_SILENT")),
+		fmt.Sprintf("APPTAINER_MESSAGELEVEL=%s", os.Getenv("APPTAINER_MESSAGELEVEL")),
 	}
 
 	return cmd, nil

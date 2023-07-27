@@ -5,6 +5,12 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes since last release
+
+### Bug fixes
+
+- Fix `$APPTAINER_MESSAGELEVEL` to correctly set the logging level.
+
 ## v1.2.1 - \[2023-07-24\]
 
 ### Security fix
