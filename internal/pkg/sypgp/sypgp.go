@@ -283,7 +283,7 @@ func loadKeysFromFile(fn string) (openpgp.EntityList, error) {
 
 // printEntity pretty prints an entity entry to w
 func printEntity(w io.Writer, index int, e *openpgp.Entity) {
-	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
 	fmt.Fprintf(tw, "%d)", index)
 	for _, v := range e.Identities {
 		fmt.Fprintf(tw, "\tUser:\t%s (%s) <%s>\n", v.UserId.Name, v.UserId.Comment, v.UserId.Email)
