@@ -650,7 +650,10 @@ func (c *ctx) checkKeyLength(t *testing.T, expectedKeyLength int) {
 			e2e.WithArgs(cmdArgs...),
 			e2e.ExpectExit(
 				0,
-				e2e.ExpectOutput(e2e.ContainMatch, "L: "+strconv.Itoa(expectedKeyLength)),
+				e2e.ExpectOutput(
+					e2e.RegexMatch,
+					`Length \(in bits\):[ ]+`+strconv.Itoa(expectedKeyLength),
+				),
 			),
 		)
 	}

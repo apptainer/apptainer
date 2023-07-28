@@ -283,20 +283,22 @@ func loadKeysFromFile(fn string) (openpgp.EntityList, error) {
 
 // printEntity pretty prints an entity entry to w
 func printEntity(w io.Writer, index int, e *openpgp.Entity) {
-	// TODO(mem): this should not be here, this is presentation
+	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	fmt.Fprintf(tw, "%d)", index)
 	for _, v := range e.Identities {
-		fmt.Fprintf(w, "%d) U: %s (%s) <%s>\n", index, v.UserId.Name, v.UserId.Comment, v.UserId.Email)
+		fmt.Fprintf(tw, "\tUser:\t%s (%s) <%s>\n", v.UserId.Name, v.UserId.Comment, v.UserId.Email)
 	}
-	fmt.Fprintf(w, "   C: %s\n", e.PrimaryKey.CreationTime)
-	fmt.Fprintf(w, "   F: %0X\n", e.PrimaryKey.Fingerprint)
+	fmt.Fprintf(tw, "\tCreation time:\t%s\n", e.PrimaryKey.CreationTime)
+	fmt.Fprintf(tw, "\tFingerprint:\t%0X\n", e.PrimaryKey.Fingerprint)
 	bits, _ := e.PrimaryKey.BitLength()
-	fmt.Fprintf(w, "   L: %d\n", bits)
+	fmt.Fprintf(tw, "\tLength (in bits):\t%d\n", bits)
+	tw.Flush()
+	fmt.Fprintln(w)
 }
 
 func printEntities(w io.Writer, entities openpgp.EntityList) {
 	for i, e := range entities {
 		printEntity(w, i, e)
-		fmt.Fprint(w, "   --------\n")
 	}
 }
 
