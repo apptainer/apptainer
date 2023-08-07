@@ -86,7 +86,7 @@ func newOrasUploadTransport() http.RoundTripper {
 	}
 }
 
-func getResolver(ctx context.Context, ociAuth *ocitypes.DockerAuthConfig, noHTTPS, push bool) (remotes.Resolver, error) {
+func getResolver(ctx context.Context, ociAuth *ocitypes.DockerAuthConfig, noHTTPS, push, progressBar bool) (remotes.Resolver, error) {
 	opts := docker.ResolverOptions{Credentials: genCredfn(ociAuth), PlainHTTP: noHTTPS}
 	if ociAuth != nil && (ociAuth.Username != "" || ociAuth.Password != "") {
 		return docker.NewResolver(opts), nil
@@ -109,7 +109,16 @@ func getResolver(ctx context.Context, ociAuth *ocitypes.DockerAuthConfig, noHTTP
 		httpClient.Transport = newOrasUploadTransport()
 	}
 
-	return cli.Resolver(ctx, httpClient, noHTTPS)
+	solver, err := cli.Resolver(ctx, httpClient, noHTTPS)
+	if err != nil {
+		return solver, err
+	}
+
+	if progressBar {
+		return &resolver{solver}, nil
+	}
+
+	return solver, nil
 }
 
 // DownloadImage downloads a SIF image specified by an oci reference to a file using the included credentials
@@ -128,7 +137,7 @@ func DownloadImage(ctx context.Context, imagePath, ref string, ociAuth *ocitypes
 		sylog.Infof("No tag or digest found, using default: %s", SifDefaultTag)
 	}
 
-	resolver, err := getResolver(ctx, ociAuth, noHTTPS, false)
+	resolver, err := getResolver(ctx, ociAuth, noHTTPS, false, true)
 	if err != nil {
 		return fmt.Errorf("while getting resolver: %s", err)
 	}
@@ -213,7 +222,7 @@ func UploadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.Docker
 		sylog.Infof("No tag or digest found, using default: %s", SifDefaultTag)
 	}
 
-	resolver, err := getResolver(ctx, ociAuth, noHTTPS, true)
+	resolver, err := getResolver(ctx, ociAuth, noHTTPS, true, true)
 	if err != nil {
 		return fmt.Errorf("while getting resolver: %s", err)
 	}
@@ -273,7 +282,7 @@ func ImageSHA(ctx context.Context, uri string, ociAuth *ocitypes.DockerAuthConfi
 	ref := strings.TrimPrefix(uri, "oras://")
 	ref = strings.TrimPrefix(ref, "//")
 
-	resolver, err := getResolver(ctx, ociAuth, noHTTPS, false)
+	resolver, err := getResolver(ctx, ociAuth, noHTTPS, false, false)
 	if err != nil {
 		return "", fmt.Errorf("while getting resolver: %s", err)
 	}
