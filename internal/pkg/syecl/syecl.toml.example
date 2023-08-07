@@ -5,6 +5,26 @@
 # location of the sif file in the file system and by checking against a list of
 # signing entities.
 #
+# *****************************************************************************
+# WARNING
+#
+# The ECL is not effective if unprivileged user namespaces are enabled. It is
+# only effectively applied when Singularity is running using the native runtime
+# in setuid mode, and unprivileged container execution is not possible on the
+# host.
+#
+# You must disable unprivileged user namespace creation on the host if you rely
+# on the ECL to limit container execution. This will disable OCI mode, which is
+# unprivileged and cannot enforce the ECL.
+#
+# The ECL only applies to SIF container images. To block execution of other
+# images (e.g. ext3 or sandbox containers), you must also disable them in
+# singularity.conf
+#
+# See the 'Security' and 'Configuration Files' sections of the Admin Guide for
+# more information.
+# *****************************************************************************
+#
 # The current possible list modes are: whitelist, whitestrict and blacklist.
 #
 # Example:

@@ -299,12 +299,30 @@ mount slave = {{ if eq .MountSlave true }}yes{{ else }}no{{ end }}
 # it will also affect users of "--writable-tmpfs".
 sessiondir max size = {{ .SessiondirMaxSize }}
 
+# *****************************************************************************
+# WARNING
+#
+# The 'limit container' and 'allow container' directives are not effective if
+# unprivileged user namespaces are enabled. They are only effectively applied
+# when Singularity is running using the native runtime in setuid mode, and
+# unprivileged container execution is not possible on the host.
+#
+# You must disable unprivileged user namespace creation on the host if you rely
+# on the these directives to limit container execution. This will disable OCI
+# mode, which is unprivileged and cannot enforce these limits.
+#
+# See the 'Security' and 'Configuration Files' sections of the Admin Guide for
+# more information.
+# *****************************************************************************
+
 # LIMIT CONTAINER OWNERS: [STRING]
 # DEFAULT: NULL
 # Only allow containers to be used that are owned by a given user. If this
 # configuration is undefined (commented or set to NULL), all containers are
-# allowed to be used. This feature only applies when Apptainer is running in
-# SUID mode and the user is non-root.
+# allowed to be used. 
+#
+# Only effective in setuid mode, with unprivileged user namespace creation disabled.
+# Ignored for the root user.
 #limit container owners = gmk, apptainer, nobody
 {{ range $index, $owner := .LimitContainerOwners }}
 {{- if eq $index 0 }}limit container owners = {{ else }}, {{ end }}{{$owner}}
@@ -314,8 +332,10 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 # DEFAULT: NULL
 # Only allow containers to be used that are owned by a given group. If this
 # configuration is undefined (commented or set to NULL), all containers are
-# allowed to be used. This feature only applies when Apptainer is running in
-# SUID mode and the user is non-root.
+# allowed to be used.
+#
+# Only effective in setuid mode, with unprivileged user namespace creation disabled.
+# Ignored for the root user.
 #limit container groups = group1, apptainer, nobody
 {{ range $index, $group := .LimitContainerGroups }}
 {{- if eq $index 0 }}limit container groups = {{ else }}, {{ end }}{{$group}}
@@ -325,9 +345,10 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 # DEFAULT: NULL
 # Only allow containers to be used that are located within an allowed path
 # prefix. If this configuration is undefined (commented or set to NULL),
-# containers will be allowed to run from anywhere on the file system. This
-# feature only applies when Apptainer is running in SUID mode and the user is
-# non-root.
+# containers will be allowed to run from anywhere on the file system.
+#
+# Only effective in setuid mode, with unprivileged user namespace creation disabled.
+# Ignored for the root user.
 #limit container paths = /scratch, /tmp, /global
 {{ range $index, $path := .LimitContainerPaths }}
 {{- if eq $index 0 }}limit container paths = {{ else }}, {{ end }}{{$path}}
@@ -335,10 +356,11 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 
 # ALLOW CONTAINER ${TYPE}: [BOOL]
 # DEFAULT: yes
-# This feature limits what kind of containers that Apptainer will allow
-# users to use (note this does not apply for root).  Note that some of the
-# same operations can be limited in setuid mode by the ALLOW SETUID-MOUNT
-# feature below; both types need to be "yes" to be allowed.
+# This feature limits what kind of containers that Singularity will allow
+# users to use.
+#
+# Only effective in setuid mode, with unprivileged user namespace creation disabled.
+# Ignored for the root user.
 #
 # Allow use of unencrypted SIF containers
 allow container sif = {{ if eq .AllowContainerSIF true}}yes{{ else }}no{{ end }}
