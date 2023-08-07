@@ -30,6 +30,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - The `remote status` command will now print the username, realname, and email
   of the logged-in user, if available.
+- The `apptainer push/pull` command will show a progress bar for oras protocol.
 
 ### Developer / API
 
