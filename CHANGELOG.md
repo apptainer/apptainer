@@ -5,6 +5,10 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.2.x
+
+- The `apptainer push/pull` command will show a progress bar for oras protocol.
+
 ## v1.2.2 - \[2023-07-27\]
 
 - Fix `$APPTAINER_MESSAGELEVEL` to correctly set the logging level.
