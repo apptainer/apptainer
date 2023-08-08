@@ -293,11 +293,11 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 	)
 
 	shamap := map[string]string{
-		"arm64":      "d715de5d9a2e1542c095a0f60145e23ec8b436fe1ff7b5d65da5a631d7ffac11",
-		"amd64":      "6cf8f2587c2cfe28a808632580a02e3bbb4367061eeeee9b9a2386f4f841b1e9",
-		"arm32v6":    "8ccd8f775eb6236695f649d396643a3f4ff5775ff2b2327417bf1e2c006615f7",
-		"amd64uri":   "285fa2a74d0b116c214ff958d80bfe00db2dad1e0c3e6602b63d304490646d37",
-		"arm64v8uri": "292623b2234c665b6409a8c249efcce087428e2ccf347fa440d97c35772e5741",
+		"arm64":      "b118e86313b8da65a597ae0f773fb7cac49fac8e6666147a9443b172288c5306",
+		"amd64":      "f38acf33dd020a91d4673e16c6ab14048b00a5fd83e334edd8b33d339103cf83",
+		"arm32v6":    "9fe584fc821b9ceaf4e04cd21ed191dfa553517728da94e3f50632523b3ab374",
+		"amd64uri":   "82e895f183a2f926f72ad8d28c3c36444ce37de4f9e1efeba35f4ed1643232d6",
+		"arm64v8uri": "a101aa43bebd5f853837120fc8f28cae7ebe1c5f7f14a4d51a8c6d275f1456a9",
 	}
 
 	files := retrieveFileNames(t, cacheDir)
@@ -314,7 +314,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("pull image failure because of wrong --arch"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", "--arch", "amd", sifname, "docker://alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", "--arch", "amd", sifname, "docker://alpine:3.6"}...),
 		e2e.ExpectExit(255, e2e.ExpectError(e2e.ContainMatch, "arch: amd is not valid")),
 	)
 
@@ -323,7 +323,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("pull image failure because --arch-variant is required"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", "--arch", "arm", sifname, "docker://alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", "--arch", "arm", sifname, "docker://alpine:3.6"}...),
 		e2e.ExpectExit(255, e2e.ExpectError(e2e.ContainMatch, "arm needs variant specification")),
 	)
 
@@ -332,7 +332,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("pull image failure because of wrong --arch-variant"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", "--arch", "arm64", "--arch-variant", "v9", sifname, "docker://alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", "--arch", "arm64", "--arch-variant", "v9", sifname, "docker://alpine:3.6"}...),
 		e2e.ExpectExit(255, e2e.ExpectError(e2e.ContainMatch, "arch: arm64v9 is not valid")),
 	)
 
@@ -342,7 +342,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("pull amd64 image"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", "--arch", "amd64", sifname, "docker://alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", "--arch", "amd64", sifname, "docker://alpine:3.6"}...),
 		e2e.ExpectExit(0),
 	)
 	ensureCachedWithSha(t, cacheDir, shamap["amd64"])
@@ -352,7 +352,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("pull arm64 image"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", "--arch", "arm64", sifname, "docker://alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", "--arch", "arm64", sifname, "docker://alpine:3.6"}...),
 		e2e.ExpectExit(0),
 	)
 	ensureCachedWithSha(t, cacheDir, shamap["arm64"])
@@ -362,7 +362,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("pull arm32v6 image"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", "--arch", "arm", "--arch-variant", "6", sifname, "docker://alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", "--arch", "arm", "--arch-variant", "6", sifname, "docker://alpine:3.6"}...),
 		e2e.ExpectExit(0),
 	)
 	ensureCachedWithSha(t, cacheDir, shamap["arm32v6"])
@@ -378,7 +378,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("pull amd64 image by explicitly defining arch"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", sifname, "docker://amd64/alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", sifname, "docker://amd64/alpine:3.6"}...),
 		e2e.ExpectExit(0),
 	)
 	ensureCachedWithSha(t, cacheDir, shamap["amd64uri"])
@@ -388,10 +388,10 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("pull arm64 image by explicitly defining arch"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", sifname, "docker://arm64v8/alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", sifname, "docker://arm64v8/alpine:3.6"}...),
 		e2e.ExpectExit(0),
 	)
-	ensureCachedWithSha(t, cacheDir, shamap["arm64v8"])
+	ensureCachedWithSha(t, cacheDir, shamap["arm64v8uri"])
 
 	files = retrieveFileNames(t, cacheDir)
 	if len(files) != 5 {
@@ -405,7 +405,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("pull amd64 image using different arch and uri"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", "--arch", "386", sifname, "docker://amd64/alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", "--arch", "386", sifname, "docker://amd64/alpine:3.6"}...),
 		e2e.ExpectExit(0),
 	)
 
@@ -414,7 +414,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("pull amd64 image using different arch and uri with docker.io prefix"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", "--arch", "386", sifname, "docker://docker.io/amd64/alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", "--arch", "386", sifname, "docker://docker.io/amd64/alpine:3.6"}...),
 		e2e.ExpectExit(0),
 	)
 
@@ -423,7 +423,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("pull arm64 image using different arch and uri"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", "--arch", "amd64", sifname, "docker://arm64v8/alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", "--arch", "amd64", sifname, "docker://arm64v8/alpine:3.6"}...),
 		e2e.ExpectExit(0),
 	)
 
@@ -432,7 +432,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("pull arm64 image using different arch and uri with docker.io prefix"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", "--arch", "amd64", sifname, "docker://docker.io/arm64v8/alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", "--arch", "amd64", sifname, "docker://docker.io/arm64v8/alpine:3.6"}...),
 		e2e.ExpectExit(0),
 	)
 
@@ -441,7 +441,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("build arm64 image using uri"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs([]string{"--force", sifname, "docker://arm64v8/alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", sifname, "docker://arm64v8/alpine:3.6"}...),
 		e2e.ExpectExit(0),
 	)
 
@@ -450,7 +450,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("build amd64 image using uri"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs([]string{"--force", sifname, "docker://amd64/alpine:3.17"}...),
+		e2e.WithArgs([]string{"--force", sifname, "docker://amd64/alpine:3.6"}...),
 		e2e.ExpectExit(0),
 	)
 
