@@ -12,6 +12,7 @@ linters:
     - containedctx
     - contextcheck
     - decorder
+    - dogsled
     - dupl
     - gofumpt
     - goimports
