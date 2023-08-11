@@ -34,6 +34,8 @@ import (
 )
 
 // DownloadImage downloads a SIF image specified by an oci reference to a file using the included credentials
+//
+// FIXME: use context for cancellation.
 func DownloadImage(ctx context.Context, path, ref string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
 	rt := client.NewRoundTripper(ctx, nil)
 	im, err := remoteImage(ref, ociAuth, noHTTPS, rt, reqAuthFile)
@@ -115,6 +117,8 @@ func DownloadImage(ctx context.Context, path, ref string, ociAuth *authn.AuthCon
 
 // UploadImage uploads the image specified by path and pushes it to the provided oci reference,
 // it will use credentials if supplied
+//
+// FIXME: use context for cancellation.
 func UploadImage(_ context.Context, path, ref string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
 	// ensure that are uploading a SIF
 	if err := ensureSIF(path); err != nil {
@@ -187,6 +191,8 @@ func ensureSIF(filepath string) error {
 }
 
 // RefHash returns the digest of the SIF layer of the OCI manifest for supplied ref
+//
+// FIXME: use context for cancellation.
 func RefHash(_ context.Context, ref string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (v1.Hash, error) {
 	im, err := remoteImage(ref, ociAuth, noHTTPS, nil, reqAuthFile)
 	if err != nil {

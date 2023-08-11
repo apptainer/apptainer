@@ -1945,7 +1945,7 @@ func (c *container) addHomeLayer(system *mount.System, source, dest string) erro
 
 // addHomeNoLayer is responsible for staging the home directory and adding the base
 // directory of the staged home into the container when overlay/underlay are unavailable
-func (c *container) addHomeNoLayer(system *mount.System, _, dest string) error {
+func (c *container) addHomeNoLayer(system *mount.System, dest string) error {
 	flags := uintptr(syscall.MS_BIND | syscall.MS_REC)
 
 	homeBase := fs.RootDir(dest)
@@ -1999,7 +1999,7 @@ func (c *container) addHomeMount(system *mount.System) error {
 	sessionLayer := c.engine.EngineConfig.GetSessionLayer()
 	sylog.Debugf("Adding home directory mount [%v:%v] to list using layer: %s\n", stagingDir, dest, sessionLayer)
 	if !c.isLayerEnabled() {
-		return c.addHomeNoLayer(system, stagingDir, dest)
+		return c.addHomeNoLayer(system, dest)
 	}
 	return c.addHomeLayer(system, stagingDir, dest)
 }

@@ -136,7 +136,7 @@ func TestFetchPubkey(t *testing.T) {
 				client.OptHTTPClient(srv.Client()),
 			}
 
-			el, err := FetchPubkey(context.Background(), tt.fingerprint, false, opts...)
+			el, err := FetchPubkey(context.Background(), tt.fingerprint, opts...)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("unexpected error: %v", err)
 				return

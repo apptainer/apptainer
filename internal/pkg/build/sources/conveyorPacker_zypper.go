@@ -60,6 +60,8 @@ func machine() (string, error) {
 
 // Get downloads container information from the specified source
 //
+// FIXME: use context for cancellation.
+//
 //nolint:maintidx
 func (cp *ZypperConveyorPacker) Get(_ context.Context, b *types.Bundle) error {
 	var suseconnectProduct, suseconnectModver string

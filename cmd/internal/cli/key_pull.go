@@ -62,7 +62,7 @@ func doKeyPullCmd(ctx context.Context, fingerprint string, co ...client.Option) 
 	keyring := sypgp.NewHandle(path, opts...)
 
 	// get matching keyring
-	el, err := sypgp.FetchPubkey(ctx, fingerprint, false, co...)
+	el, err := sypgp.FetchPubkey(ctx, fingerprint, co...)
 	if err != nil {
 		return fmt.Errorf("unable to pull key from server: %v", err)
 	}

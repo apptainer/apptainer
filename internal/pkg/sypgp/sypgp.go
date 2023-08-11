@@ -902,7 +902,7 @@ func date(s string) string {
 }
 
 // FetchPubkey pulls a public key from the Key Service.
-func FetchPubkey(ctx context.Context, fingerprint string, _ bool, opts ...client.Option) (openpgp.EntityList, error) {
+func FetchPubkey(ctx context.Context, fingerprint string, opts ...client.Option) (openpgp.EntityList, error) {
 	// Decode fingerprint and ensure proper length.
 	var fp []byte
 	fp, err := hex.DecodeString(fingerprint)

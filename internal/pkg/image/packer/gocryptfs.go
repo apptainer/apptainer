@@ -195,8 +195,5 @@ func cmdRun(commands []string, stdout, stderr io.Writer) error {
 	if stderr != nil {
 		cmd.Stderr = stderr
 	}
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	return nil
+	return cmd.Run()
 }

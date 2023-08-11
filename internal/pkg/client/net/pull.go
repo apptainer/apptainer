@@ -193,7 +193,7 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom string, tmpDir s
 }
 
 // PullToFile will pull an http(s) image to the specified location, through the cache, or directly if cache is disabled
-func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom, _ string) (imagePath string, err error) {
+func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom string) (imagePath string, err error) {
 	directTo := ""
 	if imgCache.IsDisabled() {
 		directTo = pullTo

@@ -717,7 +717,7 @@ func injectEnvHandler(senv map[string]string, noEval bool) interpreter.OpenHandl
 	}
 }
 
-func runtimeVarsHandler(_ map[string]string) interpreter.OpenHandler {
+func runtimeVarsHandler() interpreter.OpenHandler {
 	var once sync.Once
 
 	return func(_ string, _ int, _ os.FileMode) (io.ReadWriteCloser, error) {
@@ -752,7 +752,7 @@ func sylogBuiltin(_ context.Context, argv []string) error {
 }
 
 // getAllEnvBuiltin display all exported variables in the form KEY=VALUE.
-func getAllEnvBuiltin(_ *interpreter.Shell) interpreter.ShellBuiltin {
+func getAllEnvBuiltin() interpreter.ShellBuiltin {
 	return func(ctx context.Context, _ []string) error {
 		hc := interp.HandlerCtx(ctx)
 
@@ -892,10 +892,10 @@ func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []st
 	senv := engineConfig.GetApptainerEnv()
 	shell.RegisterOpenHandler("/.inject-apptainer-env.sh", injectEnvHandler(senv, engineConfig.GetNoEval()))
 
-	shell.RegisterOpenHandler("/.singularity.d/env/99-runtimevars.sh", runtimeVarsHandler(senv))
+	shell.RegisterOpenHandler("/.singularity.d/env/99-runtimevars.sh", runtimeVarsHandler())
 
 	// register few builtin
-	shell.RegisterShellBuiltin("getallenv", getAllEnvBuiltin(shell))
+	shell.RegisterShellBuiltin("getallenv", getAllEnvBuiltin())
 	shell.RegisterShellBuiltin("sylog", sylogBuiltin)
 	shell.RegisterShellBuiltin("fixpath", fixPathBuiltin)
 	shell.RegisterShellBuiltin("hash", hashBuiltin)
