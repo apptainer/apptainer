@@ -660,21 +660,19 @@ func (e *EngineConfig) GetTargetGID() []int {
 	return e.JSON.TargetGID
 }
 
-// Appends all entries that are not already present in the slice.
-func AppendSliceNonduplicate(slice []string, newElements []string) []string {
-	newSlice := make([]string, 0, len(slice)+len(newElements))
-	exists := make(map[string]bool)
-	for _, element := range slice {
-		newSlice = append(newSlice, element)
-		exists[element] = true
-	}
-	for _, element := range newElements {
-		if !exists[element] {
-			newSlice = append(newSlice, element)
-			exists[element] = true
+// ConcatenateSliceDeduplicate concatenates two string slices and returns a string slice without duplicated entries.
+func ConcatenateSliceDeduplicate(first []string, second []string) []string {
+	dedup := make(map[string]struct{})
+	for _, slice := range [][]string{first, second} {
+		for _, elem := range slice {
+			dedup[elem] = struct{}{}
 		}
 	}
-	return newSlice
+	slice := make([]string, 0, len(dedup))
+	for elem := range dedup {
+		slice = append(slice, elem)
+	}
+	return slice
 }
 
 // SetLibrariesPath sets libraries to bind in container
@@ -686,7 +684,7 @@ func (e *EngineConfig) SetLibrariesPath(libraries []string) {
 // AppendLibrariesPath adds libraries to bind in container
 // /.singularity.d/libs directory.
 func (e *EngineConfig) AppendLibrariesPath(libraries ...string) {
-	e.JSON.LibrariesPath = AppendSliceNonduplicate(e.JSON.LibrariesPath, libraries)
+	e.JSON.LibrariesPath = ConcatenateSliceDeduplicate(e.JSON.LibrariesPath, libraries)
 }
 
 // GetLibrariesPath returns libraries to bind in container
@@ -702,7 +700,7 @@ func (e *EngineConfig) SetFilesPath(files []string) {
 
 // AppendFilesPath adds files to bind in container (eg: --nv)
 func (e *EngineConfig) AppendFilesPath(files ...string) {
-	e.JSON.FilesPath = AppendSliceNonduplicate(e.JSON.FilesPath, files)
+	e.JSON.FilesPath = ConcatenateSliceDeduplicate(e.JSON.FilesPath, files)
 }
 
 // GetFilesPath returns files to bind in container (eg: --nv).
