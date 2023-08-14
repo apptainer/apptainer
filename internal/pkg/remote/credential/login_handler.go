@@ -144,10 +144,8 @@ func checkOCILogin(regName string, username, password string, insecure bool) err
 		Password: password,
 	})
 
-	scopes := []string{reg.Scope("")}
-
 	// Creating a new transport pings the registry and works through auth flow.
-	_, err = transport.NewWithContext(context.TODO(), reg, auth, http.DefaultTransport, scopes)
+	_, err = transport.NewWithContext(context.TODO(), reg, auth, http.DefaultTransport, nil)
 	if err != nil {
 		return err
 	}
