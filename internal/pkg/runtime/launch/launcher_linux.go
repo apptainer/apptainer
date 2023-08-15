@@ -791,8 +791,12 @@ func (l *Launcher) SetGPUConfig() error {
 		l.cfg.Nvidia = true
 	}
 
-	if l.cfg.Nvidia && l.cfg.Rocm {
-		sylog.Warningf("--nv and --rocm cannot be used together. Only --nv will be applied.")
+	if l.cfg.Rocm {
+		err := l.setRocmConfig()
+		// This is currently unnecessary, but useful for not missing future errors
+		if err != nil {
+			return err
+		}
 	}
 
 	if l.cfg.Nvidia {
@@ -808,10 +812,6 @@ func (l *Launcher) SetGPUConfig() error {
 			return l.setNvCCLIConfig()
 		}
 		return fmt.Errorf("--fakeroot does not support --nvccli in set-uid installations")
-	}
-
-	if l.cfg.Rocm {
-		return l.setRocmConfig()
 	}
 	return nil
 }
@@ -866,7 +866,7 @@ func (l *Launcher) setNVLegacyConfig() error {
 	if err != nil {
 		sylog.Warningf("While finding nv bind points: %v", err)
 	}
-	l.setGPUBinds(libs, bins, ipcs, "nv")
+	l.addGPUBinds(libs, bins, ipcs, "nv")
 	return nil
 }
 
@@ -879,12 +879,12 @@ func (l *Launcher) setRocmConfig() error {
 	if err != nil {
 		sylog.Warningf("While finding ROCm bind points: %v", err)
 	}
-	l.setGPUBinds(libs, bins, []string{}, "nv")
+	l.addGPUBinds(libs, bins, []string{}, "rocm")
 	return nil
 }
 
-// setGPUBinds sets EngineConfig entries to bind the provided list of libs, bins, ipc files.
-func (l *Launcher) setGPUBinds(libs, bins, ipcs []string, gpuPlatform string) {
+// addGPUBinds adds EngineConfig entries to bind the provided list of libs, bins, ipc files.
+func (l *Launcher) addGPUBinds(libs, bins, ipcs []string, gpuPlatform string) {
 	files := make([]string, len(bins)+len(ipcs))
 	if len(files) == 0 {
 		sylog.Warningf("Could not find any %s files on this host!", gpuPlatform)
@@ -899,12 +899,12 @@ func (l *Launcher) setGPUBinds(libs, bins, ipcs []string, gpuPlatform string) {
 		for i, ipc := range ipcs {
 			files[i+len(bins)] = ipc
 		}
-		l.engineConfig.SetFilesPath(files)
+		l.engineConfig.AppendFilesPath(files...)
 	}
 	if len(libs) == 0 {
 		sylog.Warningf("Could not find any %s libraries on this host!", gpuPlatform)
 	} else {
-		l.engineConfig.SetLibrariesPath(libs)
+		l.engineConfig.AppendLibrariesPath(libs...)
 	}
 }
 
