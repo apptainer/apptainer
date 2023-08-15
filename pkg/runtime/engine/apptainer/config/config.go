@@ -659,6 +659,21 @@ func (e *EngineConfig) GetTargetGID() []int {
 	return e.JSON.TargetGID
 }
 
+// ConcatenateSliceDeduplicate concatenates two string slices and returns a string slice without duplicated entries.
+func ConcatenateSliceDeduplicate(first []string, second []string) []string {
+	dedup := make(map[string]struct{})
+	for _, slice := range [][]string{first, second} {
+		for _, elem := range slice {
+			dedup[elem] = struct{}{}
+		}
+	}
+	slice := make([]string, 0, len(dedup))
+	for elem := range dedup {
+		slice = append(slice, elem)
+	}
+	return slice
+}
+
 // SetLibrariesPath sets libraries to bind in container
 // /.singularity.d/libs directory.
 func (e *EngineConfig) SetLibrariesPath(libraries []string) {
@@ -668,7 +683,7 @@ func (e *EngineConfig) SetLibrariesPath(libraries []string) {
 // AppendLibrariesPath adds libraries to bind in container
 // /.singularity.d/libs directory.
 func (e *EngineConfig) AppendLibrariesPath(libraries ...string) {
-	e.JSON.LibrariesPath = append(e.JSON.LibrariesPath, libraries...)
+	e.JSON.LibrariesPath = ConcatenateSliceDeduplicate(e.JSON.LibrariesPath, libraries)
 }
 
 // GetLibrariesPath returns libraries to bind in container
@@ -684,7 +699,7 @@ func (e *EngineConfig) SetFilesPath(files []string) {
 
 // AppendFilesPath adds files to bind in container (eg: --nv)
 func (e *EngineConfig) AppendFilesPath(files ...string) {
-	e.JSON.FilesPath = append(e.JSON.FilesPath, files...)
+	e.JSON.FilesPath = ConcatenateSliceDeduplicate(e.JSON.FilesPath, files)
 }
 
 // GetFilesPath returns files to bind in container (eg: --nv).
