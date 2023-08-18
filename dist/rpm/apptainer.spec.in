@@ -113,8 +113,6 @@ Requires: squashfuse
 Requires: fakeroot
 Requires: fuse-overlayfs
 Requires: e2fsprogs
-# only gocryptfs requires fuse
-Requires: fuse
 # Uncomment this for the epel build, but we don't want it for the Apptainer
 #  release build because there the same rpm is shared across OS versions
 #%%if 0%{?el7}
