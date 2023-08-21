@@ -48,6 +48,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix `$APPTAINER_MESSAGELEVEL` to correctly set the logging level.
 - Fix build failures when in setuid mode and unprivileged user namespaces
   are unavailable and the `--fakeroot` option is not selected.
+- Remove `Requires: fuse` from rpm packaging.
 
 ## v1.2.1 - \[2023-07-24\]
 
