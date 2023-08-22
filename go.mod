@@ -4,12 +4,12 @@ go 1.19
 
 require (
 	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2
-	github.com/ProtonMail/go-crypto v0.0.0-20230217124315-7d5c6f04bbb8
+	github.com/ProtonMail/go-crypto v0.0.0-20230528122434-6f98819771a1
 	github.com/adigunhammedolalekan/registry-auth v0.0.0-20200730122110-8cde180a3a60
 	github.com/apex/log v1.9.0
 	github.com/apptainer/container-key-client v0.8.0
 	github.com/apptainer/container-library-client v1.4.5
-	github.com/apptainer/sif/v2 v2.11.5
+	github.com/apptainer/sif/v2 v2.12.0
 	github.com/astromechza/etcpwdparse v0.0.0-20170319193008-f0e5f0779716
 	github.com/blang/semver/v4 v4.0.0
 	github.com/buger/goterm v1.0.4
@@ -112,7 +112,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/google/go-containerregistry v0.15.2 // indirect
+	github.com/google/go-containerregistry v0.16.1 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
@@ -177,7 +177,7 @@ require (
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/tools v0.8.0 // indirect
+	golang.org/x/tools v0.9.1 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
 	google.golang.org/grpc v1.55.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
