@@ -191,11 +191,11 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/go-openapi/validate/blob/master/LICENSE>
 
-## github.com/google/go-containerregistry/pkg/name
+## github.com/google/go-containerregistry/pkg
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/google/go-containerregistry/blob/master/pkg/name/LICENSE>
+**License URL:** <https://github.com/google/go-containerregistry/blob/master/pkg/LICENSE>
 
 ## github.com/gosimple/unidecode
 
