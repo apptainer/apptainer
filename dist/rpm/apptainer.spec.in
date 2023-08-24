@@ -185,7 +185,7 @@ fi
 # GOPROXY=off makes sure we fail instead of making network requests
 # the -B ldflags prevent rpm complaints about "No build ID note found"
 CGO_ENABLED=0 GOPROXY=off ./build.bash -mod=vendor -tags without_openssl \
-    -ldflags="-X main.GitVersion=%{gocryptfs_version} -B 0x`head -c20 /dev/urandom|od -An -tx1|tr -d ' \n'`" 
+    -ldflags="-X main.GitVersion=%{gocryptfs_version} -B 0x12345678"
 popd
 %endif
 
