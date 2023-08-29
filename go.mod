@@ -43,10 +43,10 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/sylabs/json-resp v0.9.0
 	github.com/urfave/cli v1.22.12 // indirect
-	github.com/vbauerster/mpb/v8 v8.5.2
+	github.com/vbauerster/mpb/v8 v8.6.1
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
 	golang.org/x/crypto v0.11.0
-	golang.org/x/sys v0.10.0
+	golang.org/x/sys v0.11.0
 	golang.org/x/term v0.10.0
 	golang.org/x/text v0.11.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -126,7 +126,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
-	github.com/mattn/go-runewidth v0.0.14 // indirect
+	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mattn/go-shellwords v1.0.12 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
