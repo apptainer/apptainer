@@ -126,9 +126,10 @@ func New(r io.Reader, name string, args []string, envs []string, runnerOptions .
 		dir = "/"
 	}
 
+	// TODO - update to ExecHandlers, as ExecHandler is deprecated.
 	opts := []interp.RunnerOption{
 		interp.StdIO(os.Stdin, os.Stdout, os.Stderr),
-		interp.ExecHandler(s.internalExecHandler()),
+		interp.ExecHandler(s.internalExecHandler()), //nolint:staticcheck
 		interp.OpenHandler(s.internalOpenHandler()),
 		interp.Params("--"),
 		interp.Env(expand.ListEnviron(envs...)),
@@ -305,8 +306,9 @@ func EvaluateEnv(ctx context.Context, script []byte, args []string, envs []strin
 		return nil, fmt.Errorf("could not open/create/modify %q: file feature is disabled", path)
 	}
 
+	// TODO - update to ExecHandlers, as ExecHandler is deprecated.
 	opts := []interp.RunnerOption{
-		interp.ExecHandler(execHandler),
+		interp.ExecHandler(execHandler), //nolint:staticcheck
 		interp.OpenHandler(openHandler),
 		interp.Env(newNonExportedEnv(envs)),
 	}

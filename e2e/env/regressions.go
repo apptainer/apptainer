@@ -127,11 +127,11 @@ func (c ctx) issue43(t *testing.T) {
 }
 
 // https://github.com/sylabs/singularity/issues/1263
-// With --env-file we should avoid any override of UID / GID / EUID that are set readonly by bash.
+// With --env-file we should avoid any override of EUID/UID/GID that are set readonly by bash.
 func (c ctx) issue1263(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
-	// An empty env file is sufficient, as UID/GID/EUID come from the mvdan.cc/sh evaluation of it.
+	// An empty env file is sufficient, as EUID/UID/GID come from the mvdan.cc/sh evaluation of it.
 	envFile, err := e2e.WriteTempFile(c.env.TestDir, "env-file", "")
 	if err != nil {
 		t.Fatal(err)
