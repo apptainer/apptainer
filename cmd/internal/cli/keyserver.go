@@ -137,7 +137,7 @@ var KeyserverAddCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-// KeyserverRemoveCmd apptainer remote remove-keyserver [remoteName] <keyserver_url>
+// KeyserverRemoveCmd apptainer keyserver remove [remoteName] <keyserver_url>
 var KeyserverRemoveCmd = &cobra.Command{
 	Args:   cobra.RangeArgs(1, 2),
 	PreRun: setKeyserver,
@@ -168,7 +168,7 @@ func setKeyserver(_ *cobra.Command, _ []string) {
 	}
 }
 
-// KeyserverLoginCmd apptainer registry login [option] <registry_url>
+// KeyserverLoginCmd apptainer keyserver login [option] <registry_url>
 var KeyserverLoginCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -203,7 +203,7 @@ var KeyserverLoginCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-// KeyserverLogoutCmd apptainer remote logout [remoteName|serviceURI]
+// KeyserverLogoutCmd apptainer keyserver logout [remoteName|serviceURI]
 var KeyserverLogoutCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -227,7 +227,7 @@ var KeyserverLogoutCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-// KeyserverListCmd apptainer remote list
+// KeyserverListCmd apptainer keyserver list
 var KeyserverListCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {

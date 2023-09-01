@@ -144,8 +144,7 @@ var remoteKeyserverOrderFlag = cmdline.Flag{
 	DefaultValue: uint32(0),
 	Name:         "order",
 	ShortHand:    "o",
-	Usage:        "define the keyserver order",
-	Deprecated:   "use 'keyserver' subcommand instead of 'remote', see the output of 'apptainer help keyserver' for more information",
+	Hidden:       true,
 }
 
 // -i|--insecure (deprecated)
@@ -155,8 +154,7 @@ var remoteKeyserverInsecureFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "insecure",
 	ShortHand:    "i",
-	Usage:        "allow insecure connection to keyserver",
-	Deprecated:   "use 'keyserver' subcommand instead of 'remote', see the output of 'apptainer help keyserver' for more information",
+	Hidden:       true,
 }
 
 // -i|--insecure
@@ -450,28 +448,28 @@ var RemoteStatusCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-// RemoteAddKeyserverCmd apptainer remote add-keyserver [option] [remoteName] <keyserver_url>
+// RemoteAddKeyserverCmd apptainer remote add-keyserver (deprecated)
 var RemoteAddKeyserverCmd = &cobra.Command{
-	Args:   cobra.RangeArgs(1, 2),
-	PreRun: setKeyserver,
+	Args: cobra.RangeArgs(1, 2),
 	Run: func(cmd *cobra.Command, args []string) {
-		if cmd.Flag(remoteKeyserverOrderFlag.Name).Changed {
-			sylog.Fatalf("use 'keyserver' subcommand instead of 'remote', see the output of 'apptainer help keyserver' for more information")
-		}
+		sylog.Warningf("'remote add-keyserver' is deprecated and will be removed in a future release; running 'keyserver add'")
+		keyserverInsecure = remoteKeyserverInsecure
+		keyserverOrder = remoteKeyserverOrder
+		KeyserverAddCmd.Run(cmd, args)
 	},
 
-	DisableFlagsInUseLine: true,
+	Use:    "add-keyserver",
+	Hidden: true,
 }
 
-// RemoteRemoveKeyserverCmd apptainer remote remove-keyserver [remoteName] <keyserver_url>
+// RemoteAddKeyserverCmd apptainer remote remove-keyserver (deprecated)
 var RemoteRemoveKeyserverCmd = &cobra.Command{
-	Args:   cobra.RangeArgs(1, 2),
-	PreRun: setKeyserver,
+	Args: cobra.RangeArgs(1, 2),
 	Run: func(cmd *cobra.Command, args []string) {
-		if cmd.Flag(remoteKeyserverOrderFlag.Name).Changed {
-			sylog.Fatalf("use 'keyserver' subcommand instead of 'remote', see the output of 'apptainer help keyserver' for more information")
-		}
+		sylog.Warningf("'remote remove-keyserver' is deprecated and will be removed in a future release; running 'keyserver remove'")
+		KeyserverRemoveCmd.Run(cmd, args)
 	},
 
-	DisableFlagsInUseLine: true,
+	Use:    "remove-keyserver",
+	Hidden: true,
 }
