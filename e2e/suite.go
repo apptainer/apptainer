@@ -40,6 +40,7 @@ import (
 	"github.com/apptainer/apptainer/e2e/inspect"
 	"github.com/apptainer/apptainer/e2e/instance"
 	"github.com/apptainer/apptainer/e2e/key"
+	"github.com/apptainer/apptainer/e2e/keyserver"
 	"github.com/apptainer/apptainer/e2e/legacy"
 	"github.com/apptainer/apptainer/e2e/oci"
 	"github.com/apptainer/apptainer/e2e/overlay"
@@ -213,6 +214,7 @@ func Run(t *testing.T) {
 	suite.AddGroup("INSPECT", inspect.E2ETests)
 	suite.AddGroup("INSTANCE", instance.E2ETests)
 	suite.AddGroup("KEY", key.E2ETests)
+	suite.AddGroup("KEYSERVER", keyserver.E2ETests)
 	suite.AddGroup("LEGACY", legacy.E2ETests)
 	suite.AddGroup("OCI", oci.E2ETests)
 	suite.AddGroup("OVERLAY", overlay.E2ETests)

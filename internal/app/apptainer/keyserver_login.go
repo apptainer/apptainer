@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
@@ -14,20 +14,15 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/remote"
-	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
-func RemoteAddKeyserver(name, uri string, order uint32, insecure bool) error {
-	// Explicit handling of corner cases: name and uri must be valid strings
-	if strings.TrimSpace(uri) == "" {
-		return fmt.Errorf("invalid URI: cannot have empty URI")
-	}
-
+// KeyserverLogin logs in to a keyserver.
+func KeyserverLogin(usrConfigFile string, args *LoginArgs) (err error) {
 	// opening config file
-	file, err := os.OpenFile(remote.SystemConfigPath, os.O_RDWR|os.O_CREATE, 0o644)
+	file, err := os.OpenFile(usrConfigFile, os.O_RDWR|os.O_CREATE, 0o600)
 	if err != nil {
 		return fmt.Errorf("while opening remote config file: %s", err)
 	}
@@ -39,22 +34,12 @@ func RemoteAddKeyserver(name, uri string, order uint32, insecure bool) error {
 		return fmt.Errorf("while parsing remote config data: %s", err)
 	}
 
-	var ep *endpoint.Config
-
-	if name == "" {
-		ep, err = c.GetDefault()
-	} else {
-		ep, err = c.GetRemote(name)
-	}
-
-	if err != nil {
-		return fmt.Errorf("no endpoint found: %s", err)
-	} else if !ep.System {
-		return fmt.Errorf("current endpoint is not a system defined endpoint")
-	}
-
-	if err := ep.AddKeyserver(uri, order, insecure); err != nil {
+	if err := syncSysConfig(c); err != nil {
 		return err
+	}
+
+	if err := c.Login(args.Name, args.Username, args.Password, args.Insecure); err != nil {
+		return fmt.Errorf("while login to %s: %s", args.Name, err)
 	}
 
 	// truncating file before writing new contents and syncing to commit file
@@ -74,5 +59,6 @@ func RemoteAddKeyserver(name, uri string, order uint32, insecure bool) error {
 		return fmt.Errorf("failed to flush remote config file %s: %s", file.Name(), err)
 	}
 
+	sylog.Infof("Token stored in %s", file.Name())
 	return nil
 }
