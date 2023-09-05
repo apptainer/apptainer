@@ -16,8 +16,8 @@ github.com/Microsoft/go-winio v0.6.1/go.mod h1:LRdKpFKfdobln8UmuiYcKPot9D2v6svN5
 github.com/Microsoft/hcsshim v0.10.0-rc.8 h1:YSZVvlIIDD1UxQpJp0h+dnpLUw+TrY0cx8obKsp3bek=
 github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2 h1:+vx7roKuyA63nhn5WAunQHLTznkw5W8b1Xc0dNjp83s=
 github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2/go.mod h1:HBCaDeC1lPdgDeDbhX8XFpy1jqjK0IBG8W5K+xYqA0w=
-github.com/ProtonMail/go-crypto v0.0.0-20230528122434-6f98819771a1 h1:JMDGhoQvXNTqH6Y3MC0IUw6tcZvaUdujNqzK2HYWZc8=
-github.com/ProtonMail/go-crypto v0.0.0-20230528122434-6f98819771a1/go.mod h1:EjAoLdwvbIOoOQr3ihjnSoLZRtE8azugULFRteWMNc0=
+github.com/ProtonMail/go-crypto v0.0.0-20230717121422-5aa5874ade95 h1:KLq8BE0KwCL+mmXnjLWEAOYO+2l2AE4YMmqG1ZpZHBs=
+github.com/ProtonMail/go-crypto v0.0.0-20230717121422-5aa5874ade95/go.mod h1:EjAoLdwvbIOoOQr3ihjnSoLZRtE8azugULFRteWMNc0=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/Shopify/logrus-bugsnag v0.0.0-20171204204709-577dee27f20d h1:UrqY+r/OJnIp5u0s1SbQ8dVfLCZJsnvazdBP5hS4iRs=
@@ -42,8 +42,8 @@ github.com/apptainer/container-key-client v0.8.0 h1:K181Zrejb53mR2YQZwCathSj8YRe
 github.com/apptainer/container-key-client v0.8.0/go.mod h1:wMeJdiMXlPRiwJfUyae2WRHsZlHG9Af6iPQ9TZcBnS8=
 github.com/apptainer/container-library-client v1.4.5 h1:zESpm9aLqELb0zr3isDspYU+iyaH0rk8Y2587RTSpp0=
 github.com/apptainer/container-library-client v1.4.5/go.mod h1:EA5bDsL/dxzAxFh3zBszSdVpB25wIwv/66M1qLOzrNU=
-github.com/apptainer/sif/v2 v2.12.0 h1:wSNFQQ2R31gEagrRGVI4YkZWMIM+xSHXe9Act9J/qzU=
-github.com/apptainer/sif/v2 v2.12.0/go.mod h1:S5dvHAwjI0Q1h32XqolsWHjPLjpLaHtHSUX5zd2DlZc=
+github.com/apptainer/sif/v2 v2.13.0 h1:eZ9JXhvUDwiQq17v9XwKSWMlj7dZIWWU6sL3lJ3pmFY=
+github.com/apptainer/sif/v2 v2.13.0/go.mod h1:SrVr0MVrzpTvfPGeSSoRDdxVwq9rFdYlEwQfsc72DdI=
 github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 h1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
