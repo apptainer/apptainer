@@ -19,7 +19,7 @@ require (
 	github.com/containernetworking/plugins v1.3.0
 	github.com/containers/image/v5 v5.25.0
 	github.com/creack/pty v1.1.18
-	github.com/cyphar/filepath-securejoin v0.2.3
+	github.com/cyphar/filepath-securejoin v0.2.4
 	github.com/docker/docker v23.0.6+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/fatih/color v1.15.0
