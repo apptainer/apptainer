@@ -46,6 +46,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.2.x
 
+### Bug fixes
+
+- Ignore undefined macros to fix yum bootstrap agent broken issue.
+
 ## v1.2.2 - \[2023-07-27\]
 
 - Fix `$APPTAINER_MESSAGELEVEL` to correctly set the logging level.
