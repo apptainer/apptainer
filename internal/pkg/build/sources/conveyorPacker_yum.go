@@ -129,9 +129,13 @@ func (c *YumConveyor) getRPMPath() (err error) {
 
 	rpmDBBackend, err := rpm.GetMacro("_db_backend")
 	if err != nil {
-		return err
+		if err != rpm.ErrMacroUndefined {
+			return err
+		}
+		sylog.Debugf("Undefined macro _db_backend is ignored.")
 	}
-	if rpmDBBackend != "bdb" {
+
+	if err == nil && rpmDBBackend != "bdb" {
 		sylog.Warningf("Your host system is using the %s RPM database backend.", rpmDBBackend)
 		sylog.Warningf("Bootstrapping of older distributions that use the bdb backend will fail.")
 	}
