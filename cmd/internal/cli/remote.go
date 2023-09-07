@@ -92,7 +92,7 @@ var remoteLoginUsernameFlag = cmdline.Flag{
 	DefaultValue: "",
 	Name:         "username",
 	ShortHand:    "u",
-	Usage:        "username to authenticate with (required for Docker/OCI registry login)",
+	Usage:        "username to authenticate with",
 	EnvKeys:      []string{"LOGIN_USERNAME"},
 }
 
@@ -232,7 +232,7 @@ func setGlobalRemoteConfig(_ *cobra.Command, _ []string) {
 	remoteConfig = remote.SystemConfigPath
 }
 
-// RemoteGetLoginPasswordCmd singularity remote get-login-password
+// RemoteGetLoginPasswordCmd apptainer remote get-login-password
 var RemoteGetLoginPasswordCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 

@@ -16,10 +16,10 @@ const (
 	// remote command
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	RemoteUse   string = `remote [remote options...]`
-	RemoteShort string = `Manage apptainer remote endpoints and OCI/Docker registry credentials`
+	RemoteShort string = `Manage apptainer remote endpoints`
 	RemoteLong  string = `
-  The 'remote' command allows you to manage Apptainer remote endpoints and
-  OCI/Docker registry credentials through its subcommands.
+  The 'remote' command allows you to manage Apptainer remote endpoints through
+  its subcommands.
 
   A 'remote endpoint' is a group of services that is compatible with the
   container library API.  The remote endpoint is a single address,
@@ -32,12 +32,6 @@ const (
   endpoint will be used for key operations, and 'library://' pull
   and push. You can also 'remote logout' from and 'remote remove' an endpoint that
   is no longer required.
-
-  To configure credentials for OCI registries that should be used when pulling or
-  pushing from/to 'docker://'' or 'oras://' URIs, use the 'remote login' command
-  only. You do not have to 'remote add' OCI registries. To remove credentials
-  'remote logout' with the same URI. You do not need to 'remote remove' OCI
-  credentials.
 
   The remote configuration is stored in $HOME/.apptainer/remotes.yaml by default.`
 	RemoteExample string = `
@@ -87,10 +81,9 @@ const (
 	// remote list command
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	RemoteListUse   string = `list`
-	RemoteListShort string = `List all apptainer remote endpoints and OCI credentials that are configured`
+	RemoteListShort string = `List all apptainer remote endpoints that are configured`
 	RemoteListLong  string = `
-  The 'remote list' command lists all remote endpoints and OCI registry
-  credentials configured for use.
+  The 'remote list' command lists all remote endpoints configured for use.
 
   The current remote is indicated by 'YES' in the 'ACTIVE' column and can be changed
   with the 'remote use' command.`
@@ -99,43 +92,30 @@ const (
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// remote login command
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	RemoteLoginUse   string = `login [login options...] <remote_name|registry_uri>`
-	RemoteLoginShort string = `Login to an Apptainer remote endpoint or an OCI/Docker registry using credentials`
+	RemoteLoginUse   string = `login [login options...] <remote_name>`
+	RemoteLoginShort string = `Login to an apptainer remote endpoint`
 	RemoteLoginLong  string = `
-  The 'remote login' command allows you to set credentials for a specific endpoint or
-  an OCI/Docker registry.
+  The 'remote login' command allows you to set credentials for a specific
+  endpoint.
 
   If no endpoint or registry is specified, the command will login to the currently
   active remote endpoint.`
 	RemoteLoginExample string = `
   To log in to an endpoint:
-  $ apptainer remote login
-
-  To login in to a docker/OCI registry:
-  $ apptainer remote login --username foo docker://docker.io
-  $ apptainer remote login --username foo oras://myregistry.example.com
-
-  Note that many cloud OCI registries use token based authentication. The token
-  should be specified as the password for login. A username is still required. E.g.
-  when using a standard Azure identity and token to login to an ACR registry the
-  username '00000000-0000-0000-0000-000000000000' is required. Consult your provider
-  documentation for detail of their login requirements.`
+  $ apptainer remote login SylabsCloud`
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// remote logout command
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	RemoteLogoutUse   string = `logout <remote_name|registry_uri>`
-	RemoteLogoutShort string = `Log out from an Apptainer remote endpoint or an OCI/Docker registry`
+	RemoteLogoutUse   string = `logout <remote_name>`
+	RemoteLogoutShort string = `Log out from an apptainer remote endpoint`
 	RemoteLogoutLong  string = `
-  The 'remote logout' command allows you to log out from an Apptainer specific
-  endpoint or an OCI/Docker registry. If no endpoint or service is specified, it
-  will logout from the current active remote endpoint.
+  The 'remote logout' command allows you to log out from an apptainer specific
+  endpoint. If no endpoint or service is specified, it will logout from the
+  currently active remote endpoint.
   `
 	RemoteLogoutExample string = `
   To log out from an endpoint
-  $ apptainer remote logout
-
-  To log out from a docker/OCI registry
-  $ apptainer remote logout docker://docker.io`
+  $ apptainer remote logout SylabsCloud`
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// remote status command
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
