@@ -29,6 +29,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - The keyserver-related commands that were under `remote` have been moved to
   their own, dedicated `keyserver` command. Run `apptainer help keyserver` for
   more information.
+- The commands related to OCI/Docker registries that were under `remote` have
+  been moved to their own, dedicated `registry` command. Run
+  `apptainer help registry` for more information.
 
 ### New Features & Functionality
 

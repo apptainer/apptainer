@@ -13,16 +13,13 @@ package apptainer
 import (
 	"fmt"
 	"os"
-	"sort"
 	"text/tabwriter"
 
 	"github.com/apptainer/apptainer/internal/pkg/remote"
 )
 
-const listLine = "%s\t%s\t%s\t%s\t%s\t%s\n"
-
-// RemoteList prints information about remote configurations
-func RemoteList(usrConfigFile string) (err error) {
+// RegistryList prints information about remote configurations
+func RegistryList(usrConfigFile string) (err error) {
 	c := &remote.Config{}
 
 	// opening config file
@@ -45,49 +42,15 @@ func RemoteList(usrConfigFile string) (err error) {
 		return err
 	}
 
-	// list in alphanumeric order
-	names := make([]string, 0, len(c.Remotes))
-	for n := range c.Remotes {
-		names = append(names, n)
-	}
-	sort.Slice(names, func(i, j int) bool {
-		iName, jName := names[i], names[j]
-
-		if c.Remotes[iName].System && !c.Remotes[jName].System {
-			return true
-		} else if !c.Remotes[iName].System && c.Remotes[jName].System {
-			return false
-		}
-
-		return names[i] < names[j]
-	})
-	sort.Strings(names)
-
-	fmt.Println("Cloud Services Endpoints")
-	fmt.Println("========================")
 	fmt.Println()
-
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintf(tw, listLine, "NAME", "URI", "ACTIVE", "GLOBAL", "EXCLUSIVE", "INSECURE")
-	for _, n := range names {
-		sys := "NO"
-		if c.Remotes[n].System {
-			sys = "YES"
+	fmt.Fprintf(tw, "%s\t%s\n", "URI", "SECURE?")
+	for _, r := range c.Credentials {
+		secure := "✓"
+		if r.Insecure {
+			secure = "✗!"
 		}
-		excl := "NO"
-		if c.Remotes[n].Exclusive {
-			excl = "YES"
-		}
-		insec := "NO"
-		if c.Remotes[n].Insecure {
-			insec = "YES"
-		}
-
-		active := "NO"
-		if c.DefaultRemote != "" && c.DefaultRemote == n {
-			active = "YES"
-		}
-		fmt.Fprintf(tw, listLine, n, c.Remotes[n].URI, active, sys, excl, insec)
+		fmt.Fprintf(tw, "%s\t%s\n", r.URI, secure)
 	}
 	tw.Flush()
 

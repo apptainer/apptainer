@@ -16,48 +16,35 @@ import (
 	"os"
 
 	"github.com/apptainer/apptainer/internal/pkg/remote"
-	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
-// RemoteLogout logs out from an endpoint.
-func RemoteLogout(usrConfigFile, name string) (err error) {
+// RegistryLogin logs in to an OCI/Docker registry.
+func RegistryLogin(usrConfigFile string, args *LoginArgs) (err error) {
 	// opening config file
 	file, err := os.OpenFile(usrConfigFile, os.O_RDWR|os.O_CREATE, 0o600)
 	if err != nil {
-		return fmt.Errorf("while opening remote config file: %s", err)
+		return fmt.Errorf("while opening configuration file: %s", err)
 	}
 	defer file.Close()
 
 	// read file contents to config struct
 	c, err := remote.ReadFrom(file)
 	if err != nil {
-		return fmt.Errorf("while parsing remote config data: %s", err)
+		return fmt.Errorf("while parsing configuration data: %s", err)
 	}
 
 	if err := syncSysConfig(c); err != nil {
 		return err
 	}
 
-	var r *endpoint.Config
-	if name == "" {
-		r, err = c.GetDefault()
-	} else {
-		r, err = c.GetRemote(name)
-	}
-
-	if r != nil {
-		// endpoint
-		r.Token = ""
-	} else {
-		// services
-		sylog.Warningf("'remote logout' is deprecated for registries or keyservers and will be removed in a future release; running 'registry logout'")
-		return RegistryLogout(usrConfigFile, name)
+	if err := c.Login(args.Name, args.Username, args.Password, args.Insecure); err != nil {
+		return fmt.Errorf("while login to %s: %s", args.Name, err)
 	}
 
 	// truncating file before writing new contents and syncing to commit file
 	if err := file.Truncate(0); err != nil {
-		return fmt.Errorf("while truncating remote config file: %s", err)
+		return fmt.Errorf("while truncating configuration file: %s", err)
 	}
 
 	if n, err := file.Seek(0, io.SeekStart); err != nil || n != 0 {
@@ -65,12 +52,13 @@ func RemoteLogout(usrConfigFile, name string) (err error) {
 	}
 
 	if _, err := c.WriteTo(file); err != nil {
-		return fmt.Errorf("while writing remote config to file: %s", err)
+		return fmt.Errorf("while writing configuration to file: %s", err)
 	}
 
 	if err := file.Sync(); err != nil {
-		return fmt.Errorf("failed to flush remote config file %s: %s", file.Name(), err)
+		return fmt.Errorf("failed to flush configuration file %s: %s", file.Name(), err)
 	}
 
+	sylog.Infof("Token stored in %s", file.Name())
 	return nil
 }

@@ -47,6 +47,7 @@ import (
 	"github.com/apptainer/apptainer/e2e/plugin"
 	"github.com/apptainer/apptainer/e2e/pull"
 	"github.com/apptainer/apptainer/e2e/push"
+	"github.com/apptainer/apptainer/e2e/registry"
 	"github.com/apptainer/apptainer/e2e/remote"
 	"github.com/apptainer/apptainer/e2e/run"
 	"github.com/apptainer/apptainer/e2e/runhelp"
@@ -221,6 +222,7 @@ func Run(t *testing.T) {
 	suite.AddGroup("PLUGIN", plugin.E2ETests)
 	suite.AddGroup("PULL", pull.E2ETests)
 	suite.AddGroup("PUSH", push.E2ETests)
+	suite.AddGroup("REGISTRY", registry.E2ETests)
 	suite.AddGroup("REMOTE", remote.E2ETests)
 	suite.AddGroup("RUN", run.E2ETests)
 	suite.AddGroup("RUNHELP", runhelp.E2ETests)
