@@ -82,12 +82,12 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 				require.Command(t, "debootstrap")
 			},
 		},
-		// TODO(mem): reenable this; disabled while shub is down
+		// TODO(mem): re-enable this; disabled while shub is down
 		// {
 		// 	name:       "ShubURI",
 		// 	buildSpec:  "shub://GodloveD/busybox",
 		// },
-		// TODO(mem): reenable this; disabled while shub is down
+		// TODO(mem): re-enable this; disabled while shub is down
 		// {
 		// 	name:       "ShubDefFile",
 		// 	buildSpec:  "../examples/shub/Apptainer",

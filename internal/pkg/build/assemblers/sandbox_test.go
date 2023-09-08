@@ -80,7 +80,7 @@ func TestSandboxAssemblerShub(t *testing.T) {
 		t.SkipNow()
 	}
 
-	// TODO(mem): reenable this; disabled while shub is down
+	// TODO(mem): re-enable this; disabled while shub is down
 	t.Skip("Skipping tests that access singularity hub")
 
 	b, err := types.NewBundle(filepath.Join(os.TempDir(), "sbuild-sandboxAssembler"), os.TempDir())

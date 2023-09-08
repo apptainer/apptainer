@@ -288,7 +288,7 @@ func (c ctx) testPullCmd(t *testing.T) {
 			unauthenticated:  false,
 			expectedExitCode: 0,
 		},
-		// TODO(mem): reenable this; disabled while shub is down
+		// TODO(mem): re-enable this; disabled while shub is down
 		{
 			desc:             "image from shub",
 			srcURI:           "shub://GodloveD/busybox",

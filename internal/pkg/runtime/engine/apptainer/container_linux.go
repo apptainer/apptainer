@@ -867,7 +867,7 @@ func (c *container) mountImage(mnt *mount.Point) error {
 	sylog.Debugf("Mounting loop device %s to %s of type %s\n", path, mnt.Destination, mnt.Type)
 
 	if mountType == "encryptfs" {
-		// pass the master processus ID only if a container IPC
+		// pass the master process ID only if a container IPC
 		// namespace was requested because cryptsetup requires
 		// to run in the host IPC namespace
 		masterPid := 0
@@ -2138,7 +2138,7 @@ func (c *container) addCwdMount(system *mount.System) error {
 		sylog.Verbosef("Not mounting CWD (already mounted in container): %s", cwdHost)
 		return nil
 	} else if cwdHostSymlink && cwdContainerSymlink && cwdContainerResolved != cwdHostResolved {
-		// symlink case when both destination exists on host and in container but are differents
+		// symlink case when both destinations exist on host and in container but are different
 		sylog.Verbosef("Not mounting CWD, detected symlinks with different destination between host/container")
 		return nil
 	}

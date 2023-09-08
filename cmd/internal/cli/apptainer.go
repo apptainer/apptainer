@@ -792,7 +792,7 @@ func apptainerExec(image string, args []string) (string, error) {
 		return "", fmt.Errorf("while determining absolute path for %s: %v", image, err)
 	}
 
-	// re-use apptainer exec to grab image file content,
+	// reuse apptainer exec to grab image file content,
 	// we reduce binds to the bare minimum with options below
 	cmdArgs := []string{"exec", "--contain", "--no-home", "--no-nv", "--no-rocm", abspath}
 	cmdArgs = append(cmdArgs, args...)

@@ -47,7 +47,7 @@ func soLinks(libPath string) (paths []string, err error) {
 		if resolvedLib, err := filepath.EvalSymlinks(lPath); err == nil {
 			if resolvedLib == libPath {
 				// symlinkCandidate resolves (eventually) to required lib
-				sylog.Debugf("Idenfified %s as a symlink for %s", lPath, libPath)
+				sylog.Debugf("Identified %s as a symlink for %s", lPath, libPath)
 				paths = append(paths, lPath)
 			}
 		} else {

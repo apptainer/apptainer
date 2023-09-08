@@ -21,8 +21,8 @@ import (
 // createVirtualBlockDevice creates a virtual block device
 // in a file using the dd command. The test is skipped if
 // the command is not available.
-// @parma[in] test handle to control the test, i.e., stop it in case of fatal error
-// @parma[in] path to the virtual block device to be created
+// @param[in] test handle to control the test, i.e., stop it in case of fatal error
+// @param[in] path to the virtual block device to be created
 func createVirtualBlockDevice(t *testing.T, path string) {
 	cmdBin, err := exec.LookPath("dd")
 	if err != nil {
