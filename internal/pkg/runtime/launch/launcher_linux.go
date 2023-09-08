@@ -1277,7 +1277,7 @@ func convertImage(filename string, unsquashfsPath string, tmpDir string) (rootfs
 	// Nice message if we have been given an older ext3 image, which cannot be extracted due to lack of privilege
 	// to loopback mount.
 	if part.Type == imgutil.EXT3 {
-		sylog.Errorf("File %q is an ext3 format continer image.", filename)
+		sylog.Errorf("File %q is an ext3 format container image.", filename)
 		sylog.Errorf("Only SIF and squashfs images can be extracted in unprivileged mode.")
 		sylog.Errorf("Use `apptainer build` to convert this image to a SIF file using a setuid install of Apptainer.")
 	}

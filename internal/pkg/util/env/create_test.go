@@ -654,7 +654,7 @@ func TestSetContainerEnv(t *testing.T) {
 			},
 		},
 		{
-			name:     "suppress the info message when both legecy and new env coexist",
+			name:     "suppress the info message when both legacy and new env coexist",
 			cleanEnv: false,
 			homeDest: "/home/tester",
 			env: []string{
@@ -670,7 +670,7 @@ func TestSetContainerEnv(t *testing.T) {
 			},
 		},
 		{
-			name:     "should print info message if only legecy env exists",
+			name:     "should print info message if only legacy env exists",
 			cleanEnv: false,
 			homeDest: "/home/tester",
 			env: []string{

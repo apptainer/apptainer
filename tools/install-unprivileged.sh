@@ -201,7 +201,7 @@ latesturl()
 		URL="$URL/${2:0:1}"
 	fi
 	if [ "$URL" != "$LASTURL" ]; then
-		# optimization: re-use last list if it hasn't changed
+		# optimization: reuse last list if it hasn't changed
 		LASTURL="$URL"
 		LASTPKGS="$(curl -Ls "$URL")"
 	elif [ $RETRY -gt 0 ]; then

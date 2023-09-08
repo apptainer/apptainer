@@ -226,7 +226,7 @@ static struct capabilities *get_process_capabilities() {
     header.pid = 0;
 
     if ( capget(&header, data) < 0 ) {
-        fatalf("Failed to get processus capabilities\n");
+        fatalf("Failed to get process capabilities\n");
     }
 
     current->permitted = ((unsigned long long)data[1].permitted << 32) | data[0].permitted;

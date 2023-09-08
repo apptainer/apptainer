@@ -57,14 +57,14 @@ type File struct {
 	Checkpoint string `json:"checkpoint"`
 }
 
-// ProcName returns processus name based on instance name
+// ProcName returns process name based on instance name
 // and username
 func ProcName(name string, username string) (string, error) {
 	if err := CheckName(name); err != nil {
 		return "", fmt.Errorf("while checking instance name: %s", err)
 	}
 	if username == "" {
-		return "", fmt.Errorf("while getting instance processus name: empty username")
+		return "", fmt.Errorf("while getting instance process name: empty username")
 	}
 	return fmt.Sprintf(prognameFormat, ProgPrefix, username, name), nil
 }

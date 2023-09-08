@@ -111,7 +111,7 @@ func (t *Methods) Decrypt(arguments *args.CryptArgs, reply *string) (err error) 
 
 		// cryptsetup requires to run in the host IPC namespace
 		// so we enter temporarily in the host IPC namespace
-		// via the master processus ID if its greater than zero
+		// via the master process ID if its greater than zero
 		// which means that a container IPC namespace was requested
 		if err := namespaces.Enter(arguments.MasterPid, "ipc"); err != nil {
 			return fmt.Errorf("while joining host IPC namespace: %s", err)

@@ -12,7 +12,7 @@ from: ghcr.io/apptainer/alpine:3.15.0
     GOPATH=/go
     PATH=$PATH:$GOPATH/bin:/usr/local/go/bin
     CGO_ENABLED=0
-    AVENGERS=asemble
+    AVENGERS=assemble
     export GOPATH PATH CGO_ENABLED AVENGERS
 
 %setup
