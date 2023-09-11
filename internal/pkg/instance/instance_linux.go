@@ -91,19 +91,22 @@ func getPath(username string, subDir string) (string, error) {
 	}
 
 	var u *user.User
+	var configDir string
 	if username == "" {
 		u, err = user.CurrentOriginal()
+		if err != nil {
+			return "", err
+		}
+		configDir = syfs.ConfigDir()
 	} else {
 		u, err = user.GetPwNam(username)
-	}
-
-	if err != nil {
-		return "", err
-	}
-
-	configDir, err := syfs.ConfigDirForUsername(u.Name)
-	if err != nil {
-		return "", err
+		if err != nil {
+			return "", err
+		}
+		configDir, err = syfs.ConfigDirForUsername(u.Name)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	return filepath.Join(configDir, instancePath, subDir, hostname, u.Name), nil
