@@ -9,6 +9,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - The `apptainer push/pull` command will show a progress bar for oras protocol.
 - The `--nv` and `--rocm` flags can now be used simultaneously.
+- Fix the use of `APPTAINER_CONFIGDIR` with `apptainer instance start`.
 
 ## v1.2.2 - \[2023-07-27\]
 
