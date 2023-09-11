@@ -53,6 +53,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Ignore undefined macros to fix yum bootstrap agent broken issue.
 - Fix the use of `APPTAINER_CONFIGDIR` with `apptainer instance start`.
+- Fix the issue that apptainer will not read credentials from Docker fallback path.
 
 ## v1.2.2 - \[2023-07-27\]
 
