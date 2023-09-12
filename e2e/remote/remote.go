@@ -11,15 +11,18 @@
 package remote
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
+	"github.com/apptainer/apptainer/pkg/syfs"
 )
 
 type ctx struct {
@@ -932,6 +935,98 @@ func (c ctx) remoteUseExclusive(t *testing.T) {
 	}
 }
 
+func (c ctx) testDockerFallbackConfig(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	tmpdir, err := os.MkdirTemp(c.env.TestDir, "pull_test.")
+	if err != nil {
+		t.Fatalf("Failed to create temporary directory for pull test: %+v", err)
+	}
+	t.Cleanup(func() {
+		if !t.Failed() {
+			os.RemoveAll(tmpdir)
+		}
+	})
+
+	var (
+		registry = fmt.Sprintf("oras://%s", c.env.TestRegistry)
+		repo     = fmt.Sprintf("oras://%s/private/e2e:1.0.0", c.env.TestRegistry)
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest(`remote login`),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("remote login"),
+		e2e.WithArgs([]string{"-u", e2e.DefaultUsername, "-p", e2e.DefaultPassword, registry}...),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest(`push image`),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("push"),
+		e2e.WithArgs([]string{c.env.ImagePath, repo}...),
+		e2e.ExpectExit(0),
+	)
+
+	user := e2e.CurrentUser(t)
+	defaultConfig := filepath.Join(user.Dir, ".apptainer", syfs.DockerConfFile)
+	dockerPath := filepath.Join(user.Dir, ".docker")
+	dockerConfig := filepath.Join(dockerPath, "config.json")
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest(`try pulling oras image`),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--disable-cache", "--force", filepath.Join(tmpdir, "image.sif"), repo}...),
+		e2e.ExpectExit(0),
+		e2e.PostRun(func(t *testing.T) {
+			// move the ~/.apptainer/docker-config.json to ~/.docker/config.json
+			if _, err := os.Stat(defaultConfig); err != nil && errors.Is(err, os.ErrNotExist) {
+				t.Fatalf("Failed to find the default config: %s", defaultConfig)
+			}
+
+			err := os.MkdirAll(dockerPath, 0o755)
+			if err != nil {
+				t.Fatalf("Failed to create docker config path: %s", dockerPath)
+			}
+
+			err = os.Rename(defaultConfig, dockerConfig)
+			if err != nil {
+				t.Fatalf("Failed to move default apptainer config: %s to docker config path: %s", defaultConfig, dockerConfig)
+			}
+		}),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest(`try pulling oras image again`),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--disable-cache", "--force", filepath.Join(tmpdir, "image.sif"), repo}...),
+		e2e.ExpectExit(0),
+		e2e.PostRun(func(t *testing.T) {
+			// move back
+			err := os.Rename(dockerConfig, defaultConfig)
+			if err != nil {
+				t.Fatalf("Failed to move docker config: %s to apptainr default config path: %s", dockerConfig, defaultConfig)
+			}
+		}),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest(`logout`),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("remote logout"),
+		e2e.WithArgs([]string{registry}...),
+		e2e.ExpectExit(0),
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -952,5 +1047,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"oci login repeated":     np(c.remoteLoginRepeated),
 		"keyserver":              np(c.remoteKeyserver),
 		"use exclusive":          np(c.remoteUseExclusive),
+		"docker fallback config": np(c.testDockerFallbackConfig),
 	}
 }
