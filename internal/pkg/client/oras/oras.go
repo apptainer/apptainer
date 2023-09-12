@@ -92,7 +92,7 @@ func getResolver(ctx context.Context, ociAuth *ocitypes.DockerAuthConfig, noHTTP
 		return docker.NewResolver(opts), nil
 	}
 
-	cli, err := oras_docker.NewClient(syfs.DockerConf())
+	cli, err := oras_docker.NewClientWithDockerFallback(syfs.DockerConf())
 	if err != nil {
 		sylog.Warningf("Couldn't load auth credential file: %s", err)
 		return docker.NewResolver(opts), nil
