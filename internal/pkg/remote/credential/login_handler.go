@@ -75,7 +75,7 @@ func (h *ociHandler) login(u *url.URL, username, password string, insecure bool)
 	if err != nil {
 		return nil, err
 	}
-	cli, err := docker.NewClient(syfs.DockerConf())
+	cli, err := docker.NewClientWithDockerFallback(syfs.DockerConf())
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (h *ociHandler) login(u *url.URL, username, password string, insecure bool)
 }
 
 func (h *ociHandler) logout(u *url.URL) error {
-	cli, err := docker.NewClient(syfs.DockerConf())
+	cli, err := docker.NewClientWithDockerFallback(syfs.DockerConf())
 	if err != nil {
 		return err
 	}
