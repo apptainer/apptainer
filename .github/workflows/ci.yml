@@ -324,7 +324,7 @@ jobs:
       # See https://github.com/apptainer/apptainer/issues/796
       - name: Update fuse-overlayfs version
         run: |
-          sudo sh -c "echo 'deb http://archive.ubuntu.com/ubuntu kinetic universe' >/etc/apt/sources.list.d/kinetic.list"
+          sudo sh -c "echo 'deb http://old-releases.ubuntu.com/ubuntu kinetic universe' >/etc/apt/sources.list.d/kinetic.list"
           sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y fuse-overlayfs
 
       - name: Enable full cgroups v2 delegation
