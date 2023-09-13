@@ -42,6 +42,10 @@ var alwaysOmitKeys = map[string]bool{
 	"LD_LIBRARY_PATH":     true,
 }
 
+var prefixedKeepKeys = map[string]struct{}{
+	"CONFIGDIR": {},
+}
+
 type envKeyMap = map[string]string
 
 // setKeyIfNotAlreadyOverridden sets a value for key if not already overridden
@@ -144,14 +148,6 @@ EnvKeys:
 			continue EnvKeys
 		}
 
-		// APPTAINER_ prefixed environment variables are not forwarded
-		for _, prefix := range ApptainerPrefixes {
-			if strings.HasPrefix(env, prefix) {
-				sylog.Verbosef("Not forwarding %s environment variable", e[0])
-				continue EnvKeys
-			}
-		}
-
 		// APPTAINERENV_ prefixed environment variables will take
 		// precedence over the non prefixed variables
 		for _, prefix := range ApptainerEnvPrefixes {
@@ -161,7 +157,6 @@ EnvKeys:
 			}
 		}
 
-		// non prefixed environment variables
 		if mustAddToHostEnv(e[0], cleanEnv) {
 			if value, ok := envKeys[e[0]]; ok {
 				if value != e[1] {
@@ -190,6 +185,17 @@ EnvKeys:
 func mustAddToHostEnv(key string, cleanEnv bool) bool {
 	if _, ok := alwaysPassKeys[key]; ok {
 		return true
+	}
+	for _, prefix := range ApptainerPrefixes {
+		if strings.HasPrefix(key, prefix) {
+			// APPTAINER_ prefixed environment variables are not
+			// forwarded except for those listed in prefixedKeepKeys
+			if _, ok := prefixedKeepKeys[key[len(prefix):]]; ok {
+				return true
+			}
+			sylog.Verbosef("Not forwarding %s environment variable", key)
+			return false
+		}
 	}
 	if _, ok := alwaysOmitKeys[key]; ok || cleanEnv {
 		return false

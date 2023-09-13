@@ -347,6 +347,9 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 	}
 
 	if e.EngineConfig.GetInstance() {
+		// import APPTAINER_CONFIGDIR from original environment if set
+		e.setEnvAppVar("CONFIGDIR")
+
 		name := e.CommonConfig.ContainerID
 
 		if err := os.Chdir("/"); err != nil {
@@ -438,13 +441,19 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 	return nil
 }
 
-func (e *EngineOperations) setPathEnv() {
+func (e *EngineOperations) setEnvVar(key string) {
 	env := e.EngineConfig.OciConfig.Process.Env
 	for _, keyval := range env {
-		if strings.HasPrefix(keyval, "PATH=") {
-			os.Setenv("PATH", keyval[5:])
+		if strings.HasPrefix(keyval, key+"=") {
+			os.Setenv(key, keyval[len(key)+1:])
 			break
 		}
+	}
+}
+
+func (e *EngineOperations) setEnvAppVar(key string) {
+	for _, pfx := range env.ApptainerPrefixes {
+		e.setEnvVar(pfx + key)
 	}
 }
 
@@ -457,7 +466,7 @@ func (e *EngineOperations) runFuseDrivers(fromContainer bool, usernsFd int) erro
 	}()
 
 	if fromContainer {
-		e.setPathEnv()
+		e.setEnvVar("PATH")
 	} else {
 		os.Setenv("PATH", env.DefaultPath)
 	}

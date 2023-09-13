@@ -402,6 +402,23 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 					for _, tt := range tests {
 						t.Run(tt.name, tt.function)
 					}
+					dir, err := os.MkdirTemp(c.env.TestDir, "MoveInstanceConfig")
+					if err != nil {
+						t.Fatalf("Failed to create temporary directory: %v", err)
+					}
+					defer os.RemoveAll(dir)
+					defer os.Unsetenv("APPTAINER_CONFIGDIR")
+					os.Setenv("APPTAINER_CONFIGDIR", dir)
+					for _, tt := range tests {
+						t.Run(tt.name+"Moved", tt.function)
+					}
+					t.Run("CheckInstanceDirMoved", func(t *testing.T) {
+						e2e.Privileged(func(t *testing.T) {
+							if _, err := os.Stat(dir + "/instances/app"); err != nil {
+								t.Fatalf("failed %v", err)
+							}
+						})(t)
+					})
 				})
 			}
 		},

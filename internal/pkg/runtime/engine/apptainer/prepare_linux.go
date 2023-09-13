@@ -665,6 +665,9 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 //
 //nolint:maintidx
 func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Config) error {
+	// import APPTAINER_CONFIGDIR from original environment if set
+	e.setEnvAppVar("CONFIGDIR")
+
 	name := instance.ExtractName(e.EngineConfig.GetImage())
 	file, err := instance.Get(name, instance.AppSubDir)
 	if err != nil {
