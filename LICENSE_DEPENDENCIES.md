@@ -119,6 +119,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/docker/libtrust/blob/master/LICENSE>
 
+## github.com/go-jose/go-jose/v3
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/go-jose/go-jose/blob/master/v3/LICENSE>
+
 ## github.com/go-logr/logr
 
 **License:** Apache-2.0
@@ -401,6 +407,12 @@ The dependencies and their licenses are as follows:
 
 **Project URL:** <https://go.opentelemetry.io/otel>
 
+## go.opentelemetry.io/otel/metric
+
+**License:** Apache-2.0
+
+**Project URL:** <https://go.opentelemetry.io/otel/metric>
+
 ## go.opentelemetry.io/otel/trace
 
 **License:** Apache-2.0
@@ -424,12 +436,6 @@ The dependencies and their licenses are as follows:
 **License:** Apache-2.0
 
 **Project URL:** <https://gopkg.in/go-jose/go-jose.v2>
-
-## gopkg.in/square/go-jose.v2
-
-**License:** Apache-2.0
-
-**Project URL:** <https://gopkg.in/square/go-jose.v2>
 
 ## gopkg.in/yaml.v2
 
@@ -514,6 +520,12 @@ The dependencies and their licenses are as follows:
 **License:** BSD-3-Clause
 
 **License URL:** <https://github.com/cyphar/filepath-securejoin/blob/master/LICENSE>
+
+## github.com/go-jose/go-jose/v3/json
+
+**License:** BSD-3-Clause
+
+**License URL:** <https://github.com/go-jose/go-jose/blob/master/v3/json/LICENSE>
 
 ## github.com/gogo/protobuf/proto
 
@@ -658,12 +670,6 @@ The dependencies and their licenses are as follows:
 **License:** BSD-3-Clause
 
 **Project URL:** <https://gopkg.in/go-jose/go-jose.v2/json>
-
-## gopkg.in/square/go-jose.v2/json
-
-**License:** BSD-3-Clause
-
-**Project URL:** <https://gopkg.in/square/go-jose.v2/json>
 
 ## gotest.tools/v3/internal/difflib
 
@@ -845,6 +851,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/mattn/go-runewidth/blob/master/LICENSE>
 
+## github.com/mattn/go-sqlite3
+
+**License:** MIT
+
+**License URL:** <https://github.com/mattn/go-sqlite3/blob/master/LICENSE>
+
 ## github.com/mitchellh/mapstructure
 
 **License:** MIT
@@ -875,11 +887,11 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/samber/lo/blob/master/LICENSE>
 
-## github.com/secure-systems-lab/go-securesystemslib/dsse
+## github.com/secure-systems-lab/go-securesystemslib
 
 **License:** MIT
 
-**License URL:** <https://github.com/secure-systems-lab/go-securesystemslib/blob/master/dsse/LICENSE>
+**License URL:** <https://github.com/secure-systems-lab/go-securesystemslib/blob/master/LICENSE>
 
 ## github.com/shopspring/decimal
 
@@ -904,12 +916,6 @@ The dependencies and their licenses are as follows:
 **License:** MIT
 
 **License URL:** <https://github.com/urfave/cli/blob/master/LICENSE>
-
-## go.etcd.io/bbolt
-
-**License:** MIT
-
-**Project URL:** <https://go.etcd.io/bbolt>
 
 ## go.mozilla.org/pkcs7
 
