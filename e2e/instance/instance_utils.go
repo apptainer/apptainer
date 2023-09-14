@@ -45,6 +45,7 @@ func (c *ctx) stopInstance(t *testing.T, instance string, stopArgs ...string) (s
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("instance stop"),
 		e2e.WithArgs(args...),
+		e2e.WithEnv(c.withEnv),
 		e2e.PostRun(func(t *testing.T) {
 			success = !t.Failed()
 		}),
@@ -65,6 +66,7 @@ func (c *ctx) execInstance(t *testing.T, instance string, execArgs ...string) (s
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("exec"),
 		e2e.WithArgs(args...),
+		e2e.WithEnv(c.withEnv),
 		e2e.PostRun(func(t *testing.T) {
 			success = !t.Failed()
 		}),
@@ -92,6 +94,7 @@ func (c *ctx) expectInstance(t *testing.T, name string, nb int) {
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("instance list"),
 		e2e.WithArgs([]string{"--json", name}...),
+		e2e.WithEnv(c.withEnv),
 		e2e.ExpectExit(0, listInstancesFn),
 	)
 }

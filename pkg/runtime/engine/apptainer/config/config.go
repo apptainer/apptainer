@@ -97,6 +97,7 @@ type JSONConfig struct {
 	Image                 string            `json:"image"`
 	ImageArg              string            `json:"imageArg"`
 	Workdir               string            `json:"workdir,omitempty"`
+	ConfigDir             string            `json:"configdir,omitempty"`
 	CgroupsJSON           string            `json:"cgroupsJSON,omitempty"`
 	HomeSource            string            `json:"homedir,omitempty"`
 	HomeDest              string            `json:"homeDest,omitempty"`
@@ -261,6 +262,17 @@ func (e *EngineConfig) SetWorkdir(name string) {
 // GetWorkdir retrieves the work directory path.
 func (e *EngineConfig) GetWorkdir() string {
 	return e.JSON.Workdir
+}
+
+// SetConfigDir sets a config directory path.
+func (e *EngineConfig) SetConfigDir(name string) {
+	e.JSON.ConfigDir = name
+}
+
+// GetConfigDir retrieves the config directory path if it is set, or
+// otherwise an empty string.
+func (e *EngineConfig) GetConfigDir() string {
+	return e.JSON.ConfigDir
 }
 
 // SetScratchDir set a scratch directory path.
