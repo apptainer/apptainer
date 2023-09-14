@@ -40,6 +40,7 @@ func randomName(t *testing.T) string {
 type ctx struct {
 	env     e2e.TestEnv
 	profile e2e.Profile
+	withEnv []string
 }
 
 // Test that a basic echo server instance can be started, communicated with,
@@ -359,6 +360,40 @@ func (c *ctx) testGhostInstance(t *testing.T) {
 	}
 }
 
+// Test instances when using an alternate configdir
+func (c *ctx) testInstanceWithConfigDir(t *testing.T) {
+	dir, err := os.MkdirTemp(c.env.TestDir, "InstanceWithConfigDir")
+	if err != nil {
+		t.Fatalf("Failed to create temporary directory: %v", err)
+	}
+	defer os.RemoveAll(dir)
+
+	c.withEnv = append(os.Environ(), "APPTAINER_CONFIGDIR="+dir)
+	defer func() {
+		c.withEnv = []string{}
+	}()
+
+	name := "movedConfig"
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(c.profile),
+		e2e.WithCommand("instance start"),
+		e2e.WithArgs(c.env.ImagePath, name),
+		e2e.WithEnv(c.withEnv),
+		e2e.ExpectExit(0),
+	)
+
+	c.expectInstance(t, name, 1)
+	c.execInstance(t, name, "id")
+	c.stopInstance(t, name)
+
+	e2e.Privileged(func(t *testing.T) {
+		if _, err := os.Stat(dir + "/instances/app"); err != nil {
+			t.Fatalf("failed %v", err)
+		}
+	})(t)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := &ctx{
@@ -388,6 +423,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 				{"StopAll", c.testStopAll},
 				{"GhostInstance", c.testGhostInstance},
 				{"CheckpointInstance", c.testCheckpointInstance},
+				{"InstanceWithConfigDir", c.testInstanceWithConfigDir},
 			}
 
 			profiles := []e2e.Profile{
@@ -396,7 +432,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			}
 
 			for _, profile := range profiles {
-				profile := profile
 				t.Run(profile.String(), func(t *testing.T) {
 					c.profile = profile
 					for _, tt := range tests {

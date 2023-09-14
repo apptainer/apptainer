@@ -347,6 +347,8 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 	}
 
 	if e.EngineConfig.GetInstance() {
+		os.Setenv("APPTAINER_CONFIGDIR", e.EngineConfig.GetConfigDir())
+
 		name := e.CommonConfig.ContainerID
 
 		if err := os.Chdir("/"); err != nil {
