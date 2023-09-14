@@ -45,6 +45,7 @@ import (
 	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
 	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
+	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
@@ -267,6 +268,7 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	// Additional directory overrides.
 	l.engineConfig.SetScratchDir(l.cfg.ScratchDirs)
 	l.engineConfig.SetWorkdir(l.cfg.WorkDir)
+	l.engineConfig.SetConfigDir(syfs.ConfigDir())
 
 	// Container networking configuration.
 	l.engineConfig.SetNetwork(l.cfg.Network)
