@@ -25,7 +25,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - The `--vm` and related flags to start apptainer inside a VM have been
   removed. This functionality was related to the retired Singularity Desktop /
   SyOS projects.
-- The `--nv` and `--rocm` flags can now be used simultaneously.
 - The keyserver-related commands that were under `remote` have been moved to
   their own, dedicated `keyserver` command. Run `apptainer help keyserver` for
   more information.
@@ -37,7 +36,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - The `remote status` command will now print the username, realname, and email
   of the logged-in user, if available.
-- The `apptainer push/pull` command will show a progress bar for oras protocol.
 
 ### Developer / API
 
@@ -49,11 +47,17 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.2.x
 
-### Bug fixes
+## v1.2.3 - \[2023-09-14\]
 
-- Ignore undefined macros to fix yum bootstrap agent broken issue.
-- Fix the use of `APPTAINER_CONFIGDIR` with `apptainer instance start`.
-- Fix the issue that apptainer will not read credentials from Docker fallback path.
+- The `apptainer push/pull` commands now show a progress bar for the oras
+  protocol like there was for docker and library protocols.
+- The `--nv` and `--rocm` flags can now be used simultaneously.
+- Fix the use of `APPTAINER_CONFIGDIR` with `apptainer instance start`
+  and action commands that refer to `instance://`.
+- Ignore undefined macros, to fix yum bootstrap agent on el7.
+- Fix the issue that apptainer would not read credentials from the Docker
+  fallback path `~/.docker/config.json` if missing in the apptainer
+  credentials.
 
 ## v1.2.2 - \[2023-07-27\]
 
