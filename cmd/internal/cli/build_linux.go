@@ -95,7 +95,7 @@ func fakerootExec(isDeffile, unprivEncrypt bool) {
 		if buildArgs.ignoreUserns {
 			err = errors.New("could not start root-mapped namespace because --ignore-userns is set")
 		} else {
-			err = fakeroot.UnshareRootMapped(args, unprivEncrypt)
+			err = fakeroot.UnshareRootMapped(args, true)
 		}
 		if err == nil {
 			// All the work has been done by the child process
