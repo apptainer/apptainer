@@ -98,6 +98,10 @@ if [ -z "$DIST" ]; then
 	fi
 fi
 
+if ! $NOOPENSUSE && [[ "$DIST" != *suse* ]]; then
+	fatal "The -o option is only relevant to suse-based distributions"
+fi
+
 if [ -z "$ARCH" ]; then
 	ARCH="$(arch)"
 fi
