@@ -51,8 +51,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   apptainer on el8 and a mounted remote filesystem when using the
   `--fakeroot` option without `/etc/subuid` mapping.  The fix was to
   change the switch to an unprivileged root-mapped namespace to be the
-  equivalent of `unshare -r` instead of `unshare -rm`, to work around a
-  bug in the el8 kernel.
+  equivalent of `unshare -r` instead of `unshare -rm` on action commands,
+  to work around a bug in the el8 kernel.
 
 ## v1.2.3 - \[2023-09-14\]
 
