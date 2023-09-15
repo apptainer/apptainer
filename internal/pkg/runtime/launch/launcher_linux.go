@@ -135,7 +135,7 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 			if l.cfg.IgnoreUserns {
 				err = errors.New("could not start root-mapped namespace because --ignore-userns is set")
 			} else {
-				err = fakeroot.UnshareRootMapped(os.Args)
+				err = fakeroot.UnshareRootMapped(os.Args, false)
 			}
 			if err == nil {
 				// All good
