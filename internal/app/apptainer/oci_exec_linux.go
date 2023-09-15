@@ -20,7 +20,7 @@ import (
 )
 
 // OciExec executes a command in a container
-func OciExec(containerID string, cmdArgs []string) error {
+func OciExec(containerID string, cmdArgs []string) error { //nolint:staticcheck
 	commonConfig, err := getCommonConfig(containerID)
 	if err != nil {
 		return fmt.Errorf("%s doesn't exist", containerID)

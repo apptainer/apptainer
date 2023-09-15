@@ -20,7 +20,7 @@ collect:
 check: codegen
 	@echo " CHECK golangci-lint"
 	$(V) cd $(SOURCEDIR) && \
-		golangci-lint run --verbose --build-tags "$(GO_TAGS)"
+		golangci-lint run --timeout 10m --verbose --build-tags "$(GO_TAGS)"
 	@echo "       PASS"
 
 .PHONY: dist

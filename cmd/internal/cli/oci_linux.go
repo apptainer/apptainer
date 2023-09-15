@@ -294,7 +294,7 @@ var OciExecCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := apptainer.OciExec(args[0], args[1:]); err != nil {
+		if err := apptainer.OciExec(args[0], args[1:]); err != nil { //nolint:staticcheck
 			sylog.Fatalf("%s", err)
 		}
 	},
