@@ -47,6 +47,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.2.x
 
+- Fixed a problem with relocating an unprivileged installation of
+  apptainer on el8 and a mounted remote filesystem when using the
+  `--fakeroot` option without `/etc/subuid` mapping.  The fix was to
+  change the switch to an unprivileged root-mapped namespace to be the
+  equivalent of `unshare -r` instead of `unshare -rm`, to work around a
+  bug in the el8 kernel.
+
 ## v1.2.3 - \[2023-09-14\]
 
 - The `apptainer push/pull` commands now show a progress bar for the oras

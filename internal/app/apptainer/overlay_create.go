@@ -232,7 +232,7 @@ func OverlayCreate(size int, imgPath string, overlaySparse bool, isFakeroot bool
 			//  the fakeroot command (in suid flow with no user
 			//  namespaces), using the --fakeroot option here
 			//  prevents overlay from working, most unfortunately.
-			err = fakeroot.UnshareRootMapped([]string{"/bin/true"})
+			err = fakeroot.UnshareRootMapped([]string{"/bin/true"}, false)
 			if err != nil {
 				sylog.Debugf("UnshareRootMapped failed: %v", err)
 				if isFakeroot {
@@ -248,7 +248,7 @@ func OverlayCreate(size int, imgPath string, overlaySparse bool, isFakeroot bool
 
 		if isFakeroot {
 			sylog.Debugf("Trying root-mapped namespace")
-			err = fakeroot.UnshareRootMapped(os.Args)
+			err = fakeroot.UnshareRootMapped(os.Args, false)
 			if err == nil {
 				// everything was done by the child
 				os.Exit(0)
