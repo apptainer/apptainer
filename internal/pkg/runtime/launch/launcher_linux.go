@@ -105,19 +105,6 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 			l.cfg.Namespaces.User = true
 			sylog.Debugf("running root-mapped unprivileged")
 			var err error
-			// Try to bind-mount the original user's home directory to /root.
-			// This may be overridden later by custom home directory settings,
-			// but this makes it available later as a source for the what it
-			// thinks of as the "original" user's home directory, if needed.
-			homedir := os.Getenv("HOME")
-			if homedir != "" {
-				err = syscall.Mount(homedir, "/root", "", syscall.MS_BIND, "")
-				if err != nil {
-					sylog.Debugf("Failure bind-mounting %s to /root: %v, skipping", homedir, err)
-				} else {
-					sylog.Debugf("Bind-mounting %s to /root", homedir)
-				}
-			}
 			if l.cfg.IgnoreFakerootCmd {
 				err = errors.New("fakeroot command is ignored because of --ignore-fakeroot-command")
 			} else {
