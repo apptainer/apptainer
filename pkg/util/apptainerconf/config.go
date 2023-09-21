@@ -128,6 +128,8 @@ type File struct {
 	DownloadPartSize    uint   `default:"5242880" directive:"download part size"`
 	DownloadBufferSize  uint   `default:"32768" directive:"download buffer size"`
 	SystemdCgroups      bool   `default:"yes" authorized:"yes,no" directive:"systemd cgroups"`
+	// pushgateway unix socket
+	PushgatewaySocketPath string `directive:"pushgateway communication socket path"`
 }
 
 // NOTE: if you think that we may want to change the default for any
@@ -530,4 +532,10 @@ download buffer size = {{ .DownloadBufferSize }}
 # Whether to use systemd to manage container cgroups. Required for rootless cgroups
 # functionality. 'no' will manage cgroups directly via cgroupfs.
 systemd cgroups = {{ if eq .SystemdCgroups true }}yes{{ else }}no{{ end }}
+
+# PUSHGATEWAY SOCKET PATH: [STRING]
+# DEFAULT: Undefined
+# Defines pushgateway socket path
+#pushgateway socket path=
+{{ if ne .PushgatewaySocketPath "" }}pushgateway socket path = {{ .PushgatewaySocketPath}}{{ end }}
 `
