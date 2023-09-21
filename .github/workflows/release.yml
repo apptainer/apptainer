@@ -32,6 +32,7 @@ jobs:
         env:
           OS_TYPE: centos
           OS_VERSION: 7
+          HIDE_DIST: true
           GO_ARCH: linux-amd64
         run: |
           # Move the source directory down a level to separate it

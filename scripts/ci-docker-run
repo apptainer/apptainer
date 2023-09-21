@@ -22,8 +22,10 @@ if [ "$OS_TYPE" = "debian" ] || [ "$OS_TYPE" = "ubuntu" ]; then
     PKGTYPE=deb
 fi
 
+CONTAINER_VERS="${CONTAINER_VERS:-$DOCKER_HUB_URI}"
+
 docker run --privileged --network=host -v "$(pwd):/build:rw" \
-  -e OS_TYPE=$OS_TYPE -e GO_ARCH=$GO_ARCH -e DOCKER_HUB_URI="$DOCKER_HUB_URI" \
+  -e OS_TYPE=$OS_TYPE -e GO_ARCH=$GO_ARCH -e CONTAINER_VERS="$CONTAINER_VERS" \
   --name "$DOCKER_CONTAINER_NAME" "$DOCKER_HUB_URI" /bin/bash -exc \
 	"cd /build && scripts/ci-${TEST_TYPE:-$PKGTYPE-build}-test"
 

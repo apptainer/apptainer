@@ -27,12 +27,17 @@ su testuser -c '
   set -e
   rm -rf ins image*.sif overlay.img
   tools/install-unprivileged.sh -v apptainer-[1-9]*.$(arch).rpm ins
-
-  ins/bin/apptainer build image.sif docker://'$DOCKER_HUB_URI'
+  (
+  echo Bootstrap: docker
+  echo From: '"$CONTAINER_VERS"'
+  echo %post
+  echo "  id"
+  ) >image.def
+  ins/bin/apptainer build image.sif image.def
   truncate -s 1G overlay.img
   mkfs.ext3 -F -O ^has_journal overlay.img
   ins/bin/apptainer exec --overlay overlay.img -f image.sif touch /bin/newfile
-  ins/bin/apptainer exec -B $PWD -f image.sif ins/bin/apptainer exec --overlay overlay.img image.sif cat /bin/newfile
+  ins/bin/apptainer exec -f image.sif ins/bin/apptainer exec --overlay overlay.img image.sif cat /bin/newfile
   ins/bin/apptainer exec --unsquash image.sif true
   echo testphrase|ins/bin/apptainer build --encrypt --passphrase image-e.sif image.sif
   echo testphrase|ins/bin/apptainer exec --passphrase image-e.sif true

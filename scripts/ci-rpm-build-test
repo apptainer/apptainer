@@ -59,8 +59,10 @@ su testuser -c '
       curl -f -L -sS -O $URL
       DOWNLOADEDFILES="$DOWNLOADEDFILES $(basename $URL)"
   done
-  # eliminate the "dist" part in the rpm name, for the release_assets
-  echo "%dist %{nil}" >$HOME/.rpmmacros
+  if [ "$HIDE_DIST" = true ]; then
+    # eliminate the "dist" part in the rpm name, for the release_assets
+    echo "%dist %{nil}" >$HOME/.rpmmacros
+  fi
   make -C builddir rpm
   sudo yum install -y $HOME/rpmbuild/RPMS/*/*.rpm
   BLD="$(echo $HOME/rpmbuild/BUILD/apptainer-*)"
