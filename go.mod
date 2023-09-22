@@ -9,7 +9,7 @@ require (
 	github.com/apex/log v1.9.0
 	github.com/apptainer/container-key-client v0.8.0
 	github.com/apptainer/container-library-client v1.4.5
-	github.com/apptainer/sif/v2 v2.13.0
+	github.com/apptainer/sif/v2 v2.14.0
 	github.com/astromechza/etcpwdparse v0.0.0-20170319193008-f0e5f0779716
 	github.com/blang/semver/v4 v4.0.0
 	github.com/buger/goterm v1.0.4
