@@ -63,7 +63,7 @@ func IsInsideUserNamespace(pid int) (bool, bool) {
 }
 
 // HostUID attempts to find the original host UID if the current
-// process is running inside a user namespace, if it doesn't it
+// process is root running inside a user namespace, and if not it
 // simply returns the current UID
 func HostUID() (int, error) {
 	return getHostID("uid", os.Getuid())
@@ -75,6 +75,10 @@ func HostGID() (int, error) {
 }
 
 func getHostID(typ string, currentID int) (int, error) {
+	if currentID != 0 {
+		return currentID, nil
+	}
+
 	idMap := fmt.Sprintf("/proc/self/%s_map", typ)
 
 	f, err := os.Open(idMap)
