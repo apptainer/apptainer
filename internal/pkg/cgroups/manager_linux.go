@@ -19,7 +19,6 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/opencontainers/runc/libcontainer/cgroups"
 	lccgroups "github.com/opencontainers/runc/libcontainer/cgroups"
 	lcmanager "github.com/opencontainers/runc/libcontainer/cgroups/manager"
 	lcconfigs "github.com/opencontainers/runc/libcontainer/configs"
@@ -243,7 +242,7 @@ func checkRootless(group string, systemd bool) (rootless bool, err error) {
 		return false, nil
 	}
 
-	if !cgroups.IsCgroup2HybridMode() && !cgroups.IsCgroup2UnifiedMode() {
+	if !lccgroups.IsCgroup2HybridMode() && !lccgroups.IsCgroup2UnifiedMode() {
 		return false, fmt.Errorf("rootless cgroups requires cgroups v2")
 	}
 	if !systemd {
