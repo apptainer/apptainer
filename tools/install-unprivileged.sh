@@ -16,19 +16,22 @@ REQUIREDCMDS="curl rpm2cpio cpio"
 usage()
 {
 	(
-	echo "Usage: install-unprivileged.sh [-d dist] [-a arch] [-v version] [-o ] installpath"
-	echo "Installs apptainer version and its dependencies from EPEL+baseOS"
-	echo "   or Fedora."
-	echo " dist can start with el or fc and ends with the major version number,"
-	echo "   e.g. el9 or fc37, default based on the current system."
-	echo "   As a convenience, active debian and ubuntu versions"
-	echo "   get translated into a compatible el version for downloads."
-	echo "   OpenSUSE based distributions are also mapped to el, or native openSUSE"
-	echo "   binaries can be used via the -o switch."
-	echo " arch can be any architecture supported by EPEL or Fedora,"
-	echo "   default based on the current system."
-	echo " version selects a specific apptainer version, default latest release,"
-	echo "   although if it ends in '.rpm' then apptainer will come from there."
+	echo "Usage: install-unprivileged.sh [-d dist] [-o] [-a arch] [-v version] installpath"
+	echo
+	echo "Installs an apptainer version and its dependencies from EPEL+baseOS or Fedora."
+	echo "By default packages are installed from the oldest supported EPEL distribution"
+	echo "   for the architecture.  That usually works best for any distribution"
+	echo "   including when building containers for any distribution."
+	echo "If that is a problem you can explicitly select a distribution with the -d"
+	echo "   option, where dist can start with el or fc and end with a major version"
+	echo "   number, e.g. el9 or fc37. If dist begins with debian, ubuntu, or suse"
+	echo "   followed by a version number, it will be translated to the most comparable"
+	echo "   el version, except that if -o is used with a dist beginning with suse,"
+	echo "   suse binaries will be used when available."
+	echo " arch can be any architecture supported by EPEL or Fedora, default based on"
+	echo "   the current system."
+	echo " version selects a specific apptainer version, default latest release, and"
+	echo "   if it ends in '.rpm' then apptainer will come from a file of that name."
 	) >&2
 	exit 1
 }
@@ -70,40 +73,20 @@ if [ -n "$MISSINGCMDS" ]; then
 	fatal "Required command(s)$MISSINGCMDS not found"
 fi
 
-simple_dist() {
-source /etc/os-release
-   	case " $ID $ID_LIKE " in
-		*" rhel "*) echo "el${VERSION_ID%.*}";;
-		*" fedora "*) echo "fc${VERSION_ID%.*}";;
-		# ubuntu has to be before debian because it has
-		# ID_LIKE=debian
-		*" ubuntu "*) echo "ubuntu${VERSION_ID%.*}";;
-		# testing & unstable debian have no VERSION_ID
-		*" debian "*) echo "debian${VERSION_ID%.*}";;
-   		# tumbleweed is  rolling release so a extra entry for it
-   	 	*" opensuse-tumbleweed"*) echo "opensuse-tumbleweed";;
-		*" suse "*) echo "suse${VERSION_ID%.*}";;
-		*" sles "*) echo "suse${VERSION_ID%.*}";;
-    esac
-}
+if [ -z "$ARCH" ]; then
+	ARCH="$(arch)"
+fi
 
 if [ -z "$DIST" ]; then
-	if [ ! -f /etc/os-release ]; then
-		fatal "There's no /etc/os-release so cannot determine distribution"
-	fi
-	# shellcheck disable=SC2311
-	DIST=$(simple_dist)
-	if [ -z "$DIST" ]; then
-		fatal "Operating system in /etc/os-release not supported"
+	if [ "$ARCH" = x86_64 ]; then
+		DIST=el7
+	else
+		DIST=el8
 	fi
 fi
 
 if ! $NOOPENSUSE && [[ "$DIST" != *suse* ]]; then
 	fatal "The -o option is only relevant to suse-based distributions"
-fi
-
-if [ -z "$ARCH" ]; then
-	ARCH="$(arch)"
 fi
 
 DEST="$1"
@@ -141,9 +124,11 @@ esac
 OSREPOURL=""
 EXTRASREPOURL=""
 EPELREPOURL=""
-OSSPLIT=true
 
-case $DIST in
+setrepourls()
+{
+OSSPLIT=true
+case $1 in
 	el7)
 	    OSREPOURL="https://linux-mirrors.fnal.gov/linux/centos/7/os/$ARCH/Packages"
 	    # there's no extra directory level with the first name of the
@@ -154,7 +139,7 @@ case $DIST in
 	    EPELREPOURL="https://linux-mirrors.fnal.gov/linux/fedora/epel/7/$ARCH/Packages"
 	    ;;
 	el*) 
-	    EL="${DIST#el}"
+	    EL="${1#el}"
 	    if [ $EL = 8 ] && { [ "$ARCH" = s390x ] || [ "$ARCH" = ppc64le ] ; } ; then
 		# these archs not yet available on rocky8
 		OSREPOURL="https://repo.almalinux.org/almalinux/$EL/BaseOS/$ARCH/os/Packages"
@@ -167,7 +152,7 @@ case $DIST in
 	    EPELREPOURL="https://download.fedoraproject.org/pub/epel/$EL/Everything/$ARCH/Packages"
 	    ;;
 	fc*)
-	    FC="${DIST#fc}"
+	    FC="${1#fc}"
 	    OSREPOURL="https://dl.fedoraproject.org/pub/fedora/linux/updates/$FC/Everything/$ARCH/Packages/"
 	    EPELREPOURL="https://dl.fedoraproject.org/pub/fedora/linux/updates$TESTING/$FC/Everything/$ARCH/Packages/"
 	    ;;
@@ -183,8 +168,10 @@ case $DIST in
 	    EXTRASREPOURL="https://download.opensuse.org/repositories/filesystems/15.4/$ARCH"
 	    OSSPLIT=false
 	    ;;
-	*) fatal "$DIST distribution not supported";;
+	*) fatal "$1 distribution not supported";;
 esac
+}
+setrepourls "$DIST"
 
 # $1 -- base URL
 # $2 -- package name
@@ -232,6 +219,7 @@ latesturl()
 	fi
 }
 
+RPMDIST=""
 LOCALAPPTAINER=false
 if [ -z "$VERSION" ] || ! $NOOPENSUSE; then
 	# shellcheck disable=SC2310,SC2311
@@ -247,6 +235,14 @@ elif [[ "$VERSION" == *.rpm ]]; then
 	if [[ "$VERSION" != /* ]]; then
 		# not a complete path
 		VERSION="$PWD/$VERSION"
+	fi
+	# take third from last field separated by dots as the rpm dist
+	# shellcheck disable=SC2001
+	RPMDIST="$(echo $VERSION|sed 's/.*\.\(.*\)\.[^.]*\..*$/\1/')"
+	# but if it starts with a number, the dist is missing so just try
+	# to use the default DIST (which happens if RPMDIST is empty)
+	if [[ "$RPMDIST" == [0-9]* ]]; then
+		RPMDIST=""
 	fi
 else
 	KOJIURL="https://kojipkgs.fedoraproject.org/packages/apptainer/$VERSION"
@@ -288,24 +284,36 @@ APPTAINERURL="https://kojipkgs.fedoraproject.org/packages/apptainer/"
 OSUTILS=""
 EXTRASUTILS="fuse-overlayfs"
 EPELUTILS="fakeroot"
+RPMUTILS=""
 if [ "$DIST" = el7 ]; then
-	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs"
+	OSUTILS="$OSUTILS lzo squashfs-tools fuse-libs"
 	EPELUTILS="$EPELUTILS libzstd fuse2fs fuse3-libs fakeroot-libs"
 elif [ "$DIST" = el8 ]; then
-	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
+	OSUTILS="$OSUTILS lzo squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
 	EPELUTILS="$EPELUTILS fakeroot-libs"
 elif [ "$DIST" = "opensuse-tumbleweed" ]; then
-	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot fuse2fs $EXTRASUTILS $EPELUTILS"
+	OSUTILS="$OSUTILS squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot fuse2fs $EXTRASUTILS $EPELUTILS"
 	EXTRASUTILS=""
 	EPELUTILS=""
 elif [ "$DIST" = "suse15" ]; then
-	OSUTILS="$OSUTILS libseccomp2 squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot $EPELUTILS"
+	OSUTILS="$OSUTILS squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot $EPELUTILS"
 	EXTRASUTILS="$EXTRASUTILS fuse2fs"
 	EPELUTILS=""
 else
-	OSUTILS="$OSUTILS lzo libseccomp squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs"
+	OSUTILS="$OSUTILS lzo squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs"
 	EXTRASUTILS="$EXTRASUTILS fuse3-libs"
 	EPELUTILS="$EPELUTILS fakeroot-libs"
+fi
+if [[ "$RPMDIST" == *suse* ]]; then
+	RPMUTILS=libseccomp2
+elif [ -n "$RPMDIST" ]; then
+	# Note that libseccomp also requires libc, so if $RPMDIST is newer than
+	# the host's distribution then this can cause GLIBC version errors.
+	RPMUTILS=libseccomp
+elif [[ "$DIST" == *suse* ]]; then
+	OSUTILS="$OSUTILS libseccomp2"
+else
+	OSUTILS="$OSUTILS libseccomp"
 fi
 FEDORA=false
 if [[ "$DIST" == fc* ]]; then
@@ -335,6 +343,10 @@ extractutils()
 extractutils "$OSREPOURL" "$OSSPLIT" $OSUTILS
 extractutils "$EXTRASREPOURL" "$OSSPLIT" $EXTRASUTILS
 extractutils "$EPELREPOURL" true $EPELUTILS
+if [ -n "$RPMDIST" ]; then
+	setrepourls "$RPMDIST"
+	extractutils "$OSREPOURL" "$OSSPLIT" $RPMUTILS
+fi
 
 echo "Patching fakeroot-sysv to make it relocatable"
 # shellcheck disable=SC2016
@@ -397,7 +409,7 @@ PARENT="${HERE%/*}"
 GGPARENT="${PARENT%/*/*}"
 REALME=$PARENT/libexec/$BASEME
 ARG0="${_WRAPPER_ARG0:-$REALME}"
-LD_LIBRARY_PATH=$GGPARENT/utils/lib PATH=$PATH:$GGPARENT/utils/bin ${_WRAPPER_EXEC_CMD:-exec -a "$ARG0"} $REALME "$@"
+LD_LIBRARY_PATH=$GGPARENT/utils/lib PATH=$GGPARENT/utils/bin:$PATH ${_WRAPPER_EXEC_CMD:-exec -a "$ARG0"} $REALME "$@"
 !EOF!
 chmod +x libexec/apptainer/bin/.wrapper
 for TOOL in libexec/apptainer/bin/*; do
@@ -426,7 +438,7 @@ fi
 if [ -n "$LD_LIBRARY_PATH" ]; then
 	LD_LIBRARY_PATH="$LD_LIBRARY_PATH:"
 fi
-PATH=$PATH:$APPTDIR/utils/bin LD_LIBRARY_PATH="${LD_LIBRARY_PATH}$APPTDIR/utils/lib" exec $APPTDIR/bin/apptainer "$@"
+PATH=$APPTDIR/utils/bin:$PATH LD_LIBRARY_PATH="$LD_LIBRARY_PATH$APPTDIR/utils/lib" exec $APPTDIR/bin/apptainer "$@"
 !EOF!
 
 chmod +x bin/apptainer
