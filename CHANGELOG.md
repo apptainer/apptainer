@@ -13,6 +13,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   change the switch to an unprivileged root-mapped namespace to be the
   equivalent of `unshare -r` instead of `unshare -rm` on action commands,
   to work around a bug in the el8 kernel.
+- Fixed a regression introduced in 1.2.0 where the user's password
+  information was not copied in to the container when there was a
+  parent root-mapped user namespace (as is the case for example in
+  [cvmfsexec](https://github.com/cvmfs/cvmfsexec)).
 
 ## v1.2.3 - \[2023-09-14\]
 
