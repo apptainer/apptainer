@@ -5,6 +5,12 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes for v1.4.x
+
+- Fix problem where credentials locally stored with `registry login` command
+  were not usable in some execution flows. Run `registry login` again with
+  latest version to ensure credentials are stored correctly.
+
 ## Changes for v1.3.x
 
 - Make 'apptainer build' work with signed Docker containers.
