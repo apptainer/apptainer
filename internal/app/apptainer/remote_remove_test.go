@@ -44,16 +44,24 @@ func TestRemoteRemove(t *testing.T) {
 			shallPass:  false,
 		},
 		{
-			name:       "valid config file; valid remote name",
+			name:       "valid config file; valid remote name; default",
 			cfgFile:    validCfgFile,
 			remoteName: "cloud_testing",
+			shallPass:  true,
+		},
+		{
+			name:       "valid config file; valid remote name; not default",
+			cfgFile:    validCfgFile,
+			remoteName: "cloud_testing2",
 			shallPass:  true,
 		},
 	}
 
 	// Add remotes based on our config file
-	err := RemoteAdd(validCfgFile, "cloud_testing", "cloud.random.io", false, false)
-	if err != nil {
+	if err := RemoteAdd(validCfgFile, "cloud_testing", "cloud.random.io", false, false, true); err != nil {
+		t.Fatalf("cannot add remote \"cloud\" for testing: %s\n", err)
+	}
+	if err := RemoteAdd(validCfgFile, "cloud_testing2", "cloud2.random.io", false, false, false); err != nil {
 		t.Fatalf("cannot add remote \"cloud\" for testing: %s\n", err)
 	}
 

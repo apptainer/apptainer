@@ -22,7 +22,7 @@ import (
 )
 
 // RemoteAdd adds remote to configuration
-func RemoteAdd(configFile, name, uri string, global bool, insecure bool) (err error) {
+func RemoteAdd(configFile, name, uri string, global bool, insecure bool, makeDefault bool) (err error) {
 	// Explicit handling of corner cases: name and uri must be valid strings
 	if strings.TrimSpace(name) == "" {
 		return fmt.Errorf("invalid name: cannot have empty name")
@@ -58,6 +58,12 @@ func RemoteAdd(configFile, name, uri string, global bool, insecure bool) (err er
 
 	if err := c.Add(name, &e); err != nil {
 		return err
+	}
+
+	if makeDefault {
+		if err := c.SetDefault(name, false); err != nil {
+			return err
+		}
 	}
 
 	// truncating file before writing new contents and syncing to commit file
