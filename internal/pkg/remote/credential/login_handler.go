@@ -92,7 +92,6 @@ func (h *ociHandler) login(u *url.URL, username, password string, insecure bool)
 	}
 
 	ociConfig := syfs.DockerConf()
-	ociConfigNew := syfs.DockerConf() + ".new"
 
 	cf := configfile.New(syfs.DockerConf())
 	if fs.IsFile(ociConfig) {
@@ -105,22 +104,23 @@ func (h *ociHandler) login(u *url.URL, username, password string, insecure bool)
 		if err != nil {
 			return nil, err
 		}
+		cf.Filename = syfs.DockerConf()
 	}
 
-	cf.AuthConfigs[regName] = types.AuthConfig{
-		Username: username,
-		Password: pass,
+	creds := cf.GetCredentialsStore(regName)
+
+	// DockerHub requires special logic for historical reasons.
+	serverAddress := regName
+	if serverAddress == name.DefaultRegistry {
+		serverAddress = authn.DefaultAuthKey
 	}
 
-	configData, err := json.Marshal(cf)
-	if err != nil {
-		return nil, err
-	}
-	if err := os.WriteFile(ociConfigNew, configData, 0o600); err != nil {
-		return nil, err
-	}
-	if err := os.Rename(ociConfigNew, ociConfig); err != nil {
-		return nil, err
+	if err := creds.Store(types.AuthConfig{
+		Username:      username,
+		Password:      pass,
+		ServerAddress: serverAddress,
+	}); err != nil {
+		return nil, fmt.Errorf("while trying to store new credentials: %w", err)
 	}
 
 	return &Config{
