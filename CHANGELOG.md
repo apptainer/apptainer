@@ -34,6 +34,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - The the `remote list` subcommand now outputs only remote endpoints (with
   keyservers and OCI/Docker registries having been moved to separate commands),
   and the output has been streamlined.
+- Adding a new remote endpoint using the `apptainer remote add` command will
+  now set the new endpoint as default. This behavior can be suppressed by
+  supplying the `--no-default` (or `-n`) flag to `remote add`.
 
 ### New Features & Functionality
 

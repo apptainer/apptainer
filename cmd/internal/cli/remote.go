@@ -43,6 +43,7 @@ var (
 	global                  bool
 	remoteUseExclusive      bool
 	remoteAddInsecure       bool
+	remoteAddNotDefault     bool
 )
 
 // assemble values of remoteConfig for user/sys locations
@@ -169,6 +170,16 @@ var remoteAddInsecureFlag = cmdline.Flag{
 	EnvKeys:      []string{"ADD_INSECURE"},
 }
 
+// -i|--insecure
+var remoteAddNotDefaultFlag = cmdline.Flag{
+	ID:           "remoteAddNotDefaultFlag",
+	Value:        &remoteAddNotDefault,
+	DefaultValue: false,
+	Name:         "no-default",
+	ShortHand:    "n",
+	Usage:        "do not designate the newly-added remote endpoint as the default",
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(RemoteCmd)
@@ -193,6 +204,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&remoteNoLoginFlag, RemoteAddCmd)
 		// add --insecure, --no-login flags to add command
 		cmdManager.RegisterFlagForCmd(&remoteAddInsecureFlag, RemoteAddCmd)
+		cmdManager.RegisterFlagForCmd(&remoteAddNotDefaultFlag, RemoteAddCmd)
 
 		cmdManager.RegisterFlagForCmd(&remoteLoginUsernameFlag, RemoteLoginCmd)
 		cmdManager.RegisterFlagForCmd(&remoteLoginPasswordFlag, RemoteLoginCmd)
@@ -279,7 +291,8 @@ var RemoteAddCmd = &cobra.Command{
 			sylog.Fatalf("http URI requires --insecure or APPTAINER_ADD_INSECURE=true")
 		}
 
-		if err := apptainer.RemoteAdd(remoteConfig, name, uri, global, localInsecure); err != nil {
+		makeDefault := !remoteAddNotDefault
+		if err := apptainer.RemoteAdd(remoteConfig, name, uri, global, localInsecure, makeDefault); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 		sylog.Infof("Remote %q added.", name)
