@@ -18,6 +18,7 @@
 - Christian Goll <cgoll@suse.com>
 - Chris Hollowell <hollowec@bnl.gov>
 - Christian Neyers <foss@neyers.org>
+- Daniel Dadap <ddadap@nvidia.com>
 - Daniele Tamino <daniele.tamino@gmail.com>
 - Dave Godlove <d@sylabs.io>, <davidgodlove@gmail.com>
 - Dave Love <d.love@liverpool.ac.uk>
