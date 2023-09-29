@@ -63,31 +63,28 @@ func RemoteList(usrConfigFile string) (err error) {
 	})
 	sort.Strings(names)
 
-	fmt.Println("Cloud Services Endpoints")
-	fmt.Println("========================")
 	fmt.Println()
-
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintf(tw, listLine, "NAME", "URI", "ACTIVE", "GLOBAL", "EXCLUSIVE", "INSECURE")
+	fmt.Fprintf(tw, listLine, "NAME", "URI", "DEFAULT?", "GLOBAL?", "EXCLUSIVE?", "SECURE?")
 	for _, n := range names {
-		sys := "NO"
+		sys := ""
 		if c.Remotes[n].System {
-			sys = "YES"
+			sys = "✓"
 		}
-		excl := "NO"
+		excl := ""
 		if c.Remotes[n].Exclusive {
-			excl = "YES"
+			excl = "✓"
 		}
-		insec := "NO"
+		secure := "✓"
 		if c.Remotes[n].Insecure {
-			insec = "YES"
+			secure = "✗!"
+		}
+		isDefault := ""
+		if c.DefaultRemote != "" && c.DefaultRemote == n {
+			isDefault = "✓"
 		}
 
-		active := "NO"
-		if c.DefaultRemote != "" && c.DefaultRemote == n {
-			active = "YES"
-		}
-		fmt.Fprintf(tw, listLine, n, c.Remotes[n].URI, active, sys, excl, insec)
+		fmt.Fprintf(tw, listLine, n, c.Remotes[n].URI, isDefault, sys, excl, secure)
 	}
 	tw.Flush()
 
