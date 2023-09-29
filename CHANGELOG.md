@@ -17,6 +17,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   information was not copied in to the container when there was a
   parent root-mapped user namespace (as is the case for example in
   [cvmfsexec](https://github.com/cvmfs/cvmfsexec)).
+- Fixed missing error handling during the creation of an encrypted
+  image that lead to the generation of corrupted images.
 
 ## v1.2.3 - \[2023-09-14\]
 
