@@ -57,7 +57,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.3.2
-	github.com/docker/distribution v2.8.2+incompatible
+	github.com/docker/distribution v2.8.3+incompatible
 	github.com/emirpasic/gods v1.18.1
 	github.com/sirupsen/logrus v1.9.3
 )
@@ -86,6 +86,7 @@ require (
 	github.com/cyberphone/json-canonicalization v0.0.0-20220623050100-57a0ce2678a7 // indirect
 	github.com/d2g/dhcp4 v0.0.0-20170904100407-a1d1b6c41b1c // indirect
 	github.com/d2g/dhcp4client v1.0.0 // indirect
+	github.com/distribution/reference v0.5.0 // indirect
 	github.com/docker/cli v23.0.5+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
