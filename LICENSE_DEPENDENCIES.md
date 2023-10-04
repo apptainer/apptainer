@@ -77,6 +77,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/cyberphone/json-canonicalization/blob/master/go/src/webpki.org/jsoncanonicalizer/LICENSE>
 
+## github.com/distribution/reference
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/distribution/reference/blob/master/LICENSE>
+
 ## github.com/docker/cli/cli/config
 
 **License:** Apache-2.0
