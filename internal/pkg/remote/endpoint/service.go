@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -28,12 +28,17 @@ const defaultTimeout = 10 * time.Second
 
 // Default cloud service endpoints.
 const (
-	DefaultCloudURI     = "cloud.apptainer.org"
-	DefaultLibraryURI   = ""
+	// ConfigPath is the path to the exposed configuration information.
+	ConfigPath = "/assets/config/config.prod.json"
+	// DefaultCloudURI is the primary hostname for the cloud service endpoint.
+	DefaultCloudURI = "cloud.apptainer.org"
+	// DefaultLibraryURI is the URI for the library service.
+	DefaultLibraryURI = ""
+	// DefaultKeyserverURI is the URI for the keyserver service.
 	DefaultKeyserverURI = "https://keys.openpgp.org"
 )
 
-// cloud services
+// cloud services - suffixed with 'API' in config.prod.json.
 const (
 	Consent   = "consent"
 	Token     = "token"
@@ -42,6 +47,9 @@ const (
 	Keyserver = "keyserver"
 	Builder   = "builder"
 )
+
+// RegistryURIConfigKey is the config key for the library OCI registry URI
+const RegistryURIConfigKey = "registryUri"
 
 var errorCodeMap = map[int]string{
 	404: "Invalid Credentials",
@@ -52,19 +60,22 @@ var errorCodeMap = map[int]string{
 // a service which doesn't support cloud status check.
 var ErrStatusNotSupported = errors.New("status not supported")
 
-// Service defines a simple service interface which can be exposed
-// to retrieve service URI and check the service status.
+// Service represents a remote service, accessible at Service.URI
 type Service interface {
+	// URI returns the URI used to access the remote service.
 	URI() string
+	// Status returns the status of the remote service, if supported.
 	Status() (string, error)
-}
-
-func newService(config *ServiceConfig) Service {
-	return &service{cfg: config}
+	// configKey returns the value of a requested configuration key, if set.
+	configVal(string) string
 }
 
 type service struct {
+	// cfg holds the serializable service configuration.
 	cfg *ServiceConfig
+	// configMap holds additional specific service configuration key/val pairs.
+	// e.g. `registryURI` most be known for the library service to facilitate OCI-SIF push/pull/
+	configMap map[string]string
 }
 
 // URI returns the service URI.
@@ -112,6 +123,12 @@ func (s *service) Status() (version string, err error) {
 	return vRes.Version, nil
 }
 
+// configVal returns the value of the specified key (if present), in the
+// service's additional known configuration.
+func (s *service) configVal(key string) string {
+	return s.configMap[key]
+}
+
 func (config *Config) GetAllServices() (map[string][]Service, error) {
 	if config.services != nil {
 		return config.services, nil
@@ -128,7 +145,8 @@ func (config *Config) GetAllServices() (map[string][]Service, error) {
 		return nil, err
 	}
 
-	configURL := epURL + "/assets/config/config.prod.json"
+	configURL := epURL + ConfigPath
+
 	req, err := http.NewRequest(http.MethodGet, configURL, nil)
 	if err != nil {
 		return nil, err
@@ -172,20 +190,35 @@ func (config *Config) GetAllServices() (map[string][]Service, error) {
 			continue
 		}
 
-		serviceConfig := &ServiceConfig{
+		sConfig := &ServiceConfig{
 			URI: uri,
 			credential: &credential.Config{
 				URI:  uri,
 				Auth: credential.TokenPrefix + config.Token,
 			},
 		}
+		sConfigMap := map[string]string{}
 
+		// If the cloud service instance reports a service called 'keystore'
+		// then override this to 'keyserver', as Apptainer uses 'keyserver'
+		// internally.
 		if s == Keystore {
 			s = Keyserver
 		}
 
+		// Store the backing OCI registry URI for the library service (if any).
+		if s == Library {
+			registryURI, ok := v[RegistryURIConfigKey].(string)
+			if ok {
+				sConfigMap[RegistryURIConfigKey] = registryURI
+			}
+		}
+
 		config.services[s] = []Service{
-			newService(serviceConfig),
+			&service{
+				cfg:       sConfig,
+				configMap: sConfigMap,
+			},
 		}
 	}
 
@@ -219,4 +252,18 @@ func (config *Config) GetServiceURI(service string) (string, error) {
 	}
 
 	return s[0].URI(), nil
+}
+
+// getServiceConfigVal returns the value for the additional config key associated with service.
+func (config *Config) getServiceConfigVal(service, key string) (string, error) {
+	services, err := config.GetAllServices()
+	if err != nil {
+		return "", err
+	}
+
+	s, ok := services[service]
+	if !ok || len(s) == 0 {
+		return "", fmt.Errorf("%v is not a service at endpoint", service)
+	}
+	return s[0].configVal(key), nil
 }

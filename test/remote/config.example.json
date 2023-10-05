@@ -1,0 +1,20 @@
+{
+    "libraryAPI": {
+      "uri": "https://library.example.com",
+      "registryUri": "https://registry.example.com"
+    },
+    "keystoreAPI": {
+      "uri": "https://keys.example.com"
+    },
+    "builderAPI": {
+      "uri": "https://build.example.com",
+      "managerUri": "https://build.example.com"
+    },
+    "consentAPI": {
+      "uri": "https://auth.example.com/consent"
+    },
+    "tokenAPI": {
+      "uri": "https://auth.example.com/token"
+    }
+  }
+  
