@@ -63,6 +63,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   information was not copied in to the container when there was a
   parent root-mapped user namespace (as is the case for example in
   [cvmfsexec](https://github.com/cvmfs/cvmfsexec)).
+- Added the upcoming NVIDIA driver library `libnvidia-gpucomp.so` to the
+  list of libraries to add to NVIDIA GPU-enabled containers.
 
 ## v1.2.3 - \[2023-09-14\]
 
