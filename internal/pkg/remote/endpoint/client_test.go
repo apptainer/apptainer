@@ -10,6 +10,8 @@
 package endpoint
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
@@ -234,5 +236,27 @@ func TestLibraryClientConfig(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestConfig_RegistryURI(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "../../../../test/remote/config.example.json")
+	}))
+	t.Cleanup(srv.Close)
+
+	ep := Config{
+		URI:      srv.URL,
+		Insecure: true,
+	}
+
+	expectRegistry := "https://registry.example.com"
+	rURI, err := ep.RegistryURI()
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	if rURI != expectRegistry {
+		t.Errorf("expected %q, got %q", expectRegistry, rURI)
 	}
 }
