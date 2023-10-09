@@ -1051,6 +1051,11 @@ func (l *Launcher) setCgroups(instanceName string) error {
 	useCG := l.uid == 0
 	// non-root needs cgroups v2 unified mode + systemd as cgroups manager.
 	if l.uid != 0 && lccgroups.IsCgroup2UnifiedMode() && l.engineConfig.File.SystemdCgroups {
+		if os.Getenv("XDG_RUNTIME_DIR") == "" || os.Getenv("DBUS_SESSION_BUS_ADDRESS") == "" {
+			sylog.Infof("Instance stats will not be available because XDG_RUNTIME_DIR")
+			sylog.Infof("  or DBUS_SESSION_BUS_ADDRESS is not set")
+			return nil
+		}
 		useCG = true
 	}
 
