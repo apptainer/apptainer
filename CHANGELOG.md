@@ -65,6 +65,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   [cvmfsexec](https://github.com/cvmfs/cvmfsexec)).
 - Added the upcoming NVIDIA driver library `libnvidia-gpucomp.so` to the
   list of libraries to add to NVIDIA GPU-enabled containers.
+- If rootless unified cgroups v2 is available when starting an image but
+  `XDG_RUNTIME_DIR` or `DBUS_SESSION_BUS_ADDRESS` is not set, print an
+  info message that stats will not be available instead of exiting with
+  a fatal error.
 
 ## v1.2.3 - \[2023-09-14\]
 
