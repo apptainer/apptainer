@@ -578,9 +578,6 @@ func getKeyVal(text string) (string, string, error) {
 		return "", "", fmt.Errorf("key field is missing in text: %s", text)
 	}
 	val := strings.TrimSpace(matches[1])
-	if val == "" {
-		return "", "", fmt.Errorf("value field is missing in text: %s", text)
-	}
 	return key, val, nil
 }
 
