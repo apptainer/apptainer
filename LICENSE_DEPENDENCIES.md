@@ -23,6 +23,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/containerd/containerd/blob/master/LICENSE>
 
+## github.com/containerd/log
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/containerd/log/blob/master/LICENSE>
+
 ## github.com/containernetworking/cni
 
 **License:** Apache-2.0
