@@ -75,10 +75,40 @@ func TestGetKeyVal(t *testing.T) {
 			err:    "missing key portion in",
 		},
 		{
-			name:   "wrong case because of missing value",
+			name:   "ok case with empty value",
 			input:  "\n  k1 =\n",
-			expect: []string{},
-			err:    "missing value portion in",
+			expect: []string{"k1", ""},
+			err:    "",
+		},
+		{
+			name:   "ok case empty value with multiple space",
+			input:  "\n  k1 =  \n",
+			expect: []string{"k1", ""},
+			err:    "",
+		},
+		{
+			name:   "ok case single quote",
+			input:  "\n  k1 =''\n",
+			expect: []string{"k1", "''"},
+			err:    "",
+		},
+		{
+			name:   "ok case single quote with multiple space",
+			input:  "\n  k1 ='  '\n",
+			expect: []string{"k1", "'  '"},
+			err:    "",
+		},
+		{
+			name:   "ok case double quote",
+			input:  "\n  k1 =\"\"\n",
+			expect: []string{"k1", "\"\""},
+			err:    "",
+		},
+		{
+			name:   "ok case double quote with multiple space",
+			input:  "\n  k1 =\"   \"\n",
+			expect: []string{"k1", "\"   \""},
+			err:    "",
 		},
 	}
 

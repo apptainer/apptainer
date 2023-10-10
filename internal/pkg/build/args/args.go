@@ -98,8 +98,5 @@ func getKeyVal(text string) (string, string, error) {
 		return "", "", fmt.Errorf("missing key portion in %q", text)
 	}
 	val := strings.TrimSpace(matches[1])
-	if val == "" {
-		return "", "", fmt.Errorf("missing value portion in %q", text)
-	}
 	return key, val, nil
 }
