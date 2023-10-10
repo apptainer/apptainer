@@ -102,7 +102,7 @@ func TestEncrypt(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			devPath, err := dev.EncryptFilesystem(tt.path, tt.key)
+			devPath, err := dev.EncryptFilesystem(tt.path, tt.key, "")
 			if tt.shallPass && err != nil {
 				if err == ErrUnsupportedCryptsetupVersion {
 					t.Skip("installed version of cryptsetup is not supported, >=2.0.0 required")
