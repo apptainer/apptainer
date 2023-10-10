@@ -115,7 +115,7 @@ func checkCryptsetupVersion(cryptsetup string) error {
 // a file that can be later used as an encrypted volume with cryptsetup.
 // NOTE: it is the callers responsibility to remove the returned file that
 // contains the crypt header.
-func (crypt *Device) EncryptFilesystem(path string, key []byte) (string, error) {
+func (crypt *Device) EncryptFilesystem(path string, key []byte, tempdir string) (string, error) {
 	f, err := os.Stat(path)
 	if err != nil {
 		return "", fmt.Errorf("failed getting size of %s", path)
@@ -124,7 +124,7 @@ func (crypt *Device) EncryptFilesystem(path string, key []byte) (string, error) 
 	fSize := f.Size()
 
 	// Create a temporary file to format with crypt header
-	cryptF, err := os.CreateTemp("", "crypt-")
+	cryptF, err := os.CreateTemp(tempdir, "crypt-")
 	if err != nil {
 		sylog.Debugf("Error creating temporary crypt file")
 		return "", err

@@ -231,7 +231,7 @@ func (a *SIFAssembler) Assemble(b *types.Bundle, path string) error {
 			// Detach the following code from the squashfs creation. SIF can be
 			// created first and encrypted after. This gives the flexibility to
 			// encrypt an existing SIF
-			loopPath, err := cryptDev.EncryptFilesystem(fsPath, plaintext)
+			loopPath, err := cryptDev.EncryptFilesystem(fsPath, plaintext, b.TmpDir)
 			if err != nil {
 				return fmt.Errorf("unable to encrypt filesystem at %s: %+v", fsPath, err)
 			}
