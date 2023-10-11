@@ -5,7 +5,7 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes for v1.2.x
+## v1.2.4 - \[2023-10-10\]
 
 - Fixed a problem with relocating an unprivileged installation of
   apptainer on el8 and a mounted remote filesystem when using the
@@ -21,12 +21,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
   list of libraries to add to NVIDIA GPU-enabled containers.
 - Fixed missing error handling during the creation of an encrypted
   image that lead to the generation of corrupted images.
+- Use `APPTAINER_TMPDIR` for temporary files during privileged image
+  encryption.
 - If rootless unified cgroups v2 is available when starting an image but
   `XDG_RUNTIME_DIR` or `DBUS_SESSION_BUS_ADDRESS` is not set, print an
   info message that stats will not be available instead of exiting with
   a fatal error.
-- Use `APPTAINER_TMPDIR` for temporary files during privileged image
-  encryption.
 - Allow templated build arguments to definition files to have empty values.
 
 ## v1.2.3 - \[2023-09-14\]
