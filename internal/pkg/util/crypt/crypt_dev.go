@@ -203,7 +203,10 @@ func (crypt *Device) EncryptFilesystem(path string, key []byte, tempdir string) 
 		return "", err
 	}
 
-	copyDeviceContents(path, "/dev/mapper/"+nextCrypt, fSize)
+	err = copyDeviceContents(path, "/dev/mapper/"+nextCrypt, fSize)
+	if err != nil {
+		return "", err
+	}
 
 	cmd = exec.Command(cryptsetup, "close", nextCrypt)
 	sylog.Debugf("Running %s %s", cmd.Path, strings.Join(cmd.Args, " "))

@@ -53,24 +53,28 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.2.x
 
+## v1.2.4 - \[2023-10-10\]
+
 - Fixed a problem with relocating an unprivileged installation of
   apptainer on el8 and a mounted remote filesystem when using the
   `--fakeroot` option without `/etc/subuid` mapping.  The fix was to
   change the switch to an unprivileged root-mapped namespace to be the
   equivalent of `unshare -r` instead of `unshare -rm` on action commands,
   to work around a bug in the el8 kernel.
-- Fixed a regression introduced in 1.2.0 where the user's password
+- Fixed a regression introduced in 1.2.0 where the user's password file
   information was not copied in to the container when there was a
   parent root-mapped user namespace (as is the case for example in
   [cvmfsexec](https://github.com/cvmfs/cvmfsexec)).
 - Added the upcoming NVIDIA driver library `libnvidia-gpucomp.so` to the
   list of libraries to add to NVIDIA GPU-enabled containers.
+- Fixed missing error handling during the creation of an encrypted
+  image that lead to the generation of corrupted images.
+- Use `APPTAINER_TMPDIR` for temporary files during privileged image
+  encryption.
 - If rootless unified cgroups v2 is available when starting an image but
   `XDG_RUNTIME_DIR` or `DBUS_SESSION_BUS_ADDRESS` is not set, print an
   info message that stats will not be available instead of exiting with
   a fatal error.
-- Use `APPTAINER_TMPDIR` for temporary files during privileged image
-  encryption.
 - Allow templated build arguments to definition files to have empty values.
 
 ## v1.2.3 - \[2023-09-14\]
