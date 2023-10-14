@@ -37,6 +37,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Adding a new remote endpoint using the `apptainer remote add` command will
   now set the new endpoint as default. This behavior can be suppressed by
   supplying the `--no-default` (or `-n`) flag to `remote add`.
+- When fetching a Docker image that has a digest but no tag Apptainer will
+  now resolve the digest from the URI instead of making a request to the
+  container registry.
 
 ### New Features & Functionality
 
