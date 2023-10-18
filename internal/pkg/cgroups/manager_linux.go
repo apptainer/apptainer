@@ -26,7 +26,7 @@ import (
 	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
-var ErrUnitialized = errors.New("cgroups manager is not initialized")
+var ErrUninitialized = errors.New("cgroups manager is not initialized")
 
 // Manager provides functions to modify, freeze, thaw, and destroy a cgroup.
 // Apptainer's cgroups.Manager is a wrapper around runc/libcontainer/cgroups.
@@ -45,7 +45,7 @@ type Manager struct {
 // GetCgroupRootPath returns the cgroups mount root path, for the managed cgroup
 func (m *Manager) GetCgroupRootPath() (rootPath string, err error) {
 	if m.group == "" || m.cgroup == nil {
-		return "", ErrUnitialized
+		return "", ErrUninitialized
 	}
 
 	// v2 - has a single fixed mountpoint for the root cgroup
@@ -78,7 +78,7 @@ func (m *Manager) GetCgroupRootPath() (rootPath string, err error) {
 // GetCgroupRelPath returns the relative path of the cgroup under the mount point
 func (m *Manager) GetCgroupRelPath() (relPath string, err error) {
 	if m.group == "" || m.cgroup == nil {
-		return "", ErrUnitialized
+		return "", ErrUninitialized
 	}
 
 	// v2 - has a single fixed mountpoint for the root cgroup
@@ -122,7 +122,7 @@ func (m *Manager) GetStats() (*lccgroups.Stats, error) {
 // an OCI LinuxResources spec struct.
 func (m *Manager) UpdateFromSpec(resources *specs.LinuxResources) (err error) {
 	if m.group == "" || m.cgroup == nil {
-		return ErrUnitialized
+		return ErrUninitialized
 	}
 
 	spec := &specs.Spec{
@@ -178,7 +178,7 @@ func (m *Manager) UpdateFromFile(path string) error {
 // nolint:contextcheck
 func (m *Manager) AddProc(pid int) (err error) {
 	if m.group == "" || m.cgroup == nil {
-		return ErrUnitialized
+		return ErrUninitialized
 	}
 	if pid == 0 {
 		return fmt.Errorf("cannot add a zero pid to cgroup")
@@ -210,7 +210,7 @@ func (m *Manager) AddProc(pid int) (err error) {
 // Freeze freezes processes in the managed cgroup.
 func (m *Manager) Freeze() (err error) {
 	if m.group == "" || m.cgroup == nil {
-		return ErrUnitialized
+		return ErrUninitialized
 	}
 	return m.cgroup.Freeze(lcconfigs.Frozen)
 }
@@ -218,7 +218,7 @@ func (m *Manager) Freeze() (err error) {
 // Thaw unfreezes process in the managed cgroup.
 func (m *Manager) Thaw() (err error) {
 	if m.group == "" || m.cgroup == nil {
-		return ErrUnitialized
+		return ErrUninitialized
 	}
 	return m.cgroup.Freeze(lcconfigs.Thawed)
 }
@@ -226,7 +226,7 @@ func (m *Manager) Thaw() (err error) {
 // Destroy deletes the managed cgroup.
 func (m *Manager) Destroy() (err error) {
 	if m.group == "" || m.cgroup == nil {
-		return ErrUnitialized
+		return ErrUninitialized
 	}
 	return m.cgroup.Destroy()
 }
