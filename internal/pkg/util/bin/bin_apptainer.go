@@ -22,7 +22,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// findOnPath performs a search on the configurated binary path for the
+// findOnPath performs a search on the configured binary path for the
 // named executable, returning its full path.
 func findOnPath(name string, useSuidPath bool) (path string, err error) {
 	cfg := apptainerconf.GetCurrentConfig()

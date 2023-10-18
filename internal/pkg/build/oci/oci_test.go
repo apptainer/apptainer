@@ -382,7 +382,7 @@ func TestNewImageSource(t *testing.T) {
 		shallPass bool
 	}{
 		{
-			name:      "valid ctx, undefained sys",
+			name:      "valid ctx, undefined sys",
 			ctx:       validCtx,
 			sys:       nil,
 			shallPass: false,
