@@ -34,7 +34,7 @@ type userData struct {
 	Username string       `json:"username"`
 }
 
-// getUserData retrives auth service user information from the current remote.
+// getUserData retrieves auth service user information from the current remote.
 func getUserData(config *containerclient.Config) (*userData, error) {
 	client := http.Client{Timeout: 5 * time.Second}
 	path := userServicePath
