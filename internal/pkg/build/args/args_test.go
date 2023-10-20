@@ -219,6 +219,37 @@ func TestReader(t *testing.T) {
 			defaultArgsMap: map[string]string{},
 			err:            "is not defined through either --build-arg (--build-arg-file) or 'arguments' section",
 		},
+		{
+			name: "ok case with variables defined in comment lines",
+			input: `
+			%argument
+				OS_VER=1 #  comment line {{ OS_VER }}
+			%post
+			    	# comment
+				#an
+				#!/bin/{{ BASH }}
+				apt install {{ OS_VER }}#comment {{ OS_VER }}
+				#some other comment {{ OS_VER }}
+				#should not be replaced as well 
+			`,
+			output: `
+			%argument
+				OS_VER=1 #  comment line {{ OS_VER }}
+			%post
+			    	# comment
+				#an
+				#!/bin/csh
+				apt install 1#comment {{ OS_VER }}
+				#some other comment {{ OS_VER }}
+				#should not be replaced as well 
+			`,
+			argsMap: map[string]string{
+				"OS_VER": "1",
+				"BASH":   "csh",
+			},
+			defaultArgsMap: map[string]string{},
+			err:            "",
+		},
 	}
 
 	for _, test := range tests {

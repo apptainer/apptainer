@@ -37,6 +37,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Adding a new remote endpoint using the `apptainer remote add` command will
   now set the new endpoint as default. This behavior can be suppressed by
   supplying the `--no-default` (or `-n`) flag to `remote add`.
+- Skip parsing build definition file template variables after comments
+  beginning with a hash symbol.
 
 ### New Features & Functionality
 
