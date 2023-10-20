@@ -115,4 +115,5 @@
 - Charles Vejnar <charles.vejnar@gmail.com>
 - Carmelo Piccione <carmelo.piccione@gmail.com>
 - Filip Gorczyca <filip.gorczyca141@gmail.com>
+- Jesse Farebrother <jessefarebro@gmail.com>
 ```

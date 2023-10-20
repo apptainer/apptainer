@@ -14,6 +14,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -29,6 +30,7 @@ import (
 const (
 	invalidOCIURI = "library://valid_uri_but_not_real_image"
 	invalidHash   = "1n2o3t4e5x6i7s9t0i1n2g3h4a5s6h"
+	validHash     = "0000000000000000000000000000000000000000000000000000000000000000"
 )
 
 // getInvalidRef enerate an invalid reference.
@@ -44,6 +46,10 @@ func getInvalidRef(cacheRootPath string) string {
 // getTestCacheInfo(). This abstracts the syntax of an OCI URI
 func getValidOCIURI(ref string) string {
 	return filepath.Join("oci://", ref)
+}
+
+func getDockerDigestURI(ref string) string {
+	return fmt.Sprintf("docker://%s@%s", ref, validHash)
 }
 
 // createIndexFile creates the index.json file of the dummy OCI cache.
@@ -266,6 +272,18 @@ func TestConvertReference(t *testing.T) {
 		{
 			name:       "invalid image ref; valid context",
 			ref:        createInvalidImageRef(t, getInvalidRef(cacheDir)),
+			ctx:        createValidSysCtx(),
+			shouldPass: false,
+		},
+		{
+			name:       "invalid image domain, valid digest; valid context",
+			ref:        createValidImageRef(t, getDockerDigestURI("invalid.domain.com:5000/image")),
+			ctx:        createValidSysCtx(),
+			shouldPass: true,
+		},
+		{
+			name:       "invalid image domain, with tag, valid digest; valid context",
+			ref:        createValidImageRef(t, getDockerDigestURI("invalid.domain.com:5000/image:latest")),
 			ctx:        createValidSysCtx(),
 			shouldPass: false,
 		},

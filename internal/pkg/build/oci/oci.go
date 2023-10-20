@@ -23,10 +23,12 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/containers/image/v5/copy"
 	"github.com/containers/image/v5/docker"
+	"github.com/containers/image/v5/docker/reference"
 	"github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/transports"
 	"github.com/containers/image/v5/types"
+	gdigest "github.com/opencontainers/go-digest"
 )
 
 // ImageReference wraps containers/image ImageReference type
@@ -240,10 +242,19 @@ func getDockerRefDigest(ctx context.Context, ref types.ImageReference, sys *type
 		sys.ArchitectureChoice = defaultCtx.ArchitectureChoice
 		sys.VariantChoice = defaultCtx.VariantChoice
 	}
-	d, err := docker.GetDigest(ctx, sys, ref)
-	if err != nil {
-		return "", err
+
+	var d gdigest.Digest
+	if canonical, ok := ref.DockerReference().(reference.Canonical); ok {
+		// If the ref is canonical, we can get the digest directly
+		d = canonical.Digest()
+	} else {
+		// Otherwise we'll get the digest from the registry
+		d, err = docker.GetDigest(ctx, sys, ref)
+		if err != nil {
+			return "", err
+		}
 	}
+
 	digest = d.Encoded()
 	digest = fmt.Sprintf("%x", sha256.Sum256([]byte(digest+sys.ArchitectureChoice+sys.VariantChoice)))
 	sylog.Debugf("docker.GetDigest digest for %s is %s", transports.ImageName(ref), digest)
