@@ -245,6 +245,7 @@ func getDockerRefDigest(ctx context.Context, ref types.ImageReference, sys *type
 		return "", err
 	}
 	digest = d.Encoded()
+	sylog.Debugf("docker.GetDigest source image digest for %s is %s", transports.ImageName(ref), digest)
 	digest = fmt.Sprintf("%x", sha256.Sum256([]byte(digest+sys.ArchitectureChoice+sys.VariantChoice)))
 	sylog.Debugf("docker.GetDigest digest for %s is %s", transports.ImageName(ref), digest)
 	return digest, nil
