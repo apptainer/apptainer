@@ -20,7 +20,10 @@ import (
 	"github.com/samber/lo"
 )
 
-var buildArgsRegexp = regexp.MustCompile(`{{\s*(\w+)\s*}}`)
+var (
+	buildArgsRegexp   = regexp.MustCompile(`{{\s*(\w+)\s*}}`)
+	commentLineRegexp = regexp.MustCompile(`\s*[#][^!]\s*.*`)
+)
 
 // NewReader creates a io.Reader that will provide the contents of a def file
 // with build-args replacements applied. src is an io.Reader from which the
@@ -35,12 +38,27 @@ func NewReader(src io.Reader, buildArgsMap map[string]string, defaultArgsMap map
 		return nil, err
 	}
 
+	// do templating
 	matches := buildArgsRegexp.FindAllSubmatchIndex(srcBytes, -1)
 	mapOfConsumedArgs := make(map[string]bool)
 	var buf bytes.Buffer
 	bufWriter := io.Writer(&buf)
 	i := 0
 	for _, m := range matches {
+		// find the last newline
+		newlineIdx := i
+		for start := m[0]; start >= newlineIdx; start-- {
+			if srcBytes[start] == '\n' {
+				newlineIdx = start
+				break
+			}
+		}
+
+		// check whether current line containing {{ VAR }} is commented line
+		if commentLineRegexp.Match(srcBytes[newlineIdx:m[0]]) {
+			continue
+		}
+
 		bufWriter.Write(srcBytes[i:m[0]])
 		argName := string(srcBytes[m[2]:m[3]])
 		val, ok := buildArgsMap[argName]
