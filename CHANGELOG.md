@@ -11,6 +11,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   NVIDIA Drivers (known with >= 525.85.05) require this lib to compile
   OpenCL programs against NVIDIA GPUs, i.e. `libnvidia-opencl` depends on
   `libnvidia-nvvm.`
+- Skip parsing build definition file template variables after comments
+  beginning with a hash symbol.
 
 ## v1.2.4 - \[2023-10-10\]
 
