@@ -39,6 +39,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   supplying the `--no-default` (or `-n`) flag to `remote add`.
 - Skip parsing build definition file template variables after comments
   beginning with a hash symbol.
+- Added `libnvidia-nvvm` to `nvliblist.conf`. Newer
+  NVIDIA Drivers (known with >= 525.85.05) require this lib to compile
+  OpenCL programs against NVIDIA GPUs, i.e. `libnvidia-opencl` depends on
+  `libnvidia-nvvm.`
 
 ### New Features & Functionality
 
