@@ -68,6 +68,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Don't bind `/var/tmp` on top of `/tmp` in the container, where `/var/tmp`
   resolves to same location as `/tmp`.
+- Support parentheses in `test` / `[` commands in container startup scripts,
+  via dependency update of mvdan.cc/sh.
 
 ## Changes for v1.2.x
 
