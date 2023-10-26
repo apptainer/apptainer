@@ -394,6 +394,20 @@ func (c *ctx) testInstanceWithConfigDir(t *testing.T) {
 	})(t)
 }
 
+// Test instances starting with unprivileged user and --fakeroot
+func (c *ctx) testInstanceStartFakerootUnprivilegedUser(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+	c.profile = e2e.UserProfile
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(c.profile),
+		e2e.WithCommand("instance start"),
+		e2e.WithArgs("--fakeroot", c.env.ImagePath, randomName(t)),
+		e2e.ExpectExit(255, e2e.ExpectError(e2e.ContainMatch, "not enough permission to start instance with --fakeroot and unprivileged user")),
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := &ctx{
@@ -440,6 +454,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 				})
 			}
 		},
+		"instance starts with fakeroot and unprivileged user": c.testInstanceStartFakerootUnprivilegedUser,
 		"issue 5033": c.issue5033, // https://github.com/apptainer/singularity/issues/4836
 	}
 }

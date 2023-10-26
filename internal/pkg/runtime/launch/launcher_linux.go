@@ -153,6 +153,8 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 				sylog.Fatalf("--fakeroot used without sandbox image or user namespaces")
 			}
 			sylog.Infof("No user namespaces available, using only the fakeroot command")
+		} else if (l.uid != 0) && namespaces.IsUnprivileged() && instanceName != "" {
+			sylog.Fatalf("not enough permission to start instance with --fakeroot and unprivileged user")
 		}
 	}
 

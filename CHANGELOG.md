@@ -55,6 +55,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.2.x
 
+### Bug fixes
+
+- Show fatal error message when users start instance with `--fakeroot` along with
+  unprivileged user.
+
 ## v1.2.4 - \[2023-10-10\]
 
 - Fixed a problem with relocating an unprivileged installation of
