@@ -22,6 +22,7 @@ import (
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
+	"github.com/apptainer/apptainer/pkg/util/slice"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
@@ -394,6 +395,16 @@ func (c *ctx) testInstanceWithConfigDir(t *testing.T) {
 	})(t)
 }
 
+func (c *ctx) testInstanceWithFakerootWithoutSuidUserNS(t *testing.T) {
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(c.profile),
+		e2e.WithCommand("instance start"),
+		e2e.WithArgs("--ignore-subuid", c.env.ImagePath, randomName(t)),
+		e2e.ExpectExit(255, e2e.ExpectError(e2e.ContainMatch, "not enough permission to start instance with --fakeroot but not in user namespace or suid installation.")),
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := &ctx{
@@ -413,29 +424,34 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			tests := []struct {
 				name     string
 				function func(*testing.T)
+				profile  []string // set sepecific profile
 			}{
-				{"BasicEchoServer", c.testBasicEchoServer},
-				{"BasicOptions", c.testBasicOptions},
-				{"Contain", c.testContain},
-				{"InstanceFromURI", c.testInstanceFromURI},
-				{"CreateManyInstances", c.testCreateManyInstances},
-				{"InstanceRun", c.testInstanceRun},
-				{"StopAll", c.testStopAll},
-				{"GhostInstance", c.testGhostInstance},
-				{"CheckpointInstance", c.testCheckpointInstance},
-				{"InstanceWithConfigDir", c.testInstanceWithConfigDir},
+				{"BasicEchoServer", c.testBasicEchoServer, []string{e2e.UserProfile.String(), e2e.RootProfile.String()}},
+				{"BasicOptions", c.testBasicOptions, []string{e2e.UserProfile.String(), e2e.RootProfile.String()}},
+				{"Contain", c.testContain, []string{e2e.UserProfile.String(), e2e.RootProfile.String()}},
+				{"InstanceFromURI", c.testInstanceFromURI, []string{e2e.UserProfile.String(), e2e.RootProfile.String()}},
+				{"CreateManyInstances", c.testCreateManyInstances, []string{e2e.UserProfile.String(), e2e.RootProfile.String()}},
+				{"InstanceRun", c.testInstanceRun, []string{e2e.UserProfile.String(), e2e.RootProfile.String()}},
+				{"StopAll", c.testStopAll, []string{e2e.UserProfile.String(), e2e.RootProfile.String()}},
+				{"GhostInstance", c.testGhostInstance, []string{e2e.UserProfile.String(), e2e.RootProfile.String()}},
+				{"CheckpointInstance", c.testCheckpointInstance, []string{e2e.UserProfile.String(), e2e.RootProfile.String()}},
+				{"InstanceWithConfigDir", c.testInstanceWithConfigDir, []string{e2e.UserProfile.String(), e2e.RootProfile.String()}},
+				{"InstanceWithFakerootWithoutSuidUserNS", c.testInstanceWithFakerootWithoutSuidUserNS, []string{e2e.FakerootProfile.String()}},
 			}
 
 			profiles := []e2e.Profile{
 				e2e.UserProfile,
 				e2e.RootProfile,
+				e2e.FakerootProfile,
 			}
 
 			for _, profile := range profiles {
 				t.Run(profile.String(), func(t *testing.T) {
 					c.profile = profile
 					for _, tt := range tests {
-						t.Run(tt.name, tt.function)
+						if slice.ContainsString(tt.profile, c.profile.String()) {
+							t.Run(tt.name, tt.function)
+						}
 					}
 				})
 			}

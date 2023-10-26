@@ -154,6 +154,15 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 			}
 			sylog.Infof("No user namespaces available, using only the fakeroot command")
 		}
+
+		// specifically checking instance != ""
+		if instanceName != "" {
+			insideUserNs, _ := namespaces.IsInsideUserNamespace(os.Getpid())
+			suidDisabled := buildcfg.APPTAINER_SUID_INSTALL == 0 || l.cfg.IgnoreSubuid
+			if (l.uid == 0 && namespaces.IsUnprivileged() && suidDisabled) || (l.uid != 0 && namespaces.IsUnprivileged() && suidDisabled && !insideUserNs) {
+				sylog.Fatalf("not enough permission to start instance with --fakeroot but not in user namespace or suid installation.")
+			}
+		}
 	}
 
 	// Set arguments to pass to contained process.
