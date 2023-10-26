@@ -427,17 +427,19 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			tests := []struct {
 				name     string
 				function func(*testing.T)
+				profile  string // set specific profile to run
 			}{
-				{"BasicEchoServer", c.testBasicEchoServer},
-				{"BasicOptions", c.testBasicOptions},
-				{"Contain", c.testContain},
-				{"InstanceFromURI", c.testInstanceFromURI},
-				{"CreateManyInstances", c.testCreateManyInstances},
-				{"InstanceRun", c.testInstanceRun},
-				{"StopAll", c.testStopAll},
-				{"GhostInstance", c.testGhostInstance},
-				{"CheckpointInstance", c.testCheckpointInstance},
-				{"InstanceWithConfigDir", c.testInstanceWithConfigDir},
+				{"BasicEchoServer", c.testBasicEchoServer, ""},
+				{"BasicOptions", c.testBasicOptions, ""},
+				{"Contain", c.testContain, ""},
+				{"InstanceFromURI", c.testInstanceFromURI, ""},
+				{"CreateManyInstances", c.testCreateManyInstances, ""},
+				{"InstanceRun", c.testInstanceRun, ""},
+				{"StopAll", c.testStopAll, ""},
+				{"GhostInstance", c.testGhostInstance, ""},
+				{"CheckpointInstance", c.testCheckpointInstance, ""},
+				{"InstanceWithConfigDir", c.testInstanceWithConfigDir, ""},
+				{"InstanceStartWithFakerootAndUnprivilegedUser", c.testInstanceStartFakerootUnprivilegedUser, e2e.UserProfile.String()},
 			}
 
 			profiles := []e2e.Profile{
@@ -449,12 +451,15 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 				t.Run(profile.String(), func(t *testing.T) {
 					c.profile = profile
 					for _, tt := range tests {
-						t.Run(tt.name, tt.function)
+						if tt.profile == "" {
+							t.Run(tt.name, tt.function)
+						} else if tt.profile != "" && c.profile.String() == tt.profile {
+							t.Run(tt.name, tt.function)
+						}
 					}
 				})
 			}
 		},
-		"instance starts with fakeroot and unprivileged user": c.testInstanceStartFakerootUnprivilegedUser,
 		"issue 5033": c.issue5033, // https://github.com/apptainer/singularity/issues/4836
 	}
 }
