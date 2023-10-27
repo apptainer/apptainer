@@ -434,6 +434,7 @@ func ParseDefinitionFile(r io.Reader) (d types.Definition, err error) {
 	s.Split(scanDefinitionFile)
 
 	// advance scanner until it returns a useful token or errors
+	//nolint:revive
 	for s.Scan() && s.Text() == "" && s.Err() == nil {
 	}
 

@@ -123,7 +123,7 @@ func TestConfigure(t *testing.T) {
 			var err error
 
 			mainthread.Execute(func() {
-				err = Configure(&s.spec)
+				err = Configure(&s.spec) //nolint:gosec
 			})
 
 			if err != nil && !s.expectFailure {

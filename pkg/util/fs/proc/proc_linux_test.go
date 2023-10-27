@@ -437,7 +437,7 @@ func TestSetOOMScoreAdj(t *testing.T) {
 	}
 
 	for _, l := range list {
-		err := SetOOMScoreAdj(l.pid, &l.score)
+		err := SetOOMScoreAdj(l.pid, &l.score) //nolint:gosec
 		if l.fail && err == nil {
 			t.Errorf("writing %d in /proc/%d/oom_score_adj should have failed", l.score, l.pid)
 		} else if !l.fail && err != nil {
