@@ -5,6 +5,13 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.2.x - \[TBA\]
+
+- Added `libnvidia-nvvm` to `nvliblist.conf`. Newer
+  NVIDIA Drivers (known with >= 525.85.05) require this lib to compile
+  OpenCL programs against NVIDIA GPUs, i.e. `libnvidia-opencl` depends on
+  `libnvidia-nvvm.`
+
 ## v1.2.4 - \[2023-10-10\]
 
 - Fixed a problem with relocating an unprivileged installation of
