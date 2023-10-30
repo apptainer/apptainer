@@ -605,12 +605,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/sylabs/json-resp/blob/master/LICENSE.md>
 
-## github.com/theupdateframework/go-tuf/encrypted
-
-**License:** BSD-3-Clause
-
-**License URL:** <https://github.com/theupdateframework/go-tuf/blob/master/encrypted/LICENSE>
-
 ## github.com/ulikunitz/xz
 
 **License:** BSD-3-Clause
