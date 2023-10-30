@@ -112,4 +112,5 @@
 - Charles Vejnar <charles.vejnar@gmail.com>
 - Carmelo Piccione <carmelo.piccione@gmail.com>
 - Filip Gorczyca <filip.gorczyca141@gmail.com>
+- Benedikt Riedel <benedikt.riedel@gmail.com>
 ```
