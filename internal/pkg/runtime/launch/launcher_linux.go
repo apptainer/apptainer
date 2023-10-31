@@ -1050,7 +1050,7 @@ func (l *Launcher) setCgroups(instanceName string) error {
 	// root can always create a cgroup.
 	useCG := l.uid == 0
 	// non-root needs cgroups v2 unified mode + systemd as cgroups manager.
-	if l.uid != 0 && lccgroups.IsCgroup2UnifiedMode() && l.engineConfig.File.SystemdCgroups {
+	if !useCG && lccgroups.IsCgroup2UnifiedMode() && l.engineConfig.File.SystemdCgroups && !l.cfg.Fakeroot {
 		if os.Getenv("XDG_RUNTIME_DIR") == "" || os.Getenv("DBUS_SESSION_BUS_ADDRESS") == "" {
 			sylog.Infof("Instance stats will not be available because XDG_RUNTIME_DIR")
 			sylog.Infof("  or DBUS_SESSION_BUS_ADDRESS is not set")
@@ -1066,6 +1066,11 @@ func (l *Launcher) setCgroups(instanceName string) error {
 			return err
 		}
 		l.engineConfig.SetCgroupsJSON(cgJSON)
+		return nil
+	}
+
+	if l.cfg.Fakeroot {
+		sylog.Debugf("Instance stats will not be available because of fakeroot mode")
 		return nil
 	}
 
