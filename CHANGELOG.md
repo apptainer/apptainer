@@ -59,6 +59,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.2.x
 
+- Disable the usage of cgroup in instance creation when `--fakeroot` is passed.
+
 ## v1.2.4 - \[2023-10-10\]
 
 - Fixed a problem with relocating an unprivileged installation of
