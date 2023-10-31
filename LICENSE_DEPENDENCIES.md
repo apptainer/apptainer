@@ -869,6 +869,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/rivo/uniseg/blob/master/LICENSE.txt>
 
+## github.com/samber/lo
+
+**License:** MIT
+
+**License URL:** <https://github.com/samber/lo/blob/master/LICENSE>
+
 ## github.com/secure-systems-lab/go-securesystemslib/dsse
 
 **License:** MIT
