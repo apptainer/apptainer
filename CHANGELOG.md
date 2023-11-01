@@ -11,6 +11,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   NVIDIA Drivers (known with >= 525.85.05) require this lib to compile
   OpenCL programs against NVIDIA GPUs, i.e. `libnvidia-opencl` depends on
   `libnvidia-nvvm.`
+- Disable the usage of cgroup in instance creation when `--fakeroot` is passed.
 
 ## v1.2.4 - \[2023-10-10\]
 
