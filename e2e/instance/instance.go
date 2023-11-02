@@ -134,7 +134,7 @@ func (c *ctx) testCreateManyInstances(t *testing.T) {
 			e2e.ExpectExit(0),
 		)
 
-		c.expectInstance(t, instanceName, 1)
+		c.expectInstance(t, instanceName, 1, false)
 	}
 }
 
@@ -383,7 +383,7 @@ func (c *ctx) testInstanceWithConfigDir(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
-	c.expectInstance(t, name, 1)
+	c.expectInstance(t, name, 1, false)
 	c.execInstance(t, name, "id")
 	c.stopInstance(t, name)
 
@@ -392,6 +392,17 @@ func (c *ctx) testInstanceWithConfigDir(t *testing.T) {
 			t.Fatalf("failed %v", err)
 		}
 	})(t)
+}
+
+// testShareNSMopde will test --sharens flag
+func (c *ctx) testShareNSMode(t *testing.T) {
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(c.profile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--sharens", c.env.ImagePath, "true"),
+		e2e.ExpectExit(0),
+	)
 }
 
 // E2ETests is the main func to trigger the test suite
@@ -424,6 +435,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 				{"GhostInstance", c.testGhostInstance},
 				{"CheckpointInstance", c.testCheckpointInstance},
 				{"InstanceWithConfigDir", c.testInstanceWithConfigDir},
+				{"ShareNSMode", c.testShareNSMode},
 			}
 
 			profiles := []e2e.Profile{

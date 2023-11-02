@@ -167,7 +167,7 @@ var CheckpointInstanceCmd = &cobra.Command{
 		sylog.Infof("Using checkpoint %q", e.Name())
 
 		a := append([]string{"/.singularity.d/actions/exec"}, dmtcp.CheckpointArgs(port)...)
-		if err := launchContainer(cmd, "instance://"+args[0], a, ""); err != nil {
+		if err := launchContainer(cmd, "instance://"+args[0], a, "", -1); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 	},

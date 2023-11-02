@@ -63,6 +63,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   inferred by `--containall` and `--compat`.
 - Added `--config` option to`keyserver` commands.
 - Honor an optional remoteName argument to the `keyserver list` command.
+- Adding `--sharens` mode for `apptainer exec/run/shell`, which enables to run multiple
+  apptainer instances in the same user namespace.
 
 ### Developer / API
 

@@ -151,6 +151,8 @@ type launchOptions struct {
 	UseBuildConfig    bool
 	TmpDir            string
 	Underlay          bool // whether prefer underlay over overlay
+	ShareNSMode       bool // whether running in sharens mode
+	ShareNSFd         int  // fd opened in sharens mode
 }
 
 type Launcher struct {
@@ -565,6 +567,22 @@ func OptTmpDir(a string) Option {
 func OptUnderlay(b bool) Option {
 	return func(lo *launchOptions) error {
 		lo.Underlay = b
+		return nil
+	}
+}
+
+// OptShareNSMode
+func OptShareNSMode(b bool) Option {
+	return func(lo *launchOptions) error {
+		lo.ShareNSMode = b
+		return nil
+	}
+}
+
+// OptShareNSFd
+func OptShareNSFd(fd int) Option {
+	return func(lo *launchOptions) error {
+		lo.ShareNSFd = fd
 		return nil
 	}
 }

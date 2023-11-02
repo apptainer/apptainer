@@ -46,7 +46,7 @@ type instanceInfo struct {
 // user filters, and prints it in a regular or a JSON format (if
 // formatJSON is true) to the passed writer. Additionally, fetches
 // log paths (if showLogs is true).
-func PrintInstanceList(w io.Writer, name, user string, formatJSON bool, showLogs bool) error {
+func PrintInstanceList(w io.Writer, name, user string, formatJSON bool, showLogs bool, all bool) error {
 	if formatJSON && showLogs {
 		sylog.Fatalf("more than one flags have been set")
 	}
@@ -54,7 +54,7 @@ func PrintInstanceList(w io.Writer, name, user string, formatJSON bool, showLogs
 	tabWriter := tabwriter.NewWriter(w, 0, 8, 4, ' ', 0)
 	defer tabWriter.Flush()
 
-	ii, err := instance.List(user, name, instance.AppSubDir)
+	ii, err := instance.List(user, name, instance.AppSubDir, all)
 	if err != nil {
 		return fmt.Errorf("could not retrieve instance list: %v", err)
 	}
@@ -115,7 +115,7 @@ func PrintInstanceList(w io.Writer, name, user string, formatJSON bool, showLogs
 // truncating it if it already exists. Note that the name should not be a glob,
 // i.e. name should identify a single instance only, otherwise an error is returned.
 func WriteInstancePidFile(name, pidFile string) error {
-	inst, err := instance.List("", name, instance.AppSubDir)
+	inst, err := instance.List("", name, instance.AppSubDir, true)
 	if err != nil {
 		return fmt.Errorf("could not retrieve instance list: %v", err)
 	}
@@ -139,7 +139,7 @@ func WriteInstancePidFile(name, pidFile string) error {
 // instanceListOrError is a private function to retrieve named instances or fail if there are no instances
 // We wrap the error from instance.List to provide a more specific error message
 func instanceListOrError(instanceUser, name string) ([]*instance.File, error) {
-	ii, err := instance.List(instanceUser, name, instance.AppSubDir)
+	ii, err := instance.List(instanceUser, name, instance.AppSubDir, true)
 	if err != nil {
 		return ii, fmt.Errorf("could not retrieve instance list: %w", err)
 	}

@@ -626,7 +626,13 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 
 	starterConfig.SetBringLoopbackInterface(true)
 
-	starterConfig.SetInstance(e.EngineConfig.GetInstance())
+	// check whether container should run in sharens mode
+	if e.EngineConfig.GetShareNSMode() {
+		// for --sharens mode, won't start the container as instance
+		starterConfig.SetInstance(false)
+	} else {
+		starterConfig.SetInstance(e.EngineConfig.GetInstance())
+	}
 
 	starterConfig.SetNsFlagsFromSpec(e.EngineConfig.OciConfig.Linux.Namespaces)
 

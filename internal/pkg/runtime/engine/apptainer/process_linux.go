@@ -45,6 +45,7 @@ import (
 	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
 	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/fs/lock"
 	"github.com/apptainer/apptainer/pkg/util/rlimit"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"golang.org/x/sys/unix"
@@ -63,6 +64,11 @@ const defaultShell = "/bin/sh"
 //
 //nolint:maintidx
 func (e *EngineOperations) StartProcess(masterConnFd int) error {
+	// close the opened fd inside container, preventing leak
+	if fd := e.EngineConfig.GetShareNSFd(); fd != -1 && e.EngineConfig.GetShareNSMode() {
+		sylog.Debugf("Close --sharens fd lock, fd: %d", fd)
+		_ = unix.Close(fd)
+	}
 	// Manage all signals.
 	// Queue them until they're ready to be handled below.
 	// Use a channel size of two here, since we may receive SIGURG, which is
@@ -74,7 +80,7 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 		return err
 	}
 
-	isInstance := e.EngineConfig.GetInstance()
+	isInstance := e.EngineConfig.GetInstance() && !e.EngineConfig.GetShareNSMode()
 	bootInstance := isInstance && e.EngineConfig.GetBootInstance()
 	shimProcess := false
 
@@ -248,6 +254,12 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 
 	syscall.Close(masterConnFd)
 
+	if e.EngineConfig.GetShareNSMode() && !e.EngineConfig.GetInstanceJoin() {
+		// the first process should sleep for a while waiting for other processes execution
+		// should keep the user namespace open. As we do not have any ways to know how many
+		// instances are running at the same time.
+		time.Sleep(100 * time.Millisecond)
+	}
 	for {
 		select {
 		case s := <-signals:
@@ -360,6 +372,9 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 			return err
 		}
 
+		// add sharens flag
+		file.ShareNSMode = e.EngineConfig.GetShareNSMode()
+
 		pw, err := user.CurrentOriginal()
 		if err != nil {
 			return err
@@ -427,6 +442,18 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 
 		err = file.Update()
 
+		if err != nil {
+			return err
+		}
+
+		// release lock if accquired
+		if fd := e.EngineConfig.GetShareNSFd(); fd != -1 && e.EngineConfig.GetShareNSMode() {
+			err = lock.Release(fd)
+			if err != nil {
+				return err
+			}
+		}
+
 		// send SIGUSR1 to the parent process in order to tell it
 		// to detach container process and run as instance.
 		// Sleep a bit in case child would exit
@@ -437,6 +464,7 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 
 		return err
 	}
+
 	return nil
 }
 

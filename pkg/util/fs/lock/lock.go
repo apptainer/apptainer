@@ -31,6 +31,23 @@ func Exclusive(path string) (fd int, err error) {
 	return fd, nil
 }
 
+// TryExclusive applies an exclusive non-blocking lock on path
+func TryExclusive(path string) (fd int, accquired bool, err error) {
+	fd, err = unix.Open(path, os.O_RDONLY, 0)
+	if err != nil {
+		return fd, false, err
+	}
+	err = unix.Flock(fd, unix.LOCK_EX|unix.LOCK_NB)
+	if err != nil {
+		unix.Close(fd)
+		if errors.Is(err, unix.EAGAIN) || errors.Is(err, unix.EWOULDBLOCK) {
+			return fd, false, nil
+		}
+		return fd, false, err
+	}
+	return fd, true, nil
+}
+
 // Release removes a lock on path referenced by fd
 func Release(fd int) error {
 	defer unix.Close(fd)

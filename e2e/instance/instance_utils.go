@@ -52,7 +52,7 @@ func (c *ctx) stopInstance(t *testing.T, instance string, stopArgs ...string) (s
 		e2e.ExpectExit(0, e2e.GetStreams(&stdout, &stderr)),
 	)
 
-	c.expectInstance(t, instance, 0)
+	c.expectInstance(t, instance, 0, true)
 
 	return
 }
@@ -77,7 +77,7 @@ func (c *ctx) execInstance(t *testing.T, instance string, execArgs ...string) (s
 }
 
 // Check if there is the number of expected instances with the provided name.
-func (c *ctx) expectInstance(t *testing.T, name string, nb int) {
+func (c *ctx) expectInstance(t *testing.T, name string, nb int, showAll bool) {
 	listInstancesFn := func(t *testing.T, r *e2e.ApptainerCmdResult) {
 		var instances instanceList
 
@@ -89,11 +89,17 @@ func (c *ctx) expectInstance(t *testing.T, name string, nb int) {
 		}
 	}
 
+	var args e2e.ApptainerCmdOp
+	if showAll {
+		args = e2e.WithArgs([]string{"--all", "--json", name}...)
+	} else {
+		args = e2e.WithArgs([]string{"--json", name}...)
+	}
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(c.profile),
 		e2e.WithCommand("instance list"),
-		e2e.WithArgs([]string{"--json", name}...),
+		args,
 		e2e.WithEnv(c.withEnv),
 		e2e.ExpectExit(0, listInstancesFn),
 	)
