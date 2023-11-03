@@ -12,6 +12,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   OpenCL programs against NVIDIA GPUs, i.e. `libnvidia-opencl` depends on
   `libnvidia-nvvm.`
 - Disable the usage of cgroup in instance creation when `--fakeroot` is passed.
+- Disable the usage of cgroup in instance creation when `hidepid` mount option
+  on /proc is set.
 
 ## v1.2.4 - \[2023-10-10\]
 
