@@ -146,7 +146,7 @@ You can configure, build, and install Apptainer using the following commands:
 
 ```sh
 ./mconfig
-cd ./builddir
+cd $(/bin/pwd)/builddir
 make
 sudo make install
 ```
