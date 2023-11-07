@@ -22,7 +22,7 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/docker/docker v23.0.6+incompatible
 	github.com/docker/go-units v0.5.0
-	github.com/fatih/color v1.15.0
+	github.com/fatih/color v1.16.0
 	github.com/go-log/log v0.2.0
 	github.com/google/uuid v1.3.0
 	github.com/gosimple/slug v1.13.1
@@ -46,7 +46,7 @@ require (
 	github.com/vbauerster/mpb/v8 v8.5.2
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
 	golang.org/x/crypto v0.11.0
-	golang.org/x/sys v0.10.0
+	golang.org/x/sys v0.14.0
 	golang.org/x/term v0.10.0
 	golang.org/x/text v0.11.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -125,7 +125,7 @@ require (
 	github.com/letsencrypt/boulder v0.0.0-20230213213521-fdfea0d469b6 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mattn/go-shellwords v1.0.12 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
