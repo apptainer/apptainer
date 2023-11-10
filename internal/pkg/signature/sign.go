@@ -12,7 +12,7 @@ package signature
 import (
 	"context"
 
-	"github.com/apptainer/apptainer/pkg/sypgp"
+	"github.com/apptainer/apptainer/internal/pkg/sypgp"
 	"github.com/apptainer/sif/v2/pkg/integrity"
 	"github.com/apptainer/sif/v2/pkg/sif"
 	"github.com/sigstore/sigstore/pkg/signature"

@@ -15,7 +15,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/apptainer/apptainer/pkg/sypgp"
+	"github.com/apptainer/apptainer/internal/pkg/sypgp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
