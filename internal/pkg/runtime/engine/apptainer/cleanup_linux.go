@@ -28,6 +28,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
+	"github.com/apptainer/apptainer/pkg/util/fs/lock"
 )
 
 // CleanupContainer is called from master after the MonitorContainer returns.
@@ -43,6 +44,13 @@ import (
 // CleanupContainer is performing step 8/9 here.
 func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, status syscall.WaitStatus) error {
 	sylog.Debugf("Cleanup container")
+	if fd := e.EngineConfig.GetShareNSFd(); fd != -1 && e.EngineConfig.GetShareNSMode() {
+		br := lock.NewByteRange(fd, 0, 1)
+		// wait all other processes first
+		if err := br.Lockw(); err != nil {
+			sylog.Errorf("sharens waiting processes error: %s", err)
+		}
+	}
 
 	// close the connection between apptainer and apptheus
 	if e.CommonConfig.ApptheusSocket != nil {

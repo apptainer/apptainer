@@ -188,7 +188,7 @@ func List(username string, name string, subDir string, all bool) ([]*File, error
 		r.Close()
 		f.Path = file
 		// delete ghost apptainer instance files
-		if subDir == AppSubDir && f.isExited() {
+		if subDir == AppSubDir && f.isExited() && !f.ShareNSMode {
 			f.Delete()
 			continue
 		}

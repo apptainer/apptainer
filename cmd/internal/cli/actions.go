@@ -24,12 +24,14 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/client/oci"
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/client/shub"
+	"github.com/apptainer/apptainer/internal/pkg/instance"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/launch"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/fs/lock"
 	"github.com/spf13/cobra"
+	"golang.org/x/sys/unix"
 )
 
 const (
@@ -362,31 +364,36 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 
 func shareNSLaunch(cmd *cobra.Command, image string, args []string) error {
 	ppid := os.Getppid()
-	procDir := fmt.Sprintf("/proc/%d", ppid)
+	procDir := fmt.Sprintf("/proc/%d/comm", ppid)
 	instanceName := fmt.Sprintf("%s_%d", shareNSInstancePrefix, ppid)
 
-	// try locking the ppid proc folder
-	fd, accquired, err := lock.TryExclusive(procDir)
+	fd, err := unix.Open(procDir, unix.O_RDWR, 0)
 	if err != nil {
 		return err
 	}
 
-	if accquired {
+	br := lock.NewByteRange(fd, 0, 1)
+	err = br.Lock()
+
+	switch err {
+	case nil:
 		// first process
 		if err := launchContainer(cmd, image, args, instanceName, fd); err != nil {
 			return err
 		}
-	} else {
+	case lock.ErrByteRangeAcquired:
 		// other process, this will block the process
-		fd, err := lock.Exclusive(procDir)
-		if err != nil {
+		if err := br.RLockw(); err != nil {
 			return err
-		} else if err = lock.Release(fd); err != nil {
-			return err
+		} else if _, err := instance.Get(instanceName, instance.AppSubDir); err != nil {
+			return fmt.Errorf("first process with --sharens has already exited, could not execute process (pid %d)", os.Getpid())
 		}
 		if err := launchContainer(cmd, fmt.Sprintf("instance://%s", instanceName), args, "", -1); err != nil {
 			return err
 		}
+	default:
+		return err
 	}
+
 	return nil
 }

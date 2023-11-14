@@ -335,7 +335,7 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	// Setup instance specific configuration if required.
 	if instanceName != "" {
 		l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "INSTANCE", instanceName)
-		l.cfg.Namespaces.PID = true
+		l.cfg.Namespaces.PID = !l.cfg.ShareNSMode
 		l.engineConfig.SetInstance(true)
 		l.engineConfig.SetBootInstance(l.cfg.Boot)
 
@@ -402,7 +402,7 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	runPluginCallbacks(cfg)
 
 	// Call the starter binary using our prepared config.
-	if l.engineConfig.GetInstance() {
+	if l.engineConfig.GetInstance() && !l.cfg.ShareNSMode {
 		err = l.starterInstance(loadOverlay, insideUserNs, instanceName, useSuid, cfg)
 	} else {
 		err = l.starterInteractive(loadOverlay, useSuid, cfg)
@@ -1180,21 +1180,15 @@ func (l *Launcher) starterInstance(loadOverlay bool, insideUserNs bool, name str
 		return err
 	}
 
-	var stdout, stderr *os.File
 	var start int64
-	if l.engineConfig.GetShareNSMode() {
-		// sharens mode will uses os.stdout and os.stderr instead of log files
-		stdout, stderr = os.Stdout, os.Stderr
-	} else {
-		var err error
-		stdout, stderr, err = instance.SetLogFile(name, l.cfg.Namespaces.User || insideUserNs, int(l.uid), instance.LogSubDir)
-		if err != nil {
-			return fmt.Errorf("failed to create instance log files: %w", err)
-		}
-		start, err = stderr.Seek(0, io.SeekEnd)
-		if err != nil {
-			sylog.Warningf("failed to get standard error stream offset: %s", err)
-		}
+
+	stdout, stderr, err := instance.SetLogFile(name, l.cfg.Namespaces.User || insideUserNs, int(l.uid), instance.LogSubDir)
+	if err != nil {
+		return fmt.Errorf("failed to create instance log files: %w", err)
+	}
+	start, err = stderr.Seek(0, io.SeekEnd)
+	if err != nil {
+		sylog.Warningf("failed to get standard error stream offset: %s", err)
 	}
 
 	cmdErr := starter.Run(
@@ -1206,32 +1200,28 @@ func (l *Launcher) starterInstance(loadOverlay bool, insideUserNs bool, name str
 		starter.LoadOverlayModule(loadOverlay),
 	)
 
-	if !l.engineConfig.GetShareNSMode() {
-		if sylog.GetLevel() != 0 {
-			// starter can exit a bit before all errors has been reported
-			// by instance process, wait a bit to catch all errors
-			time.Sleep(100 * time.Millisecond)
+	if sylog.GetLevel() != 0 {
+		// starter can exit a bit before all errors has been reported
+		// by instance process, wait a bit to catch all errors
+		time.Sleep(100 * time.Millisecond)
 
-			end, err := stderr.Seek(0, io.SeekEnd)
-			if err != nil {
-				sylog.Warningf("failed to get standard error stream offset: %s", err)
-			}
-			if end-start > 0 {
-				output := make([]byte, end-start)
-				stderr.ReadAt(output, start)
-				fmt.Println(string(output))
-			}
+		end, err := stderr.Seek(0, io.SeekEnd)
+		if err != nil {
+			sylog.Warningf("failed to get standard error stream offset: %s", err)
+		}
+		if end-start > 0 {
+			output := make([]byte, end-start)
+			stderr.ReadAt(output, start)
+			fmt.Println(string(output))
 		}
 	}
 
 	if cmdErr != nil {
 		return fmt.Errorf("failed to start instance: %w", cmdErr)
 	}
-	if !l.engineConfig.GetShareNSMode() {
-		sylog.Verbosef("you will find instance output here: %s", stdout.Name())
-		sylog.Verbosef("you will find instance error here: %s", stderr.Name())
-		sylog.Infof("instance started successfully")
-	}
+	sylog.Verbosef("you will find instance output here: %s", stdout.Name())
+	sylog.Verbosef("you will find instance error here: %s", stderr.Name())
+	sylog.Infof("instance started successfully")
 
 	return nil
 }

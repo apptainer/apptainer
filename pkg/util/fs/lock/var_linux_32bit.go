@@ -15,4 +15,5 @@ import "golang.org/x/sys/unix"
 
 func init() {
 	setLk = unix.F_SETLK64
+	setLkw = unix.F_SETLKW64
 }
