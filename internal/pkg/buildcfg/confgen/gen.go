@@ -129,9 +129,9 @@ func getPrefix() (string) {
 				sylog.Debugf("%v was relocated because %v != %v", base, bin, realBindir)
 				installPrefix = filepath.Dir(bin)
 			}
-		case "starter", "starter-suid":
+		case "starter":
 			// The default LIBEXECDIR is PREFIX/libexec
-			// LIBEXECDIR/apptainer/bin/starter{|-suid}
+			// LIBEXECDIR/apptainer/bin/starter
 			installLibexecdir := filepath.Dir(filepath.Dir(bin))
 			realLibexecdir, err := filepath.EvalSymlinks("{{.Libexecdir}}")
 			if err != nil {
@@ -144,8 +144,9 @@ func getPrefix() (string) {
 				sylog.Debugf("%v was relocated because %v != %v", base, installLibexecdir, realLibexecdir)
 				installPrefix = filepath.Dir(installLibexecdir)
 			}
+		case "starter-suid":
+			sylog.Debugf("Base is starter-suid which never relocates")
 		default:
-			// don't relocate unknown base
 			sylog.Debugf("Unrecognized base program name %v, skipping relocate", base)
 		}
 		sylog.Debugf("Install prefix is %s", installPrefix)
