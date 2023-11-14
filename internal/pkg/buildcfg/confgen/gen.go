@@ -94,20 +94,21 @@ func getPrefix() (string) {
 	prefixOnce.Do(func() {
 		// Although this is a sync.Once, there are multiple address
 		// spaces using this code so it does get called more than once
+		installPrefix = "{{.Prefix}}"
 		executablePath, err := os.Executable()
 		if err != nil {
 			sylog.Warningf("Error getting executable path, using default: %v", err)
-			installPrefix = "{{.Prefix}}"
 			return
 		}
 
+		sylog.Debugf("executablePath is %v", executablePath)
 		_, err = os.Stat(executablePath)
 		if err != nil {
 			// Due to mount namespace issues, os.Executable may return a non-existing
 			// location.  This is normal when starter-suid is in its compiled location,
 			// but assuming the original prefix here may help also in other circumstances.
 			// See https://github.com/apptainer/apptainer/issues/1061
-			installPrefix = "{{.Prefix}}"
+			sylog.Debugf("executablePath does not exist, assuming default prefix")
 			return
 		}
 
@@ -117,27 +118,36 @@ func getPrefix() (string) {
 		switch base {
 		case "apptainer":
 			realBindir, err := filepath.EvalSymlinks("{{.Bindir}}")
-			if err == nil && bin == realBindir {
+			if err != nil {
+				sylog.Debugf("Error finding real path of Bindir, assuming %v was relocated: %v", base, err)
+				installPrefix = filepath.Dir(bin)
+			} else if bin == realBindir {
 				// apptainer binary was not relocated
-				installPrefix = "{{.Prefix}}"
+				sylog.Debugf("%v was not relocated from %v", base, realBindir)
 			} else {
 				// PREFIX/bin/apptainer
+				sylog.Debugf("%v was relocated because %v != %v", base, bin, realBindir)
 				installPrefix = filepath.Dir(bin)
 			}
-		case "starter", "starter-suid":
+		case "starter":
 			// The default LIBEXECDIR is PREFIX/libexec
-			// LIBEXECDIR/apptainer/bin/starter{|-suid}
+			// LIBEXECDIR/apptainer/bin/starter
 			installLibexecdir := filepath.Dir(filepath.Dir(bin))
 			realLibexecdir, err := filepath.EvalSymlinks("{{.Libexecdir}}")
-			if err == nil && installLibexecdir == realLibexecdir {
+			if err != nil {
+				sylog.Debugf("Error finding real path of Libexecdir, assuming %v was relocated: %v", base, err)
+				installPrefix = filepath.Dir(installLibexecdir)
+			} else if installLibexecdir == realLibexecdir {
 				// starter was not relocated
-				installPrefix = "{{.Prefix}}"
+				sylog.Debugf("%v was not relocated from %v", base, realLibexecdir)
 			} else {
+				sylog.Debugf("%v was relocated because %v != %v", base, installLibexecdir, realLibexecdir)
 				installPrefix = filepath.Dir(installLibexecdir)
 			}
+		case "starter-suid":
+			sylog.Debugf("Base is starter-suid which never relocates")
 		default:
-			// don't relocate unknown base
-			installPrefix = "{{.Prefix}}"
+			sylog.Debugf("Unrecognized base program name %v, skipping relocate", base)
 		}
 		sylog.Debugf("Install prefix is %s", installPrefix)
 	})
