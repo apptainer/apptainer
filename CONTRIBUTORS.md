@@ -100,6 +100,7 @@
 - Tobias Ribizel <mail@ribizel.de>
 - Tru Huynh <tru@pasteur.fr>
 - Tyson Whitehead <twhitehead@gmail.com>
+- Vaiva Zokaite <vaiva.zokaite@cern.ch>
 - Vanessa Sochat <vsoch@users.noreply.github.com>
 - Westley Kurtzer <westley@sylabs.io>, <westleyk@nym.hush.com>
 - Yannick Cote <y@sylabs.io>, <yhcote@gmail.com>

@@ -16,8 +16,8 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/syecl"
+	"github.com/apptainer/apptainer/internal/pkg/sypgp"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
-	"github.com/apptainer/apptainer/pkg/sypgp"
 	"golang.org/x/sys/unix"
 )
 

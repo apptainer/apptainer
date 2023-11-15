@@ -17,10 +17,10 @@ import (
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
+	"github.com/apptainer/apptainer/internal/pkg/sypgp"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/apptainer/apptainer/pkg/sypgp"
 	"github.com/spf13/cobra"
 )
 

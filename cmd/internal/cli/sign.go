@@ -14,9 +14,9 @@ import (
 
 	"github.com/apptainer/apptainer/docs"
 	sifsignature "github.com/apptainer/apptainer/internal/pkg/signature"
+	"github.com/apptainer/apptainer/internal/pkg/sypgp"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/apptainer/apptainer/pkg/sypgp"
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
 	"github.com/sigstore/sigstore/pkg/signature"
 	"github.com/spf13/cobra"

@@ -19,7 +19,7 @@ import (
 	"testing"
 
 	"github.com/ProtonMail/go-crypto/openpgp"
-	"github.com/apptainer/apptainer/pkg/sypgp"
+	"github.com/apptainer/apptainer/internal/pkg/sypgp"
 	"github.com/apptainer/sif/v2/pkg/integrity"
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
 	"github.com/sigstore/sigstore/pkg/signature"
