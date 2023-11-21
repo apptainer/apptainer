@@ -476,6 +476,8 @@ memory fs type = {{ .MemoryFSType }}
 # This allows the administrator to specify the number of CPUs for mksquashfs 
 # to use when building an image.  The fewer processors the longer it takes.
 # To enable it to use all available CPU's set this to 0.
+# If the environment variable OMP_NUM_THREADS is set to a positive whole 
+# number, OMP_NUM_THREADS will be an upper bound on the number of processors used.
 # mksquashfs procs = 0
 mksquashfs procs = {{ .MksquashfsProcs }}
 
