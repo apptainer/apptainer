@@ -5,7 +5,7 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## v1.2.x - \[TBA\]
+## v1.2.5 - \[2023-11-21\]
 
 - Added `libnvidia-nvvm` to `nvliblist.conf`. Newer
   NVIDIA Drivers (known with >= 525.85.05) require this lib to compile
