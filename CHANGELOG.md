@@ -39,10 +39,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
   supplying the `--no-default` (or `-n`) flag to `remote add`.
 - Skip parsing build definition file template variables after comments
   beginning with a hash symbol.
-- Added `libnvidia-nvvm` to `nvliblist.conf`. Newer
-  NVIDIA Drivers (known with >= 525.85.05) require this lib to compile
-  OpenCL programs against NVIDIA GPUs, i.e. `libnvidia-opencl` depends on
-  `libnvidia-nvvm.`
 
 ### New Features & Functionality
 
@@ -59,6 +55,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.2.x
 
+## v1.2.5 - \[2023-11-21\]
+
+- Added `libnvidia-nvvm` to `nvliblist.conf`. Newer
+  NVIDIA Drivers (known with >= 525.85.05) require this lib to compile
+  OpenCL programs against NVIDIA GPUs, i.e. `libnvidia-opencl` depends on
+  `libnvidia-nvvm.`
 - Disable the usage of cgroup in instance creation when `--fakeroot` is passed.
 - Disable the usage of cgroup in instance creation when `hidepid` mount option
   on /proc is set.
