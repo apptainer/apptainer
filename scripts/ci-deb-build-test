@@ -20,6 +20,7 @@ apt-get install -y \
     fuse-overlayfs \
     fakeroot \
     cryptsetup \
+    tzdata \
     curl wget git
 apt-get install -y \
     devscripts \
@@ -32,7 +33,7 @@ apt-get install -y \
     uuid-dev \
     golang-go
 # for squashfuse_ll build
-apt-get install -y autoconf automake libtool pkg-config libfuse-dev zlib1g-dev
+apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev
 
 # move source code down a level because debuild writes into parent dir
 shopt -s extglob
@@ -66,24 +67,10 @@ su testuser -c '
     fi
   fi
   go version
-  # download additional source urls listed in rpm
-  SPEC=dist/rpm/apptainer.spec.in
-  DOWNLOADURL="$(sed -n "s/^Source[1-9][0-9]*: //p" $SPEC)"
-  SUBS="$(sed -n "s/.*%global //p" $SPEC)"
-  for URL in $DOWNLOADURL; do
-      if [[ "$URL" != http* ]]; then
-	  continue
-      fi
-      URL=$(echo "$SUBS" | (while read FROM TO; do
-	      URL="$(echo $URL|sed "s,%{$FROM},$TO,g")"
-	    done
-	    echo $URL))
-      BASE="$(basename $URL)"
-      curl -f -L -sS -o debian/$BASE $URL
-  done
+  mlocal/scripts/download-dependencies debian
   export DEB_FULLNAME="'"${DEB_FULLNAME:-CI Test}"'"
   export DEBEMAIL="'${DEBEMAIL:-citest@example.com}'"
-  debuild --build=binary --no-sign --lintian-opts --display-info --show-overrides
+  debuild --prepend-path $PATH --build=binary --no-sign --lintian-opts --display-info --show-overrides
   sudo dpkg -i ../apptainer*.deb
 
   apptainer exec oras://ghcr.io/apptainer/alpine:3.15.0 /bin/true

@@ -28,6 +28,7 @@ sudo apt-get install -y \
     fuse-overlayfs \
     fakeroot \
     cryptsetup \
+    tzdata \
     curl wget git
 ```
 
@@ -182,7 +183,7 @@ Instructions for installing it from source follow here.
 First, make sure that additional required packages are installed.  On Debian:
 
 ```sh
-apt-get install -y autoconf automake libtool pkg-config libfuse-dev zlib1g-dev
+apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev
 ```
 
 On CentOS/RHEL:

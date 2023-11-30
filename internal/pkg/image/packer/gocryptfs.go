@@ -49,7 +49,7 @@ func NewGocryptfs(keyInfo *cryptkey.KeyInfo) *Gocryptfs {
 		Squashfs: NewSquashfs(),
 	}
 	appfile := apptainerconf.GetCurrentConfig()
-	driver.InitImageDrivers(true, true, appfile, image.ImageFeature)
+	driver.InitImageDrivers(true, true, appfile, image.GocryptFeature)
 	g.gocryptfsPath, _ = bin.FindBin("gocryptfs")
 	g.driver = image.GetDriver(driver.DriverName)
 	g.keyInfo = keyInfo
@@ -57,7 +57,7 @@ func NewGocryptfs(keyInfo *cryptkey.KeyInfo) *Gocryptfs {
 }
 
 func (g *Gocryptfs) HasGocryptfs() bool {
-	return g.driver.Features()&image.ImageFeature != 0 && g.gocryptfsPath != ""
+	return g.driver.Features()&image.GocryptFeature != 0
 }
 
 func (g *Gocryptfs) init(tmpDir string) (cryptInfo *cryptInfo, err error) {

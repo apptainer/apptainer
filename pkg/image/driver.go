@@ -11,6 +11,7 @@ package image
 
 import (
 	"fmt"
+	"syscall"
 
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 )
@@ -19,13 +20,20 @@ import (
 type DriverFeature uint16
 
 const (
-	// ImageFeature means the driver handle image mount setup.
-	ImageFeature DriverFeature = 1 << iota
+	// SquashFeature means the driver handles squashfs image mounts.
+	SquashFeature DriverFeature = 1 << iota
+	// Ext3Feature means the driver handles ext3fs image mounts.
+	Ext3Feature
+	// GocryptFeature means the driver handles gocryptfs image mounts.
+	GocryptFeature
 	// OverlayFeature means the driver handle overlay mount.
 	OverlayFeature
-	// FuseFeature means the driver use FUSE.
+	// FuseFeature means the driver uses FUSE as its base.
 	FuseFeature
 )
+
+// ImageFeature means the driver handles any of the image mount types
+const ImageFeature = SquashFeature | Ext3Feature | GocryptFeature
 
 // MountFunc defines mount function prototype
 type MountFunc func(source string, target string, filesystem string, flags uintptr, data string) error
@@ -61,6 +69,10 @@ type Driver interface {
 	Start(*DriverParams, int) error
 	// Stop the driver related to given mount target for cleanup.
 	Stop(string) error
+	// Check if any of the image driver processes matches the given
+	// pid that exited with the given status and return an error if
+	// one of them does, or nil if they do not.
+	Stopped(int, syscall.WaitStatus) error
 	// Features Feature returns supported features.
 	Features() DriverFeature
 }

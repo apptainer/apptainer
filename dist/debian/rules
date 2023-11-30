@@ -64,35 +64,21 @@ export APPTAINER_CACHEDIR=$(pkgdir)/var/lib/apptainer/cache
 	dh $@  --with=autoreconf
 
 override_dh_auto_configure:
-	@SQUASHFUSETGZ="`echo debian/squashfuse-*.tar.gz`"; \
-	  if [ -f "$$SQUASHFUSETGZ" ]; then \
-	    set -x; \
-	    tar -C debian -xf $$SQUASHFUSETGZ; \
-	    cd $${SQUASHFUSETGZ%.tar.gz}; \
-	    ./autogen.sh; \
-	    FLAGS=-std=c99 ./configure --enable-multithreading; \
-	    make squashfuse_ll; \
-	  fi
-	@export PATH=$(GOROOT)/bin:$$PATH; \
+	@export GOPATH=$(GOROOT)/bin PATH=$(GOROOT)/bin:$$PATH GOCACHE=$(GOCACHE); \
+	  set -ex; \
 	  if ! ./mlocal/scripts/check-min-go-version go $(MINGO_VERSION); then \
-	    set -e; \
 	    if [ -d $(GOROOT) ]; then rm -rf $(GOROOT); fi; \
 	    mkdir -p $(GOROOT); \
 	    HERE=$$PWD; \
 	    cd $(GOROOT)/..; \
 	    tar -xf $$HERE/debian/go$(MINGO_VERSION).src.tar.gz; \
 	    cd go/src; \
-	    GOCACHE=$(GOCACHE) ./make.bash; \
-	  fi
-	@GOCRYPTFSTGZ="`echo debian/gocryptfs-*.tar.gz`"; \
-	  if [ -f "$$GOCRYPTFSTGZ" ]; then \
-	    set -x; \
-	    tar -C debian -xf $$GOCRYPTFSTGZ; \
-	    cd $${GOCRYPTFSTGZ%.tar.gz}; \
-	    export GOCACHE=$(GOCACHE); \
-	    export GOPATH=$(GOROOT)/bin; \
-	    PATH=$(GOROOT)/bin:$$PATH ./build-without-openssl.bash; \
-	  fi
+	    ./make.bash; \
+	    cd $$HERE; \
+	  fi; \
+	  cd debian; \
+	  ../mlocal/scripts/compile-dependencies; \
+	  cd ..
 ifneq ($(NEW_VERSION),)
 	$(warning "Setting new version in debian changelog: $(NEW_VERSION)")
 	@debchange -v $(NEW_VERSION)$(VERSION_POSTFIX) "Version $(NEW_VERSION)" && debchange -m -r ""

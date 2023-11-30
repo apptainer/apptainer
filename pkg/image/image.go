@@ -259,21 +259,25 @@ func (i *Image) GetDataPartitions() ([]Section, error) {
 	return i.getPartitions(DataUsage)
 }
 
-// HasEncryptedRootFs returns true if the image contains an encrypted
-// rootfs partition.
-func (i *Image) HasEncryptedRootFs() (encrypted bool, err error) {
+// EncryptedRootFs returns "encryptfs" if the image contains a device-mapper
+// encrypted root partition, "gocryptfs" if it contains a gocryptfs
+// encrypted root partition, or an empty string if there is no encryption
+func (i *Image) EncryptedRootFs() (encryptionType string, err error) {
 	rootFsParts, err := i.GetRootFsPartitions()
 	if err != nil {
-		return false, fmt.Errorf("while getting root FS partitions: %v", err)
+		return "", fmt.Errorf("while getting root FS partitions: %v", err)
 	}
 
 	for _, p := range rootFsParts {
-		if p.Type == ENCRYPTSQUASHFS || p.Type == GOCRYPTFSSQUASHFS {
-			return true, nil
+		if p.Type == ENCRYPTSQUASHFS {
+			return "encryptfs", nil
+		}
+		if p.Type == GOCRYPTFSSQUASHFS {
+			return "gocryptfs", nil
 		}
 	}
 
-	return false, nil
+	return "", nil
 }
 
 // writeLocks tracks write locks for the current process.

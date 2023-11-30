@@ -19,7 +19,7 @@ Build-Depends:
  automake,
  libtool,
  pkg-config,
- libfuse-dev,
+ libfuse3-dev,
  zlib1g-dev
 Standards-Version: 3.9.8
 Homepage: http://apptainer.org

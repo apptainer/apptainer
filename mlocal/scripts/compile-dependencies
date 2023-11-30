@@ -1,0 +1,20 @@
+#!/bin/bash
+# 
+# Compile dependencies.  The source tarballs are assumed to be in the
+# current working directory.
+
+set -ex
+
+SQUASHFUSETGZ="$(echo squashfuse-*.tar.gz)"
+tar -xf $SQUASHFUSETGZ
+cd ${SQUASHFUSETGZ%.tar.gz}
+./autogen.sh
+FLAGS=-std=c99 ./configure --enable-multithreading
+make squashfuse_ll
+cd ..
+
+GOCRYPTFSTGZ="$(echo gocryptfs-*.tar.gz)"
+tar -xf $GOCRYPTFSTGZ
+cd ${GOCRYPTFSTGZ%.tar.gz}
+./build-without-openssl.bash
+cd ..

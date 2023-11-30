@@ -9,6 +9,16 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ### Changed defaults / behaviours
 
+- In setuid privileged mode, if `allow setuid-mount squashfs = no` then
+  the squashfuse image driver will be used to mount squash images
+  instead of the kernel squashfs driver.  This eliminates the
+  vulnerability of using a kernel filesystem driver to mount a file
+  writable by an unprivileged user.  Likewise, if
+  `allow setuid-mount encrypted = no` then the unprivileged gocryptfs
+  format will be used for encrypting SIF files instead of the kernel
+  device-mapper.  If a SIF file was encrypted using the gocryptfs
+  format, it can now be mounted in setuid mode in addition to
+  non-setuid mode.
 - `--cwd` is now the preferred form of the flag for setting the container's
   working directory, though `--pwd` is still supported for compatibility.
 - When building RPM, we will now use `/var/lib/apptainer` (rather than
