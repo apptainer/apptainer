@@ -121,6 +121,10 @@ func (g *Gocryptfs) init(tmpDir string) (cryptInfo *cryptInfo, err error) {
 		DontElevatePrivs: true,
 	}
 
+	err = g.driver.Start(nil, 0, false)
+	if err != nil {
+		return
+	}
 	err = g.driver.Mount(&mountParams, nil)
 	if err != nil {
 		return

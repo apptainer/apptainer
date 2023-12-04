@@ -13,11 +13,9 @@ import (
 	"fmt"
 	"os"
 	"syscall"
-	"time"
 
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
 	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
-	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // MonitorContainer is called from master once the container has
@@ -31,55 +29,29 @@ import (
 // Particularly here no additional privileges are gained as monitor does
 // not need them for wait4 and kill syscalls.
 func (e *EngineOperations) MonitorContainer(pid int, signals chan os.Signal) (syscall.WaitStatus, error) {
-	var status syscall.WaitStatus
-
 	callbackType := (apptainercallback.MonitorContainer)(nil)
 	callbacks, err := plugin.LoadCallbacks(callbackType)
 	if err != nil {
-		return status, fmt.Errorf("while loading plugins callbacks '%T': %s", callbackType, err)
+		return 0, fmt.Errorf("while loading plugins callbacks '%T': %s", callbackType, err)
 	}
 	if len(callbacks) > 1 {
-		return status, fmt.Errorf("multiple plugins have registered callback for '%T'", callbackType)
+		return 0, fmt.Errorf("multiple plugins have registered callback for '%T'", callbackType)
 	} else if len(callbacks) == 1 {
 		return callbacks[0].(apptainercallback.MonitorContainer)(e.CommonConfig, pid, signals)
 	}
 
-	// Prevent the signal loop from waiting indefinitely by waking it up
-	// periodically, because we have seen sometimes SIGCHLD doesn't show.
-	// This problem has been seen in particular in setuid mode on
-	// Ubuntu 22.04 when one of the image driver programs dies with
-	// an immediate error.
-	go func() {
-		pid := syscall.Getpid()
-		for {
-			time.Sleep(time.Second)
-			syscall.Kill(pid, syscall.SIGURG)
-		}
-	}()
+	var status syscall.WaitStatus
 
 	for {
 		s := <-signals
 		switch s {
 		case syscall.SIGCHLD:
-			wpid, err := syscall.Wait4(-1, &status, syscall.WNOHANG, nil)
-			if err != nil {
-				return status, fmt.Errorf("error while waiting for child: %s", err)
-			}
-			if wpid == 0 {
-				// no child was actually waiting to be reaped
+			if wpid, err := syscall.Wait4(pid, &status, syscall.WNOHANG, nil); err != nil {
+				return status, fmt.Errorf("error while waiting child: %s", err)
+			} else if wpid != pid {
 				continue
 			}
-			sylog.Debugf("SIGCHLD received for process %d", wpid)
-			if imageDriver != nil {
-				err := imageDriver.Stopped(wpid, status)
-				if err != nil {
-					return status, err
-				}
-			}
-			if wpid == pid {
-				return status, nil
-			}
-			continue
+			return status, nil
 		case syscall.SIGURG:
 			// Ignore SIGURG, which is used for non-cooperative goroutine
 			// preemption starting with Go 1.14. For more information, see

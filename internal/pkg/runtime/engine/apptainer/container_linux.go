@@ -270,9 +270,48 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 	}
 
 	sylog.Debugf("Mount all")
-	if err := system.MountAll(); err != nil {
-		return errors.Wrap(err, "mount hook function failure")
+
+	mountAllErr := make(chan error)
+	driverMountErr := make(chan error)
+
+	go func() {
+		mountAllErr <- system.MountAll()
+	}()
+
+	go func() {
+		if imageDriver != nil {
+			err := imageDriver.MountErr()
+			select {
+			case <-driverMountErr:
+			default:
+				driverMountErr <- err
+			}
+		} else {
+			driverMountErr <- nil
+		}
+	}()
+
+	// image driver can fail during MountAll, so
+	// calling driver MountErr function gives a
+	// chance to drivers to report potential errors
+	// occurring during the MountAll phase
+	mountLoop := true
+	for mountLoop {
+		select {
+		case err := <-driverMountErr:
+			if err != nil {
+				return errors.Wrap(err, "image driver mount failure")
+			}
+		case err := <-mountAllErr:
+			if err != nil {
+				return errors.Wrap(err, "mount hook function failure")
+			}
+			mountLoop = false
+		}
 	}
+
+	close(mountAllErr)
+	close(driverMountErr)
 
 	if engine.EngineConfig.GetSessionLayer() == apptainer.UnderlayLayer {
 		// Underlay bind points can interfere with unmounting
@@ -463,9 +502,6 @@ func (c *container) setupImageDriver(system *mount.System, containerPid int) err
 
 	fakeroot := c.engine.EngineConfig.GetFakeroot()
 	fakerootHybrid := fakeroot && os.Geteuid() != 0
-	if !fakerootHybrid {
-		containerPid = 0
-	}
 
 	if fuseDriver {
 		fuseFd, fuseRPCFd, err := c.openFuseFdFromRPC()
@@ -525,7 +561,7 @@ func (c *container) setupImageDriver(system *mount.System, containerPid int) err
 			umountPoints = append(umountPoints, sp)
 
 			sylog.Debugf("Starting image driver %s", c.engine.EngineConfig.File.ImageDriver)
-			if err := imageDriver.Start(params, containerPid); err != nil {
+			if err := imageDriver.Start(params, containerPid, fakerootHybrid); err != nil {
 				return fmt.Errorf("failed to start driver: %s", err)
 			}
 
@@ -539,7 +575,7 @@ func (c *container) setupImageDriver(system *mount.System, containerPid int) err
 			defer unix.Close(params.UsernsFd)
 		}
 		sylog.Debugf("Starting image driver %s", c.engine.EngineConfig.File.ImageDriver)
-		if err := imageDriver.Start(params, containerPid); err != nil {
+		if err := imageDriver.Start(params, containerPid, fakerootHybrid); err != nil {
 			return fmt.Errorf("failed to start driver: %s", err)
 		}
 		return nil

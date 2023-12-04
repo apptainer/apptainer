@@ -11,7 +11,6 @@ package image
 
 import (
 	"fmt"
-	"syscall"
 
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 )
@@ -65,14 +64,13 @@ type DriverParams struct {
 type Driver interface {
 	// Mount is called each time an engine mount an image
 	Mount(*MountParams, MountFunc) error
+	// MountErr returns driver mount errors.
+	MountErr() error
 	// Start the driver for initialization.
-	Start(*DriverParams, int) error
-	// Stop the driver related to given mount target for cleanup.
+	Start(*DriverParams, int, bool) error
+	// Stop the driver related to given mount target for cleanup,
+	// an empty target signify to the driver to prepare for stop.
 	Stop(string) error
-	// Check if any of the image driver processes matches the given
-	// pid that exited with the given status and return an error if
-	// one of them does, or nil if they do not.
-	Stopped(int, syscall.WaitStatus) error
 	// Features Feature returns supported features.
 	Features() DriverFeature
 }

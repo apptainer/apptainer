@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-	"syscall"
 
 	"github.com/apptainer/apptainer/pkg/image"
 	pluginapi "github.com/apptainer/apptainer/pkg/plugin"
@@ -63,15 +62,15 @@ func (d *ubuntuOvlDriver) Mount(params *image.MountParams, fn image.MountFunc) e
 	)
 }
 
-func (d *ubuntuOvlDriver) Start(params *image.DriverParams, containerPid int) error {
+func (d *ubuntuOvlDriver) MountErr() error {
+	return nil
+}
+
+func (d *ubuntuOvlDriver) Start(params *image.DriverParams, containerPid int, hybrid bool) error {
 	return nil
 }
 
 func (d *ubuntuOvlDriver) Stop(target string) error {
-	return nil
-}
-
-func (d *ubuntuOvlDriver) Stopped(int, syscall.WaitStatus) error {
 	return nil
 }
 

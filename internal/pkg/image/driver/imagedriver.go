@@ -18,6 +18,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -28,6 +29,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
+	"golang.org/x/sys/unix"
 )
 
 const DriverName = "fuseapps"
@@ -60,6 +62,9 @@ type fuseappsDriver struct {
 	cmdPrefix      []string
 	squashSetUID   bool
 	unprivileged   bool
+	stopped        atomic.Bool
+	mountErrCh     chan error
+	instanceCh     chan *fuseappsInstance
 }
 
 func (f *fuseappsFeature) init(binNames string, purpose string, desired image.DriverFeature) bool {
@@ -81,7 +86,7 @@ func (f *fuseappsFeature) init(binNames string, purpose string, desired image.Dr
 	return true
 }
 
-func InitImageDrivers(register bool, unprivileged bool, fileconf *apptainerconf.File, desiredFeatures image.DriverFeature) error {
+func InitImageDrivers(register, unprivileged bool, fileconf *apptainerconf.File, desiredFeatures image.DriverFeature) error {
 	if fileconf.ImageDriver != "" && fileconf.ImageDriver != DriverName {
 		sylog.Debugf("skipping installing %v image driver because %v already configured", DriverName, fileconf.ImageDriver)
 		// allow a configured driver to take precedence
@@ -157,7 +162,19 @@ func InitImageDrivers(register bool, unprivileged bool, fileconf *apptainerconf.
 		sylog.Debugf("Setting ImageDriver to %v", DriverName)
 		fileconf.ImageDriver = DriverName
 		if register {
-			return image.RegisterDriver(DriverName, &fuseappsDriver{squashFeature, ext3Feature, overlayFeature, gocryptFeature, features, []string{}, squashSetUID, unprivileged})
+			driver := &fuseappsDriver{
+				squashFeature:  squashFeature,
+				ext3Feature:    ext3Feature,
+				overlayFeature: overlayFeature,
+				gocryptFeature: gocryptFeature,
+				features:       features,
+				cmdPrefix:      []string{},
+				squashSetUID:   squashSetUID,
+				unprivileged:   unprivileged,
+				mountErrCh:     make(chan error, 1),
+				instanceCh:     make(chan *fuseappsInstance),
+			}
+			return image.RegisterDriver(DriverName, driver)
 		}
 	}
 	return nil
@@ -300,21 +317,21 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 	}
 	stdoutErr := make(chan error, 1)
 	stderrErr := make(chan error, 1)
-	instance := fuseappsInstance{
-		cmd,
-		params,
-		fuseappsFDescript{
+	instance := &fuseappsInstance{
+		cmd:    cmd,
+		params: params,
+		stdout: fuseappsFDescript{
 			stdoutPipe,
 			bytes.Buffer{},
 			stdoutErr,
 		},
-		fuseappsFDescript{
+		stderr: fuseappsFDescript{
 			stderrPipe,
 			bytes.Buffer{},
 			stderrErr,
 		},
 	}
-	f.instances = append(f.instances, &instance)
+	f.instances = append(f.instances, instance)
 	go func() {
 		_, err := io.Copy(&instance.stdout.buf, stdoutPipe)
 		stdoutErr <- err
@@ -355,6 +372,8 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 	if process == nil {
 		return fmt.Errorf("no %v process started", f.binName)
 	}
+
+	d.instanceCh <- instance
 
 	if !waitForMount {
 		return nil
@@ -420,16 +439,16 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 			return nil
 		}
 	}
-	f.stop(params.Target, true)
-	errmsg := instance.filterMsg()
-	if errmsg != "" {
-		errmsg = ": " + errmsg
-	}
-	return fmt.Errorf("%v failed to mount %v in %v%v", f.binName, params.Target, maxTime, errmsg)
+
+	_ = f.stop(params.Target, true)
+	return fmt.Errorf("%v failed to mount %v in %v", f.binName, params.Target, maxTime)
 }
 
-func (d *fuseappsDriver) Start(params *image.DriverParams, containerPid int) error {
-	if containerPid != 0 {
+func (d *fuseappsDriver) Start(params *image.DriverParams, containerPid int, hybrid bool) error {
+	// start process monitor
+	d.monitor()
+
+	if hybrid {
 		// Running in hybrid setuid-fakeroot mode
 		// Need any subcommand to first enter the container's
 		//  user namespace
@@ -443,6 +462,7 @@ func (d *fuseappsDriver) Start(params *image.DriverParams, containerPid int) err
 			"-F",
 		}
 	}
+
 	return nil
 }
 
@@ -451,98 +471,99 @@ func (d *fuseappsDriver) Start(params *image.DriverParams, containerPid int) err
 // first just wait for the process to exit.
 func (f *fuseappsFeature) stop(target string, kill bool) error {
 	for _, instance := range f.instances {
-		if instance.params.Target != target {
+		if instance.params.Target != target || instance.cmd == nil {
 			continue
 		}
-		if instance.cmd == nil {
-			// already cleaned up by stopped()
-			continue
-		}
+
 		process := instance.cmd.Process
-		var ws syscall.WaitStatus
+
 		sylog.Debugf("Waiting for %v pid %v to exit", f.binName, process.Pid)
+
+		waitCh := make(chan struct{})
+
+		go func() {
+			siginfo := new(unix.Siginfo)
+			for {
+				err := unix.Waitid(unix.P_PID, process.Pid, siginfo, unix.WNOWAIT|unix.WEXITED, nil)
+				if err != syscall.EINTR {
+					waitCh <- struct{}{}
+					return
+				}
+			}
+		}()
+
+		if kill {
+			sylog.Debugf("Terminating pid %v", process.Pid)
+			_ = instance.cmd.Process.Signal(syscall.SIGTERM)
+		}
+
 		// maxTime is total time to wait including after kill signal,
 		//   and kill signal is sent at half the time
-		maxTime := 1 * time.Second
-		totTime := 0 * time.Second
-		killed := false
-		for totTime < maxTime {
-			wpid, err := syscall.Wait4(process.Pid, &ws, syscall.WNOHANG, nil)
-			if err != nil {
-				sylog.Debugf("Waiting for %v pid %v failed: %v", f.binName, process.Pid, err)
-				if err == syscall.ECHILD {
-					// not a terrible problem when stopping
-					return nil
+		waitTimeout := 1 * time.Second
+		timer := time.NewTimer(waitTimeout)
+		defer timer.Stop()
+
+		for {
+			select {
+			case <-timer.C:
+				if !kill {
+					// set it to true and reset timer for an additional
+					// second timeout before force kill
+					kill = true
+					timer.Reset(waitTimeout)
+					sylog.Debugf("Terminating pid %v after wait timeout", process.Pid)
+					_ = process.Signal(syscall.SIGTERM)
+				} else {
+					sylog.Debugf("Killing pid %v after wait timeout", process.Pid)
+					_ = process.Kill()
 				}
-				return err
-			} else if wpid != 0 {
-				sylog.Debugf("%v pid %v exited with status %v within %v", f.binName, wpid, ws.ExitStatus(), totTime)
-				msg := instance.filterMsg()
-				if msg != "" {
-					sylog.Debugf("output from %v: %v", f.binName, msg)
-				}
-				return nil
+			case <-waitCh:
+				close(waitCh)
+				return f.waitInstance(instance)
 			}
-			if kill {
-				sylog.Debugf("Killing pid %v", process.Pid)
-			} else if !killed && totTime >= maxTime/2 {
-				sylog.Debugf("Took more than %v, killing", maxTime/2)
-				kill = true
-			}
-			if kill {
-				kill = false
-				killed = true
-				syscall.Kill(process.Pid, syscall.SIGTERM)
-				continue
-			}
-			sleepTime := 10 * time.Millisecond
-			time.Sleep(sleepTime)
-			totTime += sleepTime
 		}
-		// This is unexpected, because the kill signal at half
-		//  of maxTime should kill quickly
-		return fmt.Errorf("took more than %v to stop %v pid %v", maxTime, f.binName, process.Pid)
 	}
+
 	return nil
 }
 
-// Check if any of the child processes belonging to this image driver feature
-// matches the pid, and return an error if so, resulting in a fatal error
-func (f *fuseappsFeature) stopped(pid int, ws syscall.WaitStatus) error {
-	for _, instance := range f.instances {
-		cmd := instance.cmd
-		if cmd == nil {
-			continue
-		}
-		process := cmd.Process
-		if pid != process.Pid {
-			continue
-		}
+func (f *fuseappsFeature) waitInstance(instance *fuseappsInstance) error {
+	cmd := instance.cmd
+	instance.cmd = nil
 
-		sylog.Debugf("%v pid %v has exited with status %v", f.binName, pid, ws.ExitStatus())
-
-		// wait for the go funcs reading from the process to exit
-		err := <-instance.stdout.err
-		if err != nil {
-			sylog.Debugf("error from %v stdout: %v", f.binName, err)
-		}
-		err = <-instance.stderr.err
-		if err != nil {
-			sylog.Debugf("error from %v stderr: %v", f.binName, err)
-		}
-
-		errmsg := instance.filterMsg()
-		if errmsg != "" {
-			errmsg = ": " + errmsg
-		}
-
-		instance.stdout.pipe.Close()
-		instance.stderr.pipe.Close()
-		instance.cmd = nil
-
-		return fmt.Errorf("%v exited%v", f.binName, errmsg)
+	// wait for the go funcs reading from the process to exit
+	if err := <-instance.stdout.err; err != nil {
+		sylog.Debugf("error from %v stdout: %v", f.binName, err)
 	}
-	return nil
+	if err := <-instance.stderr.err; err != nil {
+		sylog.Debugf("error from %v stderr: %v", f.binName, err)
+	}
+
+	err := cmd.Wait()
+	if err == nil {
+		return nil
+	}
+
+	var status syscall.WaitStatus
+
+	if ee, ok := err.(*exec.ExitError); ok {
+		status, ok = ee.Sys().(syscall.WaitStatus)
+		if !ok {
+			return err
+		}
+	} else {
+		return err
+	}
+
+	pid := cmd.Process.Pid
+	sylog.Debugf("%v pid %v has exited with status %v", f.binName, pid, status.ExitStatus())
+
+	errmsg := instance.filterMsg()
+	if errmsg != "" {
+		errmsg = ": " + errmsg
+	}
+
+	return fmt.Errorf("%v exited%v", f.binName, errmsg)
 }
 
 func (d *fuseappsDriver) allFeatures() []fuseappsFeature {
@@ -550,21 +571,61 @@ func (d *fuseappsDriver) allFeatures() []fuseappsFeature {
 }
 
 func (d *fuseappsDriver) Stop(target string) error {
+	if !d.stopped.Swap(true) {
+		close(d.mountErrCh)
+		close(d.instanceCh)
+	}
+
+	if target == "" {
+		return nil
+	}
+
 	for _, feature := range d.allFeatures() {
 		if err := feature.stop(target, false); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
-func (d *fuseappsDriver) Stopped(pid int, ws syscall.WaitStatus) error {
-	for _, feature := range d.allFeatures() {
-		if err := feature.stopped(pid, ws); err != nil {
-			return err
-		}
+func (d *fuseappsDriver) MountErr() error {
+	return <-d.mountErrCh
+}
+
+// Check if any of the child processes belonging to this image driver feature
+// has stopped, and return the status and error if it has.
+func (d *fuseappsDriver) checkStopped() {
+	for instance := range d.instanceCh {
+		go func(instance *fuseappsInstance) {
+			pid := instance.cmd.Process.Pid
+			for {
+				siginfo := new(unix.Siginfo)
+				err := unix.Waitid(unix.P_PID, pid, siginfo, unix.WNOWAIT|unix.WEXITED, nil)
+				if err != syscall.EINTR {
+					if d.stopped.Load() {
+						return
+					}
+					for _, feature := range d.allFeatures() {
+						for _, featureInstance := range feature.instances {
+							if featureInstance != instance {
+								continue
+							}
+							err := feature.waitInstance(instance)
+							if err != nil {
+								d.mountErrCh <- fmt.Errorf("image driver %s instance exited with error: %s", feature.binName, err)
+							}
+						}
+					}
+					return
+				}
+			}
+		}(instance)
 	}
-	return nil
+}
+
+func (d *fuseappsDriver) monitor() {
+	go d.checkStopped()
 }
 
 func (i *fuseappsInstance) filterMsg() string {
