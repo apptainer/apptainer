@@ -2104,22 +2104,38 @@ func (c *container) addTmpMount(system *mount.System) error {
 	c.session.OverrideDir(tmpPath, tmpSource)
 	c.session.OverrideDir(varTmpPath, vartmpSource)
 
-	flags := uintptr(syscall.MS_BIND | c.suidFlag | syscall.MS_NODEV | syscall.MS_REC)
+	addBinds := func(system *mount.System) error {
+		tmpResolved := fs.EvalRelative(tmpPath, c.session.FinalPath())
+		varTmpResolved := fs.EvalRelative(varTmpPath, c.session.FinalPath())
 
-	if err := system.Points.AddBind(mount.TmpTag, tmpSource, tmpPath, flags); err == nil {
-		system.Points.AddRemount(mount.TmpTag, tmpPath, flags)
-		sylog.Verbosef("Default mount: %s:%s", tmpPath, tmpPath)
-	} else {
-		return fmt.Errorf("could not mount container's %s directory: %s", tmpPath, err)
+		sylog.Debugf("Container /tmp resolves to %q", tmpResolved)
+		sylog.Debugf("Container /var/tmp resolves to %q", varTmpResolved)
+
+		flags := uintptr(syscall.MS_BIND | c.suidFlag | syscall.MS_NODEV | syscall.MS_REC)
+
+		if err := system.Points.AddBind(mount.TmpTag, tmpSource, tmpPath, flags); err == nil {
+			system.Points.AddRemount(mount.TmpTag, tmpPath, flags)
+			sylog.Verbosef("Default mount: %s:%s", tmpPath, tmpPath)
+		} else {
+			return fmt.Errorf("could not mount container's %s directory: %s", tmpPath, err)
+		}
+
+		if varTmpResolved == tmpResolved {
+			sylog.Debugf("Container /tmp and /var/tmp resolve to same location. Skipping /var/tmp bind mount.")
+			return nil
+		}
+
+		if err := system.Points.AddBind(mount.TmpTag, vartmpSource, varTmpPath, flags); err == nil {
+			system.Points.AddRemount(mount.TmpTag, varTmpPath, flags)
+			sylog.Verbosef("Default mount: %s:%s", varTmpPath, varTmpPath)
+		} else {
+			return fmt.Errorf("could not mount container's %s directory: %s", varTmpPath, err)
+		}
+
+		return nil
 	}
 
-	if err := system.Points.AddBind(mount.TmpTag, vartmpSource, varTmpPath, flags); err == nil {
-		system.Points.AddRemount(mount.TmpTag, varTmpPath, flags)
-		sylog.Verbosef("Default mount: %s:%s", varTmpPath, varTmpPath)
-	} else {
-		return fmt.Errorf("could not mount container's %s directory: %s", varTmpPath, err)
-	}
-	return nil
+	return system.RunBeforeTag(mount.TmpTag, addBinds)
 }
 
 func (c *container) addScratchMount(system *mount.System) error {
