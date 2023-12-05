@@ -1,0 +1,6 @@
+bootstrap: oras
+From: ghcr.io/apptainer/alpine:3.15.0
+
+%setup
+  mv  "${APPTAINER_ROOTFS}/var/tmp" "${APPTAINER_ROOTFS}/var/tmpold"
+  ln -s ../tmp "${APPTAINER_ROOTFS}/var/tmp"

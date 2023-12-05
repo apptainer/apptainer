@@ -718,3 +718,49 @@ func (c actionTests) issue619(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 }
+
+// Don't bind /var/tmp over /tmp where /var/tmp is a symlink to /tmp in the
+// container.
+func (c actionTests) issue1097(t *testing.T) {
+	// If `/var/tmp` on the host is a symlink to `/tmp` then we can't test this
+	// easily.
+	tmpHostResolved, err := filepath.EvalSymlinks("/tmp")
+	if err != nil {
+		t.Error(err)
+	}
+	varTmpHostResolved, err := filepath.EvalSymlinks("/var/tmp")
+	if err != nil {
+		t.Error(err)
+	}
+	if varTmpHostResolved == tmpHostResolved {
+		t.Skipf("/var/tmp links to /tmp on host")
+	}
+
+	// Create a canary file in the host /var/tmp
+	varTmpCanary, err := e2e.WriteTempFile("/var/tmp", "issue-1950", "")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.Remove(varTmpCanary)
+
+	// Build an image in which /var/tmp is a symlink to /tmp
+	dir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "issue1097-", "")
+	defer e2e.Privileged(cleanup)(t)
+	image := filepath.Join(dir, "issue_1097.sif")
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs(image, "testdata/regressions/issue_1097.def"),
+		e2e.ExpectExit(0),
+	)
+
+	// If /var/tmp is *not* mounted over /tmp, then our canary file should *not* be accessible.
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs(image, "cat", varTmpCanary),
+		e2e.ExpectExit(1),
+	)
+}

@@ -2931,6 +2931,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"issue 5690":                   c.issue5690,               // https://github.com/apptainer/singularity/issues/5690
 		"issue 6165":                   c.issue6165,               // https://github.com/apptainer/singularity/issues/6165
 		"issue 619":                    c.issue619,                // https://github.com/apptainer/apptainer/issues/619
+		"issue 1097":                   c.issue1097,               // https://github.com/apptainer/apptainer/issues/1097
 		"network":                      c.actionNetwork,           // test basic networking
 		"binds":                        c.actionBinds,             // test various binds with --bind and --mount
 		"exit and signals":             c.exitSignals,             // test exit and signals propagation

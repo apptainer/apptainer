@@ -63,6 +63,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
   pkg/build/types/parser.All(), `.Raw` contains the raw content of a single
   build stage. Otherwise, it is equal to `.FullRaw`.
 
+### Bug fixes
+
+- Don't bind `/var/tmp` on top of `/tmp` in the container, where `/var/tmp`
+  resolves to same location as `/tmp`.
+
 ## Changes for v1.2.x
 
 ## v1.2.5 - \[2023-11-21\]
