@@ -62,7 +62,11 @@ func (d *ubuntuOvlDriver) Mount(params *image.MountParams, fn image.MountFunc) e
 	)
 }
 
-func (d *ubuntuOvlDriver) Start(params *image.DriverParams, containerPid int) error {
+func (d *ubuntuOvlDriver) MountErr() error {
+	return nil
+}
+
+func (d *ubuntuOvlDriver) Start(params *image.DriverParams, containerPid int, hybrid bool) error {
 	return nil
 }
 

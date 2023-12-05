@@ -42,6 +42,8 @@ import (
 // https://github.com/opencontainers/runtime-spec/blob/master/runtime.md#lifecycle.
 // CleanupContainer is performing step 8/9 here.
 func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, status syscall.WaitStatus) error {
+	sylog.Debugf("Cleanup container")
+
 	// firstly stop all fuse drivers before any image removal
 	// by image driver interruption or image cleanup for hybrid
 	// fakeroot workflow
@@ -139,6 +141,9 @@ func umount() (err error) {
 			errs = []string{"error restoring capabilities: " + e.Error()}
 		}
 	}()
+
+	// empty target to signify to driver we are entering in the stop phase
+	imageDriver.Stop("")
 
 	// gocryptfs related temp folders
 	var gocryptfsTmp []string

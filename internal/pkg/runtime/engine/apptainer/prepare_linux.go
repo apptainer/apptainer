@@ -140,9 +140,12 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		useTargetIDs = true
 	}
 
-	userNS := !starterConfig.GetIsSUID() || e.EngineConfig.GetFakeroot()
+	userNS, _ := namespaces.IsInsideUserNamespace(os.Getpid())
+	userNS = userNS || e.EngineConfig.GetFakeroot()
 	driver.InitImageDrivers(true, userNS, e.EngineConfig.File, 0)
 	imageDriver = image.GetDriver(e.EngineConfig.File.ImageDriver)
+
+	elevated := starterConfig.GetIsSUID() && !userNS
 
 	if e.EngineConfig.GetInstanceJoin() {
 		if err := e.prepareInstanceJoinConfig(starterConfig); err != nil {
@@ -154,7 +157,7 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		if err := e.prepareContainerConfig(starterConfig); err != nil {
 			return err
 		}
-		if err := e.loadImages(starterConfig, userNS); err != nil {
+		if err := e.loadImages(starterConfig, userNS, elevated); err != nil {
 			return err
 		}
 	}
@@ -207,7 +210,7 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	if e.EngineConfig.GetNvCCLI() {
 		// Disallow this feature under setuid mode because running
 		// the external command is too risky
-		if starterConfig.GetIsSUID() && os.Geteuid() != 0 {
+		if elevated {
 			return fmt.Errorf("nvidia-container-cli not allowed in setuid mode")
 		}
 
@@ -1013,7 +1016,7 @@ func (e *EngineOperations) checkSignalPropagation() {
 }
 
 // setSessionLayer will test if overlay is supported/allowed.
-func (e *EngineOperations) setSessionLayer(img *image.Image) error {
+func (e *EngineOperations) setSessionLayer(img *image.Image, userNS bool) error {
 	e.EngineConfig.SetSessionLayer(apptainerConfig.DefaultLayer)
 
 	writableTmpfs := e.EngineConfig.GetWritableTmpfs()
@@ -1055,10 +1058,6 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 		sylog.Debugf("Not attempting to use overlay or underlay: writable flag requested")
 		return nil
 	}
-
-	// Check for implicit user namespace, e.g when we run %test in a fakeroot build
-	// https://github.com/apptainer/singularity/issues/5315
-	userNS, _ := namespaces.IsInsideUserNamespace(os.Getpid())
 
 	// Check for explicit user namespace request
 	if !userNS {
@@ -1159,12 +1158,12 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 	return nil
 }
 
-func (e *EngineOperations) loadImages(starterConfig *starter.Config, userNS bool) error {
+func (e *EngineOperations) loadImages(starterConfig *starter.Config, userNS bool, elevated bool) error {
 	images := make([]image.Image, 0)
 
 	// load rootfs image
 	writable := e.EngineConfig.GetWritableImage()
-	img, err := e.loadImage(e.EngineConfig.GetImage(), writable, userNS)
+	img, err := e.loadImage(e.EngineConfig.GetImage(), writable, userNS, elevated)
 	if err != nil {
 		return err
 	}
@@ -1178,7 +1177,7 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config, userNS bool
 		return fmt.Errorf("could not use %s for writing, you don't have write permissions", img.Path)
 	}
 
-	if err := e.setSessionLayer(img); err != nil {
+	if err := e.setSessionLayer(img, userNS); err != nil {
 		return err
 	}
 
@@ -1267,7 +1266,7 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config, userNS bool
 				if p.Type != image.EXT3 {
 					continue
 				}
-				if !userNS && !e.EngineConfig.File.AllowSetuidMountExtfs {
+				if elevated && !e.EngineConfig.File.AllowSetuidMountExtfs && (imageDriver == nil || imageDriver.Features()&image.Ext3Feature == 0) {
 					return fmt.Errorf("configuration disallows users from mounting SIF extfs partition in setuid mode, try --userns")
 				}
 				if img.Writable {
@@ -1286,7 +1285,7 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config, userNS bool
 
 	switch e.EngineConfig.GetSessionLayer() {
 	case apptainerConfig.OverlayLayer:
-		overlayImages, err := e.loadOverlayImages(starterConfig, writableOverlayPath, userNS)
+		overlayImages, err := e.loadOverlayImages(starterConfig, writableOverlayPath, userNS, elevated)
 		if err != nil {
 			return fmt.Errorf("while loading overlay images: %s", err)
 		}
@@ -1298,7 +1297,7 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config, userNS bool
 		}
 	}
 
-	bindImages, err := e.loadBindImages(starterConfig, userNS)
+	bindImages, err := e.loadBindImages(starterConfig, userNS, elevated)
 	if err != nil {
 		return fmt.Errorf("while loading data bind images: %s", err)
 	}
@@ -1310,7 +1309,7 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config, userNS bool
 }
 
 // loadOverlayImages loads overlay images.
-func (e *EngineOperations) loadOverlayImages(starterConfig *starter.Config, writableOverlayPath string, userNS bool) ([]image.Image, error) {
+func (e *EngineOperations) loadOverlayImages(starterConfig *starter.Config, writableOverlayPath string, userNS bool, elevated bool) ([]image.Image, error) {
 	images := make([]image.Image, 0)
 
 	for _, overlayImg := range e.EngineConfig.GetOverlayImage() {
@@ -1323,7 +1322,7 @@ func (e *EngineOperations) loadOverlayImages(starterConfig *starter.Config, writ
 			}
 		}
 
-		img, err := e.loadImage(splitted[0], writableOverlay, userNS)
+		img, err := e.loadImage(splitted[0], writableOverlay, userNS, elevated)
 		if err != nil {
 			if !image.IsReadOnlyFilesytem(err) {
 				return nil, fmt.Errorf("failed to open overlay image %s: %s", splitted[0], err)
@@ -1361,7 +1360,7 @@ func (e *EngineOperations) loadOverlayImages(starterConfig *starter.Config, writ
 }
 
 // loadBindImages load data bind images.
-func (e *EngineOperations) loadBindImages(starterConfig *starter.Config, userNS bool) ([]image.Image, error) {
+func (e *EngineOperations) loadBindImages(starterConfig *starter.Config, userNS bool, elevated bool) ([]image.Image, error) {
 	images := make([]image.Image, 0)
 
 	binds := e.EngineConfig.GetBindPath()
@@ -1375,7 +1374,7 @@ func (e *EngineOperations) loadBindImages(starterConfig *starter.Config, userNS 
 
 		sylog.Debugf("Loading data image %s", imagePath)
 
-		img, err := e.loadImage(imagePath, !binds[i].Readonly(), userNS)
+		img, err := e.loadImage(imagePath, !binds[i].Readonly(), userNS, elevated)
 		if err != nil && !image.IsReadOnlyFilesytem(err) {
 			return nil, fmt.Errorf("failed to load data image %s: %s", imagePath, err)
 		}
@@ -1391,7 +1390,7 @@ func (e *EngineOperations) loadBindImages(starterConfig *starter.Config, userNS 
 	return images, nil
 }
 
-func (e *EngineOperations) loadImage(path string, writable bool, userNS bool) (*image.Image, error) {
+func (e *EngineOperations) loadImage(path string, writable bool, userNS bool, elevated bool) (*image.Image, error) {
 	const delSuffix = " (deleted)"
 
 	imgObject, imgErr := image.Init(path, writable)
@@ -1443,13 +1442,17 @@ func (e *EngineOperations) loadImage(path string, writable bool, userNS bool) (*
 		}
 	}
 
+	hasFeature := func(desiredFeature image.DriverFeature) bool {
+		return imageDriver != nil && imageDriver.Features()&desiredFeature != 0
+	}
+
 	switch imgObject.Type {
 	// Bare SquashFS
 	case image.SQUASHFS:
 		if !e.EngineConfig.File.AllowContainerSquashfs {
 			return nil, fmt.Errorf("configuration disallows users from running squashFS containers")
 		}
-		if !userNS && !e.EngineConfig.File.AllowSetuidMountSquashfs {
+		if elevated && !e.EngineConfig.File.AllowSetuidMountSquashfs && !hasFeature(image.SquashFeature) {
 			return nil, fmt.Errorf("configuration disallows users from mounting squashFS in setuid mode, try --userns")
 		}
 	// Bare EXT3
@@ -1457,7 +1460,7 @@ func (e *EngineOperations) loadImage(path string, writable bool, userNS bool) (*
 		if !e.EngineConfig.File.AllowContainerExtfs {
 			return nil, fmt.Errorf("configuration disallows users from running extFS containers")
 		}
-		if !userNS && !e.EngineConfig.File.AllowSetuidMountExtfs {
+		if elevated && !e.EngineConfig.File.AllowSetuidMountExtfs && !hasFeature(image.Ext3Feature) {
 			return nil, fmt.Errorf("configuration disallows users from mounting extfs in setuid mode, try --userns")
 		}
 	// Bare sandbox directory
@@ -1467,24 +1470,27 @@ func (e *EngineOperations) loadImage(path string, writable bool, userNS bool) (*
 		}
 	// SIF
 	case image.SIF:
-		if !userNS && !e.EngineConfig.File.AllowSetuidMountSquashfs {
+		if elevated && !e.EngineConfig.File.AllowSetuidMountSquashfs && !hasFeature(image.SquashFeature) {
 			return nil, fmt.Errorf("configuration disallows users from mounting SIF squashFS partition in setuid mode, try --userns")
 		}
 		// Check if SIF contains an encrypted rootfs partition.
 		// We don't support encryption for other partitions at present.
-		encrypted, err := imgObject.HasEncryptedRootFs()
+		encryptedType, err := imgObject.EncryptedRootFs()
 		if err != nil {
 			return nil, fmt.Errorf("while checking for encrypted root FS: %v", err)
 		}
 		// SIF with encryption
-		if encrypted && !e.EngineConfig.File.AllowContainerEncrypted {
+		if encryptedType != "" && !e.EngineConfig.File.AllowContainerEncrypted {
 			return nil, fmt.Errorf("configuration disallows users from running encrypted SIF containers")
 		}
-		if encrypted && !userNS && !e.EngineConfig.File.AllowSetuidMountEncrypted {
-			return nil, fmt.Errorf("configuration disallows users from mounting encrypted files in setuid mode, try --userns")
+		if encryptedType == "encryptfs" && userNS {
+			return nil, fmt.Errorf("cannot mount device-mapper encrypted files without setuid mode or root")
+		}
+		if encryptedType == "encryptfs" && elevated && !e.EngineConfig.File.AllowSetuidMountEncrypted {
+			return nil, fmt.Errorf("configuration disallows users from mounting device-mapper encrypted files")
 		}
 		// SIF without encryption - regardless of rootfs filesystem type
-		if !encrypted && !e.EngineConfig.File.AllowContainerSIF {
+		if encryptedType == "" && !e.EngineConfig.File.AllowContainerSIF {
 			return nil, fmt.Errorf("configuration disallows users from running unencrypted SIF containers")
 		}
 	// We shouldn't be able to run anything else, but make sure we don't!

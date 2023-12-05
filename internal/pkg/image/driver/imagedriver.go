@@ -12,11 +12,13 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -27,31 +29,45 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
+	"golang.org/x/sys/unix"
 )
 
 const DriverName = "fuseapps"
 
+type fuseappsFDescript struct {
+	pipe io.ReadCloser
+	buf  bytes.Buffer
+	err  <-chan error
+}
+
 type fuseappsInstance struct {
 	cmd    *exec.Cmd
 	params *image.MountParams
+	stdout fuseappsFDescript
+	stderr fuseappsFDescript
 }
 
 type fuseappsFeature struct {
 	binName   string
 	cmdPath   string
-	instances []fuseappsInstance
+	instances []*fuseappsInstance
 }
 
 type fuseappsDriver struct {
-	squashFeature    fuseappsFeature
-	ext3Feature      fuseappsFeature
-	overlayFeature   fuseappsFeature
-	gocryptfsFeature fuseappsFeature
-	cmdPrefix        []string
-	squashSetUID     bool
+	squashFeature  fuseappsFeature
+	ext3Feature    fuseappsFeature
+	overlayFeature fuseappsFeature
+	gocryptFeature fuseappsFeature
+	features       image.DriverFeature
+	cmdPrefix      []string
+	squashSetUID   bool
+	unprivileged   bool
+	stopped        atomic.Bool
+	mountErrCh     chan error
+	instanceCh     chan *fuseappsInstance
 }
 
-func (f *fuseappsFeature) init(binNames string, purpose string, desired image.DriverFeature) {
+func (f *fuseappsFeature) init(binNames string, purpose string, desired image.DriverFeature) bool {
 	var err error
 	for _, binName := range strings.Split(binNames, "|") {
 		f.binName = binName
@@ -65,33 +81,51 @@ func (f *fuseappsFeature) init(binNames string, purpose string, desired image.Dr
 		if desired != 0 {
 			sylog.Infof("%v not found, will not be able to %v", f.binName, purpose)
 		}
+		return false
 	}
+	return true
 }
 
-func InitImageDrivers(register bool, unprivileged bool, fileconf *apptainerconf.File, desiredFeatures image.DriverFeature) error {
+func InitImageDrivers(register, unprivileged bool, fileconf *apptainerconf.File, desiredFeatures image.DriverFeature) error {
 	if fileconf.ImageDriver != "" && fileconf.ImageDriver != DriverName {
 		sylog.Debugf("skipping installing %v image driver because %v already configured", DriverName, fileconf.ImageDriver)
 		// allow a configured driver to take precedence
-		return nil
-	}
-	if !unprivileged {
-		// no need for these features if running privileged
-		if fileconf.ImageDriver == DriverName {
-			// must have been incorrectly thought to be unprivileged
-			// at an earlier point (e.g. TestLibraryPacker unit-test)
-			fileconf.ImageDriver = ""
-		}
 		return nil
 	}
 
 	var squashFeature fuseappsFeature
 	var ext3Feature fuseappsFeature
 	var overlayFeature fuseappsFeature
-	var gocryptfsFeature fuseappsFeature
-	squashFeature.init("squashfuse_ll|squashfuse", "mount SIF", desiredFeatures&image.ImageFeature)
-	ext3Feature.init("fuse2fs", "mount EXT3 filesystems", desiredFeatures&image.ImageFeature)
-	overlayFeature.init("fuse-overlayfs", "use overlay", desiredFeatures&image.OverlayFeature)
-	gocryptfsFeature.init("gocryptfs", "use gocryptfs", desiredFeatures&image.ImageFeature)
+	var gocryptFeature fuseappsFeature
+	var features image.DriverFeature
+	// Always initialize the SquashFeature because it is needed by
+	// the GocryptFeature which can be used even in privileged mode.
+	// However, only indicate that it is available when it is needed
+	// for other reasons, because when it is marked as available it
+	// takes precedence over the kernel squashfs.
+	if unprivileged || !fileconf.AllowSetuidMountSquashfs {
+		if squashFeature.init("squashfuse_ll|squashfuse", "mount SIF or other squashfs files", desiredFeatures&image.SquashFeature) {
+			features |= image.SquashFeature
+		}
+	} else {
+		squashFeature.init("squashfuse_ll|squashfuse", "use gocryptfs", desiredFeatures&image.SquashFeature)
+	}
+	// Include `|| !fileconf.AllowSetuidMountExtfs` here once fuse2fs
+	// supports libfuse3
+	if unprivileged {
+		if ext3Feature.init("fuse2fs", "mount EXT3 filesystems", desiredFeatures&image.Ext3Feature) {
+			features |= image.Ext3Feature
+		}
+	}
+	if unprivileged {
+		if overlayFeature.init("fuse-overlayfs", "use overlay", desiredFeatures&image.OverlayFeature) {
+			features |= image.OverlayFeature
+		}
+	}
+	// gocryptfs is always available
+	if gocryptFeature.init("gocryptfs", "use gocryptfs", desiredFeatures&image.GocryptFeature) {
+		features |= image.GocryptFeature
+	}
 
 	// squashfuse generally supports the -o uid and -o gid options, except
 	// on Debian 18.04, but it doesn't show in the help output so we just
@@ -124,29 +158,59 @@ func InitImageDrivers(register bool, unprivileged bool, fileconf *apptainerconf.
 		_ = cmd.Wait()
 	}
 
-	if squashFeature.cmdPath != "" || ext3Feature.cmdPath != "" || overlayFeature.cmdPath != "" || gocryptfsFeature.cmdPath != "" {
+	if squashFeature.cmdPath != "" || ext3Feature.cmdPath != "" || overlayFeature.cmdPath != "" || gocryptFeature.cmdPath != "" {
 		sylog.Debugf("Setting ImageDriver to %v", DriverName)
 		fileconf.ImageDriver = DriverName
 		if register {
-			return image.RegisterDriver(DriverName, &fuseappsDriver{squashFeature, ext3Feature, overlayFeature, gocryptfsFeature, []string{}, squashSetUID})
+			driver := &fuseappsDriver{
+				squashFeature:  squashFeature,
+				ext3Feature:    ext3Feature,
+				overlayFeature: overlayFeature,
+				gocryptFeature: gocryptFeature,
+				features:       features,
+				cmdPrefix:      []string{},
+				squashSetUID:   squashSetUID,
+				unprivileged:   unprivileged,
+				mountErrCh:     make(chan error, 1),
+				instanceCh:     make(chan *fuseappsInstance),
+			}
+			return image.RegisterDriver(DriverName, driver)
 		}
 	}
 	return nil
 }
 
 func (d *fuseappsDriver) Features() image.DriverFeature {
-	var features image.DriverFeature
-	if d.squashFeature.cmdPath != "" || d.ext3Feature.cmdPath != "" || d.gocryptfsFeature.cmdPath != "" {
-		features |= image.ImageFeature
-	}
-	if d.overlayFeature.cmdPath != "" {
-		features |= image.OverlayFeature
-	}
-	return features
+	return d.features
 }
 
 //nolint:maintidx
 func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc) error {
+	extraFiles := 0
+	sourceFd := -1
+	if path.Dir(params.Source) == "/proc/self/fd" {
+		sourceFd, _ = strconv.Atoi(path.Base(params.Source))
+		// this becomes the first ExtraFiles, always fd 3
+		params.Source = "/proc/self/fd/3"
+		extraFiles++
+	}
+	waitForMount := true
+	targetFd := -1
+	if !d.unprivileged {
+		if !strings.HasPrefix(params.Target, "/dev/fd/") {
+			return fmt.Errorf("program error: in privileged mode the image driver mount target must start with \"/dev/fd/\"")
+		}
+		// drop privileges
+		params.DontElevatePrivs = true
+		// get the target file descriptor
+		targetFd, _ = strconv.Atoi(path.Base(params.Target))
+		// this becomes another of the ExtraFiles
+		params.Target = fmt.Sprintf("/dev/fd/%d", 3+extraFiles)
+		extraFiles++
+		// don't wait for the mountpoint, it's already mounted
+		waitForMount = false
+	}
+
 	var f *fuseappsFeature
 	var cmd *exec.Cmd
 	cmdArgs := d.cmdPrefix
@@ -175,29 +239,19 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 			}
 			optsStr += "offset=" + strconv.FormatUint(params.Offset, 10)
 		}
-		srcPath := params.Source
-		if path.Dir(params.Source) == "/proc/self/fd" {
-			// this will be passed as the first ExtraFile below, always fd 3
-			srcPath = "/proc/self/fd/3"
-		}
+		cmdArgs = append(cmdArgs, f.cmdPath, "-f")
 		if optsStr != "" {
-			cmdArgs = append(cmdArgs, f.cmdPath, "-f", "-o", optsStr, srcPath, params.Target)
-		} else {
-			cmdArgs = append(cmdArgs, f.cmdPath, "-f", srcPath, params.Target)
+			cmdArgs = append(cmdArgs, "-o", optsStr)
 		}
+		cmdArgs = append(cmdArgs, params.Source, params.Target)
 		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
 	case "gocryptfs":
-		f = &d.gocryptfsFeature
+		f = &d.gocryptFeature
 		cmdArgs = append(cmdArgs, f.cmdPath, "-fg", params.Source, params.Target)
 		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
 		cmd.Stdin = strings.NewReader(fmt.Sprintf("%s\n", string(params.Key)))
 	case "ext3":
 		f = &d.ext3Feature
-		srcPath := params.Source
-		if path.Dir(params.Source) == "/proc/self/fd" {
-			// this will be passed as the first ExtraFile below, always fd 3
-			srcPath = "/proc/self/fd/3"
-		}
 		optsStr := ""
 		if os.Getuid() != 0 {
 			// Bypass permission checks so all can be read,
@@ -217,7 +271,7 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 			//  warnings sometimes sent through stdout
 			cmdArgs = append(cmdArgs, stdbuf, "-oL")
 		}
-		cmdArgs = append(cmdArgs, f.cmdPath, "-f", "-o", optsStr, srcPath, params.Target)
+		cmdArgs = append(cmdArgs, f.cmdPath, "-f", "-o", optsStr, params.Source, params.Target)
 		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
 
 		if params.Offset > 0 {
@@ -225,7 +279,7 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 			//  so load a preload wrapper
 			cmd.Env = []string{
 				"LD_PRELOAD=" + buildcfg.LIBEXECDIR + "/apptainer/lib/offsetpreload.so",
-				"OFFSETPRELOAD_FILE=" + srcPath,
+				"OFFSETPRELOAD_FILE=" + params.Source,
 				"OFFSETPRELOAD_OFFSET=" + strconv.FormatUint(params.Offset, 10),
 			}
 			for _, e := range cmd.Env {
@@ -241,18 +295,62 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 	}
 
 	if f.cmdPath == "" {
-		return fmt.Errorf("%v not found", f.binName)
+		return fmt.Errorf("image driver command for %v type not available", params.Filesystem)
 	}
 
 	sylog.Debugf("Executing %v", cmd.String())
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	if path.Dir(params.Source) == "/proc/self/fd" {
-		cmd.ExtraFiles = make([]*os.File, 1)
-		targetFd, _ := strconv.Atoi(path.Base(params.Source))
-		cmd.ExtraFiles[0] = os.NewFile(uintptr(targetFd), params.Source)
+
+	// Use our own go routines for reading from the command output
+	// pipes instead of those hidden inside of os/exec in order to
+	// better control synchronizing when the child process exits;
+	// the os/exec Wait() function does not give enough control.
+	var err error
+	var stdoutPipe io.ReadCloser
+	var stderrPipe io.ReadCloser
+	stdoutPipe, err = cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("error getting command stdout pipe: %v", err)
+	}
+	stderrPipe, err = cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("error getting command stderr pipe: %v", err)
+	}
+	stdoutErr := make(chan error, 1)
+	stderrErr := make(chan error, 1)
+	instance := &fuseappsInstance{
+		cmd:    cmd,
+		params: params,
+		stdout: fuseappsFDescript{
+			stdoutPipe,
+			bytes.Buffer{},
+			stdoutErr,
+		},
+		stderr: fuseappsFDescript{
+			stderrPipe,
+			bytes.Buffer{},
+			stderrErr,
+		},
+	}
+	f.instances = append(f.instances, instance)
+	go func() {
+		_, err := io.Copy(&instance.stdout.buf, stdoutPipe)
+		stdoutErr <- err
+	}()
+	go func() {
+		_, err := io.Copy(&instance.stderr.buf, stderrPipe)
+		stderrErr <- err
+	}()
+
+	if extraFiles > 0 {
+		cmd.ExtraFiles = make([]*os.File, extraFiles)
+		idx := 0
+		if sourceFd >= 0 {
+			cmd.ExtraFiles[idx] = os.NewFile(uintptr(sourceFd), params.Source)
+			idx++
+		}
+		if targetFd >= 0 {
+			cmd.ExtraFiles[idx] = os.NewFile(uintptr(targetFd), params.Target)
+		}
 	}
 
 	// when using gocryptfs for build step, we should not use SysProcAttr
@@ -267,59 +365,20 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 		}
 	}
 
-	var err error
 	if err = cmd.Start(); err != nil {
-		return fmt.Errorf("%v Start failed: %v, stderr: %v", f.binName, err, stderr.String())
+		return fmt.Errorf("%v Start failed: %v: %v", f.binName, err, instance.filterMsg())
 	}
 	process := cmd.Process
 	if process == nil {
 		return fmt.Errorf("no %v process started", f.binName)
 	}
 
-	ignoreMsgs := []string{
-		// from fuse2fs
-		"journal is not supported.",
-		"Mounting read-only.",
-		// from squashfuse_ll
-		"failed to clone device fd",
-		"continue without -o clone_fd",
-		// from fuse-overlayfs due to a bug
-		// (see https://github.com/containers/fuse-overlayfs/issues/397)
-		"/proc seems to be mounted as readonly",
-		// from gocryptfs
-		"Reading Password from stdin",
-		"Decrypting master key",
-		"Filesystem mounted and ready.",
-	}
-	filterMsg := func() string {
-		var errstr string
-		for idx, fd := range []bytes.Buffer{stdout, stderr} {
-			str := fd.String()
-			for _, line := range strings.Split(str, "\n") {
-				if len(line) == 0 {
-					continue
-				}
-				skip := false
-				for _, ignoreMsg := range ignoreMsgs {
-					if strings.Contains(line, ignoreMsg) {
-						// skip these unhelpful messages
-						skip = true
-						break
-					}
-				}
-				if skip {
-					sylog.Debugf("%v", line)
-				} else if idx == 0 {
-					sylog.Infof("%v\n", line)
-				} else {
-					errstr += line + "\n"
-				}
-			}
-		}
-		return errstr
+	d.instanceCh <- instance
+
+	if !waitForMount {
+		return nil
 	}
 
-	f.instances = append(f.instances, fuseappsInstance{cmd, params})
 	maxTime := 10 * time.Second
 	infoTime := 2 * time.Second
 	totTime := 0 * time.Second
@@ -327,22 +386,9 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 		sleepTime := 25 * time.Millisecond
 		time.Sleep(sleepTime)
 		totTime += sleepTime
-		var ws syscall.WaitStatus
-		wpid, err := syscall.Wait4(process.Pid, &ws, syscall.WNOHANG, nil)
-		if err != nil && err != syscall.ECHILD {
-			return fmt.Errorf("unable to get wait status on %v: %v: %v", f.binName, err, filterMsg())
-		}
 
-		if wpid != 0 {
-			msg := filterMsg()
-			if strings.Contains(msg, "fusermount") {
-				sylog.Infof("A fusermount error indicates that the kernel is too old")
-				if params.Filesystem == "squashfs" {
-					sylog.Infof("The --unsquash option may work around it")
-				}
-			}
-			return fmt.Errorf("%v exited with status %v: %v", f.binName, ws.ExitStatus(), msg)
-		}
+		// There is no need to check to see if the command exited
+		// because the SIGCHLD signal handler will take care of it.
 
 		// See if mount has succeeded
 		entries, err := proc.GetMountInfoEntry("/proc/self/mountinfo")
@@ -354,7 +400,7 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 			if entry.Point != params.Target {
 				continue
 			}
-			msg := filterMsg()
+			msg := instance.filterMsg()
 			if len(msg) > 0 {
 				// Haven't seen this happen, but just in case
 				sylog.Infof("%v", msg)
@@ -393,16 +439,16 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 			return nil
 		}
 	}
-	f.stop(params.Target, true)
-	errmsg := stderr.String()
-	if errmsg != "" {
-		errmsg = ": " + errmsg
-	}
-	return fmt.Errorf("%v failed to mount %v in %v%v", f.binName, params.Target, maxTime, errmsg)
+
+	_ = f.stop(params.Target, true)
+	return fmt.Errorf("%v failed to mount %v in %v", f.binName, params.Target, maxTime)
 }
 
-func (d *fuseappsDriver) Start(params *image.DriverParams, containerPid int) error {
-	if containerPid != 0 {
+func (d *fuseappsDriver) Start(params *image.DriverParams, containerPid int, hybrid bool) error {
+	// start process monitor
+	d.monitor()
+
+	if hybrid {
 		// Running in hybrid setuid-fakeroot mode
 		// Need any subcommand to first enter the container's
 		//  user namespace
@@ -416,6 +462,7 @@ func (d *fuseappsDriver) Start(params *image.DriverParams, containerPid int) err
 			"-F",
 		}
 	}
+
 	return nil
 }
 
@@ -424,66 +471,209 @@ func (d *fuseappsDriver) Start(params *image.DriverParams, containerPid int) err
 // first just wait for the process to exit.
 func (f *fuseappsFeature) stop(target string, kill bool) error {
 	for _, instance := range f.instances {
-		if instance.params.Target != target {
+		if instance.params.Target != target || instance.cmd == nil {
 			continue
 		}
+
 		process := instance.cmd.Process
-		var ws syscall.WaitStatus
+
 		sylog.Debugf("Waiting for %v pid %v to exit", f.binName, process.Pid)
+
+		waitCh := make(chan struct{})
+
+		go func() {
+			siginfo := new(unix.Siginfo)
+			for {
+				err := unix.Waitid(unix.P_PID, process.Pid, siginfo, unix.WNOWAIT|unix.WEXITED, nil)
+				if err != syscall.EINTR {
+					waitCh <- struct{}{}
+					return
+				}
+			}
+		}()
+
+		if kill {
+			sylog.Debugf("Terminating pid %v", process.Pid)
+			_ = instance.cmd.Process.Signal(syscall.SIGTERM)
+		}
+
 		// maxTime is total time to wait including after kill signal,
 		//   and kill signal is sent at half the time
-		maxTime := 1 * time.Second
-		totTime := 0 * time.Second
-		killed := false
-		for totTime < maxTime {
-			wpid, err := syscall.Wait4(process.Pid, &ws, syscall.WNOHANG, nil)
-			if err != nil {
-				sylog.Debugf("Waiting for %v pid %v failed: %v", f.binName, process.Pid, err)
-				if err == syscall.ECHILD {
-					// not a terrible problem when stopping
-					return nil
+		waitTimeout := 1 * time.Second
+		timer := time.NewTimer(waitTimeout)
+		defer timer.Stop()
+
+		for {
+			select {
+			case <-timer.C:
+				if !kill {
+					// set it to true and reset timer for an additional
+					// second timeout before force kill
+					kill = true
+					timer.Reset(waitTimeout)
+					sylog.Debugf("Terminating pid %v after wait timeout", process.Pid)
+					_ = process.Signal(syscall.SIGTERM)
+				} else {
+					sylog.Debugf("Killing pid %v after wait timeout", process.Pid)
+					_ = process.Kill()
 				}
-				return err
-			} else if wpid != 0 {
-				sylog.Debugf("%v pid %v exited with status %v within %v", f.binName, wpid, ws.ExitStatus(), totTime)
-				return nil
+			case <-waitCh:
+				close(waitCh)
+				return f.waitInstance(instance)
 			}
-			if kill {
-				sylog.Debugf("Killing pid %v", process.Pid)
-			} else if !killed && totTime >= maxTime/2 {
-				sylog.Debugf("Took more than %v, killing", maxTime/2)
-				kill = true
-			}
-			if kill {
-				kill = false
-				killed = true
-				syscall.Kill(process.Pid, syscall.SIGTERM)
-				continue
-			}
-			sleepTime := 10 * time.Millisecond
-			time.Sleep(sleepTime)
-			totTime += sleepTime
 		}
-		// This is unexpected, because the kill signal at half
-		//  of maxTime should kill quickly
-		return fmt.Errorf("took more than %v to stop %v pid %v", maxTime, f.binName, process.Pid)
 	}
+
 	return nil
 }
 
+func (f *fuseappsFeature) waitInstance(instance *fuseappsInstance) error {
+	cmd := instance.cmd
+	instance.cmd = nil
+
+	// wait for the go funcs reading from the process to exit
+	if err := <-instance.stdout.err; err != nil {
+		sylog.Debugf("error from %v stdout: %v", f.binName, err)
+	}
+	if err := <-instance.stderr.err; err != nil {
+		sylog.Debugf("error from %v stderr: %v", f.binName, err)
+	}
+
+	err := cmd.Wait()
+	if err == nil {
+		return nil
+	}
+
+	var status syscall.WaitStatus
+
+	if ee, ok := err.(*exec.ExitError); ok {
+		status, ok = ee.Sys().(syscall.WaitStatus)
+		if !ok {
+			return err
+		}
+	} else {
+		return err
+	}
+
+	pid := cmd.Process.Pid
+	sylog.Debugf("%v pid %v has exited with status %v", f.binName, pid, status.ExitStatus())
+
+	errmsg := instance.filterMsg()
+	if errmsg != "" {
+		errmsg = ": " + errmsg
+	}
+
+	return fmt.Errorf("%v exited%v", f.binName, errmsg)
+}
+
+func (d *fuseappsDriver) allFeatures() []fuseappsFeature {
+	return []fuseappsFeature{d.squashFeature, d.ext3Feature, d.overlayFeature, d.gocryptFeature}
+}
+
 func (d *fuseappsDriver) Stop(target string) error {
-	var err error
-	if err = d.squashFeature.stop(target, false); err != nil {
-		return err
+	if !d.stopped.Swap(true) {
+		close(d.mountErrCh)
+		close(d.instanceCh)
 	}
-	if err = d.ext3Feature.stop(target, false); err != nil {
-		return err
+
+	if target == "" {
+		return nil
 	}
-	if err = d.overlayFeature.stop(target, false); err != nil {
-		return err
+
+	for _, feature := range d.allFeatures() {
+		if err := feature.stop(target, false); err != nil {
+			return err
+		}
 	}
-	if err = d.gocryptfsFeature.stop(target, false); err != nil {
-		return err
-	}
+
 	return nil
+}
+
+func (d *fuseappsDriver) MountErr() error {
+	return <-d.mountErrCh
+}
+
+// Check if any of the child processes belonging to this image driver feature
+// has stopped, and return the status and error if it has.
+func (d *fuseappsDriver) checkStopped() {
+	for instance := range d.instanceCh {
+		go func(instance *fuseappsInstance) {
+			pid := instance.cmd.Process.Pid
+			for {
+				siginfo := new(unix.Siginfo)
+				err := unix.Waitid(unix.P_PID, pid, siginfo, unix.WNOWAIT|unix.WEXITED, nil)
+				if err != syscall.EINTR {
+					if d.stopped.Load() {
+						return
+					}
+					for _, feature := range d.allFeatures() {
+						for _, featureInstance := range feature.instances {
+							if featureInstance != instance {
+								continue
+							}
+							err := feature.waitInstance(instance)
+							if err != nil {
+								d.mountErrCh <- fmt.Errorf("image driver %s instance exited with error: %s", feature.binName, err)
+							}
+						}
+					}
+					return
+				}
+			}
+		}(instance)
+	}
+}
+
+func (d *fuseappsDriver) monitor() {
+	go d.checkStopped()
+}
+
+func (i *fuseappsInstance) filterMsg() string {
+	ignoreMsgs := []string{
+		// from fuse2fs
+		"journal is not supported.",
+		"Mounting read-only.",
+		// from squashfuse_ll
+		"failed to clone device fd",
+		"continue without -o clone_fd",
+		// from fuse-overlayfs due to a bug
+		// (see https://github.com/containers/fuse-overlayfs/issues/397)
+		"/proc seems to be mounted as readonly",
+		// from gocryptfs
+		"Reading Password from stdin",
+		"Decrypting master key",
+		"Filesystem mounted and ready.",
+	}
+
+	errmsg := ""
+	for idx, buf := range []bytes.Buffer{i.stdout.buf, i.stderr.buf} {
+		str := buf.String()
+		for _, line := range strings.Split(str, "\n") {
+			if len(line) == 0 {
+				continue
+			}
+			skip := false
+			for _, ignoreMsg := range ignoreMsgs {
+				if strings.Contains(line, ignoreMsg) {
+					// skip these unhelpful messages
+					skip = true
+					break
+				}
+			}
+			if skip {
+				sylog.Debugf("%v", line)
+			} else if idx == 0 {
+				sylog.Infof("%v\n", line)
+			} else {
+				errmsg += line + "\n"
+			}
+		}
+	}
+	if strings.Contains(errmsg, "fusermount") {
+		sylog.Infof("A fusermount error may indicate that the kernel is too old")
+		if i.params.Filesystem == "squashfs" {
+			sylog.Infof("The --unsquash option may work around it")
+		}
+	}
+	return errmsg
 }

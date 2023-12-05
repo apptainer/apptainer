@@ -270,9 +270,48 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 	}
 
 	sylog.Debugf("Mount all")
-	if err := system.MountAll(); err != nil {
-		return errors.Wrap(err, "mount hook function failure")
+
+	mountAllErr := make(chan error)
+	driverMountErr := make(chan error)
+
+	go func() {
+		mountAllErr <- system.MountAll()
+	}()
+
+	go func() {
+		if imageDriver != nil {
+			err := imageDriver.MountErr()
+			select {
+			case <-driverMountErr:
+			default:
+				driverMountErr <- err
+			}
+		} else {
+			driverMountErr <- nil
+		}
+	}()
+
+	// image driver can fail during MountAll, so
+	// calling driver MountErr function gives a
+	// chance to drivers to report potential errors
+	// occurring during the MountAll phase
+	mountLoop := true
+	for mountLoop {
+		select {
+		case err := <-driverMountErr:
+			if err != nil {
+				return errors.Wrap(err, "image driver mount failure")
+			}
+		case err := <-mountAllErr:
+			if err != nil {
+				return errors.Wrap(err, "mount hook function failure")
+			}
+			mountLoop = false
+		}
 	}
+
+	close(mountAllErr)
+	close(driverMountErr)
 
 	if engine.EngineConfig.GetSessionLayer() == apptainer.UnderlayLayer {
 		// Underlay bind points can interfere with unmounting
@@ -420,20 +459,18 @@ func (c *container) isLayerEnabled() bool {
 
 func (c *container) mount(point *mount.Point, system *mount.System) error {
 	if _, err := mount.GetOffset(point.InternalOptions); err == nil {
-		if err := c.mountImage(point); err != nil {
+		if err := c.mountImage(point, system); err != nil {
 			return fmt.Errorf("while mounting image %s: %s", point.Source, err)
 		}
 	} else {
-		tag := system.CurrentTag()
-		if err := c.mountGeneric(point, tag); err != nil {
+		if err := c.mountGeneric(point, system); err != nil {
 			return fmt.Errorf("while mounting %s: %s", point.Source, err)
 		}
 	}
 	return nil
 }
 
-// setupImageDriver prepare the image driver configured in apptainer.conf
-// to start it after the session setup.
+// setupImageDriver prepares the image driver to start
 func (c *container) setupImageDriver(system *mount.System, containerPid int) error {
 	if imageDriver == nil {
 		return nil
@@ -465,9 +502,6 @@ func (c *container) setupImageDriver(system *mount.System, containerPid int) err
 
 	fakeroot := c.engine.EngineConfig.GetFakeroot()
 	fakerootHybrid := fakeroot && os.Geteuid() != 0
-	if !fakerootHybrid {
-		containerPid = 0
-	}
 
 	if fuseDriver {
 		fuseFd, fuseRPCFd, err := c.openFuseFdFromRPC()
@@ -521,13 +555,13 @@ func (c *container) setupImageDriver(system *mount.System, containerPid int) err
 			sylog.Debugf("Add FUSE mount for image driver with options %s", opts)
 			err := c.rpcOps.Mount("fuse", sp, "fuse", syscall.MS_NOSUID|syscall.MS_NODEV, opts)
 			if err != nil {
-				return fmt.Errorf("while mounting fuse image driver: %s", err)
+				return fmt.Errorf("while mounting fuse for image driver: %s", err)
 			}
 
 			umountPoints = append(umountPoints, sp)
 
 			sylog.Debugf("Starting image driver %s", c.engine.EngineConfig.File.ImageDriver)
-			if err := imageDriver.Start(params, containerPid); err != nil {
+			if err := imageDriver.Start(params, containerPid, fakerootHybrid); err != nil {
 				return fmt.Errorf("failed to start driver: %s", err)
 			}
 
@@ -541,7 +575,7 @@ func (c *container) setupImageDriver(system *mount.System, containerPid int) err
 			defer unix.Close(params.UsernsFd)
 		}
 		sylog.Debugf("Starting image driver %s", c.engine.EngineConfig.File.ImageDriver)
-		if err := imageDriver.Start(params, containerPid); err != nil {
+		if err := imageDriver.Start(params, containerPid, fakerootHybrid); err != nil {
 			return fmt.Errorf("failed to start driver: %s", err)
 		}
 		return nil
@@ -597,10 +631,69 @@ func (c *container) chdirFinal(system *mount.System) error {
 	return nil
 }
 
+// mount via image driver.  If in privileged mode, mount the target first
+// using a generic fuse mount and pass in the file descriptor instead of
+// making the image driver do the mount.
+func (c *container) mountImageDriver(params *image.MountParams, system *mount.System, mfunc image.MountFunc) error {
+	if imageDriver == nil {
+		return fmt.Errorf("no image driver found, programming error")
+	}
+
+	if c.userNS {
+		return imageDriver.Mount(params, mfunc)
+	}
+
+	// we are privileged here, so mount fuse device first
+
+	saveTarget := params.Target
+	defer func() {
+		params.Target = saveTarget
+	}()
+
+	fuseFd, fuseRPCFd, err := c.openFuseFdFromRPC()
+	if err != nil {
+		return fmt.Errorf("while requesting /dev/fuse file descriptor from RPC: %s", err)
+	}
+
+	defer unix.Close(fuseFd)
+
+	// Note that /dev/fd is a symlink to /proc/self/fd, but use /dev/fd
+	// because libfuse is explicitly scanning for that form.
+	params.Target = fmt.Sprintf("/dev/fd/%d", fuseFd)
+
+	rootmode := syscall.S_IFDIR & syscall.S_IFMT
+	allowOther := ""
+	if c.engine.EngineConfig.GetFakeroot() {
+		allowOther = ",allow_other"
+	}
+	opts := fmt.Sprintf("fd=%d,rootmode=%o,user_id=%d,group_id=%d%s",
+		fuseRPCFd,
+		rootmode,
+		os.Getuid(),
+		os.Getgid(),
+		allowOther,
+	)
+
+	sylog.Debugf("Do FUSE mount for image driver with %s %s", opts, saveTarget)
+	err = c.rpcOps.Mount("fuse", saveTarget, "fuse", syscall.MS_NOSUID|syscall.MS_NODEV, opts)
+	if err != nil {
+		sylog.Debugf("While mounting fuse for image driver: %s", err)
+		return fmt.Errorf("while mounting fuse for image driver: %s", err)
+	}
+
+	sylog.Debugf("Do image mount with source %s and target %s", params.Source, params.Target)
+	err = imageDriver.Mount(params, mfunc)
+	if err != nil {
+		sylog.Debugf("While doing image driver mount: %s", err)
+	}
+	return err
+}
+
 // mount any generic mount (not loop dev)
 //
 //nolint:maintidx
-func (c *container) mountGeneric(mnt *mount.Point, tag mount.AuthorizedTag) (err error) {
+func (c *container) mountGeneric(mnt *mount.Point, system *mount.System) (err error) {
+	tag := system.CurrentTag()
 	flags, opts := mount.ConvertOptions(mnt.Options)
 	optsString := strings.Join(opts, ",")
 	sessionPath := c.session.Path()
@@ -756,7 +849,7 @@ mount:
 						Flags:      flags,
 						FSOptions:  opts,
 					}
-					return imageDriver.Mount(params, c.rpcOps.Mount)
+					return c.mountImageDriver(params, system, c.rpcOps.Mount)
 				}
 				// ask for the OverlayFeature just in case there's
 				//  a message about why it is not available
@@ -794,7 +887,7 @@ mount:
 }
 
 // mount image via loop
-func (c *container) mountImage(mnt *mount.Point) error {
+func (c *container) mountImage(mnt *mount.Point, system *mount.System) error {
 	var key []byte
 
 	maxDevices := int(c.engine.EngineConfig.File.MaxLoopDevices)
@@ -831,15 +924,26 @@ func (c *container) mountImage(mnt *mount.Point) error {
 		FSOptions:  opts,
 	}
 
-	if imageDriver != nil && imageDriver.Features()&image.ImageFeature != 0 {
+	if imageDriver != nil {
+		features := imageDriver.Features()
 		if mountType == "gocryptfs" {
-			return gocryptfsMount(params, c.rpcOps.Mount)
+			if features&image.GocryptFeature != 0 {
+				return c.gocryptfsMount(params, system, c.rpcOps.Mount)
+			}
+		} else if mountType == "squashfs" {
+			if features&image.SquashFeature != 0 {
+				return c.mountImageDriver(params, system, c.rpcOps.Mount)
+			}
+		} else if mountType == "ext3" {
+			if features&image.Ext3Feature != 0 {
+				return c.mountImageDriver(params, system, c.rpcOps.Mount)
+			}
 		}
-		return imageDriver.Mount(params, c.rpcOps.Mount)
 	}
 
-	if imageDriver == nil && mountType == "gocryptfs" {
-		return fmt.Errorf("gocryptfs requires user namespace, please add `--userns` option")
+	if mountType == "gocryptfs" {
+		// no non-image driver alternative for this one
+		return fmt.Errorf("gocryptfs image driver unavailable")
 	}
 
 	attachFlag := os.O_RDWR
@@ -2862,7 +2966,7 @@ func (c *container) getBindFlags(source string, defaultFlags uintptr) (uintptr, 
 	return defaultFlags | addFlags, nil
 }
 
-func gocryptfsMount(params *image.MountParams, mfunc image.MountFunc) error {
+func (c *container) gocryptfsMount(params *image.MountParams, system *mount.System, mfunc image.MountFunc) error {
 	// Prepare gocryptfs decryption info
 	tmpDir, err := os.MkdirTemp(os.TempDir(), "gocryptfs-")
 	if err != nil {
@@ -2883,8 +2987,12 @@ func gocryptfsMount(params *image.MountParams, mfunc image.MountFunc) error {
 	params.Target = cipherDir
 	params.Filesystem = "squashfs"
 
-	// Mount using squashfs
-	err = imageDriver.Mount(params, mfunc)
+	// Mount using the squashfs image driver.
+	// Cannot use the kernel squashfs even in setuid mode because the
+	// files are owned by root and not readable by gocryptfs which runs
+	// unprivileged.  The image driver makes the files owned by the
+	// unprivileged user but the kernel driver has no option for that.
+	err = c.mountImageDriver(params, system, mfunc)
 	if err != nil {
 		return err
 	}
@@ -2920,7 +3028,7 @@ func gocryptfsMount(params *image.MountParams, mfunc image.MountFunc) error {
 	params.Source = cipherDir
 	params.Target = plainDir
 	params.Filesystem = "gocryptfs"
-	err = imageDriver.Mount(params, mfunc)
+	err = c.mountImageDriver(params, system, mfunc)
 	if err != nil {
 		return err
 	}
@@ -2937,7 +3045,7 @@ func gocryptfsMount(params *image.MountParams, mfunc image.MountFunc) error {
 	if err != nil && errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("could not locate the decrypted squashfs file, previous gocryptfs mount failed")
 	}
-	return imageDriver.Mount(params, mfunc)
+	return c.mountImageDriver(params, system, mfunc)
 }
 
 func (c *container) GetPwUID(uid uint32) (*user.User, error) {

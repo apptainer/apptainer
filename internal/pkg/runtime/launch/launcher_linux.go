@@ -1093,18 +1093,20 @@ func (l *Launcher) prepareImage(c context.Context, insideUserNs bool, image stri
 	if fs.IsFile(image) {
 		desiredFeatures = imgutil.ImageFeature
 	}
-	driver.InitImageDrivers(true, l.cfg.Namespaces.User || insideUserNs, l.engineConfig.File, desiredFeatures)
+	fileconf := l.engineConfig.File
+	driver.InitImageDrivers(true, l.cfg.Namespaces.User || insideUserNs, fileconf, desiredFeatures)
 
 	// convert image file to sandbox if either it was requested by
-	// `--unsquash` or if we are inside of a user namespace and there's
+	// `--unsquash` or we cannot mount the image directly and there's
 	// no image driver.
 	if fs.IsFile(image) {
 		convert := false
 		if l.cfg.Unsquash {
 			convert = true
-		} else if l.cfg.Namespaces.User || insideUserNs {
+		} else if l.cfg.Namespaces.User || insideUserNs ||
+			!fileconf.AllowSetuidMountSquashfs {
 			convert = true
-			if l.engineConfig.File.ImageDriver != "" {
+			if fileconf.ImageDriver != "" {
 				// load image driver plugins
 				callbackType := (apptainercallback.RegisterImageDriver)(nil)
 				callbacks, err := plugin.LoadCallbacks(callbackType)
@@ -1117,9 +1119,9 @@ func (l *Launcher) prepareImage(c context.Context, insideUserNs bool, image stri
 						}
 					}
 				}
-				driver := imgutil.GetDriver(l.engineConfig.File.ImageDriver)
-				if driver != nil && driver.Features()&imgutil.ImageFeature != 0 {
-					// the image driver indicates support for image so let's
+				driver := imgutil.GetDriver(fileconf.ImageDriver)
+				if driver != nil && driver.Features()&imgutil.SquashFeature != 0 {
+					// the image driver indicates support for squashfs so let's
 					// proceed with the image driver without conversion
 					convert = false
 				}

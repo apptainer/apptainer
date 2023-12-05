@@ -1,0 +1,25 @@
+#!/bin/bash
+# Download additional source urls listed in rpm into directory in $1.
+# Assumes being run from the top of the apptainer source directory.
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 downloaddir" >&2
+    exit 2
+fi
+
+set -e
+SPEC=dist/rpm/apptainer.spec.in
+DOWNLOADURL="$(sed -n "s/^Source[1-9][0-9]*: //p" $SPEC)"
+SUBS="$(sed -n "s/.*%global //p" $SPEC)"
+for URL in $DOWNLOADURL; do
+    if [[ "$URL" != http* ]]; then
+        continue
+    fi
+    URL=$(echo "$SUBS" | (while read -r FROM TO; do
+            URL="${URL//%\{$FROM\}/$TO}"
+          done
+          echo $URL))
+    BASE="$(basename $URL)"
+    echo "+ curl -f -L -sS -o $1/$BASE $URL" >&2
+    curl -f -L -sS -o $1/$BASE $URL
+done

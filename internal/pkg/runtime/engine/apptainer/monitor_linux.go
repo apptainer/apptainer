@@ -29,18 +29,18 @@ import (
 // Particularly here no additional privileges are gained as monitor does
 // not need them for wait4 and kill syscalls.
 func (e *EngineOperations) MonitorContainer(pid int, signals chan os.Signal) (syscall.WaitStatus, error) {
-	var status syscall.WaitStatus
-
 	callbackType := (apptainercallback.MonitorContainer)(nil)
 	callbacks, err := plugin.LoadCallbacks(callbackType)
 	if err != nil {
-		return status, fmt.Errorf("while loading plugins callbacks '%T': %s", callbackType, err)
+		return 0, fmt.Errorf("while loading plugins callbacks '%T': %s", callbackType, err)
 	}
 	if len(callbacks) > 1 {
-		return status, fmt.Errorf("multiple plugins have registered callback for '%T'", callbackType)
+		return 0, fmt.Errorf("multiple plugins have registered callback for '%T'", callbackType)
 	} else if len(callbacks) == 1 {
 		return callbacks[0].(apptainercallback.MonitorContainer)(e.CommonConfig, pid, signals)
 	}
+
+	var status syscall.WaitStatus
 
 	for {
 		s := <-signals
