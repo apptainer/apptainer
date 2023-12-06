@@ -331,7 +331,7 @@ func TestPrintEntity(t *testing.T) {
 					},
 				},
 			},
-			expected: "1) U: name 1 (comment 1) <email.1@example.org>\n   C: 2011-01-23 16:49:20 +0000 UTC\n   F: 5FB74B1D03B1E3CB31BC2F8AA34D7E18C20C31BB\n   L: 1024\n",
+			expected: "1)  User:              name 1 (comment 1) <email.1@example.org>\n    Creation time:     2011-01-23 16:49:20 +0000 UTC\n    Fingerprint:       5FB74B1D03B1E3CB31BC2F8AA34D7E18C20C31BB\n    Length (in bits):  1024\n\n",
 		},
 		{
 			name:  "DSA key",
@@ -348,7 +348,7 @@ func TestPrintEntity(t *testing.T) {
 					},
 				},
 			},
-			expected: "2) U: name 2 (comment 2) <email.2@example.org>\n   C: 2011-01-28 21:05:13 +0000 UTC\n   F: EECE4C094DB002103714C63C8E8FBE54062F19ED\n   L: 1024\n",
+			expected: "2)  User:              name 2 (comment 2) <email.2@example.org>\n    Creation time:     2011-01-28 21:05:13 +0000 UTC\n    Fingerprint:       EECE4C094DB002103714C63C8E8FBE54062F19ED\n    Length (in bits):  1024\n\n",
 		},
 		{
 			name:  "ECDSA key",
@@ -365,7 +365,7 @@ func TestPrintEntity(t *testing.T) {
 					},
 				},
 			},
-			expected: "3) U: name 3 (comment 3) <email.3@example.org>\n   C: 2012-10-07 17:57:40 +0000 UTC\n   F: 9892270B38B8980B05C8D56D43FE956C542CA00B\n   L: 1059\n",
+			expected: "3)  User:              name 3 (comment 3) <email.3@example.org>\n    Creation time:     2012-10-07 17:57:40 +0000 UTC\n    Fingerprint:       9892270B38B8980B05C8D56D43FE956C542CA00B\n    Length (in bits):  1059\n\n",
 		},
 	}
 
@@ -424,12 +424,9 @@ func TestPrintEntities(t *testing.T) {
 		},
 	}
 
-	expected := "0) U: name 1 (comment 1) <email.1@example.org>\n   C: 2011-01-23 16:49:20 +0000 UTC\n   F: 5FB74B1D03B1E3CB31BC2F8AA34D7E18C20C31BB\n   L: 1024\n" +
-		"   --------\n" +
-		"1) U: name 2 (comment 2) <email.2@example.org>\n   C: 2011-01-28 21:05:13 +0000 UTC\n   F: EECE4C094DB002103714C63C8E8FBE54062F19ED\n   L: 1024\n" +
-		"   --------\n" +
-		"2) U: name 3 (comment 3) <email.3@example.org>\n   C: 2012-10-07 17:57:40 +0000 UTC\n   F: 9892270B38B8980B05C8D56D43FE956C542CA00B\n   L: 1059\n" +
-		"   --------\n"
+	expected := "0)  User:              name 1 (comment 1) <email.1@example.org>\n    Creation time:     2011-01-23 16:49:20 +0000 UTC\n    Fingerprint:       5FB74B1D03B1E3CB31BC2F8AA34D7E18C20C31BB\n    Length (in bits):  1024\n\n" +
+		"1)  User:              name 2 (comment 2) <email.2@example.org>\n    Creation time:     2011-01-28 21:05:13 +0000 UTC\n    Fingerprint:       EECE4C094DB002103714C63C8E8FBE54062F19ED\n    Length (in bits):  1024\n\n" +
+		"2)  User:              name 3 (comment 3) <email.3@example.org>\n    Creation time:     2012-10-07 17:57:40 +0000 UTC\n    Fingerprint:       9892270B38B8980B05C8D56D43FE956C542CA00B\n    Length (in bits):  1059\n\n"
 
 	var b bytes.Buffer
 
