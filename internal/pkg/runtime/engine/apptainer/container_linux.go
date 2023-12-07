@@ -2984,17 +2984,23 @@ func (c *container) getBindFlags(source string, defaultFlags uintptr) (uintptr, 
 
 func (c *container) gocryptfsMount(params *image.MountParams, system *mount.System, mfunc image.MountFunc) error {
 	// Prepare gocryptfs decryption info
-	tmpDir, err := os.MkdirTemp(os.TempDir(), "gocryptfs-")
+	gocryptfsDir := "/gocryptfs"
+	err := c.session.AddDir(gocryptfsDir)
+	if err != nil {
+		return err
+	}
+
+	tmpDir, err := c.session.GetPath(gocryptfsDir)
 	if err != nil {
 		return err
 	}
 	cipherDir := filepath.Join(tmpDir, "cipher")
-	err = os.Mkdir(cipherDir, 0o700)
+	err = os.MkdirAll(cipherDir, 0o700)
 	if err != nil {
 		return err
 	}
 	plainDir := filepath.Join(tmpDir, "plain")
-	err = os.Mkdir(plainDir, 0o700)
+	err = os.MkdirAll(plainDir, 0o700)
 	if err != nil {
 		return err
 	}

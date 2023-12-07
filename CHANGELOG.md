@@ -50,6 +50,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Skip parsing build definition file template variables after comments
   beginning with a hash symbol.
 - Improved the clarity of `apptainer key list` output.
+- The global /tmp directory is no longer used for gocryptfs mountpoints.  
 
 ### New Features & Functionality
 
