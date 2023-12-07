@@ -20,11 +20,13 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/apptainer/apptainer/internal/pkg/metric"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
 	"github.com/apptainer/apptainer/internal/pkg/util/crypt"
 	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
 	signalutil "github.com/apptainer/apptainer/internal/pkg/util/signal"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
 
 func createContainer(ctx context.Context, rpcSocket int, containerPid int, e *engine.Engine, fatalChan chan error) {
@@ -39,6 +41,16 @@ func createContainer(ctx context.Context, rpcSocket int, containerPid int, e *en
 		fatalChan <- fmt.Errorf("failed to copy unix socket descriptor: %s", err)
 		return
 	}
+
+	configFile := apptainerconf.GetCurrentConfig()
+	if configFile != nil && configFile.AllowMonitoring {
+		apptheusMetric, err := metric.New()
+		if err != nil {
+			sylog.Debugf("Failed to establish connection to apptheus, err: %s", err)
+		}
+		e.Common.ApptheusSocket = apptheusMetric
+	}
+
 	err = e.CreateContainer(ctx, containerPid, rpcConn)
 	if err != nil {
 		if strings.Contains(err.Error(), crypt.ErrInvalidPassphrase.Error()) {

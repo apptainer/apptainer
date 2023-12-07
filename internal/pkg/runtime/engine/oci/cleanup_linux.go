@@ -32,6 +32,13 @@ import (
 // most likely this still will be executed as root since `apptainer oci`
 // command set requires privileged execution.
 func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, status syscall.WaitStatus) error {
+	// close the connection between apptainer and apptheus
+	if e.CommonConfig.ApptheusSocket != nil {
+		if err := e.CommonConfig.ApptheusSocket.Close(); err != nil {
+			sylog.Warningf("failed to close the aptainer connection with apptheus: %v", err)
+		}
+	}
+
 	if e.EngineConfig.Cgroups != nil {
 		if err := e.EngineConfig.Cgroups.Destroy(); err != nil {
 			sylog.Warningf("failed to remove cgroup configuration: %v", err)
