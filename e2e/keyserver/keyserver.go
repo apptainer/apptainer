@@ -50,7 +50,7 @@ func (c ctx) keyserver(t *testing.T) {
 			command: addKeyserver,
 			args:    []string{"--insecure", testKeyserver},
 			listLines: []string{
-				"DefaultRemote*",
+				"DefaultRemote*^",
 				"   #1  https://keys.openpgp.org  🔒",
 				"   #2  http://localhost:11371",
 			},
@@ -83,7 +83,7 @@ func (c ctx) keyserver(t *testing.T) {
 			command: addKeyserver,
 			args:    []string{"--order", "1", testKeyserver},
 			listLines: []string{
-				"DefaultRemote*",
+				"DefaultRemote*^",
 				"   #1  http://localhost:11371    🔒",
 				"   #2  https://keys.openpgp.org  🔒",
 			},
@@ -102,7 +102,7 @@ func (c ctx) keyserver(t *testing.T) {
 			command: removeKeyserver,
 			args:    []string{apptainerKeyserver},
 			listLines: []string{
-				"DefaultRemote*",
+				"DefaultRemote*^",
 				"   #1  http://localhost:11371  🔒",
 			},
 			expectExit: 0,
@@ -120,7 +120,7 @@ func (c ctx) keyserver(t *testing.T) {
 			command: addKeyserver,
 			args:    []string{apptainerKeyserver},
 			listLines: []string{
-				"DefaultRemote*",
+				"DefaultRemote*^",
 				"   #1  http://localhost:11371    🔒",
 				"   #2  https://keys.openpgp.org  🔒",
 			},
@@ -132,7 +132,7 @@ func (c ctx) keyserver(t *testing.T) {
 			command: removeKeyserver,
 			args:    []string{testKeyserver},
 			listLines: []string{
-				"DefaultRemote*",
+				"DefaultRemote*^",
 				"   #1  https://keys.openpgp.org  🔒",
 			},
 			expectExit: 0,
