@@ -69,6 +69,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Don't bind `/var/tmp` on top of `/tmp` in the container, where `/var/tmp`
   resolves to same location as `/tmp`.
 
+### Release change
+
+- Releases will generate apptainer Docker images for the Linux amd64 and arm64
+  architectures.
+
 ## Changes for v1.2.x
 
 ## v1.2.5 - \[2023-11-21\]
