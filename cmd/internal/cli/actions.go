@@ -16,6 +16,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"syscall"
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
@@ -364,24 +365,44 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 
 func shareNSLaunch(cmd *cobra.Command, image string, args []string) error {
 	ppid := os.Getppid()
-	procDir := fmt.Sprintf("/proc/%d/comm", ppid)
+	lockFile := fmt.Sprintf("%s/%s_%d", os.TempDir(), shareNSInstancePrefix, ppid)
 	instanceName := fmt.Sprintf("%s_%d", shareNSInstancePrefix, ppid)
 
-	fd, err := unix.Open(procDir, unix.O_RDWR, 0)
+	var fd int
+	var err error
+	existingInstanceLock := false
+	fd, err = unix.Open(lockFile, unix.O_CREAT|unix.O_RDWR|unix.O_EXCL, 0o700)
 	if err != nil {
-		return err
+		existingInstanceLock = err == syscall.EEXIST
+		if !existingInstanceLock {
+			return err
+		}
+
+		fd, err = unix.Open(lockFile, unix.O_RDWR, 0o700)
+		if err != nil {
+			return err
+		}
 	}
 
-	br := lock.NewByteRange(fd, 0, 1)
+	br := lock.NewByteRange(fd, 0, 0)
 	err = br.Lock()
+	if err != nil && err != lock.ErrByteRangeAcquired {
+		return err
+	}
+	firstProcess := err == nil
 
-	switch err {
-	case nil:
-		// first process
+	// check existingInstanceLock, if true and we can acquire a lock
+	// it means the instance has been created and we are not the first
+	// process
+	if firstProcess && existingInstanceLock {
+		firstProcess = false
+	}
+
+	if firstProcess {
 		if err := launchContainer(cmd, image, args, instanceName, fd); err != nil {
 			return err
 		}
-	case lock.ErrByteRangeAcquired:
+	} else {
 		// other process, this will block the process
 		if err := br.RLockw(); err != nil {
 			return err
@@ -391,8 +412,6 @@ func shareNSLaunch(cmd *cobra.Command, image string, args []string) error {
 		if err := launchContainer(cmd, fmt.Sprintf("instance://%s", instanceName), args, "", -1); err != nil {
 			return err
 		}
-	default:
-		return err
 	}
 
 	return nil

@@ -375,6 +375,10 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	l.setProcessCwd()
 
 	l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "APPNAME", l.cfg.AppName)
+	// set an additional environment APPTAINER_SHARENS_MASTER = 1 inside container
+	if fd := l.engineConfig.GetShareNSFd(); fd != -1 && l.engineConfig.GetShareNSMode() {
+		l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "SHARENS_MASTER", "1")
+	}
 
 	// Get image ready to run, if needed, via FUSE mount / extraction / image driver handling.
 	if err := l.prepareImage(ctx, insideUserNs, image); err != nil {

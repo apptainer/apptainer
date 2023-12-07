@@ -10,7 +10,9 @@
 package instance
 
 import (
+	"bufio"
 	"bytes"
+	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -18,6 +20,7 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
@@ -396,13 +399,54 @@ func (c *ctx) testInstanceWithConfigDir(t *testing.T) {
 
 // testShareNSMopde will test --sharens flag
 func (c *ctx) testShareNSMode(t *testing.T) {
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(c.profile),
-		e2e.WithCommand("exec"),
-		e2e.WithArgs("--sharens", c.env.ImagePath, "true"),
-		e2e.ExpectExit(0),
-	)
+	dir, err := os.MkdirTemp(c.env.TestDir, "InstanceShareNS")
+	if err != nil {
+		t.Fatalf("Failed to create temporary directory: %v", err)
+	}
+	defer os.RemoveAll(dir)
+
+	file := fmt.Sprintf("%s/file", dir)
+	f, err := os.Create(file)
+	if err != nil {
+		t.Fatalf("failed to create file, this is unexpected, err: %v", err)
+	}
+	f.Close()
+
+	insNumber := 2
+	for i := 0; i < insNumber; i++ {
+		go c.env.RunApptainer(
+			t,
+			e2e.WithProfile(c.profile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs("--bind", fmt.Sprintf("%s:/canary/file", file), "--sharens", c.env.ImagePath, "sh", "-c", "echo 0 >> /canary/file; sleep 1"),
+			e2e.ExpectExit(0),
+		)
+	}
+
+	// waiting enough time for the file written
+	time.Sleep(2 * time.Second)
+
+	f, err = os.Open(file)
+	if err != nil {
+		t.Fatalf("failed to open file: %v, this is unexpected", err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	scanner.Split(bufio.ScanLines)
+
+	var count int
+	for scanner.Scan() {
+		count++
+	}
+
+	if err := scanner.Err(); err != nil {
+		t.Fatalf("having issue while scanning file: %s, err: %v", file, err)
+	}
+
+	if count != insNumber {
+		t.Fatalf("should have %d lines, but actually is %d", insNumber, count)
+	}
 }
 
 // E2ETests is the main func to trigger the test suite

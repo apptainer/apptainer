@@ -98,7 +98,7 @@ func (r *ByteRange) Lock() error {
 	return r.flock(unix.F_WRLCK, setLk)
 }
 
-// Lock places a write lock and wait for the corresponding byte-range.
+// Lock places a write lock and waits for the corresponding byte-range.
 func (r *ByteRange) Lockw() error {
 	return r.flock(unix.F_WRLCK, setLkw)
 }
@@ -108,7 +108,7 @@ func (r *ByteRange) RLock() error {
 	return r.flock(unix.F_RDLCK, setLk)
 }
 
-// RLock places a read lock and wait for the corresponding byte-range.
+// RLock places a read lock and waits for the corresponding byte-range.
 func (r *ByteRange) RLockw() error {
 	return r.flock(unix.F_RDLCK, setLkw)
 }

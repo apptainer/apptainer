@@ -824,7 +824,7 @@ var actionShareNSFlag = cmdline.Flag{
 	Value:        &shareNS,
 	DefaultValue: false,
 	Name:         "sharens",
-	Usage:        "mode for launching containers in the same namespace",
+	Usage:        "share the namespace and image with other containers launched from the same parent process",
 	EnvKeys:      []string{"SHARENS"},
 	Hidden:       false,
 }

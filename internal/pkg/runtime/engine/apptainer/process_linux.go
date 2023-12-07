@@ -451,7 +451,7 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 				return err
 			}
 		} else if fd := e.EngineConfig.GetShareNSFd(); fd != -1 {
-			br := lock.NewByteRange(fd, 0, 1)
+			br := lock.NewByteRange(fd, 0, 0)
 			if err := br.Unlock(); err != nil {
 				return err
 			}

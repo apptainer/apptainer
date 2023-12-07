@@ -45,10 +45,23 @@ import (
 func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, status syscall.WaitStatus) error {
 	sylog.Debugf("Cleanup container")
 	if fd := e.EngineConfig.GetShareNSFd(); fd != -1 && e.EngineConfig.GetShareNSMode() {
-		br := lock.NewByteRange(fd, 0, 1)
+		br := lock.NewByteRange(fd, 0, 0)
 		// wait all other processes first
 		if err := br.Lockw(); err != nil {
 			sylog.Errorf("sharens waiting processes error: %s", err)
+		}
+
+		// clean up the lock file, this is first process
+		if path, err := os.Readlink(fmt.Sprintf("/proc/self/fd/%d", fd)); err == nil {
+			if err := syscall.Close(fd); err == nil {
+				if err := syscall.Unlink(path); err != nil {
+					sylog.Errorf("unable to unlink path: %s, err: %v", path, err)
+				}
+			} else {
+				sylog.Errorf("unable to close file descriptor for sharens lock file: %d", fd)
+			}
+		} else {
+			sylog.Errorf("unable to locate the file descriptor: %d in /proc folder", fd)
 		}
 	}
 
