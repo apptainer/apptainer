@@ -329,6 +329,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev
 
       - name: Download, compile, and install dependent packages
+        if: env.run_tests
         run: |
           set -ex
           mlocal/scripts/download-dependencies .
@@ -339,11 +340,13 @@ jobs:
       # so update to version 1.9
       # See https://github.com/apptainer/apptainer/issues/796
       - name: Update fuse-overlayfs version
+        if: env.run_tests
         run: |
           sudo sh -c "echo 'deb http://old-releases.ubuntu.com/ubuntu kinetic universe' >/etc/apt/sources.list.d/kinetic.list"
           sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y fuse-overlayfs
 
       - name: Enable full cgroups v2 delegation
+        if: env.run_tests
         run: |
           sudo mkdir -p /etc/systemd/system/user@.service.d
           cat <<EOF | sudo tee /etc/systemd/system/user@.service.d/delegate.conf
