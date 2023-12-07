@@ -1516,17 +1516,14 @@ func (e *EngineOperations) setUserInfo(useTargetIDs bool) {
 
 	if useTargetIDs {
 		pw, err = user.GetPwUID(uint32(e.EngineConfig.GetTargetUID()))
-		if err == nil {
-			e.EngineConfig.JSON.UserInfo.Username = pw.Name
-			e.EngineConfig.JSON.UserInfo.Gecos = pw.Gecos
-			e.EngineConfig.JSON.UserInfo.UID = int(pw.UID)
-			e.EngineConfig.JSON.UserInfo.GID = int(pw.GID)
-		}
-	} else {
+	}
+
+	if err == nil {
 		e.EngineConfig.JSON.UserInfo.Username = pw.Name
 		e.EngineConfig.JSON.UserInfo.Gecos = pw.Gecos
 		e.EngineConfig.JSON.UserInfo.UID = int(pw.UID)
 		e.EngineConfig.JSON.UserInfo.GID = int(pw.GID)
+		e.EngineConfig.JSON.UserInfo.Shell = pw.Shell
 	}
 
 	e.EngineConfig.JSON.UserInfo.Groups = make(map[int]string)
