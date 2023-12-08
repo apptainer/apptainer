@@ -304,12 +304,11 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 #
 # The 'limit container' and 'allow container' directives are not effective if
 # unprivileged user namespaces are enabled. They are only effectively applied
-# when Singularity is running using the native runtime in setuid mode, and
+# when Apptainer is running using the native runtime in setuid mode, and
 # unprivileged container execution is not possible on the host.
 #
 # You must disable unprivileged user namespace creation on the host if you rely
-# on the these directives to limit container execution. This will disable OCI
-# mode, which is unprivileged and cannot enforce these limits.
+# on the these directives to limit container execution.
 #
 # See the 'Security' and 'Configuration Files' sections of the Admin Guide for
 # more information.
@@ -356,11 +355,13 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 
 # ALLOW CONTAINER ${TYPE}: [BOOL]
 # DEFAULT: yes
-# This feature limits what kind of containers that Singularity will allow
+# This feature limits what kind of containers that Apptainer will allow
 # users to use.
 #
 # Only effective in setuid mode, with unprivileged user namespace creation disabled.
-# Ignored for the root user.
+# Ignored for the root user. Note that some of the
+# same operations can be limited in setuid mode by the ALLOW SETUID-MOUNT
+# feature below; both types need to be "yes" to be allowed.
 #
 # Allow use of unencrypted SIF containers
 allow container sif = {{ if eq .AllowContainerSIF true}}yes{{ else }}no{{ end }}
