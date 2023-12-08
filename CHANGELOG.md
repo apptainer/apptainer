@@ -59,6 +59,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add monitoring feature support, which requires the usage of an additional tool
   named `apptheus`, this tool will put apptainer starter into a newly created
   cgroup and collect system metrics.
+- A new `--no-pid` flag for `apptainer run/shell/exec` disables the PID namespace
+  inferred by `--containall` and `--compat`.
 
 ### Developer / API
 

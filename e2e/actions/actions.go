@@ -100,9 +100,10 @@ func (c actionTests) actionExec(t *testing.T) {
 	user := e2e.UserProfile.HostUser(t)
 
 	tests := []struct {
-		name string
-		argv []string
-		exit int
+		name        string
+		argv        []string
+		exit        int
+		wantOutputs []e2e.ApptainerCmdResultOp
 	}{
 		{
 			name: "NoCommand",
@@ -191,6 +192,23 @@ func (c actionTests) actionExec(t *testing.T) {
 			argv: []string{"--no-home", c.env.ImagePath, "ls", "-ld", user.Dir},
 			exit: 1,
 		},
+		// PID namespace, and override, in --containall mode. Uses --no-init to be able to check PID=1
+		{
+			name: "ContainAllPID",
+			argv: []string{"--containall", "--no-init", c.env.ImagePath, "sh", "-c", "echo $$"},
+			exit: 0,
+			wantOutputs: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.ExactMatch, "1"),
+			},
+		},
+		{
+			name: "ContainAllNoPID",
+			argv: []string{"--containall", "--no-init", "--no-pid", c.env.ImagePath, "sh", "-c", "echo $$"},
+			exit: 0,
+			wantOutputs: []e2e.ApptainerCmdResultOp{
+				e2e.ExpectOutput(e2e.UnwantedExactMatch, "1\n"),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -201,7 +219,7 @@ func (c actionTests) actionExec(t *testing.T) {
 			e2e.WithCommand("exec"),
 			e2e.WithDir("/tmp"),
 			e2e.WithArgs(tt.argv...),
-			e2e.ExpectExit(tt.exit),
+			e2e.ExpectExit(tt.exit, tt.wantOutputs...),
 		)
 	}
 }

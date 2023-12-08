@@ -169,6 +169,8 @@ type Namespaces struct {
 	PID  bool
 	IPC  bool
 	Net  bool
+	// NoPID will force the PID namespace not to be used, even if set by default / other flags.
+	NoPID bool
 }
 
 type Option func(co *launchOptions) error
