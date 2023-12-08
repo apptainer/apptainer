@@ -10,6 +10,7 @@
 package actions
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -762,5 +763,28 @@ func (c actionTests) issue1097(t *testing.T) {
 		e2e.WithCommand("exec"),
 		e2e.WithArgs(image, "cat", varTmpCanary),
 		e2e.ExpectExit(1),
+	)
+}
+
+// Verify the generated host user data appended to /etc/passwd
+func (c actionTests) issue1848(t *testing.T) {
+	user := e2e.UserProfile.HostUser(t)
+	expectedPasswdLine := fmt.Sprintf("%s:x:%d:%d:%s:%s:%s",
+		user.Name,
+		user.UID,
+		user.GID,
+		user.Gecos,
+		user.Dir,
+		user.Shell,
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("docker://rockylinux:8", "tail", "-1", "/etc/passwd"),
+		e2e.ExpectExit(0,
+			e2e.ExpectOutput(e2e.ExactMatch, expectedPasswdLine),
+		),
 	)
 }

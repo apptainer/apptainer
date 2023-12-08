@@ -25,6 +25,7 @@
 - David Rohr <drohr@jwdt.org>
 - David Trudgian <david.trudgian@utsouthwestern.edu>,
   <david.trudgian@sylabs.io>, <dave@trudgian.net>
+- Dennis Klein <d.klein@gsi.de>
 - Diana Langenbach <dcl@dcl.sh>
 - Dimitri Papadopoulos Orfanos <3234522+DimitriPapadopoulos@users.noreply.github.com>
 - Divya Cote <divya.cote@gmail.com>

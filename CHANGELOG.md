@@ -74,6 +74,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   resolves to same location as `/tmp`.
 - Support parentheses in `test` / `[` commands in container startup scripts,
   via dependency update of mvdan.cc/sh.
+- Fix regression introduced in v1.2.0 that led to an empty user's shell field
+  in the `/etc/passwd` file.
 
 ### Release change
 
