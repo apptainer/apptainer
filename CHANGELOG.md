@@ -75,6 +75,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Support parentheses in `test` / `[` commands in container startup scripts,
   via dependency update of mvdan.cc/sh.
 
+### Release change
+
+- Releases will generate apptainer Docker images for the Linux amd64 and arm64
+  architectures.
+
 ## Changes for v1.2.x
 
 ## v1.2.5 - \[2023-11-21\]
