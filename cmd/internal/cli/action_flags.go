@@ -59,11 +59,12 @@ var (
 	noUmask         bool
 	disableCache    bool
 
-	netNamespace  bool
-	utsNamespace  bool
-	userNamespace bool
-	pidNamespace  bool
-	ipcNamespace  bool
+	netNamespace   bool
+	utsNamespace   bool
+	userNamespace  bool
+	pidNamespace   bool
+	noPidNamespace bool
+	ipcNamespace   bool
 
 	allowSUID bool
 	keepPrivs bool
@@ -489,6 +490,16 @@ var actionPidNamespaceFlag = cmdline.Flag{
 	EnvKeys:      []string{"PID", "UNSHARE_PID"},
 }
 
+// --no-pid
+var actionNoPidNamespaceFlag = cmdline.Flag{
+	ID:           "actionNoPidNamespaceFlag",
+	Value:        &noPidNamespace,
+	DefaultValue: false,
+	Name:         "no-pid",
+	Usage:        "do not run container in a new PID namespace",
+	EnvKeys:      []string{"NO_PID"},
+}
+
 // -i|--ipc
 var actionIpcNamespaceFlag = cmdline.Flag{
 	ID:           "actionIpcNamespaceFlag",
@@ -859,6 +870,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&commonPromptForPassphraseFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&commonPEMFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionPidNamespaceFlag, actionsCmd...)
+		cmdManager.RegisterFlagForCmd(&actionNoPidNamespaceFlag, actionsCmd...)
 		cmdManager.RegisterFlagForCmd(&actionCwdFlag, actionsCmd...)
 		cmdManager.RegisterFlagForCmd(&actionPwdFlag, actionsCmd...)
 		cmdManager.RegisterFlagForCmd(&actionScratchFlag, actionsInstanceCmd...)
