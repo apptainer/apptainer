@@ -44,6 +44,12 @@ import (
 func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, status syscall.WaitStatus) error {
 	sylog.Debugf("Cleanup container")
 
+	// close the connection between apptainer and apptheus
+	if e.CommonConfig.ApptheusSocket != nil {
+		if err := e.CommonConfig.ApptheusSocket.Close(); err != nil {
+			sylog.Warningf("failed to close the aptainer connection with apptheus: %v", err)
+		}
+	}
 	// firstly stop all fuse drivers before any image removal
 	// by image driver interruption or image cleanup for hybrid
 	// fakeroot workflow

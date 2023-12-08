@@ -56,6 +56,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - The `remote status` command will now print the username, realname, and email
   of the logged-in user, if available.
+- Add monitoring feature support, which requires the usage of an additional tool
+  named `apptheus`, this tool will put apptainer starter into a newly created
+  cgroup and collect system metrics.
 
 ### Developer / API
 

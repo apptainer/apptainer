@@ -12,6 +12,7 @@ package config
 import (
 	"encoding/json"
 
+	"github.com/apptainer/apptainer/internal/pkg/metric"
 	"github.com/apptainer/apptainer/pkg/plugin"
 )
 
@@ -25,6 +26,9 @@ type Common struct {
 
 	// PluginConfig is the JSON raw representation of the plugin configurations.
 	PluginConfig map[string]json.RawMessage `json:"plugin"`
+
+	// Apptheus connection, this field will be ignored
+	ApptheusSocket *metric.Apptheus `json:"-"`
 }
 
 // GetPluginConfig retrieves the configuration for the corresponding plugin.
