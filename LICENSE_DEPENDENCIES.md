@@ -413,6 +413,12 @@ The dependencies and their licenses are as follows:
 
 **Project URL:** <https://go.mongodb.org/mongo-driver>
 
+## go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
+
+**License:** Apache-2.0
+
+**Project URL:** <https://go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp>
+
 ## go.opentelemetry.io/otel
 
 **License:** Apache-2.0
