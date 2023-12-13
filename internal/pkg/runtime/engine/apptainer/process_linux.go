@@ -288,7 +288,7 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 				// permissions to send signals to its childs and EINVAL would
 				// mean to update the Go runtime or the kernel to something more
 				// stable :)
-				if isInstance && cmdPid > 0 {
+				if (isInstance || e.EngineConfig.GetShareNSMode()) && cmdPid > 0 {
 					if err := syscall.Kill(-cmdPid, signal); err == syscall.ESRCH {
 						sylog.Debugf("No child process, exiting ...")
 						os.Exit(128 + int(signal))
@@ -451,6 +451,15 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 				return err
 			}
 		} else if fd := e.EngineConfig.GetShareNSFd(); fd != -1 {
+			// here first process in the --sharens mode starts properly
+			// as there are chances that the lock file will not be removed properly
+			// and it'll be difficult to distinguish the successful startup and false one
+			// here we will write one byte data into the lock file to indicate that first process
+			// starts correctly.
+			if _, err := unix.Pwrite(fd, []byte{1}, io.SeekStart); err != nil {
+				return err
+			}
+
 			br := lock.NewByteRange(fd, 0, 0)
 			if err := br.Unlock(); err != nil {
 				return err

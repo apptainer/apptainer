@@ -13,6 +13,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"runtime"
 	"strings"
@@ -365,7 +366,7 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 
 func shareNSLaunch(cmd *cobra.Command, image string, args []string) error {
 	ppid := os.Getppid()
-	lockFile := fmt.Sprintf("%s/%s_%d", os.TempDir(), shareNSInstancePrefix, ppid)
+	lockFile := fmt.Sprintf("%s/%s_%d", "/dev/shm", shareNSInstancePrefix, ppid)
 	instanceName := fmt.Sprintf("%s_%d", shareNSInstancePrefix, ppid)
 
 	var fd int
@@ -389,13 +390,22 @@ func shareNSLaunch(cmd *cobra.Command, image string, args []string) error {
 	if err != nil && err != lock.ErrByteRangeAcquired {
 		return err
 	}
+
 	firstProcess := err == nil
 
 	// check existingInstanceLock, if true and we can acquire a lock
 	// it means the instance has been created and we are not the first
 	// process
 	if firstProcess && existingInstanceLock {
-		firstProcess = false
+		// read the content of the lock file (count up to 1 byte)
+		buf := make([]byte, 1)
+		n, err := unix.Pread(fd, buf, io.SeekStart)
+		if err != nil {
+			return err
+		}
+		// if there is no content, meaning that previous startup fails
+		// because the successful first process will always write 1 byte into this lock file
+		firstProcess = n == 0
 	}
 
 	if firstProcess {

@@ -335,7 +335,13 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	// Setup instance specific configuration if required.
 	if instanceName != "" {
 		l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "INSTANCE", instanceName)
-		l.cfg.Namespaces.PID = !l.cfg.ShareNSMode
+		// instance are always using PID namespace by default
+		pidNamespace := true
+		if l.cfg.ShareNSMode && !l.cfg.Namespaces.PID {
+			// sharens disable PID namespace by default
+			pidNamespace = false
+		}
+		l.cfg.Namespaces.PID = pidNamespace
 		l.engineConfig.SetInstance(true)
 		l.engineConfig.SetBootInstance(l.cfg.Boot)
 
