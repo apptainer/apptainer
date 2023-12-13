@@ -11,6 +11,9 @@
 package keyserver
 
 import (
+	"fmt"
+	"log"
+	"os"
 	"strings"
 	"testing"
 
@@ -23,11 +26,30 @@ type ctx struct {
 }
 
 func (c ctx) keyserver(t *testing.T) {
+	config, err := os.CreateTemp(c.env.TestDir, "testConfig-")
+	if err != nil {
+		log.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if !t.Failed() {
+			os.Remove(config.Name()) // clean up
+		}
+	})
+
 	var (
 		apptainerKeyserver = "https://keys.openpgp.org"
 		testKeyserver      = "http://localhost:11371"
-		addKeyserver       = "keyserver add"
-		removeKeyserver    = "keyserver remove"
+		addKeyserver       = fmt.Sprintf("keyserver --config %s add", config.Name())
+		removeKeyserver    = fmt.Sprintf("keyserver --config %s remove", config.Name())
+	)
+
+	argv := []string{"--config", config.Name(), "add", "--no-login", "--no-default", "OtherCloud", "cloud.sylabs.io"}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("remote"),
+		e2e.WithArgs(argv...),
+		e2e.ExpectExit(0),
 	)
 
 	tests := []struct {
@@ -50,7 +72,7 @@ func (c ctx) keyserver(t *testing.T) {
 			command: addKeyserver,
 			args:    []string{"--insecure", testKeyserver},
 			listLines: []string{
-				"DefaultRemote*^",
+				"DefaultRemote *^",
 				"   #1  https://keys.openpgp.org  🔒",
 				"   #2  http://localhost:11371",
 			},
@@ -83,7 +105,7 @@ func (c ctx) keyserver(t *testing.T) {
 			command: addKeyserver,
 			args:    []string{"--order", "1", testKeyserver},
 			listLines: []string{
-				"DefaultRemote*^",
+				"DefaultRemote *^",
 				"   #1  http://localhost:11371    🔒",
 				"   #2  https://keys.openpgp.org  🔒",
 			},
@@ -102,7 +124,7 @@ func (c ctx) keyserver(t *testing.T) {
 			command: removeKeyserver,
 			args:    []string{apptainerKeyserver},
 			listLines: []string{
-				"DefaultRemote*^",
+				"DefaultRemote *^",
 				"   #1  http://localhost:11371  🔒",
 			},
 			expectExit: 0,
@@ -120,7 +142,7 @@ func (c ctx) keyserver(t *testing.T) {
 			command: addKeyserver,
 			args:    []string{apptainerKeyserver},
 			listLines: []string{
-				"DefaultRemote*^",
+				"DefaultRemote *^",
 				"   #1  http://localhost:11371    🔒",
 				"   #2  https://keys.openpgp.org  🔒",
 			},
@@ -132,7 +154,7 @@ func (c ctx) keyserver(t *testing.T) {
 			command: removeKeyserver,
 			args:    []string{testKeyserver},
 			listLines: []string{
-				"DefaultRemote*^",
+				"DefaultRemote *^",
 				"   #1  https://keys.openpgp.org  🔒",
 			},
 			expectExit: 0,
@@ -160,8 +182,10 @@ func (c ctx) keyserver(t *testing.T) {
 				}
 				c.env.RunApptainer(
 					t,
+					e2e.AsSubtest("VerifyList"),
 					e2e.WithProfile(e2e.UserProfile),
-					e2e.WithCommand("keyserver list"),
+					e2e.WithArgs("--config", config.Name(), "list"),
+					e2e.WithCommand("keyserver"),
 					e2e.ExpectExit(
 						0,
 						e2e.ExpectOutput(
@@ -174,6 +198,24 @@ func (c ctx) keyserver(t *testing.T) {
 			e2e.ExpectExit(tt.expectExit),
 		)
 	}
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("RemoteNameInvalid"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithArgs("--config", config.Name(), "list", "InvalidCloud"),
+		e2e.WithCommand("keyserver"),
+		e2e.ExpectExit(255),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("RemoteNameValid"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithArgs("--config", config.Name(), "list", "OtherCloud"),
+		e2e.WithCommand("keyserver"),
+		e2e.ExpectExit(0, e2e.ExpectOutput(e2e.UnwantedContainMatch, testKeyserver)),
+	)
 }
 
 // E2ETests is the main func to trigger the test suite

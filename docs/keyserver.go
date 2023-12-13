@@ -81,9 +81,9 @@ const (
 	KeyserverListUse   string = `list [remoteName]`
 	KeyserverListShort string = `List all keyservers that are configured`
 	KeyserverListLong  string = `
-  The 'keyserver list' command lists all keyservers configured for use with a
-  given remote endpoint. If no endpoint is specified, the default
-  remote endpoint will be assumed.`
+  The 'keyserver list' command lists the keyservers configured for use with
+  each remote endpoint. If the optional remoteName argument is provided, the
+  command will only list keyservers for the remote endpoint matching that name.`
 	KeyserverListExample string = `
   $ apptainer keyserver list`
 )

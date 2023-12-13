@@ -12,10 +12,13 @@ package apptainer
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"text/tabwriter"
 
 	"github.com/apptainer/apptainer/internal/pkg/remote"
+	"github.com/apptainer/apptainer/internal/pkg/remote/credential"
+	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 )
 
 // KeyserverList prints information about remote configurations
@@ -42,12 +45,34 @@ func KeyserverList(remoteName string, usrConfigFile string) (err error) {
 		return err
 	}
 
+	keyserverCredentials := make(map[string]*credential.Config)
+	for _, cred := range c.Credentials {
+		u, err := url.Parse(cred.URI)
+		if err != nil {
+			return err
+		}
+
+		switch u.Scheme {
+		case "http", "https":
+			keyserverCredentials[cred.URI] = cred
+		}
+	}
+
 	defaultRemote, err := c.GetDefault()
 	if err != nil {
 		return fmt.Errorf("error getting default remote-endpoint: %w", err)
 	}
 
-	for epName, ep := range c.Remotes {
+	remotes := c.Remotes
+	if remoteName != "" {
+		ep, ok := c.Remotes[remoteName]
+		if !ok {
+			return fmt.Errorf("no remote-endpoint with the name %q found", remoteName)
+		}
+		remotes = map[string]*endpoint.Config{remoteName: ep}
+	}
+
+	for epName, ep := range remotes {
 		fmt.Println()
 		isSystem := ""
 		if ep.System {
@@ -57,7 +82,7 @@ func KeyserverList(remoteName string, usrConfigFile string) (err error) {
 		if ep == defaultRemote {
 			isDefault = "^"
 		}
-		fmt.Printf("%s%s%s\n", epName, isSystem, isDefault)
+		fmt.Printf("%s %s%s\n", epName, isSystem, isDefault)
 
 		tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		if err := ep.UpdateKeyserversConfig(); err != nil {

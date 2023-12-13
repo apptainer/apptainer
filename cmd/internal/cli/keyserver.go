@@ -25,6 +25,16 @@ var (
 	keyserverOrder    uint32
 )
 
+// -c|--config
+var keyserverConfigFlag = cmdline.Flag{
+	ID:           "keyserverConfigFlag",
+	Value:        &remoteConfig,
+	DefaultValue: remoteConfigUser,
+	Name:         "config",
+	ShortHand:    "c",
+	Usage:        "path to the file holding keyserver configurations",
+}
+
 // -i|--insecure
 var keyserverInsecureFlag = cmdline.Flag{
 	ID:           "keyserverInsecureFlag",
@@ -84,6 +94,9 @@ func init() {
 		cmdManager.RegisterSubCmd(KeyserverCmd, KeyserverLoginCmd)
 		cmdManager.RegisterSubCmd(KeyserverCmd, KeyserverLogoutCmd)
 		cmdManager.RegisterSubCmd(KeyserverCmd, KeyserverListCmd)
+
+		// default location of the remote.yaml file is the user directory
+		cmdManager.RegisterFlagForCmd(&keyserverConfigFlag, KeyserverCmd)
 
 		cmdManager.RegisterFlagForCmd(&keyserverOrderFlag, KeyserverAddCmd)
 		cmdManager.RegisterFlagForCmd(&keyserverInsecureFlag, KeyserverAddCmd)

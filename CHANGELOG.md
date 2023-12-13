@@ -61,6 +61,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   cgroup and collect system metrics.
 - A new `--no-pid` flag for `apptainer run/shell/exec` disables the PID namespace
   inferred by `--containall` and `--compat`.
+- Added `--config` option to`keyserver` commands.
+- Honor an optional remoteName argument to the `keyserver list` command.
 
 ### Developer / API
 

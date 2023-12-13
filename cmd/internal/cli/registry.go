@@ -25,7 +25,7 @@ var registryConfigFlag = cmdline.Flag{
 	DefaultValue: remoteConfigUser,
 	Name:         "config",
 	ShortHand:    "c",
-	Usage:        "path to the file holding remote endpoint configurations",
+	Usage:        "path to the file holding registry configurations",
 }
 
 // -u|--username
