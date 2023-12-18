@@ -7,21 +7,28 @@ linters:
   disable-all: true
   enable-all: false
   enable:
+    - asciicheck
+    - bidichk
     - containedctx
     - contextcheck
     - decorder
     - dupl
     - gofumpt
     - goimports
+    - gomodguard
+    - goprintffuncname
     - gosimple
     - govet
     - grouper
     - ineffassign
+    - interfacebloat
     - maintidx
     - misspell
     - nakedret
+    - reassign
     - revive
     - staticcheck
+    - typecheck
     - unused
 
 linters-settings:
