@@ -340,12 +340,14 @@ func (c ctx) testPullCmd(t *testing.T) {
 			noHTTPS:          true,
 			expectedExitCode: 0,
 		},
+
+		// pulling without --no-https flag
 		{
-			desc:             "oras pull of SIF file should fail because the insecure registry only expects non-secure header",
+			desc:             "oras pull of SIF file should success because go-containerregistry will automatically switch to insecure mode for localhost",
 			srcURI:           fmt.Sprintf("oras://%s/pull_test_sif:latest", c.env.InsecureRegistry),
 			unauthenticated:  true,
 			force:            true,
-			expectedExitCode: 255,
+			expectedExitCode: 0,
 		},
 	}
 

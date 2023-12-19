@@ -19,7 +19,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/apptainer/apptainer/internal/pkg/client/ocisif"
+	"github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/pkg/image"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
@@ -32,8 +32,8 @@ import (
 )
 
 // DownloadImage downloads a SIF image specified by an oci reference to a file using the included credentials
-func DownloadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.DockerAuthConfig) error {
-	im, err := remoteImage(ref, ociAuth)
+func DownloadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) error {
+	im, err := remoteImage(ref, ociAuth, noHTTPS)
 	if err != nil {
 		return err
 	}
@@ -41,7 +41,7 @@ func DownloadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.Dock
 	// Check manifest to ensure we have a SIF as single layer
 	//
 	// We *don't* check the image config mediaType as prior versions of
-	// Singularity have not been consistent in setting this, and really all we
+	// Apptainer have not been consistent in setting this, and really all we
 	// care about is that we are pulling a single SIF file.
 	//
 	manifest, err := im.Manifest()
@@ -86,7 +86,27 @@ func DownloadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.Dock
 		return err
 	}
 	defer outFile.Close()
-	_, err = io.Copy(outFile, blob)
+
+	// progressbar
+	in, out := io.Pipe()
+	mwriter := io.MultiWriter(outFile, out)
+	wpb := &writerWithProgressBar{
+		Writer:      mwriter,
+		ProgressBar: &client.DownloadProgressBar{},
+	}
+	wpb.Init(layer.Size)
+
+	go func() {
+		_, err := io.Copy(io.Discard, in)
+		if err != nil {
+			pb.Abort(true)
+			in.CloseWithError(err)
+		}
+		pb.Wait()
+		in.Close()
+	}()
+
+	_, err = io.Copy(wpb, blob)
 	if err != nil {
 		return err
 	}
@@ -112,10 +132,11 @@ func UploadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.Docker
 	ref = strings.TrimPrefix(ref, "//")
 
 	// Get reference to image in the remote
-	ir, err := name.ParseReference(ref,
-		name.WithDefaultTag(name.DefaultTag),
-		name.WithDefaultRegistry(name.DefaultRegistry),
-	)
+	opts := []name.Option{name.WithDefaultTag(name.DefaultTag), name.WithDefaultRegistry(name.DefaultRegistry)}
+	if noHTTPS {
+		opts = append(opts, name.Insecure)
+	}
+	ir, err := name.ParseReference(ref, opts...)
 	if err != nil {
 		return err
 	}
@@ -125,8 +146,10 @@ func UploadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.Docker
 		return err
 	}
 
-	authOptn := ocisif.AuthOptn(ociAuth)
-	return remote.Write(ir, im, authOptn, remote.WithUserAgent(useragent.Value()))
+	authOptn := AuthOptn(ociAuth)
+	updates := make(chan v1.Update, 1)
+	go showProgressBar(updates)
+	return remote.Write(ir, im, authOptn, remote.WithUserAgent(useragent.Value()), remote.WithProgress(updates))
 }
 
 // ensureSIF checks for a SIF image at filepath and returns an error if it is not, or an error is encountered
@@ -145,8 +168,8 @@ func ensureSIF(filepath string) error {
 }
 
 // RefHash returns the digest of the SIF layer of the OCI manifest for supplied ref
-func RefHash(ctx context.Context, ref string, ociAuth *ocitypes.DockerAuthConfig) (v1.Hash, error) {
-	im, err := remoteImage(ref, ociAuth)
+func RefHash(ctx context.Context, ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (v1.Hash, error) {
+	im, err := remoteImage(ref, ociAuth, noHTTPS)
 	if err != nil {
 		return v1.Hash{}, err
 	}
@@ -204,19 +227,20 @@ func sha256sum(r io.Reader) (result string, nBytes int64, err error) {
 }
 
 // remoteImage returns a v1.Image for the provided remote ref.
-func remoteImage(ref string, ociAuth *ocitypes.DockerAuthConfig) (v1.Image, error) {
+func remoteImage(ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (v1.Image, error) {
 	ref = strings.TrimPrefix(ref, "oras://")
 	ref = strings.TrimPrefix(ref, "//")
 
 	// Get reference to image in the remote
-	ir, err := name.ParseReference(ref,
-		name.WithDefaultTag(name.DefaultTag),
-		name.WithDefaultRegistry(name.DefaultRegistry),
-	)
+	opts := []name.Option{name.WithDefaultTag(name.DefaultTag), name.WithDefaultRegistry(name.DefaultRegistry)}
+	if noHTTPS {
+		opts = append(opts, name.Insecure)
+	}
+	ir, err := name.ParseReference(ref, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("invalid reference %q: %w", ref, err)
 	}
-	authOptn := ocisif.AuthOptn(ociAuth)
+	authOptn := AuthOptn(ociAuth)
 	im, err := remote.Image(ir, authOptn)
 	if err != nil {
 		return nil, err

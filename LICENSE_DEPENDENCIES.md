@@ -17,17 +17,17 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/Netflix/go-expect/blob/master/LICENSE>
 
-## github.com/containerd/containerd
+## github.com/containerd/containerd/pkg/userns
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/containerd/containerd/blob/master/LICENSE>
+**License URL:** <https://github.com/containerd/containerd/blob/master/pkg/userns/LICENSE>
 
-## github.com/containerd/log
+## github.com/containerd/stargz-snapshotter/estargz
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/containerd/log/blob/master/LICENSE>
+**License URL:** <https://github.com/containerd/stargz-snapshotter/blob/master/estargz/LICENSE>
 
 ## github.com/containernetworking/cni
 
@@ -137,18 +137,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/go-jose/go-jose/blob/master/v3/LICENSE>
 
-## github.com/go-logr/logr
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/go-logr/logr/blob/master/LICENSE>
-
-## github.com/go-logr/stdr
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/go-logr/stdr/blob/master/LICENSE>
-
 ## github.com/go-openapi/analysis
 
 **License:** Apache-2.0
@@ -209,11 +197,11 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/go-openapi/validate/blob/master/LICENSE>
 
-## github.com/google/go-containerregistry/pkg
+## github.com/google/go-containerregistry
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/google/go-containerregistry/blob/master/pkg/LICENSE>
+**License URL:** <https://github.com/google/go-containerregistry/blob/master/LICENSE>
 
 ## github.com/gosimple/unidecode
 
@@ -250,12 +238,6 @@ The dependencies and their licenses are as follows:
 **License:** Apache-2.0
 
 **License URL:** <https://github.com/moby/sys/blob/master/sequential/LICENSE>
-
-## github.com/moby/term
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/moby/term/blob/master/LICENSE>
 
 ## github.com/modern-go/concurrent
 
@@ -406,30 +388,6 @@ The dependencies and their licenses are as follows:
 **License:** Apache-2.0
 
 **Project URL:** <https://go.mongodb.org/mongo-driver>
-
-## go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
-
-**License:** Apache-2.0
-
-**Project URL:** <https://go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp>
-
-## go.opentelemetry.io/otel
-
-**License:** Apache-2.0
-
-**Project URL:** <https://go.opentelemetry.io/otel>
-
-## go.opentelemetry.io/otel/metric
-
-**License:** Apache-2.0
-
-**Project URL:** <https://go.opentelemetry.io/otel/metric>
-
-## go.opentelemetry.io/otel/trace
-
-**License:** Apache-2.0
-
-**Project URL:** <https://go.opentelemetry.io/otel/trace>
 
 ## google.golang.org/genproto/googleapis/rpc/status
 
@@ -856,6 +814,12 @@ The dependencies and their licenses are as follows:
 **License:** MIT
 
 **License URL:** <https://github.com/mattn/go-sqlite3/blob/master/LICENSE>
+
+## github.com/mitchellh/go-homedir
+
+**License:** MIT
+
+**License URL:** <https://github.com/mitchellh/go-homedir/blob/master/LICENSE>
 
 ## github.com/mitchellh/mapstructure
 

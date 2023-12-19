@@ -1,4 +1,9 @@
-// Copyright (c) 2023 Sylabs Inc. All rights reserved.
+// Copyright (c) Contributors to the Apptainer project, established as
+//   Apptainer a Series of LF Projects LLC.
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
+// Copyright (c) 2020, Control Command Inc. All rights reserved.
+// Copyright (c) 2020-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -21,35 +26,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ocisif
+package oras
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"sync"
 
+	"github.com/apptainer/apptainer/pkg/syfs"
+	"github.com/apptainer/apptainer/pkg/sylog"
 	ocitypes "github.com/containers/image/v5/types"
 	"github.com/docker/cli/cli/config"
 	"github.com/docker/cli/cli/config/types"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/sylabs/singularity/pkg/syfs"
-	"github.com/sylabs/singularity/pkg/sylog"
 )
 
-type singularityKeychain struct {
+type apptainerKeychain struct {
 	mu sync.Mutex
 }
 
 // Resolve implements Keychain.
-func (sk *singularityKeychain) Resolve(target authn.Resource) (authn.Authenticator, error) {
+func (sk *apptainerKeychain) Resolve(target authn.Resource) (authn.Authenticator, error) {
 	sk.mu.Lock()
 	defer sk.mu.Unlock()
 
 	authFile := syfs.DockerConf()
 	f, err := os.Open(authFile)
 	if os.IsNotExist(err) {
-		sylog.Debugf("Auth file %q does not exist, using anonymous auth.", authFile)
+		fallbackPath := syfs.FallbackDockerConf()
+		sylog.Debugf("Auth file %q does not exist, fallback to %s", authFile, fallbackPath)
+		f, err = os.Open(fallbackPath)
+		if os.IsNotExist(err) {
+			sylog.Debugf("Auth file %q does not exist, using anonymouse auth", authFile)
+			return authn.Anonymous, nil
+		}
+	}
+	if errors.Is(err, fs.ErrPermission) {
+		sylog.Warningf("Reading auth file %q has error: %s", authFile, fs.ErrPermission.Error())
 		return authn.Anonymous, nil
 	}
 	if err != nil {
@@ -100,8 +116,8 @@ func (sk *singularityKeychain) Resolve(target authn.Resource) (authn.Authenticat
 }
 
 func AuthOptn(ociAuth *ocitypes.DockerAuthConfig) remote.Option {
-	// By default we use auth from ~/.singularity/docker-config.json
-	authOptn := remote.WithAuthFromKeychain(&singularityKeychain{})
+	// By default we use auth from ~/.apptainer/docker-config.json
+	authOptn := remote.WithAuthFromKeychain(&apptainerKeychain{})
 
 	// If explicit credentials in ociAuth were passed in, use those instead.
 	if ociAuth != nil {

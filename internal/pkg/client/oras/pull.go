@@ -22,7 +22,7 @@ import (
 
 // pull will pull an oras image into the cache if directTo="", or a specific file if directTo is set.
 func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (imagePath string, err error) {
-	hash, err := RefHash(ctx, pullFrom, ociAuth)
+	hash, err := RefHash(ctx, pullFrom, ociAuth, noHTTPS)
 	if err != nil {
 		return "", fmt.Errorf("failed to get checksum for %s: %s", pullFrom, err)
 	}
