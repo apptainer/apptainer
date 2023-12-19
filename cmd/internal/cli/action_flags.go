@@ -90,6 +90,8 @@ var (
 	ignoreUserns      bool
 
 	underlay bool // whether using underlay instead of overlay
+
+	shareNS bool // mode for launching container using shared namespace
 )
 
 // --app
@@ -816,6 +818,17 @@ var actionUnderlayFlag = cmdline.Flag{
 	Hidden:       false,
 }
 
+// --sharens
+var actionShareNSFlag = cmdline.Flag{
+	ID:           "shareNSFlag",
+	Value:        &shareNS,
+	DefaultValue: false,
+	Name:         "sharens",
+	Usage:        "share the namespace and image with other containers launched from the same parent process",
+	EnvKeys:      []string{"SHARENS"},
+	Hidden:       false,
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(ExecCmd)
@@ -908,5 +921,6 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&actionIgnoreFakerootCommand, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionIgnoreUsernsFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionUnderlayFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionShareNSFlag, actionsCmd...)
 	})
 }

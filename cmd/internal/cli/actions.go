@@ -13,9 +13,11 @@ package cli
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"runtime"
 	"strings"
+	"syscall"
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
@@ -24,15 +26,19 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/client/oci"
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/client/shub"
+	"github.com/apptainer/apptainer/internal/pkg/instance"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/launch"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/fs/lock"
 	"github.com/spf13/cobra"
+	"golang.org/x/sys/unix"
 )
 
 const (
-	defaultPath = "/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
+	defaultPath           = "/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
+	shareNSInstancePrefix = "sharens_instance"
 )
 
 func getCacheHandle(cfg cache.Config) *cache.Handle {
@@ -175,8 +181,14 @@ var ExecCmd = &cobra.Command{
 	PreRun:                actionPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
 		a := append([]string{"/.singularity.d/actions/exec"}, args[1:]...)
-		if err := launchContainer(cmd, args[0], a, ""); err != nil {
-			sylog.Fatalf("%s", err)
+		if shareNS {
+			if err := shareNSLaunch(cmd, args[0], a); err != nil {
+				sylog.Fatalf("%s", err)
+			}
+		} else {
+			if err := launchContainer(cmd, args[0], a, "", -1); err != nil {
+				sylog.Fatalf("%s", err)
+			}
 		}
 	},
 
@@ -198,8 +210,14 @@ var ShellCmd = &cobra.Command{
 		}
 
 		a := []string{"/.singularity.d/actions/shell"}
-		if err := launchContainer(cmd, args[0], a, ""); err != nil {
-			sylog.Fatalf("%s", err)
+		if shareNS {
+			if err := shareNSLaunch(cmd, args[0], a); err != nil {
+				sylog.Fatalf("%s", err)
+			}
+		} else {
+			if err := launchContainer(cmd, args[0], a, "", -1); err != nil {
+				sylog.Fatalf("%s", err)
+			}
 		}
 	},
 
@@ -217,8 +235,14 @@ var RunCmd = &cobra.Command{
 	PreRun:                actionPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
 		a := append([]string{"/.singularity.d/actions/run"}, args[1:]...)
-		if err := launchContainer(cmd, args[0], a, ""); err != nil {
-			sylog.Fatalf("%s", err)
+		if shareNS {
+			if err := shareNSLaunch(cmd, args[0], a); err != nil {
+				sylog.Fatalf("%s", err)
+			}
+		} else {
+			if err := launchContainer(cmd, args[0], a, "", -1); err != nil {
+				sylog.Fatalf("%s", err)
+			}
 		}
 	},
 
@@ -236,8 +260,14 @@ var TestCmd = &cobra.Command{
 	PreRun:                actionPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
 		a := append([]string{"/.singularity.d/actions/test"}, args[1:]...)
-		if err := launchContainer(cmd, args[0], a, ""); err != nil {
-			sylog.Fatalf("%s", err)
+		if shareNS {
+			if err := shareNSLaunch(cmd, args[0], a); err != nil {
+				sylog.Fatalf("%s", err)
+			}
+		} else {
+			if err := launchContainer(cmd, args[0], a, "", -1); err != nil {
+				sylog.Fatalf("%s", err)
+			}
 		}
 	},
 
@@ -247,7 +277,7 @@ var TestCmd = &cobra.Command{
 	Example: docs.RunTestExample,
 }
 
-func launchContainer(cmd *cobra.Command, image string, args []string, instanceName string) error {
+func launchContainer(cmd *cobra.Command, image string, args []string, instanceName string, fd int) error {
 	ns := launch.Namespaces{
 		User:  userNamespace,
 		UTS:   utsNamespace,
@@ -322,6 +352,8 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 		launch.OptUseBuildConfig(useBuildConfig),
 		launch.OptTmpDir(tmpDir),
 		launch.OptUnderlay(underlay),
+		launch.OptShareNSMode(shareNS),
+		launch.OptShareNSFd(fd),
 	}
 
 	l, err := launch.NewLauncher(opts...)
@@ -330,4 +362,67 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 	}
 
 	return l.Exec(cmd.Context(), image, args, instanceName)
+}
+
+func shareNSLaunch(cmd *cobra.Command, image string, args []string) error {
+	ppid := os.Getppid()
+	lockFile := fmt.Sprintf("%s/%s_%d", "/dev/shm", shareNSInstancePrefix, ppid)
+	instanceName := fmt.Sprintf("%s_%d", shareNSInstancePrefix, ppid)
+
+	var fd int
+	var err error
+	existingInstanceLock := false
+	fd, err = unix.Open(lockFile, unix.O_CREAT|unix.O_RDWR|unix.O_EXCL, 0o700)
+	if err != nil {
+		existingInstanceLock = err == syscall.EEXIST
+		if !existingInstanceLock {
+			return err
+		}
+
+		fd, err = unix.Open(lockFile, unix.O_RDWR, 0o700)
+		if err != nil {
+			return err
+		}
+	}
+
+	br := lock.NewByteRange(fd, 0, 0)
+	err = br.Lock()
+	if err != nil && err != lock.ErrByteRangeAcquired {
+		return err
+	}
+
+	firstProcess := err == nil
+
+	// check existingInstanceLock, if true and we can acquire a lock
+	// it means the instance has been created and we are not the first
+	// process
+	if firstProcess && existingInstanceLock {
+		// read the content of the lock file (count up to 1 byte)
+		buf := make([]byte, 1)
+		n, err := unix.Pread(fd, buf, io.SeekStart)
+		if err != nil {
+			return err
+		}
+		// if there is no content, meaning that previous startup fails
+		// because the successful first process will always write 1 byte into this lock file
+		firstProcess = n == 0
+	}
+
+	if firstProcess {
+		if err := launchContainer(cmd, image, args, instanceName, fd); err != nil {
+			return err
+		}
+	} else {
+		// other process, this will block the process
+		if err := br.RLockw(); err != nil {
+			return err
+		} else if _, err := instance.Get(instanceName, instance.AppSubDir); err != nil {
+			return fmt.Errorf("first process with --sharens has already exited, could not execute process (pid %d)", os.Getpid())
+		}
+		if err := launchContainer(cmd, fmt.Sprintf("instance://%s", instanceName), args, "", -1); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

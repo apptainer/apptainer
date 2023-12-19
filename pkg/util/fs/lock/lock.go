@@ -31,6 +31,23 @@ func Exclusive(path string) (fd int, err error) {
 	return fd, nil
 }
 
+// TryExclusive applies an exclusive non-blocking lock on path
+func TryExclusive(path string) (fd int, accquired bool, err error) {
+	fd, err = unix.Open(path, os.O_RDONLY, 0)
+	if err != nil {
+		return fd, false, err
+	}
+	err = unix.Flock(fd, unix.LOCK_EX|unix.LOCK_NB)
+	if err != nil {
+		unix.Close(fd)
+		if errors.Is(err, unix.EAGAIN) || errors.Is(err, unix.EWOULDBLOCK) {
+			return fd, false, nil
+		}
+		return fd, false, err
+	}
+	return fd, true, nil
+}
+
 // Release removes a lock on path referenced by fd
 func Release(fd int) error {
 	defer unix.Close(fd)
@@ -58,7 +75,7 @@ func NewByteRange(fd int, start, len int64) *ByteRange {
 }
 
 // flock places a byte-range lock.
-func (r *ByteRange) flock(lockType int16) error {
+func (r *ByteRange) flock(lockType int16, cmd int) error {
 	lk := &unix.Flock_t{
 		Type:   lockType,
 		Whence: io.SeekStart,
@@ -66,7 +83,7 @@ func (r *ByteRange) flock(lockType int16) error {
 		Len:    r.len,
 	}
 
-	err := unix.FcntlFlock(uintptr(r.fd), setLk, lk)
+	err := unix.FcntlFlock(uintptr(r.fd), cmd, lk)
 	if err == unix.EAGAIN || err == unix.EACCES {
 		return ErrByteRangeAcquired
 	} else if err == unix.ENOLCK {
@@ -78,15 +95,25 @@ func (r *ByteRange) flock(lockType int16) error {
 
 // Lock places a write lock for the corresponding byte-range.
 func (r *ByteRange) Lock() error {
-	return r.flock(unix.F_WRLCK)
+	return r.flock(unix.F_WRLCK, setLk)
+}
+
+// Lock places a write lock and waits for the corresponding byte-range.
+func (r *ByteRange) Lockw() error {
+	return r.flock(unix.F_WRLCK, setLkw)
 }
 
 // RLock places a read lock for the corresponding byte-range.
 func (r *ByteRange) RLock() error {
-	return r.flock(unix.F_RDLCK)
+	return r.flock(unix.F_RDLCK, setLk)
+}
+
+// RLock places a read lock and waits for the corresponding byte-range.
+func (r *ByteRange) RLockw() error {
+	return r.flock(unix.F_RDLCK, setLkw)
 }
 
 // Unlock removes the lock for the corresponding byte-range.
 func (r *ByteRange) Unlock() error {
-	return r.flock(unix.F_UNLCK)
+	return r.flock(unix.F_UNLCK, setLk)
 }

@@ -153,6 +153,8 @@ type JSONConfig struct {
 	Underlay              bool              `json:"underlay,omitempty"`
 	UserInfo              UserInfo          `json:"userInfo,omitempty"`
 	WritableOverlay       bool              `json:"writableOverlay,omitempty"`
+	ShareNSMode           bool              `json:"sharensMode,omitempty"`
+	ShareNSFd             int               `json:"sharensFd,omitempty"`
 }
 
 // SetImage sets the container image path to be used by EngineConfig.JSON.
@@ -941,4 +943,24 @@ func (e *EngineConfig) SetWritableOverlay(writableOverlay bool) {
 // GetWritableOverlay gets the value of whether the overlay is writable or not
 func (e *EngineConfig) GetWritableOverlay() bool {
 	return e.JSON.WritableOverlay
+}
+
+// SetShareNSMode sets whether container should run in shared namespace mode
+func (e *EngineConfig) SetShareNSMode(mode bool) {
+	e.JSON.ShareNSMode = mode
+}
+
+// GetShareNSMode gets the value of previous SetShareNSMode
+func (e *EngineConfig) GetShareNSMode() bool {
+	return e.JSON.ShareNSMode
+}
+
+// SetShareNSFd sets the locked fd
+func (e *EngineConfig) SetShareNSFd(fd int) {
+	e.JSON.ShareNSFd = fd
+}
+
+// GetShareNSFd gets the locked fd
+func (e *EngineConfig) GetShareNSFd() int {
+	return e.JSON.ShareNSFd
 }

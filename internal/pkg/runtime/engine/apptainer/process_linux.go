@@ -45,6 +45,7 @@ import (
 	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
 	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/fs/lock"
 	"github.com/apptainer/apptainer/pkg/util/rlimit"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"golang.org/x/sys/unix"
@@ -63,6 +64,17 @@ const defaultShell = "/bin/sh"
 //
 //nolint:maintidx
 func (e *EngineOperations) StartProcess(masterConnFd int) error {
+	isInstance := e.EngineConfig.GetInstance() && !e.EngineConfig.GetShareNSMode()
+	bootInstance := isInstance && e.EngineConfig.GetBootInstance()
+	shimProcess := false
+
+	// close the opened fd inside container, preventing leak
+	if fd := e.EngineConfig.GetShareNSFd(); fd != -1 && e.EngineConfig.GetShareNSMode() {
+		shimProcess = true
+		sylog.Debugf("Close --sharens fd lock, fd: %d", fd)
+		_ = unix.Close(fd)
+	}
+
 	// Manage all signals.
 	// Queue them until they're ready to be handled below.
 	// Use a channel size of two here, since we may receive SIGURG, which is
@@ -73,10 +85,6 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 	if err := e.runFuseDrivers(true, -1); err != nil {
 		return err
 	}
-
-	isInstance := e.EngineConfig.GetInstance()
-	bootInstance := isInstance && e.EngineConfig.GetBootInstance()
-	shimProcess := false
 
 	_, customCwd := e.EngineConfig.OciConfig.Annotations["CustomCwd"]
 
@@ -280,7 +288,7 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 				// permissions to send signals to its childs and EINVAL would
 				// mean to update the Go runtime or the kernel to something more
 				// stable :)
-				if isInstance && cmdPid > 0 {
+				if (isInstance || e.EngineConfig.GetShareNSMode()) && cmdPid > 0 {
 					if err := syscall.Kill(-cmdPid, signal); err == syscall.ESRCH {
 						sylog.Debugf("No child process, exiting ...")
 						os.Exit(128 + int(signal))
@@ -360,6 +368,9 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 			return err
 		}
 
+		// add sharens flag
+		file.ShareNSMode = e.EngineConfig.GetShareNSMode()
+
 		pw, err := user.CurrentOriginal()
 		if err != nil {
 			return err
@@ -427,16 +438,35 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 
 		err = file.Update()
 
-		// send SIGUSR1 to the parent process in order to tell it
-		// to detach container process and run as instance.
-		// Sleep a bit in case child would exit
-		time.Sleep(100 * time.Millisecond)
-		if err := syscall.Kill(os.Getppid(), syscall.SIGUSR1); err != nil {
+		if err != nil {
 			return err
 		}
 
-		return err
+		if !e.EngineConfig.GetShareNSMode() {
+			// send SIGUSR1 to the parent process in order to tell it
+			// to detach container process and run as instance.
+			// Sleep a bit in case child would exit
+			time.Sleep(100 * time.Millisecond)
+			if err := syscall.Kill(os.Getppid(), syscall.SIGUSR1); err != nil {
+				return err
+			}
+		} else if fd := e.EngineConfig.GetShareNSFd(); fd != -1 {
+			// here first process in the --sharens mode starts properly
+			// as there are chances that the lock file will not be removed properly
+			// and it'll be difficult to distinguish the successful startup and false one
+			// here we will write one byte data into the lock file to indicate that first process
+			// starts correctly.
+			if _, err := unix.Pwrite(fd, []byte{1}, io.SeekStart); err != nil {
+				return err
+			}
+
+			br := lock.NewByteRange(fd, 0, 0)
+			if err := br.Unlock(); err != nil {
+				return err
+			}
+		}
 	}
+
 	return nil
 }
 

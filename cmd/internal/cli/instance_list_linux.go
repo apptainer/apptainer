@@ -24,6 +24,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&instanceListUserFlag, instanceListCmd)
 		cmdManager.RegisterFlagForCmd(&instanceListJSONFlag, instanceListCmd)
 		cmdManager.RegisterFlagForCmd(&instanceListLogsFlag, instanceListCmd)
+		cmdManager.RegisterFlagForCmd(&instanceListAllFlag, instanceListCmd)
 	})
 }
 
@@ -67,6 +68,19 @@ var instanceListLogsFlag = cmdline.Flag{
 	EnvKeys:      []string{"LOGS"},
 }
 
+// -a|--all
+var instanceListAll bool
+
+var instanceListAllFlag = cmdline.Flag{
+	ID:           "instanceListAllFlag",
+	Value:        &instanceListAll,
+	DefaultValue: false,
+	Name:         "all",
+	ShortHand:    "a",
+	Usage:        "display all instances (include --sharens instances)",
+	EnvKeys:      []string{"ALL"},
+}
+
 // apptainer instance list
 var instanceListCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
@@ -81,7 +95,7 @@ var instanceListCmd = &cobra.Command{
 			sylog.Fatalf("Only root user can list user's instances")
 		}
 
-		err := apptainer.PrintInstanceList(os.Stdout, name, instanceListUser, instanceListJSON, instanceListLogs)
+		err := apptainer.PrintInstanceList(os.Stdout, name, instanceListUser, instanceListJSON, instanceListLogs, instanceListAll)
 		if err != nil {
 			sylog.Fatalf("Could not list instances: %v", err)
 		}

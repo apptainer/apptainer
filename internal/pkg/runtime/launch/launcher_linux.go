@@ -335,7 +335,13 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	// Setup instance specific configuration if required.
 	if instanceName != "" {
 		l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "INSTANCE", instanceName)
-		l.cfg.Namespaces.PID = true
+		// instance are always using PID namespace by default
+		pidNamespace := true
+		if l.cfg.ShareNSMode && !l.cfg.Namespaces.PID {
+			// sharens disable PID namespace by default
+			pidNamespace = false
+		}
+		l.cfg.Namespaces.PID = pidNamespace
 		l.engineConfig.SetInstance(true)
 		l.engineConfig.SetBootInstance(l.cfg.Boot)
 
@@ -359,6 +365,10 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 			}
 			l.generator.SetProcessArgs([]string{"/sbin/init"})
 		}
+
+		// Set sharens mode
+		l.engineConfig.SetShareNSMode(l.cfg.ShareNSMode)
+		l.engineConfig.SetShareNSFd(l.cfg.ShareNSFd)
 	}
 
 	// Set the required namespaces in the engine config.
@@ -371,6 +381,10 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	l.setProcessCwd()
 
 	l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "APPNAME", l.cfg.AppName)
+	// set an additional environment APPTAINER_SHARENS_MASTER = 1 inside container
+	if fd := l.engineConfig.GetShareNSFd(); fd != -1 && l.engineConfig.GetShareNSMode() {
+		l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "SHARENS_MASTER", "1")
+	}
 
 	// Get image ready to run, if needed, via FUSE mount / extraction / image driver handling.
 	if err := l.prepareImage(ctx, insideUserNs, image); err != nil {
@@ -398,7 +412,7 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	runPluginCallbacks(cfg)
 
 	// Call the starter binary using our prepared config.
-	if l.engineConfig.GetInstance() {
+	if l.engineConfig.GetInstance() && !l.cfg.ShareNSMode {
 		err = l.starterInstance(loadOverlay, insideUserNs, instanceName, useSuid, cfg)
 	} else {
 		err = l.starterInteractive(loadOverlay, useSuid, cfg)
@@ -1176,12 +1190,13 @@ func (l *Launcher) starterInstance(loadOverlay bool, insideUserNs bool, name str
 		return err
 	}
 
+	var start int64
+
 	stdout, stderr, err := instance.SetLogFile(name, l.cfg.Namespaces.User || insideUserNs, int(l.uid), instance.LogSubDir)
 	if err != nil {
 		return fmt.Errorf("failed to create instance log files: %w", err)
 	}
-
-	start, err := stderr.Seek(0, io.SeekEnd)
+	start, err = stderr.Seek(0, io.SeekEnd)
 	if err != nil {
 		sylog.Warningf("failed to get standard error stream offset: %s", err)
 	}
