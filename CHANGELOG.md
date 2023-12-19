@@ -51,6 +51,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   beginning with a hash symbol.
 - Improved the clarity of `apptainer key list` output.
 - The global /tmp directory is no longer used for gocryptfs mountpoints.  
+- Updated minimum go version to 1.20
 
 ### New Features & Functionality
 
