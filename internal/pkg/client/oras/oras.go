@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2020-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2020-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -14,182 +14,109 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 
+	"github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/pkg/image"
-	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/containerd/containerd/images"
-	"github.com/containerd/containerd/reference"
-	"github.com/containerd/containerd/remotes"
-	"github.com/containerd/containerd/remotes/docker"
-	"github.com/containers/image/v5/manifest"
+	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	ocitypes "github.com/containers/image/v5/types"
-	"github.com/opencontainers/go-digest"
-	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
-	oras_docker "oras.land/oras-go/pkg/auth/docker"
-	"oras.land/oras-go/pkg/content"
-	orasctx "oras.land/oras-go/pkg/context"
-	"oras.land/oras-go/pkg/oras"
-	orasAuth "oras.land/oras-go/pkg/registry/remote/auth"
+	"github.com/google/go-containerregistry/pkg/name"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/empty"
+	"github.com/google/go-containerregistry/pkg/v1/layout"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
 )
-
-const (
-	// SifDefaultTag is the tag to use when a tag is not specified
-	SifDefaultTag = "latest"
-
-	// SifConfigMediaTypeV1 is the config descriptor mediaType
-	// Since we only ever send a null config this should not have the
-	// format extension appended:
-	//   https://github.com/deislabs/oras/#pushing-artifacts-with-single-files
-	//   If a null config is passed, the config extension must be removed.
-	SifConfigMediaTypeV1 = "application/vnd.sylabs.sif.config.v1"
-
-	// SifLayerMediaTypeV1 is the mediaType for the "layer" which contains the actual SIF file
-	SifLayerMediaTypeV1 = "application/vnd.sylabs.sif.layer.v1.sif"
-
-	// SifLayerMediaTypeProto is the mediaType from prototyping and Apptainer
-	// <3.7 which unfortunately includes a typo and doesn't have a version suffix
-	// See: https://github.com/apptainer/singularity/issues/4437
-	SifLayerMediaTypeProto = "appliciation/vnd.sylabs.sif.layer.tar"
-)
-
-var sifLayerMediaTypes = []string{SifLayerMediaTypeV1, SifLayerMediaTypeProto}
-
-type orasUploadTransport struct {
-	rt http.RoundTripper
-}
-
-func (t *orasUploadTransport) RoundTrip(r *http.Request) (*http.Response, error) {
-	values := r.URL.Query()
-	// service is a required parameter
-	if values.Has("service") {
-		// inspect scopes and merge them if possible
-		if scopes, ok := values["scope"]; ok && len(scopes) > 1 {
-			values["scope"] = orasAuth.CleanScopes(scopes)
-			r.URL.RawQuery = values.Encode()
-		}
-	}
-	return t.rt.RoundTrip(r)
-}
-
-func newOrasUploadTransport() http.RoundTripper {
-	return &orasUploadTransport{
-		rt: http.DefaultTransport,
-	}
-}
-
-func getResolver(ctx context.Context, ociAuth *ocitypes.DockerAuthConfig, noHTTPS, push, progressBar bool) (remotes.Resolver, error) {
-	opts := docker.ResolverOptions{Credentials: genCredfn(ociAuth), PlainHTTP: noHTTPS}
-	if ociAuth != nil && (ociAuth.Username != "" || ociAuth.Password != "") {
-		return docker.NewResolver(opts), nil
-	}
-
-	cli, err := oras_docker.NewClientWithDockerFallback(syfs.DockerConf())
-	if err != nil {
-		sylog.Warningf("Couldn't load auth credential file: %s", err)
-		return docker.NewResolver(opts), nil
-	}
-
-	httpClient := &http.Client{}
-
-	// docker client doesn't merge scopes correctly and can set multiple scopes in url parameters when pushing image:
-	// "scope=repository:my_namespace/alpine:pull&scope=repository:my_namespace:alpine:pull,push",
-	// this could be merged to "scope=repository:my_namespace:alpine:pull,push".
-	// Since there are authorization servers that might not support multiple scopes, a custom transport is injected
-	// to merge duplicated scopes
-	if push {
-		httpClient.Transport = newOrasUploadTransport()
-	}
-
-	solver, err := cli.Resolver(ctx, httpClient, noHTTPS)
-	if err != nil {
-		return solver, err
-	}
-
-	if progressBar {
-		return &resolver{solver}, nil
-	}
-
-	return solver, nil
-}
 
 // DownloadImage downloads a SIF image specified by an oci reference to a file using the included credentials
-func DownloadImage(ctx context.Context, imagePath, ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) error {
-	ref = strings.TrimPrefix(ref, "oras://")
-	ref = strings.TrimPrefix(ref, "//")
-
-	spec, err := reference.Parse(ref)
+func DownloadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) error {
+	im, err := remoteImage(ref, ociAuth, noHTTPS)
 	if err != nil {
-		return fmt.Errorf("unable to parse oci reference: %s", err)
-	}
-
-	// append default tag if no object exists
-	if spec.Object == "" {
-		spec.Object = SifDefaultTag
-		sylog.Infof("No tag or digest found, using default: %s", SifDefaultTag)
-	}
-
-	resolver, err := getResolver(ctx, ociAuth, noHTTPS, false, true)
-	if err != nil {
-		return fmt.Errorf("while getting resolver: %s", err)
-	}
-
-	wd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("failed to get working directory: %s", err)
-	}
-
-	store := content.NewFile(wd)
-	defer store.Close()
-
-	store.AllowPathTraversalOnWrite = true
-	// With image caching via download to tmpfile + rename we are now overwriting the temporary file that is created
-	// so we have to allow an overwrite here.
-	store.DisableOverwrite = false
-
-	allowedMediaTypes := oras.WithAllowedMediaTypes(sifLayerMediaTypes)
-	handlerFunc := func(ctx context.Context, desc ocispec.Descriptor) ([]ocispec.Descriptor, error) {
-		for _, mt := range sifLayerMediaTypes {
-			if desc.MediaType == mt {
-				// Ensure descriptor is of a single file
-				// AnnotationUnpack indicates that the descriptor is of a directory
-				if desc.Annotations[content.AnnotationUnpack] == "true" {
-					return nil, fmt.Errorf("descriptor is of a bundled directory, not a SIF image")
-				}
-				nameOld, _ := content.ResolveName(desc)
-				sylog.Debugf("Will pull oras image %s to %s", nameOld, imagePath)
-				_ = store.MapPath(nameOld, imagePath)
-			}
-		}
-		return nil, nil
-	}
-	pullHandler := oras.WithPullBaseHandler(images.HandlerFunc(handlerFunc))
-
-	_, err = oras.Copy(orasctx.WithLoggerDiscarded(ctx), resolver, spec.String(), store, "", allowedMediaTypes, pullHandler)
-	if err != nil {
-		return fmt.Errorf("unable to pull from registry: %s", err)
-	}
-
-	// ensure that we have downloaded a SIF
-	if err := ensureSIF(imagePath); err != nil {
-		// remove whatever we downloaded if it is not a SIF
-		os.RemoveAll(imagePath)
 		return err
 	}
 
-	// ensure container is executable
-	if err := os.Chmod(imagePath, 0o755); err != nil {
-		return fmt.Errorf("unable to set image perms: %s", err)
+	// Check manifest to ensure we have a SIF as single layer
+	//
+	// We *don't* check the image config mediaType as prior versions of
+	// Apptainer have not been consistent in setting this, and really all we
+	// care about is that we are pulling a single SIF file.
+	//
+	manifest, err := im.Manifest()
+	if err != nil {
+		return err
+	}
+	if len(manifest.Layers) != 1 {
+		return fmt.Errorf("ORAS SIF image should have a single layer, found %d", len(manifest.Layers))
+	}
+	layer := manifest.Layers[0]
+	if layer.MediaType != SifLayerMediaTypeV1 &&
+		layer.MediaType != SifLayerMediaTypeProto {
+		return fmt.Errorf("invalid layer mediatype: %s", layer.MediaType)
 	}
 
+	// Retrieve image to a temporary OCI layout
+	tmpDir, err := os.MkdirTemp("", "oras-tmp-")
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			sylog.Errorf("while removing %q: %v", tmpDir, err)
+		}
+	}()
+	tmpLayout, err := layout.Write(tmpDir, empty.Index)
+	if err != nil {
+		return err
+	}
+	if err := tmpLayout.AppendImage(im); err != nil {
+		return err
+	}
+
+	// Copy SIF blob out from layout to final location
+	blob, err := tmpLayout.Blob(layer.Digest)
+	if err != nil {
+		return err
+	}
+	defer blob.Close()
+	outFile, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	// progressbar
+	in, out := io.Pipe()
+	mwriter := io.MultiWriter(outFile, out)
+	wpb := &writerWithProgressBar{
+		Writer:      mwriter,
+		ProgressBar: &client.DownloadProgressBar{},
+	}
+	wpb.Init(layer.Size)
+
+	go func() {
+		_, err := io.Copy(io.Discard, in)
+		if err != nil {
+			pb.Abort(true)
+			in.CloseWithError(err)
+		}
+		pb.Wait()
+		in.Close()
+	}()
+
+	_, err = io.Copy(wpb, blob)
+	if err != nil {
+		return err
+	}
+
+	// Ensure that we have downloaded a SIF
+	if err := ensureSIF(path); err != nil {
+		// remove whatever we downloaded if it is not a SIF
+		os.RemoveAll(path)
+		return err
+	}
 	return nil
 }
 
@@ -204,58 +131,25 @@ func UploadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.Docker
 	ref = strings.TrimPrefix(ref, "oras://")
 	ref = strings.TrimPrefix(ref, "//")
 
-	spec, err := reference.Parse(ref)
+	// Get reference to image in the remote
+	opts := []name.Option{name.WithDefaultTag(name.DefaultTag), name.WithDefaultRegistry(name.DefaultRegistry)}
+	if noHTTPS {
+		opts = append(opts, name.Insecure)
+	}
+	ir, err := name.ParseReference(ref, opts...)
 	if err != nil {
-		return fmt.Errorf("unable to parse oci reference: %w", err)
+		return err
 	}
 
-	// Hostname() will panic if there is no '/' in the locator
-	// explicitly check for this and fail in order to prevent panic
-	// this case will only occur for incorrect uris
-	if !strings.Contains(spec.Locator, "/") {
-		return fmt.Errorf("not a valid oci object uri: %s", ref)
-	}
-
-	// append default tag if no object exists
-	if spec.Object == "" {
-		spec.Object = SifDefaultTag
-		sylog.Infof("No tag or digest found, using default: %s", SifDefaultTag)
-	}
-
-	resolver, err := getResolver(ctx, ociAuth, noHTTPS, true, true)
+	im, err := NewImageFromSIF(path, SifLayerMediaTypeV1)
 	if err != nil {
-		return fmt.Errorf("while getting resolver: %s", err)
+		return err
 	}
 
-	store := content.NewFile("")
-	defer store.Close()
-
-	// Get the filename from path and use it as the name in the file store
-	name := filepath.Base(path)
-
-	desc, err := store.Add(name, SifLayerMediaTypeV1, path)
-	if err != nil {
-		return fmt.Errorf("unable to add SIF to store: %w", err)
-	}
-
-	manifest, manifestDesc, config, configDesc, err := content.GenerateManifestAndConfig(nil, nil, desc)
-	if err != nil {
-		return fmt.Errorf("unable to generate manifest and config: %w", err)
-	}
-
-	if err := store.Load(configDesc, config); err != nil {
-		return fmt.Errorf("unable to load config: %w", err)
-	}
-
-	if err := store.StoreManifest("local", manifestDesc, manifest); err != nil {
-		return fmt.Errorf("unable to store manifest: %w", err)
-	}
-
-	if _, err = oras.Copy(orasctx.WithLoggerDiscarded(ctx), store, "local", resolver, spec.String()); err != nil {
-		return fmt.Errorf("unable to push: %w", err)
-	}
-
-	return nil
+	authOptn := AuthOptn(ociAuth)
+	updates := make(chan v1.Update, 1)
+	go showProgressBar(updates)
+	return remote.Write(ir, im, authOptn, remote.WithUserAgent(useragent.Value()), remote.WithProgress(updates))
 }
 
 // ensureSIF checks for a SIF image at filepath and returns an error if it is not, or an error is encountered
@@ -273,82 +167,50 @@ func ensureSIF(filepath string) error {
 	return nil
 }
 
-// ImageSHA returns the sha256 digest of the SIF layer of the OCI manifest
-// oci spec dictates only sha256 and sha512 are supported at time creation for this function
-// sha512 is currently optional for implementations, this function will return an error when
-// encountering such digests.
-// https://github.com/opencontainers/image-spec/blob/master/descriptor.md#registered-algorithms
-func ImageSHA(ctx context.Context, uri string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (string, error) {
-	ref := strings.TrimPrefix(uri, "oras://")
-	ref = strings.TrimPrefix(ref, "//")
-
-	resolver, err := getResolver(ctx, ociAuth, noHTTPS, false, false)
+// RefHash returns the digest of the SIF layer of the OCI manifest for supplied ref
+func RefHash(ctx context.Context, ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (v1.Hash, error) {
+	im, err := remoteImage(ref, ociAuth, noHTTPS)
 	if err != nil {
-		return "", fmt.Errorf("while getting resolver: %s", err)
+		return v1.Hash{}, err
 	}
 
-	_, desc, err := resolver.Resolve(ctx, ref)
+	// Check manifest to ensure we have a SIF as single layer
+	manifest, err := im.Manifest()
 	if err != nil {
-		return "", fmt.Errorf("while resolving reference: %v", err)
+		return v1.Hash{}, err
+	}
+	if len(manifest.Layers) != 1 {
+		return v1.Hash{}, fmt.Errorf("ORAS SIF image should have a single layer, found %d", len(manifest.Layers))
+	}
+	layer := manifest.Layers[0]
+	if layer.MediaType != SifLayerMediaTypeV1 &&
+		layer.MediaType != SifLayerMediaTypeProto {
+		return v1.Hash{}, fmt.Errorf("invalid layer mediatype: %s", layer.MediaType)
 	}
 
-	// ensure that we received an image manifest descriptor
-	if desc.MediaType != ocispec.MediaTypeImageManifest {
-		if desc.MediaType == manifest.DockerV2Schema2MediaType {
-			return "", errors.New("unexpected docker media type received; try changing the protocol to docker://")
-		}
-		return "", fmt.Errorf("could not get image manifest, received mediaType: %s", desc.MediaType)
-	}
-
-	fetcher, err := resolver.Fetcher(ctx, ref)
-	if err != nil {
-		return "", fmt.Errorf("while creating fetcher for reference: %v", err)
-	}
-
-	rc, err := fetcher.Fetch(ctx, desc)
-	if err != nil {
-		return "", fmt.Errorf("while fetching manifest: %v", err)
-	}
-	defer rc.Close()
-
-	b, err := io.ReadAll(rc)
-	if err != nil {
-		return "", fmt.Errorf("while reading manifest: %v", err)
-	}
-
-	var man ocispec.Manifest
-	if err := json.Unmarshal(b, &man); err != nil {
-		return "", fmt.Errorf("while unmarshalling manifest: %v", err)
-	}
-
-	// search image layers for sif image and return sha
-	for _, l := range man.Layers {
-		for _, t := range sifLayerMediaTypes {
-			if l.MediaType == t {
-				// only allow sha256 digests
-				if l.Digest.Algorithm() != digest.SHA256 {
-					return "", fmt.Errorf("SIF layer found with incorrect digest algorithm: %s", l.Digest.Algorithm())
-				}
-				return l.Digest.String(), nil
-			}
-		}
-	}
-
-	return "", fmt.Errorf("no layer found corresponding to SIF image")
+	hash := layer.Digest
+	return hash, nil
 }
 
-// ImageHash returns the appropriate hash for a provided image file
-// e.g. sha256:<sha256>
-func ImageHash(filePath string) (result string, err error) {
+// ImageDigest returns the digest for a file
+func ImageHash(filePath string) (v1.Hash, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return "", err
+		return v1.Hash{}, err
 	}
 	defer file.Close()
 
-	result, _, err = sha256sum(file)
+	sha, _, err := sha256sum(file)
+	if err != nil {
+		return v1.Hash{}, err
+	}
 
-	return result, err
+	hash, err := v1.NewHash(sha)
+	if err != nil {
+		return v1.Hash{}, err
+	}
+
+	return hash, nil
 }
 
 // sha256sum computes the sha256sum of the specified reader; caller is
@@ -364,12 +226,24 @@ func sha256sum(r io.Reader) (result string, nBytes int64, err error) {
 	return "sha256:" + hex.EncodeToString(hash.Sum(nil)), nBytes, nil
 }
 
-func genCredfn(ociAuth *ocitypes.DockerAuthConfig) func(string) (string, string, error) {
-	return func(_ string) (string, string, error) {
-		if ociAuth != nil {
-			return ociAuth.Username, ociAuth.Password, nil
-		}
+// remoteImage returns a v1.Image for the provided remote ref.
+func remoteImage(ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (v1.Image, error) {
+	ref = strings.TrimPrefix(ref, "oras://")
+	ref = strings.TrimPrefix(ref, "//")
 
-		return "", "", nil
+	// Get reference to image in the remote
+	opts := []name.Option{name.WithDefaultTag(name.DefaultTag), name.WithDefaultRegistry(name.DefaultRegistry)}
+	if noHTTPS {
+		opts = append(opts, name.Insecure)
 	}
+	ir, err := name.ParseReference(ref, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("invalid reference %q: %w", ref, err)
+	}
+	authOptn := AuthOptn(ociAuth)
+	im, err := remote.Image(ir, authOptn)
+	if err != nil {
+		return nil, err
+	}
+	return im, nil
 }

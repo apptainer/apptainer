@@ -92,6 +92,10 @@ func DockerConf() string {
 	return filepath.Join(ConfigDir(), DockerConfFile)
 }
 
+func FallbackDockerConf() string {
+	return filepath.Join(configDir(".docker"), "config.json")
+}
+
 // ConfigDirForUsername returns the directory where the apptainer
 // configuration and data for the specified username is located.
 func ConfigDirForUsername(username string) (string, error) {

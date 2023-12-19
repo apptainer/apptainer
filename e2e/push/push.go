@@ -98,11 +98,12 @@ func (c ctx) testPushCmd(t *testing.T) {
 			dstURI:           fmt.Sprintf("oras://%s/directory:test", c.env.TestRegistry),
 			expectedExitCode: 255,
 		},
+		// this will succeed, because go-containerregistry will automatically switch to insecure mode if it's locallhost
 		{
 			desc:             "standard SIF push",
 			imagePath:        c.env.ImagePath,
 			dstURI:           fmt.Sprintf("oras://%s/standard_sif:test", c.env.InsecureRegistry),
-			expectedExitCode: 255,
+			expectedExitCode: 0,
 		},
 		{
 			desc:             "standard SIF push with --no-https/--nohttps",
