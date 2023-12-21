@@ -20,6 +20,20 @@ import (
 const (
 	invalidPemPath = "nothing"
 	testPassphrase = "test"
+	badPemData     = "bad data"
+	goodPemData    = `-----BEGIN RSA PUBLIC KEY-----
+MIICCgKCAgEAj29RUJcaXFzKKFhfzZpUTZLf5gc4G+hJbRgOxKiqxlbrTXS2sO73
+W38KBs5+ZAj4JUfrxNbUYU9ZVFs4ikHhCIIblMUl5JCGYF00F0nDHIuaRPv5ywI/
+Sf6A/+6JA2rDxzvp3C4g2ukPQCrCA+A8hCuM3Qbzv8TR4wGmt0k5SRqfIk2AWAaH
+5Dk2bbWzkcLvwRN97/JO5XLrXxiYB1dU7a6tkA+4PChxieJK2y0DxWvPrBsijqj7
+j2mogo5FKKqwZ91+2CtDhehDzrshcYdUkGDgjVYH4CNG1Wcw/o0jq3hyIIWteCXT
+AmgrGbOfLy+zZq+QkxjxjLFRFm/6L26OMbtb2mjdpU6KbCJJvMhmBW7TwkbKYVIe
+gEmb846oRchgG3H/uoR3tPyW6Q5I60S1+S3UQ9xTUNYeXgK9/PTH7w/hsSgqQRUP
+HYVU9MBHplHFs+rpLqVjkB90cVaIJ7yVoErJJt/GgHJs0wypopOJ9y1xoK1G/FEv
+m/lws02svkAKjIyQiCO3oyCXBa9C4EeATriKt0DvCBh2xM64drbMk5FqvEELKbno
+gK3HyFm6tn6tqO0GsLuFYDPPJ8s96OqoTDOXvCNZUQW93ljLOvf8hKQjiueL7nCN
+r3Oy11/EgEv3gdQeZ47PKgkevS5vqcT06KZKcIOsnz05ik9WPhZqTW8CAwEAAQ==
+-----END RSA PUBLIC KEY-----`
 )
 
 func TestNewPlaintextKey(t *testing.T) {
@@ -87,7 +101,19 @@ func TestEncryptKey(t *testing.T) {
 			name:          "invalid pem",
 			keyInfo:       KeyInfo{Format: PEM, Path: invalidPemPath},
 			plaintext:     []byte(""),
-			expectedError: errors.Wrap(fmt.Errorf("open nothing: no such file or directory"), "loading public key for key encryption"),
+			expectedError: errors.Wrap(fmt.Errorf("open nothing: no such file or directory"), "loading public key for key encryption: loading public key for key encryption"),
+		},
+		{
+			name:          "invalid pem data",
+			keyInfo:       KeyInfo{Format: ENV, Material: badPemData},
+			plaintext:     []byte(""),
+			expectedError: fmt.Errorf("loading public key for key encryption: loading public key for key encryption: could not read bad data: no PEM data"),
+		},
+		{
+			name:          "valid pem data",
+			keyInfo:       KeyInfo{Format: ENV, Material: goodPemData},
+			plaintext:     []byte(""),
+			expectedError: nil,
 		},
 	}
 
@@ -132,7 +158,7 @@ func TestPlaintextKey(t *testing.T) {
 		{
 			name:          "invalid pem",
 			keyInfo:       KeyInfo{Format: PEM, Path: invalidPemPath},
-			expectedError: fmt.Errorf("could not load PEM private key: open nothing: no such file or directory"),
+			expectedError: fmt.Errorf("could not load PEM private key: loading public key for key encryption: open nothing: no such file or directory"),
 		},
 	}
 

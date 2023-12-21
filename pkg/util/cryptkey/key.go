@@ -44,6 +44,8 @@ const (
 	Passphrase
 	// PEM indicates the key material is formatted as a PEM file.
 	PEM
+	// ENV indicates PEM content saved in an environment variable.
+	ENV
 	// hash size for encryption (Bytes)
 	Hash = 32
 )
@@ -84,8 +86,8 @@ func NewPlaintextKey(k KeyInfo) ([]byte, error) {
 
 func EncryptKey(k KeyInfo, plaintext []byte) ([]byte, error) {
 	switch k.Format {
-	case PEM:
-		pubKey, err := LoadPEMPublicKey(k.Path)
+	case PEM, ENV:
+		pubKey, err := LoadPEMPublicKey(k)
 		if err != nil {
 			return nil, fmt.Errorf("loading public key for key encryption: %v", err)
 		}
@@ -127,8 +129,8 @@ func EncryptKey(k KeyInfo, plaintext []byte) ([]byte, error) {
 
 func PlaintextKey(k KeyInfo, image string) ([]byte, error) {
 	switch k.Format {
-	case PEM:
-		privateKey, err := LoadPEMPrivateKey(k.Path)
+	case PEM, ENV:
+		privateKey, err := LoadPEMPrivateKey(k)
 		if err != nil {
 			return nil, fmt.Errorf("could not load PEM private key: %v", err)
 		}
@@ -175,7 +177,26 @@ func PlaintextKey(k KeyInfo, image string) ([]byte, error) {
 	}
 }
 
-func LoadPEMPrivateKey(fn string) (*rsa.PrivateKey, error) {
+func LoadPEMPrivateKey(k KeyInfo) (*rsa.PrivateKey, error) {
+	switch k.Format {
+	case PEM:
+		priKey, err := LoadPEMPrivateKeyFile(k.Path)
+		if err != nil {
+			return nil, fmt.Errorf("loading public key for key encryption: %v", err)
+		}
+		return priKey, err
+	case ENV:
+		priKey, err := LoadPEMPrivateKeyEnvVar(k.Material)
+		if err != nil {
+			return nil, fmt.Errorf("loading public key for key encryption: %v", err)
+		}
+		return priKey, err
+	default:
+		return nil, ErrUnsupportedKeyURI
+	}
+}
+
+func LoadPEMPrivateKeyFile(fn string) (*rsa.PrivateKey, error) {
 	b, err := os.ReadFile(fn)
 	if err != nil {
 		return nil, err
@@ -193,7 +214,44 @@ func LoadPEMPrivateKey(fn string) (*rsa.PrivateKey, error) {
 	return x509.ParsePKCS1PrivateKey(block.Bytes)
 }
 
-func LoadPEMPublicKey(fn string) (*rsa.PublicKey, error) {
+func LoadPEMPrivateKeyEnvVar(en string) (*rsa.PrivateKey, error) {
+	b := []byte(en)
+	if len(b) == 0 {
+		return nil, fmt.Errorf("data in private PEM env var is invalid")
+	}
+
+	block, _ := pem.Decode(b)
+	if block == nil {
+		return nil, fmt.Errorf("could not read %s: %v", en, ErrNoPEMData)
+	}
+
+	if strings.Contains(block.Headers["Proc-Type"], "ENCRYPTED") {
+		return nil, fmt.Errorf("passphrase protected pem files not supported")
+	}
+
+	return x509.ParsePKCS1PrivateKey(block.Bytes)
+}
+
+func LoadPEMPublicKey(k KeyInfo) (*rsa.PublicKey, error) {
+	switch k.Format {
+	case PEM:
+		pubKey, err := LoadPEMPublicKeyFile(k.Path)
+		if err != nil {
+			return nil, fmt.Errorf("loading public key for key encryption: %v", err)
+		}
+		return pubKey, err
+	case ENV:
+		pubKey, err := LoadPEMPublicKeyEnvVar(k.Material)
+		if err != nil {
+			return nil, fmt.Errorf("loading public key for key encryption: %v", err)
+		}
+		return pubKey, err
+	default:
+		return nil, ErrUnsupportedKeyURI
+	}
+}
+
+func LoadPEMPublicKeyFile(fn string) (*rsa.PublicKey, error) {
 	b, err := os.ReadFile(fn)
 	if err != nil {
 		return nil, err
@@ -202,6 +260,20 @@ func LoadPEMPublicKey(fn string) (*rsa.PublicKey, error) {
 	block, _ := pem.Decode(b)
 	if block == nil {
 		return nil, fmt.Errorf("could not read %s: %v", fn, ErrNoPEMData)
+	}
+
+	return x509.ParsePKCS1PublicKey(block.Bytes)
+}
+
+func LoadPEMPublicKeyEnvVar(en string) (*rsa.PublicKey, error) {
+	b := []byte(en)
+	if len(b) == 0 {
+		return nil, fmt.Errorf("data in public PEM env var is invalid")
+	}
+
+	block, _ := pem.Decode(b)
+	if block == nil {
+		return nil, fmt.Errorf("could not read %s: %v", en, ErrNoPEMData)
 	}
 
 	return x509.ParsePKCS1PublicKey(block.Bytes)

@@ -91,7 +91,7 @@ func (g *Gocryptfs) init(tmpDir string) (cryptInfo *cryptInfo, err error) {
 	}
 
 	switch g.keyInfo.Format {
-	case cryptkey.PEM:
+	case cryptkey.PEM, cryptkey.ENV:
 		hash := md5.Sum(buf)
 		cryptInfo.pass = hex.EncodeToString(hash[:])
 	case cryptkey.Passphrase:

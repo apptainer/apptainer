@@ -64,6 +64,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   inferred by `--containall` and `--compat`.
 - Added `--config` option to`keyserver` commands.
 - Honor an optional remoteName argument to the `keyserver list` command.
+- Added the `APPTAINER_ENCRYPTION_PEM_DATA` env var to allow for encrypting and
+  running encrypted containers without a PEM file.  
 - Adding `--sharens` mode for `apptainer exec/run/shell`, which enables to run multiple
   apptainer instances created by the same parent using the same image in the same
   user namespace.
