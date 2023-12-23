@@ -823,6 +823,7 @@ mount:
 		}
 	} else if err != nil {
 		if !bindMount && !remount {
+			xinolessOptsString := strings.Replace(optsString, ",xino=on", "", -1)
 			if mnt.Type == "devpts" {
 				sylog.Verbosef("Couldn't mount devpts filesystem, continuing with PTY allocation functionality disabled")
 				return nil
@@ -833,15 +834,14 @@ mount:
 				sylog.Verbosef("Overlay mount failed with %s, mounting with index=off", err)
 				optsString = fmt.Sprintf("%s,index=off", optsString)
 				goto mount
-			} else if mnt.Type == "overlay" && err == syscall.EINVAL {
-				sylog.Verbosef("Overlay mount failed with %s, mounting without xino option", err)
-				optsString = strings.Replace(optsString, ",xino=on", "", -1)
+			} else if mnt.Type == "overlay" && err == syscall.EINVAL && xinolessOptsString != optsString {
+				sylog.Verbosef("Overlay mount failed with %s, trying mount without xino option", err)
+				optsString = xinolessOptsString
 				goto mount
 			} else if mnt.Type == "overlay" && tag == mount.LayerTag {
 				if imageDriver != nil && imageDriver.Features()&image.OverlayFeature != 0 {
 
-					sylog.Debugf("kernel overlay mount failed, trying image driver: %v", err)
-					// Kernel overlay didn't work so try the image driver
+					sylog.Debugf("Kernel overlay mount failed, trying image driver: %v", err)
 					params := &image.MountParams{
 						Source:     source,
 						Target:     dest,
@@ -2484,8 +2484,8 @@ func (c *container) addIdentityMount(system *mount.System) error {
 
 	if (uid == 0) &&
 		(c.engine.EngineConfig.GetWritableImage() ||
-			c.engine.EngineConfig.GetWritableTmpfs()) ||
-		c.engine.EngineConfig.GetWritableOverlay() {
+			c.engine.EngineConfig.GetWritableTmpfs() ||
+			c.engine.EngineConfig.GetWritableOverlay()) {
 		sylog.Verbosef("skipping bind-mount of /etc/passwd and /etc/group (container is writable running as root)")
 		return nil
 	}

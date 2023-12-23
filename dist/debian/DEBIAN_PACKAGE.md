@@ -15,7 +15,9 @@ cp -r dist/debian .
 Next, make sure all the dependencies are met. See
 [INSTALL.md](../../INSTALL.md#install-system-dependencies)
 for the basic apt-get install list.
-Also install these additional dependencies for the packaging:
+Also install the extra required packages needed for
+[dependent FUSE-based packages](../../INSTALL.md#compiling-dependent-fuse-based-packages),
+and these additional dependencies for the packaging:
 
 ```sh
 sudo apt-get install \
@@ -25,13 +27,12 @@ sudo apt-get install \
     help2man \
     libarchive-dev \
     libssl-dev \
-    python2 \
     uuid-dev \
     golang-go
 ```
 
 If the golang-go version isn't at least the minimum shown in
-`scripts/get-min-go-version` (which is the case on Debian 11)
+`scripts/get-min-go-version` (which is the case on Debian 12)
 then download a copy of the corresponding go source tarball into the
 debian directory like this:
 
@@ -39,13 +40,6 @@ debian directory like this:
 TARBALL=go$(scripts/get-min-go-version).src.tar.gz
 wget -O debian/$TARBALL https://dl.google.com/go/$TARBALL
 ```
-
-Finally, install the additional dependencies in the section on the
-[improved performance squashfuse](../../INSTALL.md##installing-improved-performance-squashfuse_ll)
-and download the additional file listed there into the debian directory.
-Also install the additional file from the section on
-[installing gocryptfs)(../../INSTALL.md##installing-gocryptfs)
-into the debian directory.
 
 ## Configuration
 
@@ -115,6 +109,14 @@ and the domain-name.
 ```sh
 export DEB_FULLNAME="Your Name"
 export DEBEMAIL="you@example.org"
+```
+
+## Download dependendent source code
+
+Include the source code for the FUSE-based dependent packages:
+
+```sh
+./scripts/download-dependencies debian
 ```
 
 ## Building

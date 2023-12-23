@@ -1,0 +1,56 @@
+#!/bin/bash
+# Download additional source urls listed in rpm into directory in $1.
+# Assumes being run from the top of the apptainer source directory.
+
+if [ -n "$2" ] || [[ "$1" = -* ]]; then
+    echo "Usage: $0 [downloaddir]" >&2
+    echo "The default downloaddir is '.'" >&2
+    exit 2
+fi
+DIR=.
+if [ -n "$1" ]; then
+    DIR="$1"
+fi
+
+set -ex
+${0%/*}/clean-dependencies $1
+
+SPEC=dist/rpm/apptainer.spec.in
+SUBS="$(sed -n "s/.*%global //p" $SPEC)"
+# Expected format for sources that have a different base path than the URL
+# is a line beginning "# URL:" followed by the URL, then the source with just
+# the base path.
+sed -n -e 's/^# URL:/URL:/p' -e 's/^Source[1-9][0-9]*: //p' -e 's/^Patch[1-9][0-9]*: //p' $SPEC | while read -r LINE; do
+    # first apply substitutions
+    LINE=$(echo "$SUBS" | (while read -r FROM TO; do
+            LINE="${LINE//%\{$FROM\}/$TO}"
+          done
+          echo "$LINE"))
+    if [[ "$LINE" = *http* ]]; then
+	URL="${LINE/*http/http}"
+	if [[ "$LINE" = "URL:"*http* ]]; then
+	    # the file name is on the next line
+	    continue
+	fi
+	# take the file name from the base of the URL
+	LINE="${LINE/*\//}"
+    fi
+    echo "+ curl -f -L -sS -o $DIR/$LINE $URL" >&2
+    curl -f -L -sS -o $DIR/$LINE $URL
+    if [[ "$LINE" = gocryptfs*.tar.gz ]]; then
+	# Also download go dependencies
+	echo "Adding vendor to $LINE" >&2
+	pushd "$DIR"
+	SUBDIR="${LINE%.tar.gz}"
+	trap "rm -rf $SUBDIR" 0
+	tar -xf $LINE
+	cd $SUBDIR
+	go mod vendor
+	cd ..
+	tar -czf $LINE "$SUBDIR"
+	rm -rf "$SUBDIR"
+	trap "" 0
+	popd
+    fi
+done
+

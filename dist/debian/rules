@@ -76,9 +76,7 @@ override_dh_auto_configure:
 	    ./make.bash; \
 	    cd $$HERE; \
 	  fi; \
-	  cd debian; \
-	  ../mlocal/scripts/compile-dependencies; \
-	  cd ..
+	  ./scripts/compile-dependencies debian
 ifneq ($(NEW_VERSION),)
 	$(warning "Setting new version in debian changelog: $(NEW_VERSION)")
 	@debchange -v $(NEW_VERSION)$(VERSION_POSTFIX) "Version $(NEW_VERSION)" && debchange -m -r ""
@@ -94,7 +92,7 @@ override_dh_auto_build:
 
 override_dh_auto_install:
 	@dh_auto_install -Smakefile -D$(DEB_SC_BUILDDIR)
-	cp debian/squashfuse-*/squashfuse_ll debian/gocryptfs-*/gocryptfs debian/tmp/usr/libexec/apptainer/bin
+	@./scripts/install-dependencies $(pkgdir)/usr/libexec
 
 override_dh_install:
 	@dh_install -papptainer-suid usr/libexec/apptainer/bin/starter-suid
@@ -113,5 +111,6 @@ override_dh_fixperms:
 override_dh_clean:
 	@rm -rf -- $(DEB_SC_BUILDDIR)
 	@dh_clean
+	@./scripts/clean-dependencies
 
 # vim:ft=make:noet:sts=0

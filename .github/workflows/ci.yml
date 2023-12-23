@@ -332,9 +332,10 @@ jobs:
         if: env.run_tests
         run: |
           set -ex
-          mlocal/scripts/download-dependencies .
-          mlocal/scripts/compile-dependencies
-          sudo cp gocryptfs*/gocryptfs squashfuse*/squashfuse_ll /usr/local/bin
+          ./scripts/download-dependencies 
+          ./scripts/compile-dependencies
+          sudo mkdir -p /usr/local/libexec/apptainer/bin
+          sudo ./scripts/install-dependencies /usr/local/libexec
 
       # The fuse-overlayfs version from ubuntu-22.04, 1.7, is buggy,
       # so update to version 1.9

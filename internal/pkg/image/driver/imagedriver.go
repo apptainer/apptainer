@@ -110,17 +110,15 @@ func InitImageDrivers(register, unprivileged bool, fileconf *apptainerconf.File,
 	} else {
 		squashFeature.init("squashfuse_ll|squashfuse", "use gocryptfs", desiredFeatures&image.SquashFeature)
 	}
-	// Include `|| !fileconf.AllowSetuidMountExtfs` here once fuse2fs
-	// supports libfuse3
-	if unprivileged {
+	if unprivileged || !fileconf.AllowSetuidMountExtfs {
 		if ext3Feature.init("fuse2fs", "mount EXT3 filesystems", desiredFeatures&image.Ext3Feature) {
 			features |= image.Ext3Feature
 		}
 	}
-	if unprivileged {
-		if overlayFeature.init("fuse-overlayfs", "use overlay", desiredFeatures&image.OverlayFeature) {
-			features |= image.OverlayFeature
-		}
+	// Always initialize the OverlayFeature because the kernel overlay
+	// doesn't like using FUSE for lower or upper layers.
+	if overlayFeature.init("fuse-overlayfs", "use FUSE overlay", desiredFeatures&image.OverlayFeature) {
+		features |= image.OverlayFeature
 	}
 	// gocryptfs is always available
 	if gocryptFeature.init("gocryptfs", "use gocryptfs", desiredFeatures&image.GocryptFeature) {
@@ -353,7 +351,8 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 		}
 	}
 
-	// when using gocryptfs for build step, we should not use SysProcAttr
+	// When using gocryptfs for build step or when running in setuid mode,
+	// we should not run with the elevated CAP_SYS_ADMIN privilege.
 	if !params.DontElevatePrivs {
 		cmd.SysProcAttr = &syscall.SysProcAttr{
 			AmbientCaps: []uintptr{

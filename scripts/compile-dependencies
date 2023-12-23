@@ -1,0 +1,62 @@
+#!/bin/bash
+# Compile dependencies.  The source tarballs and patches should be in the
+# directory passed in as $1, default "."
+
+if [ -n "$2" ] || [[ "$1" = -* ]]; then
+    echo "Usage: $0 [sourcedir]" >&2
+    echo "The default sourcedir is '.'" >&2
+    exit 2
+fi
+SRC=$PWD
+if [ -n "$1" ]; then
+    SRC="$(cd $1;pwd)"
+fi
+
+set -ex
+for PKG in squashfuse e2fsprogs fuse-overlayfs gocryptfs; do
+    TGZ="$(echo $SRC/${PKG}-*.tar.gz)"
+    if [ ! -f "$TGZ" ]; then
+	echo "$PKG-*.tar.gz not found in $SRC" >&2
+	exit 1
+    fi
+    DIR=${TGZ%.tar.gz}
+    DIR=${DIR/*\//}
+    rm -rf "$DIR"
+    tar -xf $TGZ
+    cd $DIR
+    for PATCH in $(echo $SRC/$PKG-*.patch); do
+	if [ -f "$PATCH" ]; then
+	    patch -p1 <$PATCH
+	fi
+    done
+    case "$PKG" in
+	squashfuse)
+	    ./autogen.sh
+	    FLAGS=-std=c99 ./configure --enable-multithreading
+	    make squashfuse_ll
+	    ;;
+	e2fsprogs)
+	    ./configure
+	    make libs && make -C misc fuse2fs
+	    mv misc/fuse2fs .
+	    ;;
+	fuse-overlayfs)
+	    ./autogen.sh
+	    ./configure
+	    make
+	    ;;
+	gocryptfs)
+	    # GOPROXY=off makes sure we fail instead of making network requests
+	    # the -B ldflags prevent rpm complaints about "No build ID note found"
+	    CGO_ENABLED=0 GOPROXY=off ./build.bash \
+		-mod=vendor -tags without_openssl \
+		-ldflags="-X main.GitVersion=%{gocryptfs_version} \
+		-B 0x`head -c20 /dev/urandom|od -An -tx1|tr -d ' \n'`"
+	    ;;
+	*)
+	    echo "unrecognized package $PKG" >&2
+	    exit 1
+	    ;;
+    esac
+    cd ..
+done

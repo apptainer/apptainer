@@ -13,12 +13,25 @@ For older changes see the [archived Singularity change log](https://github.com/a
   the squashfuse image driver will be used to mount squash images
   instead of the kernel squashfs driver.  This eliminates the
   vulnerability of using a kernel filesystem driver to mount a file
-  writable by an unprivileged user.  Likewise, if
-  `allow setuid-mount encrypted = no` then the unprivileged gocryptfs
+  writable by an unprivileged user.
+  Likewise, if `allow setuid-mount extfs = no` (the default) then the
+  fuse2fs image driver will be used to mount ext3 images in setuid mode
+  instead of the kernel driver (ext3 images are primarily used for the
+  `--overlay` feature).
+  The `fuse-overlayfs` driver will also now be tried in setuid mode
+  if the kernel overlayfs driver does not work (for example if one of
+  the layers is a FUSE filesystem).
+  In addition,
+  if `allow setuid-mount encrypted = no` then the unprivileged gocryptfs
   format will be used for encrypting SIF files instead of the kernel
   device-mapper.  If a SIF file was encrypted using the gocryptfs
   format, it can now be mounted in setuid mode in addition to
   non-setuid mode.
+- The four dependent FUSE programs for various reasons all now need to
+  be compiled from source and included in Apptainer installations and
+  packages.
+  Scripts are provided to make this easy; see the updated instructions
+  in [INSTALL.md](INSTALL.md).
 - `--cwd` is now the preferred form of the flag for setting the container's
   working directory, though `--pwd` is still supported for compatibility.
 - When building RPM, we will now use `/var/lib/apptainer` (rather than

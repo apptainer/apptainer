@@ -877,12 +877,7 @@ if [ "$host" = "unix" ]; then
 	    package_golang_source="Source1: https://dl.google.com/go/go${hstgo_preferred_version}.src.tar.gz"
 	fi
 
-	# Transform version numbers so that rpm accepts them:
-	#
-	# 3.4.2-rc.1            ->  3.4.2~rc.1
-	# 3.4.2                 ->  3.4.2
-	# 3.4.2+522-gee98ef356  ->  3.4.2+522.gee98ef356
-	package_rpm_version="$(echo "${short_version}" | sed -e 's,\(^[^+]\+\)-,\1~,; s,-,.,g')"
+	package_rpm_version="$(scripts/rpm-version "${short_version}")"
 
 	sed -e "s/@PACKAGE_VERSION@/${package_version}/" \
 	    -e "s/@PACKAGE_RPM_VERSION@/${package_rpm_version}/" \
