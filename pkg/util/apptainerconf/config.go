@@ -380,28 +380,33 @@ allow container dir = {{ if eq .AllowContainerDir true }}yes{{ else }}no{{ end }
 
 # ALLOW SETUID-MOUNT ${TYPE}: [BOOL]
 # DEFAULT: yes, except no for extfs
-# This feature limits what types of mounts that Apptainer will allow
-# unprivileged users to use in setuid mode.  Normally these operations
-# require the elevated privileges of setuid mode, although Apptainer
-# has unprivileged alternatives for squashfs and extfs.  Note that some of
+# This feature limits what types of kernel mounts that Apptainer will
+# allow unprivileged users to use in setuid mode.  Note that some of
 # the same operations can also be limited by the ALLOW CONTAINER feature
 # above; both types need to be "yes" to be allowed.
 #
-# Allow mounting of SIF encryption (using the kernel device-mapper) in
-# setuid mode
+# Allow mounting of SIF encryption using the kernel device-mapper in
+# setuid mode.  If set to "no", gocryptfs (FUSE-based) encryption will be
+# used instead, which uses a different format in the SIF file, the same
+# format used in unprivileged user namespace mode.
 {{ if eq .AllowSetuidMountEncrypted true}}# {{ end }}allow setuid-mount encrypted = {{ if eq .AllowSetuidMountEncrypted true}}yes{{ else }}no{{ end }}
 #
-# Allow mounting of squashfs filesystem types in setuid mode, both inside and
-# outside of SIF files
+# Allow mounting of squashfs filesystem types by the kernel in setuid mode,
+# both inside and outside of SIF files.  If set to "no", a FUSE-based
+# alternative will be used, the same one used in unprivileged user namespace
+# mode.
 {{ if eq .AllowSetuidMountSquashfs true}}# {{ end }}allow setuid-mount squashfs = {{ if eq .AllowSetuidMountSquashfs true}}yes{{ else }}no{{ end }}
 #
-# Allow mounting of extfs filesystem types in setuid mode, both inside and
-# outside of SIF files.  WARNING: this filesystem type frequently has
-# relevant CVEs that take a very long time for vendors to patch because they
-# are not considered to be High severity since normally unprivileged users do
-# not have write access to the raw filesystem data.  This is why this option
-# defaults to "no".  Change it at your own risk and consider using the
-# LIMIT CONTAINER features above if you do.
+# Allow mounting of extfs filesystem types by the kernel in setuid mode, both
+# inside and outside of SIF files.  If set to "no", a FUSE-based alternative
+# will be used, the same one used in unprivileged user namespace mode.
+# WARNING: this filesystem type frequently has relevant kernel CVEs that take
+# a long time for vendors to patch because they are not considered to be High
+# severity since normally unprivileged users do not have write access to the
+# raw filesystem data.  That leaves the kernel vulnerable to attack when
+# this option is enabled in setuid mode. That is why this option defaults to
+# "no".  Change it at your own risk and consider using the LIMIT CONTAINER
+# features above if you do.
 {{ if eq .AllowSetuidMountExtfs false}}# {{ end }}allow setuid-mount extfs = {{ if eq .AllowSetuidMountExtfs true}}yes{{ else }}no{{ end }}
 
 # ALLOW NET USERS: [STRING]

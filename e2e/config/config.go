@@ -123,7 +123,10 @@ func (c *configTests) prepImages(t *testing.T) (cleanup func(t *testing.T)) {
 	return cleanup
 }
 
-const findsquash = "pstree $PPID|grep squashfuse"
+const (
+	findsquash  = "pstree $PPID|grep squashfuse"
+	findfuse2fs = "pstree $PPID|grep fuse2fs"
+)
 
 //nolint:maintidx
 func (c configTests) configGlobal(t *testing.T) {
@@ -614,31 +617,31 @@ func (c configTests) configGlobal(t *testing.T) {
 		},
 		{
 			name:           "AllowSetuidMountExtfsNo",
-			argv:           []string{c.ext3Image, "true"},
+			argv:           []string{c.ext3Image, "sh", "-c", findfuse2fs},
 			profile:        e2e.UserProfile,
 			directive:      "allow setuid-mount extfs",
 			directiveValue: "no",
-			exit:           255,
+			exit:           0,
 		},
 		{
 			name:           "AllowSetuidMountExtfsNoSif",
-			argv:           []string{c.ext3OverlayImage, "true"},
+			argv:           []string{c.ext3OverlayImage, "sh", "-c", findfuse2fs},
 			profile:        e2e.UserProfile,
 			directive:      "allow setuid-mount extfs",
 			directiveValue: "no",
-			exit:           255,
+			exit:           0,
 		},
 		{
 			name:           "AllowSetuidMountExtfsNoBind",
-			argv:           []string{"-B", c.ext3Image + ":/ext3:image-src=/", c.sifImage, "true"},
+			argv:           []string{"-B", c.ext3Image + ":/ext3:image-src=/", c.sifImage, "sh", "-c", findfuse2fs},
 			profile:        e2e.UserProfile,
 			directive:      "allow setuid-mount extfs",
 			directiveValue: "no",
-			exit:           255,
+			exit:           0,
 		},
 		{
 			name:           "AllowSetuidMountExtfsNoUserns",
-			argv:           []string{c.ext3Image, "true"},
+			argv:           []string{c.ext3Image, "sh", "-c", findfuse2fs},
 			profile:        e2e.UserNamespaceProfile,
 			directive:      "allow setuid-mount extfs",
 			directiveValue: "no",
@@ -646,7 +649,7 @@ func (c configTests) configGlobal(t *testing.T) {
 		},
 		{
 			name:           "AllowSetuidMountExtfsNoUsernsSif",
-			argv:           []string{c.ext3OverlayImage, "true"},
+			argv:           []string{c.ext3OverlayImage, "sh", "-c", findfuse2fs},
 			profile:        e2e.UserNamespaceProfile,
 			directive:      "allow setuid-mount extfs",
 			directiveValue: "no",
@@ -654,7 +657,7 @@ func (c configTests) configGlobal(t *testing.T) {
 		},
 		{
 			name:           "AllowSetuidMountExtfsNoUsernsBind",
-			argv:           []string{"-B", c.ext3Image + ":/ext3:image-src=/", c.sifImage, "true"},
+			argv:           []string{"-B", c.ext3Image + ":/ext3:image-src=/", c.sifImage, "sh", "-c", findfuse2fs},
 			profile:        e2e.UserNamespaceProfile,
 			directive:      "allow setuid-mount extfs",
 			directiveValue: "no",
@@ -662,27 +665,27 @@ func (c configTests) configGlobal(t *testing.T) {
 		},
 		{
 			name:           "AllowSetuidMountExtfsYes",
-			argv:           []string{c.ext3Image, "true"},
+			argv:           []string{c.ext3Image, "sh", "-c", findfuse2fs},
 			profile:        e2e.UserProfile,
 			directive:      "allow setuid-mount extfs",
 			directiveValue: "yes",
-			exit:           0,
+			exit:           1,
 		},
 		{
 			name:           "AllowSetuidMountExtfsYesSif",
-			argv:           []string{c.ext3OverlayImage, "true"},
+			argv:           []string{c.ext3OverlayImage, "sh", "-c", findfuse2fs},
 			profile:        e2e.UserProfile,
 			directive:      "allow setuid-mount extfs",
 			directiveValue: "yes",
-			exit:           0,
+			exit:           1,
 		},
 		{
 			name:           "AllowSetuidMountExtfsYesBind",
-			argv:           []string{"-B", c.ext3Image + ":/ext3:image-src=/", c.sifImage, "true"},
+			argv:           []string{"-B", c.ext3Image + ":/ext3:image-src=/", c.sifImage, "sh", "-c", findfuse2fs},
 			profile:        e2e.UserProfile,
 			directive:      "allow setuid-mount extfs",
 			directiveValue: "yes",
-			exit:           0,
+			exit:           1,
 		},
 		// FIXME
 		// The e2e tests currently run inside a PID namespace.

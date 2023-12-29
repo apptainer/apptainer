@@ -1,0 +1,36 @@
+#!/bin/bash
+# Install dependencies.  The compiled tools are expected to be in
+# subdirectories under the current directory as produced by the
+# compile-dependencies script. The install prefix is passed in as $1,
+# default taken from LIBEXECDIR in builddir/Makefile.
+
+if [ -n "$2" ] || [[ "$1" = -* ]]; then
+    echo "Usage: $0 [LIBEXECDIR]" >&2
+    echo "The default LIBEXECDIR is taken from builddir/Makefile" >&2
+    exit 2
+fi
+if [ -n "$1" ]; then
+    LIBEXECDIR="$1"
+elif [ ! -f builddir/Makefile ]; then
+    echo "builddir/Makefile not found" >&2
+    LIBEXECDIR="$(sed -n 's/^LIBEXECDIR := //p' builddir/Makefile)"
+fi
+
+DIR="$LIBEXECDIR/apptainer/bin"
+if [ ! -d "$DIR" ]; then
+    echo "$DIR does not exist" >&2
+    exit 1
+fi
+if [ ! -w "$DIR" ]; then
+    echo "$DIR does is not writable" >&2
+    exit 1
+fi
+
+set -ex
+for CMD in squashfuse-*/squashfuse_ll e2fsprogs-*/fuse2fs fuse-overlayfs-*/fuse-overlayfs gocryptfs-*/gocryptfs; do
+    if [ ! -f "$CMD" ]; then
+	echo "$CMD not found" >&2
+	exit 1
+    fi
+    cp -f $CMD $DIR
+done

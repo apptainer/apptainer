@@ -33,9 +33,6 @@ Depends:
  ${shlibs:Depends},
  uidmap,
  squashfs-tools,
- squashfuse,
- fuse2fs,
- fuse-overlayfs,
  fakeroot
 Conflicts: singularity-container
 Description: container platform focused on supporting "Mobility of Compute" formerly known as Singularity

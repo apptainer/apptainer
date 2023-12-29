@@ -23,9 +23,6 @@ sudo apt-get install -y \
     pkg-config \
     uidmap \
     squashfs-tools \
-    squashfuse \
-    fuse2fs \
-    fuse-overlayfs \
     fakeroot \
     cryptsetup \
     tzdata \
@@ -43,10 +40,7 @@ sudo yum install -y epel-release
 sudo yum install -y \
     libseccomp-devel \
     squashfs-tools \
-    squashfuse \
-    fuse-overlayfs \
     fakeroot \
-    /usr/*bin/fuse2fs \
     cryptsetup \
     wget git
 ```
@@ -171,67 +165,37 @@ If you want a setuid-installation (formerly the default) use the
 
 See the output of `./mconfig -h` for available options.
 
-## Installing improved performance squashfuse_ll
+## Compiling dependent FUSE-based packages
 
-If you want to have the best performance for unprivileged mounts of SIF
-files for multi-core applications, you can optionally install an improved
-performance version of `squashfuse_ll`.  That version has been released as
-version 0.2.0 but as of this writing it is not yet very widely distributed,
-and it does not have multithreading enabled in the default compilation options.
-Instructions for installing it from source follow here.
+In many cases Apptainer uses FUSE-based packages in order to mount
+filesystems.  Very often these packages are available in Linux
+distributions but out of date for Apptainer needs, so they need to be
+compiled and installed with Apptainer following these directions.
 
 First, make sure that additional required packages are installed.  On Debian:
 
 ```sh
-apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev
+sudo apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev
 ```
 
 On CentOS/RHEL:
 
 ```sh
-yum install -y autoconf automake libtool pkgconfig fuse3-devel zlib-devel
+sudo yum install -y autoconf automake libtool pkgconfig fuse3-devel zlib-devel
 ```
 
-To download the source code do this:
+To download the source code from the top level of the Apptainer source
+tree do:
 
 ```sh
-SQUASHFUSEVERSION=0.2.0
-curl -L -O https://github.com/vasi/squashfuse/archive/$SQUASHFUSEVERSION/squashfuse-$SQUASHFUSEVERSION.tar.gz
-```
-
-Then to compile and install do this:
-
-```sh
-tar xzf squashfuse-$SQUASHFUSEVERSION.tar.gz
-cd squashfuse-$SQUASHFUSEVERSION
-./autogen.sh
-CFLAGS=-std=c99 ./configure --enable-multithreading
-make squashfuse_ll
-sudo cp squashfuse_ll /usr/local/libexec/apptainer/bin
-```
-
-## Installing gocryptfs
-
-If you want to support SIF encryption and/or decryption in unprivileged
-mode, then gocryptfs needs to installed.  It is available as a package
-install on some operating systems as described in its
-[documentation](https://nuetzlich.net/gocryptfs/quickstart/), but
-otherwise to compile it from source follow these instructions.
-
-To download the source code do this:
-
-```sh
-GOCRYPTFSVERSION=2.4.0
-curl -L -O https://github.com/rfjakob/gocryptfs/archive/v$GOCRYPTFSVERSION/gocryptfs-$GOCRYPTFSVERSION.tar.gz
+./scripts/download-dependencies
 ```
 
 Then to compile and install do this:
 
 ```sh
-tar xzf gocryptfs-$GOCRYPTFSVERSION.tar.gz
-cd gocryptfs-$GOCRYPTFSVERSION
-./build-without-openssl.bash
-sudo cp gocryptfs /usr/local/libexec/apptainer/bin
+./scripts/compile-dependencies
+sudo ./scripts/install-dependencies
 ```
 
 ## Building & Installing from RPM
@@ -242,7 +206,9 @@ Apptainer across multiple machines, or wish to manage all software via
 `yum/dnf`.
 
 To build the rpms, in addition to the
-[system dependencies](#install-system-dependencies),
+[system dependencies](#install-system-dependencies)
+and the extra required packages needed for
+[dependent FUSE-based packages](#compiling-dependent-fuse-based-packages),
 also install these extra packages:
 
 ```sh
@@ -260,15 +226,14 @@ In order to make use of this mechanism, use the `mconfig --only-rpm` option
 to skip the minimum version check.
 `mconfig` will then create a `.spec` file that looks for a go source
 tarball in the rpm build's current directory.
-If you need it, download the go tarball like this:
+If you need it, download the go tarball:
 
 ```sh
 wget https://dl.google.com/go/go$(scripts/get-min-go-version).src.tar.gz
 ```
 
 Then download the latest
-[apptainer release tarball](https://github.com/apptainer/apptainer/releases)
-like this:
+[apptainer release tarball](https://github.com/apptainer/apptainer/releases):
 
 <!-- markdownlint-disable MD013 -->
 
@@ -278,45 +243,35 @@ VERSION=1.2.5  # this is the apptainer version, change as you need
 wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
 ```
 
-Next we need to include the source of squashfuse_ll and gocryptfs.
-The easiest way to do that is to modify the apptainer tarball and
-include them inside of it.  First unpack it like this:
+Next download the source for the FUSE-based dependencies:
 
 ```sh
-tar xf apptainer-${VERSION}.tar.gz
+tar xvf apptainer-${VERSION}.tar.gz apptainer-${VERSION}/scripts
+tar xvf apptainer-${VERSION}.tar.gz apptainer-${VERSION}/dist/rpm
 cd apptainer-${VERSION}
-```
-
-Then install the extra packages and download the source code into the
-current directory as shown at
-[the above squashfuse link](#installing-improved-performance-squashfuse_ll)
-and [the above gocryptfs link](#installing-gocryptfs).
-(If the rpm needs to be built offline from the internet see
-additional instructions for the gocryptfs source code in
-dist/rpm/apptainer.spec.in).
-Then recreate the apptainer tarball like this:
-
-```sh
+./scripts/download-dependencies ..
 cd ..
-tar czf apptainer-${VERSION}.tar.gz apptainer-${VERSION}
 rm -rf apptainer-${VERSION}
 ```
 
-Then build the rpms from the tarball like this:
+Then build the rpms from the tarball:
 
 ```sh
 rpmbuild -tb apptainer-${VERSION}.tar.gz
 # Install Apptainer using the resulting rpm
-sudo rpm -Uvh ~/rpmbuild/RPMS/x86_64/apptainer-$(echo $VERSION|tr - \~)-1.el7.x86_64.rpm
+RPMVERSION="$(scripts/rpm-version "${VERSION}")"
+sudo rpm -Uvh ~/rpmbuild/RPMS/x86_64/apptainer-${RPMVERSION}-1.el7.x86_64.rpm
 # (Optionally) Install the setuid-root portion
-sudo rpm -Uvh ~/rpmbuild/RPMS/x86_64/apptainer-suid-$(echo $VERSION|tr - \~)-1.el7.x86_64.rpm
-# (Optionally) Remove the build tree and source to save space
-rm -rf ~/rpmbuild apptainer-${VERSION}*.tar.gz
+sudo rpm -Uvh ~/rpmbuild/RPMS/x86_64/apptainer-suid-${RPMVERSION}-1.el7.x86_64.rpm
+# (Optionally) Remove the build tree, source, and dependencies
+rm -rf ~/rpmbuild apptainer-${VERSION}.tar.gz
+./scripts/clean-dependencies
+
 ```
 
 <!-- markdownlint-enable MD013 -->
 
-Alternatively, to build RPMs from the latest main you can
+Alternatively, to build RPMs from the latest source code you can
 [clone the repo as detailed above](#clone-the-repo), and run `./mconfig`.
 Then use the `rpm` make target to build Apptainer as rpm packages,
 for example like this if you already have a new enough golang first
@@ -325,19 +280,20 @@ in your PATH:
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-VERSION=1.2.5 # this is the latest apptainer version, change as you need
 ./mconfig
+./scripts/download-dependencies
 make -C builddir rpm
-sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-$(echo $VERSION|tr - \~)*.x86_64.rpm 
+VERSION="$(scripts/get-version)"
+RPMVERSION="$(scripts/rpm-version ${VERSION})"
+sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-${RPMVERSION}-1.x86_64.rpm 
 # (Optionally) Install the setuid-root portion
-sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-suid-$(echo $VERSION|tr - \~)*.x86_64.rpm 
+sudo rpm -ivh ~/rpmbuild/RPMS/x86_64/apptainer-suid-${RPMVERSION}-1.x86_64.rpm 
+# (Optionally) Remove the build tree, source, and dependency sources
+rm -rf ~/rpmbuild apptainer-${VERSION}.tar.gz
+./scripts/clean-dependencies
 ```
 
 <!-- markdownlint-enable MD013 -->
-
-That will not include squashfuse_ll and gocryptfs in the rpm unless you
-uncomment the %global definitions of their version numbers in apptainer.spec
-first and have their source tarballs available in the current directory.
 
 By default, the rpms will be built so that Apptainer is installed in
 standard Linux paths under ``/``.

@@ -67,7 +67,7 @@ su testuser -c '
     fi
   fi
   go version
-  mlocal/scripts/download-dependencies debian
+  ./scripts/download-dependencies debian
   export DEB_FULLNAME="'"${DEB_FULLNAME:-CI Test}"'"
   export DEBEMAIL="'${DEBEMAIL:-citest@example.com}'"
   debuild --prepend-path $PATH --build=binary --no-sign --lintian-opts --display-info --show-overrides

@@ -33,10 +33,10 @@
 # For example, it has dash instead of tilde for release candidates.
 %global package_version @PACKAGE_VERSION@
 
-# Uncomment this to include gocryptfs
-# %%global gocryptfs_version 2.4.0
-# Uncomment this to include a multithreaded version of squashfuse_ll
-# %%global squashfuse_version 0.2.0
+%global gocryptfs_version 2.4.0
+%global squashfuse_version 0.2.0
+%global e2fsprogs_version 1.47.0
+%global fuse_overlayfs_version 1.13
 
 # The last singularity version number in EPEL/Fedora
 %global last_singularity_version 3.8.7-3
@@ -57,12 +57,23 @@ Source: https://github.com/%{name}/%{name}/releases/download/v%{package_version}
 # In order to build offline, this source tarball needs to have the "vendor"
 # directory added, which can be done by unpacking it, doing the command
 #   go mod vendor
-# and then recreating the tarball.
+# and then recreating the tarball.  Use scripts/download-dependencies.
 Source10: https://github.com/rfjakob/gocryptfs/archive/v%{gocryptfs_version}/gocryptfs-%{gocryptfs_version}.tar.gz
 %endif
 %if "%{?squashfuse_version}" != ""
 Source11: https://github.com/vasi/squashfuse/archive/%{squashfuse_version}/squashfuse-%{squashfuse_version}.tar.gz
 %endif
+%if "%{?e2fsprogs_version}" != ""
+# URL: https://github.com/tytso/e2fsprogs/archive/refs/tags/v%{e2fsprogs_version}.tar.gz
+Source12: e2fsprogs-%{e2fsprogs_version}.tar.gz
+# URL: https://github.com/tytso/e2fsprogs/commit/5598a96.patch
+Patch121: e2fsprogs-1.patch
+# URL: https://github.com/tytso/e2fsprogs/commit/1ac0061.patch
+Patch122: e2fsprogs-2.patch
+# URL: https://github.com/tytso/e2fsprogs/commit/448a3f8.patch
+Patch123: e2fsprogs-3.patch
+%endif
+Source13: https://github.com/containers/fuse-overlayfs/archive/v%{fuse_overlayfs_version}/fuse-overlayfs-%{fuse_overlayfs_version}.tar.gz
 
 # This Conflicts is in case someone tries to install the main apptainer
 # package when an old singularity package is installed.  An Obsoletes is on
@@ -96,12 +107,12 @@ BuildRequires: gcc
 BuildRequires: make
 BuildRequires: libseccomp-devel
 BuildRequires: cryptsetup
-%if "%{?squashfuse_version}" != ""
+BuildRequires: fuse3-devel
+%if ("%{?squashfuse_version}" != "") || ("%{e2fsprogs_version}" != "") || ("%{fuse_overlayfs_version}" != "")
 BuildRequires: autoconf
 BuildRequires: automake
 BuildRequires: libtool
 BuildRequires: pkgconfig
-BuildRequires: fuse3-devel
 BuildRequires: zlib-devel
 %endif
 %if "%{_target_vendor}" == "suse"
@@ -109,15 +120,7 @@ Requires: squashfs
 %else
 Requires: squashfs-tools
 %endif
-Requires: squashfuse
 Requires: fakeroot
-Requires: fuse-overlayfs
-Requires: e2fsprogs
-# Uncomment this for the epel build, but we don't want it for the Apptainer
-#  release build because there the same rpm is shared across OS versions
-#%%if 0%{?el7}
-#Requires: fuse2fs
-#%%endif
 
 %description
 Apptainer provides functionality to make portable
@@ -137,28 +140,11 @@ Provides: alternative-for(singularity)
 Provides the optional setuid-root portion of Apptainer.
 
 %prep
-%if "%{?gocryptfs_version}" != ""
-%setup -b 10 -n gocryptfs-%{gocryptfs_version}
-%endif
-
-%if "%{?squashfuse_version}" != ""
-# the default directory for other steps is where the %%prep section ends
-# so do main package last
-%setup -b 11 -n squashfuse-%{squashfuse_version}
 %setup -n %{name}-%{package_version}
-%else
-%autosetup -n %{name}-%{package_version}
-%endif
+# don't need to setup dependent source packages and patches because
+# that is done by the compile-dependencies script
 
 %build
-%if "%{?squashfuse_version}" != ""
-pushd ../squashfuse-%{squashfuse_version}
-./autogen.sh
-FLAGS=-std=c99 ./configure --enable-multithreading
-%make_build squashfuse_ll
-popd
-%endif
-
 %if "%{?SOURCE1}" != ""
 GOVERSION="$(echo %SOURCE1|sed 's,.*/,,;s/go//;s/\.src.*//')"
 if ! ./mlocal/scripts/check-min-go-version go $GOVERSION; then
@@ -173,21 +159,7 @@ if ! ./mlocal/scripts/check-min-go-version go $GOVERSION; then
 fi
 %endif
 
-%if "%{?gocryptfs_version}" != ""
-pushd ../gocryptfs-%{gocryptfs_version}
-if [ ! -d vendor ]; then
-    (
-    export GOPATH="`pwd`/gopath"
-    go mod vendor
-    go clean -modcache
-    )
-fi
-# GOPROXY=off makes sure we fail instead of making network requests
-# the -B ldflags prevent rpm complaints about "No build ID note found"
-CGO_ENABLED=0 GOPROXY=off ./build.bash -mod=vendor -tags without_openssl \
-    -ldflags="-X main.GitVersion=%{gocryptfs_version} -B 0x`head -c20 /dev/urandom|od -An -tx1|tr -d ' \n'`" 
-popd
-%endif
+./scripts/compile-dependencies $(dirname %{SOURCE10})
 
 # Not all of these parameters currently have an effect, but they might be
 #  used someday.  They are the same parameters as in the configure macro.
@@ -216,11 +188,19 @@ export PATH=$PWD/go/bin:$PATH
 %make_install -C builddir V=
 
 %if "%{?gocryptfs_version}" != ""
-install -m 755 ../gocryptfs-%{gocryptfs_version}/gocryptfs %{buildroot}%{_libexecdir}/%{name}/bin/gocryptfs
+install -m 755 gocryptfs-%{gocryptfs_version}/gocryptfs %{buildroot}%{_libexecdir}/%{name}/bin/gocryptfs
 %endif
 
 %if "%{?squashfuse_version}" != ""
-install -m 755 ../squashfuse-%{squashfuse_version}/squashfuse_ll %{buildroot}%{_libexecdir}/%{name}/bin/squashfuse_ll
+install -m 755 squashfuse-%{squashfuse_version}/squashfuse_ll %{buildroot}%{_libexecdir}/%{name}/bin/squashfuse_ll
+%endif
+
+%if "%{?e2fsprogs_version}" != ""
+install -m 755 e2fsprogs-%{e2fsprogs_version}/fuse2fs %{buildroot}%{_libexecdir}/%{name}/bin/fuse2fs
+%endif
+
+%if "%{?fuse_overlayfs_version}" != ""
+install -m 755 fuse-overlayfs-%{fuse_overlayfs_version}/fuse-overlayfs %{buildroot}%{_libexecdir}/%{name}/bin/fuse-overlayfs
 %endif
 
 %if 0%{?el7}
@@ -294,6 +274,12 @@ fi
 %endif
 %if "%{?squashfuse_version}" != ""
 %{_libexecdir}/%{name}/bin/squashfuse_ll
+%endif
+%if "%{?e2fsprogs_version}" != ""
+%{_libexecdir}/%{name}/bin/fuse2fs
+%endif
+%if "%{?fuse_overlayfs_version}" != ""
+%{_libexecdir}/%{name}/bin/fuse-overlayfs
 %endif
 %{_libexecdir}/%{name}/cni
 %{_libexecdir}/%{name}/lib

@@ -41,24 +41,7 @@ su testuser -c '
     fi
   fi
   go version
-  # enable the multithreading squashfuse and gocryptfs
-  sed -i "s/^# %\(%global squashfuse_version\)/\1/" apptainer.spec
-  sed -i "s/^# %\(%global gocryptfs_version\)/\1/" apptainer.spec
-  # download any additional source urls
-  DOWNLOADURL="$(sed -n "s/^Source[1-9][0-9]*: //p" apptainer.spec)"
-  SUBS="$(sed -n "s/^%global //p" apptainer.spec)"
-  DOWNLOADEDFILES=""
-  for URL in $DOWNLOADURL; do
-      if [[ "$URL" != http* ]]; then
-	  continue
-      fi
-      URL=$(echo "$SUBS" | (while read FROM TO; do
-	      URL="$(echo $URL|sed "s,%{$FROM},$TO,g")"
-	    done
-	    echo $URL))
-      curl -f -L -sS -O $URL
-      DOWNLOADEDFILES="$DOWNLOADEDFILES $(basename $URL)"
-  done
+  ./scripts/download-dependencies
   if [ "$HIDE_DIST" = true ]; then
     # eliminate the "dist" part in the rpm name, for the release_assets
     echo "%dist %{nil}" >$HOME/.rpmmacros
