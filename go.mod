@@ -4,12 +4,12 @@ go 1.19
 
 require (
 	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2
-	github.com/ProtonMail/go-crypto v0.0.0-20230717121422-5aa5874ade95
+	github.com/ProtonMail/go-crypto v0.0.0-20230923063757-afb1ddc0824c
 	github.com/adigunhammedolalekan/registry-auth v0.0.0-20200730122110-8cde180a3a60
 	github.com/apex/log v1.9.0
 	github.com/apptainer/container-key-client v0.8.0
 	github.com/apptainer/container-library-client v1.4.5
-	github.com/apptainer/sif/v2 v2.14.0
+	github.com/apptainer/sif/v2 v2.15.1
 	github.com/astromechza/etcpwdparse v0.0.0-20170319193008-f0e5f0779716
 	github.com/blang/semver/v4 v4.0.0
 	github.com/buger/goterm v1.0.4
@@ -39,7 +39,7 @@ require (
 	github.com/seccomp/containers-golang v0.6.0
 	github.com/seccomp/libseccomp-golang v0.10.0
 	github.com/shopspring/decimal v1.3.1
-	github.com/sigstore/sigstore v1.7.6
+	github.com/sigstore/sigstore v1.8.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/sylabs/json-resp v0.9.0
@@ -117,7 +117,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.17.3 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
-	github.com/letsencrypt/boulder v0.0.0-20230213213521-fdfea0d469b6 // indirect
+	github.com/letsencrypt/boulder v0.0.0-20230907030200-6d76a0f91e1e // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -144,7 +144,7 @@ require (
 	github.com/rootless-containers/proto v0.1.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/safchain/ethtool v0.3.0 // indirect
-	github.com/secure-systems-lab/go-securesystemslib v0.7.0 // indirect
+	github.com/secure-systems-lab/go-securesystemslib v0.8.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/sigstore/fulcio v1.4.3 // indirect
 	github.com/sigstore/rekor v1.2.2 // indirect
