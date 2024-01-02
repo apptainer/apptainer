@@ -10,6 +10,9 @@
 package squashfs
 
 import (
+	"os"
+	"strconv"
+
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
@@ -36,8 +39,27 @@ func GetProcs() (uint, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	// proc is either "" or the string value in the conf file
 	proc := c.MksquashfsProcs
+
+	ompNumThreads := os.Getenv("OMP_NUM_THREADS")
+	if ompNumThreads != "" {
+		ompNum, err := strconv.Atoi(ompNumThreads)
+		if (err == nil) && (ompNum > 0) {
+			// OMP_NUM_THREADS can only lower the number
+			// of threads to use, never raise it above
+			// the admin's config
+			if err == nil {
+				if proc == 0 || uint(ompNum) < proc {
+					proc = uint(ompNum)
+				}
+			} else {
+				// MksquashfsProcs configured to max, but we want fewer
+				proc = uint(ompNum)
+			}
+		}
+	}
 
 	return proc, err
 }
