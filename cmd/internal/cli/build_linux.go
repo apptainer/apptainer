@@ -243,7 +243,8 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 	} else {
 		_, passphraseEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PASSPHRASE")
 		_, pemPathEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PEM_PATH")
-		if passphraseEnvOK || pemPathEnvOK {
+		_, pemDataEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PEM_DATA")
+		if passphraseEnvOK || pemPathEnvOK || pemDataEnvOK {
 			sylog.Warningf("Encryption related env vars found, but --encrypt was not specified. NOT encrypting container.")
 		}
 	}
@@ -409,17 +410,19 @@ func getEncryptionMaterial(cmd *cobra.Command) (*cryptkey.KeyInfo, error) {
 	PEMFlag := cmd.Flags().Lookup("pem-path")
 	passphraseEnv, passphraseEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PASSPHRASE")
 	pemPathEnv, pemPathEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PEM_PATH")
+	pemDataEnv, pemDataEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PEM_DATA")
 
 	// checks for no flags/envvars being set
-	if !(PEMFlag.Changed || pemPathEnvOK || passphraseFlag.Changed || passphraseEnvOK) {
+	if !(PEMFlag.Changed || pemPathEnvOK || pemDataEnvOK || passphraseFlag.Changed || passphraseEnvOK) {
 		return nil, nil
 	}
 
 	// order of precedence:
 	// 1. PEM flag
 	// 2. Passphrase flag
-	// 3. PEM envvar
-	// 4. Passphrase envvar
+	// 3. PEM PATH envvar
+	// 4. PEM DATA envvar
+	// 5. Passphrase envvar
 
 	if PEMFlag.Changed {
 		exists, err := fs.PathExists(encryptionPEMPath)
@@ -435,12 +438,12 @@ func getEncryptionMaterial(cmd *cobra.Command) (*cryptkey.KeyInfo, error) {
 
 		// Check it's a valid PEM public key we can load, before starting the build (#4173)
 		if cmd.Name() == "build" {
-			if _, err := cryptkey.LoadPEMPublicKey(encryptionPEMPath); err != nil {
+			if _, err := cryptkey.LoadPEMPublicKeyFile(encryptionPEMPath); err != nil {
 				sylog.Fatalf("Invalid encryption public key: %v", err)
 			}
 			// or a valid private key before launching the engine for actions on a container (#5221)
 		} else {
-			if _, err := cryptkey.LoadPEMPrivateKey(encryptionPEMPath); err != nil {
+			if _, err := cryptkey.LoadPEMPrivateKeyFile(encryptionPEMPath); err != nil {
 				sylog.Fatalf("Invalid encryption private key: %v", err)
 			}
 		}
@@ -472,6 +475,11 @@ func getEncryptionMaterial(cmd *cobra.Command) (*cryptkey.KeyInfo, error) {
 
 		sylog.Verbosef("Using pem path environment variable for encrypted container")
 		return &cryptkey.KeyInfo{Format: cryptkey.PEM, Path: pemPathEnv}, nil
+	}
+
+	if pemDataEnvOK {
+		sylog.Verbosef("Using pem data environment variable for encrypted container")
+		return &cryptkey.KeyInfo{Format: cryptkey.ENV, Material: pemDataEnv}, nil
 	}
 
 	if passphraseEnvOK {
