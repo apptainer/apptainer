@@ -50,6 +50,11 @@ import (
 	"golang.org/x/term"
 )
 
+type umountPoint struct {
+	path     string
+	writable bool
+}
+
 // global variables used by master process only at various steps:
 // - setup
 // - cleanup
@@ -58,7 +63,7 @@ var (
 	cryptDev       string
 	networkSetup   *network.Setup
 	imageDriver    image.Driver
-	umountPoints   []string
+	umountPoints   []umountPoint
 	cgroupsManager *cgroups.Manager
 )
 
@@ -195,10 +200,10 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 		return err
 	}
 
-	umountPoints = append(umountPoints, c.session.RootFsPath())
+	umountPoints = append(umountPoints, umountPoint{c.session.RootFsPath(), false})
 
 	if c.session.FinalPath() != c.session.RootFsPath() {
-		umountPoints = append(umountPoints, c.session.FinalPath())
+		umountPoints = append(umountPoints, umountPoint{c.session.FinalPath(), false})
 	}
 
 	if err := system.RunAfterTag(mount.SessionTag, c.addMountInfo); err != nil {
@@ -316,13 +321,11 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 	if engine.EngineConfig.GetSessionLayer() == apptainer.UnderlayLayer {
 		// Underlay bind points can interfere with unmounting
 		//  the image, so unmount all those bind points first
-		bindPoints := []string{}
 		for _, bindPoint := range system.Points.GetAllBinds() {
 			if strings.Contains(bindPoint.Destination, "/session/underlay/") {
-				bindPoints = append(bindPoints, bindPoint.Destination)
+				umountPoints = append(umountPoints, umountPoint{bindPoint.Destination, false})
 			}
 		}
-		umountPoints = append(umountPoints, bindPoints...)
 	}
 
 	if engine.EngineConfig.GetNvCCLI() {
@@ -558,7 +561,7 @@ func (c *container) setupImageDriver(system *mount.System, containerPid int) err
 				return fmt.Errorf("while mounting fuse for image driver: %s", err)
 			}
 
-			umountPoints = append(umountPoints, sp)
+			umountPoints = append(umountPoints, umountPoint{sp, true})
 
 			sylog.Debugf("Starting image driver %s", c.engine.EngineConfig.File.ImageDriver)
 			if err := imageDriver.Start(params, containerPid, fakerootHybrid); err != nil {
@@ -1170,7 +1173,7 @@ func (c *container) addOverlayMount(system *mount.System) error {
 				return fmt.Errorf("failed to create session directory for overlay: %s", err)
 			}
 			dst, _ := c.session.GetPath(sessionDest)
-			umountPoints = append(umountPoints, dst)
+			umountPoints = append(umountPoints, umountPoint{dst, img.Writable})
 			nb++
 
 			src := img.Source
@@ -1351,7 +1354,7 @@ func (c *container) addImageBindMount(system *mount.System) error {
 				return fmt.Errorf("failed to create session directory for overlay: %s", err)
 			}
 			imgDest, _ := c.session.GetPath(sessionDest)
-			umountPoints = append(umountPoints, imgDest)
+			umountPoints = append(umountPoints, umountPoint{imgDest, img.Writable})
 			nb++
 
 			flags := uintptr(syscall.MS_NOSUID | syscall.MS_NODEV)
@@ -3018,7 +3021,7 @@ func (c *container) gocryptfsMount(params *image.MountParams, system *mount.Syst
 	if err != nil {
 		return err
 	}
-	umountPoints = append(umountPoints, params.Target)
+	umountPoints = append(umountPoints, umountPoint{params.Target, false})
 
 	// Verify mounted files
 	files, err := os.ReadDir(cipherDir)
@@ -3054,7 +3057,7 @@ func (c *container) gocryptfsMount(params *image.MountParams, system *mount.Syst
 	if err != nil {
 		return err
 	}
-	umountPoints = append(umountPoints, params.Target)
+	umountPoints = append(umountPoints, umountPoint{params.Target, false})
 
 	// Mount using squashfs
 	params.Source = fmt.Sprintf("%s/%s", plainDir, targetfile)

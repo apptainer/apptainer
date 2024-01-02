@@ -29,6 +29,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
 	"github.com/apptainer/apptainer/pkg/util/fs/lock"
+	"golang.org/x/sys/unix"
 )
 
 // CleanupContainer is called from master after the MonitorContainer returns.
@@ -175,7 +176,26 @@ func umount() (err error) {
 	// gocryptfs related temp folders
 	var gocryptfsTmp []string
 	for i := len(umountPoints) - 1; i >= 0; i-- {
-		p := umountPoints[i]
+		up := umountPoints[i]
+		p := up.path
+		if up.writable {
+			// First do Syncfs before unmounting.
+			// We haven't seen a problem without this but
+			// fuse-overlayfs does it so we're doing it just
+			// in case.
+			var fd int
+			fd, err = unix.Open(p, unix.O_DIRECTORY, 0)
+			if err != nil {
+				sylog.Debugf("Unable to open %s: %s", p, err)
+			} else {
+				if err = unix.Syncfs(fd); err != nil {
+					sylog.Debugf("Error syncing %s: %s", p, err)
+				} else {
+					sylog.Debugf("Sync of %s succeeded", p)
+				}
+				unix.Close(fd)
+			}
+		}
 		sylog.Debugf("Umount %s", p)
 		if strings.Contains(p, "gocryptfs-") {
 			gocryptfsTmp = append(gocryptfsTmp, p)
