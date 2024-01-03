@@ -635,6 +635,8 @@ func (i *fuseappsInstance) filterMsg() string {
 		// from squashfuse_ll
 		"failed to clone device fd",
 		"continue without -o clone_fd",
+		// from fuse-overlayfs sometimes
+		"unknown argument ignored: lazytime",
 		// from fuse-overlayfs due to a bug
 		// (see https://github.com/containers/fuse-overlayfs/issues/397)
 		"/proc seems to be mounted as readonly",
@@ -642,6 +644,9 @@ func (i *fuseappsInstance) filterMsg() string {
 		"Reading Password from stdin",
 		"Decrypting master key",
 		"Filesystem mounted and ready.",
+		// from any of the programs when an older fuse3 lib is used
+		// than what the programs were compiled with
+		"fuse: warning: library too old",
 	}
 
 	errmsg := ""

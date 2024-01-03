@@ -140,7 +140,7 @@ case $1 in
 	    ;;
 	el*) 
 	    EL="${1#el}"
-	    if [ $EL = 8 ] && { [ "$ARCH" = s390x ] || [ "$ARCH" = ppc64le ] ; } ; then
+	    if [ "$EL" = 8 ] && { [ "$ARCH" = s390x ] || [ "$ARCH" = ppc64le ] ; } ; then
 		# these archs not yet available on rocky8
 		OSREPOURL="https://repo.almalinux.org/almalinux/$EL/BaseOS/$ARCH/os/Packages"
 		OSSPLIT=false
@@ -221,12 +221,7 @@ latesturl()
 
 RPMDIST=""
 LOCALAPPTAINER=false
-if [ -z "$VERSION" ] || ! $NOOPENSUSE; then
-	# shellcheck disable=SC2310,SC2311
-	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer $NOOPENSUSE false)"; then
-		fatal "Could not find apptainer version from $APPTAINERURL"
-	fi
-elif [[ "$VERSION" == *.rpm ]]; then
+if [[ "$VERSION" == *.rpm ]]; then
 	# use a local rpm
 	if [ ! -f "$VERSION" ]; then
 		fatal "$VERSION not found"
@@ -238,11 +233,16 @@ elif [[ "$VERSION" == *.rpm ]]; then
 	fi
 	# take third from last field separated by dots as the rpm dist
 	# shellcheck disable=SC2001
-	RPMDIST="$(echo $VERSION|sed 's/.*\.\(.*\)\.[^.]*\..*$/\1/')"
+	RPMDIST="$(echo "$VERSION"|sed 's/.*\.\(.*\)\.[^.]*\..*$/\1/')"
 	# but if it starts with a number, the dist is missing so just try
 	# to use the default DIST (which happens if RPMDIST is empty)
 	if [[ "$RPMDIST" == [0-9]* ]]; then
 		RPMDIST=""
+	fi
+elif [ -z "$VERSION" ] || ! $NOOPENSUSE; then
+	# shellcheck disable=SC2310,SC2311
+	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer $NOOPENSUSE false)"; then
+		fatal "Could not find apptainer version from $APPTAINERURL"
 	fi
 else
 	KOJIURL="https://kojipkgs.fedoraproject.org/packages/apptainer/$VERSION"
@@ -277,32 +277,59 @@ if ! rmdir usr; then
 	fatal "error removing usr"
 fi
 
+APPTAINERURL="https://kojipkgs.fedoraproject.org/packages/apptainer/"
+OSUTILS=""
+NEEDSFUSE2FS=true
+if [ -f libexec/apptainer/bin/fuse2fs ]; then
+	# apptainer-1.3.0 or newer
+	NEEDSFUSE2FS=false
+fi
+EXTRASUTILS=""
+if [ ! -f libexec/apptainer/bin/fuse-overlayfs ]; then
+	# older than apptainer-1.3.0
+	EXTRASUTILS="fuse-overlayfs"
+fi
+EPELUTILS="fakeroot"
+if [[ "$DIST" != *suse* ]]; then
+	EPELUTILS="fakeroot-libs $EPELUTILS"
+fi
+RPMUTILS=""
+
 mkdir tmp
 cd tmp
 
-APPTAINERURL="https://kojipkgs.fedoraproject.org/packages/apptainer/"
-OSUTILS=""
-EXTRASUTILS="fuse-overlayfs"
-EPELUTILS="fakeroot"
-RPMUTILS=""
 if [ "$DIST" = el7 ]; then
-	OSUTILS="$OSUTILS lzo squashfs-tools fuse-libs"
-	EPELUTILS="$EPELUTILS libzstd fuse2fs fuse3-libs fakeroot-libs"
+	OSUTILS="$OSUTILS lzo squashfs-tools"
+	EPELUTILS="$EPELUTILS libzstd fuse3-libs"
+	if $NEEDSFUSE2FS; then
+		OSUTILS="$OSUTILS fuse-libs"
+		EPELUTILS="$EPELUTILS fuse2fs"
+	fi
 elif [ "$DIST" = el8 ]; then
-	OSUTILS="$OSUTILS lzo squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs fuse3-libs"
-	EPELUTILS="$EPELUTILS fakeroot-libs"
+	OSUTILS="$OSUTILS lzo squashfs-tools libzstd fuse3-libs"
+	if $NEEDSFUSE2FS; then
+		OSUTILS="$OSUTILS fuse-libs e2fsprogs-libs e2fsprogs"
+	fi
 elif [ "$DIST" = "opensuse-tumbleweed" ]; then
-	OSUTILS="$OSUTILS squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot fuse2fs $EXTRASUTILS $EPELUTILS"
+	OSUTILS="$OSUTILS squashfs liblzo2-2 libzstd1 libfuse3-3 $EXTRASUTILS $EPELUTILS"
+	if $NEEDSFUSE2FS; then
+		OSUTILS="$OSUTILS fuse2fs"
+	fi
 	EXTRASUTILS=""
 	EPELUTILS=""
 elif [ "$DIST" = "suse15" ]; then
-	OSUTILS="$OSUTILS squashfs liblzo2-2 libzstd1 e2fsprogs fuse3 libfuse3-3 fakeroot $EPELUTILS"
-	EXTRASUTILS="$EXTRASUTILS fuse2fs"
+	OSUTILS="$OSUTILS squashfs liblzo2-2 libzstd1 libfuse3-3 $EPELUTILS"
+	if $NEEDSFUSE2FS; then
+		EXTRASUTILS="$EXTRASUTILS libext2fs2 libfuse2 fuse2fs"
+	fi
 	EPELUTILS=""
 else
-	OSUTILS="$OSUTILS lzo squashfs-tools fuse-libs libzstd e2fsprogs-libs e2fsprogs"
+	# el9 & fc*
+	OSUTILS="$OSUTILS lzo squashfs-tools libzstd"
+	if $NEEDSFUSE2FS; then
+		OSUTILS="$OSUTILS fuse-libs e2fsprogs-libs e2fsprogs"
+	fi
 	EXTRASUTILS="$EXTRASUTILS fuse3-libs"
-	EPELUTILS="$EPELUTILS fakeroot-libs"
 fi
 if [[ "$RPMDIST" == *suse* ]]; then
 	RPMUTILS=libseccomp2
@@ -371,7 +398,8 @@ rmdir lib 2>/dev/null || true
 # move everything needed out of tmp to utils
 mkdir -p utils/bin utils/lib utils/libexec
 mv tmp/usr/lib*/* utils/lib
-mv tmp/usr/*bin/fuse* tmp/usr/*bin/*squashfs utils/libexec
+mv tmp/usr/*bin/*squashfs utils/libexec
+mv tmp/usr/*bin/fuse* utils/libexec 2>/dev/null || true # optional
 mv tmp/usr/bin/fake*sysv utils/bin
 cat >utils/bin/.wrapper <<'!EOF!'
 #!/bin/bash
