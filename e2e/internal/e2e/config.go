@@ -18,6 +18,11 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+const (
+	Findsquash  = "pstree $PPID|grep squashfuse"
+	Findfuse2fs = "pstree $PPID|grep fuse2fs"
+)
+
 func SetupDefaultConfig(t *testing.T, path string) {
 	c, err := apptainerconf.Parse("")
 	if err != nil {
