@@ -34,7 +34,7 @@
 %global package_version @PACKAGE_VERSION@
 
 %global gocryptfs_version 2.4.0
-%global squashfuse_version 0.2.0
+%global squashfuse_version 0.5.0
 %global e2fsprogs_version 1.47.0
 %global fuse_overlayfs_version 1.13
 
