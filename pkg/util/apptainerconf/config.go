@@ -97,7 +97,7 @@ type File struct {
 	AllowContainerExtfs       bool     `default:"yes" authorized:"yes,no" directive:"allow container extfs"`
 	AllowContainerDir         bool     `default:"yes" authorized:"yes,no" directive:"allow container dir"`
 	AllowSetuidMountEncrypted bool     `default:"yes" authorized:"yes,no" directive:"allow setuid-mount encrypted"`
-	AllowSetuidMountSquashfs  bool     `default:"yes" authorized:"yes,no" directive:"allow setuid-mount squashfs"`
+	AllowSetuidMountSquashfs  string   `default:"iflimited" authorized:"yes,no,iflimited" directive:"allow setuid-mount squashfs"`
 	AllowSetuidMountExtfs     bool     `default:"no" authorized:"yes,no" directive:"allow setuid-mount extfs"`
 	AlwaysUseNv               bool     `default:"no" authorized:"yes,no" directive:"always use nv"`
 	UseNvCCLI                 bool     `default:"no" authorized:"yes,no" directive:"use nvidia-container-cli"`
@@ -281,7 +281,7 @@ enable fusemount = {{ if eq .EnableFusemount true }}yes{{ else }}no{{ end }}
 # If 'driver' is chosen, overlayfs is handled by the image driver.
 enable overlay = {{ .EnableOverlay }}
 
-# ENABLE UNDERLAY: [yes/no]
+# ENABLE UNDERLAY: [BOOL]
 # DEFAULT: yes
 # Enabling this option will make it possible to specify bind paths to locations
 # that do not currently exist within the container even if overlay is not
@@ -324,8 +324,8 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 # configuration is undefined (commented or set to NULL), all containers are
 # allowed to be used. 
 #
-# Only effective in setuid mode, with unprivileged user namespace creation disabled.
-# Ignored for the root user.
+# Only effective in setuid mode, with unprivileged user namespace creation
+# disabled.  Ignored for the root user.
 #limit container owners = gmk, apptainer, nobody
 {{ range $index, $owner := .LimitContainerOwners }}
 {{- if eq $index 0 }}limit container owners = {{ else }}, {{ end }}{{$owner}}
@@ -337,8 +337,8 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 # configuration is undefined (commented or set to NULL), all containers are
 # allowed to be used.
 #
-# Only effective in setuid mode, with unprivileged user namespace creation disabled.
-# Ignored for the root user.
+# Only effective in setuid mode, with unprivileged user namespace creation
+# disabled.  Ignored for the root user.
 #limit container groups = group1, apptainer, nobody
 {{ range $index, $group := .LimitContainerGroups }}
 {{- if eq $index 0 }}limit container groups = {{ else }}, {{ end }}{{$group}}
@@ -350,8 +350,8 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 # prefix. If this configuration is undefined (commented or set to NULL),
 # containers will be allowed to run from anywhere on the file system.
 #
-# Only effective in setuid mode, with unprivileged user namespace creation disabled.
-# Ignored for the root user.
+# Only effective in setuid mode, with unprivileged user namespace creation
+# disabled.  Ignored for the root user.
 #limit container paths = /scratch, /tmp, /global
 {{ range $index, $path := .LimitContainerPaths }}
 {{- if eq $index 0 }}limit container paths = {{ else }}, {{ end }}{{$path}}
@@ -362,8 +362,8 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 # This feature limits what kind of containers that Apptainer will allow
 # users to use.
 #
-# Only effective in setuid mode, with unprivileged user namespace creation disabled.
-# Ignored for the root user. Note that some of the
+# Only effective in setuid mode, with unprivileged user namespace creation
+# disabled.  Ignored for the root user. Note that some of the
 # same operations can be limited in setuid mode by the ALLOW SETUID-MOUNT
 # feature below; both types need to be "yes" to be allowed.
 #
@@ -378,25 +378,41 @@ allow container squashfs = {{ if eq .AllowContainerSquashfs true }}yes{{ else }}
 allow container extfs = {{ if eq .AllowContainerExtfs true }}yes{{ else }}no{{ end }}
 allow container dir = {{ if eq .AllowContainerDir true }}yes{{ else }}no{{ end }}
 
-# ALLOW SETUID-MOUNT ${TYPE}: [BOOL]
-# DEFAULT: yes, except no for extfs
+# ALLOW SETUID-MOUNT ${TYPE}: [see specific types below]
 # This feature limits what types of kernel mounts that Apptainer will
 # allow unprivileged users to use in setuid mode.  Note that some of
 # the same operations can also be limited by the ALLOW CONTAINER feature
-# above; both types need to be "yes" to be allowed.
+# above; both types need to be "yes" to be allowed.  Ignored for the root
+# user.
 #
+# ALLOW SETUID-MOUNT ENCRYPTED: [BOOL}
+# DEFAULT: yes
 # Allow mounting of SIF encryption using the kernel device-mapper in
 # setuid mode.  If set to "no", gocryptfs (FUSE-based) encryption will be
 # used instead, which uses a different format in the SIF file, the same
 # format used in unprivileged user namespace mode.
 {{ if eq .AllowSetuidMountEncrypted true}}# {{ end }}allow setuid-mount encrypted = {{ if eq .AllowSetuidMountEncrypted true}}yes{{ else }}no{{ end }}
 #
+# ALLOW SETUID-MOUNT SQUASHFS: [yes/no/iflimited]
+# DEFAULT: iflimited
 # Allow mounting of squashfs filesystem types by the kernel in setuid mode,
 # both inside and outside of SIF files.  If set to "no", a FUSE-based
 # alternative will be used, the same one used in unprivileged user namespace
-# mode.
-{{ if eq .AllowSetuidMountSquashfs true}}# {{ end }}allow setuid-mount squashfs = {{ if eq .AllowSetuidMountSquashfs true}}yes{{ else }}no{{ end }}
+# mode.  If set to "iflimited" (the default), then if either a LIMIT CONTAINER
+# option is used above or the Execution Control List (ECL) feature is activated
+# in ecl.toml, this setting will be treated as "yes", and otherwise it will be
+# treated as "no". 
+# WARNING: in setuid mode a "yes" here while still allowing users write
+# access to the underlying filesystem data enables potential attacks on
+# the kernel.  On the other hand, a "no" here while attempting to limit
+# users to running only approved containers enables the users to potentially
+# override those limits using ptrace() functionality since the FUSE processes
+# run under the user's own uid.  So leaving this on the default setting is
+# advised.
+{{ if eq .AllowSetuidMountSquashfs "iflimited"}}# {{ end }}allow setuid-mount squashfs = {{ .AllowSetuidMountSquashfs }}
 #
+# ALLOW SETUID-MOUNT EXTFS: [BOOL]
+# DEFAULT: no
 # Allow mounting of extfs filesystem types by the kernel in setuid mode, both
 # inside and outside of SIF files.  If set to "no", a FUSE-based alternative
 # will be used, the same one used in unprivileged user namespace mode.
@@ -405,8 +421,7 @@ allow container dir = {{ if eq .AllowContainerDir true }}yes{{ else }}no{{ end }
 # severity since normally unprivileged users do not have write access to the
 # raw filesystem data.  That leaves the kernel vulnerable to attack when
 # this option is enabled in setuid mode. That is why this option defaults to
-# "no".  Change it at your own risk and consider using the LIMIT CONTAINER
-# features above if you do.
+# "no".  Change it at your own risk.
 {{ if eq .AllowSetuidMountExtfs false}}# {{ end }}allow setuid-mount extfs = {{ if eq .AllowSetuidMountExtfs true}}yes{{ else }}no{{ end }}
 
 # ALLOW NET USERS: [STRING]

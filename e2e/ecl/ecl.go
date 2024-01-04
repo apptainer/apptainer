@@ -176,6 +176,24 @@ func (c *ctx) eclConfig(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name:    "make sure kernel squashfs is used with ECL and default config",
+			command: "exec",
+			profile: e2e.UserProfile,
+			config: &syecl.EclConfig{
+				Activated: true,
+				ExecGroups: []syecl.Execgroup{
+					{
+						TagName:  "group1",
+						ListMode: "whitelist",
+						DirPath:  tmpDir,
+						KeyFPs:   []string{KeyMap["key1"]},
+					},
+				},
+			},
+			args: []string{signed, "sh", "-c", e2e.Findsquash},
+			exit: 1,
+		},
+		{
 			name:    "run with whitelist key2 and signed image",
 			command: "exec",
 			profile: e2e.UserProfile,

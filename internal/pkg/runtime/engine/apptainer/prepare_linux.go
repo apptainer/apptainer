@@ -36,6 +36,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/sypgp"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/overlay"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/squashfs"
 	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/image"
@@ -1458,7 +1459,7 @@ func (e *EngineOperations) loadImage(path string, writable bool, userNS bool, el
 		if !e.EngineConfig.File.AllowContainerSquashfs {
 			return nil, fmt.Errorf("configuration disallows users from running squashFS containers")
 		}
-		if elevated && !e.EngineConfig.File.AllowSetuidMountSquashfs && !hasFeature(image.SquashFeature) {
+		if elevated && !squashfs.SetuidMountAllowed(e.EngineConfig.File) && !hasFeature(image.SquashFeature) {
 			return nil, fmt.Errorf("configuration disallows users from mounting squashFS in setuid mode, try --userns")
 		}
 	// Bare EXT3
@@ -1476,7 +1477,7 @@ func (e *EngineOperations) loadImage(path string, writable bool, userNS bool, el
 		}
 	// SIF
 	case image.SIF:
-		if elevated && !e.EngineConfig.File.AllowSetuidMountSquashfs && !hasFeature(image.SquashFeature) {
+		if elevated && !squashfs.SetuidMountAllowed(e.EngineConfig.File) && !hasFeature(image.SquashFeature) {
 			return nil, fmt.Errorf("configuration disallows users from mounting SIF squashFS partition in setuid mode, try --userns")
 		}
 		// Check if SIF contains an encrypted rootfs partition.

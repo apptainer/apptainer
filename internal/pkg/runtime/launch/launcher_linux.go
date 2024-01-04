@@ -35,6 +35,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/squashfs"
 	"github.com/apptainer/apptainer/internal/pkg/util/gpu"
 	"github.com/apptainer/apptainer/internal/pkg/util/shell/interpreter"
 	"github.com/apptainer/apptainer/internal/pkg/util/starter"
@@ -1118,7 +1119,7 @@ func (l *Launcher) prepareImage(c context.Context, insideUserNs bool, image stri
 		if l.cfg.Unsquash {
 			convert = true
 		} else if l.cfg.Namespaces.User || insideUserNs ||
-			!fileconf.AllowSetuidMountSquashfs {
+			!squashfs.SetuidMountAllowed(fileconf) {
 			convert = true
 			if fileconf.ImageDriver != "" {
 				// load image driver plugins

@@ -7,20 +7,37 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.3.x
 
+Changes since v1.2.5
+
 ### Changed defaults / behaviours
 
-- In setuid privileged mode, if `allow setuid-mount squashfs = no` then
-  the squashfuse image driver will be used to mount squash images
-  instead of the kernel squashfs driver.  This eliminates the
-  vulnerability of using a kernel filesystem driver to mount a file
-  writable by an unprivileged user.
-  Likewise, if `allow setuid-mount extfs = no` (the default) then the
-  fuse2fs image driver will be used to mount ext3 images in setuid mode
-  instead of the kernel driver (ext3 images are primarily used for the
-  `--overlay` feature).
-  The `fuse-overlayfs` driver will also now be tried in setuid mode
+- FUSE mounts are now supported in setuid mode, enabling full
+  functionality even when kernel filesystem mounts are insecure
+  due to unprivileged users having write access to raw filesystems
+  in containers.
+
+  When `allow setuid-mount extfs = no` (the default) in apptainer.conf,
+  then the fuse2fs image driver will be used to mount ext3 images in setuid
+  mode instead of the kernel driver (ext3 images are primarily used for the
+  `--overlay` feature), restoring functionality that was removed by
+  default in Apptainer 1.1.8 because of the security risk.
+
+  The `allow setuid-mount squashfs` configuration option in
+  apptainer.conf now has a new default called `iflimited` which allows
+  kernel squashfs mounts only if there is at least one `limit container`
+  option set or if Execution Control Lists are activated in ecl.toml.
+  If kernel squashfs mounts are are not allowed, then the squashfuse
+  image driver will be used instead.
+  `iflimited` is the default because if one of those limits are used
+  the system administrator ensures that unprivileged users do not have
+  write access to the containers, but on the other hand using FUSE would
+  enable a user to theoretically bypass the limits via ptrace() because
+  the FUSE process runs as that user.
+
+  The `fuse-overlayfs` image driver will also now be tried in setuid mode
   if the kernel overlayfs driver does not work (for example if one of
   the layers is a FUSE filesystem).
+
   In addition,
   if `allow setuid-mount encrypted = no` then the unprivileged gocryptfs
   format will be used for encrypting SIF files instead of the kernel

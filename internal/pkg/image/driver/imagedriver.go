@@ -24,6 +24,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/squashfs"
 	"github.com/apptainer/apptainer/pkg/image"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
@@ -88,8 +89,14 @@ func (f *fuseappsFeature) init(binNames string, purpose string, desired image.Dr
 
 func InitImageDrivers(register, unprivileged bool, fileconf *apptainerconf.File, desiredFeatures image.DriverFeature) error {
 	if fileconf.ImageDriver != "" && fileconf.ImageDriver != DriverName {
-		sylog.Debugf("skipping installing %v image driver because %v already configured", DriverName, fileconf.ImageDriver)
+		sylog.Debugf("Skipping installing %v image driver because %v already configured", DriverName, fileconf.ImageDriver)
 		// allow a configured driver to take precedence
+		return nil
+	}
+
+	if !unprivileged && os.Getuid() == 0 {
+		// Skip all the FUSE drivers when running as root
+		sylog.Debugf("Skipping installing %v image driver because running as root", DriverName)
 		return nil
 	}
 
@@ -103,7 +110,7 @@ func InitImageDrivers(register, unprivileged bool, fileconf *apptainerconf.File,
 	// However, only indicate that it is available when it is needed
 	// for other reasons, because when it is marked as available it
 	// takes precedence over the kernel squashfs.
-	if unprivileged || !fileconf.AllowSetuidMountSquashfs {
+	if unprivileged || !squashfs.SetuidMountAllowed(fileconf) {
 		if squashFeature.init("squashfuse_ll|squashfuse", "mount SIF or other squashfs files", desiredFeatures&image.SquashFeature) {
 			features |= image.SquashFeature
 		}
@@ -532,10 +539,10 @@ func (f *fuseappsFeature) waitInstance(instance *fuseappsInstance) error {
 
 	// wait for the go funcs reading from the process to exit
 	if err := <-instance.stdout.err; err != nil {
-		sylog.Debugf("error from %v stdout: %v", f.binName, err)
+		sylog.Debugf("Error from %v stdout: %v", f.binName, err)
 	}
 	if err := <-instance.stderr.err; err != nil {
-		sylog.Debugf("error from %v stderr: %v", f.binName, err)
+		sylog.Debugf("Error from %v stderr: %v", f.binName, err)
 	}
 
 	err := cmd.Wait()
