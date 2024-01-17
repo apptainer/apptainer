@@ -9,6 +9,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.3.x
 
+Changes since 1.3.0-rc.1.
+
+- Fix check for rootless overlay so it will work when something is
+  mounted under `/mnt`.  This check is used to decide whether to use the
+  kernel overlayfs in user namespace mode by default or underlay.
+
 ## v1.3.0-rc.1 - \[2024-01-10\]
 
 Changes since v1.2.5

@@ -157,7 +157,7 @@ func CheckRootless() error {
 
 	args := []string{
 		"-t", "overlay",
-		"-o", "lowerdir=/mnt:/etc",
+		"-o", "lowerdir=/etc/sysctl.d:/etc/modprobe.d",
 		"none",
 		"/tmp",
 	}
