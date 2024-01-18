@@ -14,6 +14,7 @@ Changes since 1.3.0-rc.1.
 - Fix check for rootless overlay so it will work when something is
   mounted under `/mnt`.  This check is used to decide whether to use the
   kernel overlayfs in user namespace mode by default or underlay.
+- Fix `--sharens` failure on EL8.
 
 ## v1.3.0-rc.1 - \[2024-01-10\]
 
