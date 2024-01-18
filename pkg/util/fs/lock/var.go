@@ -12,6 +12,6 @@ package lock
 import "golang.org/x/sys/unix"
 
 var (
-	setLk  = unix.F_SETLK
-	setLkw = unix.F_SETLKW
+	setLk  = unix.F_OFD_SETLK
+	setLkw = unix.F_OFD_SETLKW
 )
