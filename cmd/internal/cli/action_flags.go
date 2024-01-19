@@ -807,12 +807,13 @@ var actionIgnoreUsernsFlag = cmdline.Flag{
 	Hidden:       true,
 }
 
-// --underlay
+// --underlay (deprecated)
 var actionUnderlayFlag = cmdline.Flag{
 	ID:           "underlayFlag",
 	Value:        &underlay,
 	DefaultValue: false,
 	Name:         "underlay",
+	Deprecated:   "default overlay is preferred",
 	Usage:        "use underlay instead of overlay for bind mounts",
 	EnvKeys:      []string{"UNDERLAY"},
 	Hidden:       false,

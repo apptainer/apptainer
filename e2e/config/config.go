@@ -935,9 +935,8 @@ func (c configTests) configGlobalCombination(t *testing.T) {
 			},
 			exit: 255,
 		},
-		// disable overlay to force underlay
 		{
-			name:    "EnableUnderlayNo",
+			name:    "EnableOverlayNoUnderlayNo",
 			argv:    []string{"--bind", "/etc/passwd:/passwd", c.env.ImagePath, "test", "-f", "/passwd"},
 			profile: e2e.UserProfile,
 			directives: map[string]string{
@@ -949,13 +948,24 @@ func (c configTests) configGlobalCombination(t *testing.T) {
 		},
 		{
 			name:    "EnableUnderlayYes",
-			argv:    []string{"--bind", "/etc/passwd:/passwd", c.env.ImagePath, "test", "-f", "/passwd"},
+			argv:    []string{"--bind", "/etc/passwd:/passwd", c.env.ImagePath, "sh", "-c", "test -f /passwd && mount"},
 			profile: e2e.UserProfile,
 			directives: map[string]string{
 				"enable overlay":  "no",
 				"enable underlay": "yes",
 			},
-			exit: 0,
+			resultOp: e2e.ExpectOutput(e2e.ContainMatch, "on / type tmpfs"),
+			exit:     0,
+		},
+		{
+			name:    "EnableUnderlayPreferred",
+			argv:    []string{"--bind", "/etc/passwd:/passwd", c.env.ImagePath, "sh", "-c", "test -f /passwd && mount"},
+			profile: e2e.UserProfile,
+			directives: map[string]string{
+				"enable underlay": "preferred",
+			},
+			resultOp: e2e.ExpectOutput(e2e.ContainMatch, "on / type tmpfs"),
+			exit:     0,
 		},
 	}
 
