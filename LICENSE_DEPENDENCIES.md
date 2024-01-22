@@ -23,6 +23,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/containerd/containerd/blob/master/pkg/userns/LICENSE>
 
+## github.com/containerd/log
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/containerd/log/blob/master/LICENSE>
+
 ## github.com/containerd/stargz-snapshotter/estargz
 
 **License:** Apache-2.0
@@ -137,6 +143,18 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/go-jose/go-jose/blob/master/v3/LICENSE>
 
+## github.com/go-logr/logr
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/go-logr/logr/blob/master/LICENSE>
+
+## github.com/go-logr/stdr
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/go-logr/stdr/blob/master/LICENSE>
+
 ## github.com/go-openapi/analysis
 
 **License:** Apache-2.0
@@ -238,6 +256,12 @@ The dependencies and their licenses are as follows:
 **License:** Apache-2.0
 
 **License URL:** <https://github.com/moby/sys/blob/master/sequential/LICENSE>
+
+## github.com/moby/sys/user
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/moby/sys/blob/master/user/LICENSE>
 
 ## github.com/modern-go/concurrent
 
@@ -388,6 +412,30 @@ The dependencies and their licenses are as follows:
 **License:** Apache-2.0
 
 **Project URL:** <https://go.mongodb.org/mongo-driver>
+
+## go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
+
+**License:** Apache-2.0
+
+**Project URL:** <https://go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp>
+
+## go.opentelemetry.io/otel
+
+**License:** Apache-2.0
+
+**Project URL:** <https://go.opentelemetry.io/otel>
+
+## go.opentelemetry.io/otel/metric
+
+**License:** Apache-2.0
+
+**Project URL:** <https://go.opentelemetry.io/otel/metric>
+
+## go.opentelemetry.io/otel/trace
+
+**License:** Apache-2.0
+
+**Project URL:** <https://go.opentelemetry.io/otel/trace>
 
 ## google.golang.org/genproto/googleapis/rpc/status
 
