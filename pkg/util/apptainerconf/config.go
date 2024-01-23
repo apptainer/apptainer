@@ -89,7 +89,7 @@ type File struct {
 	MountHostfs               bool     `default:"no" authorized:"yes,no" directive:"mount hostfs"`
 	UserBindControl           bool     `default:"yes" authorized:"yes,no" directive:"user bind control"`
 	EnableFusemount           bool     `default:"yes" authorized:"yes,no" directive:"enable fusemount"`
-	EnableUnderlay            bool     `default:"yes" authorized:"yes,no" directive:"enable underlay"`
+	EnableUnderlay            string   `default:"yes" authorized:"yes,no,preferred" directive:"enable underlay"`
 	MountSlave                bool     `default:"yes" authorized:"yes,no" directive:"mount slave"`
 	AllowContainerSIF         bool     `default:"yes" authorized:"yes,no" directive:"allow container sif"`
 	AllowContainerEncrypted   bool     `default:"yes" authorized:"yes,no" directive:"allow container encrypted"`
@@ -106,7 +106,7 @@ type File struct {
 	MaxLoopDevices            uint     `default:"256" directive:"max loop devices"`
 	SessiondirMaxSize         uint     `default:"64" directive:"sessiondir max size"`
 	MountDev                  string   `default:"yes" authorized:"yes,no,minimal" directive:"mount dev"`
-	EnableOverlay             string   `default:"try" authorized:"yes,no,try,driver" directive:"enable overlay"`
+	EnableOverlay             string   `default:"yes" authorized:"yes,no,try,driver" directive:"enable overlay"`
 	BindPath                  []string `default:"/etc/localtime,/etc/hosts" directive:"bind path"`
 	LimitContainerOwners      []string `directive:"limit container owners"`
 	LimitContainerGroups      []string `directive:"limit container groups"`
@@ -273,20 +273,31 @@ user bind control = {{ if eq .UserBindControl true }}yes{{ else }}no{{ end }}
 # command line option.
 enable fusemount = {{ if eq .EnableFusemount true }}yes{{ else }}no{{ end }}
 
-# ENABLE OVERLAY: [yes/no/try/driver]
-# DEFAULT: try
-# Enabling this option will make it possible to specify bind paths to locations
-# that do not currently exist within the container.  If 'try' is chosen,
-# overlayfs will be tried but if it is unavailable it will be silently ignored.
-# If 'driver' is chosen, overlayfs is handled by the image driver.
-enable overlay = {{ .EnableOverlay }}
-
-# ENABLE UNDERLAY: [BOOL]
+# ENABLE OVERLAY: [yes/no/driver/try]
 # DEFAULT: yes
 # Enabling this option will make it possible to specify bind paths to locations
-# that do not currently exist within the container even if overlay is not
-# working.  If overlay is available, it will be tried first.
-enable underlay = {{ if eq .EnableUnderlay true }}yes{{ else }}no{{ end }}
+# that do not currently exist within the container.  If 'yes', kernel overlayfs
+# will be tried but if it doesn't work, the image driver (i.e. fuse-overlayfs)
+# will be used instead.  'try' is obsolete and treated the same as 'yes'.
+# If 'driver' is chosen, overlay will always be handled by the image driver.
+# If 'no' is chosen, then no overlay type will be used for missing bind paths
+# nor for any other purpose.
+# The ENABLE UNDERLAY 'preferred' option below overrides this option for
+# creating bind paths.
+enable overlay = {{ .EnableOverlay }}
+
+# ENABLE UNDERLAY: [yes/no/preferred]
+# DEFAULT: yes
+# Enabling this option will make it possible to specify bind paths to locations
+# that do not currently exist within the container without using any overlay
+# feature, when the '--underlay' action option is given by the user or when
+# the ENABLE OVERLAY option above is set to 'no'.
+# If 'preferred' is chosen, then underlay will always be used instead of
+# overlay for creating bind paths.
+# This option is deprecated and will be removed in a future release, because
+# the implementation is complicated and the performance is similar to
+# overlayfs and fuse-overlayfs.
+enable underlay = {{ .EnableUnderlay }}
 
 # MOUNT SLAVE: [BOOL]
 # DEFAULT: yes

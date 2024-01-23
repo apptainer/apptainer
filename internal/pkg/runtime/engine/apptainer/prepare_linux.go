@@ -1022,14 +1022,13 @@ func (e *EngineOperations) checkSignalPropagation() {
 	}
 }
 
-// setSessionLayer will test if overlay is supported/allowed.
-func (e *EngineOperations) setSessionLayer(img *image.Image, userNS bool) error {
+// setSessionLayer chooses between overlay, underlay, or neither
+func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 	e.EngineConfig.SetSessionLayer(apptainerConfig.DefaultLayer)
 
 	writableTmpfs := e.EngineConfig.GetWritableTmpfs()
 	writableImage := e.EngineConfig.GetWritableImage()
 	hasOverlayImage := len(e.EngineConfig.GetOverlayImage()) > 0
-	overlayDriver := e.EngineConfig.File.EnableOverlay == "driver"
 
 	if writableImage && hasOverlayImage {
 		return fmt.Errorf("cannot use --overlay in conjunction with --writable")
@@ -1037,9 +1036,7 @@ func (e *EngineOperations) setSessionLayer(img *image.Image, userNS bool) error 
 
 	// a SIF image may contain one or more overlay partition
 	// check there is at least one ext3 overlay partition
-	// to validate overlay with writable flag
 	hasSIFOverlay := false
-
 	if img.Type == image.SIF {
 		overlays, err := img.GetOverlayPartitions()
 		if err != nil {
@@ -1053,111 +1050,56 @@ func (e *EngineOperations) setSessionLayer(img *image.Image, userNS bool) error 
 		}
 	}
 
-	if overlayDriver {
-		// overlay is always handled by the image driver
-		if e.EngineConfig.File.ImageDriver == "" {
-			return fmt.Errorf("you need to specify an image driver with 'enable overlay = driver'")
+	if e.EngineConfig.File.EnableOverlay == "no" {
+		if hasOverlayImage {
+			return fmt.Errorf("overlay images requires 'enable overlay', but set to 'no' by administrator")
 		}
-		if !writableImage || hasSIFOverlay {
-			e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
-			return nil
+		if writableTmpfs {
+			return fmt.Errorf("--writable-tmpfs requires 'enable overlay', but set to 'no' by administrator")
 		}
-		sylog.Debugf("Not attempting to use overlay or underlay: writable flag requested")
-		return nil
-	}
-
-	// Check for explicit user namespace request
-	if !userNS {
-		for _, ns := range e.EngineConfig.OciConfig.Linux.Namespaces {
-			if ns.Type == specs.UserNamespace {
-				userNS = true
-				break
-			}
+		if hasSIFOverlay {
+			return fmt.Errorf("SIF overlay partition requires 'enable overlay', but set to 'no' by administrator")
 		}
-	}
-
-	if userNS {
+		sylog.Debugf("Can not use overlay, disabled by configuration ('enable overlay = no')")
+	} else {
 		if writableTmpfs || hasOverlayImage {
-			sylog.Debugf("Overlay requested while in user namespace")
-			// Try overlay although it will only work if the image driver or the
-			//  kernel support unprivileged overlay
+			sylog.Debugf("Overlay requested by user")
 			e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
 			return nil
 		}
 		if hasSIFOverlay {
-			sylog.Debugf("Overlay partition found while in user namespace")
-			// Likewise try the overlay because of the partition
+			sylog.Debugf("Overlay partition found")
 			e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
 			return nil
 		}
-		if !writableImage {
-			if e.EngineConfig.File.EnableOverlay == "yes" || e.EngineConfig.File.EnableOverlay == "try" {
-				if e.EngineConfig.GetUnderlay() && e.EngineConfig.File.EnableUnderlay {
-					sylog.Debugf("Attempting to use 'underlay' over 'overlay': '--underlay' is set")
-					e.EngineConfig.SetSessionLayer(apptainerConfig.UnderlayLayer)
-					return nil
-				}
-				err := overlay.CheckRootless()
-				if err == nil {
-					e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
-					return nil
-				}
-				if err != overlay.ErrNoRootlessOverlay {
-					sylog.Warningf("While checking for rootless overlay support: %s", err)
-				}
-			}
-			if !e.EngineConfig.File.EnableUnderlay {
-				sylog.Debugf("Not attempting to use underlay with user namespace: disabled by configuration ('enable underlay = no')")
-				return nil
-			}
-			sylog.Debugf("Using underlay layer: user namespace requested")
-			e.EngineConfig.SetSessionLayer(apptainerConfig.UnderlayLayer)
-			return nil
-		}
+	}
+	if writableImage {
 		sylog.Debugf("Not attempting to use overlay or underlay: writable flag requested")
 		return nil
 	}
 
-	// Now check if there is an overlay entry in /proc/filesystems
-	if has, _ := proc.HasFilesystem("overlay"); has {
-		sylog.Debugf("Overlay seems supported and allowed by kernel")
-		switch e.EngineConfig.File.EnableOverlay {
-		case "yes", "try":
-			e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
-
-			if !writableImage || hasSIFOverlay {
-				sylog.Debugf("Attempting to use overlayfs (enable overlay = %v)\n", e.EngineConfig.File.EnableOverlay)
-				return nil
-			}
-
-			sylog.Debugf("Not attempting to use overlay or underlay: writable flag requested")
-			e.EngineConfig.SetSessionLayer(apptainerConfig.DefaultLayer)
-			return nil
-		default:
-			if hasOverlayImage {
-				return fmt.Errorf("overlay images requires 'enable overlay = yes', but set to 'no' by administrator")
-			}
-			if writableTmpfs {
-				return fmt.Errorf("--writable-tmpfs requires 'enable overlay = yes', but set to 'no' by administrator")
-			}
-			sylog.Debugf("Could not use overlay, disabled by configuration ('enable overlay = no')")
-		}
-	} else {
-		if writableTmpfs {
-			return fmt.Errorf("--writable-tmpfs requires overlay kernel support: your kernel doesn't support it")
-		}
-		if hasOverlayImage {
-			return fmt.Errorf("overlay images requires overlay kernel support: your kernel doesn't support it")
-		}
-	}
-
-	// if --writable wasn't set, use underlay if possible
-	if !writableImage && e.EngineConfig.File.EnableUnderlay {
-		sylog.Debugf("Attempting to use underlay (enable underlay = yes)\n")
+	if e.EngineConfig.File.EnableUnderlay == "preferred" {
+		sylog.Debugf("Using 'underlay' because 'enable underlay = preferred' option")
 		e.EngineConfig.SetSessionLayer(apptainerConfig.UnderlayLayer)
 		return nil
-	} else if writableImage {
-		sylog.Debugf("Not attempting to use overlay or underlay: writable flag requested")
+	}
+	if e.EngineConfig.GetUnderlay() {
+		if e.EngineConfig.File.EnableUnderlay == "no" {
+			return fmt.Errorf("'--underlay' requires 'enable underlay = yes', but set to 'no' by administrator")
+		}
+		sylog.Debugf("Using 'underlay' because '--underlay' option was given")
+		e.EngineConfig.SetSessionLayer(apptainerConfig.UnderlayLayer)
+		return nil
+	}
+
+	if e.EngineConfig.File.EnableOverlay != "no" {
+		sylog.Debugf("Using overlay because it is not disabled")
+		e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
+		return nil
+	}
+	if e.EngineConfig.File.EnableUnderlay != "no" {
+		sylog.Debugf("Using 'underlay' because overlay is disabled and underlay is not")
+		e.EngineConfig.SetSessionLayer(apptainerConfig.UnderlayLayer)
 		return nil
 	}
 
@@ -1184,7 +1126,7 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config, userNS bool
 		return fmt.Errorf("could not use %s for writing, you don't have write permissions", img.Path)
 	}
 
-	if err := e.setSessionLayer(img, userNS); err != nil {
+	if err := e.setSessionLayer(img); err != nil {
 		return err
 	}
 
@@ -1209,7 +1151,7 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config, userNS bool
 			(imageDriver == nil || imageDriver.Features()&image.OverlayFeature == 0) {
 			if err := overlay.CheckLower(img.Path); overlay.IsIncompatible(err) {
 				layer := apptainerConfig.UnderlayLayer
-				if !e.EngineConfig.File.EnableUnderlay {
+				if e.EngineConfig.File.EnableUnderlay == "no" {
 					sylog.Warningf("Could not fallback to underlay, disabled by configuration ('enable underlay = no')")
 					layer = apptainerConfig.DefaultLayer
 				}
