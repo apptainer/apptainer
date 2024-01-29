@@ -10,14 +10,8 @@
 package overlay
 
 import (
-	"errors"
 	"fmt"
-	"os"
-	"os/exec"
-	"syscall"
 
-	"github.com/apptainer/apptainer/internal/pkg/util/bin"
-	"github.com/apptainer/apptainer/pkg/sylog"
 	"golang.org/x/sys/unix"
 )
 
@@ -144,49 +138,4 @@ func IsIncompatible(err error) bool {
 		return true
 	}
 	return false
-}
-
-var ErrNoRootlessOverlay = errors.New("rootless overlay not supported by kernel")
-
-// CheckRootless checks whether the kernel overlay driver supports unprivileged use in a user namespace.
-func CheckRootless() error {
-	mountBin, err := bin.FindBin("mount")
-	if err != nil {
-		return fmt.Errorf("while looking for mount command: %s", err)
-	}
-
-	args := []string{
-		"-t", "overlay",
-		"-o", "lowerdir=/mnt:/etc",
-		"none",
-		"/tmp",
-	}
-
-	cmd := exec.Command(mountBin, args...)
-	cmd.SysProcAttr = &syscall.SysProcAttr{}
-	// Unshare user and mount namespace
-	cmd.SysProcAttr.Unshareflags = syscall.CLONE_NEWUSER | syscall.CLONE_NEWNS
-	// Map to user to root inside the user namespace
-	cmd.SysProcAttr.UidMappings = []syscall.SysProcIDMap{
-		{
-			ContainerID: 0,
-			HostID:      os.Getuid(),
-			Size:        1,
-		},
-	}
-	cmd.SysProcAttr.GidMappings = []syscall.SysProcIDMap{
-		{
-			ContainerID: 0,
-			HostID:      os.Getgid(),
-			Size:        1,
-		},
-	}
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		sylog.Debugf("Rootless overlay not supported on this system: %s\n%s", err, out)
-		return ErrNoRootlessOverlay
-	}
-
-	sylog.Debugf("Rootless overlay appears supported on this system.")
-	return nil
 }

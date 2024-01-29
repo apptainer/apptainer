@@ -11,7 +11,10 @@ package cmdline
 
 import (
 	"fmt"
+	"os"
 	"strings"
+
+	"github.com/apptainer/apptainer/pkg/sylog"
 
 	"github.com/spf13/cobra"
 )
@@ -24,6 +27,26 @@ type CommandManager struct {
 	groupCmds map[string][]*cobra.Command
 	errPool   []error
 	fm        *flagManager
+}
+
+// object for turning deprecation messages into warnings
+type warnDeprecated struct{}
+
+// implement io.Writer function for redirecting deprecated messages to
+// sylog.Warningf()
+func (w *warnDeprecated) Write(b []byte) (n int, err error) {
+	s := string(b[:])
+	if strings.Contains(s, "has been deprecated") {
+		sylog.Warningf(s)
+		return len(s), nil
+	}
+	// This is only supposed to be for the "Out" stream, but some
+	// error messages come through here too that by default go
+	// to stderr.
+	if strings.HasPrefix(s, "Error") {
+		return os.Stderr.Write(b)
+	}
+	return os.Stdout.Write(b)
 }
 
 // FlagError represents a flag error type
@@ -55,6 +78,7 @@ func NewCommandManager(rootCmd *cobra.Command) *CommandManager {
 		fm:        newFlagManager(),
 	}
 	rootCmd.SetFlagErrorFunc(onError)
+	rootCmd.SetOut(&warnDeprecated{})
 	return cm
 }
 

@@ -7,8 +7,19 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.3.x
 
-Changes since 1.3.0-rc.1.
+Changes since v1.3.0-rc.1
 
+- Change the default in user namespace mode to use either kernel
+  overlayfs or fuse-overlayfs instead of the underlay feature for the
+  purpose of adding bind mount points.  That was already the default in
+  setuid mode; this change makes it consistent.  The underlay feature can
+  still be used with the `--underlay` option, but it is deprecated because
+  the implementation is complicated and measurements have shown that the
+  performance of underlay is similar to overlayfs and fuse-overlayfs.
+  For now the underlay feature can be made the default again with a new
+  `preferred` value on the `enable underlay` configuration option.
+  Also the `--underlay` option can be used in setuid mode or as the root
+  user, although it was ignored previously.
 - Fix `--sharens` failure on EL8.
 
 ## v1.3.0-rc.1 - \[2024-01-10\]

@@ -1921,6 +1921,126 @@ func (c actionTests) actionBinds(t *testing.T) {
 	}
 }
 
+func (c actionTests) actionLayerType(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	sandbox, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "action-layertype-sandbox", "")
+	defer e2e.Privileged(cleanup)
+
+	// convert test image to sandbox
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--force", "--sandbox", sandbox, c.env.ImagePath),
+		e2e.ExpectExit(0),
+	)
+
+	tests := []struct {
+		name       string
+		profile    e2e.Profile
+		args       []string
+		expectType string
+	}{
+		{
+			name:    "RootDefault",
+			profile: e2e.RootProfile,
+			args: []string{
+				c.env.ImagePath,
+			},
+			expectType: "overlay",
+		},
+		{
+			name:    "RootWithUnderlayOption",
+			profile: e2e.RootProfile,
+			args: []string{
+				"--underlay",
+				c.env.ImagePath,
+			},
+			expectType: "tmpfs",
+		},
+		{
+			name:    "UserDefault",
+			profile: e2e.UserProfile,
+			args: []string{
+				c.env.ImagePath,
+			},
+			expectType: "fuse",
+		},
+		{
+			name:    "UserWithUnderlayOption",
+			profile: e2e.UserProfile,
+			args: []string{
+				"--underlay",
+				c.env.ImagePath,
+			},
+			expectType: "tmpfs",
+		},
+		{
+			name:    "UserSandboxDefault",
+			profile: e2e.UserProfile,
+			args: []string{
+				sandbox,
+			},
+			expectType: "overlay",
+		},
+		{
+			name:    "UserSandboxWithUnderlayOption",
+			profile: e2e.UserProfile,
+			args: []string{
+				"--underlay",
+				sandbox,
+			},
+			expectType: "tmpfs",
+		},
+		{
+			name:    "UserNamespaceDefault",
+			profile: e2e.UserNamespaceProfile,
+			args: []string{
+				c.env.ImagePath,
+			},
+			expectType: "fuse",
+		},
+		{
+			name:    "UserNamespaceWithUnderlayOption",
+			profile: e2e.UserNamespaceProfile,
+			args: []string{
+				"--underlay",
+				c.env.ImagePath,
+			},
+			expectType: "tmpfs",
+		},
+		{
+			name:    "UserNamespaceSandboxDefault",
+			profile: e2e.UserNamespaceProfile,
+			args: []string{
+				sandbox,
+			},
+			expectType: "overlay",
+		},
+		{
+			name:    "UserNamespaceSandboxWithUnderlayOption",
+			profile: e2e.UserNamespaceProfile,
+			args: []string{
+				"--underlay",
+				sandbox,
+			},
+			expectType: "tmpfs",
+		},
+	}
+
+	for _, tt := range tests {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(tt.profile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(append(tt.args, "mount")...),
+			e2e.ExpectExit(0, e2e.ExpectOutput(e2e.ContainMatch, "on / type "+tt.expectType)),
+		)
+	}
+}
+
 func (c actionTests) exitSignals(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
@@ -2953,6 +3073,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"issue 1848":                   c.issue1848,               // https://github.com/apptainer/apptainer/issues/1848
 		"network":                      c.actionNetwork,           // test basic networking
 		"binds":                        c.actionBinds,             // test various binds with --bind and --mount
+		"layerType":                    c.actionLayerType,         // verify the various layer types
 		"exit and signals":             c.exitSignals,             // test exit and signals propagation
 		"fuse mount":                   c.fuseMount,               // test fusemount option
 		"bind image":                   c.bindImage,               // test bind image with --bind and --mount

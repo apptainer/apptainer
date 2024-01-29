@@ -133,7 +133,7 @@ user bind control = yes
 # Enabling this option will make it possible to specify bind paths to locations
 # that do not currently exist within the container.  If 'try' is chosen,
 # overlayfs will be tried but if it is unavailable it will be silently ignored.
-enable overlay = try
+enable overlay = yes
 
 
 # MOUNT SLAVE: [BOOL]
