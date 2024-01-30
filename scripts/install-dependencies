@@ -13,6 +13,7 @@ if [ -n "$1" ]; then
     LIBEXECDIR="$1"
 elif [ ! -f builddir/Makefile ]; then
     echo "builddir/Makefile not found" >&2
+else
     LIBEXECDIR="$(sed -n 's/^LIBEXECDIR := //p' builddir/Makefile)"
 fi
 
