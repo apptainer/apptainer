@@ -63,7 +63,7 @@ func ensurePassword(password string) (string, error) {
 			return "", fmt.Errorf("failed to read password: %s", err)
 		}
 		if input == "" {
-			return "", fmt.Errorf("A password is required")
+			return "", fmt.Errorf("a password is required")
 		}
 		return input, nil
 	}
@@ -87,7 +87,7 @@ func (h *ociHandler) login(u *url.URL, username, password string, insecure bool)
 		return nil, err
 	}
 
-	if err := checkOCILogin(regName, username, password, insecure); err != nil {
+	if err := checkOCILogin(regName, username, pass, insecure); err != nil {
 		return nil, err
 	}
 
