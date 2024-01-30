@@ -21,6 +21,7 @@ Changes since v1.3.0-rc.1
   Also the `--underlay` option can be used in setuid mode or as the root
   user, although it was ignored previously.
 - Fix `--sharens` failure on EL8.
+- Fix Harbor registry login failure.
 
 ## v1.3.0-rc.1 - \[2024-01-10\]
 
