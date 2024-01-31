@@ -2761,7 +2761,7 @@ func (c *container) getFuseFdFromRPC(fds []int) ([]int, error) {
 
 	bufSpace := (len(fds) + 1) * 4
 	buf := make([]byte, unix.CmsgSpace(bufSpace))
-	_, _, _, _, err := unix.Recvmsg(socketPair[0], nil, buf, 0)
+	_, _, _, _, err := unix.Recvmsg(socketPair[0], nil, buf, 0) //nolint:dogsled
 	if err != nil {
 		return nil, fmt.Errorf("while receiving file descriptors: %s", err)
 	}
@@ -2802,7 +2802,7 @@ func (c *container) openFuseFdFromRPC() (int, int, error) {
 
 	bufSpace := 4
 	buf := make([]byte, unix.CmsgSpace(bufSpace))
-	_, _, _, _, err = unix.Recvmsg(socketPair[0], nil, buf, 0)
+	_, _, _, _, err = unix.Recvmsg(socketPair[0], nil, buf, 0) //nolint:dogsled
 	if err != nil {
 		return -1, -1, fmt.Errorf("while receiving file descriptors: %s", err)
 	}

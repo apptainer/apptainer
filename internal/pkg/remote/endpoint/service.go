@@ -158,7 +158,7 @@ func (config *Config) GetAllServices() (map[string][]Service, error) {
 	reader := cacheReader
 
 	if cacheReader == nil {
-		res, err := client.Do(req)
+		res, err := client.Do(req) //nolint:bodyclose
 		if err != nil {
 			return nil, fmt.Errorf("error making request to server: %s", err)
 		} else if res.StatusCode != http.StatusOK {
