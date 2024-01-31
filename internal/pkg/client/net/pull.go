@@ -128,6 +128,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 	if err != nil {
 		sylog.Fatalf("Error making http request: %v\n", err)
 	}
+	defer res.Body.Close()
 
 	headerDate := res.Header.Get("Last-Modified")
 	sylog.Debugf("HTTP Last-Modified header is: %s", headerDate)

@@ -9,6 +9,7 @@ linters:
   enable:
     - asciicheck
     - bidichk
+    - bodyclose
     - containedctx
     - contextcheck
     - decorder
