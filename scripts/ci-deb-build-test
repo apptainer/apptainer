@@ -15,9 +15,6 @@ apt-get install -y \
     pkg-config \
     uidmap \
     squashfs-tools \
-    squashfuse \
-    fuse2fs \
-    fuse-overlayfs \
     fakeroot \
     cryptsetup \
     tzdata \

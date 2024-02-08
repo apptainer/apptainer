@@ -203,17 +203,6 @@ install -m 755 e2fsprogs-%{e2fsprogs_version}/fuse2fs %{buildroot}%{_libexecdir}
 install -m 755 fuse-overlayfs-%{fuse_overlayfs_version}/fuse-overlayfs %{buildroot}%{_libexecdir}/%{name}/bin/fuse-overlayfs
 %endif
 
-%if 0%{?el7}
-# Check for fuse2fs only as a pre-install so that an rpm built on el7 can
-# be used on el8 & el9.  Only el7 has a fuse2fs package, the others have 
-# the fuse2fs program in the e2fsprogs package.
-%pre
-if [ ! -f /usr/bin/fuse2fs ] && [ ! -f /usr/sbin/fuse2fs ]; then
-	echo "fuse2fs not found, please yum install /usr/*bin/fuse2fs from epel" >&2
-	exit 1
-fi
-%endif
-
 %post
 # $1 in %%posttrans cannot distinguish between fresh installs and upgrades,
 # so check it here and create a file to pass the knowledge to that step
