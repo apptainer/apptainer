@@ -219,10 +219,18 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 	var f *fuseappsFeature
 	var cmd *exec.Cmd
 	cmdArgs := d.cmdPrefix
+	// This avoids sometimes seeing "Permission denied" when FUSE
+	// is fooled into thinking two different user ids are involved.
+	optsStr := "allow_other"
+	if (params.Flags & syscall.MS_RDONLY) != 0 {
+		optsStr += ",ro"
+	}
 	switch params.Filesystem {
 	case "overlay":
 		f = &d.overlayFeature
-		optsStr := strings.Join(params.FSOptions, ",")
+		if len(params.FSOptions) > 0 {
+			optsStr += "," + strings.Join(params.FSOptions, ",")
+		}
 		// Ignore xino=on option with fuse-overlayfs
 		optsStr = strings.Replace(optsStr, ",xino=on", "", -1)
 		// noacl is needed to avoid failures when the upper layer
@@ -234,15 +242,11 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 
 	case "squashfs":
 		f = &d.squashFeature
-		optsStr := ""
 		if d.squashSetUID {
-			optsStr = fmt.Sprintf("uid=%v,gid=%v", os.Getuid(), os.Getgid())
+			optsStr += fmt.Sprintf(",uid=%v,gid=%v", os.Getuid(), os.Getgid())
 		}
 		if params.Offset > 0 {
-			if optsStr != "" {
-				optsStr += ","
-			}
-			optsStr += "offset=" + strconv.FormatUint(params.Offset, 10)
+			optsStr += ",offset=" + strconv.FormatUint(params.Offset, 10)
 		}
 		cmdArgs = append(cmdArgs, f.cmdPath, "-f")
 		if optsStr != "" {
@@ -257,19 +261,11 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 		cmd.Stdin = strings.NewReader(fmt.Sprintf("%s\n", string(params.Key)))
 	case "ext3":
 		f = &d.ext3Feature
-		optsStr := ""
 		if os.Getuid() != 0 {
 			// Bypass permission checks so all can be read,
 			//  especially overlay work dir
-			optsStr = "fakeroot"
+			optsStr += ",fakeroot"
 		}
-		if (params.Flags & syscall.MS_RDONLY) != 0 {
-			if optsStr != "" {
-				optsStr += ","
-			}
-			optsStr += "ro"
-		}
-
 		stdbuf, err := bin.FindBin("stdbuf")
 		if err == nil {
 			// Run fuse2fs through stdbuf to be able to read the
@@ -654,6 +650,8 @@ func (i *fuseappsInstance) filterMsg() string {
 		// from any of the programs when an older fuse3 lib is used
 		// than what the programs were compiled with
 		"fuse: warning: library too old",
+		// from any of the programs
+		"The option \"-allow_other\" is set",
 	}
 
 	errmsg := ""
