@@ -73,6 +73,14 @@ func (t *Methods) Mount(arguments *args.MountArgs, mountErr *error) (err error) 
 	return
 }
 
+// Unmount performs an unmount with the specified arguments.
+func (t *Methods) Unmount(arguments *args.UnmountArgs, unmountErr *error) (err error) {
+	mainthread.Execute(func() {
+		*unmountErr = syscall.Unmount(arguments.Target, arguments.Unmountflags)
+	})
+	return
+}
+
 // Decrypt decrypts the loop device.
 func (t *Methods) Decrypt(arguments *args.CryptArgs, reply *string) (err error) {
 	cryptName := ""

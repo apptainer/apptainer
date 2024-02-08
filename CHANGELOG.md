@@ -22,6 +22,11 @@ Changes since v1.3.0-rc.1
   `preferred` value on the `enable underlay` configuration option.
   Also the `--underlay` option can be used in setuid mode or as the root
   user, although it was ignored previously.
+- Prefer again to use kernel overlayfs over fuse-overlayfs when a lower
+  layer is FUSE and there's no writable upper layer, undoing the change
+  from 1.2.0.  Another workaround was found for the problem that change
+  addressed.  This applies in both setuid mode and in user namespace
+  mode (except the latter not on CentOS7 where it isn't supported).
 - Fix `--sharens` failure on EL8.
 
 ## v1.3.0-rc.1 - \[2024-01-10\]

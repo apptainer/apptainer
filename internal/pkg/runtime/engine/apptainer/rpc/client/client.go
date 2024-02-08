@@ -45,6 +45,24 @@ func (t *RPC) Mount(source string, target string, filesystem string, flags uintp
 	return err
 }
 
+// Unmount calls the unmount RPC using the supplied arguments.
+func (t *RPC) Unmount(target string, flags int) error {
+	arguments := &args.UnmountArgs{
+		Target:       target,
+		Unmountflags: flags,
+	}
+
+	var unmountErr error
+
+	err := t.Client.Call(t.Name+".Unmount", arguments, &unmountErr)
+	// RPC communication will take precedence over unmount error
+	if err == nil {
+		err = unmountErr
+	}
+
+	return err
+}
+
 // Decrypt calls the DeCrypt RPC using the supplied arguments.
 func (t *RPC) Decrypt(offset uint64, path string, key []byte, masterPid int) (string, error) {
 	arguments := &args.CryptArgs{

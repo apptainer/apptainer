@@ -43,6 +43,12 @@ type MountArgs struct {
 	Data       string
 }
 
+// UnmountArgs defines the arguments to unmount.
+type UnmountArgs struct {
+	Target       string
+	Unmountflags int
+}
+
 // CryptArgs defines the arguments to mount.
 type CryptArgs struct {
 	Offset    uint64
