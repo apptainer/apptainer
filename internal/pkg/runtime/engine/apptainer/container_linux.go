@@ -875,6 +875,22 @@ mount:
 			return nil
 		}
 		return fmt.Errorf("could not mount %s: %s", mnt.Source, err)
+	} else if mnt.Type == "overlay" {
+		// The overlay mount succeeded, but under some conditions the
+		// kernel overlayfs exhibits a bizarre behavior where it returns
+		// Permission denied to the user unless the mount happens twice
+		// and in between the mountpoint is accessed.
+		// See https://github.com/apptainer/apptainer/issues/1945
+		if _, err = os.Stat(dest); err != nil {
+			return fmt.Errorf("while getting stat for %s: %s", dest, err)
+		}
+		sylog.Debugf("Unmounting and remounting overlay")
+		if err = c.rpcOps.Unmount(dest, 0); err != nil {
+			return fmt.Errorf("while unmounting %s: %s", dest, err)
+		}
+		if err = c.rpcOps.Mount(source, dest, mnt.Type, flags, optsString); err != nil {
+			return fmt.Errorf("while remounting %s: %s", dest, err)
+		}
 	}
 
 	return nil
