@@ -45,7 +45,7 @@ require (
 	github.com/sylabs/json-resp v0.9.0
 	github.com/urfave/cli v1.22.14 // indirect
 	github.com/vbauerster/mpb/v8 v8.7.2
-	golang.org/x/crypto v0.18.0
+	golang.org/x/crypto v0.19.0
 	golang.org/x/sys v0.17.0
 	golang.org/x/term v0.17.0
 	golang.org/x/text v0.14.0
