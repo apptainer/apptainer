@@ -1965,7 +1965,7 @@ func (c actionTests) actionLayerType(t *testing.T) {
 			args: []string{
 				c.env.ImagePath,
 			},
-			expectType: "fuse",
+			expectType: "overlay",
 		},
 		{
 			name:    "UserWithUnderlayOption",
@@ -1999,7 +1999,7 @@ func (c actionTests) actionLayerType(t *testing.T) {
 			args: []string{
 				c.env.ImagePath,
 			},
-			expectType: "fuse",
+			expectType: "overlay",
 		},
 		{
 			name:    "UserNamespaceWithUnderlayOption",
