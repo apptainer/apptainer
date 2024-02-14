@@ -23,6 +23,7 @@ import (
 	"sync"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
@@ -74,6 +75,15 @@ func configDir(dir string) string {
 			homedir = cwd
 		} else {
 			homedir = user.HomeDir
+		}
+	}
+
+	if !fs.IsReadable(homedir) {
+		sylog.Debugf("Home dir: %s is not readable, will reset it to '/'", homedir)
+		homedir = "/"
+		err := os.Setenv("HOME", "/")
+		if err != nil {
+			sylog.Warningf("Unable to update `$HOME`: %s", err)
 		}
 	}
 
