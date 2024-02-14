@@ -228,9 +228,11 @@ func (e *EngineOperations) PreStartProcess(ctx context.Context, pid int, masterC
 
 	hooks := e.EngineConfig.OciConfig.Hooks
 	if hooks != nil {
-		for _, h := range hooks.Prestart {
-			if err := exec.Hook(ctx, &h, &e.EngineConfig.State.State); err != nil {
-				return err
+		for _, ht := range [][]specs.Hook{hooks.CreateRuntime, hooks.CreateContainer, hooks.StartContainer} {
+			for _, h := range ht {
+				if err := exec.Hook(ctx, &h, &e.EngineConfig.State.State); err != nil {
+					return err
+				}
 			}
 		}
 	}
