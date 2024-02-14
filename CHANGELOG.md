@@ -24,6 +24,7 @@ Changes since v1.3.0-rc.1
   user, although it was ignored previously.
 - Fix `--sharens` failure on EL8.
 - Fix Harbor registry login failure.
+- Prevent container builds from failing when `$HOME` points to a non-readable directory.
 
 ## v1.3.0-rc.1 - \[2024-01-10\]
 
