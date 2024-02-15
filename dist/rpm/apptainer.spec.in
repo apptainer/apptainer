@@ -96,6 +96,11 @@ Obsoletes: singularity-runtime < 3.0
 Provides: sif-runtime
 Conflicts: sif-runtime
 
+Provides: bundled(gocryptfs) = %{gocryptfs_version}
+Provides: bundled(squashfuse) = %{squashfuse_version}
+Provides: bundled(e2fsprogs) = %{e2fsprogs_version}
+Provides: bundled(fuse2fs) = %{e2fsprogs_version}
+Provides: bundled(fuse-overlayfs) = %{fuse_overlayfs_version}
 @BUNDLED_PROVIDES@
 
 %if "%{_target_vendor}" == "suse"
