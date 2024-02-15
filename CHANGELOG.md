@@ -9,6 +9,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.3.x
 
+Changes since v1.3.0-rc.2
+
+## v1.3.0-rc.2 - \[2024-02-15\]
+
 Changes since v1.3.0-rc.1
 
 - Change the default in user namespace mode to use either kernel
@@ -30,7 +34,8 @@ Changes since v1.3.0-rc.1
 - Fix the use of an overlay ext3 filesystem in SIF files.
 - Fix `--sharens` failure on EL8.
 - Fix Harbor registry login failure.
-- Prevent container builds from failing when `$HOME` points to a non-readable directory.
+- Prevent container builds from failing when `$HOME` points to a non-readable
+  directory.
 
 ## v1.3.0-rc.1 - \[2024-01-10\]
 
