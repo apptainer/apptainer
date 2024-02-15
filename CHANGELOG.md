@@ -5,7 +5,7 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes for v1.3.x
+## v1.3.0-rc.2 - \[2024-02-15\]
 
 Changes since v1.3.0-rc.1
 
@@ -27,7 +27,8 @@ Changes since v1.3.0-rc.1
   mode (except the latter not on CentOS7 where it isn't supported).
 - Fix `--sharens` failure on EL8.
 - Fix Harbor registry login failure.
-- Prevent container builds from failing when `$HOME` points to a non-readable directory.
+- Prevent container builds from failing when `$HOME` points to a non-readable
+  directory.
 
 ## v1.3.0-rc.1 - \[2024-01-10\]
 
