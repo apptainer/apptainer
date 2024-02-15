@@ -8,12 +8,12 @@
 
 # install dependencies
 yum install -y rpm-build make yum-utils gcc binutils util-linux-ng which git
-yum install -y libseccomp-devel e2fsprogs cryptsetup
+yum install -y libseccomp-devel cryptsetup
 if [ $OS_TYPE != fedora ]; then
   yum install -y epel-release
 fi
-yum install -y golang squashfuse fuse-overlayfs fakeroot /usr/*bin/fuse2fs
-yum install -y autoconf automake libtool pkgconfig fuse3-devel zlib-devel # for squashfuse_ll build
+yum install -y golang fakeroot
+yum install -y autoconf automake libtool pkgconfig fuse3-devel zlib-devel
 
 # switch to an unprivileged user with sudo privileges
 yum install -y sudo
