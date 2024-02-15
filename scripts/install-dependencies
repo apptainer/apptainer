@@ -1,4 +1,9 @@
 #!/bin/bash
+# Copyright (c) Contributors to the Apptainer project, established as
+#   Apptainer a Series of LF Projects LLC.
+#   For website terms of use, trademark policy, privacy policy and other
+#   project policies see https://lfprojects.org/policies
+#
 # Install dependencies.  The compiled tools are expected to be in
 # subdirectories under the current directory as produced by the
 # compile-dependencies script. The install prefix is passed in as $1,
