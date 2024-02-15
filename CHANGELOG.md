@@ -29,6 +29,7 @@ Changes since v1.3.0-rc.1
   mode (except the latter not on CentOS7 where it isn't supported).
 - Fix `--sharens` failure on EL8.
 - Fix Harbor registry login failure.
+- Prevent container builds from failing when `$HOME` points to a non-readable directory.
 
 ## v1.3.0-rc.1 - \[2024-01-10\]
 
