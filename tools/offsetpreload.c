@@ -52,12 +52,7 @@ ssize_t pwrite64(int fd, const void *buf, size_t count, off_t offset) {
 	return (*original_pwrite64)(fd, buf, count, offset);
 }
 
-int __open64_2(const char *path, int flags1, int flags2, int flags3) {
-	static int (*original_open64_2)(const char*, int, int, int) = NULL;
-	if (original_open64_2 == NULL) {
-		original_open64_2 = dlsym(RTLD_NEXT, "__open64_2");
-	}
-
+static int ___open64(int (*original_open64)(const char *, int, int, int), const char *path, int flags1, int flags2, int flags3) {
 	static char *offsetpath = NULL;
 	if (offsetfd == -3) {
 		offsetfd = -2;
@@ -68,7 +63,7 @@ int __open64_2(const char *path, int flags1, int flags2, int flags3) {
 		}
 	}
 
-	int fd = (*original_open64_2)(path, flags1, flags2, flags3);
+	int fd = (*original_open64)(path, flags1, flags2, flags3);
 
 	if (fd >= 0) {
 		if ((offsetpath != NULL) && (strcmp(offsetpath, path) == 0)) {
@@ -77,4 +72,23 @@ int __open64_2(const char *path, int flags1, int flags2, int flags3) {
 	}
 
 	return fd;
+}
+
+// This is the version used by some compilations of fuse2fs
+int __open64_2(const char *path, int flags1, int flags2, int flags3) {
+	static int (*original_open64_2)(const char*, int, int, int) = NULL;
+	if (original_open64_2 == NULL) {
+		original_open64_2 = dlsym(RTLD_NEXT, "__open64_2");
+	}
+        return ___open64(original_open64_2, path, flags1, flags2, flags3);
+}
+
+// This is more parameters than the real open64, but use that many because
+// we want to use a common function with __open64_2
+int open64(const char *path, int flags1, int flags2, int flags3) {
+	static int (*original_open64)(const char*, int, int, int) = NULL;
+	if (original_open64 == NULL) {
+		original_open64 = dlsym(RTLD_NEXT, "open64");
+	}
+        return ___open64(original_open64, path, flags1, flags2, flags3);
 }
