@@ -27,6 +27,7 @@ Changes since v1.3.0-rc.1
   from 1.2.0.  Another workaround was found for the problem that change
   addressed.  This applies in both setuid mode and in user namespace
   mode (except the latter not on CentOS7 where it isn't supported).
+- Fix the use of an overlay ext3 filesystem in SIF files.
 - Fix `--sharens` failure on EL8.
 - Fix Harbor registry login failure.
 
