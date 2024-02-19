@@ -65,6 +65,7 @@
 - Mark Egan-Fuller <markeganfuller@googlemail.com>
 - Matthias Gerstner <matthias.gerstner@suse.com>
 - Matt Wiens <mwiens91@gmail.com>
+- Max Schwarz <max.schwarz@online.de>
 - Michael Bauer <m@sylabs.io>, <bauerm@umich.edu>
 - Michael Herzberg <michael@mherzberg.de>
 - Michael Milton <ttmigueltt@gmail.com>
