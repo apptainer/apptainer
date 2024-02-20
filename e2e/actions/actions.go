@@ -698,52 +698,13 @@ func (c actionTests) RunFromURI(t *testing.T) {
 	}
 }
 
-// PersistentOverlay test the --overlay function
-func (c actionTests) PersistentOverlay(t *testing.T) {
-	e2e.EnsureImage(t, c.env)
-
-	require.Filesystem(t, "overlay")
-
-	require.Command(t, "mkfs.ext3")
-	require.Command(t, "mksquashfs")
-	require.Command(t, "dd")
-
-	testdir, err := os.MkdirTemp(c.env.TestDir, "persistent-overlay-")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	cleanup := func(t *testing.T) {
-		if t.Failed() {
-			t.Logf("Not removing directory %s for test %s", testdir, t.Name())
-			return
-		}
-		err := os.RemoveAll(testdir)
-		if err != nil {
-			t.Logf("Error while removing directory %s for test %s: %#v", testdir, t.Name(), err)
-		}
-	}
-	// sandbox overlay implies creation of upper/work directories by
-	// Apptainer, so we would need privileges to delete the test
-	// directory correctly
-	defer e2e.Privileged(cleanup)
-
+func (c actionTests) squashCreate(t *testing.T, testdir string) string {
 	squashfsImage := filepath.Join(testdir, "squashfs.simg")
-	ext3Img := filepath.Join(testdir, "ext3_fs.img")
-	sandboxImage := filepath.Join(testdir, "sandbox")
-
-	// create an overlay directory
-	dir, err := os.MkdirTemp(testdir, "overlay-dir-")
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	// create root directory for squashfs image
 	squashDir, err := os.MkdirTemp(testdir, "root-squash-dir-")
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	squashMarkerFile := "squash_marker"
 	if err := fs.Touch(filepath.Join(squashDir, squashMarkerFile)); err != nil {
 		t.Fatal(err)
@@ -755,23 +716,31 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 		t.Fatalf("Unexpected error while running command.\n%s", res)
 	}
 
+	return squashfsImage
+}
+
+func (c actionTests) ext3Create(t *testing.T, testdir string) string {
+	ext3Img := filepath.Join(testdir, "ext3_fs.img")
 	// create the overlay ext3 image
-	cmd = exec.Command("dd", "if=/dev/zero", "of="+ext3Img, "bs=1M", "count=64", "status=none")
+	cmd := exec.Command("dd", "if=/dev/zero", "of="+ext3Img, "bs=1M", "count=64", "status=none")
 	if res := cmd.Run(t); res.Error != nil {
 		t.Fatalf("Unexpected error while running command.\n%s", res)
 	}
-
 	cmd = exec.Command("mkfs.ext3", "-q", "-F", ext3Img)
 	if res := cmd.Run(t); res.Error != nil {
 		t.Fatalf("Unexpected error while running command.\n%s", res)
 	}
+	return ext3Img
+}
 
+func (c actionTests) sandboxCreate(t *testing.T, testdir string) string {
+	sandboxImage := filepath.Join(testdir, "sandbox")
 	// create a sandbox image from test image
 	c.env.RunApptainer(
 		t,
-		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--sandbox", sandboxImage, c.env.ImagePath),
+		e2e.WithArgs("--force", "--sandbox", sandboxImage, c.env.ImagePath),
 		e2e.PostRun(func(t *testing.T) {
 			if t.Failed() {
 				t.Fatalf("failed to create sandbox %s from test image %s", sandboxImage, c.env.ImagePath)
@@ -779,131 +748,241 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 		}),
 		e2e.ExpectExit(0),
 	)
+	return sandboxImage
+}
+
+func (c actionTests) centosCreate(t *testing.T, testdir string) string {
+	centos7Image := filepath.Join(testdir, "centos7.sif")
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--force", centos7Image, "docker://centos:7"),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("overlay"),
+		e2e.WithArgs("create", centos7Image),
+		e2e.ExpectExit(0),
+	)
+
+	return centos7Image
+}
+
+func (c actionTests) overlayDirCreate(t *testing.T, testdir string) string {
+	dir, err := os.MkdirTemp(testdir, "overlay-dir-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return dir
+}
+
+func (c actionTests) PersistentOverlay(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	require.Filesystem(t, "overlay")
+
+	require.Command(t, "mkfs.ext3")
+	require.Command(t, "mksquashfs")
+	require.Command(t, "dd")
+
+	profiles := []e2e.Profile{e2e.RootProfile, e2e.UserNamespaceProfile, e2e.UserProfile}
+
+	// create the test dir
+	testdir, err := os.MkdirTemp(c.env.TestDir, "persitent-overlay-")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer e2e.Privileged(func(t *testing.T) {
+		if t.Failed() {
+			t.Logf("Not removing directory %s for test %s", testdir, t.Name())
+			return
+		}
+		err := os.RemoveAll(testdir)
+		if err != nil {
+			t.Logf("Error while removing directory %s for test %s: %#v", testdir, t.Name(), err)
+		}
+	})
+
+	replaceTemplate := func(overlay, squash, ext3, sandbox, centos7 string, argvs []string) []string {
+		baseOverlayDir := filepath.Base(overlay)
+		var ret []string
+		for _, argv := range argvs {
+			newArgv := strings.ReplaceAll(argv, "${OVERLAY_DIR}", overlay)
+			newArgv = strings.ReplaceAll(newArgv, "${SQUASH_DIR}", squash)
+			newArgv = strings.ReplaceAll(newArgv, "${EXT3_DIR}", ext3)
+			newArgv = strings.ReplaceAll(newArgv, "${SANDBOX_DIR}", sandbox)
+			newArgv = strings.ReplaceAll(newArgv, "${CENTOS7_DIR}", sandbox)
+			newArgv = strings.ReplaceAll(newArgv, "${BASE_OVERLAY_DIR}", baseOverlayDir)
+			ret = append(ret, newArgv)
+		}
+		return ret
+	}
 
 	tests := []struct {
-		name    string
-		argv    []string
-		dir     string
-		exit    int
-		profile e2e.Profile
+		name     string
+		argv     []string
+		fakeroot bool
+		exit     int
+		dir      string
 	}{
 		{
-			name:    "overlay_create",
-			argv:    []string{"--overlay", dir, c.env.ImagePath, "touch", "/dir_overlay"},
-			exit:    0,
-			profile: e2e.RootProfile,
+			name: "overlay_create",
+			argv: []string{"--overlay", "${OVERLAY_DIR}", c.env.ImagePath, "touch", "/dir_overlay"},
+			exit: 0,
 		},
 		{
-			name:    "overlay_ext3_create",
-			argv:    []string{"--overlay", ext3Img, c.env.ImagePath, "touch", "/ext3_overlay"},
-			exit:    0,
-			profile: e2e.RootProfile,
+			name:     "overlay_ext3_create",
+			argv:     []string{"--overlay", "${EXT3_DIR}", c.env.ImagePath, "touch", "/ext3_overlay"},
+			fakeroot: true,
+			exit:     0,
 		},
 		{
-			name:    "overlay_multiple_create",
-			argv:    []string{"--overlay", ext3Img, "--overlay", squashfsImage + ":ro", c.env.ImagePath, "touch", "/multiple_overlay_fs"},
-			exit:    0,
-			profile: e2e.RootProfile,
+			name:     "overlay_multiple_create",
+			argv:     []string{"--overlay", "${EXT3_DIR}", "--overlay", "${SQUASH_DIR}" + ":ro", c.env.ImagePath, "touch", "/multiple_overlay_fs"},
+			fakeroot: true,
+			exit:     0,
 		},
 		{
-			name:    "overlay_find",
-			argv:    []string{"--overlay", dir, c.env.ImagePath, "test", "-f", "/dir_overlay"},
-			exit:    0,
-			profile: e2e.RootProfile,
+			name: "overlay_find",
+			argv: []string{"--overlay", "${OVERLAY_DIR}", c.env.ImagePath, "test", "-f", "/dir_overlay"},
+			exit: 0,
 		},
 		{
-			name:    "overlay_find_with_writable_fail",
-			argv:    []string{"--overlay", dir, "--writable", c.env.ImagePath, "true"},
-			exit:    255,
-			profile: e2e.RootProfile,
+			name: "overlay_find_with_writable_fail",
+			argv: []string{"--overlay", "${OVERLAY_DIR}", "--writable", c.env.ImagePath, "true"},
+			exit: 255,
 		},
 		{
-			name:    "overlay_find_with_writable_tmpfs",
-			argv:    []string{"--overlay", dir + ":ro", "--writable-tmpfs", c.env.ImagePath, "test", "-f", "/dir_overlay"},
-			exit:    0,
-			profile: e2e.RootProfile,
+			name: "overlay_find_with_writable_tmpfs",
+			argv: []string{"--overlay", "${OVERLAY_DIR}:ro", "--writable-tmpfs", c.env.ImagePath, "test", "-f", "/dir_overlay"},
+			exit: 0,
 		},
 		{
-			name:    "overlay_find_with_writable_tmpfs_fail",
-			argv:    []string{"--overlay", dir, "--writable-tmpfs", c.env.ImagePath, "true"},
-			exit:    255,
-			profile: e2e.RootProfile,
+			name: "overlay_find_with_writable_tmpfs_fail",
+			argv: []string{"--overlay", "${OVERLAY_DIR}", "--writable-tmpfs", c.env.ImagePath, "true"},
+			exit: 255,
 		},
 		{
-			name:    "overlay_ext3_find",
-			argv:    []string{"--overlay", ext3Img, c.env.ImagePath, "test", "-f", "/ext3_overlay"},
-			exit:    0,
-			profile: e2e.RootProfile,
+			name:     "overlay_ext3_find",
+			argv:     []string{"--overlay", "${EXT3_DIR}", c.env.ImagePath, "test", "-f", "/ext3_overlay"},
+			fakeroot: true,
+			exit:     0,
 		},
 		{
-			name:    "overlay_multiple_writable_fail",
-			argv:    []string{"--overlay", ext3Img, "--overlay", ext3Img, c.env.ImagePath, "true"},
-			exit:    255,
-			profile: e2e.RootProfile,
+			name: "overlay_multiple_writable_fail",
+			argv: []string{"--overlay", "${EXT3_DIR}", "--overlay", "${EXT3_DIR}", c.env.ImagePath, "true"},
+			exit: 255,
 		},
 		{
-			name:    "overlay_squashFS_find",
-			argv:    []string{"--overlay", squashfsImage + ":ro", c.env.ImagePath, "test", "-f", fmt.Sprintf("/%s", squashMarkerFile)},
-			exit:    0,
-			profile: e2e.RootProfile,
+			name: "overlay_squashFS_find",
+			argv: []string{"--overlay", "${SQUASH_DIR}" + ":ro", c.env.ImagePath, "test", "-f", "/squash_marker"},
+			exit: 0,
 		},
 		{
-			name:    "overlay_squashFS_find_without_ro",
-			argv:    []string{"--overlay", squashfsImage, c.env.ImagePath, "test", "-f", fmt.Sprintf("/%s", squashMarkerFile)},
-			exit:    0,
-			profile: e2e.RootProfile,
+			name: "overlay_squashFS_find_without_ro",
+			argv: []string{"--overlay", "${SQUASH_DIR}", c.env.ImagePath, "test", "-f", "/squash_marker"},
+			exit: 0,
 		},
 		{
-			name:    "overlay_multiple_find_ext3",
-			argv:    []string{"--overlay", ext3Img, "--overlay", squashfsImage + ":ro", c.env.ImagePath, "test", "-f", "/multiple_overlay_fs"},
-			exit:    0,
-			profile: e2e.RootProfile,
+			name:     "overlay_multiple_find_ext3",
+			argv:     []string{"--overlay", "${EXT3_DIR}", "--overlay", "${SQUASH_DIR}" + ":ro", c.env.ImagePath, "test", "-f", "/multiple_overlay_fs"},
+			fakeroot: true,
+			exit:     0,
 		},
 		{
-			name:    "overlay_multiple_find_squashfs",
-			argv:    []string{"--overlay", ext3Img, "--overlay", squashfsImage + ":ro", c.env.ImagePath, "test", "-f", fmt.Sprintf("/%s", squashMarkerFile)},
-			exit:    0,
-			profile: e2e.RootProfile,
+			name:     "overlay_multiple_find_squashfs",
+			argv:     []string{"--overlay", "${EXT3_DIR}", "--overlay", "${SQUASH_DIR}" + ":ro", c.env.ImagePath, "test", "-f", "/squash_marker"},
+			fakeroot: true,
+			exit:     0,
 		},
 		{
-			name:    "overlay_noroot",
-			argv:    []string{"--overlay", dir, c.env.ImagePath, "true"},
-			exit:    255,
-			profile: e2e.UserProfile,
+			name: "overlay_noroot",
+			argv: []string{"--overlay", "${OVERLAY_DIR}", c.env.ImagePath, "true"},
+			exit: 0,
 		},
 		{
-			name:    "overlay_noflag",
-			argv:    []string{c.env.ImagePath, "test", "-f", "/foo_overlay"},
-			exit:    1,
-			profile: e2e.RootProfile,
+			name: "overlay_noflag",
+			argv: []string{c.env.ImagePath, "test", "-f", "/foo_overlay"},
+			exit: 1,
 		},
 		{
 			// https://github.com/apptainer/singularity/issues/4329
-			name:    "SIF_writable_without_overlay_partition_issue_4329",
-			argv:    []string{"--writable", c.env.ImagePath, "true"},
-			exit:    255,
-			profile: e2e.RootProfile,
+			name: "SIF_writable_without_overlay_partition_issue_4329",
+			argv: []string{"--writable", c.env.ImagePath, "true"},
+			exit: 255,
 		},
 		{
 			// https://github.com/apptainer/singularity/issues/4270
-			name:    "overlay_dir_relative_path_issue_4270",
-			argv:    []string{"--overlay", filepath.Base(dir), sandboxImage, "test", "-f", "/dir_overlay"},
-			dir:     filepath.Dir(dir),
-			exit:    0,
-			profile: e2e.RootProfile,
+			name:     "overlay_dir_relative_path_issue_4270",
+			argv:     []string{"--overlay", "${BASE_OVERLAY_DIR}", "${SANDBOX_DIR}", "test", "-f", "/dir_overlay"},
+			dir:      "${PARENT_OVERLAY_DIR}",
+			fakeroot: true,
+			exit:     0,
+		},
+		{
+			name: "centos 7 Embedded overlay partition in SIF",
+			argv: []string{"${CENTOS7_DIR}", "ps"},
+			exit: 0,
 		},
 	}
 
-	for _, tt := range tests {
-		c.env.RunApptainer(
-			t,
-			e2e.AsSubtest(tt.name),
-			e2e.WithProfile(tt.profile),
-			e2e.WithDir(tt.dir),
-			e2e.WithCommand("exec"),
-			e2e.WithArgs(tt.argv...),
-			e2e.ExpectExit(tt.exit),
-		)
+	// centos7 img will only create one time
+	centos7Dir := c.centosCreate(t, testdir)
+	for _, profile := range profiles {
+		// create an overlay directory
+		overlayDir := c.overlayDirCreate(t, testdir)
+		squashDir := c.squashCreate(t, testdir)
+		ext3Dir := c.ext3Create(t, testdir)
+		sandboxDir := c.sandboxCreate(t, testdir)
+
+		for _, tt := range tests {
+			var args []string
+			if (profile.String() == "User" || profile.String() == "UserNamespace") && tt.fakeroot {
+				args = append(args, "--fakeroot")
+			}
+			newArgs := replaceTemplate(overlayDir, squashDir, ext3Dir, sandboxDir, centos7Dir, tt.argv)
+			args = append(args, newArgs...)
+
+			dir := tt.dir
+			if dir != "" {
+				dir = strings.ReplaceAll(dir, "${PARENT_OVERLAY_DIR}", filepath.Dir(overlayDir))
+			}
+
+			c.env.RunApptainer(
+				t,
+				e2e.AsSubtest(tt.name+"_"+profile.String()),
+				e2e.WithProfile(profile),
+				e2e.WithDir(dir),
+				e2e.WithCommand("exec"),
+				e2e.WithArgs(args...),
+				e2e.ExpectExit(tt.exit),
+			)
+		}
+
+		// clean all dirs as for the next profile, we will create them again
+		e2e.Privileged(func(t *testing.T) {
+			err = os.RemoveAll(overlayDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = os.RemoveAll(squashDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = os.RemoveAll(ext3Dir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = os.RemoveAll(sandboxDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }
 
@@ -995,73 +1074,6 @@ func (c actionTests) actionBasicProfiles(t *testing.T) {
 				)
 			}
 		})
-	}
-}
-
-// PersistentOverlayUnpriv tests the --overlay function in non-setuid root mode
-func (c actionTests) PersistentOverlayUnpriv(t *testing.T) {
-	e2e.EnsureImage(t, c.env)
-
-	require.Filesystem(t, "overlay")
-
-	testdir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "persistent-overlay-", "")
-	defer cleanup(t)
-
-	// create an overlay directory
-	dir, err := os.MkdirTemp(testdir, "overlay-dir-")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	tests := []struct {
-		name    string
-		argv    []string
-		dir     string
-		exit    int
-		profile e2e.Profile
-	}{
-		{
-			name:    "overlay_create",
-			argv:    []string{"--overlay", dir, c.env.ImagePath, "touch", "/dir_overlay"},
-			exit:    0,
-			profile: e2e.UserNamespaceProfile,
-		},
-		{
-			name:    "overlay_find",
-			argv:    []string{"--overlay", dir, c.env.ImagePath, "test", "-f", "/dir_overlay"},
-			exit:    0,
-			profile: e2e.UserNamespaceProfile,
-		},
-		{
-			name:    "overlay_find_with_writable_fail",
-			argv:    []string{"--overlay", dir, "--writable", c.env.ImagePath, "true"},
-			exit:    255,
-			profile: e2e.UserNamespaceProfile,
-		},
-		{
-			name:    "overlay_find_with_writable_tmpfs",
-			argv:    []string{"--overlay", dir + ":ro", "--writable-tmpfs", c.env.ImagePath, "test", "-f", "/dir_overlay"},
-			exit:    0,
-			profile: e2e.UserNamespaceProfile,
-		},
-		{
-			name:    "overlay_find_with_writable_tmpfs_fail",
-			argv:    []string{"--overlay", dir, "--writable-tmpfs", c.env.ImagePath, "true"},
-			exit:    255,
-			profile: e2e.UserNamespaceProfile,
-		},
-	}
-
-	for _, tt := range tests {
-		c.env.RunApptainer(
-			t,
-			e2e.AsSubtest(tt.name),
-			e2e.WithProfile(tt.profile),
-			e2e.WithDir(tt.dir),
-			e2e.WithCommand("exec"),
-			e2e.WithArgs(tt.argv...),
-			e2e.ExpectExit(tt.exit),
-		)
 	}
 }
 
@@ -3041,48 +3053,47 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	np := testhelper.NoParallel
 
 	return testhelper.Tests{
-		"action URI":                   c.RunFromURI,              // action_URI
-		"singularity link":             c.singularityLink,         // singularity symlink
-		"exec":                         c.actionExec,              // apptainer exec
-		"exec under multiple profiles": c.actionExecMultiProfile,  // apptainer exec
-		"persistent overlay":           c.PersistentOverlay,       // Persistent Overlay
-		"persistent overlay unpriv":    c.PersistentOverlayUnpriv, // Persistent Overlay Unprivileged
-		"run":                          c.actionRun,               // apptainer run
-		"shell":                        c.actionShell,             // shell interaction
-		"STDPIPE":                      c.STDPipe,                 // stdin/stdout pipe
-		"action basic profiles":        c.actionBasicProfiles,     // run basic action under different profiles
-		"issue 4488":                   c.issue4488,               // https://github.com/apptainer/singularity/issues/4488
-		"issue 4587":                   c.issue4587,               // https://github.com/apptainer/singularity/issues/4587
-		"issue 4755":                   c.issue4755,               // https://github.com/apptainer/singularity/issues/4755
-		"issue 4768":                   c.issue4768,               // https://github.com/apptainer/singularity/issues/4768
-		"issue 4797":                   c.issue4797,               // https://github.com/apptainer/singularity/issues/4797
-		"issue 4823":                   c.issue4823,               // https://github.com/apptainer/singularity/issues/4823
-		"issue 4836":                   c.issue4836,               // https://github.com/apptainer/singularity/issues/4836
-		"issue 5211":                   c.issue5211,               // https://github.com/apptainer/singularity/issues/5211
-		"issue 5228":                   c.issue5228,               // https://github.com/apptainer/singularity/issues/5228
-		"issue 5271":                   c.issue5271,               // https://github.com/apptainer/singularity/issues/5271
-		"issue 5399":                   c.issue5399,               // https://github.com/apptainer/singularity/issues/5399
-		"issue 5455":                   c.issue5455,               // https://github.com/apptainer/singularity/issues/5455
-		"issue 5465":                   c.issue5465,               // https://github.com/apptainer/singularity/issues/5465
-		"issue 5599":                   c.issue5599,               // https://github.com/apptainer/singularity/issues/5599
-		"issue 5631":                   c.issue5631,               // https://github.com/apptainer/singularity/issues/5631
-		"issue 5690":                   c.issue5690,               // https://github.com/apptainer/singularity/issues/5690
-		"issue 6165":                   c.issue6165,               // https://github.com/apptainer/singularity/issues/6165
-		"issue 619":                    c.issue619,                // https://github.com/apptainer/apptainer/issues/619
-		"issue 1097":                   c.issue1097,               // https://github.com/apptainer/apptainer/issues/1097
-		"issue 1848":                   c.issue1848,               // https://github.com/apptainer/apptainer/issues/1848
-		"network":                      c.actionNetwork,           // test basic networking
-		"binds":                        c.actionBinds,             // test various binds with --bind and --mount
-		"layerType":                    c.actionLayerType,         // verify the various layer types
-		"exit and signals":             c.exitSignals,             // test exit and signals propagation
-		"fuse mount":                   c.fuseMount,               // test fusemount option
-		"bind image":                   c.bindImage,               // test bind image with --bind and --mount
-		"unsquash":                     c.actionUnsquash,          // test --unsquash
-		"no-mount":                     c.actionNoMount,           // test --no-mount
-		"compat":                       np(c.actionCompat),        // test --compat
-		"umask":                        np(c.actionUmask),         // test umask propagation
-		"invalidRemote":                np(c.invalidRemote),       // GHSA-5mv9-q7fq-9394
-		"fakeroot home":                c.actionFakerootHome,      // test home dir in fakeroot
-		"relWorkdirScratch":            np(c.relWorkdirScratch),   // test relative --workdir with --scratch
+		"action URI":                   c.RunFromURI,             // action_URI
+		"singularity link":             c.singularityLink,        // singularity symlink
+		"exec":                         c.actionExec,             // apptainer exec
+		"exec under multiple profiles": c.actionExecMultiProfile, // apptainer exec
+		"run":                          c.actionRun,              // apptainer run
+		"shell":                        c.actionShell,            // shell interaction
+		"STDPIPE":                      c.STDPipe,                // stdin/stdout pipe
+		"persistent overlay":           c.PersistentOverlay,
+		"action basic profiles":        c.actionBasicProfiles,   // run basic action under different profiles
+		"issue 4488":                   c.issue4488,             // https://github.com/apptainer/singularity/issues/4488
+		"issue 4587":                   c.issue4587,             // https://github.com/apptainer/singularity/issues/4587
+		"issue 4755":                   c.issue4755,             // https://github.com/apptainer/singularity/issues/4755
+		"issue 4768":                   c.issue4768,             // https://github.com/apptainer/singularity/issues/4768
+		"issue 4797":                   c.issue4797,             // https://github.com/apptainer/singularity/issues/4797
+		"issue 4823":                   c.issue4823,             // https://github.com/apptainer/singularity/issues/4823
+		"issue 4836":                   c.issue4836,             // https://github.com/apptainer/singularity/issues/4836
+		"issue 5211":                   c.issue5211,             // https://github.com/apptainer/singularity/issues/5211
+		"issue 5228":                   c.issue5228,             // https://github.com/apptainer/singularity/issues/5228
+		"issue 5271":                   c.issue5271,             // https://github.com/apptainer/singularity/issues/5271
+		"issue 5399":                   c.issue5399,             // https://github.com/apptainer/singularity/issues/5399
+		"issue 5455":                   c.issue5455,             // https://github.com/apptainer/singularity/issues/5455
+		"issue 5465":                   c.issue5465,             // https://github.com/apptainer/singularity/issues/5465
+		"issue 5599":                   c.issue5599,             // https://github.com/apptainer/singularity/issues/5599
+		"issue 5631":                   c.issue5631,             // https://github.com/apptainer/singularity/issues/5631
+		"issue 5690":                   c.issue5690,             // https://github.com/apptainer/singularity/issues/5690
+		"issue 6165":                   c.issue6165,             // https://github.com/apptainer/singularity/issues/6165
+		"issue 619":                    c.issue619,              // https://github.com/apptainer/apptainer/issues/619
+		"issue 1097":                   c.issue1097,             // https://github.com/apptainer/apptainer/issues/1097
+		"issue 1848":                   c.issue1848,             // https://github.com/apptainer/apptainer/issues/1848
+		"network":                      c.actionNetwork,         // test basic networking
+		"binds":                        c.actionBinds,           // test various binds with --bind and --mount
+		"layerType":                    c.actionLayerType,       // verify the various layer types
+		"exit and signals":             c.exitSignals,           // test exit and signals propagation
+		"fuse mount":                   c.fuseMount,             // test fusemount option
+		"bind image":                   c.bindImage,             // test bind image with --bind and --mount
+		"unsquash":                     c.actionUnsquash,        // test --unsquash
+		"no-mount":                     c.actionNoMount,         // test --no-mount
+		"compat":                       np(c.actionCompat),      // test --compat
+		"umask":                        np(c.actionUmask),       // test umask propagation
+		"invalidRemote":                np(c.invalidRemote),     // GHSA-5mv9-q7fq-9394
+		"fakeroot home":                c.actionFakerootHome,    // test home dir in fakeroot
+		"relWorkdirScratch":            np(c.relWorkdirScratch), // test relative --workdir with --scratch
 	}
 }
