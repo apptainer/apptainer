@@ -14,6 +14,8 @@ Changes since v1.3.0-rc.2
 - Fix the use of `nvidia-container-cli` on Ubuntu 22.04 where an
   `ldconfig` wrapper script gets in the way. Instead, we use
   `ldconfig.real` directly.
+- Remove unneeded 32-bit specific lock types that were changed in 1.3.0-rc.2,
+  because they interfered with 32-bit builds.
 
 ## v1.3.0-rc.2 - \[2024-02-15\]
 
