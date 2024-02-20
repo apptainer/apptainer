@@ -37,6 +37,15 @@ func FindBin(name string) (path string, err error) {
 	// We must not search the user's PATH when in the suid flow with these
 	case "cryptsetup":
 		return findOnPath(name, true)
+	// ldconfig is special on Ubuntu: "ldconfig" is a wrapper around
+	// "ldconfig.real" and the latter is the one we want, since the wrapper
+	// interacts may drop capabilities. So try "ldconfig.real" first.
+	case "ldconfig":
+		path, err = findOnPath("ldconfig.real", false)
+		if err == nil {
+			return path, err
+		}
+		return findOnPath("ldconfig", false)
 	// All other executables
 	// We will always search the user's PATH first for these
 	case "curl",
@@ -47,7 +56,6 @@ func FindBin(name string) (path string, err error) {
 		"fuse-overlayfs",
 		"fuse2fs",
 		"go",
-		"ldconfig",
 		"mksquashfs",
 		"newgidmap",
 		"newuidmap",

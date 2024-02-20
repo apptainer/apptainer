@@ -5,6 +5,14 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes for v1.3.x
+
+Changes since v1.3.0-rc.2
+
+- Fix the use of `nvidia-container-cli` on Ubuntu 22.04 where an
+  `ldconfig` wrapper script gets in the way. Instead, we use
+  `ldconfig.real` directly.
+
 ## v1.3.0-rc.2 - \[2024-02-15\]
 
 Changes since v1.3.0-rc.1
