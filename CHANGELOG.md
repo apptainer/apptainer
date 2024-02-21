@@ -14,6 +14,9 @@ Changes since v1.3.0-rc.2
   `ldconfig.real` directly.
 - Remove unneeded 32-bit specific lock types that were changed in 1.3.0-rc.2,
   because they interfered with 32-bit builds.
+- Run image drivers with CAP_DAC_OVERRIDE in user namespace mode. This
+  fixes --nvccli with NVIDIA_DRIVER_CAPABILITIES=graphics, which
+  previously failed when using fuse-overlayfs.
 
 ## v1.3.0-rc.2 - \[2024-02-15\]
 
