@@ -363,6 +363,9 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 				// Needed for nsenter
 				//  https://stackoverflow.com/a/69724124/10457761
 				uintptr(capabilities.Map["CAP_SYS_PTRACE"].Value),
+				// Required for fuse-overlayfs
+				//  see https://github.com/containers/fuse-overlayfs/issues/414#issuecomment-1956140097
+				uintptr(capabilities.Map["CAP_DAC_OVERRIDE"].Value),
 			},
 		}
 	}

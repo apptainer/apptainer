@@ -11,6 +11,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since v1.3.0-rc.2
 
+- Run image drivers with CAP_DAC_OVERRIDE in user namespace mode. This
+  fixes --nvccli with NVIDIA_DRIVER_CAPABILITIES=graphics, which
+  previously failed when using fuse-overlayfs.
 - Fix the use of `nvidia-container-cli` on Ubuntu 22.04 where an
   `ldconfig` wrapper script gets in the way. Instead, we use
   `ldconfig.real` directly.
