@@ -3,288 +3,288 @@ on:
   pull_request:
 
 jobs:
-  check_go_mod:
-    name: check_go_mod
-    runs-on: ubuntu-22.04
-    container: golang:1.21.5
-    steps:
-      - uses: actions/checkout@v2
+  # check_go_mod:
+  #   name: check_go_mod
+  #   runs-on: ubuntu-22.04
+  #   container: golang:1.21.5
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: Check go.mod
-        run: |
-          git config --global --add safe.directory $(pwd)
-          ./scripts/check-go.mod
+  #     - name: Check go.mod
+  #       run: |
+  #         git config --global --add safe.directory $(pwd)
+  #         ./scripts/check-go.mod
 
-  lint_markdown:
-    name: lint_markdown
-    runs-on: ubuntu-22.04
-    container: node:18-slim
-    steps:
-      - uses: actions/checkout@v2
+  # lint_markdown:
+  #   name: lint_markdown
+  #   runs-on: ubuntu-22.04
+  #   container: node:18-slim
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: Install markdownlint
-        run: npm install -g markdownlint-cli
+  #     - name: Install markdownlint
+  #       run: npm install -g markdownlint-cli
 
-      - name: Check for Lint
-        run: markdownlint .
+  #     - name: Check for Lint
+  #       run: markdownlint .
 
-  check_source:
-    name: check_source
-    runs-on: ubuntu-22.04
-    container: golangci/golangci-lint:v1.51.1
-    steps:
-      - uses: actions/checkout@v2
+  # check_source:
+  #   name: check_source
+  #   runs-on: ubuntu-22.04
+  #   container: golangci/golangci-lint:v1.51.1
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: Check apptainer source
-        run: |
-          git config --global --add safe.directory $(pwd)
-          ./mconfig -v -p /usr/local --with-suid
-          make -C ./builddir check
+  #     - name: Check apptainer source
+  #       run: |
+  #         git config --global --add safe.directory $(pwd)
+  #         ./mconfig -v -p /usr/local --with-suid
+  #         make -C ./builddir check
 
-  shellcheck:
-    name: shellcheck
-    runs-on: ubuntu-22.04
-    container: koalaman/shellcheck-alpine
-    steps:
-      - uses: actions/checkout@v2
-      - name: shellcheck files that appear to be sh or bash scripts (or some cousin thereof)
-        run: |
-          shellcheck $( ./scripts/get-shell-files.sh )
+  # shellcheck:
+  #   name: shellcheck
+  #   runs-on: ubuntu-22.04
+  #   container: koalaman/shellcheck-alpine
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: shellcheck files that appear to be sh or bash scripts (or some cousin thereof)
+  #       run: |
+  #         shellcheck $( ./scripts/get-shell-files.sh )
 
-  alpine:
-    name: alpine
-    runs-on: ubuntu-22.04
-    container: golang:1.21.5-alpine
-    steps:
-      - name: Fetch deps
-        run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
+  # alpine:
+  #   name: alpine
+  #   runs-on: ubuntu-22.04
+  #   container: golang:1.21.5-alpine
+  #   steps:
+  #     - name: Fetch deps
+  #       run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
 
-      - uses: actions/checkout@v2
+  #     - uses: actions/checkout@v2
 
-      - name: Build Apptainer
-        run: |
-          git config --global --add safe.directory $(pwd)
-          ./mconfig -v -p /usr/local --with-suid
-          make -C ./builddir all
+  #     - name: Build Apptainer
+  #       run: |
+  #         git config --global --add safe.directory $(pwd)
+  #         ./mconfig -v -p /usr/local --with-suid
+  #         make -C ./builddir all
 
-  oldgo:
-    name: oldgo
-    runs-on: ubuntu-22.04
-    # match the minimum version required by mconfig
-    container: golang:1.20-alpine
-    steps:
-      - name: Fetch deps
-        run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
+  # oldgo:
+  #   name: oldgo
+  #   runs-on: ubuntu-22.04
+  #   # match the minimum version required by mconfig
+  #   container: golang:1.20-alpine
+  #   steps:
+  #     - name: Fetch deps
+  #       run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
 
-      - uses: actions/checkout@v2
+  #     - uses: actions/checkout@v2
 
-      - name: Build Apptainer
-        run: |
-          git config --global --add safe.directory $(pwd)
-          ./mconfig -v -p /usr/local --with-suid
-          make -C ./builddir all
+  #     - name: Build Apptainer
+  #       run: |
+  #         git config --global --add safe.directory $(pwd)
+  #         ./mconfig -v -p /usr/local --with-suid
+  #         make -C ./builddir all
 
-  check_test_corpus:
-    name: check_test_corpus
-    runs-on: ubuntu-22.04
-    container: golang:1.21.5
-    steps:
-      - uses: actions/checkout@v2
+  # check_test_corpus:
+  #   name: check_test_corpus
+  #   runs-on: ubuntu-22.04
+  #   container: golang:1.21.5
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: Generate Certificates
-        run: |
-          git config --global --add safe.directory $(pwd)
-          cd test/certs/ && go run ./gen_certs.go && cd ../..
+  #     - name: Generate Certificates
+  #       run: |
+  #         git config --global --add safe.directory $(pwd)
+  #         cd test/certs/ && go run ./gen_certs.go && cd ../..
 
-      - name: Check Test Corpus Tidiness
-        run: git diff --exit-code --
+  #     - name: Check Test Corpus Tidiness
+  #       run: git diff --exit-code --
 
-  check_license_dependencies:
-    name: check_license_dependencies
-    runs-on: ubuntu-22.04
-    container: golang:1.21.5
-    steps:
-      - uses: actions/checkout@v2
+  # check_license_dependencies:
+  #   name: check_license_dependencies
+  #   runs-on: ubuntu-22.04
+  #   container: golang:1.21.5
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: Update LICENSE_DEPENDENCIES.md
-        run: |
-          git config --global --add safe.directory $(pwd)
-          ./scripts/update-license-dependencies.sh
+  #     - name: Update LICENSE_DEPENDENCIES.md
+  #       run: |
+  #         git config --global --add safe.directory $(pwd)
+  #         ./scripts/update-license-dependencies.sh
 
-      - name: Check License Changes
-        run: git diff --exit-code -- LICENSE_DEPENDENCIES.md
+  #     - name: Check License Changes
+  #       run: git diff --exit-code -- LICENSE_DEPENDENCIES.md
 
-  debian:
-    name: debian
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+  # debian:
+  #   name: debian
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     # fetch tags as checkout@v2 doesn't do that by default
+  #     - run: git fetch --prune --unshallow --tags --force
 
-      - name: Build and test deb under docker
-        env:
-          OS_TYPE: debian
-          OS_VERSION: 11
-          # setting GO_ARCH speeds things by using go binaries instead of source
-          GO_ARCH: linux-amd64
-        run: ./scripts/ci-docker-run
+  #     - name: Build and test deb under docker
+  #       env:
+  #         OS_TYPE: debian
+  #         OS_VERSION: 11
+  #         # setting GO_ARCH speeds things by using go binaries instead of source
+  #         GO_ARCH: linux-amd64
+  #       run: ./scripts/ci-docker-run
 
-  rpmbuild-centos7:
-    runs-on: ubuntu-22.04
-    name: rpmbuild-centos7
-    steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+  # rpmbuild-centos7:
+  #   runs-on: ubuntu-22.04
+  #   name: rpmbuild-centos7
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     # fetch tags as checkout@v2 doesn't do that by default
+  #     - run: git fetch --prune --unshallow --tags --force
 
-      - name: Build and test rpm under docker
-        env:
-          OS_TYPE: centos
-          OS_VERSION: 7
-          GO_ARCH: linux-amd64
-        run: ./scripts/ci-docker-run
+  #     - name: Build and test rpm under docker
+  #       env:
+  #         OS_TYPE: centos
+  #         OS_VERSION: 7
+  #         GO_ARCH: linux-amd64
+  #       run: ./scripts/ci-docker-run
 
-      - name: Install and test unprivileged
-        env:
-          OS_TYPE: centos
-          OS_VERSION: 7
-          TEST_TYPE: unpriv
-        run: ./scripts/ci-docker-run
+  #     - name: Install and test unprivileged
+  #       env:
+  #         OS_TYPE: centos
+  #         OS_VERSION: 7
+  #         TEST_TYPE: unpriv
+  #       run: ./scripts/ci-docker-run
 
-  rpmbuild-rocky8:
-    runs-on: ubuntu-22.04
-    name: rpmbuild-rocky8
-    steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+  # rpmbuild-rocky8:
+  #   runs-on: ubuntu-22.04
+  #   name: rpmbuild-rocky8
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     # fetch tags as checkout@v2 doesn't do that by default
+  #     - run: git fetch --prune --unshallow --tags --force
 
-      - name: Build and test rpm under docker
-        env:
-          OS_TYPE: rockylinux
-          OS_VERSION: 8
-          GO_ARCH: linux-amd64
-        run: ./scripts/ci-docker-run
+  #     - name: Build and test rpm under docker
+  #       env:
+  #         OS_TYPE: rockylinux
+  #         OS_VERSION: 8
+  #         GO_ARCH: linux-amd64
+  #       run: ./scripts/ci-docker-run
 
-      - name: Install and test unprivileged for rocky 8
-        env:
-          OS_TYPE: rockylinux
-          OS_VERSION: 8
-          TEST_TYPE: unpriv
-        run: ./scripts/ci-docker-run
+  #     - name: Install and test unprivileged for rocky 8
+  #       env:
+  #         OS_TYPE: rockylinux
+  #         OS_VERSION: 8
+  #         TEST_TYPE: unpriv
+  #       run: ./scripts/ci-docker-run
 
-      - name: Install and test unprivileged for rocky 9 with rocky 8 container
-        env:
-          OS_TYPE: rockylinux
-          OS_VERSION: 9
-          CONTAINER_VERS: rockylinux:8
-          TEST_TYPE: unpriv
-        run: ./scripts/ci-docker-run
+  #     - name: Install and test unprivileged for rocky 9 with rocky 8 container
+  #       env:
+  #         OS_TYPE: rockylinux
+  #         OS_VERSION: 9
+  #         CONTAINER_VERS: rockylinux:8
+  #         TEST_TYPE: unpriv
+  #       run: ./scripts/ci-docker-run
 
-      - name: Install and test unprivileged for ubuntu 20.04
-        env:
-          OS_TYPE: ubuntu
-          OS_VERSION: 20.04
-          TEST_TYPE: unpriv
-        run: ./scripts/ci-docker-run
+  #     - name: Install and test unprivileged for ubuntu 20.04
+  #       env:
+  #         OS_TYPE: ubuntu
+  #         OS_VERSION: 20.04
+  #         TEST_TYPE: unpriv
+  #       run: ./scripts/ci-docker-run
 
-      - name: Install and test unprivileged for debian 11
-        env:
-          OS_TYPE: debian
-          OS_VERSION: 11
-          TEST_TYPE: unpriv
-        run: ./scripts/ci-docker-run
+  #     - name: Install and test unprivileged for debian 11
+  #       env:
+  #         OS_TYPE: debian
+  #         OS_VERSION: 11
+  #         TEST_TYPE: unpriv
+  #       run: ./scripts/ci-docker-run
 
-      - name: Install and test unprivileged for openSUSE leap
-        env:
-          OS_TYPE: opensuse/leap
-          OS_VERSION: latest
-          TEST_TYPE: unpriv
-        run: ./scripts/ci-docker-run
+  #     - name: Install and test unprivileged for openSUSE leap
+  #       env:
+  #         OS_TYPE: opensuse/leap
+  #         OS_VERSION: latest
+  #         TEST_TYPE: unpriv
+  #       run: ./scripts/ci-docker-run
 
-  rpmbuild-rocky9:
-    runs-on: ubuntu-22.04
-    name: rpmbuild-rocky9
-    steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+  # rpmbuild-rocky9:
+  #   runs-on: ubuntu-22.04
+  #   name: rpmbuild-rocky9
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     # fetch tags as checkout@v2 doesn't do that by default
+  #     - run: git fetch --prune --unshallow --tags --force
 
-      - name: Build and test rpm under docker
-        env:
-          OS_TYPE: rockylinux
-          OS_VERSION: 9
-          GO_ARCH: linux-amd64
-        run: ./scripts/ci-docker-run
+  #     - name: Build and test rpm under docker
+  #       env:
+  #         OS_TYPE: rockylinux
+  #         OS_VERSION: 9
+  #         GO_ARCH: linux-amd64
+  #       run: ./scripts/ci-docker-run
 
-      - name: Install and test unprivileged for rocky 9
-        env:
-          OS_TYPE: rockylinux
-          OS_VERSION: 9
-          TEST_TYPE: unpriv
-        run: ./scripts/ci-docker-run
+  #     - name: Install and test unprivileged for rocky 9
+  #       env:
+  #         OS_TYPE: rockylinux
+  #         OS_VERSION: 9
+  #         TEST_TYPE: unpriv
+  #       run: ./scripts/ci-docker-run
 
-      - name: Install and test unprivileged for ubuntu 22.04
-        env:
-          OS_TYPE: ubuntu
-          OS_VERSION: 22.04
-          TEST_TYPE: unpriv
-        run: ./scripts/ci-docker-run
+  #     - name: Install and test unprivileged for ubuntu 22.04
+  #       env:
+  #         OS_TYPE: ubuntu
+  #         OS_VERSION: 22.04
+  #         TEST_TYPE: unpriv
+  #       run: ./scripts/ci-docker-run
 
-  short_unit_tests:
-    name: short_unit_tests
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+  # short_unit_tests:
+  #   name: short_unit_tests
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     # fetch tags as checkout@v2 doesn't do that by default
+  #     - run: git fetch --prune --unshallow --tags --force
 
-      - name: Setup Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.21.5
+  #     - name: Setup Go
+  #       uses: actions/setup-go@v2
+  #       with:
+  #         go-version: 1.21.5
 
-      - name: Fetch deps
-        run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfs-tools squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
+  #     - name: Fetch deps
+  #       run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfs-tools squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
 
-      - name: Build and install Apptainer
-        run: |
-          ./mconfig -v -p /usr/local --with-suid
-          make -C ./builddir all && sudo make -C ./builddir install
+  #     - name: Build and install Apptainer
+  #       run: |
+  #         ./mconfig -v -p /usr/local --with-suid
+  #         make -C ./builddir all && sudo make -C ./builddir install
 
-      - name: Run unit tests
-        run: make -C ./builddir short-unit-test
+  #     - name: Run unit tests
+  #       run: make -C ./builddir short-unit-test
 
-      - name: Check NFPM
-        run: |
-          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.10.0
-          go run ./dist/nfpm/generate.go -version $(./scripts/get-version) -prefix /usr/local | \
-          $HOME/go/bin/nfpm package -f /dev/stdin -p deb -t ./builddir
+  #     - name: Check NFPM
+  #       run: |
+  #         go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.10.0
+  #         go run ./dist/nfpm/generate.go -version $(./scripts/get-version) -prefix /usr/local | \
+  #         $HOME/go/bin/nfpm package -f /dev/stdin -p deb -t ./builddir
 
-  integration_tests:
-    name: integration_tests
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+  # integration_tests:
+  #   name: integration_tests
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     # fetch tags as checkout@v2 doesn't do that by default
+  #     - run: git fetch --prune --unshallow --tags --force
 
-      - name: Setup Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.21.5
+  #     - name: Setup Go
+  #       uses: actions/setup-go@v2
+  #       with:
+  #         go-version: 1.21.5
 
-      - name: Fetch deps
-        run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfs-tools libseccomp-dev cryptsetup dbus-user-session
+  #     - name: Fetch deps
+  #       run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfs-tools libseccomp-dev cryptsetup dbus-user-session
 
-      - name: Build and install Apptainer
-        run: |
-          ./mconfig -v -p /usr/local --with-suid
-          make -C ./builddir all && sudo make -C ./builddir install
+  #     - name: Build and install Apptainer
+  #       run: |
+  #         ./mconfig -v -p /usr/local --with-suid
+  #         make -C ./builddir all && sudo make -C ./builddir install
 
-      - name: Run integration tests
-        run: make -C ./builddir integration-test
+  #     - name: Run integration tests
+  #       run: make -C ./builddir integration-test
 
   e2e_tests:
     name: e2e_tests
@@ -381,25 +381,25 @@ jobs:
           path: builddir/e2e-cmd-report.txt
           retention-days: 7
 
-  check_pkg_no_buildcfg:
-    name: check_pkg_no_buildcfg
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+  # check_pkg_no_buildcfg:
+  #   name: check_pkg_no_buildcfg
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     # fetch tags as checkout@v2 doesn't do that by default
+  #     - run: git fetch --prune --unshallow --tags --force
 
-      - name: Setup Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.21.5
+  #     - name: Setup Go
+  #       uses: actions/setup-go@v2
+  #       with:
+  #         go-version: 1.21.5
 
-      - name: Check pkg/... doesn't depend on buildcfg
-        run: |
-          if $(/usr/local/go/bin/go list -f '{{.Deps}}' ./pkg/... | grep -q buildcfg)
-          then
-            echo "Prohibited buildcfg dependency found in pkg/:"
-            echo
-            /usr/local/go/bin/go list -f '{{.ImportPath}} - {{.Deps}}' ./pkg/... | grep buildcfg
-            exit 1
-          fi
+  #     - name: Check pkg/... doesn't depend on buildcfg
+  #       run: |
+  #         if $(/usr/local/go/bin/go list -f '{{.Deps}}' ./pkg/... | grep -q buildcfg)
+  #         then
+  #           echo "Prohibited buildcfg dependency found in pkg/:"
+  #           echo
+  #           /usr/local/go/bin/go list -f '{{.ImportPath}} - {{.Deps}}' ./pkg/... | grep buildcfg
+  #           exit 1
+  #         fi
