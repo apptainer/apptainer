@@ -169,6 +169,14 @@ func (c ctx) testNvCCLI(t *testing.T) {
 			expectExit:  255,
 		},
 		{
+			// Test "graphics" capability without privileges (issue #2033)
+			name:       "UserGraphics",
+			profile:    e2e.UserProfile,
+			args:       []string{"--nvccli", imagePath, "true"},
+			env:        []string{"NVIDIA_DRIVER_CAPABILITIES=graphics"},
+			expectExit: 0,
+		},
+		{
 			// Require CUDA version >8 should be fine!
 			name:       "UserValidRequire",
 			profile:    e2e.RootProfile,
