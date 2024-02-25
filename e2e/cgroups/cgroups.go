@@ -412,7 +412,7 @@ var resourceFlagTests = []resourceFlagTest{
 		controllerV1:    "cpu",
 		resourceV1:      "cpu.shares",
 		expectV1:        "123",
-		// Cgroups v2 has a conversion from shares to weight
+		// Cgroups v2 has a conversion from shares to weight:
 		// weight = (1 + ((cpuShares-2)*9999)/262142)
 		delegationV2: "cpu",
 		resourceV2:   "cpu.weight",

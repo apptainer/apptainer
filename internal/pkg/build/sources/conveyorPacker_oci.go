@@ -49,6 +49,7 @@ type ociRunscriptData struct {
 	PrependEntrypoint string
 }
 
+//nolint:dupword
 const ociRunscript = `
 # When SINGULARITY_NO_EVAL set, use OCI compatible behavior that does
 # not evaluate resolved CMD / ENTRYPOINT / ARGS through the shell, and

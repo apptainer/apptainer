@@ -11,7 +11,7 @@ package tool
 
 /*
 Package tool provides all related test helpers/tools which can be used by
-by unit/e2e/integration tests.
+unit/e2e/integration tests.
 
 All helpers functions here should take as first argument *testing.T, if a function
 doesn't require or use *testing.T, this function should go into another package

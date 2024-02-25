@@ -83,8 +83,8 @@ func loadMetaByFilename(filename string) (*Meta, error) {
 	return loadFromJSON(fh)
 }
 
-// metaPath returns the path to the meta file based on the
-// the name of the corresponding plugin.
+// metaPath returns the path to the meta file based on the name of the
+// corresponding plugin.
 func metaPath(name string) string {
 	return filepath.Join(rootDir, pluginIDFromName(name)+".meta")
 }

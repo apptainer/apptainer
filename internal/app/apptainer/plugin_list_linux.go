@@ -17,7 +17,7 @@ import (
 )
 
 // ListPlugins lists the apptainer plugins installed in the plugin
-// plugin installation directory.
+// installation directory.
 func ListPlugins() error {
 	plugins, err := plugin.List()
 	if err != nil {
