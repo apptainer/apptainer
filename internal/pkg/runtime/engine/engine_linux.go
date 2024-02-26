@@ -43,7 +43,7 @@ type Operations interface {
 	Config() config.EngineConfig
 	// InitConfig stores the parsed config.Common inside the Operations
 	// implementation and may do additional initialization depending on
-	// on the second parameter which is true only when running setuid
+	// the second parameter which is true only when running setuid
 	// in stage1.
 	//
 	// No elevated privileges are needed during this call.

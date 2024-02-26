@@ -359,6 +359,7 @@ func (c configTests) configGlobal(t *testing.T) {
 			exit:           0,
 		},
 		// overlay may or not be available, just test with no
+		//nolint:dupword
 		{
 			name:           "EnableOverlayNo",
 			argv:           []string{c.env.ImagePath, "grep", "\\- overlay overlay", "/proc/self/mountinfo"},

@@ -44,7 +44,7 @@ func ApplyBuildConfig(config *File) {
 // SetBinaryPath sets the value of the binary path, substituting the
 // user's $PATH plus ":" for "$PATH:" in BinaryPath.  If nonSuid is true,
 // then SuidBinaryPath gets the same value as BinaryPath, otherwise
-// SuidBinaryPath gets the value of the binary path with with "$PATH:"
+// SuidBinaryPath gets the value of the binary path with "$PATH:"
 // replaced with nothing.  libexecdir + "apptainer/bin" is always included
 // either at the beginning of $PATH if present, or the very beginning.
 func SetBinaryPath(libexecDir string, nonSuid bool) {

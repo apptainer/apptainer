@@ -143,7 +143,7 @@ func replaceURIWithImage(ctx context.Context, cmd *cobra.Command, args []string)
 	var image string
 	var err error
 
-	// Create a cache handle only when we know we are are using a URI
+	// Create a cache handle only when we know we are using a URI
 	imgCache := getCacheHandle(cache.Config{Disable: disableCache})
 	if imgCache == nil {
 		sylog.Fatalf("failed to create a new image cache handle")

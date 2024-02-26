@@ -26,7 +26,7 @@ import (
 )
 
 /*
-Online Certificate Status Protocol - OCSP
+Online Certificate Status Protocol (OCSP)
 
 OCSP responder is used to provide real-time verification of the revocation status of an X.509 certificate.
 RFC: https://www.rfc-editor.org/rfc/rfc6960

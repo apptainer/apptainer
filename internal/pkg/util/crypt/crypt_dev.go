@@ -242,7 +242,7 @@ func copyDeviceContents(source, dest string, size int64) error {
 		buffer = buffer[:cap(buffer)]
 		numRead, err := syscall.Read(sourceFd, buffer)
 		if err != nil {
-			return fmt.Errorf("unable to read the the file %s", source)
+			return fmt.Errorf("unable to read the file %s", source)
 		}
 		buffer = buffer[:numRead]
 		for n := 0; n < numRead; {

@@ -15,6 +15,7 @@ linters:
     - decorder
     - dogsled
     - dupl
+    - dupword
     - gofumpt
     - goimports
     - gomodguard

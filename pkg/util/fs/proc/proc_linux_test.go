@@ -39,6 +39,7 @@ func TestHasFilesystem(t *testing.T) {
 	}
 }
 
+//nolint:dupword
 var mountInfoData = `22 28 0:21 / /sys rw,nosuid,nodev,noexec,relatime shared:7 - sysfs sysfs rw
 23 28 0:4 / /proc rw,nosuid,nodev,noexec,relatime shared:13 - proc proc rw
 24 28 0:6 / /dev rw,nosuid,relatime shared:2 - devtmpfs udev rw,size=8110616k,nr_inodes=2027654,mode=755
@@ -372,6 +373,7 @@ func TestReadIDMap(t *testing.T) {
 		}
 	}
 
+	//nolint:dupword
 	for _, e := range []string{"a a a", "0 a a"} {
 		f, err := os.CreateTemp("", "uid_map-")
 		if err != nil {

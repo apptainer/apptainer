@@ -21,7 +21,7 @@ import (
 // part of the main function, as it exits, it would require mock at
 // some point and that would make code more complex than necessary.
 // createContainer and startContainer are quickly tested and only
-// cover case with bad socket file descriptors or non socket file
+// cover case with bad socket file descriptors or non socket
 // file descriptor (stderr).
 
 //nolint:dupl

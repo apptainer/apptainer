@@ -61,7 +61,7 @@ func GetProcessInheritable() (uint64, error) {
 }
 
 // SetProcessEffective set effective capabilities for the
-// the current process and returns previous effective set.
+// current process and returns previous effective set.
 func SetProcessEffective(caps uint64) (uint64, error) {
 	var data [2]unix.CapUserData
 	var header unix.CapUserHeader

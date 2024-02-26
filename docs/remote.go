@@ -53,7 +53,7 @@ const (
 	RemoteAddShort string = `Add a new apptainer remote endpoint`
 	RemoteAddLong  string = `
   The 'remote add' command allows you to add a new remote endpoint to be
-  be used for apptainer remote services. Authentication with a newly created
+  used for apptainer remote services. Authentication with a newly created
   endpoint will occur automatically.`
 	RemoteAddExample string = `
   $ apptainer remote add ExampleCloud cloud.example.com`

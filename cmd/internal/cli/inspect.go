@@ -189,6 +189,7 @@ type command struct {
 	img         *image.Image
 }
 
+//nolint:dupword
 func newCommand(allData bool, appName string, img *image.Image) *command {
 	command := new(command)
 	command.img = img
