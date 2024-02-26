@@ -5,6 +5,13 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.4.x changes
+
+Changes since 1.4.0-rc.2
+
+- Fix `target: no such file or directory` error when extracting
+  layers from certain OCI images that manipulate hard links across layers.
+
 ## v1.4.0 Release Candidate 2 - \[2025-03-4\]
 
 Changes since 1.4.0-rc.1

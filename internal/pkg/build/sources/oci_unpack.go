@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2024, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -24,19 +24,14 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	umocilayer "github.com/opencontainers/umoci/oci/layer"
 	"github.com/opencontainers/umoci/pkg/idtools"
 )
 
 // isExtractable checks if we have extractable layers in the image. Shouldn't be
-// an ORAS artifact or similar. If we don't check, ggcr mutate.Extract will
-// happily create an empty rootfs, leading to odd error messages elsewhere.
-func isExtractable(img v1.Image) (bool, error) {
-	layers, err := img.Layers()
-	if err != nil {
-		return false, err
-	}
+// an ORAS artifact or similar. Avoids creating an empty rootfs from 0 layers,
+// leading to odd error messages elsewhere.
+func isExtractable(layers []v1.Layer) (bool, error) {
 	for _, l := range layers {
 		mt, err := l.MediaType()
 		if err != nil {
@@ -51,15 +46,17 @@ func isExtractable(img v1.Image) (bool, error) {
 
 // UnpackRootfs extracts all of the layers of the given srcImage into destDir.
 func UnpackRootfs(_ context.Context, srcImage v1.Image, destDir string) (err error) {
-	extractable, err := isExtractable(srcImage)
+	layers, err := srcImage.Layers()
+	if err != nil {
+		return fmt.Errorf("while getting layers from image: %w", err)
+	}
+	extractable, err := isExtractable(layers)
 	if err != nil {
 		return err
 	}
 	if !extractable {
 		return fmt.Errorf("no extractable OCI/Docker tar layers found in this image")
 	}
-
-	flatTar := mutate.Extract(srcImage)
 
 	var mapOptions umocilayer.MapOptions
 
@@ -98,15 +95,40 @@ func UnpackRootfs(_ context.Context, srcImage v1.Image, destDir string) (err err
 		mapOptions.GIDMappings = append(mapOptions.GIDMappings, gidMap)
 	}
 
-	// Unpack root filesystem
-	unpackOptions := umocilayer.UnpackOptions{MapOptions: mapOptions}
-	err = umocilayer.UnpackLayer(destDir, flatTar, &unpackOptions)
-	if err != nil {
-		return fmt.Errorf("error unpacking rootfs: %s", err)
+	for _, l := range layers {
+		if err := extractLayer(l, mapOptions, destDir); err != nil {
+			return err
+		}
 	}
+	return nil
+}
 
-	// No `--fix-perms` and no sandbox... we are fine
-	return err
+func extractLayer(l v1.Layer, mapOptions umocilayer.MapOptions, destDir string) error {
+	layerDigest, err := l.Digest()
+	if err != nil {
+		return fmt.Errorf("while getting digest: %w", err)
+	}
+	sylog.Debugf("Extracting layer %s", layerDigest)
+	layerReader, err := l.Uncompressed()
+	if err != nil {
+		return fmt.Errorf("while reading layer: %s: %w", layerDigest, err)
+	}
+	defer func() {
+		if closeErr := layerReader.Close(); closeErr != nil {
+			if err == nil {
+				err = fmt.Errorf("while closing layer %s: %w", layerDigest, err)
+			} else {
+				sylog.Errorf("while closing layer %s: %v", layerDigest, err)
+			}
+		}
+	}()
+
+	unpackOptions := umocilayer.UnpackOptions{MapOptions: mapOptions}
+	err = umocilayer.UnpackLayer(destDir, layerReader, &unpackOptions)
+	if err != nil {
+		return fmt.Errorf("while unpacking layer %s: %w", layerDigest, err)
+	}
+	return nil
 }
 
 // FixPerms will work through the rootfs of this bundle, making sure that all
