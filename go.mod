@@ -45,10 +45,10 @@ require (
 	github.com/urfave/cli v1.22.12 // indirect
 	github.com/vbauerster/mpb/v8 v8.5.2
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
-	golang.org/x/crypto v0.11.0
-	golang.org/x/sys v0.10.0
-	golang.org/x/term v0.10.0
-	golang.org/x/text v0.11.0
+	golang.org/x/crypto v0.20.0
+	golang.org/x/sys v0.17.0
+	golang.org/x/term v0.17.0
+	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools/v3 v3.5.0
 	mvdan.cc/sh/v3 v3.6.1-0.20221221181323-d3feb15bed3a
@@ -173,7 +173,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.14.0 // indirect
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
 	golang.org/x/mod v0.10.0 // indirect
-	golang.org/x/net v0.11.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/tools v0.8.0 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
