@@ -1334,22 +1334,14 @@ func (c *container) addImageBindMount(system *mount.System) error {
 				if err != nil {
 					return fmt.Errorf("while getting partitions for %s: %s", img.Path, err)
 				}
-				for _, part := range partitions {
-					if part.ID == partID {
-						data = &part
-						break
-					}
-				}
+				data = getPartitionByID(partitions, partID)
 			} else {
 				// take the first data partition found
 				partitions, err := img.GetDataPartitions()
 				if err != nil {
 					return fmt.Errorf("while getting data partition for %s: %s", img.Path, err)
 				}
-				for _, part := range partitions {
-					data = &part
-					break
-				}
+				data = getFirstPartition(partitions)
 			}
 
 			if data == nil {
@@ -1406,6 +1398,25 @@ func (c *container) addImageBindMount(system *mount.System) error {
 			if err := system.Points.AddBind(mount.UserbindsTag, src, destination, syscall.MS_BIND); err != nil {
 				return fmt.Errorf("while adding data bind %s -> %s: %s", src, destination, err)
 			}
+		}
+	}
+
+	return nil
+}
+
+func getFirstPartition(partitions []image.Section) *image.Section {
+	if len(partitions) > 0 {
+		return &partitions[0]
+	}
+
+	return nil
+}
+
+func getPartitionByID(partitions []image.Section, partID uint32) *image.Section {
+	var part image.Section
+	for _, part = range partitions {
+		if part.ID == partID {
+			return &part
 		}
 	}
 

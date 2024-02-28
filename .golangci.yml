@@ -16,6 +16,7 @@ linters:
     - dogsled
     - dupl
     - dupword
+    - exportloopref
     - gofumpt
     - goimports
     - gomodguard
