@@ -17,6 +17,7 @@ Changes since v1.3.0-rc.2
 - Run image drivers with CAP_DAC_OVERRIDE in user namespace mode. This
   fixes --nvccli with NVIDIA_DRIVER_CAPABILITIES=graphics, which
   previously failed when using fuse-overlayfs.
+- Update the bundled squashfuse_ll to version 0.5.1.
 
 ## v1.3.0-rc.2 - \[2024-02-15\]
 
