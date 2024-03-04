@@ -379,6 +379,7 @@ echo "Patching fakeroot-sysv to make it relocatable"
 # shellcheck disable=SC2016
 if ! sed -i -e 's,^FAKEROOT_PREFIX=/.*,FAKEROOT_BINDIR=${0%/*},' \
 	-e 's,FAKEROOT_BINDIR=/.*,FAKEROOT_PREFIX=${FAKEROOT_BINDIR%/*},' \
+	-e 's,^PATHS=/usr/lib[^/]*/libfakeroot:,PATHS=,' \
 	usr/bin/fakeroot-sysv
 then
 	fatal "failure patching fakeroot-sysv"
