@@ -19,6 +19,7 @@ Changes since v1.3.0-rc.2
   `ldconfig.real` directly.
 - Remove unneeded 32-bit specific lock types that were changed in 1.3.0-rc.2,
   because they interfered with 32-bit builds.
+- Update the bundled squashfuse_ll to version 0.5.1.
 
 ## v1.3.0-rc.2 - \[2024-02-15\]
 
