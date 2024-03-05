@@ -31,8 +31,9 @@ import (
 )
 
 const (
-	zypperConf         = "/etc/zypp/zypp.conf"
-	osreleaseFile      = "/etc/os-release"
+	zypperConf    = "/etc/zypp/zypp.conf"
+	osreleaseFile = "/etc/os-release"
+	// #nosec G101
 	ssccredentialsFile = "/etc/zypp/credentials.d/SCCcredentials"
 	gpgKeyid           = "gpg-pubkey-307e3d54-5aaa90a5 gpg-pubkey-39db7c82-5f68629b"
 )

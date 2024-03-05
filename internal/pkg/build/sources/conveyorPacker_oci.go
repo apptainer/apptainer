@@ -378,6 +378,7 @@ func (cp *OCIConveyorPacker) extractArchive(src string, dst string) error {
 		}
 
 		// ZipSlip protection - don't escape from dst
+		// #nosec G305
 		target := filepath.Join(dst, header.Name)
 		if !strings.HasPrefix(target, filepath.Clean(dst)+string(os.PathSeparator)) {
 			return fmt.Errorf("%s: illegal extraction path", target)
@@ -401,6 +402,7 @@ func (cp *OCIConveyorPacker) extractArchive(src string, dst string) error {
 			defer f.Close()
 
 			// copy over contents
+			// #nosec G110
 			if _, err := io.Copy(f, tr); err != nil {
 				return err
 			}

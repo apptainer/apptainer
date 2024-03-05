@@ -21,6 +21,7 @@ linters:
     - goimports
     - gomodguard
     - goprintffuncname
+    - gosec
     - gosimple
     - govet
     - grouper
@@ -42,3 +43,8 @@ linters-settings:
 issues:
   max-per-linter: 0
   max-same-issues: 0
+  exclude-rules:
+    - linters:
+        - gosec
+      text: "^(G107|G204|G306):"
+

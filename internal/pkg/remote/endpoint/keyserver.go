@@ -217,7 +217,7 @@ func (c *keyserverTransport) RoundTrip(req *http.Request) (*http.Response, error
 func newClient(keyservers []*ServiceConfig, op KeyserverOp) *http.Client {
 	innerTransport := http.DefaultTransport.(*http.Transport).Clone()
 	innerTransport.DisableKeepAlives = true
-	innerTransport.TLSClientConfig = &tls.Config{}
+	innerTransport.TLSClientConfig = &tls.Config{MinVersion: tls.VersionTLS12}
 	innerClient := &http.Client{
 		Timeout:   5 * time.Second,
 		Transport: innerTransport,
