@@ -46,7 +46,7 @@ require (
 	github.com/urfave/cli v1.22.14 // indirect
 	github.com/vbauerster/mpb/v8 v8.7.2
 	golang.org/x/crypto v0.20.0
-	golang.org/x/sys v0.17.0
+	golang.org/x/sys v0.18.0
 	golang.org/x/term v0.17.0
 	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
