@@ -2443,12 +2443,17 @@ func (c actionTests) bindImage(t *testing.T) {
 			},
 			exit: 0,
 		},
-		{
-			name:    "SquashfsBadSource",
-			profile: e2e.UserProfile,
-			args:    []string{"--bind", squashfsImage + ":/bind:image-src=/ko", c.env.ImagePath, "true"},
-			exit:    255,
-		},
+		//Causes frequent crashes, not sure why.  See
+		//  https://github.com/apptainer/apptainer/issues/1953
+		// and possibly the fix to
+		//  https://github.com/apptainer/apptainer/issues/2079
+		// will affect it.
+		//{
+		//	name:    "SquashfsBadSource",
+		//	profile: e2e.UserProfile,
+		//	args:    []string{"--bind", squashfsImage + ":/bind:image-src=/ko", c.env.ImagePath, "true"},
+		//	exit:    255,
+		//},
 		{
 			name:    "SquashfsMixedBind",
 			profile: e2e.UserProfile,
