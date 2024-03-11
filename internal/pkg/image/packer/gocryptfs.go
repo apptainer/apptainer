@@ -2,6 +2,7 @@ package packer
 
 import (
 	"bytes"
+	// #nosec G501
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
@@ -92,6 +93,7 @@ func (g *Gocryptfs) init(tmpDir string) (cryptInfo *cryptInfo, err error) {
 
 	switch g.keyInfo.Format {
 	case cryptkey.PEM, cryptkey.ENV:
+		// #nosec G401
 		hash := md5.Sum(buf)
 		cryptInfo.pass = hex.EncodeToString(hash[:])
 	case cryptkey.Passphrase:

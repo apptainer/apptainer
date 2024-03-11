@@ -150,6 +150,7 @@ func StartRegistry(t *testing.T, env TestEnv) string {
 			}
 			app.ServeHTTP(w, r)
 		}),
+		ReadHeaderTimeout: httpTimeout,
 	}
 
 	registryListener, err := net.Listen("tcp", "127.0.0.1:0")

@@ -139,9 +139,9 @@ func NewDefinitionFromJSON(r io.Reader) (d Definition, err error) {
 
 func UpdateDefinitionRaw(defs *[]Definition) {
 	var buf []byte
-	for _, def := range *defs {
+	for i, def := range *defs {
 		var tmp bytes.Buffer
-		populateRaw(&def, &tmp)
+		populateRaw(&(*defs)[i], &tmp)
 		def.Raw = tmp.Bytes()
 		buf = append(buf, tmp.Bytes()...)
 	}

@@ -230,7 +230,8 @@ func (e *EngineOperations) PreStartProcess(ctx context.Context, pid int, masterC
 	if hooks != nil {
 		for _, ht := range [][]specs.Hook{hooks.CreateRuntime, hooks.CreateContainer, hooks.StartContainer} {
 			for _, h := range ht {
-				if err := exec.Hook(ctx, &h, &e.EngineConfig.State.State); err != nil {
+				hks := h
+				if err := exec.Hook(ctx, &hks, &e.EngineConfig.State.State); err != nil {
 					return err
 				}
 			}
@@ -269,7 +270,8 @@ func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error 
 	hooks := e.EngineConfig.OciConfig.Hooks
 	if hooks != nil {
 		for _, h := range hooks.Poststart {
-			if err := exec.Hook(ctx, &h, &e.EngineConfig.State.State); err != nil {
+			hks := h
+			if err := exec.Hook(ctx, &hks, &e.EngineConfig.State.State); err != nil {
 				sylog.Warningf("%s", err)
 			}
 		}

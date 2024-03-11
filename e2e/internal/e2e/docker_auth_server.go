@@ -98,7 +98,10 @@ func startAuthServer(ln net.Listener, crt, key string) error {
 	}
 
 	http.Handle("/auth", &dockerAuthHandler{srv: srv})
-	return http.Serve(ln, nil)
+	server := &http.Server{
+		ReadHeaderTimeout: httpTimeout,
+	}
+	return server.Serve(ln)
 }
 
 func (d *dockerAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
