@@ -125,8 +125,9 @@ func (t *ImageReference) newImageSource(ctx context.Context, sys *types.SystemCo
 
 	// First we are fetching into the cache
 	_, err = copy.Image(ctx, policyCtx, t.ImageReference, t.source, &copy.Options{
-		ReportWriter: w,
-		SourceCtx:    sys,
+		ReportWriter:     w,
+		SourceCtx:        sys,
+		RemoveSignatures: true,
 	})
 	if err != nil {
 		return nil, err
