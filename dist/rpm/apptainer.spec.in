@@ -105,8 +105,10 @@ Provides: bundled(fuse-overlayfs) = %{fuse_overlayfs_version}
 
 %if "%{_target_vendor}" == "suse"
 BuildRequires: binutils-gold
-%endif
+BuildRequires: go
+%else
 BuildRequires: golang
+%endif
 BuildRequires: git
 BuildRequires: gcc
 BuildRequires: make

@@ -63,6 +63,7 @@
 - Marcelo Magallon <marcelo@sylabs.io>
 - Marco Rubin <marco.rubin@protonmail.com>
 - Mark Egan-Fuller <markeganfuller@googlemail.com>
+- Matt Ezell <ezellma@ornl.gov>
 - Matthias Gerstner <matthias.gerstner@suse.com>
 - Matt Wiens <mwiens91@gmail.com>
 - Max Schwarz <max.schwarz@online.de>
