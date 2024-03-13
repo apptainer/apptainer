@@ -17,7 +17,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/containerd/containerd v1.7.11 // indirect
 	github.com/containernetworking/cni v1.1.2
-	github.com/containernetworking/plugins v1.4.0
+	github.com/containernetworking/plugins v1.4.1
 	github.com/containers/image/v5 v5.30.0
 	github.com/creack/pty v1.1.21
 	github.com/cyphar/filepath-securejoin v0.2.4
@@ -70,7 +70,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // indirect
-	github.com/alexflint/go-filemutex v1.2.0 // indirect
+	github.com/alexflint/go-filemutex v1.3.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -95,7 +95,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/garyburd/redigo v0.0.0-20150301180006-535138d7bcd7 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.2 // indirect
-	github.com/go-logr/logr v1.3.0 // indirect
+	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.21.4 // indirect
 	github.com/go-openapi/errors v0.21.1 // indirect
@@ -174,9 +174,9 @@ require (
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/tools v0.18.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231002182017-d307bd883b97 // indirect
-	google.golang.org/grpc v1.59.0 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 // indirect
+	google.golang.org/grpc v1.62.0 // indirect
+	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/go-jose/go-jose.v2 v2.6.3 // indirect
 )
 
