@@ -58,5 +58,5 @@ su testuser -c '
   cp $HOME/rpmbuild/SRPMS/*.rpm $HOME/rpmbuild/RPMS/*/*.rpm .
 
   # remove any downloaded files so tar files do not get into release assets
-  rm -f $DOWNLOADEDFILES
+  ./scripts/clean-dependencies
 '
