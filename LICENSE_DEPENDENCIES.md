@@ -545,11 +545,11 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/gogo/protobuf/blob/master/proto/LICENSE>
 
-## github.com/golang/protobuf
+## github.com/golang/protobuf/proto
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/golang/protobuf/blob/master/LICENSE>
+**License URL:** <https://github.com/golang/protobuf/blob/master/proto/LICENSE>
 
 ## github.com/google/go-cmp/cmp
 
