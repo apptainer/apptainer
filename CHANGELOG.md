@@ -9,45 +9,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.3.x
 
-Changes since v1.3.0-rc.2
-
-- Run image drivers with CAP_DAC_OVERRIDE in user namespace mode. This
-  fixes --nvccli with NVIDIA_DRIVER_CAPABILITIES=graphics, which
-  previously failed when using fuse-overlayfs.
-- Fix the use of `nvidia-container-cli` on Ubuntu 22.04 where an
-  `ldconfig` wrapper script gets in the way. Instead, we use
-  `ldconfig.real` directly.
-- Remove unneeded 32-bit specific lock types that were changed in 1.3.0-rc.2,
-  because they interfered with 32-bit builds.
-- Update the bundled squashfuse_ll to version 0.5.1.
-
-## v1.3.0-rc.2 - \[2024-02-15\]
-
-Changes since v1.3.0-rc.1
-
-- Change the default in user namespace mode to use either kernel
-  overlayfs or fuse-overlayfs instead of the underlay feature for the
-  purpose of adding bind mount points.  That was already the default in
-  setuid mode; this change makes it consistent.  The underlay feature can
-  still be used with the `--underlay` option, but it is deprecated because
-  the implementation is complicated and measurements have shown that the
-  performance of underlay is similar to overlayfs and fuse-overlayfs.
-  For now the underlay feature can be made the default again with a new
-  `preferred` value on the `enable underlay` configuration option.
-  Also the `--underlay` option can be used in setuid mode or as the root
-  user, although it was ignored previously.
-- Prefer again to use kernel overlayfs over fuse-overlayfs when a lower
-  layer is FUSE and there's no writable upper layer, undoing the change
-  from 1.2.0.  Another workaround was found for the problem that change
-  addressed.  This applies in both setuid mode and in user namespace
-  mode (except the latter not on CentOS7 where it isn't supported).
-- Fix the use of an overlay ext3 filesystem in SIF files.
-- Fix `--sharens` failure on EL8.
-- Fix Harbor registry login failure.
-- Prevent container builds from failing when `$HOME` points to a non-readable
-  directory.
-
-## v1.3.0-rc.1 - \[2024-01-10\]
+## v1.3.0 - \[2024-03-12\]
 
 Changes since v1.2.5
 
@@ -91,6 +53,23 @@ Changes since v1.2.5
   packages.
   Scripts are provided to make this easy; see the updated instructions
   in [INSTALL.md](INSTALL.md).
+  The bundled squashfuse_ll is updated to version 0.5.1.
+- Change the default in user namespace mode to use either kernel
+  overlayfs or fuse-overlayfs instead of the underlay feature for the
+  purpose of adding bind mount points.  That was already the default in
+  setuid mode; this change makes it consistent.  The underlay feature can
+  still be used with the `--underlay` option, but it is deprecated because
+  the implementation is complicated and measurements have shown that the
+  performance of underlay is similar to overlayfs and fuse-overlayfs.
+  For now the underlay feature can be made the default again with a new
+  `preferred` value on the `enable underlay` configuration option.
+  Also the `--underlay` option can be used in setuid mode or as the root
+  user, although it was ignored previously.
+- Prefer again to use kernel overlayfs over fuse-overlayfs when a lower
+  layer is FUSE and there's no writable upper layer, undoing the change
+  from 1.2.0.  Another workaround was found for the problem that change
+  addressed.  This applies in both setuid mode and in user namespace
+  mode (except the latter not on CentOS7 where it isn't supported).
 - `--cwd` is now the preferred form of the flag for setting the container's
   working directory, though `--pwd` is still supported for compatibility.
 - When building RPM, we will now use `/var/lib/apptainer` (rather than
@@ -158,11 +137,19 @@ Changes since v1.2.5
   via dependency update of mvdan.cc/sh.
 - Fix regression introduced in v1.2.0 that led to an empty user's shell field
   in the `/etc/passwd` file.
+- Prevent container builds from failing when `$HOME` points to a non-readable
+  directory.
+- Fix the use of `nvidia-container-cli` on Ubuntu 22.04 where an
+  `ldconfig` wrapper script gets in the way. Instead, we use
+  `ldconfig.real` directly.
+- Run image drivers with CAP_DAC_OVERRIDE in user namespace mode. This
+  fixes --nvccli with NVIDIA_DRIVER_CAPABILITIES=graphics, which
+  previously failed when using fuse-overlayfs.
 
 ### Release change
 
 - Releases will generate apptainer Docker images for the Linux amd64 and arm64
-  architectures.
+  architectures at `ghcr.io/apptainer/apptainer`.
 
 ## v1.2.5 - \[2023-11-21\]
 
