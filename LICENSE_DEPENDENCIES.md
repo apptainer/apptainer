@@ -239,6 +239,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/matttproud/golang_protobuf_extensions/blob/master/pbutil/LICENSE>
 
+## github.com/moby/docker-image-spec/specs-go/v1
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/moby/docker-image-spec/blob/master/specs-go/v1/LICENSE>
+
 ## github.com/moby/patternmatcher
 
 **License:** Apache-2.0
