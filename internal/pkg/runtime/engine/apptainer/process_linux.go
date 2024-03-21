@@ -21,7 +21,6 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
-	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -238,17 +237,19 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 	// Modify argv argument and program name shown in /proc/self/comm
 	name := "appinit"
 
-	argv0str := (*reflect.StringHeader)(unsafe.Pointer(&os.Args[0]))
-	argv0 := (*[1 << 30]byte)(unsafe.Pointer(argv0str.Data))[:argv0str.Len]
-	progname := make([]byte, argv0str.Len)
+	argv0 := unsafe.Slice(unsafe.StringData(os.Args[0]), len(os.Args[0]))
+	progname := make([]byte, len(os.Args[0]))
 
-	if len(name) > argv0str.Len {
+	if len(name) > len(progname) {
 		return fmt.Errorf("program name too short")
 	}
 
 	copy(progname, name)
+
+	// Set name by overwriting argv[0]
 	copy(argv0, progname)
 
+	// Set name by PR_SET_NAME (only affects PR_GET_NAME)
 	ptr := unsafe.Pointer(&progname[0])
 	if _, _, err := syscall.Syscall(syscall.SYS_PRCTL, syscall.PR_SET_NAME, uintptr(ptr), 0); err != 0 {
 		return syscall.Errno(err)
