@@ -45,7 +45,7 @@ type EngineOperations struct {
 //
 // Since this method simply stores config.Common, it does not matter
 // whether or not there are any elevated privileges during this call.
-func (e *EngineOperations) InitConfig(cfg *config.Common, privStageOne bool) {
+func (e *EngineOperations) InitConfig(cfg *config.Common, _ bool) {
 	e.CommonConfig = cfg
 }
 
@@ -263,7 +263,7 @@ func fakerootSeccompProfile() *specs.LinuxSeccomp {
 //
 // This will be executed as a fake root user in a new user
 // namespace (PrepareConfig will set both).
-func (e *EngineOperations) StartProcess(masterConnFd int) error {
+func (e *EngineOperations) StartProcess(_ int) error {
 	const (
 		mountInfo    = "/proc/self/mountinfo"
 		selinuxMount = "/sys/fs/selinux"
@@ -392,7 +392,7 @@ func (e *EngineOperations) CleanupContainer(context.Context, error, syscall.Wait
 }
 
 // PostStartProcess does nothing for the fakeroot engine.
-func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error {
+func (e *EngineOperations) PostStartProcess(_ context.Context, _ int) error {
 	return nil
 }
 

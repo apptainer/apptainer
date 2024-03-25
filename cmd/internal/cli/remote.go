@@ -254,7 +254,7 @@ var RemoteGetLoginPasswordCmd = &cobra.Command{
 	Long:    docs.RemoteGetLoginPasswordLong,
 	Example: docs.RemoteGetLoginPasswordExample,
 
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		defaultConfig := ""
 
 		config, err := getLibraryClientConfig(defaultConfig)
@@ -276,7 +276,7 @@ var RemoteGetLoginPasswordCmd = &cobra.Command{
 var RemoteAddCmd = &cobra.Command{
 	Args:   cobra.ExactArgs(2),
 	PreRun: setGlobalRemoteConfig,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		name := args[0]
 
 		uri := args[1]
@@ -324,7 +324,7 @@ var RemoteAddCmd = &cobra.Command{
 var RemoteRemoveCmd = &cobra.Command{
 	Args:   cobra.ExactArgs(1),
 	PreRun: setGlobalRemoteConfig,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		name := args[0]
 		if err := apptainer.RemoteRemove(remoteConfig, name); err != nil {
 			sylog.Fatalf("%s", err)
@@ -344,7 +344,7 @@ var RemoteRemoveCmd = &cobra.Command{
 var RemoteUseCmd = &cobra.Command{
 	Args:   cobra.ExactArgs(1),
 	PreRun: setGlobalRemoteConfig,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		name := args[0]
 		if err := apptainer.RemoteUse(remoteConfig, name, global, remoteUseExclusive); err != nil {
 			sylog.Fatalf("%s", err)
@@ -363,7 +363,7 @@ var RemoteUseCmd = &cobra.Command{
 // RemoteListCmd apptainer remote list
 var RemoteListCmd = &cobra.Command{
 	Args: cobra.ExactArgs(0),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		if err := apptainer.RemoteList(remoteConfig); err != nil {
 			sylog.Fatalf("%s", err)
 		}
@@ -380,7 +380,7 @@ var RemoteListCmd = &cobra.Command{
 // RemoteLoginCmd apptainer remote login [remoteName]
 var RemoteLoginCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		loginArgs := new(apptainer.LoginArgs)
 
 		// default to empty string to signal to RemoteLogin to use default remote
@@ -418,7 +418,7 @@ var RemoteLoginCmd = &cobra.Command{
 // RemoteLogoutCmd apptainer remote logout [remoteName|serviceURI]
 var RemoteLogoutCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		// default to empty string to signal to RemoteLogin to use default remote
 		name := ""
 		if len(args) > 0 {
@@ -442,7 +442,7 @@ var RemoteLogoutCmd = &cobra.Command{
 // RemoteStatusCmd apptainer remote status [remoteName]
 var RemoteStatusCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		// default to empty string to signal to RemoteStatus to use default remote
 		name := ""
 		if len(args) > 0 {

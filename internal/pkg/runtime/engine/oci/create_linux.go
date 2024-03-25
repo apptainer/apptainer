@@ -162,7 +162,7 @@ var statusChan = make(chan string, 1)
 // command set requires privileged execution.
 //
 //nolint:maintidx
-func (e *EngineOperations) CreateContainer(ctx context.Context, pid int, rpcConn net.Conn) error {
+func (e *EngineOperations) CreateContainer(_ context.Context, pid int, rpcConn net.Conn) error {
 	var err error
 
 	if e.CommonConfig.EngineName != Name {
@@ -881,7 +881,7 @@ func (c *container) addReadonlyPathsMount(system *mount.System) error {
 	return nil
 }
 
-func (c *container) mount(point *mount.Point, system *mount.System) error {
+func (c *container) mount(point *mount.Point, _ *mount.System) error {
 	source := point.Source
 	dest := point.Destination
 	flags, opts := mount.ConvertOptions(point.Options)

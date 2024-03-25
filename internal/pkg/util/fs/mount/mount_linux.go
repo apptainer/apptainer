@@ -578,9 +578,8 @@ func (p *Points) Import(points map[AuthorizedTag]PointList) error {
 			if flags&syscall.MS_BIND != 0 {
 				if err = p.AddBind(tag, point.Source, point.Destination, flags); err == nil {
 					continue
-				} else {
-					return err
 				}
+				return err
 			}
 
 			for _, option := range point.InternalOptions {

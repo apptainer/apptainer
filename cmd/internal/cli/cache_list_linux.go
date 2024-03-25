@@ -55,7 +55,7 @@ func init() {
 // CacheListCmd is 'apptainer cache list' and will list your local apptainer cache
 var CacheListCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		if err := cacheListCmd(); err != nil {
 			os.Exit(2)
 		}

@@ -1115,7 +1115,7 @@ func (l *Launcher) setCgroups(instanceName string) error {
 // PrepareImage performs any image preparation required before execution.
 // This is currently limited to extraction or FUSE mount when using the user namespace,
 // and activating any image driver plugins that might handle the image mount.
-func (l *Launcher) prepareImage(c context.Context, insideUserNs bool, image string) error {
+func (l *Launcher) prepareImage(_ context.Context, insideUserNs bool, image string) error {
 	// initialize internal image drivers
 	var desiredFeatures imgutil.DriverFeature
 	if fs.IsFile(image) {

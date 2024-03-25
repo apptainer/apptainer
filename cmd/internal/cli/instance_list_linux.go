@@ -84,7 +84,7 @@ var instanceListAllFlag = cmdline.Flag{
 // apptainer instance list
 var instanceListCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		name := "*"
 		if len(args) > 0 {
 			name = args[0]

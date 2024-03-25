@@ -63,7 +63,7 @@ func (c CommandError) Error() string {
 	return string(c)
 }
 
-func onError(cmd *cobra.Command, err error) error {
+func onError(_ *cobra.Command, err error) error {
 	return FlagError(err.Error())
 }
 

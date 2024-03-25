@@ -217,7 +217,7 @@ func buildPlugin(sourceDir string, bTool buildToolchain) (string, error) {
 // generateManifest takes the path to the plugin source, extracts
 // plugin's manifest by loading it into memory and stores it's json
 // representation in a separate file.
-func generateManifest(sourceDir string, bTool buildToolchain) (string, error) {
+func generateManifest(sourceDir string, _ buildToolchain) (string, error) {
 	in := pluginObjPath(sourceDir)
 	out := pluginManifestPath(sourceDir)
 

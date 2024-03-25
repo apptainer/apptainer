@@ -33,6 +33,7 @@ func TestSystem(t *testing.T) {
 	after := false
 	mnt := false
 
+	//nolint:unparam,revive
 	mountFn := func(point *Point, system *System) error {
 		mnt = true
 		return nil

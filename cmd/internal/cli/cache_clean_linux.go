@@ -81,7 +81,7 @@ var (
 	// cacheCleanCmd is 'apptainer cache clean' and will clear your local apptainer cache
 	cacheCleanCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			if err := cleanCache(); err != nil {
 				sylog.Fatalf("Handle clean failed: %v", err)
 			}

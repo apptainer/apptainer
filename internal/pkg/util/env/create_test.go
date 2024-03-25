@@ -768,7 +768,7 @@ func TestSetContainerEnv(t *testing.T) {
 
 // equal tells whether a and b contain the same elements in the
 // same order. A nil argument is equivalent to an empty slice.
-func equal(t *testing.T, a, b []string) bool {
+func equal(_ *testing.T, a, b []string) bool {
 	if len(a) != len(b) {
 		return false
 	}

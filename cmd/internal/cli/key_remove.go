@@ -23,7 +23,7 @@ var KeyRemoveCmd = &cobra.Command{
 	PreRun:                checkGlobal,
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var opts []sypgp.HandleOpt
 		path := keyLocalDir
 

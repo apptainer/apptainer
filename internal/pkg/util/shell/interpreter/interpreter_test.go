@@ -134,7 +134,7 @@ func TestInterpreter(t *testing.T) {
 			expectOut: "argument",
 			shellBuiltin: &testShellBuiltin{
 				builtin: "testing",
-				fn: func(shell *Shell) ShellBuiltin {
+				fn: func(_ *Shell) ShellBuiltin {
 					return func(ctx context.Context, args []string) error {
 						hc := interp.HandlerCtx(ctx)
 						fmt.Fprintf(hc.Stdout, "%s\n", args[0])
@@ -148,8 +148,8 @@ func TestInterpreter(t *testing.T) {
 			script: "export FOO=bar && exec /bin/true",
 			shellBuiltin: &testShellBuiltin{
 				builtin: "exec",
-				fn: func(shell *Shell) ShellBuiltin {
-					return func(ctx context.Context, args []string) error {
+				fn: func(_ *Shell) ShellBuiltin {
+					return func(ctx context.Context, _ []string) error {
 						hc := interp.HandlerCtx(ctx)
 						for _, env := range GetEnv(hc) {
 							if env == "FOO=bar" {
@@ -167,8 +167,8 @@ func TestInterpreter(t *testing.T) {
 			expectOut: "a virtual file",
 			openHandler: &testOpenHandler{
 				path: "/virtual/file",
-				fn: func(shell *Shell) OpenHandler {
-					return func(path string, flag int, perm os.FileMode) (io.ReadWriteCloser, error) {
+				fn: func(_ *Shell) OpenHandler {
+					return func(_ string, _ int, _ os.FileMode) (io.ReadWriteCloser, error) {
 						bc := new(bufferCloser)
 						bc.WriteString("echo 'a virtual file'\n")
 						return bc, nil

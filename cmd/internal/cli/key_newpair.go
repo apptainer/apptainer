@@ -92,7 +92,7 @@ type keyNewPairOptions struct {
 	PushToKeyStore bool
 }
 
-func runNewPairCmd(cmd *cobra.Command, args []string) {
+func runNewPairCmd(cmd *cobra.Command, _ []string) {
 	path := keyLocalDir
 	keyring := sypgp.NewHandle(path)
 

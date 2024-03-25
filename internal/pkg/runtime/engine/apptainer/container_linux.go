@@ -512,7 +512,7 @@ func (c *container) setupImageDriver(system *mount.System, containerPid int) err
 			return fmt.Errorf("while requesting /dev/fuse file descriptor from RPC: %s", err)
 		}
 		params.FuseFd = fuseFd
-		system.RunAfterTag(mount.SessionTag, func(system *mount.System) error {
+		system.RunAfterTag(mount.SessionTag, func(_ *mount.System) error {
 			defer unix.Close(params.FuseFd)
 
 			uid := os.Getuid()
@@ -573,7 +573,7 @@ func (c *container) setupImageDriver(system *mount.System, containerPid int) err
 		return nil
 	}
 
-	system.RunAfterTag(mount.SessionTag, func(system *mount.System) error {
+	system.RunAfterTag(mount.SessionTag, func(_ *mount.System) error {
 		if params.UsernsFd != -1 {
 			defer unix.Close(params.UsernsFd)
 		}
@@ -591,7 +591,7 @@ func (c *container) setupImageDriver(system *mount.System, containerPid int) err
 // configuration directive, when applied master process
 // won't see mount done by RPC server anymore. Typically
 // called after SharedTag mounts
-func (c *container) setPropagationMount(system *mount.System) error {
+func (c *container) setPropagationMount(_ *mount.System) error {
 	pflags := uintptr(syscall.MS_REC)
 
 	if c.engine.EngineConfig.File.MountSlave {
@@ -609,7 +609,7 @@ func (c *container) setPropagationMount(system *mount.System) error {
 // point preventing this process from accessing /proc/<rpc_pid>/mountinfo
 // without error, so we bind mount /proc/self/mountinfo from RPC process
 // to a session file and read mount information from there.
-func (c *container) addMountInfo(system *mount.System) error {
+func (c *container) addMountInfo(_ *mount.System) error {
 	const (
 		mountinfo = "/mountinfo"
 		self      = "/proc/self/mountinfo"
@@ -627,7 +627,7 @@ func (c *container) addMountInfo(system *mount.System) error {
 	return nil
 }
 
-func (c *container) chdirFinal(system *mount.System) error {
+func (c *container) chdirFinal(_ *mount.System) error {
 	if _, err := c.rpcOps.Chdir(c.session.FinalPath()); err != nil {
 		return err
 	}
@@ -637,7 +637,7 @@ func (c *container) chdirFinal(system *mount.System) error {
 // mount via image driver.  If in privileged mode, mount the target first
 // using a generic fuse mount and pass in the file descriptor instead of
 // making the image driver do the mount.
-func (c *container) mountImageDriver(params *image.MountParams, system *mount.System, mfunc image.MountFunc) error {
+func (c *container) mountImageDriver(params *image.MountParams, _ *mount.System, mfunc image.MountFunc) error {
 	if imageDriver == nil {
 		return fmt.Errorf("no image driver found, programming error")
 	}
@@ -1095,7 +1095,7 @@ func (c *container) addRootfsMount(system *mount.System) error {
 	return nil
 }
 
-func (c *container) overlayUpperWork(system *mount.System) error {
+func (c *container) overlayUpperWork(_ *mount.System) error {
 	ov := c.session.Layer.(*overlay.Overlay)
 
 	createUpperWork := func(path string) error {
@@ -1938,7 +1938,7 @@ func (c *container) addHomeLayer(system *mount.System, source, dest string) erro
 
 // addHomeNoLayer is responsible for staging the home directory and adding the base
 // directory of the staged home into the container when overlay/underlay are unavailable
-func (c *container) addHomeNoLayer(system *mount.System, source, dest string) error {
+func (c *container) addHomeNoLayer(system *mount.System, _, dest string) error {
 	flags := uintptr(syscall.MS_BIND | syscall.MS_REC)
 
 	homeBase := fs.RootDir(dest)

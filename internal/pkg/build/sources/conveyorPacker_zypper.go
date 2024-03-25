@@ -61,7 +61,7 @@ func machine() (string, error) {
 // Get downloads container information from the specified source
 //
 //nolint:maintidx
-func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err error) {
+func (cp *ZypperConveyorPacker) Get(_ context.Context, b *types.Bundle) (err error) {
 	var suseconnectProduct, suseconnectModver string
 	var suseconnectPath string
 	// dependContainer is a container which shares the repos with the host through container-suseconnect

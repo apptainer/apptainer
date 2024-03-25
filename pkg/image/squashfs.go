@@ -41,7 +41,7 @@ type squashfsInfo struct {
 	Compression uint16
 	BlockLog    uint16
 	Flags       uint16
-	NoIds       uint16
+	NoIDs       uint16
 	Major       uint16
 	Minor       uint16
 }
@@ -174,10 +174,10 @@ func (f *squashfsFormat) initializer(img *Image, fileinfo os.FileInfo) error {
 	return nil
 }
 
-func (f *squashfsFormat) openMode(writable bool) int {
+func (f *squashfsFormat) openMode(_ bool) int {
 	return os.O_RDONLY
 }
 
-func (f *squashfsFormat) lock(img *Image) error {
+func (f *squashfsFormat) lock(_ *Image) error {
 	return nil
 }

@@ -103,7 +103,7 @@ var instanceStopTimeoutFlag = cmdline.Flag{
 var instanceStopCmd = &cobra.Command{
 	Args:                  cobra.RangeArgs(0, 1),
 	DisableFlagsInUseLine: true,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		if len(args) == 0 && !instanceStopAll {
 			return errors.New("invalid command")
 		}

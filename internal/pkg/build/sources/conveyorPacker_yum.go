@@ -48,7 +48,7 @@ type YumConveyorPacker struct {
 }
 
 // Get downloads container information from the specified source
-func (c *YumConveyor) Get(ctx context.Context, b *types.Bundle) (err error) {
+func (c *YumConveyor) Get(_ context.Context, b *types.Bundle) (err error) {
 	c.b = b
 
 	// check for dnf or yum on system

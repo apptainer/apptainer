@@ -31,7 +31,7 @@ import (
 // Specifically in oci engine, no additional privileges are gained here. However,
 // most likely this still will be executed as root since `apptainer oci`
 // command set requires privileged execution.
-func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, status syscall.WaitStatus) error {
+func (e *EngineOperations) CleanupContainer(_ context.Context, fatal error, status syscall.WaitStatus) error {
 	// close the connection between apptainer and apptheus
 	if e.CommonConfig.ApptheusSocket != nil {
 		if err := e.CommonConfig.ApptheusSocket.Close(); err != nil {

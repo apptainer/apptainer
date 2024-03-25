@@ -24,7 +24,7 @@ import (
 // apptainer plugin disable <name>
 var PluginDisableCmd = &cobra.Command{
 	PreRun: CheckRootOrUnpriv,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		err := apptainer.DisablePlugin(args[0], buildcfg.LIBEXECDIR)
 		if err != nil {
 			if os.IsNotExist(err) {

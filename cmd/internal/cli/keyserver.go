@@ -152,7 +152,7 @@ var KeyserverAddCmd = &cobra.Command{
 var KeyserverRemoveCmd = &cobra.Command{
 	Args:   cobra.RangeArgs(1, 2),
 	PreRun: setKeyserver,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		uri := args[0]
 		name := ""
 		if len(args) > 1 {
@@ -182,7 +182,7 @@ func setKeyserver(_ *cobra.Command, _ []string) {
 // KeyserverLoginCmd apptainer keyserver login [option] <registry_url>
 var KeyserverLoginCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if err := apptainer.KeyserverLogin(remoteConfig, ObtainLoginArgs(args[0])); err != nil {
 			sylog.Fatalf("%s", err)
 		}
@@ -199,7 +199,7 @@ var KeyserverLoginCmd = &cobra.Command{
 // KeyserverLogoutCmd apptainer keyserver logout [remoteName|serviceURI]
 var KeyserverLogoutCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		// default to empty string to signal to KeyserverLogin to use default remote
 		name := ""
 		if len(args) > 0 {
@@ -223,7 +223,7 @@ var KeyserverLogoutCmd = &cobra.Command{
 // KeyserverListCmd apptainer keyserver list
 var KeyserverListCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		remoteName := ""
 		if len(args) > 0 {
 			remoteName = args[0]

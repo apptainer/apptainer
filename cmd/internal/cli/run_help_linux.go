@@ -44,7 +44,7 @@ func init() {
 var RunHelpCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Args:                  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		// Sanity check
 		if _, err := os.Stat(args[0]); err != nil {
 			sylog.Fatalf("container not found: %s", err)

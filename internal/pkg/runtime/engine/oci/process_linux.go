@@ -263,7 +263,7 @@ func (e *EngineOperations) PreStartProcess(ctx context.Context, pid int, masterC
 //
 // Most likely this still will be executed as root since `apptainer oci`
 // command set requires privileged execution.
-func (e *EngineOperations) PostStartProcess(ctx context.Context, pid int) error {
+func (e *EngineOperations) PostStartProcess(ctx context.Context, _ int) error {
 	if err := e.updateState(ociruntime.Running); err != nil {
 		return err
 	}

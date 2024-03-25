@@ -184,7 +184,7 @@ func (c *imgBuildTests) issue4967(t *testing.T) {
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs(image, "testdata/regressions/issue_4967.def"),
-		e2e.PostRun(func(t *testing.T) {
+		e2e.PostRun(func(_ *testing.T) {
 			os.Remove(image)
 		}),
 		e2e.ExpectExit(
@@ -204,7 +204,7 @@ func (c *imgBuildTests) issue4969(t *testing.T) {
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs(image, "testdata/regressions/issue_4969.def"),
-		e2e.PostRun(func(t *testing.T) {
+		e2e.PostRun(func(_ *testing.T) {
 			os.Remove(image)
 		}),
 		e2e.ExpectExit(
@@ -274,7 +274,7 @@ func (c *imgBuildTests) issue4820(t *testing.T) {
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs(image, "testdata/regressions/issue_4820.def"),
-		e2e.PostRun(func(t *testing.T) {
+		e2e.PostRun(func(_ *testing.T) {
 			os.Remove(image)
 		}),
 		e2e.ExpectExit(
@@ -293,7 +293,7 @@ func (c *imgBuildTests) issue5315(t *testing.T) {
 		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs(image, "testdata/regressions/issue_5315.def"),
-		e2e.PostRun(func(t *testing.T) {
+		e2e.PostRun(func(_ *testing.T) {
 			os.Remove(image)
 		}),
 		e2e.ExpectExit(
@@ -350,7 +350,7 @@ func (c *imgBuildTests) issue5250(t *testing.T) {
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs(image, "testdata/regressions/issue_5250.def"),
-		e2e.PostRun(func(t *testing.T) {
+		e2e.PostRun(func(_ *testing.T) {
 			os.Remove(image)
 		}),
 		e2e.ExpectExit(
@@ -472,7 +472,7 @@ From: {{ .From }}
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs(image, f.Name()),
-		e2e.PostRun(func(t *testing.T) {
+		e2e.PostRun(func(_ *testing.T) {
 			os.Remove(image)
 		}),
 		e2e.ExpectExit(0),

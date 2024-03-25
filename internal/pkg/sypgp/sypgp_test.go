@@ -42,7 +42,7 @@ type mockPKSLookup struct {
 	el   openpgp.EntityList
 }
 
-func (ms *mockPKSLookup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (ms *mockPKSLookup) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(ms.code)
 	if ms.code == http.StatusOK {
 		w.Header().Set("Content-Type", "application/pgp-keys")

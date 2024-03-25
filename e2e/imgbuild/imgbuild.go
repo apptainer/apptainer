@@ -1812,7 +1812,7 @@ func (c imgBuildTests) buildBindMount(t *testing.T) {
 			e2e.WithProfile(e2e.RootProfile),
 			e2e.WithCommand("build"),
 			e2e.WithArgs(args...),
-			e2e.PostRun(func(t *testing.T) {
+			e2e.PostRun(func(_ *testing.T) {
 				os.Remove(defFile)
 			}),
 			e2e.ExpectExit(tt.exit),
@@ -1841,7 +1841,7 @@ func (c imgBuildTests) buildLibraryHost(t *testing.T) {
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs("-F", imagePath, defFile),
-		e2e.PostRun(func(t *testing.T) {
+		e2e.PostRun(func(_ *testing.T) {
 			os.Remove(defFile)
 		}),
 		e2e.ExpectExit(255,
@@ -1872,7 +1872,7 @@ func (c imgBuildTests) testWritableTmpfs(t *testing.T) {
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs("-F", "--writable-tmpfs", imagePath, defFile),
-		e2e.PostRun(func(t *testing.T) {
+		e2e.PostRun(func(_ *testing.T) {
 			os.Remove(defFile)
 		}),
 		e2e.ExpectExit(0),
@@ -2105,7 +2105,7 @@ cat /proc/$$/cmdline`
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs("-F", imagePath, defFile),
-		e2e.PostRun(func(t *testing.T) {
+		e2e.PostRun(func(_ *testing.T) {
 			os.Remove(defFile)
 		}),
 		e2e.ExpectExit(0,
