@@ -990,7 +990,6 @@ func (c *container) mountImage(mnt *mount.Point, system *mount.System) error {
 		}
 
 		cryptDev, err = c.rpcOps.Decrypt(offset, path, key, masterPid)
-
 		if err != nil {
 			return fmt.Errorf("unable to decrypt the file system: %s", err)
 		}

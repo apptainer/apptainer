@@ -437,7 +437,6 @@ func (e *EngineOperations) PostStartProcess(_ context.Context, pid int) error {
 		}
 
 		err = file.Update()
-
 		if err != nil {
 			return err
 		}
