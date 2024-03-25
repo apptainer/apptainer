@@ -202,9 +202,8 @@ func (h *keyserverHandler) login(u *url.URL, username, password string, insecure
 
 	if insecure {
 		client.Transport = &http.Transport{
-			//#nosec G402
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
+				InsecureSkipVerify: true, //nolint:gosec
 			},
 		}
 	}

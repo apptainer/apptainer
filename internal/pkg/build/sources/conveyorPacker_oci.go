@@ -403,8 +403,7 @@ func (cp *OCIConveyorPacker) extractArchive(src string, dst string) error {
 			defer f.Close()
 
 			// copy over contents
-			// #nosec G110
-			if _, err := io.Copy(f, tr); err != nil {
+			if _, err := io.Copy(f, tr); err != nil { //nolint:gosec
 				return err
 			}
 		}

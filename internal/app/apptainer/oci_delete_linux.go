@@ -43,8 +43,7 @@ func OciDelete(ctx context.Context, containerID string) error {
 	hooks := engineConfig.OciConfig.Hooks
 	if hooks != nil {
 		for _, h := range hooks.Poststop {
-			// #nosec G601
-			if err := exec.Hook(ctx, &h, &engineConfig.State.State); err != nil {
+			if err := exec.Hook(ctx, &h, &engineConfig.State.State); err != nil { //nolint:gosec
 				sylog.Warningf("%s", err)
 			}
 		}
