@@ -1775,6 +1775,10 @@ func (c *container) addBindsMount(system *mount.System) error {
 			}
 		}
 		if !skipAllBinds && !slice.ContainsString(skipBinds, localtimePath) {
+			if err := c.copyHostLocaltime(localtimePath); err != nil {
+				return err
+			}
+
 			if err := system.Points.AddBind(mount.BindsTag, localtimePath, localtimePath, flags, "skip-on-error"); err != nil {
 				return fmt.Errorf("unable to add %s to mount list: %s", localtimePath, err)
 			}
@@ -1802,6 +1806,11 @@ func (c *container) addBindsMount(system *mount.System) error {
 			continue
 		}
 
+		if src == localtimePath {
+			if err := c.copyHostLocaltime(localtimePath); err != nil {
+				return err
+			}
+		}
 		// #5465 If hosts/localtime mount fails, it should not be fatal so skip-on-error
 		bindOpt := ""
 		if src == localtimePath || src == hostsPath {
@@ -1817,6 +1826,23 @@ func (c *container) addBindsMount(system *mount.System) error {
 		}
 	}
 
+	return nil
+}
+
+// copyHostLocaltime creates a bind point in the overlay layer so the bind mount does not overwrite the
+// default timezone in the container, which is likely at a different path due to a symlink.  Rather than creating
+// an empty file, it copies the content from the host filesystem if available, just in case of a bind mount failure
+// (which should be extremely rare)
+func (c *container) copyHostLocaltime(localtimePath string) error {
+	if c.engine.EngineConfig.GetSessionLayer() == apptainer.OverlayLayer {
+		content, err := os.ReadFile(localtimePath)
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("while reading host %s, err: %s", localtimePath, err)
+		}
+		if err := c.session.AddFile(filepath.Join(c.session.Layer.Dir(), localtimePath), content); err != nil {
+			return fmt.Errorf("while adding file to overlay session folder, err: %s", err)
+		}
+	}
 	return nil
 }
 

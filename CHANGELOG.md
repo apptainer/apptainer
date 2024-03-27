@@ -10,6 +10,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 ## Changes for v1.3.x
 
 - Make 'apptainer build' work with signed Docker containers.
+- Stopped binding over the default timezone in the container with the host's timezone,
+  which led to unexpected behavior if the application changed timezones.
 - Added progress bars for `oras://` push and pull.
 - Hide `Instance stats will not be available` message under `--sharens` mode.
 - Fix problem where credentials locally stored with `registry login` command
