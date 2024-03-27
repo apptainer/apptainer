@@ -788,3 +788,24 @@ func (c actionTests) issue1848(t *testing.T) {
 		),
 	)
 }
+
+// Verify whether the time discrepancy issue gets resolved
+// see: https://github.com/apptainer/apptainer/issues/1868
+func (c actionTests) issue1868(t *testing.T) {
+	// change the host timezone to JST first
+	if err := os.Setenv("TZ", "JST"); err != nil {
+		t.Fatalf("Can not set the timezone to JST")
+	}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("docker://ghcr.io/apptainer/centos_base:7", "bash", "-c", "TZ=UTC date --date 2020-01-01T12:00:00 +%s"),
+		e2e.ExpectExit(0,
+			e2e.ExpectOutput(e2e.ExactMatch, "1577880000"),
+		),
+	)
+	if err := os.Unsetenv("TZ"); err != nil {
+		t.Fatalf("Can not unset TZ")
+	}
+}
