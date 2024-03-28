@@ -58,15 +58,16 @@ func TestInterpreter(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		argv         []string
-		env          []string
-		script       string
-		expectOut    string
-		expectErr    string
-		shellBuiltin *testShellBuiltin
-		openHandler  *testOpenHandler
-		expectExit   uint8
+		name           string
+		argv           []string
+		env            []string
+		script         string
+		expectOut      string
+		expectErr      string
+		shellBuiltin   *testShellBuiltin
+		openHandler    *testOpenHandler
+		expectExit     uint8
+		expectShellErr string
 	}{
 		{
 			name:      "hello stdout",
@@ -176,6 +177,32 @@ func TestInterpreter(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:      "runscript timeout",
+			script:    "echo $APPTAINER_RUNSCRIPT_TIMEOUT",
+			env:       []string{fmt.Sprintf("%s=2s", runscriptTimeoutEnv)},
+			expectOut: "2s",
+		},
+		{
+			name:   "exec sleep timeout",
+			script: "sleep 2",
+			env:    []string{"PATH=/usr/bin", fmt.Sprintf("%s=1s", runscriptTimeoutEnv)},
+			shellBuiltin: &testShellBuiltin{
+				builtin: "exec",
+				fn: func(shell *Shell) ShellBuiltin {
+					return func(ctx context.Context, args []string) error {
+						hc := interp.HandlerCtx(ctx)
+						cmd, err := shell.LookPath(ctx, args[0])
+						if err != nil {
+							return err
+						}
+						fmt.Fprintf(hc.Stdout, "%s\n", cmd)
+						return nil
+					}
+				},
+			},
+			expectShellErr: "command \"sleep 2\" was killed after 1s timeout",
+		},
 	}
 
 	for _, tt := range tests {
@@ -201,7 +228,9 @@ func TestInterpreter(t *testing.T) {
 				if tt.expectExit != 0 && shell.Status() != tt.expectExit {
 					t.Fatalf("unexpected exit status for %s: got %d instead of %d", tt.name, shell.Status(), tt.expectExit)
 				} else if tt.expectExit == 0 {
-					t.Fatalf("unexpected error: %s", err)
+					if tt.expectShellErr != err.Error() {
+						t.Fatalf("unexpected error: %s", err)
+					}
 				}
 			}
 

@@ -43,6 +43,10 @@ type Shell struct {
 	runner        *interp.Runner
 }
 
+// runscriptTimeoutEnv defines the environment variable for the runscript timeout
+// duration for commands executed by the runscript
+const runscriptTimeoutEnv = "APPTAINER_RUNSCRIPT_TIMEOUT"
+
 // execTimeout defines the execution timeout for commands executed by the
 // shell interpreter (default: 1 minute).
 var execTimeout = time.Minute
@@ -55,6 +59,15 @@ func defaultExecHandler(ctx context.Context, args []string) error {
 	if err != nil {
 		fmt.Fprintln(hc.Stderr, err)
 		return interp.NewExitStatus(127)
+	}
+
+	timeoutVal := GetEnvVar(hc, runscriptTimeoutEnv)
+	if timeoutVal != "" {
+		if timeoutDur, err := time.ParseDuration(timeoutVal); err == nil {
+			// only if the timeoutDur is properly parsed and we only use the abs value.
+			// otherwise it'll be 1 minute by default
+			execTimeout = timeoutDur.Abs()
+		}
 	}
 
 	ectx, cancel := context.WithTimeout(ctx, execTimeout)
@@ -108,6 +121,16 @@ func GetEnv(hc interp.HandlerContext) []string {
 	sort.Strings(environ)
 
 	return environ
+}
+
+// GetEnvVar returns the value of a specific exported environment variable within
+// the context of the shell interpreter.
+func GetEnvVar(hc interp.HandlerContext, env string) string {
+	vr := hc.Env.Get(env)
+	if vr.IsSet() && vr.Exported && vr.Kind == expand.String {
+		return vr.Str
+	}
+	return ""
 }
 
 // New returns a shell interpreter instance.
