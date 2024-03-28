@@ -848,6 +848,7 @@ func getEnvVal(env []string, envname string) string {
 // an embedded shell interpreter.
 func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []string, error) {
 	args := engineConfig.OciConfig.Process.Args
+	engineConfig.OciConfig.SetProcessEnv("APPTAINER_RUNSCRIPT_TIMEOUT", engineConfig.GetRunscriptTimeout())
 	penv := append(engineConfig.OciConfig.Process.Env, "APPTAINER_COMMAND="+filepath.Base(args[0]))
 
 	b := bytes.NewBufferString(files.ActionScript)

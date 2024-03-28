@@ -354,6 +354,7 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 		launch.OptUnderlay(underlay),
 		launch.OptShareNSMode(shareNS),
 		launch.OptShareNSFd(fd),
+		launch.OptRunscriptTimeout(runscriptTimeout),
 	}
 
 	l, err := launch.NewLauncher(opts...)

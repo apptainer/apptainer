@@ -12,6 +12,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Make 'apptainer build' work with signed Docker containers.
 - Stopped binding over the default timezone in the container with the host's timezone,
   which led to unexpected behavior if the application changed timezones.
+- Make runscript timeout configurable.
 
 ## v1.3.0 - \[2024-03-12\]
 
