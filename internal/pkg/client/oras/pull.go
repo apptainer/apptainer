@@ -15,9 +15,11 @@ import (
 	"os"
 
 	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	ocitypes "github.com/containers/image/v5/types"
+	"golang.org/x/term"
 )
 
 // pull will pull an oras image into the cache if directTo="", or a specific file if directTo is set.
@@ -27,9 +29,13 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 		return "", fmt.Errorf("failed to get checksum for %s: %s", pullFrom, err)
 	}
 
+	var pb *client.DownloadProgressBar
+	if term.IsTerminal(2) {
+		pb = &client.DownloadProgressBar{}
+	}
 	if directTo != "" {
 		sylog.Infof("Downloading oras image")
-		if err := DownloadImage(ctx, directTo, pullFrom, ociAuth, noHTTPS); err != nil {
+		if err := DownloadImage(ctx, directTo, pullFrom, ociAuth, noHTTPS, pb); err != nil {
 			return "", fmt.Errorf("unable to Download Image: %v", err)
 		}
 		imagePath = directTo
@@ -43,7 +49,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 		if !cacheEntry.Exists {
 			sylog.Infof("Downloading oras image")
 
-			if err := DownloadImage(ctx, cacheEntry.TmpPath, pullFrom, ociAuth, noHTTPS); err != nil {
+			if err := DownloadImage(ctx, cacheEntry.TmpPath, pullFrom, ociAuth, noHTTPS, pb); err != nil {
 				return "", fmt.Errorf("unable to Download Image: %v", err)
 			}
 			if cacheFileHash, err := ImageHash(cacheEntry.TmpPath); err != nil {

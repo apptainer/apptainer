@@ -29,11 +29,12 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/empty"
 	"github.com/google/go-containerregistry/pkg/v1/layout"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"golang.org/x/term"
 )
 
 // DownloadImage downloads a SIF image specified by an oci reference to a file using the included credentials
-func DownloadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) error {
-	im, err := remoteImage(ref, ociAuth, noHTTPS)
+func DownloadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool, pb *client.DownloadProgressBar) error {
+	im, err := remoteImage(ref, ociAuth, noHTTPS, pb)
 	if err != nil {
 		return err
 	}
@@ -87,26 +88,7 @@ func DownloadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.Dock
 	}
 	defer outFile.Close()
 
-	// progressbar
-	in, out := io.Pipe()
-	mwriter := io.MultiWriter(outFile, out)
-	wpb := &writerWithProgressBar{
-		Writer:      mwriter,
-		ProgressBar: &client.DownloadProgressBar{},
-	}
-	wpb.Init(layer.Size)
-
-	go func() {
-		_, err := io.Copy(io.Discard, in)
-		if err != nil {
-			pb.Abort(true)
-			in.CloseWithError(err)
-		}
-		pb.Wait()
-		in.Close()
-	}()
-
-	_, err = io.Copy(wpb, blob)
+	_, err = io.Copy(outFile, blob)
 	if err != nil {
 		return err
 	}
@@ -146,10 +128,36 @@ func UploadImage(ctx context.Context, path, ref string, ociAuth *ocitypes.Docker
 		return err
 	}
 
-	authOptn := AuthOptn(ociAuth)
-	updates := make(chan v1.Update, 1)
-	go showProgressBar(updates)
-	return remote.Write(ir, im, authOptn, remote.WithUserAgent(useragent.Value()), remote.WithProgress(updates))
+	remoteOpts := []remote.Option{AuthOptn(ociAuth), remote.WithUserAgent(useragent.Value())}
+	if term.IsTerminal(2) {
+		pb := &client.DownloadProgressBar{}
+		progChan := make(chan v1.Update, 1)
+		go func() {
+			var total int64
+			soFar := int64(0)
+			for {
+				// The following is concurrency-safe because this is the only
+				// goroutine that's going to be reading progChan updates.
+				update := <-progChan
+				if update.Error != nil {
+					pb.Abort(false)
+					return
+				}
+				if update.Total != total {
+					pb.Init(update.Total)
+					total = update.Total
+				}
+				pb.IncrBy(int(update.Complete - soFar))
+				soFar = update.Complete
+				if soFar >= total {
+					pb.Wait()
+					return
+				}
+			}
+		}()
+		remoteOpts = append(remoteOpts, remote.WithProgress(progChan))
+	}
+	return remote.Write(ir, im, remoteOpts...)
 }
 
 // ensureSIF checks for a SIF image at filepath and returns an error if it is not, or an error is encountered
@@ -169,7 +177,7 @@ func ensureSIF(filepath string) error {
 
 // RefHash returns the digest of the SIF layer of the OCI manifest for supplied ref
 func RefHash(ctx context.Context, ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (v1.Hash, error) {
-	im, err := remoteImage(ref, ociAuth, noHTTPS)
+	im, err := remoteImage(ref, ociAuth, noHTTPS, nil)
 	if err != nil {
 		return v1.Hash{}, err
 	}
@@ -227,7 +235,7 @@ func sha256sum(r io.Reader) (result string, nBytes int64, err error) {
 }
 
 // remoteImage returns a v1.Image for the provided remote ref.
-func remoteImage(ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (v1.Image, error) {
+func remoteImage(ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool, pb *client.DownloadProgressBar) (v1.Image, error) {
 	ref = strings.TrimPrefix(ref, "oras://")
 	ref = strings.TrimPrefix(ref, "//")
 
@@ -240,8 +248,12 @@ func remoteImage(ref string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (
 	if err != nil {
 		return nil, fmt.Errorf("invalid reference %q: %w", ref, err)
 	}
-	authOptn := AuthOptn(ociAuth)
-	im, err := remote.Image(ir, authOptn)
+	remoteOpts := []remote.Option{AuthOptn(ociAuth)}
+	if pb != nil {
+		rt := client.NewRoundTripper(nil, pb)
+		remoteOpts = append(remoteOpts, remote.WithTransport(rt))
+	}
+	im, err := remote.Image(ir, remoteOpts...)
 	if err != nil {
 		return nil, err
 	}
