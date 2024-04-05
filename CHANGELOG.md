@@ -13,6 +13,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Stopped binding over the default timezone in the container with the host's timezone,
   which led to unexpected behavior if the application changed timezones.
 - Added progress bars for `oras://` push and pull.
+- Hide `Instance stats will not be available` message under `--sharens` mode.
 
 ## v1.3.0 - \[2024-03-12\]
 
