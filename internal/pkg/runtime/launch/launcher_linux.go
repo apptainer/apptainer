@@ -1095,7 +1095,11 @@ func (l *Launcher) setCgroups(instanceName string) error {
 		return nil
 	}
 
-	sylog.Infof("Instance stats will not be available - requires cgroups v2 with systemd as manager.")
+	if l.cfg.ShareNSMode {
+		sylog.Debugf("Instance stats will not be available - requires cgroups v2 with systemd as manager.")
+	} else {
+		sylog.Infof("Instance stats will not be available - requires cgroups v2 with systemd as manager.")
+	}
 	return nil
 }
 
