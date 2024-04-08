@@ -361,7 +361,7 @@ func (c ctx) registryIssue2226(t *testing.T) {
 	}
 
 	u := e2e.CurrentUser(t)
-	configPath := filepath.Join(u.Dir, ".singularity", syfs.DockerConfFile)
+	configPath := filepath.Join(u.Dir, ".apptainer", syfs.DockerConfFile)
 	sourceCtx.AuthFilePath = configPath
 	destCtx.AuthFilePath = configPath
 

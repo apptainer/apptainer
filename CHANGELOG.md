@@ -7,10 +7,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.4.x
 
-- Fix problem where credentials locally stored with `registry login` command
-  were not usable in some execution flows. Run `registry login` again with
-  latest version to ensure credentials are stored correctly.
-
 ## Changes for v1.3.x
 
 - Make 'apptainer build' work with signed Docker containers.
@@ -18,6 +14,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   which led to unexpected behavior if the application changed timezones.
 - Added progress bars for `oras://` push and pull.
 - Hide `Instance stats will not be available` message under `--sharens` mode.
+- Fix problem where credentials locally stored with `registry login` command
+  were not usable in some execution flows. Run `registry login` again with
+  latest version to ensure credentials are stored correctly.
 
 ## v1.3.0 - \[2024-03-12\]
 
