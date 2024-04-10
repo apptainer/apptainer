@@ -5,11 +5,16 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes for v1.4.x
+
 ## Changes for v1.3.x
 
 - Make 'apptainer build' work with signed Docker containers.
 - Added progress bars for `oras://` push and pull.
 - Hide `Instance stats will not be available` message under `--sharens` mode.
+- Fix problem where credentials locally stored with `registry login` command
+  were not usable in some execution flows. Run `registry login` again with
+  latest version to ensure credentials are stored correctly.
 
 ## v1.3.0 - \[2024-03-12\]
 
