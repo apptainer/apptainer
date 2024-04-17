@@ -849,6 +849,20 @@ func getEnvVal(env []string, envname string) string {
 func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []string, error) {
 	args := engineConfig.OciConfig.Process.Args
 	penv := append(engineConfig.OciConfig.Process.Env, "APPTAINER_COMMAND="+filepath.Base(args[0]))
+	var execCtx context.Context
+	if timeoutVal := engineConfig.GetRunscriptTimeout(); timeoutVal != "" {
+		timeoutDur, err := time.ParseDuration(timeoutVal)
+		if err != nil {
+			return nil, nil, err
+		}
+		timeoutCtx, cancel := context.WithTimeout(context.Background(), timeoutDur)
+		defer cancel()
+		execCtx = context.WithValue(timeoutCtx, interpreter.TimeoutKey, timeoutDur)
+	} else {
+		timeoutCtx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+		execCtx = context.WithValue(timeoutCtx, interpreter.TimeoutKey, time.Minute)
+	}
 
 	b := bytes.NewBufferString(files.ActionScript)
 
@@ -893,7 +907,7 @@ func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []st
 	// function to execute the command
 	shell.RegisterShellBuiltin("exec", execBuiltin)
 
-	err = shell.Run(context.TODO())
+	err = shell.Run(execCtx)
 	if err != nil {
 		if shell.Status() != 0 {
 			os.Exit(int(shell.Status()))
@@ -911,7 +925,7 @@ func runActionScript(engineConfig *apptainerConfig.EngineConfig) ([]string, []st
 				return nil, nil, err
 			}
 			interp.RegisterShellBuiltin("exec", execBuiltin)
-			err = interp.Run(context.TODO())
+			err = interp.Run(execCtx)
 			if err != nil {
 				if interp.Status() != 0 {
 					os.Exit(int(interp.Status()))
