@@ -92,6 +92,8 @@ var (
 	underlay bool // whether using underlay instead of overlay
 
 	shareNS bool // mode for launching container using shared namespace
+
+	runscriptTimeout string // runscript timeout
 )
 
 // --app
@@ -830,6 +832,17 @@ var actionShareNSFlag = cmdline.Flag{
 	Hidden:       false,
 }
 
+// --runscript-timeout
+var actionRunscriptTimeoutFlag = cmdline.Flag{
+	ID:           "runscriptTimeoutFlag",
+	Value:        &runscriptTimeout,
+	DefaultValue: "",
+	Name:         "runscript-timeout",
+	Usage:        "set the timeout duration for runscript (default 1m)",
+	EnvKeys:      []string{"RUNSCRIPT_TIMEOUT"},
+	Hidden:       false,
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(ExecCmd)
@@ -847,6 +860,9 @@ func init() {
 			cmdManager.SetCmdGroup("actions_instance", actionsCmd...)
 		}
 		actionsInstanceCmd := cmdManager.GetCmdGroup("actions_instance")
+
+		cmdManager.SetCmdGroup("actions_runscript", RunCmd, instanceRunCmd)
+		actionsRunscriptCmd := cmdManager.GetCmdGroup("actions_runscript")
 
 		cmdManager.RegisterFlagForCmd(&actionAddCapsFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionAllowSetuidFlag, actionsInstanceCmd...)
@@ -923,5 +939,6 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&actionIgnoreUsernsFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionUnderlayFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionShareNSFlag, actionsCmd...)
+		cmdManager.RegisterFlagForCmd(&actionRunscriptTimeoutFlag, actionsRunscriptCmd...)
 	})
 }

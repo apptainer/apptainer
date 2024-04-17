@@ -13,6 +13,7 @@
 package apptainerenv
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -630,6 +631,27 @@ func (c ctx) apptainerEnvEval(t *testing.T) {
 	}
 }
 
+// apptainerRuntimeTimetutEnv tests the new apptainer run/instance option `--runscript-timeout`
+func (c ctx) apptainerRuntimeTimeoutEnv(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+	// test script
+	dir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "runscript-", "")
+	defer cleanup(t)
+	path := filepath.Join(dir, "sleep.sh")
+	err := os.WriteFile(path, []byte("sleep 2s"), 0o755)
+	if err != nil {
+		t.Fatalf("unable to create timeout script, err: %s", err)
+	}
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("run"),
+		e2e.WithArgs("-B", fmt.Sprintf("%s:/.singularity.d/env/91-slow_env.sh", path), "--runscript-timeout", "1s", c.env.ImagePath, "true"),
+		e2e.ExpectExit(255, e2e.ExpectError(e2e.ContainMatch, "FATAL:   command \"sleep 2s\" was killed after 1s timeout")),
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -641,9 +663,10 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"environment option":       c.apptainerEnvOption,
 		"environment file":         c.apptainerEnvFile,
 		"env eval":                 c.apptainerEnvEval,
-		"issue 5057":               c.issue5057, // https://github.com/apptainer/singularity/issues/5057
-		"issue 5426":               c.issue5426, // https://github.com/apptainer/singularity/issues/5426
-		"issue 43":                 c.issue43,   // https://github.com/sylabs/singularity/issues/43
-		"issue 1263":               c.issue1263, // https://github.com/sylabs/singularity/issues/1263
+		"issue 5057":               c.issue5057,                  // https://github.com/apptainer/singularity/issues/5057
+		"issue 5426":               c.issue5426,                  // https://github.com/apptainer/singularity/issues/5426
+		"issue 43":                 c.issue43,                    // https://github.com/sylabs/singularity/issues/43
+		"issue 1263":               c.issue1263,                  // https://github.com/sylabs/singularity/issues/1263
+		"runscript timeout":        c.apptainerRuntimeTimeoutEnv, // https://github.com/apptainer/apptainer/issues/1595
 	}
 }

@@ -43,6 +43,12 @@ type Shell struct {
 	runner        *interp.Runner
 }
 
+type timeoutKey string
+
+const (
+	TimeoutKey timeoutKey = "timeout"
+)
+
 // execTimeout defines the execution timeout for commands executed by the
 // shell interpreter (default: 1 minute).
 var execTimeout = time.Minute
@@ -57,8 +63,15 @@ func defaultExecHandler(ctx context.Context, args []string) error {
 		return interp.NewExitStatus(127)
 	}
 
-	ectx, cancel := context.WithTimeout(ctx, execTimeout)
-	defer cancel()
+	ectx := ctx
+	// if there is no deadline, we use default 1 min
+	if _, ok := ctx.Deadline(); !ok {
+		cctx, cancel := context.WithTimeout(ctx, execTimeout)
+		defer cancel()
+		ectx = cctx
+	} else {
+		execTimeout = ctx.Value(TimeoutKey).(time.Duration)
+	}
 
 	cmd := exec.CommandContext(ectx, path, args[1:]...)
 	cmd.Env = append([]string{"PWD=" + hc.Dir}, GetEnv(hc)...)

@@ -15,6 +15,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Fix problem where credentials locally stored with `registry login` command
   were not usable in some execution flows. Run `registry login` again with
   latest version to ensure credentials are stored correctly.
+- Make runscript timeout configurable.
 
 ## v1.3.0 - \[2024-03-12\]
 

@@ -150,9 +150,10 @@ type launchOptions struct {
 	IgnoreUserns      bool
 	UseBuildConfig    bool
 	TmpDir            string
-	Underlay          bool // whether prefer underlay over overlay
-	ShareNSMode       bool // whether running in sharens mode
-	ShareNSFd         int  // fd opened in sharens mode
+	Underlay          bool   // whether prefer underlay over overlay
+	ShareNSMode       bool   // whether running in sharens mode
+	ShareNSFd         int    // fd opened in sharens mode
+	RunscriptTimeout  string // runscript timeout
 }
 
 type Launcher struct {
@@ -583,6 +584,14 @@ func OptShareNSMode(b bool) Option {
 func OptShareNSFd(fd int) Option {
 	return func(lo *launchOptions) error {
 		lo.ShareNSFd = fd
+		return nil
+	}
+}
+
+// OptRunscriptTimeout
+func OptRunscriptTimeout(timeout string) Option {
+	return func(lo *launchOptions) error {
+		lo.RunscriptTimeout = timeout
 		return nil
 	}
 }
