@@ -372,6 +372,9 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 		l.engineConfig.SetShareNSFd(l.cfg.ShareNSFd)
 	}
 
+	// Set runscript timeout
+	l.engineConfig.SetRunscriptTimout(l.cfg.RunscriptTimeout)
+
 	// Set the required namespaces in the engine config.
 	l.setNamespaces()
 	// Set the container environment.
