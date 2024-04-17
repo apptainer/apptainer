@@ -155,6 +155,7 @@ type JSONConfig struct {
 	WritableOverlay       bool              `json:"writableOverlay,omitempty"`
 	ShareNSMode           bool              `json:"sharensMode,omitempty"`
 	ShareNSFd             int               `json:"sharensFd,omitempty"`
+	RunscriptTimeout      string            `json:"runscriptTimeout,omitempty"`
 }
 
 // SetImage sets the container image path to be used by EngineConfig.JSON.
@@ -963,4 +964,14 @@ func (e *EngineConfig) SetShareNSFd(fd int) {
 // GetShareNSFd gets the locked fd
 func (e *EngineConfig) GetShareNSFd() int {
 	return e.JSON.ShareNSFd
+}
+
+// SetRunscriptTimout sets the runscript timeout
+func (e *EngineConfig) SetRunscriptTimout(timeout string) {
+	e.JSON.RunscriptTimeout = timeout
+}
+
+// GetRunscriptTimeout gets the set runscript timeout
+func (e *EngineConfig) GetRunscriptTimeout() string {
+	return e.JSON.RunscriptTimeout
 }
