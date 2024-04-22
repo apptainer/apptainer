@@ -502,8 +502,8 @@ func (f *fuseappsFeature) stop(target string, kill bool) error {
 			_ = instance.cmd.Process.Signal(syscall.SIGTERM)
 		}
 
-		// maxTime is total time to wait including after kill signal,
-		//   and kill signal is sent at half the time
+		// waitTimeout is time to wait until terminate signal and
+		//   again to wait until force kill signal
 		waitTimeout := 1 * time.Second
 		timer := time.NewTimer(waitTimeout)
 		defer timer.Stop()
@@ -517,6 +517,8 @@ func (f *fuseappsFeature) stop(target string, kill bool) error {
 					kill = true
 					timer.Reset(waitTimeout)
 					sylog.Debugf("Terminating pid %v after wait timeout", process.Pid)
+					sylog.Infof("Terminating %v after timeout", f.binName)
+					sylog.Infof("Timeouts can be caused by a running background process")
 					_ = process.Signal(syscall.SIGTERM)
 				} else {
 					sylog.Debugf("Killing pid %v after wait timeout", process.Pid)
@@ -565,10 +567,10 @@ func (f *fuseappsFeature) waitInstance(instance *fuseappsInstance) error {
 
 	errmsg := instance.filterMsg()
 	if errmsg != "" {
-		errmsg = ": " + errmsg
+		return fmt.Errorf("%v exited: %v", f.binName, errmsg)
 	}
 
-	return fmt.Errorf("%v exited%v", f.binName, errmsg)
+	return nil
 }
 
 func (d *fuseappsDriver) allFeatures() []fuseappsFeature {
