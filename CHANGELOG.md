@@ -18,6 +18,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   were not usable in some execution flows. Run `registry login` again with
   latest version to ensure credentials are stored correctly.
 - Make runscript timeout configurable.
+- Return invalid bind path mount options during bind path parsing.
 
 ## v1.3.0 - \[2024-03-12\]
 
