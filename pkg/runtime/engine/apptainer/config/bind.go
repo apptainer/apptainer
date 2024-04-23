@@ -116,6 +116,12 @@ func ParseBindPath(paths []string) ([]BindPath, error) {
 			}
 
 			if elem == 2 && !isOption {
+				// if the bind variable ends with a colon, add the remaining
+				// string to it and parse it as an option in newBindPath to
+				// catch invalid options
+				if bind != "" && bind[len(bind)-1] == ':' {
+					bind += s
+				}
 				bp, err := newBindPath(bind)
 				if err != nil {
 					return nil, fmt.Errorf("while getting bind path: %s", err)
@@ -220,6 +226,14 @@ func newBindPath(bind string) (BindPath, error) {
 	var bp BindPath
 
 	splitted := splitBy(bind, ':')
+
+	// a correct bind path should have 3 parts at most
+	if len(splitted) > 3 {
+		return bp, fmt.Errorf(
+			"bad bind syntax %q: should be %s:%s:%s",
+			bind, splitted[0], splitted[1], splitted[2],
+		)
+	}
 
 	bp.Source = strings.ReplaceAll(splitted[0], "\\:", ":")
 	if bp.Source == "" {
