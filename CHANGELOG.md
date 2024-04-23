@@ -19,6 +19,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   latest version to ensure credentials are stored correctly.
 - Make runscript timeout configurable.
 - Return invalid bind path mount options during bind path parsing.
+- Make the INFO message more helpful when a running background process
+  at exit time causes a FUSE mount to not shut down cleanly.
 
 ## v1.3.0 - \[2024-03-12\]
 
