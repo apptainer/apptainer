@@ -132,7 +132,7 @@ func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, st
 		}
 	}
 
-	if cryptDev != "" && imageDriver == nil {
+	if cryptDev != "" {
 		if err := cleanupCrypt(cryptDev); err != nil {
 			sylog.Errorf("could not cleanup crypt: %v", err)
 		}
