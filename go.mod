@@ -21,7 +21,7 @@ require (
 	github.com/containers/image/v5 v5.30.0
 	github.com/creack/pty v1.1.21
 	github.com/cyphar/filepath-securejoin v0.2.4
-	github.com/docker/docker v26.0.2+incompatible
+	github.com/docker/docker v26.1.0+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/fatih/color v1.16.0
 	github.com/go-log/log v0.2.0
