@@ -5,8 +5,6 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes for v1.4.x
-
 ## Changes for v1.3.x
 
 - Make 'apptainer build' work with signed Docker containers.
@@ -165,9 +163,7 @@ Changes since v1.2.5
 ### Release change
 
 - Releases will generate apptainer Docker images for the Linux amd64 and arm64
-  architectures.
-
-## Changes for v1.2.x
+  architectures at `ghcr.io/apptainer/apptainer`.
 
 ## v1.2.5 - \[2023-11-21\]
 
@@ -976,7 +972,7 @@ Accidentally included no code changes.
 
 ### Comparison to SingularityCE
 
-This release candidate has most of the new features, bug fixes, and
+This release has most of the new features, bug fixes, and
 changes that went into SingularityCE up through their version 3.9.5,
 except where the maintainers of Apptainer disagreed with what went into
 SingularityCE since the project fork.  The biggest difference is that
