@@ -3089,5 +3089,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"invalidRemote":                np(c.invalidRemote),       // GHSA-5mv9-q7fq-9394
 		"fakeroot home":                c.actionFakerootHome,      // test home dir in fakeroot
 		"relWorkdirScratch":            np(c.relWorkdirScratch),   // test relative --workdir with --scratch
+		"issue 1868":                   c.issue1868,               // https://github.com/apptainer/apptainer/issues/1868
 	}
 }
