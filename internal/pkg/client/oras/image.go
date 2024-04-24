@@ -147,7 +147,7 @@ func NewImageFromSIF(file string, layerMediaType types.MediaType) (*SifImage, er
 	//   }
 	si.manifest = v1.Manifest{
 		SchemaVersion: 2,
-		MediaType:     types.DockerManifestSchema2,
+		MediaType:     types.OCIManifestSchema1,
 		Config: v1.Descriptor{
 			MediaType: types.MediaType(SifConfigMediaTypeV1),
 			Digest:    emptyHash,
