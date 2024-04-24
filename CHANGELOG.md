@@ -24,6 +24,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Return invalid bind path mount options during bind path parsing.
 - Make the INFO message more helpful when a running background process
   at exit time causes a FUSE mount to not shut down cleanly.
+- Fixed the wrong mediaType in the oras push manifest.
 
 ## v1.3.0 - \[2024-03-12\]
 
