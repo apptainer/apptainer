@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.3.x
 
+## v1.3.1 - \[2024-04-24\]
+
 - Make 'apptainer build' work with signed Docker containers.
 - Fixed regression introduced in 1.3.0 that prevented closing cryptsetup
   and the corresponding loop device after running an encrypted sif container
