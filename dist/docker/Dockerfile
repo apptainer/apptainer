@@ -1,6 +1,7 @@
 ARG BASE_IMAGE=debian:bookworm-slim
 ARG GOLANG_IMAGE=golang:1.21.5-bookworm
 
+FROM --platform=${TARGETPLATFORM} ${BASE_IMAGE} as debian-target
 FROM --platform=${BUILDPLATFORM} ${GOLANG_IMAGE} as build
 
 ARG SYSROOT_BUILD=/sysroot-build
@@ -46,7 +47,6 @@ RUN . /buildenv.sh && \
     ./mconfig -c ${DEBIANARCH}-linux-gnu-gcc --with-suid --prefix=/opt/apptainer && \
     make -C builddir && make -C builddir install
 
-FROM --platform=${TARGETPLATFORM} ${BASE_IMAGE} as debian-target
 FROM --platform=${BUILDPLATFORM} ${BASE_IMAGE} AS rootfs
 
 ARG SYSROOT=/sysroot
