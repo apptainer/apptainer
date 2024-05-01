@@ -21,7 +21,7 @@ require (
 	github.com/containers/image/v5 v5.30.0
 	github.com/creack/pty v1.1.21
 	github.com/cyphar/filepath-securejoin v0.2.4
-	github.com/docker/docker v25.0.5+incompatible
+	github.com/docker/docker v26.1.1+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/fatih/color v1.16.0
 	github.com/go-log/log v0.2.0
@@ -132,6 +132,7 @@ require (
 	github.com/miekg/pkcs11 v1.1.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/patternmatcher v0.5.0 // indirect
 	github.com/moby/sys/mountinfo v0.7.1 // indirect
 	github.com/moby/sys/sequential v0.5.0 // indirect
