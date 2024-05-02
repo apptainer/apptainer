@@ -1,0 +1,11 @@
+bootstrap: yum
+include: dnf
+mirrorurl: http://dl.rockylinux.org/pub/rocky/%{OSVERSION}/BaseOS/x86_64/os/
+osversion: 9
+
+%environment
+    LC_ALL=C
+
+%post
+    dnf -y update
+    dnf install -y epel-release
