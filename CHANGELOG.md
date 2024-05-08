@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Fixed the issue when nesting `apptainer instance start` inside a container
   on cgroups-v2 capable host.
+- Fixed the issue that oras download progress bar gets stuck
+  when downloading large images.
 
 ## v1.3.1 - \[2024-04-24\]
 
