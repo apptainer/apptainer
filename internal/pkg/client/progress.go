@@ -18,6 +18,17 @@ import (
 	"github.com/vbauerster/mpb/v8/decor"
 )
 
+var defaultOption = []mpb.BarOption{
+	mpb.PrependDecorators(
+		decor.Counters(decor.SizeB1024(0), "%.1f / %.1f"),
+	),
+	mpb.AppendDecorators(
+		decor.Percentage(),
+		decor.AverageSpeed(decor.SizeB1024(0), " % .1f "),
+		decor.AverageETA(decor.ET_STYLE_GO),
+	),
+}
+
 func initProgressBar(totalSize int64) (*mpb.Progress, *mpb.Bar) {
 	p := mpb.New()
 
