@@ -21,6 +21,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	lccgroups "github.com/opencontainers/runc/libcontainer/cgroups"
 	lcmanager "github.com/opencontainers/runc/libcontainer/cgroups/manager"
+	lcsystemd "github.com/opencontainers/runc/libcontainer/cgroups/systemd"
 	lcconfigs "github.com/opencontainers/runc/libcontainer/configs"
 	lcspecconv "github.com/opencontainers/runc/libcontainer/specconv"
 	"github.com/opencontainers/runtime-spec/specs-go"
@@ -320,6 +321,17 @@ func newManager(resources *specs.LinuxResources, group string, systemd bool) (ma
 				Allow:  true,
 				Access: "rwm",
 			},
+		}
+	}
+
+	// if systemd is configured but systemd is not running
+	if lcConfig.Systemd && !lcsystemd.IsRunningSystemd() {
+		// DBUS_SESSION_BUS_ADDRESS is set
+		if val, ok := os.LookupEnv("DBUS_SESSION_BUS_ADDRESS"); val != "" && ok {
+			sylog.Warningf("Systemd is unavailabe currently, environment variable `DBUS_SESSION_BUS_ADDRESS` is set, will unset it")
+			if err := os.Unsetenv("DBUS_SESSION_BUS_ADDRESS"); err != nil {
+				return nil, fmt.Errorf("while unset `DBUS_SESSION_BUS_ADDRESS`, err: %w", err)
+			}
 		}
 	}
 
