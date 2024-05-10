@@ -16,7 +16,7 @@ require (
 	github.com/buger/jsonparser v1.1.1
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/containerd/containerd v1.7.11 // indirect
-	github.com/containernetworking/cni v1.2.0
+	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.4.1
 	github.com/containers/image/v5 v5.30.0
 	github.com/creack/pty v1.1.21
@@ -56,7 +56,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.3.2
-	github.com/docker/cli v26.1.1+incompatible
+	github.com/docker/cli v26.1.2+incompatible
 	github.com/docker/distribution v2.8.3+incompatible
 	github.com/google/go-containerregistry v0.19.1
 	github.com/samber/lo v1.39.0
@@ -67,7 +67,6 @@ require (
 require (
 	github.com/AdamKorcz/go-fuzz-headers v0.0.0-20210319161527-f761c2329661 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
-	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // indirect
