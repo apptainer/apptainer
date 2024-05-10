@@ -31,7 +31,16 @@ if ! go mod verify > /dev/null ; then
 	exit 4
 fi
 
-if ! go mod tidy ; then
+# Use the minimum go version for backward compatibility when different
+# go versions are used on different operating systems
+HERE=${0%/*}
+PARENT=${HERE%/*}
+if [ "$PARENT" = "$HERE" ]; then
+    PARENT=.
+fi
+eval `grep ^hstgo_version= ${PARENT}/mconfig`
+
+if ! go mod tidy -go=$hstgo_version; then
 	echo "E: Failed to run go mod tidy. Abort."
 	exit 5
 fi
