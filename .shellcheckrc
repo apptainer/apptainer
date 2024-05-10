@@ -114,6 +114,7 @@ disable=SC2249  # (info): Consider adding a default *) case, even if it just exi
 disable=SC2250  # (style): Prefer putting braces around variable references even when not strictly required.
 disable=SC2292  # (style): Prefer [[ ]] over [ ] for tests in Bash/Ksh.
 disable=SC2312  # (info): Consider invoking this command separately to avoid masking its return value (or use '|| true' to ignore).
+disable=SC2329  # (info): This function is never invoked. Check usage (or ignored if invoked indirectly).
 disable=SC3003  # (warning): In POSIX sh, $'..' is undefined.
 disable=SC3014  # (warning): In POSIX sh, == in place of = is undefined.
 disable=SC3043  # (warning): In POSIX sh, 'local' is undefined.
