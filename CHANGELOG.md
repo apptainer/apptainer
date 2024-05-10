@@ -5,6 +5,11 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes for v1.3.x
+
+- Fixed the issue when nesting `apptainer instance start` inside a container
+  on cgroups-v2 capable host.
+
 ## v1.3.1 - \[2024-04-24\]
 
 - Make 'apptainer build' work with signed Docker containers.
