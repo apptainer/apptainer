@@ -328,7 +328,7 @@ func newManager(resources *specs.LinuxResources, group string, systemd bool) (ma
 	if lcConfig.Systemd && !lcsystemd.IsRunningSystemd() {
 		// DBUS_SESSION_BUS_ADDRESS is set
 		if val, ok := os.LookupEnv("DBUS_SESSION_BUS_ADDRESS"); val != "" && ok {
-			sylog.Warningf("Systemd is unavailabe currently, environment variable `DBUS_SESSION_BUS_ADDRESS` is set, will unset it")
+			sylog.Infof("Disabling cgroups because systemd is unavailable")
 			if err := os.Unsetenv("DBUS_SESSION_BUS_ADDRESS"); err != nil {
 				return nil, fmt.Errorf("while unset `DBUS_SESSION_BUS_ADDRESS`, err: %w", err)
 			}
