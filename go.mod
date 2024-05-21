@@ -17,7 +17,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/containerd/containerd v1.7.11 // indirect
 	github.com/containernetworking/cni v1.1.2
-	github.com/containernetworking/plugins v1.4.1
+	github.com/containernetworking/plugins v1.5.0
 	github.com/containers/image/v5 v5.30.1
 	github.com/creack/pty v1.1.21
 	github.com/cyphar/filepath-securejoin v0.2.5
@@ -67,7 +67,7 @@ require (
 require (
 	github.com/AdamKorcz/go-fuzz-headers v0.0.0-20210319161527-f761c2329661 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
-	github.com/Microsoft/go-winio v0.6.1 // indirect
+	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // indirect
 	github.com/alexflint/go-filemutex v1.3.0 // indirect
@@ -171,10 +171,8 @@ require (
 	go.opentelemetry.io/otel/metric v1.19.0 // indirect
 	go.opentelemetry.io/otel/trace v1.19.0 // indirect
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // indirect
-	golang.org/x/mod v0.15.0 // indirect
-	golang.org/x/net v0.22.0 // indirect
-	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/tools v0.18.0 // indirect
+	golang.org/x/net v0.24.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 // indirect
 	google.golang.org/grpc v1.62.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
