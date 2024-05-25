@@ -60,7 +60,7 @@ func (sk *apptainerKeychain) Resolve(target authn.Resource) (authn.Authenticator
 		sylog.Debugf("Auth file %q does not exist, fallback to %s", authFile, fallbackPath)
 		f, err = os.Open(fallbackPath)
 		if os.IsNotExist(err) {
-			sylog.Debugf("Auth file %q does not exist, using anonymouse auth", authFile)
+			sylog.Debugf("Auth file %q does not exist, using anonymous auth", authFile)
 			return authn.Anonymous, nil
 		}
 	}
