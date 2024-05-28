@@ -7,12 +7,22 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.4.x
 
-## Changes for v1.3.x
+## v1.3.2 - \[2024-05-28\]
 
-- Fixed the issue that oras download progress bar gets stuck
-  when downloading large images.
+### Security fix
+
+- Included a fix for
+  [CVE-2024-3727](https://github.com/advisories/GHSA-6wvf-f2vw-3425)
+  in a dependent library which describes a flaw that can allow attackers
+  to trigger unexpected authenticated registry accesses due to object digest
+  values not being validated in all cases.
+
+### Other Changes
+
 - Fixed the issue when nesting `apptainer instance start` inside a container
   on cgroups-v2 capable host.
+- Fixed the issue that oras download progress bar gets stuck
+  when downloading large images.
 
 ## v1.3.1 - \[2024-04-24\]
 
