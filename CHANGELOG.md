@@ -5,7 +5,17 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes for v1.3.x
+## v1.3.2 - \[2024-05-28\]
+
+### Security fix
+
+- Included a fix for
+  [CVE-2024-3727](https://github.com/advisories/GHSA-6wvf-f2vw-3425)
+  in a dependent library which describes a flaw that can allow attackers
+  to trigger unexpected authenticated registry accesses due to object digest
+  values not being validated in all cases.
+
+### Other Changes
 
 - Fixed the issue when nesting `apptainer instance start` inside a container
   on cgroups-v2 capable host.
