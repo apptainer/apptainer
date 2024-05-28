@@ -32,7 +32,7 @@ func Exclusive(path string) (fd int, err error) {
 }
 
 // TryExclusive applies an exclusive non-blocking lock on path
-func TryExclusive(path string) (fd int, accquired bool, err error) {
+func TryExclusive(path string) (fd int, acquired bool, err error) {
 	fd, err = unix.Open(path, os.O_RDONLY, 0)
 	if err != nil {
 		return fd, false, err

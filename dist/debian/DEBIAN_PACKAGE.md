@@ -111,7 +111,7 @@ export DEB_FULLNAME="Your Name"
 export DEBEMAIL="you@example.org"
 ```
 
-## Download dependendent source code
+## Download dependent source code
 
 Include the source code for the FUSE-based dependent packages:
 
