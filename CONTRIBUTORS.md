@@ -49,6 +49,7 @@
 - Jarrod Johnson <jjohnson2@lenovo.com>
 - Jason Stover <jms@sylabs.io>, <jason.stover@gmail.com>
 - Jeff Kriske <jekriske@gmail.com>
+- Jeremy Spencer <jeremy.spencer@stfc.ac.uk>
 - Jia Li <jiali@sylabs.io>
 - Jim Phillips <jcphill@users.noreply.github.com>
 - Joana Chavez <joana@sylabs.io>, <j.chavezlavalle@gmail.com>

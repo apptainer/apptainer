@@ -419,7 +419,13 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	if l.engineConfig.GetInstance() && !l.cfg.ShareNSMode {
 		err = l.starterInstance(loadOverlay, insideUserNs, instanceName, useSuid, cfg)
 	} else {
-		err = l.starterInteractive(loadOverlay, useSuid, cfg)
+		var imageFilename string
+		var fileInfoErr error
+		info, fileInfoErr := os.Stat(image)
+		if fileInfoErr == nil {
+			imageFilename = info.Name()
+		}
+		err = l.starterInteractive(loadOverlay, useSuid, cfg, imageFilename)
 	}
 
 	// Execution is finished.
@@ -1177,9 +1183,9 @@ func (l *Launcher) prepareImage(c context.Context, insideUserNs bool, image stri
 }
 
 // starterInteractive executes the starter binary to run an image interactively, given the supplied engineConfig
-func (l *Launcher) starterInteractive(loadOverlay bool, useSuid bool, cfg *config.Common) error {
+func (l *Launcher) starterInteractive(loadOverlay bool, useSuid bool, cfg *config.Common, imageFilename string) error {
 	err := starter.Exec(
-		"Apptainer runtime parent",
+		"Apptainer runtime parent: "+imageFilename,
 		cfg,
 		starter.UseSuid(useSuid),
 		starter.LoadOverlayModule(loadOverlay),
