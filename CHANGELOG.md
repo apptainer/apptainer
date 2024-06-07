@@ -10,6 +10,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Label process for starter binary of interactive containers with image filename,
   for example: `Apptainer runtime parent: example.sif`.
 
+## Changes for v1.3.x
+
+- Added libcudadebugger.so to nvliblist.conf to support cuda-gdb in CUDA 12+.
+
 ## v1.3.2 - \[2024-05-28\]
 
 ### Security fix
