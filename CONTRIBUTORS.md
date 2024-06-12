@@ -82,6 +82,7 @@
 - Olivier Sallou <olivier.sallou@irisa.fr>
 - Omer Preminger <omer@sylabs.io>
 - Paul Charlton <techguru@byiq.com>
+- Patrick LoPresti <lopresti@gmail.com>
 - Peter Steinbach <steinbach@scionics.de>
 - Petr Votava <votava.petr@gene.com>
 - Rafal Gumienny <rafal.gumienny@gmail.com>
