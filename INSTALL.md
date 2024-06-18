@@ -101,7 +101,7 @@ run:
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.51.1
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.59.1
 ```
 
 <!-- markdownlint-enable MD013 -->
@@ -260,9 +260,9 @@ Then build the rpms from the tarball:
 rpmbuild -tb apptainer-${VERSION}.tar.gz
 # Install Apptainer using the resulting rpm
 RPMVERSION="$(scripts/rpm-version "${VERSION}")"
-sudo rpm -Uvh ~/rpmbuild/RPMS/x86_64/apptainer-${RPMVERSION}-1.el7.x86_64.rpm
+sudo rpm -Uvh ~/rpmbuild/RPMS/x86_64/apptainer-${RPMVERSION}-1.el8.x86_64.rpm
 # (Optionally) Install the setuid-root portion
-sudo rpm -Uvh ~/rpmbuild/RPMS/x86_64/apptainer-suid-${RPMVERSION}-1.el7.x86_64.rpm
+sudo rpm -Uvh ~/rpmbuild/RPMS/x86_64/apptainer-suid-${RPMVERSION}-1.el8.x86_64.rpm
 # (Optionally) Remove the build tree, source, and dependencies
 rm -rf ~/rpmbuild apptainer-${VERSION}.tar.gz
 ./scripts/clean-dependencies

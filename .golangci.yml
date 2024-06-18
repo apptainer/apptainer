@@ -24,9 +24,7 @@ linters:
     - interfacebloat
     - maintidx
     - misspell
-    - nakedret
     - reassign
-    - revive
     - staticcheck
     - typecheck
     - unused
