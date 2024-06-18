@@ -233,12 +233,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/klauspost/compress/blob/master/LICENSE>
 
-## github.com/matttproud/golang_protobuf_extensions/pbutil
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/matttproud/golang_protobuf_extensions/blob/master/pbutil/LICENSE>
-
 ## github.com/moby/docker-image-spec/specs-go/v1
 
 **License:** Apache-2.0
@@ -946,18 +940,6 @@ The dependencies and their licenses are as follows:
 **License:** MPL-2.0
 
 **License URL:** <https://github.com/gosimple/slug/blob/master/LICENSE>
-
-## github.com/hashicorp/errwrap
-
-**License:** MPL-2.0
-
-**License URL:** <https://github.com/hashicorp/errwrap/blob/master/LICENSE>
-
-## github.com/hashicorp/go-multierror
-
-**License:** MPL-2.0
-
-**License URL:** <https://github.com/hashicorp/go-multierror/blob/master/LICENSE>
 
 ## github.com/letsencrypt/boulder
 
