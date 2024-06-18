@@ -7,6 +7,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.4.x
 
+- Updated the minimum golang version to 1.21.
+- Remove support for EL7.
 - Label process for starter binary of interactive containers with image filename,
   for example: `Apptainer runtime parent: example.sif`.
 
