@@ -64,7 +64,7 @@ Source10: https://github.com/rfjakob/gocryptfs/archive/v%{gocryptfs_version}/goc
 Source11: https://github.com/vasi/squashfuse/archive/%{squashfuse_version}/squashfuse-%{squashfuse_version}.tar.gz
 %endif
 %if "%{?e2fsprogs_version}" != ""
-# URL: https://github.com/tytso/e2fsprogs/archive/refs/tags/v%{e2fsprogs_version}.tar.gz
+# URL: https://github.com/tytso/e2fsprogs/archive/refs/tags/v%%{e2fsprogs_version}.tar.gz
 Source12: e2fsprogs-%{e2fsprogs_version}.tar.gz
 # URL: https://github.com/tytso/e2fsprogs/commit/5598a96.patch
 Patch121: e2fsprogs-1.patch
