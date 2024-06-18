@@ -24,12 +24,12 @@ func Enabled() bool {
 }
 
 // LoadSeccompConfig loads seccomp configuration filter for the current process.
-func LoadSeccompConfig(config *specs.LinuxSeccomp, noNewPrivs bool, errNo int16) error {
+func LoadSeccompConfig(_ *specs.LinuxSeccomp, _ bool, _ int16) error {
 	return fmt.Errorf("can't load seccomp filter: not enabled at compilation time")
 }
 
 // LoadProfileFromFile loads seccomp rules from json file and fill in provided OCI configuration.
-func LoadProfileFromFile(profile string, generator *generate.Generator) error {
+func LoadProfileFromFile(_ string, generator *generate.Generator) error {
 	if generator.Config.Linux == nil {
 		generator.Config.Linux = &specs.Linux{}
 	}

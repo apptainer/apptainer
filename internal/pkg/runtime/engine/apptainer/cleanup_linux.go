@@ -43,7 +43,7 @@ import (
 // For better understanding of runtime flow in general refer to
 // https://github.com/opencontainers/runtime-spec/blob/master/runtime.md#lifecycle.
 // CleanupContainer is performing step 8/9 here.
-func (e *EngineOperations) CleanupContainer(ctx context.Context, fatal error, status syscall.WaitStatus) error {
+func (e *EngineOperations) CleanupContainer(ctx context.Context, _ error, _ syscall.WaitStatus) error {
 	sylog.Debugf("Cleanup container")
 	if fd := e.EngineConfig.GetShareNSFd(); fd != -1 && e.EngineConfig.GetShareNSMode() {
 		br := lock.NewByteRange(fd, 0, 0)

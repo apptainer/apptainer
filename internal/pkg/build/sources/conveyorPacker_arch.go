@@ -45,7 +45,7 @@ type ArchConveyorPacker struct {
 
 // prepareFakerootEnv prepares a build environment to
 // make fakeroot working with pacstrap.
-func (cp *ArchConveyorPacker) prepareFakerootEnv(ctx context.Context) (func(), error) {
+func (cp *ArchConveyorPacker) prepareFakerootEnv(_ context.Context) (func(), error) {
 	truePath, err := bin.FindBin("true")
 	if err != nil {
 		return nil, fmt.Errorf("while searching true command: %s", err)

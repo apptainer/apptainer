@@ -277,7 +277,6 @@ func TestOCIPacker(t *testing.T) {
 	}
 
 	_, err = ocp.Pack(context.Background())
-
 	if err != nil {
 		t.Fatalf("failed to Pack from %s: %v\n", dockerURI, err)
 	}

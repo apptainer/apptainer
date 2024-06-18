@@ -12,6 +12,6 @@ package apptainer
 import "github.com/apptainer/apptainer/internal/pkg/plugin"
 
 // DisablePlugin disables the named plugin.
-func DisablePlugin(name, libexecdir string) error {
+func DisablePlugin(name, _ string) error {
 	return plugin.Disable(name)
 }

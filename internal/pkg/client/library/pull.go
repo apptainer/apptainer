@@ -123,7 +123,7 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom *libClient.Ref, 
 }
 
 // PullToFile will pull a library image to the specified location, through the cache, or directly if cache is disabled
-func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pullFrom *libClient.Ref, arch string, tmpDir string, libraryConfig *libClient.Config, co []keyClient.Option) (imagePath string, err error) {
+func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pullFrom *libClient.Ref, arch string, _ string, libraryConfig *libClient.Config, co []keyClient.Option) (imagePath string, err error) {
 	directTo := ""
 	if imgCache.IsDisabled() {
 		directTo = pullTo

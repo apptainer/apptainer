@@ -27,7 +27,7 @@ type EngineOperations struct {
 //
 // Since this method simply stores config.Common, it does not matter
 // whether or not there are any elevated privileges during this call.
-func (e *EngineOperations) InitConfig(cfg *config.Common, privStageOne bool) {
+func (e *EngineOperations) InitConfig(cfg *config.Common, _ bool) {
 	e.CommonConfig = cfg
 }
 

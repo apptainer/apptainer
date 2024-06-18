@@ -24,7 +24,7 @@ import (
 // apptainer plugin uninstall <name>
 var PluginUninstallCmd = &cobra.Command{
 	PreRun: CheckRootOrUnpriv,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		name := args[0]
 		err := apptainer.UninstallPlugin(name)
 		if err != nil {

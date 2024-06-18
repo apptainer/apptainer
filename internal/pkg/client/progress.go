@@ -66,7 +66,7 @@ type ProgressCallback func(int64, io.Reader, io.Writer) error
 func ProgressBarCallback(ctx context.Context) ProgressCallback {
 	if sylog.GetLevel() <= -1 {
 		// If we don't need a bar visible, we just copy data through the callback func
-		return func(totalSize int64, r io.Reader, w io.Writer) error {
+		return func(_ int64, r io.Reader, w io.Writer) error {
 			_, err := CopyWithContext(ctx, w, r)
 			return err
 		}

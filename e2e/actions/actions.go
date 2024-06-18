@@ -469,7 +469,7 @@ func (c actionTests) STDPipe(t *testing.T) {
 			e2e.WithCommand(tt.command),
 			e2e.WithArgs(tt.argv...),
 			e2e.WithStdin(&input),
-			e2e.PreRun(func(t *testing.T) {
+			e2e.PreRun(func(_ *testing.T) {
 				input.WriteString(tt.input)
 			}),
 			e2e.ExpectExit(tt.exit),
@@ -2114,7 +2114,7 @@ func (c actionTests) fuseMount(t *testing.T) {
 			e2e.WithStdin(stdinReader),
 			e2e.WithCommand("run"),
 			e2e.WithArgs("--writable", "--no-home", imageDir),
-			e2e.PostRun(func(t *testing.T) {
+			e2e.PostRun(func(_ *testing.T) {
 				stdinReader.Close()
 				stdinWriter.Close()
 			}),

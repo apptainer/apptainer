@@ -20,7 +20,7 @@ import (
 
 // PluginInspectCmd displays information about a plugin.
 var PluginInspectCmd = &cobra.Command{
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		err := apptainer.InspectPlugin(args[0])
 		if err != nil {
 			if os.IsNotExist(err) {

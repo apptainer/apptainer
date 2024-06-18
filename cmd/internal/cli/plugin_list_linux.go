@@ -18,7 +18,7 @@ import (
 
 // PluginListCmd lists the plugins installed in the system.
 var PluginListCmd = &cobra.Command{
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		err := apptainer.ListPlugins()
 		if err != nil {
 			sylog.Fatalf("Failed to get a list of installed plugins: %s.", err)

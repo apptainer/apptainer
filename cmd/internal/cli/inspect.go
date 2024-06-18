@@ -640,7 +640,7 @@ var InspectCmd = &cobra.Command{
 	Long:    docs.InspectLong,
 	Example: docs.InspectExample,
 
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		img, err := image.Init(args[0], false)
 		if err != nil {
 			sylog.Fatalf("Failed to open image %s: %s", args[0], err)

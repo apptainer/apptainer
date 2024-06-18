@@ -54,7 +54,7 @@ var capGroupFlag = cmdline.Flag{
 var CapabilityAvailCmd = &cobra.Command{
 	Args:                  cobra.RangeArgs(0, 1),
 	DisableFlagsInUseLine: true,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		caps := ""
 		if len(args) > 0 {
 			caps = args[0]
@@ -78,7 +78,7 @@ var CapabilityAvailCmd = &cobra.Command{
 var CapabilityAddCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		c := apptainer.CapManageConfig{
 			Caps:  args[0],
 			User:  capConfig.CapUser,
@@ -100,7 +100,7 @@ var CapabilityAddCmd = &cobra.Command{
 var CapabilityDropCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		c := apptainer.CapManageConfig{
 			Caps:  args[0],
 			User:  capConfig.CapUser,
@@ -122,7 +122,7 @@ var CapabilityDropCmd = &cobra.Command{
 var CapabilityListCmd = &cobra.Command{
 	Args:                  cobra.RangeArgs(0, 1),
 	DisableFlagsInUseLine: true,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		userGroup := ""
 		if len(args) == 1 {
 			userGroup = args[0]
@@ -146,7 +146,7 @@ var CapabilityListCmd = &cobra.Command{
 
 // CapabilityCmd is the capability command
 var CapabilityCmd = &cobra.Command{
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, _ []string) error {
 		return errors.New("invalid command")
 	},
 	DisableFlagsInUseLine: true,

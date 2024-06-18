@@ -23,7 +23,7 @@ import (
 // apptainer plugin enable <name>
 var PluginEnableCmd = &cobra.Command{
 	PreRun: CheckRootOrUnpriv,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		err := apptainer.EnablePlugin(args[0])
 		if err != nil {
 			if os.IsNotExist(err) {

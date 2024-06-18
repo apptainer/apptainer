@@ -189,6 +189,7 @@ func (h *ociHandler) logout(u *url.URL) error {
 // keyserverHandler handle login/logout for keyserver service.
 type keyserverHandler struct{}
 
+//nolint:revive
 func (h *keyserverHandler) login(u *url.URL, username, password string, insecure bool) (*Config, error) {
 	pass, err := ensurePassword(password)
 	if err != nil {
@@ -201,9 +202,8 @@ func (h *keyserverHandler) login(u *url.URL, username, password string, insecure
 
 	if insecure {
 		client.Transport = &http.Transport{
-			//#nosec G402
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
+				InsecureSkipVerify: true, //nolint:gosec
 			},
 		}
 	}
@@ -239,6 +239,7 @@ func (h *keyserverHandler) login(u *url.URL, username, password string, insecure
 	}, nil
 }
 
+//nolint:revive
 func (h *keyserverHandler) logout(u *url.URL) error {
 	return nil
 }

@@ -303,7 +303,6 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 	files := retrieveFileNames(t, cacheDir)
 	if len(files) != 0 {
 		t.Fatalf("Unexpected cache files: %v", files)
-		t.FailNow()
 	}
 
 	sifname := fmt.Sprintf("%s/build.sif", tempDir)
@@ -370,7 +369,6 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 	files = retrieveFileNames(t, cacheDir)
 	if len(files) != 3 {
 		t.Fatalf("Unexpected cache files: %v", files)
-		t.FailNow()
 	}
 
 	c.env.RunApptainer(
@@ -396,7 +394,6 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 	files = retrieveFileNames(t, cacheDir)
 	if len(files) != 5 {
 		t.Fatalf("Unexpected cache files: %v", files)
-		t.FailNow()
 	}
 
 	// from now on, the cache should be hit when pulling
@@ -457,7 +454,6 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 	files = retrieveFileNames(t, cacheDir)
 	if len(files) != 5 {
 		t.Fatalf("Unexpected cache files: %v", files)
-		t.FailNow()
 	}
 }
 
@@ -497,7 +493,6 @@ func ensureCachedWithSha(t *testing.T, cacheParentDir, shaval string) {
 	cachePath := path.Join(cacheParentDir, "cache", "oci-tmp", shaval)
 	if !e2e.PathExists(t, cachePath) {
 		t.Fatalf("%s cache file does not exit", cachePath)
-		t.FailNow()
 	}
 }
 
@@ -506,7 +501,6 @@ func retrieveFileNames(t *testing.T, cacheParentDir string) []string {
 	infos, err := os.ReadDir(cachePath)
 	if err != nil {
 		t.Fatalf("Failed to read the cache dir: %s", cachePath)
-		t.FailNow()
 	}
 
 	var names []string

@@ -171,7 +171,7 @@ var OciCreateCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if err := apptainer.OciCreate(args[0], &ociArgs); err != nil {
 			sylog.Fatalf("%s", err)
 		}
@@ -203,7 +203,7 @@ var OciStartCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if err := apptainer.OciStart(args[0]); err != nil {
 			sylog.Fatalf("%s", err)
 		}
@@ -235,7 +235,7 @@ var OciKillCmd = &cobra.Command{
 	Args:                  cobra.MinimumNArgs(1),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		timeout := int(ociArgs.KillTimeout)
 		killSignal := ""
 		if len(args) > 1 && args[1] != "" {
@@ -261,7 +261,7 @@ var OciStateCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if err := apptainer.OciState(args[0], &ociArgs); err != nil {
 			sylog.Fatalf("%s", err)
 		}
@@ -293,7 +293,7 @@ var OciExecCmd = &cobra.Command{
 	Args:                  cobra.MinimumNArgs(1),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if err := apptainer.OciExec(args[0], args[1:]); err != nil { //nolint:staticcheck
 			sylog.Fatalf("%s", err)
 		}
@@ -309,7 +309,7 @@ var OciUpdateCmd = &cobra.Command{
 	Args:                  cobra.MinimumNArgs(1),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if err := apptainer.OciUpdate(args[0], &ociArgs); err != nil {
 			sylog.Fatalf("%s", err)
 		}
@@ -325,7 +325,7 @@ var OciPauseCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if err := apptainer.OciPauseResume(args[0], true); err != nil {
 			sylog.Fatalf("%s", err)
 		}
@@ -341,7 +341,7 @@ var OciResumeCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if err := apptainer.OciPauseResume(args[0], false); err != nil {
 			sylog.Fatalf("%s", err)
 		}
@@ -357,7 +357,7 @@ var OciMountCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(2),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if err := apptainer.OciMount(args[0], args[1]); err != nil {
 			sylog.Fatalf("%s", err)
 		}
@@ -373,7 +373,7 @@ var OciUmountCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if err := apptainer.OciUmount(args[0]); err != nil {
 			sylog.Fatalf("%s", err)
 		}

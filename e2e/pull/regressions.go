@@ -89,7 +89,7 @@ func (c ctx) issueSylabs1087(t *testing.T) {
 
 	// Start an http server that serves some output without a content-length
 	data := "DATADATADATADATA"
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = fmt.Fprint(w, data)
 	}))
 	defer srv.Close()

@@ -190,7 +190,7 @@ func (d *fuseappsDriver) Features() image.DriverFeature {
 }
 
 //nolint:maintidx
-func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc) error {
+func (d *fuseappsDriver) Mount(params *image.MountParams, _ image.MountFunc) error {
 	extraFiles := 0
 	sourceFd := -1
 	if path.Dir(params.Source) == "/proc/self/fd" {
@@ -449,7 +449,7 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, mfunc image.MountFunc)
 	return fmt.Errorf("%v failed to mount %v in %v", f.binName, params.Target, maxTime)
 }
 
-func (d *fuseappsDriver) Start(params *image.DriverParams, containerPid int, hybrid bool) error {
+func (d *fuseappsDriver) Start(_ *image.DriverParams, containerPid int, hybrid bool) error {
 	// start process monitor
 	d.monitor()
 

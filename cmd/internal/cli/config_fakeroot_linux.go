@@ -72,7 +72,7 @@ var configFakerootCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRoot,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		username := args[0]
 		var op apptainer.FakerootConfigOp
 

@@ -292,7 +292,7 @@ func getRetryStatusFn(imageFd uintptr, imageInfo *syscall.Stat_t) retryStatusFn 
 	}
 }
 
-func flushCache(imageFd uintptr, imageInfo *syscall.Stat_t) error {
+func flushCache(_ uintptr, imageInfo *syscall.Stat_t) error {
 	devStr := fmt.Sprintf("%d:%d", unix.Major(imageInfo.Dev), unix.Minor(imageInfo.Dev))
 	entries, err := proc.GetMountInfoEntry("/proc/self/mountinfo")
 	if err != nil {

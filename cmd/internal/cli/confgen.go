@@ -23,7 +23,7 @@ func init() {
 // ConfGenCmd generates an apptainer.conf file, optionally taking an
 // old singularity.conf or apptainer.conf for initial settings.
 var ConfGenCmd = &cobra.Command{
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		return confgen.Gen(args)
 	},
 	DisableFlagsInUseLine: true,

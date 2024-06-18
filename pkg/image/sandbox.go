@@ -32,10 +32,10 @@ func (f *sandboxFormat) initializer(img *Image, fi os.FileInfo) error {
 	return nil
 }
 
-func (f *sandboxFormat) openMode(writable bool) int {
+func (f *sandboxFormat) openMode(_ bool) int {
 	return os.O_RDONLY
 }
 
-func (f *sandboxFormat) lock(img *Image) error {
+func (f *sandboxFormat) lock(_ *Image) error {
 	return nil
 }

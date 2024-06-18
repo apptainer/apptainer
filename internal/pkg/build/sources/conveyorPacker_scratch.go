@@ -29,7 +29,7 @@ type ScratchConveyorPacker struct {
 }
 
 // Get just stores the source
-func (c *ScratchConveyor) Get(ctx context.Context, b *types.Bundle) (err error) {
+func (c *ScratchConveyor) Get(_ context.Context, b *types.Bundle) (err error) {
 	c.b = b
 
 	return nil

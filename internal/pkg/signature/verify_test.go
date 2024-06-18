@@ -105,7 +105,7 @@ type mockHKP struct {
 	e *openpgp.Entity
 }
 
-func (m mockHKP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (m mockHKP) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/pgp-keys")
 
 	wr, err := armor.Encode(w, openpgp.PublicKeyType, nil)
@@ -552,7 +552,7 @@ func TestVerify(t *testing.T) { //nolint:maintidx
 		t.Run(tt.name, func(t *testing.T) {
 			i := 0
 
-			cb := func(f *sif.FileImage, r integrity.VerifyResult) bool {
+			cb := func(_ *sif.FileImage, r integrity.VerifyResult) bool {
 				defer func() { i++ }()
 
 				if i >= len(tt.wantVerified) {
@@ -752,7 +752,7 @@ func TestVerifyFingerPrint(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			i := 0
 
-			cb := func(f *sif.FileImage, r integrity.VerifyResult) bool {
+			cb := func(_ *sif.FileImage, r integrity.VerifyResult) bool {
 				defer func() { i++ }()
 
 				if i >= len(tt.wantVerified) {

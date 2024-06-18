@@ -94,7 +94,6 @@ func DownloadImage(ctx context.Context, filePath string, netURL string) error {
 	pb := client.ProgressBarCallback(ctx)
 
 	err = pb(res.ContentLength, res.Body, out)
-
 	if err != nil {
 		// Delete incomplete image file in the event of failure
 		// we get here e.g. if the context is canceled by Ctrl-C
@@ -194,7 +193,7 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom string, tmpDir s
 }
 
 // PullToFile will pull an http(s) image to the specified location, through the cache, or directly if cache is disabled
-func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom, tmpDir string) (imagePath string, err error) {
+func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom, _ string) (imagePath string, err error) {
 	directTo := ""
 	if imgCache.IsDisabled() {
 		directTo = pullTo

@@ -247,9 +247,8 @@ func (m *flagManager) updateCmdFlagFromEnv(cmd *cobra.Command, precedence int, f
 						sylog.Warningf("%s and %s have different values, using the latter", prefix+key, env.ApptainerPrefixes[0]+key)
 					}
 					continue
-				} else {
-					sylog.Infof("Environment variable %v is set, but %v is preferred", prefix+key, env.ApptainerPrefixes[0]+key)
 				}
+				sylog.Infof("Environment variable %v is set, but %v is preferred", prefix+key, env.ApptainerPrefixes[0]+key)
 			}
 			if !withoutPrefix {
 				foundKeys[key] = val

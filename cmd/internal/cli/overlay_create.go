@@ -64,7 +64,7 @@ var overlayFakerootFlag = cmdline.Flag{
 // OverlayCreateCmd is the 'overlay create' command that allows to create writable overlay.
 var OverlayCreateCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		if err := apptainer.OverlayCreate(overlaySize, args[0], overlaySparse, isOverlayFakeroot, overlayDirs...); err != nil {
 			sylog.Fatalf(err.Error())
 		}

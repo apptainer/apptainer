@@ -124,7 +124,7 @@ func checkWhiteList(v *integrity.Verifier, egroup *Execgroup, unvalidatedFingerp
 	// get signing entities fingerprints that have signed all selected objects
 	keyfps, err := v.AllSignedBy()
 	if err != nil {
-		return
+		return false, err
 	}
 
 	// were the selected objects signed by an authorized entity?

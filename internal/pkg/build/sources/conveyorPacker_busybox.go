@@ -34,7 +34,7 @@ type BusyBoxConveyorPacker struct {
 }
 
 // Get just stores the source
-func (c *BusyBoxConveyor) Get(ctx context.Context, b *types.Bundle) (err error) {
+func (c *BusyBoxConveyor) Get(_ context.Context, b *types.Bundle) (err error) {
 	c.b = b
 
 	// get mirrorURL, OSVerison, and Includes components to definition
@@ -111,13 +111,13 @@ func (c *BusyBoxConveyor) insertBusyBox(mirrorurl string) (busyBoxPath string, e
 
 	f, err := os.Create(filepath.Join(c.b.RootfsPath, "/bin/busybox"))
 	if err != nil {
-		return
+		return "", err
 	}
 	defer f.Close()
 
 	bytesWritten, err := io.Copy(f, resp.Body)
 	if err != nil {
-		return
+		return "", err
 	}
 
 	// Simple check to make sure file received is the correct size
@@ -127,7 +127,7 @@ func (c *BusyBoxConveyor) insertBusyBox(mirrorurl string) (busyBoxPath string, e
 
 	err = os.Chmod(f.Name(), 0o755)
 	if err != nil {
-		return
+		return "", err
 	}
 
 	return filepath.Join(c.b.RootfsPath, "/bin/busybox"), nil

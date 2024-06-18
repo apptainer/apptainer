@@ -373,7 +373,7 @@ func handleConfDir(confDir, legacyConfigDir string) {
 	migrateKeys(confDir, legacyConfigDir)
 }
 
-func migrateRemoteConf(confDir, legacyConfigDir string) {
+func migrateRemoteConf(_, _ string) {
 	ok, err := fs.PathExists(syfs.LegacyRemoteConf())
 	if err != nil {
 		sylog.Warningf("Failed to retrieve information for %s: %s", syfs.LegacyRemoteConf(), err)
@@ -400,7 +400,7 @@ func migrateRemoteConf(confDir, legacyConfigDir string) {
 	}
 }
 
-func migrateDockerConf(confDir, legacyConfigDir string) {
+func migrateDockerConf(_, _ string) {
 	ok, err := fs.PathExists(syfs.LegacyDockerConf())
 	if err != nil {
 		sylog.Warningf("Failed to retrieve information for %s: %s", syfs.LegacyDockerConf(), err)
@@ -418,7 +418,7 @@ func migrateDockerConf(confDir, legacyConfigDir string) {
 	}
 }
 
-func migrateKeys(confDir, legacyConfigDir string) {
+func migrateKeys(_, _ string) {
 	legacySypgpDir := filepath.Join(syfs.LegacyConfigDir(), sypgp.LegacyDirectory)
 	keysDir := filepath.Join(syfs.ConfigDir(), sypgp.Directory)
 	ok, err := fs.PathExists(legacySypgpDir)
@@ -481,7 +481,7 @@ func migrateGPGPrivate(sypgpDir, legacySypgpDir string) {
 	}
 }
 
-func persistentPreRun(cmd *cobra.Command, args []string) error {
+func persistentPreRun(cmd *cobra.Command, _ []string) error {
 	setSylogMessageLevel()
 	sylog.Debugf("Apptainer version: %s", buildcfg.PACKAGE_VERSION)
 
@@ -617,7 +617,7 @@ func Init(loadPlugins bool) {
 var apptainerCmd = &cobra.Command{
 	TraverseChildren:      true,
 	DisableFlagsInUseLine: true,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, _ []string) error {
 		return cmdline.CommandError("invalid command")
 	},
 
@@ -715,7 +715,7 @@ func TraverseParentsUses(cmd *cobra.Command) string {
 // VersionCmd displays installed apptainer version
 var VersionCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Println(buildcfg.PACKAGE_VERSION)
 	},
 
@@ -814,7 +814,7 @@ func apptainerExec(image string, args []string) (string, error) {
 }
 
 // CheckRoot ensures that a command is executed with root privileges.
-func CheckRoot(cmd *cobra.Command, args []string) {
+func CheckRoot(cmd *cobra.Command, _ []string) {
 	if os.Geteuid() != 0 {
 		sylog.Fatalf("%q command requires root privileges", cmd.CommandPath())
 	}
@@ -822,7 +822,7 @@ func CheckRoot(cmd *cobra.Command, args []string) {
 
 // CheckRootOrUnpriv ensures that a command is executed with root
 // privileges or that Apptainer is installed unprivileged.
-func CheckRootOrUnpriv(cmd *cobra.Command, args []string) {
+func CheckRootOrUnpriv(cmd *cobra.Command, _ []string) {
 	if os.Geteuid() != 0 && buildcfg.APPTAINER_SUID_INSTALL == 1 {
 		sylog.Fatalf("%q command requires root privileges or an unprivileged installation", cmd.CommandPath())
 	}

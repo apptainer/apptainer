@@ -69,26 +69,26 @@ func (g *Gocryptfs) init(tmpDir string) (cryptInfo *cryptInfo, err error) {
 	cryptInfo = newCryptInfo()
 	parentDir, err := os.MkdirTemp(tmpDir, "gocryptfs-")
 	if err != nil {
-		return
+		return nil, err
 	}
 	cipherDir := filepath.Join(parentDir, "cipher")
 	plainDir := filepath.Join(parentDir, "plain")
 
 	err = os.Mkdir(cipherDir, 0o700)
 	if err != nil {
-		return
+		return nil, err
 	}
 	cryptInfo.cipherDir = cipherDir
 	err = os.Mkdir(plainDir, 0o700)
 	if err != nil {
-		return
+		return nil, err
 	}
 	cryptInfo.plainDir = plainDir
 
 	buf := make([]byte, 32)
 	_, err = rand.Read(buf)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	switch g.keyInfo.Format {
@@ -100,7 +100,7 @@ func (g *Gocryptfs) init(tmpDir string) (cryptInfo *cryptInfo, err error) {
 		cryptInfo.pass = g.keyInfo.Material
 	default:
 		err = errors.New("cryptkey type is unknown")
-		return
+		return nil, err
 	}
 	cryptInfo.confPath = filepath.Join(cipherDir, "gocryptfs.conf")
 
@@ -112,7 +112,7 @@ func (g *Gocryptfs) init(tmpDir string) (cryptInfo *cryptInfo, err error) {
 	cmd.Stderr = &stderr
 	if err = cmd.Run(); err != nil {
 		err = fmt.Errorf("initialize gocryptfs encounters error, err: %w, stderr: %s", err, &stderr)
-		return
+		return nil, err
 	}
 
 	mountParams := image.MountParams{
@@ -125,11 +125,11 @@ func (g *Gocryptfs) init(tmpDir string) (cryptInfo *cryptInfo, err error) {
 
 	err = g.driver.Start(nil, 0, false)
 	if err != nil {
-		return
+		return nil, err
 	}
 	err = g.driver.Mount(&mountParams, nil)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	// Trap SIGINT/SIGTERM signals

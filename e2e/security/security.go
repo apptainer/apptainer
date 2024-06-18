@@ -136,7 +136,7 @@ func (c ctx) testSecurityPriv(t *testing.T) {
 	var err error
 	// Get the capability set for root on this system
 	// e.g. "CapEff:	000001ffffffffff"
-	e2e.Privileged(func(t *testing.T) {
+	e2e.Privileged(func(_ *testing.T) {
 		caps, err = capabilities.GetProcessEffective()
 	})(t)
 	if err != nil {

@@ -375,7 +375,7 @@ var buildCmd = &cobra.Command{
 	TraverseChildren: true,
 }
 
-func preRun(cmd *cobra.Command, args []string) {
+func preRun(_ *cobra.Command, args []string) {
 	spec := args[len(args)-1]
 	isDeffile := fs.IsFile(spec) && !isImage(spec)
 	if buildArgs.fakeroot {

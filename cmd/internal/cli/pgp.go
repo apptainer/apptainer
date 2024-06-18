@@ -149,7 +149,7 @@ func isGlobal(e *openpgp.Entity) bool {
 }
 
 // outputVerify outputs a textual representation of r to stdout.
-func outputVerify(f *sif.FileImage, r integrity.VerifyResult) bool {
+func outputVerify(_ *sif.FileImage, r integrity.VerifyResult) bool {
 	e := r.Entity()
 
 	// Print signing entity info.

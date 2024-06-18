@@ -148,7 +148,7 @@ func (t *Methods) Decrypt(arguments *args.CryptArgs, reply *string) (err error) 
 }
 
 // Mkdir performs a mkdir with the specified arguments.
-func (t *Methods) Mkdir(arguments *args.MkdirArgs, reply *int) (err error) {
+func (t *Methods) Mkdir(arguments *args.MkdirArgs, _ *int) (err error) {
 	mainthread.Execute(func() {
 		oldmask := syscall.Umask(0)
 		err = os.Mkdir(arguments.Path, arguments.Perm)
@@ -158,7 +158,7 @@ func (t *Methods) Mkdir(arguments *args.MkdirArgs, reply *int) (err error) {
 }
 
 // Chroot performs a chroot with the specified arguments.
-func (t *Methods) Chroot(arguments *args.ChrootArgs, reply *int) (err error) {
+func (t *Methods) Chroot(arguments *args.ChrootArgs, _ *int) (err error) {
 	root := arguments.Root
 
 	if root != "." {
@@ -184,7 +184,7 @@ func (t *Methods) Chroot(arguments *args.ChrootArgs, reply *int) (err error) {
 
 	oldEffective, err = capabilities.SetProcessEffective(caps)
 	if err != nil {
-		return
+		return err
 	}
 	defer func() {
 		_, e := capabilities.SetProcessEffective(oldEffective)
@@ -314,12 +314,12 @@ func (t *Methods) LoopDevice(arguments *args.LoopArgs, reply *int) (err error) {
 }
 
 // SetHostname sets hostname with the specified arguments.
-func (t *Methods) SetHostname(arguments *args.HostnameArgs, reply *int) error {
+func (t *Methods) SetHostname(arguments *args.HostnameArgs, _ *int) error {
 	return syscall.Sethostname([]byte(arguments.Hostname))
 }
 
 // Chdir changes current working directory to path.
-func (t *Methods) Chdir(arguments *args.ChdirArgs, reply *int) error {
+func (t *Methods) Chdir(arguments *args.ChdirArgs, _ *int) error {
 	return mainthread.Chdir(arguments.Dir)
 }
 
@@ -348,7 +348,7 @@ func (t *Methods) Access(arguments *args.AccessArgs, reply *args.AccessReply) er
 }
 
 // SendFuseFd send fuse file descriptor over unix socket.
-func (t *Methods) SendFuseFd(arguments *args.SendFuseFdArgs, reply *int) error {
+func (t *Methods) SendFuseFd(arguments *args.SendFuseFdArgs, _ *int) error {
 	usernsFd, err := unix.Open("/proc/self/ns/user", unix.O_RDONLY|unix.O_CLOEXEC, 0)
 	if err != nil {
 		return fmt.Errorf("while opening /proc/self/ns/user: %s", err)
@@ -378,7 +378,7 @@ func (t *Methods) OpenSendFuseFd(arguments *args.OpenSendFuseFdArgs, reply *int)
 }
 
 // Symlink performs a symlink with the specified arguments.
-func (t *Methods) Symlink(arguments *args.SymlinkArgs, reply *int) error {
+func (t *Methods) Symlink(arguments *args.SymlinkArgs, _ *int) error {
 	return os.Symlink(arguments.Old, arguments.New)
 }
 
@@ -401,12 +401,12 @@ func (t *Methods) ReadDir(arguments *args.ReadDirArgs, reply *args.ReadDirReply)
 }
 
 // Chown performs a chown with the specified arguments.
-func (t *Methods) Chown(arguments *args.ChownArgs, reply *int) error {
+func (t *Methods) Chown(arguments *args.ChownArgs, _ *int) error {
 	return os.Chown(arguments.Name, arguments.UID, arguments.GID)
 }
 
 // Lchown performs a lchown with the specified arguments.
-func (t *Methods) Lchown(arguments *args.ChownArgs, reply *int) error {
+func (t *Methods) Lchown(arguments *args.ChownArgs, _ *int) error {
 	return os.Lchown(arguments.Name, arguments.UID, arguments.GID)
 }
 
@@ -429,7 +429,7 @@ func (t *Methods) Umask(arguments *args.UmaskArgs, reply *int) (err error) {
 }
 
 // WriteFile creates an empty file if it doesn't exist or a file with the provided data.
-func (t *Methods) WriteFile(arguments *args.WriteFileArgs, reply *int) error {
+func (t *Methods) WriteFile(arguments *args.WriteFileArgs, _ *int) error {
 	f, err := os.OpenFile(arguments.Filename, os.O_CREATE|os.O_WRONLY|os.O_EXCL, arguments.Perm)
 	if err != nil {
 		if !os.IsExist(err) {
@@ -447,7 +447,7 @@ func (t *Methods) WriteFile(arguments *args.WriteFileArgs, reply *int) error {
 }
 
 // NvCCLI will call nvidia-container-cli to configure GPU(s) for the container.
-func (t *Methods) NvCCLI(arguments *args.NvCCLIArgs, reply *int) (err error) {
+func (t *Methods) NvCCLI(arguments *args.NvCCLIArgs, _ *int) (err error) {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 

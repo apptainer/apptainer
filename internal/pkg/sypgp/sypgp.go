@@ -843,9 +843,9 @@ func SearchPubkey(ctx context.Context, search string, longOutput bool, opts ...c
 			return fmt.Errorf("unauthorized or missing token")
 		} else if ok && httpError.Code() == http.StatusNotFound {
 			return fmt.Errorf("no matching keys found for fingerprint")
-		} else {
-			return fmt.Errorf("failed to get key: %v", err)
 		}
+
+		return fmt.Errorf("failed to get key: %v", err)
 	}
 
 	kcount, keyList, err := formatMROutput(keyText, longOutput)
@@ -902,7 +902,7 @@ func date(s string) string {
 }
 
 // FetchPubkey pulls a public key from the Key Service.
-func FetchPubkey(ctx context.Context, fingerprint string, noPrompt bool, opts ...client.Option) (openpgp.EntityList, error) {
+func FetchPubkey(ctx context.Context, fingerprint string, _ bool, opts ...client.Option) (openpgp.EntityList, error) {
 	// Decode fingerprint and ensure proper length.
 	var fp []byte
 	fp, err := hex.DecodeString(fingerprint)
@@ -931,9 +931,9 @@ func FetchPubkey(ctx context.Context, fingerprint string, noPrompt bool, opts ..
 			return nil, fmt.Errorf("unauthorized or missing token")
 		} else if ok && httpError.Code() == http.StatusNotFound {
 			return nil, fmt.Errorf("no matching keys found for fingerprint")
-		} else {
-			return nil, fmt.Errorf("failed to get key: %v", err)
 		}
+
+		return nil, fmt.Errorf("failed to get key: %v", err)
 	}
 
 	el, err := openpgp.ReadArmoredKeyRing(strings.NewReader(keyText))

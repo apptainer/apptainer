@@ -25,7 +25,7 @@ SUBS="$(sed -n "s/.*%global //p" $SPEC)"
 # Expected format for sources that have a different base path than the URL
 # is a line beginning "# URL:" followed by the URL, then the source with just
 # the base path.
-sed -n -e 's/^# URL:/URL:/p' -e 's/^Source[1-9][0-9]*: //p' -e 's/^Patch[1-9][0-9]*: //p' $SPEC | while read -r LINE; do
+sed -n -e '/^# URL:/{s/^# //;s/%%/%/g;p}' -e 's/^Source[1-9][0-9]*: //p' -e 's/^Patch[1-9][0-9]*: //p' $SPEC | while read -r LINE; do
     # first apply substitutions
     LINE=$(echo "$SUBS" | (while read -r FROM TO; do
             LINE="${LINE//%\{$FROM\}/$TO}"

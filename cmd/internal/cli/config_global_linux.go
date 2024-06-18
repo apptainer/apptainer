@@ -84,7 +84,7 @@ var configGlobalCmd = &cobra.Command{
 	Args:                  cobra.RangeArgs(1, 2),
 	DisableFlagsInUseLine: true,
 	PreRun:                CheckRootOrUnpriv,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		var op apptainer.GlobalConfigOp
 
 		if globalConfigSet {

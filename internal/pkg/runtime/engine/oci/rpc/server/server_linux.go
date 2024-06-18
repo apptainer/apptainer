@@ -27,7 +27,7 @@ type Methods struct {
 }
 
 // MkdirAll performs a mkdir with the specified arguments.
-func (t *Methods) MkdirAll(arguments *args.MkdirArgs, reply *int) (err error) {
+func (t *Methods) MkdirAll(arguments *args.MkdirArgs, _ *int) (err error) {
 	mainthread.Execute(func() {
 		oldmask := syscall.Umask(0)
 		err = os.MkdirAll(arguments.Path, arguments.Perm)
@@ -37,6 +37,6 @@ func (t *Methods) MkdirAll(arguments *args.MkdirArgs, reply *int) (err error) {
 }
 
 // Touch performs a touch with the specified arguments.
-func (t *Methods) Touch(arguments *ociargs.TouchArgs, reply *int) (err error) {
+func (t *Methods) Touch(arguments *ociargs.TouchArgs, _ *int) (err error) {
 	return fs.Touch(arguments.Path)
 }
