@@ -61,7 +61,7 @@ func machine() (string, error) {
 // Get downloads container information from the specified source
 //
 //nolint:maintidx
-func (cp *ZypperConveyorPacker) Get(_ context.Context, b *types.Bundle) (err error) {
+func (cp *ZypperConveyorPacker) Get(_ context.Context, b *types.Bundle) error {
 	var suseconnectProduct, suseconnectModver string
 	var suseconnectPath string
 	// dependContainer is a container which shares the repos with the host through container-suseconnect
@@ -80,7 +80,7 @@ func (cp *ZypperConveyorPacker) Get(_ context.Context, b *types.Bundle) (err err
 	// check for rpm on system
 	err = rpmPathCheck()
 	if err != nil {
-		return
+		return err
 	}
 
 	include := cp.b.Recipe.Header["include"]

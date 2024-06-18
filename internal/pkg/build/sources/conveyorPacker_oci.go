@@ -421,17 +421,17 @@ func (cp *OCIConveyorPacker) insertBaseEnv() (err error) {
 	return
 }
 
-func (cp *OCIConveyorPacker) insertRunScript() (err error) {
+func (cp *OCIConveyorPacker) insertRunScript() error {
 	f, err := os.Create(cp.b.RootfsPath + "/.singularity.d/runscript")
 	if err != nil {
-		return
+		return err
 	}
 
 	defer f.Close()
 
 	_, err = f.WriteString("#!/bin/sh\n")
 	if err != nil {
-		return
+		return err
 	}
 
 	if len(cp.imgConfig.Entrypoint) > 0 {
@@ -439,12 +439,12 @@ func (cp *OCIConveyorPacker) insertRunScript() (err error) {
 			shell.EscapeSingleQuotes(shell.ArgsQuoted(cp.imgConfig.Entrypoint)) +
 			"'\n")
 		if err != nil {
-			return
+			return err
 		}
 	} else {
 		_, err = f.WriteString("OCI_ENTRYPOINT=''\n")
 		if err != nil {
-			return
+			return err
 		}
 	}
 
@@ -453,12 +453,12 @@ func (cp *OCIConveyorPacker) insertRunScript() (err error) {
 			shell.EscapeSingleQuotes(shell.ArgsQuoted(cp.imgConfig.Cmd)) +
 			"'\n")
 		if err != nil {
-			return
+			return err
 		}
 	} else {
 		_, err = f.WriteString("OCI_CMD=''\n")
 		if err != nil {
-			return
+			return err
 		}
 	}
 
@@ -491,30 +491,30 @@ func (cp *OCIConveyorPacker) insertRunScript() (err error) {
 
 	_, err = f.WriteString(runscript.String())
 	if err != nil {
-		return
+		return err
 	}
 
 	f.Sync()
 
 	err = os.Chmod(cp.b.RootfsPath+"/.singularity.d/runscript", 0o755)
 	if err != nil {
-		return
+		return err
 	}
 
 	return nil
 }
 
-func (cp *OCIConveyorPacker) insertEnv() (err error) {
+func (cp *OCIConveyorPacker) insertEnv() error {
 	f, err := os.Create(cp.b.RootfsPath + "/.singularity.d/env/10-docker2singularity.sh")
 	if err != nil {
-		return
+		return err
 	}
 
 	defer f.Close()
 
 	_, err = f.WriteString("#!/bin/sh\n")
 	if err != nil {
-		return
+		return err
 	}
 
 	for _, element := range cp.imgConfig.Env {
@@ -531,7 +531,7 @@ func (cp *OCIConveyorPacker) insertEnv() (err error) {
 		}
 		_, err = f.WriteString(export)
 		if err != nil {
-			return
+			return err
 		}
 	}
 
@@ -539,7 +539,7 @@ func (cp *OCIConveyorPacker) insertEnv() (err error) {
 
 	err = os.Chmod(cp.b.RootfsPath+"/.singularity.d/env/10-docker2singularity.sh", 0o755)
 	if err != nil {
-		return
+		return err
 	}
 
 	return nil
