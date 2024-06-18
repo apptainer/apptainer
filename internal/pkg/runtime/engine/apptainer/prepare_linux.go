@@ -37,6 +37,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/overlay"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/squashfs"
+	"github.com/apptainer/apptainer/internal/pkg/util/hack"
 	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/image"
@@ -439,11 +440,13 @@ func keepAutofsMount(source string, autoFsPoints []string) (int, error) {
 	for _, p := range autoFsPoints {
 		if strings.HasPrefix(resolved, p) {
 			sylog.Debugf("Open file descriptor for %s", resolved)
-			f, err := os.Open(resolved)
+			// use syscall.Open here instead of os.Open to avoid the garbage collector
+			// to execute the os.Open finalizer which will close the file descriptor
+			fd, err := syscall.Open(resolved, syscall.O_RDONLY, 0)
 			if err != nil {
 				return -1, err
 			}
-			return int(f.Fd()), nil
+			return fd, nil
 		}
 	}
 
@@ -1134,6 +1137,10 @@ func (e *EngineOperations) loadImages(starterConfig *starter.Config, userNS bool
 	images = append(images, *img)
 	writableOverlayPath := ""
 
+	if err := hack.UnsetFileFinalizer(img.File); err != nil {
+		return err
+	}
+
 	if err := starterConfig.KeepFileDescriptor(int(img.Fd)); err != nil {
 		return err
 	}
@@ -1295,6 +1302,10 @@ func (e *EngineOperations) loadOverlayImages(starterConfig *starter.Config, writ
 
 		e.EngineConfig.SetWritableOverlay(writableOverlay)
 
+		if err := hack.UnsetFileFinalizer(img.File); err != nil {
+			return nil, err
+		}
+
 		if err := starterConfig.KeepFileDescriptor(int(img.Fd)); err != nil {
 			return nil, err
 		}
@@ -1328,6 +1339,10 @@ func (e *EngineOperations) loadBindImages(starterConfig *starter.Config, userNS 
 			return nil, fmt.Errorf("failed to load data image %s: %s", imagePath, err)
 		}
 		img.Usage = image.DataUsage
+
+		if err := hack.UnsetFileFinalizer(img.File); err != nil {
+			return nil, err
+		}
 
 		if err := starterConfig.KeepFileDescriptor(int(img.Fd)); err != nil {
 			return nil, err
