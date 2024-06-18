@@ -15,6 +15,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 ## Changes for v1.3.x
 
 - Added libcudadebugger.so to nvliblist.conf to support cuda-gdb in CUDA 12+.
+- Ensure opened/kept file descriptors in stage 1 are not closed during the Go
+  garbage collection to avoid "bad file descriptor" errors at startup.
 
 ## v1.3.2 - \[2024-05-28\]
 
