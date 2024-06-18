@@ -25,7 +25,7 @@ hstranlib=
 hstobjcopy=
 hstgo=
 hstgo_version="1.21"
-hstgo_preferred_version="1.20.9"
+hstgo_preferred_version="1.21.9"
 
 tgtcc=
 tgtcc_opts=$hstcc_opts
