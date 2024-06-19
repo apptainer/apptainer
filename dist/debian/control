@@ -20,7 +20,8 @@ Build-Depends:
  libtool,
  pkg-config,
  libfuse3-dev,
- zlib1g-dev
+ zlib1g-dev,
+ dh-apparmor
 Standards-Version: 3.9.8
 Homepage: http://apptainer.org
 Vcs-Git: https://github.com/apptainer/apptainer.git
