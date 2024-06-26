@@ -695,12 +695,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/BurntSushi/toml/blob/master/COPYING>
 
-## github.com/Masterminds/semver/v3
-
-**License:** MIT
-
-**License URL:** <https://github.com/Masterminds/semver/blob/master/v3/LICENSE.txt>
-
 ## github.com/VividCortex/ewma
 
 **License:** MIT
