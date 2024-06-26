@@ -412,6 +412,10 @@ func getEncryptionMaterial(cmd *cobra.Command) (*cryptkey.KeyInfo, error) {
 	pemPathEnv, pemPathEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PEM_PATH")
 	pemDataEnv, pemDataEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PEM_DATA")
 
+	if PEMFlag == nil || passphraseFlag == nil {
+		return nil, nil
+	}
+
 	// checks for no flags/envvars being set
 	if !(PEMFlag.Changed || pemPathEnvOK || pemDataEnvOK || passphraseFlag.Changed || passphraseEnvOK) {
 		return nil, nil
