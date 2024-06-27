@@ -26,6 +26,7 @@ sudo apt-get install -y \
     fakeroot \
     cryptsetup \
     tzdata \
+    dh-apparmor \
     curl wget git
 ```
 
@@ -196,6 +197,54 @@ Then to compile and install do this:
 ```sh
 ./scripts/compile-dependencies
 sudo ./scripts/install-dependencies
+```
+
+## Apparmor Profile (Ubuntu 24.04+)
+
+Beginning with the 24.04 LTS release, Ubuntu does not permit applications to
+create unprivileged user namespaces by default.
+
+If you install Apptainer from a GitHub release `.deb` package then an
+apparmor profile will be installed that permits Apptainer to create
+unprivileged user namespaces.
+
+If you install Apptainer from source you must either configure apparmor or
+disable the restriction on unprivileged user namespaces.
+To create an apparmor profile:
+
+```sh
+sudo tee /etc/apparmor.d/apptainer << 'EOF'
+# Permit unprivileged user namespace creation for apptainer starter
+abi <abi/4.0>,
+include <tunables/global>
+profile apptainer /usr/local/libexec/apptainer/bin/starter{,-suid} 
+flags=(unconfined) {
+  userns,
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/apptainer>
+}
+EOF
+```
+
+Modify the path beginning `/usr/local` if you specified a non-default `--prefix`
+when configuring and installing Apptainer.
+
+Reload the system apparmor profiles after you have created the file:
+
+```sh
+sudo systemctl reload apparmor
+```
+
+Apptainer will now be able to create unprivileged user namespaces on your
+system.
+
+If instead you want to allow unprivileged users to create any unprivileged user
+namespace do the following:
+
+```sh
+sudo sh -c 'echo kernel.apparmor_restrict_unprivileged_userns=0 \
+    >/etc/sysctl.d/90-disable-userns-restrictions.conf'
+sudo sysctl -p /etc/sysctl.d/90-disable-userns-restrictions.conf
 ```
 
 ## Building & Installing from RPM

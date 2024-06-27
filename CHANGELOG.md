@@ -13,6 +13,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Ensure opened/kept file descriptors in stage 1 are not closed during the Go
   garbage collection to avoid "bad file descriptor" errors at startup.
 - Fixed a segmentation violation issue when running Apptainer checkpoint.
+- Add apparmor profiles for ubuntu 24.04 or higher distros.
 
 ## v1.3.2 - \[2024-05-28\]
 
