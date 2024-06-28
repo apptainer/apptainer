@@ -78,11 +78,7 @@ if [ -z "$ARCH" ]; then
 fi
 
 if [ -z "$DIST" ]; then
-	if [ "$ARCH" = x86_64 ]; then
-		DIST=el7
-	else
-		DIST=el8
-	fi
+	DIST=el8
 fi
 
 if ! $NOOPENSUSE && [[ "$DIST" != *suse* ]]; then
