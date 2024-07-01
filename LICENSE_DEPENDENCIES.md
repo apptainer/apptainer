@@ -629,11 +629,11 @@ The dependencies and their licenses are as follows:
 
 **Project URL:** <https://golang.org/x/crypto>
 
-## golang.org/x/exp
+## golang.org/x/exp/maps
 
 **License:** BSD-3-Clause
 
-**Project URL:** <https://golang.org/x/exp>
+**Project URL:** <https://golang.org/x/exp/maps>
 
 ## golang.org/x/net
 
