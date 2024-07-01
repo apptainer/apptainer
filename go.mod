@@ -59,7 +59,7 @@ require (
 	github.com/docker/cli v27.0.2+incompatible
 	github.com/docker/distribution v2.8.3+incompatible
 	github.com/google/go-containerregistry v0.19.2
-	github.com/samber/lo v1.42.0
+	github.com/samber/lo v1.44.0
 	github.com/sirupsen/logrus v1.9.3
 	gopkg.in/yaml.v2 v2.4.0
 )
