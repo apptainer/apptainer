@@ -1,5 +1,0 @@
-BootStrap: oras
-From: ghcr.io/apptainer/centos:7
-
-%post
-    yum -y reinstall setup
