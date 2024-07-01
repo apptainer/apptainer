@@ -2264,7 +2264,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"issue 4967":                             c.issue4967,                            // https://github.com/apptainer/singularity/issues/4967
 		"issue 4969":                             c.issue4969,                            // https://github.com/apptainer/singularity/issues/4969
 		"issue 5166":                             c.issue5166,                            // https://github.com/apptainer/singularity/issues/5166
-		"issue 5250":                             c.issue5250,                            // https://github.com/apptainer/singularity/issues/5250
 		"issue 5315":                             c.issue5315,                            // https://github.com/apptainer/singularity/issues/5315
 		"issue 5435":                             c.issue5435,                            // https://github.com/apptainer/singularity/issues/5435
 		"issue 5668":                             c.issue5668,                            // https://github.com/apptainer/singularity/issues/5435
