@@ -19,6 +19,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   garbage collection to avoid "bad file descriptor" errors at startup.
 - Fixed a segmentation violation issue when running Apptainer checkpoint.
 - Add apparmor profiles for ubuntu 24.04 or higher distros.
+- Fixed an issue that Apptainer won't read default docker credentials.
 
 ## v1.3.2 - \[2024-05-28\]
 
