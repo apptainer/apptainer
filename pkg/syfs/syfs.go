@@ -149,3 +149,12 @@ func DefaultLocalKeyDirPath() string {
 	}
 	return filepath.Join(ConfigDir(), defaultLocalKeyDirName)
 }
+
+func SearchDockerConf() string {
+	apptainerDockerConf := DockerConf()
+	if _, err := os.Stat(apptainerDockerConf); err != nil && os.IsNotExist(err) {
+		return FallbackDockerConf()
+	}
+
+	return apptainerDockerConf
+}

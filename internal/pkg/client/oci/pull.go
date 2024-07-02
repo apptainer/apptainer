@@ -47,7 +47,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 	sysCtx := &ocitypes.SystemContext{
 		OCIInsecureSkipTLSVerify: opts.NoHTTPS,
 		DockerAuthConfig:         opts.OciAuth,
-		AuthFilePath:             syfs.DockerConf(),
+		AuthFilePath:             syfs.SearchDockerConf(),
 		DockerRegistryUserAgent:  useragent.Value(),
 		BigFilesTemporaryDir:     opts.TmpDir,
 	}
