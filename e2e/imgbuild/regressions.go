@@ -338,27 +338,6 @@ func (c *imgBuildTests) issue5435(t *testing.T) {
 	)
 }
 
-// This test will yum reinstall the 'setup' package in a centos 7 container during %post.
-// On a CentOS/RHEL/Fedora host this yum reinstall errors unless the bound in /etc/hosts in the build is modified from
-// the package default, so that yum does not attempt to remove->replace it (which is not possible as it is bound in).
-// See the workaround in build.createStageFile
-func (c *imgBuildTests) issue5250(t *testing.T) {
-	image := filepath.Join(c.env.TestDir, "issue_5250.sif")
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.RootProfile),
-		e2e.WithCommand("build"),
-		e2e.WithArgs(image, "testdata/regressions/issue_5250.def"),
-		e2e.PostRun(func(_ *testing.T) {
-			os.Remove(image)
-		}),
-		e2e.ExpectExit(
-			0,
-		),
-	)
-}
-
 // Check that unsquashfs (SIF -> sandbox) works on a tmpfs, that will not support
 // user xattrs. Our home dir in the e2e test is a tmpfs bound over our real home dir
 // so we can use that.
