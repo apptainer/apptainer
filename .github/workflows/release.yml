@@ -30,8 +30,8 @@ jobs:
       - name: Make dist tarball and rpm packages
         if: env.do_release
         env:
-          OS_TYPE: centos
-          OS_VERSION: 7
+          OS_TYPE: rockylinux
+          OS_VERSION: 8
           HIDE_DIST: true
           GO_ARCH: linux-amd64
         run: |
