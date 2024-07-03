@@ -5,15 +5,15 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes for v1.3.x
+## v1.3.3 - \[2024-07-03\]
 
 - Updated the minimum golang version to 1.21.
-- Remove support for EL7.
+- Removed support for EL7.
 - Added libcudadebugger.so to nvliblist.conf to support cuda-gdb in CUDA 12+.
 - Ensure opened/kept file descriptors in stage 1 are not closed during the Go
   garbage collection to avoid "bad file descriptor" errors at startup.
 - Fixed a segmentation violation issue when running Apptainer checkpoint.
-- Add apparmor profiles for ubuntu 24.04 or higher distros.
+- Added apparmor profiles for ubuntu 24.04 or higher distros.
 - Fixed an issue that Apptainer won't read default docker credentials.
 
 ## v1.3.2 - \[2024-05-28\]
