@@ -12,6 +12,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.3.x
 
+- Fix sif-embedded overlay partitions for containers that are larger
+  than 2 gigabytes.
+
 ## v1.3.3 - \[2024-07-03\]
 
 - Updated the minimum golang version to 1.21.
