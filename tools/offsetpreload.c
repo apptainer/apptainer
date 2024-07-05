@@ -24,7 +24,7 @@
 #include <dlfcn.h>
 
 static int offsetfd = -3;
-static int offsetval;
+static long offsetval;
 
 ssize_t pread64(int fd, void *buf, size_t count, off_t offset) {
 	static off_t (*original_pread64)(int, void *, size_t, off_t) = NULL;
@@ -59,7 +59,7 @@ static int ___open64(int (*original_open64)(const char *, int, int, int), const 
 		offsetpath = getenv("OFFSETPRELOAD_FILE");
 		char *valenv = getenv("OFFSETPRELOAD_OFFSET");
 		if (valenv != NULL) {
-			offsetval = atoi(valenv);
+			offsetval = atol(valenv);
 		}
 	}
 
