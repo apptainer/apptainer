@@ -26,7 +26,7 @@ su testuser -c '
   set -x
   set -e
   rm -rf ins image*.sif overlay.img
-  tools/install-unprivileged.sh -v apptainer-[1-9]*.$(arch).rpm ins
+  tools/install-unprivileged.sh -e -v apptainer-[1-9]*.$(arch).rpm ins
   (
   echo Bootstrap: docker
   echo From: '"$CONTAINER_VERS"'

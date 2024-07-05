@@ -13,10 +13,13 @@
 
 REQUIREDCMDS="curl rpm2cpio cpio"
 
+# assumes at least a 1 Mbit connection
+CURLOPTS="--connect-timeout 5 -Y 125000 -y 10 -Ls"
+
 usage()
 {
 	(
-	echo "Usage: install-unprivileged.sh [-d dist] [-o] [-a arch] [-v version] installpath"
+	echo "Usage: install-unprivileged.sh [-e] [-d dist] [-o] [-a arch] [-v version] installpath"
 	echo
 	echo "Installs an apptainer version and its dependencies from EPEL+baseOS or Fedora."
 	echo "By default packages are installed from the oldest supported EPEL distribution"
@@ -32,6 +35,7 @@ usage()
 	echo "   the current system."
 	echo " version selects a specific apptainer version, default latest release, and"
 	echo "   if it ends in '.rpm' then apptainer will come from a file of that name."
+	echo "The -e option shows download errors and retries which are otherwise hidden."
 	) >&2
 	exit 1
 }
@@ -48,12 +52,16 @@ DIST=""
 ARCH=""
 VERSION=""
 NOOPENSUSE=true
+SHOWERRORS=false
 while true; do
 	case "$1" in
 		-d) DIST="$2"; shift 2;;
 		-a) ARCH="$2"; shift 2;;
 		-v) VERSION="$2"; shift 2;;
 		-o) NOOPENSUSE="false"; shift 1;;
+		-e) SHOWERRORS="true"
+		    CURLOPTS="$CURLOPTS -S"
+		    shift 1;;
 		-*) usage;;
 		*) break;;
 	esac
@@ -190,9 +198,9 @@ latesturl()
 	if [ "$URL" != "$LASTURL" ]; then
 		# optimization: reuse last list if it hasn't changed
 		LASTURL="$URL"
-		LASTPKGS="$(curl -Ls "$URL")"
+		LASTPKGS="$(curl $CURLOPTS "$URL")"
 	elif [ $RETRY -gt 0 ]; then
-		LASTPKGS="$(curl -Ls "$URL")"
+		LASTPKGS="$(curl $CURLOPTS "$URL")"
 	fi
 	typeset LATEST="$(echo "$LASTPKGS"|sed -e 's/.*href="//;s/".*//' -e 's/\.mirrorlist//' -e 's/\-32bit//' -e 's@^\.\/@@' |grep "^$2-[0-9].*$ARCH"|tail -1)"
 	if [ -n "$LATEST" ]; then
@@ -206,6 +214,9 @@ latesturl()
 		return $?
 	elif [ $RETRY -lt 3 ]; then
 		RETRY=$((RETRY+1))
+		if $SHOWERRORS; then
+			echo "Retrying..." >&2
+		fi
 		latesturl "$URL" "$2" false "$4"
 		return $?
 	else
@@ -242,12 +253,33 @@ elif [ -z "$VERSION" ] || ! $NOOPENSUSE; then
 	fi
 else
 	KOJIURL="https://kojipkgs.fedoraproject.org/packages/apptainer/$VERSION"
-	REL="$(curl -Ls "$KOJIURL"|sed 's/.*href="//;s/".*//'|grep "\.$DIST/"|tail -1|sed 's,/$,,')"
+	REL="$(curl $CURLOPTS "$KOJIURL"|sed 's/.*href="//;s/".*//'|grep "\.$DIST/"|tail -1|sed 's,/$,,')"
 	if [ -z "$REL" ]; then
 		fatal "Could not find latest release in $KOJIURL"
 	fi
 	APPTAINERURL="$KOJIURL/$REL/$ARCH/apptainer-$VERSION-$REL.$ARCH.rpm"
 fi
+
+# Retry url to 3 times if download fails
+extracturl()
+{
+	typeset URL="$1"
+	typeset RETRY=0
+
+	echo "Extracting $URL"
+	while true; do
+		if curl $CURLOPTS "$URL"|rpm2cpio -|cpio -idum; then
+			break
+		fi
+		RETRY=$((RETRY+1))
+		if [ "$RETRY" -ge 3 ]; then
+			fatal "Failure extracting $URL"
+		fi
+		if $SHOWERRORS; then
+			echo "Retrying..." >&2
+		fi
+	done
+}
 
 cd "$DEST"
 mkdir "$ARCH"
@@ -258,10 +290,7 @@ if $LOCALAPPTAINER; then
 		fatal "Error extracting $VERSION"
 	fi
 else
-	echo "Extracting $APPTAINERURL"
-	if ! (curl -Ls "$APPTAINERURL"|rpm2cpio -|cpio -idum); then
-		fatal "Error extracting $APPTAINERURL"
-	fi
+	extracturl "$APPTAINERURL"
 fi
 if [ ! -f usr/bin/apptainer ]; then
 	fatal "Required file usr/bin/apptainer missing"
@@ -273,7 +302,6 @@ if ! rmdir usr; then
 	fatal "error removing usr"
 fi
 
-APPTAINERURL="https://kojipkgs.fedoraproject.org/packages/apptainer/"
 OSUTILS=""
 NEEDSFUSE2FS=true
 if [ -f libexec/apptainer/bin/fuse2fs ]; then
@@ -346,6 +374,7 @@ if [[ "$DIST" == fc* ]]; then
 	FEDORA=true
 fi
 
+# Extract rpms from given repo url with a given split type
 extractutils()
 {
 	typeset REPOURL="$1"
@@ -356,10 +385,7 @@ extractutils()
 		if ! URL="$(latesturl "$REPOURL" "$PKG" "$SPLIT" "$FEDORA")"; then
 			fatal "$PKG not found in $URL"
 		fi
-		echo "Extracting $URL"
-		if ! (curl -Ls "$URL"|rpm2cpio -|cpio -idum); then
-			fatal "failure extracting $URL"
-		fi
+		extracturl "$URL"
 	done
 }
 # shellcheck disable=SC2086
