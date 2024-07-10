@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/apptainer/apptainer/actions/workflows/ci.yml/badge.svg)](https://github.com/apptainer/apptainer/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/pkg.golang.dev/github.com/apptainer/apptainer.svg)](https://pkg.go.dev/github.com/apptainer/apptainer)
+[![Go Report Card](https://goreportcard.com/badge/github.com/apptainer/apptainer)](https://goreportcard.com/report/github.com/apptainer/apptainer)
 
 - [Documentation](https://apptainer.org/docs/)
 - [Support](#support)
