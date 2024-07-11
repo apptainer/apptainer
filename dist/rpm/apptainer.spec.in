@@ -127,7 +127,7 @@ Requires: squashfs
 %else
 Requires: squashfs-tools
 %endif
-Requires: fakeroot
+Recommends: fakeroot
 
 %description
 Apptainer provides functionality to make portable
