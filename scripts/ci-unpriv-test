@@ -13,7 +13,7 @@ if [ "$OS_TYPE" = debian ] || [ "$OS_TYPE" = ubuntu ]; then
 elif [ "$OS_TYPE" = "opensuse/leap" ] || [ "$OS_TYPE" = "opensuse/tumbleweed" ]; then
   zypper install -y e2fsprogs curl cpio util-linux timezone
 else
-  yum install -y e2fsprogs cpio
+  dnf install -y e2fsprogs cpio
 fi
 
 # switch to an unprivileged user

@@ -30,15 +30,15 @@ sudo apt-get install -y \
     curl wget git
 ```
 
-On CentOS/RHEL:
+On RHEL or its derivatives:
 
 ```sh
 # Install basic tools for compiling
-sudo yum groupinstall -y 'Development Tools'
+sudo dnf groupinstall -y 'Development Tools'
 # Ensure EPEL repository is available
-sudo yum install -y epel-release
+sudo dnf install -y epel-release
 # Install RPM packages for dependencies
-sudo yum install -y \
+sudo dnf install -y \
     libseccomp-devel \
     squashfs-tools \
     fakeroot \
@@ -179,10 +179,10 @@ First, make sure that additional required packages are installed.  On Debian:
 sudo apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev
 ```
 
-On CentOS/RHEL:
+On RHEL or derivatives:
 
 ```sh
-sudo yum install -y autoconf automake libtool pkgconfig fuse3-devel zlib-devel
+sudo dnf install -y autoconf automake libtool pkgconfig fuse3-devel zlib-devel
 ```
 
 To download the source code from the top level of the Apptainer source
@@ -249,10 +249,10 @@ sudo sysctl -p /etc/sysctl.d/90-disable-userns-restrictions.conf
 
 ## Building & Installing from RPM
 
-On a RHEL / CentOS / Fedora machine you can build an Apptainer into rpm
+On a RHEL / Fedora machine you can build an Apptainer into rpm
 packages, and install it from them. This is useful if you need to install
 Apptainer across multiple machines, or wish to manage all software via
-`yum/dnf`.
+`dnf`.
 
 To build the rpms, in addition to the
 [system dependencies](#install-system-dependencies)
@@ -261,7 +261,7 @@ and the extra required packages needed for
 also install these extra packages:
 
 ```sh
-sudo yum install -y rpm-build golang
+sudo dnf install -y rpm-build golang
 ```
 
 The rpm build will use the OS distribution or EPEL version of Go,
