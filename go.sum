@@ -409,8 +409,8 @@ github.com/russross/blackfriday/v2 v2.1.0 h1:JIOH55/0cWyOuilr9/qlrm0BSXldqnqwMsf
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/safchain/ethtool v0.4.0 h1:vq1i2HCjshJNywOXFZ1BpwIjyeFR/kvNdHiRzqSElDI=
 github.com/safchain/ethtool v0.4.0/go.mod h1:XLLnZmy4OCRTkksP/UiMjij96YmIsBfmBQcs7H6tA48=
-github.com/samber/lo v1.45.0 h1:TPK85Y30Lv9Jh8s3TrJeA94u1hwcbFA9JObx/vT6lYU=
-github.com/samber/lo v1.45.0/go.mod h1:RmDH9Ct32Qy3gduHQuKJ3gW1fMHAnE/fAzQuf6He5cU=
+github.com/samber/lo v1.46.0 h1:w8G+oaCPgz1PoCJztqymCFaKwXt+5cCXn51uPxExFfQ=
+github.com/samber/lo v1.46.0/go.mod h1:RmDH9Ct32Qy3gduHQuKJ3gW1fMHAnE/fAzQuf6He5cU=
 github.com/sebdah/goldie/v2 v2.5.3 h1:9ES/mNN+HNUbNWpVAlrzuZ7jE+Nrczbj8uFRjM7624Y=
 github.com/sebdah/goldie/v2 v2.5.3/go.mod h1:oZ9fp0+se1eapSRjfYbsV/0Hqhbuu3bJVvKI/NNtssI=
 github.com/seccomp/containers-golang v0.6.0 h1:VWPMMIDr8pAtNjCX0WvLEEK9EQi5lAm4HtJbDtAtFvQ=
