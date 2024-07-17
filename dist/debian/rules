@@ -5,6 +5,7 @@ pkgver = $(shell LC_ALL=C dpkg-parsechangelog --show-field Version )
 
 OS_MAJOR := $(shell grep ^VERSION_ID /etc/os-release | cut -d'=' -f2 | sed 's/\"//gI' | cut -d'.' -f1)
 OS_NAME := $(shell grep ^NAME /etc/os-release | cut -d '=' -f2 | sed 's/\"//gI')
+OS_VERSION := $(shell grep ^VERSION_ID /etc/os-release | cut -d'=' -f2 | sed 's/\"//gI')
 
 # Needed by debchange to set Name and EMAIL in changelog
 # DEBFULLNAME is filtered out by debuild
@@ -97,8 +98,8 @@ override_dh_auto_install:
 	@dh_auto_install -Smakefile -D$(DEB_SC_BUILDDIR)
 	@./scripts/install-dependencies $(pkgdir)/usr/libexec
 # Apparmor userns profile needed on Ubuntu 24.04, or unconfined placeholder for older versions.	
-	if [ $(OS_MAJOR) -gt 23 ] && [[ $(OS_NAME) = "Ubuntu" ]]; then \
-		echo "Ubuntu 24.04 or newer - installing apparmor userns profile"; \
+	if ([ $(OS_MAJOR) -gt 23 ] || [ "$(OS_VERSION)" = "23.10" ]) && [ "$(OS_NAME)" = "Ubuntu" ]; then \
+		echo "Ubuntu 23.10 or newer - installing apparmor userns profile"; \
 		install -D -m 644 dist/debian/apparmor-userns $(pkgdir)/etc/apparmor.d/apptainer; \
 	else \
 		echo "other debian/ubuntu distros - installing apparmor placeholder profile"; \

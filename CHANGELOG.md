@@ -7,8 +7,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.3.x
 
-- Fix sif-embedded overlay partitions for containers that are larger
+- Fixed sif-embedded overlay partitions for containers that are larger
   than 2 gigabytes.
+- Fixed the apparmor profile that was added in v1.3.3 but didn't work.
+  An apparmor profile is applied in all Debian-based apptainer packaging,
+  but is only needed to enable user namespaces for apptainer on a
+  default-configured Ubuntu 23.10 or newer.
 
 ## v1.3.3 - \[2024-07-03\]
 
