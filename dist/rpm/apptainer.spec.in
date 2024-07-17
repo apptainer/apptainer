@@ -124,10 +124,11 @@ BuildRequires: zlib-devel
 %endif
 %if "%{_target_vendor}" == "suse"
 Requires: squashfs
+Recommends: fakeroot
 %else
 Requires: squashfs-tools
+Requires: fakeroot
 %endif
-Recommends: fakeroot
 
 %description
 Apptainer provides functionality to make portable

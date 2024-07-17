@@ -19,6 +19,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   but is only needed to enable user namespaces for apptainer on a
   default-configured Ubuntu 23.10 or newer.
 - Fixed the failure when starting apptainer with `instance --fakeroot`.
+- Make fakeroot Recommended for suse rpm
 
 ## v1.3.3 - \[2024-07-03\]
 
