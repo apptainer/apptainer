@@ -2,7 +2,7 @@
 abi <abi/4.0>,
 include <tunables/global>
 
-profile apptainer /usr/lib/@{multiarch}/apptainer/bin/starter{,-suid} flags=(unconfined) {
+profile apptainer /usr/libexec/apptainer/bin/starter{,-suid} flags=(unconfined) {
   userns,
 
   # Site-specific additions and overrides. See local/README for details.

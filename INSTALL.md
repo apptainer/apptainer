@@ -199,10 +199,11 @@ Then to compile and install do this:
 sudo ./scripts/install-dependencies
 ```
 
-## Apparmor Profile (Ubuntu 24.04+)
+## Apparmor Profile (Ubuntu 23.10+)
 
-Beginning with the 24.04 LTS release, Ubuntu does not permit applications to
-create unprivileged user namespaces by default.
+Beginning with the 23.10 release and including the 24.04 LTS release,
+Ubuntu does not permit applications to create unprivileged user
+namespaces by default.
 
 If you install Apptainer from a GitHub release `.deb` package then an
 apparmor profile will be installed that permits Apptainer to create
@@ -218,7 +219,7 @@ sudo tee /etc/apparmor.d/apptainer << 'EOF'
 abi <abi/4.0>,
 include <tunables/global>
 profile apptainer /usr/local/libexec/apptainer/bin/starter{,-suid} 
-flags=(unconfined) {
+    flags=(unconfined) {
   userns,
   # Site-specific additions and overrides. See local/README for details.
   include if exists <local/apptainer>
