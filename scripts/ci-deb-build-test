@@ -8,6 +8,7 @@
 
 OS_MAJOR=$(grep ^VERSION_ID /etc/os-release | cut -d'=' -f2 | sed 's/\"//gI' | cut -d'.' -f1)
 OS_NAME=$(grep ^NAME /etc/os-release | cut -d '=' -f2 | sed 's/\"//gI')
+OS_VERSION=$(grep ^VERSION_ID /etc/os-release | cut -d'=' -f2 | sed 's/\"//gI')
 
 # install dependencies
 apt-get update
@@ -45,7 +46,7 @@ mv .??* !(src) src
 # switch to an unprivileged user with sudo privileges
 apt-get install -y sudo
 
-if [[ $OS_NAME = "Ubuntu" ]] && [ $OS_MAJOR -gt 23 ]; then
+if [[ $OS_NAME = "Ubuntu" ]] && { [ $OS_MAJOR -gt 23 ] || [[ $OS_VERSION = "23.10" ]]; }; then
 # uid 1000 is occupied by user 'ubuntu' in ubuntu 24.04, here using a different uid = 1001
     useradd -u 1001 --create-home -s /bin/bash testuser
 else
@@ -82,5 +83,8 @@ su testuser -c '
   debuild --prepend-path $PATH --build=binary --no-sign --lintian-opts --display-info --show-overrides
   sudo dpkg -i ../apptainer*.deb
 
+  cat /etc/apparmor.d/apptainer
   apptainer exec oras://ghcr.io/apptainer/alpine:3.15.0 /bin/true
+  apptainer exec --userns oras://ghcr.io/apptainer/alpine:3.15.0 /bin/true
+  apptainer exec --fakeroot oras://ghcr.io/apptainer/alpine:3.15.0 /bin/true
 '
