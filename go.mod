@@ -44,9 +44,9 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/sylabs/json-resp v0.9.2
 	github.com/urfave/cli v1.22.14 // indirect
-	github.com/vbauerster/mpb/v8 v8.7.3
+	github.com/vbauerster/mpb/v8 v8.7.4
 	golang.org/x/crypto v0.22.0
-	golang.org/x/sys v0.19.0
+	golang.org/x/sys v0.22.0
 	golang.org/x/term v0.19.0
 	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
