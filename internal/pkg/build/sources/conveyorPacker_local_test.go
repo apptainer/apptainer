@@ -8,116 +8,120 @@ package sources_test
 import (
 	"context"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 
 	"github.com/sylabs/singularity/v4/internal/pkg/build/sources"
-	"github.com/sylabs/singularity/v4/internal/pkg/image/packer"
+	"github.com/sylabs/singularity/v4/internal/pkg/test/tool/require"
 	"github.com/sylabs/singularity/v4/internal/pkg/util/fs"
+	"github.com/sylabs/singularity/v4/internal/pkg/util/fs/squashfs"
 	"github.com/sylabs/singularity/v4/pkg/build/types"
 )
 
-func createArchiveFromDir(dir string, t *testing.T) *os.File {
-	mk, err := exec.LookPath("mksquashfs")
+func TestLocalPackerSquashfs(t *testing.T) {
+	require.Command(t, "mksquashfs")
+
+	tempDirPath, err := os.MkdirTemp("", "test-localpacker-squashfs")
 	if err != nil {
-		t.SkipNow()
+		t.Fatalf("while creating temp dir: %v", err)
 	}
-	f, err := os.CreateTemp("", "archive-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	cmd := exec.Command(mk, dir, f.Name(), "-noappend", "-no-progress")
-	if err := cmd.Run(); err != nil {
-		t.Fatal(err)
-	}
-	return f
-}
+	defer os.RemoveAll(tempDirPath)
 
-func makeDir(path string, t *testing.T) {
-	if err := os.MkdirAll(path, 0o755); err != nil {
-		t.Fatalf("while creating directory %s: %v", path, err)
+	// Image root directory
+	rootfs := filepath.Join(tempDirPath, "issue_3084_rootfs")
+
+	// Create directories
+	if err := os.Mkdir(rootfs, 0o755); err != nil {
+		t.Fatalf("while creating directory: %v", err)
 	}
-}
-
-func isExist(path string) bool {
-	result, _ := fs.PathExists(path)
-	return result
-}
-
-func TestSquashfsInput(t *testing.T) {
-	if s := packer.NewSquashfs(); !s.HasMksquashfs() {
-		t.Skip("mksquashfs not found, skipping")
+	if err := os.Mkdir(filepath.Join(rootfs, "tmp"), 0o755); err != nil {
+		t.Fatalf("while creating directory: %v", err)
+	}
+	if err := os.Mkdir(filepath.Join(rootfs, "var"), 0o755); err != nil {
+		t.Fatalf("while creating directory: %v", err)
 	}
 
-	dir, err := os.MkdirTemp(os.TempDir(), "test-localpacker-squashfs-")
-	if err != nil {
-		t.Fatalf("while creating tmpdir: %v", err)
-	}
-	defer os.RemoveAll(dir)
-
-	// Check that folder symlinks in the image to common folders (in base env) work
-	inputDir := filepath.Join(dir, "input")
-
-	makeDir(filepath.Join(dir, "var", "tmp"), t)
-	// Symlink /var/tmp -> /tmp in image
-	makeDir(filepath.Join(inputDir, "tmp"), t)
-	makeDir(filepath.Join(inputDir, "var"), t)
-	if err := os.Symlink("../tmp", filepath.Join(inputDir, "var", "tmp")); err != nil {
+	// Create symlinks: /var/tmp -> /tmp , /var/log -> /tmp
+	if err := os.Symlink(filepath.Join(rootfs, "tmp"), filepath.Join(rootfs, "var", "tmp")); err != nil {
 		t.Fatalf("while creating symlink: %v", err)
 	}
-	// And a file we can check for
+	if err := os.Symlink(filepath.Join(rootfs, "tmp"), filepath.Join(rootfs, "var", "log")); err != nil {
+		t.Fatalf("while creating symlink: %v", err)
+	}
+
+	// Copy a test file to rootfs and create image.
 	testfile := "conveyorPacker_local_test.go"
 	data, err := os.ReadFile(testfile)
 	if err != nil {
 		t.Fatalf("while reading test file: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(inputDir, testfile), data, 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(rootfs, testfile), data, 0o644); err != nil {
 		t.Fatalf("while writing test file: %v", err)
 	}
-	archive := createArchiveFromDir(inputDir, t)
-	defer os.Remove(archive.Name())
+	image := filepath.Join(tempDirPath, "issue_3084.img")
+	if err := squashfs.Mksquashfs([]string{rootfs}, image); err != nil {
+		t.Fatalf("while creating image: %v", err)
+	}
+	defer os.Remove(image)
 
+	// Creates bundle
 	bundleTmp, _ := os.MkdirTemp(os.TempDir(), "bundle-tmp-")
-	b, err := types.NewBundle(dir, bundleTmp)
+	defer os.RemoveAll(bundleTmp)
+
+	b, err := types.NewBundle(tempDirPath, bundleTmp)
 	if err != nil {
 		t.Fatalf("while creating bundle: %v", err)
 	}
-	b.Recipe, _ = types.NewDefinitionFromURI("localimage://" + archive.Name())
+	b.Recipe, _ = types.NewDefinitionFromURI("localimage://" + image)
 
+	// Creates and execute packer
 	lcp := &sources.LocalConveyorPacker{}
 	if err := lcp.Get(context.Background(), b); err != nil {
 		t.Fatalf("while getting local packer: %v", err)
 	}
-
-	_, err = lcp.Pack(context.Background())
-	if err != nil {
-		t.Fatalf("failed to Pack from %s: %v\n", archive.Name(), err)
+	if _, err = lcp.Pack(context.Background()); err != nil {
+		t.Fatalf("failed to Pack from %s: %v\n", image, err)
 	}
-	rootfs := b.RootfsPath
+	rootfsPath := b.RootfsPath
 
-	// check if testfile was extracted
-	path := filepath.Join(rootfs, testfile)
-	if !isExist(path) {
+	// Check if testfile was extracted
+	path := filepath.Join(rootfsPath, testfile)
+	if exist, _ := fs.PathExists(path); !exist {
 		t.Errorf("extraction failed, %s is missing", path)
 	}
-	// Check folders and symlinks
-	path = filepath.Join(rootfs, "tmp")
+
+	// Check directories
+	path = filepath.Join(rootfsPath, "tmp")
 	if !fs.IsDir(path) {
 		t.Errorf("extraction failed, %s is missing", path)
 	}
-	path = filepath.Join(rootfs, "var")
+	path = filepath.Join(rootfsPath, "var")
 	if !fs.IsDir(path) {
 		t.Errorf("extraction failed, %s is missing", path)
 	}
-	path = filepath.Join(rootfs, "var", "tmp")
-	if !isExist(path) {
+
+	// Check symlinks
+	// /var/tmp -> /tmp
+	path = filepath.Join(rootfsPath, "var", "tmp")
+	if exist, _ := fs.PathExists(path); !exist {
 		t.Errorf("extraction failed, %s is missing", path)
 	} else if !fs.IsLink(path) {
 		t.Errorf("extraction failed, %s is not a symlink", path)
 	} else {
 		tgt, _ := os.Readlink(path)
-		if tgt != "../tmp" {
+		if tgt != filepath.Join(rootfs, "tmp") {
+			t.Errorf("extraction failed, %s wrongly points to %s", path, tgt)
+		}
+	}
+	// /var/log -> /tmp
+	path = filepath.Join(rootfsPath, "var", "log")
+	if exist, _ := fs.PathExists(path); !exist {
+		t.Errorf("extraction failed, %s is missing", path)
+	} else if !fs.IsLink(path) {
+		t.Errorf("extraction failed, %s is not a symlink", path)
+	} else {
+		tgt, _ := os.Readlink(path)
+		if tgt != filepath.Join(rootfs, "tmp") {
 			t.Errorf("extraction failed, %s wrongly points to %s", path, tgt)
 		}
 	}
