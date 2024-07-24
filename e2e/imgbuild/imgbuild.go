@@ -2272,5 +2272,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"build sif image using gocryptfs":        c.testGocryptfsSIFBuild,                // https://github.com/apptainer/apptainer/issues/484
 		"definition build with template support": c.buildDefinitionWithBuildArgs,         // builds from definition with build args (build arg file) support
 		"issue 1812":                             c.issue1812,                            // https://github.com/sylabs/singularity/issues/1812
+		"issue 3084":                      c.issue3084,                     // https://github.com/sylabs/singularity/issues/3084
 	}
 }

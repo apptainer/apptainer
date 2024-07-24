@@ -19,7 +19,9 @@ import (
 	"text/template"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/squashfs"
 	"github.com/google/uuid"
 )
 
@@ -598,4 +600,47 @@ from: %s
 			)
 		})
 	}
+}
+
+// Check that the build process from an image doesn't fail when the source image
+// includes symlinks.
+func (c *imgBuildTests) issue3084(t *testing.T) {
+	require.Command(t, "mksquashfs")
+
+	rootfs := filepath.Join(c.env.TestDir, "issue_3084_rootfs")
+	if err := os.Mkdir(rootfs, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(rootfs, "tmp"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(rootfs, "var"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(rootfs, "tmp"), filepath.Join(rootfs, "var", "tmp")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(rootfs, "tmp"), filepath.Join(rootfs, "var", "log")); err != nil {
+		t.Fatal(err)
+	}
+	image := filepath.Join(c.env.TestDir, "issue_3084.img")
+	if err := squashfs.Mksquashfs([]string{rootfs}, image); err != nil {
+		t.Fatal(err)
+	}
+
+	destImage := filepath.Join(c.env.TestDir, "issue_3084_dest.img")
+	c.env.RunSingularity(
+		t,
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs(destImage, image),
+		e2e.PostRun(func(_ *testing.T) {
+			os.Remove(destImage)
+			os.Remove(image)
+			os.RemoveAll(rootfs)
+		}),
+		e2e.ExpectExit(
+			0,
+		),
+	)
 }
