@@ -18,6 +18,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   An apparmor profile is applied in all Debian-based apptainer packaging,
   but is only needed to enable user namespaces for apptainer on a
   default-configured Ubuntu 23.10 or newer.
+- Fixed the failure when starting apptainer with `instance --fakeroot`.
 
 ## v1.3.3 - \[2024-07-03\]
 
