@@ -103,7 +103,13 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 		if (l.uid == 0) && namespaces.IsUnprivileged() {
 			// Already running root-mapped unprivileged
 			l.cfg.Fakeroot = false
-			l.cfg.Namespaces.User = true
+			// Setting the following line with `false` value
+			// will prevent Apptainer from allocating an additional user namespace.
+			// Here, Apptainer is already running inside a root-mapped namespace,
+			// i.e., similar to running with `unshare -r`, setting the following
+			// line with `true` value will make Apptainer run inside a nested
+			// root-mapped namespace, similar to `unshare -r unshare -r`
+			l.cfg.Namespaces.User = false
 			sylog.Debugf("running root-mapped unprivileged")
 			var err error
 			if l.cfg.IgnoreFakerootCmd {
@@ -314,7 +320,10 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 		l.cfg.Namespaces.User = !l.cfg.IgnoreUserns
 	}
 
-	l.setCgroups(instanceName)
+	err = l.setCgroups(instanceName)
+	if err != nil {
+		sylog.Fatalf("Error while setting cgroups, err: %s", err)
+	}
 
 	// --boot flag requires privilege, so check for this.
 	err = withPrivilege(l.uid, l.cfg.Boot, "--boot", func() error { return nil })
@@ -1067,9 +1076,10 @@ func (l *Launcher) setCgroups(instanceName string) error {
 	hidePid := hidepidProc()
 	// If we are an instance, always use a cgroup if possible, to enable stats.
 	// root can always create a cgroup.
-	useCG := l.uid == 0
+	sylog.Debugf("During setting cgroups configuration, uid: %d, namespace.user: %t, fakeroot: %t, unprivileged: %t", l.uid, l.cfg.Namespaces.User, l.cfg.Fakeroot, namespaces.IsUnprivileged())
+	useCG := l.uid == 0 && !namespaces.IsUnprivileged()
 	// non-root needs cgroups v2 unified mode + systemd as cgroups manager.
-	if !useCG && lccgroups.IsCgroup2UnifiedMode() && l.engineConfig.File.SystemdCgroups && !l.cfg.Fakeroot && !hidePid {
+	if !useCG && lccgroups.IsCgroup2UnifiedMode() && l.engineConfig.File.SystemdCgroups && !namespaces.IsUnprivileged() && !l.cfg.Fakeroot && !hidePid {
 		if os.Getenv("XDG_RUNTIME_DIR") == "" || os.Getenv("DBUS_SESSION_BUS_ADDRESS") == "" {
 			sylog.Infof("Instance stats will not be available because XDG_RUNTIME_DIR")
 			sylog.Infof("  or DBUS_SESSION_BUS_ADDRESS is not set")
@@ -1079,6 +1089,7 @@ func (l *Launcher) setCgroups(instanceName string) error {
 	}
 
 	if useCG {
+		sylog.Debugf("Using cgroup manager during setting cgroups configuration")
 		cg := cgroups.Config{}
 		cgJSON, err := cg.MarshalJSON()
 		if err != nil {

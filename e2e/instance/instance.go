@@ -480,6 +480,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 				{"CheckpointInstance", c.testCheckpointInstance},
 				{"InstanceWithConfigDir", c.testInstanceWithConfigDir},
 				{"ShareNSMode", c.testShareNSMode},
+				{"issue 2189", c.issue2189},
 			}
 
 			profiles := []e2e.Profile{
