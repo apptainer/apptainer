@@ -14,6 +14,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   but is only needed to enable user namespaces for apptainer on a
   default-configured Ubuntu 23.10 or newer.
 - Fixed the failure when starting apptainer with `instance --fakeroot`.
+- `apptainer build -B ...` can now be used to mount custom resolv.conf
+  and hosts files from non-standard outside locations. This can be
+  used to run `apptainer build` in a nix-build sandbox that has no
+  /etc/resolv.conf.
 
 ## v1.3.3 - \[2024-07-03\]
 
