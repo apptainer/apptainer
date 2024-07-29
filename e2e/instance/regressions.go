@@ -43,3 +43,20 @@ func (c *ctx) issue5033(t *testing.T) {
 
 	c.stopInstance(t, instanceName)
 }
+
+func (c *ctx) issue2189(t *testing.T) {
+	e2e.EnsureDebianImage(t, c.env)
+
+	c.profile = e2e.FakerootProfile
+
+	instanceName := randomName(t)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(c.profile),
+		e2e.WithCommand("instance start"),
+		e2e.WithArgs("--ignore-subuid", c.env.ImagePath, instanceName),
+		e2e.ExpectExit(0),
+	)
+	c.stopInstance(t, instanceName)
+}
