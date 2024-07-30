@@ -41,11 +41,11 @@ func TestLocalPackerSquashfs(t *testing.T) {
 		t.Fatalf("while creating directory: %v", err)
 	}
 
-	// Create symlinks: /var/tmp -> /tmp , /var/log -> /tmp
-	if err := os.Symlink(filepath.Join(rootfs, "tmp"), filepath.Join(rootfs, "var", "tmp")); err != nil {
+	// Create symlinks: $rootfs/var/tmp -> /tmp , $rootfs/var/log -> /tmp
+	if err := os.Symlink("/tmp", filepath.Join(rootfs, "var", "tmp")); err != nil {
 		t.Fatalf("while creating symlink: %v", err)
 	}
-	if err := os.Symlink(filepath.Join(rootfs, "tmp"), filepath.Join(rootfs, "var", "log")); err != nil {
+	if err := os.Symlink("/tmp", filepath.Join(rootfs, "var", "log")); err != nil {
 		t.Fatalf("while creating symlink: %v", err)
 	}
 
@@ -65,7 +65,7 @@ func TestLocalPackerSquashfs(t *testing.T) {
 	defer os.Remove(image)
 
 	// Creates bundle
-	bundleTmp, _ := os.MkdirTemp(os.TempDir(), "bundle-tmp-")
+	bundleTmp, _ := os.MkdirTemp("", "bundle-temp-*")
 	defer os.RemoveAll(bundleTmp)
 
 	b, err := types.NewBundle(tempDirPath, bundleTmp)
@@ -101,7 +101,7 @@ func TestLocalPackerSquashfs(t *testing.T) {
 	}
 
 	// Check symlinks
-	// /var/tmp -> /tmp
+	// $rootfsPath/var/tmp -> /tmp
 	path = filepath.Join(rootfsPath, "var", "tmp")
 	if exist, _ := fs.PathExists(path); !exist {
 		t.Errorf("extraction failed, %s is missing", path)
@@ -109,11 +109,11 @@ func TestLocalPackerSquashfs(t *testing.T) {
 		t.Errorf("extraction failed, %s is not a symlink", path)
 	} else {
 		tgt, _ := os.Readlink(path)
-		if tgt != filepath.Join(rootfs, "tmp") {
+		if tgt != "/tmp" {
 			t.Errorf("extraction failed, %s wrongly points to %s", path, tgt)
 		}
 	}
-	// /var/log -> /tmp
+	// $rootfsPath/var/log -> /tmp
 	path = filepath.Join(rootfsPath, "var", "log")
 	if exist, _ := fs.PathExists(path); !exist {
 		t.Errorf("extraction failed, %s is missing", path)
@@ -121,7 +121,7 @@ func TestLocalPackerSquashfs(t *testing.T) {
 		t.Errorf("extraction failed, %s is not a symlink", path)
 	} else {
 		tgt, _ := os.Readlink(path)
-		if tgt != filepath.Join(rootfs, "tmp") {
+		if tgt != "/tmp" {
 			t.Errorf("extraction failed, %s wrongly points to %s", path, tgt)
 		}
 	}
