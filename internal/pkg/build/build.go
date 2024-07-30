@@ -328,6 +328,24 @@ func (b Build) cleanUp() {
 	}
 }
 
+// Search list of binds, return true iff there is one for the given destination
+func haveBindFor(binds []string, destination string) bool {
+	for _, bindpath := range binds {
+		splitted := strings.Split(bindpath, ":")
+		src := splitted[0]
+		dst := ""
+		if len(splitted) > 1 {
+			dst = splitted[1]
+		} else {
+			dst = src
+		}
+		if destination == dst {
+			return true
+		}
+	}
+	return false
+}
+
 // Full runs a standard build from start to finish.
 func (b *Build) Full(ctx context.Context) error {
 	sylog.Infof("Starting build...")
@@ -412,17 +430,24 @@ func (b *Build) Full(ctx context.Context) error {
 		}
 
 		// create stage file for /etc/resolv.conf and /etc/hosts
-		sessionResolv, err := createStageFile("/etc/resolv.conf", stage.b, "Name resolution could fail")
-		if err != nil {
-			return err
-		} else if sessionResolv != "" {
-			defer os.Remove(sessionResolv)
+		// skip, if there is an explicit --bind
+		sessionResolv := ""
+		if !haveBindFor(stage.b.Opts.Binds, "/etc/resolv.conf") {
+			sessionResolv, err = createStageFile("/etc/resolv.conf", stage.b, "Name resolution could fail")
+			if err != nil {
+				return err
+			} else if sessionResolv != "" {
+				defer os.Remove(sessionResolv)
+			}
 		}
-		sessionHosts, err := createStageFile("/etc/hosts", stage.b, "Host resolution could fail")
-		if err != nil {
-			return err
-		} else if sessionHosts != "" {
-			defer os.Remove(sessionHosts)
+		sessionHosts := ""
+		if !haveBindFor(stage.b.Opts.Binds, "/etc/hosts") {
+			sessionHosts, err = createStageFile("/etc/hosts", stage.b, "Host resolution could fail")
+			if err != nil {
+				return err
+			} else if sessionHosts != "" {
+				defer os.Remove(sessionHosts)
+			}
 		}
 
 		if stage.b.Recipe.BuildData.Post.Script != "" {
