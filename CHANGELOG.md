@@ -18,6 +18,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   and hosts files from non-standard outside locations. This can be
   used to run `apptainer build` in a nix-build sandbox that has no
   /etc/resolv.conf.
+- Fix failing builds from local images that have symbolic links for paths that
+  are part of the base container environment (e.g. /var/tmp -> /tmp).
 
 ## v1.3.3 - \[2024-07-03\]
 
