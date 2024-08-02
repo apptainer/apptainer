@@ -2255,6 +2255,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"test with writable tmpfs":               c.testWritableTmpfs,                    // build image, using writable tmpfs in the test step
 		"test build system environment":          c.testBuildEnvironmentVariables,        // build image with build system environment variables set in definition
 		"test build under fakeroot modes":        c.testContainerBuildUnderFakerootModes, // build image under different fakeroot modes
+		"issue 2347":                             c.issue2347,                            // https://github.com/apptainer/apptainer/issues/2347
 		"issue 3848":                             c.issue3848,                            // https://github.com/apptainer/singularity/issues/3848
 		"issue 4203":                             c.issue4203,                            // https://github.com/apptainer/singularity/issues/4203
 		"issue 4407":                             c.issue4407,                            // https://github.com/apptainer/singularity/issues/4407
@@ -2272,6 +2273,5 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"build sif image using gocryptfs":        c.testGocryptfsSIFBuild,                // https://github.com/apptainer/apptainer/issues/484
 		"definition build with template support": c.buildDefinitionWithBuildArgs,         // builds from definition with build args (build arg file) support
 		"issue 1812":                             c.issue1812,                            // https://github.com/sylabs/singularity/issues/1812
-		"issue 3084":                      c.issue3084,                     // https://github.com/sylabs/singularity/issues/3084
 	}
 }
