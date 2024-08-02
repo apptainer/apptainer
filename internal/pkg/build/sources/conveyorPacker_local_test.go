@@ -1,3 +1,7 @@
+// Copyright (c) Contributors to the Apptainer project, established as
+//   Apptainer a Series of LF Projects LLC.
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright (c) 2018-2024, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
@@ -8,15 +12,39 @@ package sources_test
 import (
 	"context"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
-	"github.com/sylabs/singularity/v4/internal/pkg/build/sources"
-	"github.com/sylabs/singularity/v4/internal/pkg/test/tool/require"
-	"github.com/sylabs/singularity/v4/internal/pkg/util/fs"
-	"github.com/sylabs/singularity/v4/internal/pkg/util/fs/squashfs"
-	"github.com/sylabs/singularity/v4/pkg/build/types"
+	"github.com/apptainer/apptainer/internal/pkg/build/sources"
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/pkg/build/types"
 )
+
+func createArchiveFromDir(dir string, t *testing.T) *os.File {
+	require.Command(t, "mksquashfs")
+	f, err := os.CreateTemp("", "archive-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command("mksquashfs", dir, f.Name(), "-noappend", "-no-progress")
+	if err := cmd.Run(); err != nil {
+		t.Fatal(err)
+	}
+	return f
+}
+
+func makeDir(path string, t *testing.T) {
+	if err := os.MkdirAll(path, 0o755); err != nil {
+		t.Fatalf("while creating directory %s: %v", path, err)
+	}
+}
+
+func isExist(path string) bool {
+	result, _ := fs.PathExists(path)
+	return result
+}
 
 func TestLocalPackerSquashfs(t *testing.T) {
 	require.Command(t, "mksquashfs")
@@ -28,44 +56,34 @@ func TestLocalPackerSquashfs(t *testing.T) {
 	defer os.RemoveAll(tempDirPath)
 
 	// Image root directory
-	rootfs := filepath.Join(tempDirPath, "issue_3084_rootfs")
+	inputDir := filepath.Join(tempDirPath, "input")
 
 	// Create directories
-	if err := os.Mkdir(rootfs, 0o755); err != nil {
-		t.Fatalf("while creating directory: %v", err)
-	}
-	if err := os.Mkdir(filepath.Join(rootfs, "tmp"), 0o755); err != nil {
-		t.Fatalf("while creating directory: %v", err)
-	}
-	if err := os.Mkdir(filepath.Join(rootfs, "var"), 0o755); err != nil {
-		t.Fatalf("while creating directory: %v", err)
-	}
+	makeDir(filepath.Join(inputDir, "tmp"), t)
+	makeDir(filepath.Join(inputDir, "var"), t)
 
-	// Create symlinks: $rootfs/var/tmp -> /tmp , $rootfs/var/log -> /tmp
-	if err := os.Symlink("/tmp", filepath.Join(rootfs, "var", "tmp")); err != nil {
+	// Create symlinks: /var/tmp -> /tmp , /var/log -> /tmp
+	if err := os.Symlink("/tmp", filepath.Join(inputDir, "var", "tmp")); err != nil {
 		t.Fatalf("while creating symlink: %v", err)
 	}
-	if err := os.Symlink("/tmp", filepath.Join(rootfs, "var", "log")); err != nil {
+	if err := os.Symlink("/tmp", filepath.Join(inputDir, "var", "log")); err != nil {
 		t.Fatalf("while creating symlink: %v", err)
 	}
 
-	// Copy a test file to rootfs and create image.
+	// Add a file we can check for and create image.
 	testfile := "conveyorPacker_local_test.go"
 	data, err := os.ReadFile(testfile)
 	if err != nil {
 		t.Fatalf("while reading test file: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(rootfs, testfile), data, 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(inputDir, testfile), data, 0o644); err != nil {
 		t.Fatalf("while writing test file: %v", err)
 	}
-	image := filepath.Join(tempDirPath, "issue_3084.img")
-	if err := squashfs.Mksquashfs([]string{rootfs}, image); err != nil {
-		t.Fatalf("while creating image: %v", err)
-	}
+	image := createArchiveFromDir(inputDir, t).Name()
 	defer os.Remove(image)
 
-	// Creates bundle
-	bundleTmp, _ := os.MkdirTemp("", "bundle-temp-*")
+	// Create bundle
+	bundleTmp, _ := os.MkdirTemp("", "bundle-tmp-")
 	defer os.RemoveAll(bundleTmp)
 
 	b, err := types.NewBundle(tempDirPath, bundleTmp)
@@ -74,7 +92,7 @@ func TestLocalPackerSquashfs(t *testing.T) {
 	}
 	b.Recipe, _ = types.NewDefinitionFromURI("localimage://" + image)
 
-	// Creates and execute packer
+	// Create and execute packer
 	lcp := &sources.LocalConveyorPacker{}
 	if err := lcp.Get(context.Background(), b); err != nil {
 		t.Fatalf("while getting local packer: %v", err)
@@ -86,7 +104,7 @@ func TestLocalPackerSquashfs(t *testing.T) {
 
 	// Check if testfile was extracted
 	path := filepath.Join(rootfsPath, testfile)
-	if exist, _ := fs.PathExists(path); !exist {
+	if !isExist(path) {
 		t.Errorf("extraction failed, %s is missing", path)
 	}
 
@@ -101,9 +119,9 @@ func TestLocalPackerSquashfs(t *testing.T) {
 	}
 
 	// Check symlinks
-	// $rootfsPath/var/tmp -> /tmp
+	// /var/tmp -> /tmp
 	path = filepath.Join(rootfsPath, "var", "tmp")
-	if exist, _ := fs.PathExists(path); !exist {
+	if !isExist(path) {
 		t.Errorf("extraction failed, %s is missing", path)
 	} else if !fs.IsLink(path) {
 		t.Errorf("extraction failed, %s is not a symlink", path)
@@ -113,9 +131,9 @@ func TestLocalPackerSquashfs(t *testing.T) {
 			t.Errorf("extraction failed, %s wrongly points to %s", path, tgt)
 		}
 	}
-	// $rootfsPath/var/log -> /tmp
+	// /var/log -> /tmp
 	path = filepath.Join(rootfsPath, "var", "log")
-	if exist, _ := fs.PathExists(path); !exist {
+	if !isExist(path) {
 		t.Errorf("extraction failed, %s is missing", path)
 	} else if !fs.IsLink(path) {
 		t.Errorf("extraction failed, %s is not a symlink", path)
