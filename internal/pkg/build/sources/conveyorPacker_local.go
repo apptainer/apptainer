@@ -22,11 +22,6 @@ import (
 	"github.com/apptainer/sif/v2/pkg/integrity"
 )
 
-// LocalConveyor only needs to hold the conveyor to have the needed data to pack
-type LocalConveyor struct {
-	src string
-}
-
 // LocalPacker ...
 type LocalPacker interface {
 	Pack(context.Context) (*types.Bundle, error)
@@ -34,8 +29,7 @@ type LocalPacker interface {
 
 // LocalConveyorPacker only needs to hold the conveyor to have the needed data to pack
 type LocalConveyorPacker struct {
-	LocalConveyor
-	LocalPacker
+	localPacker LocalPacker
 }
 
 // GetLocalPacker ...
@@ -115,13 +109,24 @@ func GetLocalPacker(ctx context.Context, src string, b *types.Bundle) (LocalPack
 
 // Get just stores the source.
 func (cp *LocalConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err error) {
-	// insert base metadata before unpacking fs
-	if err = makeBaseEnv(b.RootfsPath); err != nil {
-		return fmt.Errorf("while inserting base environment: %v", err)
+	src := filepath.Clean(b.Recipe.Header["from"])
+
+	cp.localPacker, err = GetLocalPacker(ctx, src, b)
+	return err
+}
+
+// Delegate to local packer then insert base env
+func (cp *LocalConveyorPacker) Pack(ctx context.Context) (*types.Bundle, error) {
+	sylog.Infof("Extracting local image...")
+	b, err := cp.localPacker.Pack(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("while unpacking local image: %v", err)
 	}
 
-	cp.src = filepath.Clean(b.Recipe.Header["from"])
+	// insert base metadata AFTER unpacking fs to avoid conflicts with contained files/symlinks
+	if err = makeBaseEnv(b.RootfsPath); err != nil {
+		return nil, fmt.Errorf("while inserting base environment: %v", err)
+	}
 
-	cp.LocalPacker, err = GetLocalPacker(ctx, cp.src, b)
-	return err
+	return b, nil
 }
