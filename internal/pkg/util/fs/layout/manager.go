@@ -389,7 +389,9 @@ func (m *Manager) sync() error {
 			}
 			if err := m.VFS.WriteFile(path, entry.content, entry.mode); err != nil {
 				if !os.IsExist(err) {
-					return fmt.Errorf("failed to create file %s: %s", path, err)
+					if _, err1 := os.Stat(path); err1 != nil {
+						return fmt.Errorf("failed to create file %s: %s", path, err)
+					}
 				}
 				// skip content write or owner change, not created by us
 				entry.created = true
