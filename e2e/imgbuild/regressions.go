@@ -13,12 +13,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"testing"
 	"text/template"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/google/uuid"
 )
@@ -598,4 +600,45 @@ from: %s
 			)
 		})
 	}
+}
+
+// Check that the build process from an image doesn't fail when the source image
+// includes symlinks.
+func (c *imgBuildTests) issue2347(t *testing.T) {
+	require.Command(t, "mksquashfs")
+
+	rootfs := filepath.Join(c.env.TestDir, "issue_2347_rootfs")
+	if err := os.Mkdir(rootfs, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(rootfs, "tmp"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(rootfs, "var"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(rootfs, "tmp"), filepath.Join(rootfs, "var", "tmp")); err != nil {
+		t.Fatal(err)
+	}
+	image := filepath.Join(c.env.TestDir, "issue_2347.img")
+	cmd := exec.Command("mksquashfs", rootfs, image, "-noappend", "-no-progress")
+	if err := cmd.Run(); err != nil {
+		t.Fatal(err)
+	}
+
+	destImage := filepath.Join(c.env.TestDir, "issue_2347_dest.img")
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs(destImage, image),
+		e2e.PostRun(func(_ *testing.T) {
+			os.Remove(destImage)
+			os.Remove(image)
+			os.RemoveAll(rootfs)
+		}),
+		e2e.ExpectExit(
+			0,
+		),
+	)
 }
