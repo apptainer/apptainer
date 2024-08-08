@@ -25,6 +25,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   /etc/resolv.conf.
 - Fix failing builds from local images that have symbolic links for paths that
   are part of the base container environment (e.g. /var/tmp -> /tmp).
+- Fix the unfunctional issue when using `--nvccli` along with `--overlay`.
 
 ## v1.3.3 - \[2024-07-03\]
 
