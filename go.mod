@@ -56,7 +56,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.3.2
-	github.com/docker/cli v25.0.4+incompatible
+	github.com/docker/cli v27.1.2+incompatible
 	github.com/docker/distribution v2.8.3+incompatible
 	github.com/google/go-containerregistry v0.19.1
 	github.com/samber/lo v1.39.0
