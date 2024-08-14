@@ -17,12 +17,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/Netflix/go-expect/blob/master/LICENSE>
 
-## github.com/containerd/containerd/pkg/userns
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/containerd/containerd/blob/master/pkg/userns/LICENSE>
-
 ## github.com/containerd/log
 
 **License:** Apache-2.0
@@ -262,6 +256,12 @@ The dependencies and their licenses are as follows:
 **License:** Apache-2.0
 
 **License URL:** <https://github.com/moby/sys/blob/master/user/LICENSE>
+
+## github.com/moby/sys/userns
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/moby/sys/blob/master/userns/LICENSE>
 
 ## github.com/modern-go/concurrent
 
