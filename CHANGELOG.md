@@ -20,6 +20,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   /etc/resolv.conf.
 - Fix failing builds from local images that have symbolic links for paths that
   are part of the base container environment (e.g. /var/tmp -> /tmp).
+- Show info messages suggesting to use `enable underlay = preferred` or
+  the `--underlay` flag when overlay is implied for bind mounts but the
+  kernel is too old to support fuse mounts in user namespaces and so
+  tries to use fusermount.
 
 ## v1.3.3 - \[2024-07-03\]
 
