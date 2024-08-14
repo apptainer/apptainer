@@ -305,6 +305,14 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 		select {
 		case err := <-driverMountErr:
 			if err != nil {
+				if strings.Contains(err.Error(), "overlayfs") &&
+					strings.Contains(err.Error(), "fusermount") &&
+					c.engine.EngineConfig.GetOverlayImplied() {
+					// This can happen when a kernel is too old to
+					// support fuse mounts in user namespaces
+					sylog.Infof("You may have better success with the `--underlay` option or with")
+					sylog.Infof(" the equivalent configuration `enable underlay = preferred`")
+				}
 				return errors.Wrap(err, "image driver mount failure")
 			}
 		case err := <-mountAllErr:

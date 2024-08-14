@@ -153,6 +153,7 @@ type JSONConfig struct {
 	Underlay              bool              `json:"underlay,omitempty"`
 	UserInfo              UserInfo          `json:"userInfo,omitempty"`
 	WritableOverlay       bool              `json:"writableOverlay,omitempty"`
+	OverlayImplied        bool              `json:"overlayImplied,omitempty"`
 	ShareNSMode           bool              `json:"sharensMode,omitempty"`
 	ShareNSFd             int               `json:"sharensFd,omitempty"`
 	RunscriptTimeout      string            `json:"runscriptTimeout,omitempty"`
@@ -944,6 +945,17 @@ func (e *EngineConfig) SetWritableOverlay(writableOverlay bool) {
 // GetWritableOverlay gets the value of whether the overlay is writable or not
 func (e *EngineConfig) GetWritableOverlay() bool {
 	return e.JSON.WritableOverlay
+}
+
+// SetOverlayImplied sets whether the overlay was implied
+// as opposed to explicitly requested
+func (e *EngineConfig) SetOverlayImplied(overlayImplied bool) {
+	e.JSON.OverlayImplied = overlayImplied
+}
+
+// GetOverlayImplied gets the value of whether the overlay was implied
+func (e *EngineConfig) GetOverlayImplied() bool {
+	return e.JSON.OverlayImplied
 }
 
 // SetShareNSMode sets whether container should run in shared namespace mode
