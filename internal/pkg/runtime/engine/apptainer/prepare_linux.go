@@ -1098,6 +1098,7 @@ func (e *EngineOperations) setSessionLayer(img *image.Image) error {
 	if e.EngineConfig.File.EnableOverlay != "no" {
 		sylog.Debugf("Using overlay because it is not disabled")
 		e.EngineConfig.SetSessionLayer(apptainerConfig.OverlayLayer)
+		e.EngineConfig.SetOverlayImplied(true)
 		return nil
 	}
 	if e.EngineConfig.File.EnableUnderlay != "no" {
