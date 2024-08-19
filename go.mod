@@ -43,7 +43,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/sylabs/json-resp v0.9.3
 	github.com/urfave/cli v1.22.14 // indirect
-	github.com/vbauerster/mpb/v8 v8.7.5
+	github.com/vbauerster/mpb/v8 v8.8.2
 	golang.org/x/crypto v0.26.0
 	golang.org/x/sys v0.24.0
 	golang.org/x/term v0.23.0
