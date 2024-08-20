@@ -562,6 +562,12 @@ if [ $lang_go -eq 1 ]; then
 fi
 echo
 
+if [ "$hststatic" = "1" ]; then
+	export CGO_ENABLED=0
+	export CGO_LDFLAGS="-static"
+	with_seccomp_check=0 
+fi
+
 #######################################################################
 # mlocal/checks/project-pre.chk -- executes before standard base checks
 #######################################################################
@@ -724,8 +730,8 @@ if [ "$found_modules" != "" ]; then
 	echo >> $makeit_makefile_base
 fi
 
-# init LDFLAGS if static builds are supported
-if [ "$hststatic" = "1" -a "$tgtstatic" = "1" ]; then
+# init LDFLAGS with or without static
+if [ "$tgtstatic" = "1" ]; then
 	echo "LDFLAGS := -static $ldflags" >> $makeit_makefile_base
 else
 	echo "LDFLAGS := $ldflags" >> $makeit_makefile_base
@@ -771,6 +777,11 @@ cat $makeit_fragsdir/common_opts.mk >> $makeit_makefile
 
 drawline $makeit_fragsdir/go_common_opts.mk
 cat $makeit_fragsdir/go_common_opts.mk >> $makeit_makefile
+
+if [ "$hststatic" = "1" ]; then
+	drawline $makeit_fragsdir/go_static_opts.mk
+	cat $makeit_fragsdir/go_static_opts.mk >> $makeit_makefile
+fi
 
 if [ -f "$makeit_fragsdir/go_${host}_opts.mk" ]; then
 	drawline $makeit_fragsdir/go_${host}_opts.mk
