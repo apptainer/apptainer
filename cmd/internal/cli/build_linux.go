@@ -165,6 +165,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 		}
 		// Try fakeroot command
 		os.Unsetenv("_APPTAINER_FAKEFAKEROOT")
+		buildArgs.fakefakeroot = true
 		buildArgs.fakeroot = false
 		if buildArgs.ignoreFakerootCmd {
 			err = errors.New("fakeroot command is ignored because of --ignore-fakeroot-command")
@@ -182,7 +183,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 			}
 			sylog.Infof("Installing some packages may fail")
 		} else {
-			sylog.Infof("The %%post section will be run under fakeroot")
+			sylog.Infof("The %%post section will be run under the fakeroot command")
 			if !buildArgs.fixPerms && uid != 0 {
 				sylog.Infof("Using --fix-perms because building from a definition file")
 				sylog.Infof(" without either root user or unprivileged user namespaces")
@@ -288,6 +289,10 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 	hasSIF := false
 
 	for _, d := range defs {
+		if d.Header["bootstrap"] == "yum" && buildArgs.fakefakeroot {
+			sylog.Warningf("yum bootstrap is unlikely to work without root or subuid-based fakeroot")
+		}
+
 		// If there's a library source we need the library client, and it'll be a SIF
 		if d.Header["bootstrap"] == "library" {
 			hasLibrary = true
