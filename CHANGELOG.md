@@ -24,6 +24,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   the `--underlay` flag when overlay is implied for bind mounts but the
   kernel is too old to support fuse mounts in user namespaces and so
   tries to use fusermount.
+- Allow a writable `--overlay` to be used with `--nvccli` instead of `--writable-tmpfs`
 
 ## v1.3.3 - \[2024-07-03\]
 
