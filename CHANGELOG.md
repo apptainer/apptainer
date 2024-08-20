@@ -33,6 +33,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   subuid-based fakeroot or root, warn that it is unlikely to work.
 - Allow a writable `--overlay` to be used with `--nvccli` instead of
   `--writable-tmpfs`.
+- Fix the `mconfig -s` option to build the apptainer and starter
+  binaries statically as documented.
 
 ## v1.3.3 - \[2024-07-03\]
 
