@@ -866,7 +866,16 @@ func (l *Launcher) setNvCCLIConfig() (err error) {
 	}
 	l.engineConfig.SetNvCCLIEnv(nvCCLIEnv)
 
-	if !l.cfg.Writable && !l.cfg.WritableTmpfs {
+	overlayExist := false
+	for _, path := range l.cfg.OverlayPaths {
+		if !strings.HasSuffix(path, ":ro") {
+			overlayExist = true
+			sylog.Verbosef("Detected writable overlay images, skipping setting --writable-tmpfs (otherwise required by --nvccli)")
+			break
+		}
+	}
+
+	if !l.cfg.Writable && !l.cfg.WritableTmpfs && !overlayExist {
 		sylog.Infof("Setting --writable-tmpfs (required by nvidia-container-cli)")
 		l.cfg.WritableTmpfs = true
 	}
