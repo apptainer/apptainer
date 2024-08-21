@@ -240,10 +240,10 @@ func (c ctx) testApptainer(t *testing.T) {
 
 		printSuccessOrFailureFn := func(t *testing.T, r *e2e.ApptainerCmdResult) {
 			if r.Stdout != nil {
-				t.Logf(string(r.Stdout) + "\n")
+				t.Log(string(r.Stdout) + "\n")
 			}
 			if r.Stderr != nil {
-				t.Logf(string(r.Stderr) + "\n")
+				t.Log(string(r.Stderr) + "\n")
 			}
 		}
 

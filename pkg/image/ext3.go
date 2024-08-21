@@ -12,6 +12,7 @@ package image
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"os"
 	"unsafe"
@@ -30,6 +31,8 @@ const (
 )
 
 const notValidExt3ImageMessage = "file is not a valid ext3 image"
+
+var ErrNotValidExt3Image = errors.New(notValidExt3ImageMessage)
 
 type extFSInfo struct {
 	Magic    [2]byte
@@ -65,13 +68,13 @@ func CheckExt3Header(b []byte) (uint64, error) {
 		return offset, debugError(notValidExt3ImageMessage)
 	}
 	if einfo.Compat&compatHasJournal == 0 {
-		return offset, fmt.Errorf(notValidExt3ImageMessage)
+		return offset, ErrNotValidExt3Image
 	}
 	if einfo.Incompat&^(incompatFileType|incompatRecover|incompatMetabg) != 0 {
-		return offset, fmt.Errorf(notValidExt3ImageMessage)
+		return offset, ErrNotValidExt3Image
 	}
 	if einfo.Rocompat&^(rocompatSparseSuper|rocompatLargeFile|rocompatBtreeDir) != 0 {
-		return offset, fmt.Errorf(notValidExt3ImageMessage)
+		return offset, ErrNotValidExt3Image
 	}
 	offset -= extMagicOffset
 	return offset, nil

@@ -31,7 +31,7 @@ jobs:
   check_source:
     name: check_source
     runs-on: ubuntu-22.04
-    container: golangci/golangci-lint:v1.59.1
+    container: golangci/golangci-lint:v1.60.1
     steps:
       - uses: actions/checkout@v2
 
