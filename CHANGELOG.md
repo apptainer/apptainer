@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Label process for starter binary of interactive containers with image filename,
   for example: `Apptainer runtime parent: example.sif`.
+- Fix the `mconfig -s` option to build the apptainer and starter
+  binaries statically as documented.
 
 ## Changes for v1.3.x
 
@@ -33,8 +35,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   subuid-based fakeroot or root, warn that it is unlikely to work.
 - Allow a writable `--overlay` to be used with `--nvccli` instead of
   `--writable-tmpfs`.
-- Fix the `mconfig -s` option to build the apptainer and starter
-  binaries statically as documented.
+- If an error "no descriptor found for reference" is seen while getting
+  an oci container, retry the operation up to five times.
 
 ## v1.3.3 - \[2024-07-03\]
 
