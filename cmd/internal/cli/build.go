@@ -36,6 +36,7 @@ var buildArgs struct {
 	webURL              string
 	encrypt             bool
 	fakeroot            bool
+	fakefakeroot        bool
 	fixPerms            bool
 	isJSON              bool
 	noCleanUp           bool
