@@ -388,8 +388,20 @@ func (b *Build) Full(ctx context.Context) error {
 			if b.Conf.Opts.ImgCache == nil {
 				return fmt.Errorf("undefined image cache")
 			}
-			if err := stage.c.Get(ctx, stage.b); err != nil {
-				return fmt.Errorf("conveyor failed to get: %v", err)
+			attempt := 0
+			for {
+				err := stage.c.Get(ctx, stage.b)
+				if err == nil {
+					break
+				}
+				attempt++
+				if !strings.Contains(err.Error(), "no descriptor found for reference") || attempt == 5 {
+					return fmt.Errorf("conveyor failed to get: %v", err)
+				}
+				// This happens during random tests in about 50% of e2e runs,
+				// so try a few times before giving up
+				sylog.Infof("Conveyor failed to get reference descriptor, trying again")
+				sylog.Debugf("Error from getting conveyor: %v", err)
 			}
 
 			_, err := stage.c.Pack(ctx)
