@@ -495,7 +495,7 @@ func checkBuildTarget(path string) error {
 				img.File.Close()
 			}
 
-			input, err := interactive.AskYNQuestion("n", question)
+			input, err := interactive.AskYNQuestion("n", "%s", question)
 			if err != nil {
 				return fmt.Errorf("while reading the input: %s", err)
 			}

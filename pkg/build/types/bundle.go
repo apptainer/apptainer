@@ -158,7 +158,7 @@ func (b *Bundle) Remove() error {
 	}
 
 	if len(errors) > 0 {
-		return fmt.Errorf(strings.Join(errors, " "))
+		return fmt.Errorf("while removing bundle: %v", strings.Join(errors, " "))
 	}
 	return nil
 }

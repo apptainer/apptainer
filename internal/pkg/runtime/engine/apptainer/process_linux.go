@@ -740,15 +740,15 @@ func sylogBuiltin(_ context.Context, argv []string) error {
 	}
 	switch argv[0] {
 	case "info":
-		sylog.Infof(argv[1])
+		sylog.Infof("%s", argv[1])
 	case "error":
-		sylog.Errorf(argv[1])
+		sylog.Errorf("%s", argv[1])
 	case "verbose":
-		sylog.Verbosef(argv[1])
+		sylog.Verbosef("%s", argv[1])
 	case "debug":
-		sylog.Debugf(argv[1])
+		sylog.Debugf("%s", argv[1])
 	case "warning":
-		sylog.Warningf(argv[1])
+		sylog.Warningf("%s", argv[1])
 	}
 	return nil
 }

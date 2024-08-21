@@ -161,7 +161,7 @@ func AskQuestionNoEcho(format string, a ...interface{}) (string, error) {
 // retries.
 func GetPassphrase(message string, retries int) (string, error) {
 	ask := func() (string, error) {
-		pass1, err := AskQuestionNoEcho(message)
+		pass1, err := AskQuestionNoEcho("%s", message)
 		if err != nil {
 			return "", err
 		}
