@@ -142,6 +142,9 @@ func (s *stage) runPostScript(sessionResolv, sessionHosts string) error {
 		if len(fakerootBinds) > 0 {
 			s.cleanFakerootBindpoints(fakerootBinds)
 		}
+		if err != nil {
+			return fmt.Errorf("while running %%post section: %s", err)
+		}
 		return err
 	}
 	return nil

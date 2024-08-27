@@ -374,6 +374,11 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 	}
 
 	if err = b.Full(ctx); err != nil {
+		if fakerootPath != "" && strings.Contains(err.Error(), " %post section") && os.Getuid() == 0 {
+			sylog.Infof("If error was from fakeroot, try --ignore-fakeroot-command and")
+			sylog.Infof("  maybe use fakeroot inside the %%post section as described at")
+			sylog.Infof("  https://apptainer.org/docs/user/latest/fakeroot.html#fakeroot-inside-def")
+		}
 		sylog.Fatalf("While performing build: %v", err)
 	}
 }
