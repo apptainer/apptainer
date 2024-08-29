@@ -92,7 +92,7 @@ func List() ([]*Meta, error) {
 		return nil, fmt.Errorf("cannot list plugins in directory %q", rootDir)
 	}
 
-	var metas []*Meta
+	metas := make([]*Meta, 0, len(entries))
 	for _, entry := range entries {
 		fi, err := os.Stat(entry)
 		if err != nil {

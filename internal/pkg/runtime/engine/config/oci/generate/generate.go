@@ -33,6 +33,7 @@ import (
 
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
 	"github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/samber/lo"
 	"golang.org/x/sys/unix"
 )
 
@@ -251,10 +252,7 @@ func (g *Generator) SetupPrivileged(privileged bool) {
 	// Add all capabilities, we don't need to check for the
 	// latest capability available as it's handled automatically
 	// by the starter
-	var allCapability []string
-	for capStr := range capabilities.Map {
-		allCapability = append(allCapability, capStr)
-	}
+	allCapability := lo.Keys(capabilities.Map)
 
 	g.initLinux()
 	g.initProcessCapabilities()

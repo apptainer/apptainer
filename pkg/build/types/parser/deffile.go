@@ -456,8 +456,6 @@ func ParseDefinitionFile(r io.Reader) (d types.Definition, err error) {
 // and parses it into a slice of Definition structs or returns error if
 // an error is encounter while parsing
 func All(r io.Reader) ([]types.Definition, error) {
-	var stages []types.Definition
-
 	raw, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("while attempting to read definition file: %v", err)
@@ -485,6 +483,7 @@ func All(r io.Reader) ([]types.Definition, error) {
 		return nil, errEmptyDefinition
 	}
 
+	stages := make([]types.Definition, 0, len(splitBuf))
 	for _, stage := range splitBuf {
 		if len(stage) == 0 {
 			continue
