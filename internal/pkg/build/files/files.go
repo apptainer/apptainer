@@ -50,7 +50,8 @@ func expandPath(path string) ([]string, error) {
 	}
 
 	// parse expanded output and ignore empty strings from consecutive null bytes
-	var paths []string
+	paths := make([]string, 0, len(strings.Split(output.String(), "\\0")))
+
 	for _, s := range strings.Split(output.String(), "\\0") {
 		if s == "" {
 			continue

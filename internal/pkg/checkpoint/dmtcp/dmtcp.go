@@ -67,7 +67,7 @@ func GetPaths() ([]string, []string, error) {
 		return nil, nil, err
 	}
 
-	var usrBins []string
+	usrBins := make([]string, 0, len(bins))
 	for _, bin := range bins {
 		usrBin := filepath.Join("/usr/bin", filepath.Base(bin))
 		usrBins = append(usrBins, strings.Join([]string{bin, usrBin}, ":"))

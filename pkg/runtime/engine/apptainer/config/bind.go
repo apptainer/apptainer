@@ -203,12 +203,13 @@ func ParseBindPath(paths []string) ([]BindPath, error) {
 }
 
 func splitBy(str string, sep byte) []string {
-	var list []string
-
 	re := regexp.MustCompile(fmt.Sprintf(`(?m)([^\\]%c)`, sep))
+	indexes := re.FindAllStringIndex(str, -1)
+
+	list := make([]string, 0, len(indexes)+1)
+
 	cursor := 0
 
-	indexes := re.FindAllStringIndex(str, -1)
 	for i, index := range indexes {
 		list = append(list, str[cursor:index[1]-1])
 		cursor = index[1]
