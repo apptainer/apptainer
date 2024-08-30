@@ -88,6 +88,8 @@ type Options struct {
 	Unprivilege bool
 	// Arch info
 	Arch string
+	// Authentication file for registry credentials
+	ReqAuthFile string
 }
 
 // NewEncryptedBundle creates an Encrypted Bundle environment.

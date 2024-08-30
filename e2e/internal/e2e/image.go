@@ -242,17 +242,6 @@ func CopyImage(t *testing.T, source, dest string, insecureSource, insecureDest b
 		DockerRegistryUserAgent:     useragent.Value(),
 	}
 
-	// Use the auth config written out in dockerhub_auth.go - only if source/dest are not insecure.
-	// We don't want to inadvertently send out credentials over http (!)
-	u := CurrentUser(t)
-	configPath := filepath.Join(u.Dir, ".apptainer", syfs.DockerConfFile)
-	if !insecureSource {
-		srcCtx.AuthFilePath = configPath
-	}
-	if !insecureDest {
-		dstCtx.AuthFilePath = configPath
-	}
-
 	srcRef, err := parseRef(source)
 	if err != nil {
 		t.Fatalf("failed to parse %s reference: %s", source, err)
@@ -260,6 +249,18 @@ func CopyImage(t *testing.T, source, dest string, insecureSource, insecureDest b
 	dstRef, err := parseRef(dest)
 	if err != nil {
 		t.Fatalf("failed to parse %s reference: %s", dest, err)
+	}
+
+	// Use the auth config written out in dockerhub_auth.go - only if
+	// source/dest are not insecure, or are the localhost. We don't want to
+	// inadvertently send out credentials over http (!)
+	u := CurrentUser(t)
+	configPath := filepath.Join(u.Dir, ".apptainer", syfs.DockerConfFile)
+	if !insecureSource {
+		srcCtx.AuthFilePath = configPath
+	}
+	if !insecureDest {
+		dstCtx.AuthFilePath = configPath
 	}
 
 	_, err = copy.Image(context.Background(), policyCtx, dstRef, srcRef, &copy.Options{

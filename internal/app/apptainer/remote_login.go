@@ -24,11 +24,12 @@ import (
 )
 
 type LoginArgs struct {
-	Name      string
-	Username  string
-	Password  string
-	Tokenfile string
-	Insecure  bool
+	Name        string
+	Username    string
+	Password    string
+	Tokenfile   string
+	Insecure    bool
+	ReqAuthFile string
 }
 
 // ErrLoginAborted is raised when the login process has been aborted by the user

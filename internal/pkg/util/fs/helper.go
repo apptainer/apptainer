@@ -371,7 +371,7 @@ func CopyFileAtomic(from, to string, mode os.FileMode) (err error) {
 
 	tmpFile, err := MakeTmpFile(parentDir, "tmp-copy-", mode)
 	if err != nil {
-		return fmt.Errorf("could not open temporary file for copy: %v", err)
+		return fmt.Errorf("could not open temporary file for copy: %w", err)
 	}
 
 	defer func() {
@@ -381,13 +381,13 @@ func CopyFileAtomic(from, to string, mode os.FileMode) (err error) {
 
 	srcFile, err := os.Open(from)
 	if err != nil {
-		return fmt.Errorf("could not open file to copy: %v", err)
+		return fmt.Errorf("could not open file to copy: %w", err)
 	}
 	defer srcFile.Close()
 
 	_, err = io.Copy(tmpFile, srcFile)
 	if err != nil {
-		return fmt.Errorf("could not copy file: %v", err)
+		return fmt.Errorf("could not copy file: %w", err)
 	}
 	srcFile.Close()
 	tmpFile.Close()
