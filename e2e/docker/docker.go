@@ -263,6 +263,228 @@ func (c ctx) testDockerHost(t *testing.T) {
 	})(t)
 }
 
+// Test that DOCKER_xyz env vars take priority over other means of
+// authenticating with Docker - in particular, the --authfile flag.
+func (c ctx) testDockerCredsPriority(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	profiles := []e2e.Profile{
+		e2e.UserProfile,
+		e2e.RootProfile,
+	}
+
+	for _, p := range profiles {
+		t.Run(p.String(), func(t *testing.T) {
+			t.Run("def pull", func(t *testing.T) {
+				c.dockerCredsPriorityTester(t, false, p, "pull", "--disable-cache", "--no-https", "-F", c.env.TestRegistryPrivImage)
+			})
+			t.Run("def exec", func(t *testing.T) {
+				c.dockerCredsPriorityTester(t, false, p, "exec", "--disable-cache", "--no-https", c.env.TestRegistryPrivImage, "true")
+			})
+			t.Run("cstm pull", func(t *testing.T) {
+				c.dockerCredsPriorityTester(t, true, p, "pull", "--disable-cache", "--no-https", "-F", c.env.TestRegistryPrivImage)
+			})
+			t.Run("cstm exec", func(t *testing.T) {
+				c.dockerCredsPriorityTester(t, true, p, "exec", "--disable-cache", "--no-https", c.env.TestRegistryPrivImage, "true")
+			})
+		})
+	}
+}
+
+func (c ctx) dockerCredsPriorityTester(t *testing.T, withCustomAuthFile bool, profile e2e.Profile, cmd string, args ...string) {
+	tmpdir, tmpdirCleanup := e2e.MakeTempDir(t, c.env.TestDir, "docker-auth", "")
+	t.Cleanup(func() {
+		if !t.Failed() {
+			tmpdirCleanup(t)
+		}
+	})
+
+	prevCwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("could not get current working directory: %s", err)
+	}
+	defer os.Chdir(prevCwd)
+	if err = os.Chdir(tmpdir); err != nil {
+		t.Fatalf("could not change cwd to %q: %s", tmpdir, err)
+	}
+
+	localAuthFileName := ""
+	if withCustomAuthFile {
+		localAuthFileName = "./my_local_authfile"
+	}
+
+	authFileArgs := []string{}
+	if withCustomAuthFile {
+		authFileArgs = []string{"--authfile", localAuthFileName}
+	}
+
+	// Store the previous values of relevant env vars, and set up facilities for
+	// wiping and restoring them.
+	envVarSet := []string{
+		"APPTAINER_DOCKER_USERNAME",
+		"APPTAINER_DOCKER_PASSWORD",
+		"DOCKER_USERNAME",
+		"DOCKER_PASSWORD",
+	}
+	prevEnvVals := make(map[string]string)
+	for _, varName := range envVarSet {
+		if varVal, ok := os.LookupEnv(varName); ok {
+			prevEnvVals[varName] = varVal
+		}
+	}
+	wipeVars := func() {
+		for _, varName := range envVarSet {
+			os.Unsetenv(varName)
+		}
+	}
+	restoreVars := func() {
+		wipeVars()
+		for _, varName := range envVarSet {
+			if varVal, ok := prevEnvVals[varName]; ok {
+				os.Setenv(varName, varVal)
+			}
+		}
+	}
+
+	t.Cleanup(func() {
+		e2e.PrivateRepoLogout(t, c.env, profile, localAuthFileName)
+		restoreVars()
+	})
+
+	tests := []struct {
+		name            string
+		pfxDockerUser   string
+		pfxDockerPass   string
+		nopfxDockerUser string
+		nopfxDockerPass string
+		authLoggedIn    bool
+		expectExit      int
+	}{
+		{
+			name:          "pfx denv wrong, no auth",
+			pfxDockerUser: "wrong",
+			pfxDockerPass: "wrong",
+			authLoggedIn:  false,
+			expectExit:    255,
+		},
+		{
+			name:          "pfx denv wrong, auth",
+			pfxDockerUser: "wrong",
+			pfxDockerPass: "wrong",
+			authLoggedIn:  true,
+			expectExit:    255,
+		},
+		{
+			name:          "pfx denv right, no auth",
+			pfxDockerUser: e2e.DefaultUsername,
+			pfxDockerPass: e2e.DefaultPassword,
+			authLoggedIn:  false,
+			expectExit:    0,
+		},
+		{
+			name:          "pfx denv right, auth",
+			pfxDockerUser: e2e.DefaultUsername,
+			pfxDockerPass: e2e.DefaultPassword,
+			authLoggedIn:  true,
+			expectExit:    0,
+		},
+		{
+			name:            "nopfx denv wrong, no auth",
+			nopfxDockerUser: "wrong",
+			nopfxDockerPass: "wrong",
+			authLoggedIn:    false,
+			expectExit:      255,
+		},
+		{
+			name:            "nopfx denv wrong, auth",
+			nopfxDockerUser: "wrong",
+			nopfxDockerPass: "wrong",
+			authLoggedIn:    true,
+			expectExit:      255,
+		},
+		{
+			name:            "nopfx denv right, no auth",
+			nopfxDockerUser: e2e.DefaultUsername,
+			nopfxDockerPass: e2e.DefaultPassword,
+			authLoggedIn:    false,
+			expectExit:      0,
+		},
+		{
+			name:            "nopfx denv right, auth",
+			nopfxDockerUser: e2e.DefaultUsername,
+			nopfxDockerPass: e2e.DefaultPassword,
+			authLoggedIn:    true,
+			expectExit:      0,
+		},
+		{
+			name:            "both denv (pfx right), auth",
+			pfxDockerUser:   e2e.DefaultUsername,
+			pfxDockerPass:   e2e.DefaultPassword,
+			nopfxDockerUser: "wrong",
+			nopfxDockerPass: "wrong",
+			authLoggedIn:    true,
+			expectExit:      0,
+		},
+		{
+			name:            "both denv (pfx right), noauth",
+			pfxDockerUser:   e2e.DefaultUsername,
+			pfxDockerPass:   e2e.DefaultPassword,
+			nopfxDockerUser: "wrong",
+			nopfxDockerPass: "wrong",
+			authLoggedIn:    false,
+			expectExit:      0,
+		},
+		{
+			name:            "both denv (nopfx right), auth",
+			pfxDockerUser:   "wrong",
+			pfxDockerPass:   "wrong",
+			nopfxDockerUser: e2e.DefaultUsername,
+			nopfxDockerPass: e2e.DefaultPassword,
+			authLoggedIn:    true,
+			expectExit:      255,
+		},
+		{
+			name:            "both denv (nopfx right), noauth",
+			pfxDockerUser:   "wrong",
+			pfxDockerPass:   "wrong",
+			nopfxDockerUser: e2e.DefaultUsername,
+			nopfxDockerPass: e2e.DefaultPassword,
+			authLoggedIn:    false,
+			expectExit:      255,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			wipeVars()
+			if tt.pfxDockerUser != "" {
+				os.Setenv("APPTAINER_DOCKER_USERNAME", tt.pfxDockerUser)
+			}
+			if tt.pfxDockerPass != "" {
+				os.Setenv("APPTAINER_DOCKER_PASSWORD", tt.pfxDockerPass)
+			}
+			if tt.nopfxDockerUser != "" {
+				os.Setenv("DOCKER_USERNAME", tt.nopfxDockerUser)
+			}
+			if tt.nopfxDockerPass != "" {
+				os.Setenv("DOCKER_PASSWORD", tt.nopfxDockerPass)
+			}
+			if tt.authLoggedIn {
+				e2e.PrivateRepoLogin(t, c.env, profile, localAuthFileName)
+			} else {
+				e2e.PrivateRepoLogout(t, c.env, profile, localAuthFileName)
+			}
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(profile),
+				e2e.WithCommand(cmd),
+				e2e.WithArgs(append(authFileArgs, args...)...),
+				e2e.ExpectExit(tt.expectExit),
+			)
+		})
+	}
+}
+
 // AUFS sanity tests
 func (c ctx) testDockerAUFS(t *testing.T) {
 	imageDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "aufs-", "")
@@ -886,6 +1108,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		env: env,
 	}
 
+	np := testhelper.NoParallel
+
 	return testhelper.Tests{
 		// Run most docker:// source tests sequentially amongst themselves, so we
 		// don't hit DockerHub massively in parallel, and we benefit from
@@ -909,6 +1133,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		// them to avoid docker caching concurrency issues.
 		"docker host": c.testDockerHost,
 		"registry":    c.testDockerRegistry,
+		"cred prio":   np(c.testDockerCredsPriority),
 		// Regressions
 		"issue 4943": c.issue4943,
 		"issue 5172": c.issue5172,

@@ -518,14 +518,14 @@ func (c *ctx) testInstanceAuthFile(t *testing.T) {
 		t.Run(p.String(), func(t *testing.T) {
 			for _, tt := range tests {
 				if tt.whileLoggedIn {
-					e2e.PrivateRepoLogin(t, c.env, e2e.UserProfile, localAuthFileName)
+					e2e.PrivateRepoLogin(t, c.env, p, localAuthFileName)
 				} else {
-					e2e.PrivateRepoLogout(t, c.env, e2e.UserProfile, localAuthFileName)
+					e2e.PrivateRepoLogout(t, c.env, p, localAuthFileName)
 				}
 				c.env.RunApptainer(
 					t,
 					e2e.AsSubtest(tt.name),
-					e2e.WithProfile(e2e.UserProfile),
+					e2e.WithProfile(p),
 					e2e.WithCommand("instance "+tt.subCmd),
 					e2e.WithArgs(tt.args...),
 					e2e.ExpectExit(tt.expectExit),

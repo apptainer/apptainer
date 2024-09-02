@@ -267,6 +267,7 @@ var commonAuthFileFlag = cmdline.Flag{
 	DefaultValue: "",
 	Name:         "authfile",
 	Usage:        "Docker-style authentication file to use for writing/reading OCI registry credentials",
+	EnvKeys:      []string{"AUTH_FILE"},
 }
 
 func getCurrentUser() *user.User {
