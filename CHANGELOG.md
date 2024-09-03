@@ -30,6 +30,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `--writable-tmpfs`.
 - If an error "no descriptor found for reference" is seen while getting
   an oci container, retry the operation up to five times.
+- Make fakeroot Recommended for SUSE rpms.
+- Allow bind mounts onto existing files on r/o NFS filesystems.
+- If an error is seen in the %post section when building a container
+  using fakeroot mode 3 (with the fakeroot command) then show a message
+  suggesting using `--ignore-fakeroot-command` and referring to the
+  documentation about how to install and use it inside the container
+  definition file.
 
 ## v1.3.3 - \[2024-07-03\]
 

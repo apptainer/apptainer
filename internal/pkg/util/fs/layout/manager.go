@@ -389,7 +389,13 @@ func (m *Manager) sync() error {
 			}
 			if err := m.VFS.WriteFile(path, entry.content, entry.mode); err != nil {
 				if !os.IsExist(err) {
-					return fmt.Errorf("failed to create file %s: %s", path, err)
+					// It is possible that on an NFS r/o mount, opening an existing file
+					// would return EROFS instead of EEXIST. So even if we had a different
+					// error, we check first if the file exists.
+					// If it doesn't, we return the original error.
+					if _, err1 := os.Stat(path); err1 != nil {
+						return fmt.Errorf("failed to create file %s: %s", path, err)
+					}
 				}
 				// skip content write or owner change, not created by us
 				entry.created = true
