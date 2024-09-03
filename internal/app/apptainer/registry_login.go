@@ -38,7 +38,7 @@ func RegistryLogin(usrConfigFile string, args *LoginArgs) (err error) {
 		return err
 	}
 
-	if err := c.Login(args.Name, args.Username, args.Password, args.Insecure); err != nil {
+	if err := c.Login(args.Name, args.Username, args.Password, args.Insecure, args.ReqAuthFile); err != nil {
 		return fmt.Errorf("while login to %s: %s", args.Name, err)
 	}
 

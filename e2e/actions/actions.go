@@ -3012,6 +3012,129 @@ func (c actionTests) relWorkdirScratch(t *testing.T) {
 	}
 }
 
+// actionAuth tests run/exec/shell flows that involve authenticated pulls from
+// OCI registries.
+func (c actionTests) actionAuth(t *testing.T) {
+	profiles := []e2e.Profile{
+		e2e.UserProfile,
+		e2e.RootProfile,
+	}
+
+	for _, p := range profiles {
+		t.Run(p.String(), func(t *testing.T) {
+			t.Run("default", func(t *testing.T) {
+				c.actionAuthTester(t, false, p)
+			})
+			t.Run("custom", func(t *testing.T) {
+				c.actionAuthTester(t, true, p)
+			})
+		})
+	}
+}
+
+func (c actionTests) actionAuthTester(t *testing.T, withCustomAuthFile bool, profile e2e.Profile) {
+	e2e.EnsureImage(t, c.env)
+
+	tmpdir, tmpdirCleanup := e2e.MakeTempDir(t, c.env.TestDir, "action-auth", "")
+	t.Cleanup(func() {
+		if !t.Failed() {
+			tmpdirCleanup(t)
+		}
+	})
+
+	prevCwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("could not get current working directory: %s", err)
+	}
+	defer os.Chdir(prevCwd)
+	if err = os.Chdir(tmpdir); err != nil {
+		t.Fatalf("could not change cwd to %q: %s", tmpdir, err)
+	}
+
+	localAuthFileName := ""
+	if withCustomAuthFile {
+		localAuthFileName = "./my_local_authfile"
+	}
+
+	authFileArgs := []string{}
+	if withCustomAuthFile {
+		authFileArgs = []string{"--authfile", localAuthFileName}
+	}
+
+	t.Cleanup(func() {
+		e2e.PrivateRepoLogout(t, c.env, e2e.UserProfile, localAuthFileName)
+	})
+
+	orasCustomPushTarget := fmt.Sprintf("oras://%s/authfile-pushtest-oras-busybox:latest", c.env.TestRegistryPrivPath)
+
+	tests := []struct {
+		name          string
+		cmd           string
+		args          []string
+		whileLoggedIn bool
+		expectExit    int
+	}{
+		{
+			name:          "docker before auth",
+			cmd:           "exec",
+			args:          []string{"--disable-cache", "--no-https", c.env.TestRegistryPrivImage, "true"},
+			whileLoggedIn: false,
+			expectExit:    255,
+		},
+		{
+			name:          "docker",
+			cmd:           "exec",
+			args:          []string{"--disable-cache", "--no-https", c.env.TestRegistryPrivImage, "true"},
+			whileLoggedIn: true,
+			expectExit:    0,
+		},
+		{
+			name:          "noauth docker",
+			cmd:           "exec",
+			args:          []string{"--disable-cache", "--no-https", c.env.TestRegistryPrivImage, "true"},
+			whileLoggedIn: false,
+			expectExit:    255,
+		},
+		{
+			name:          "oras push",
+			cmd:           "push",
+			args:          []string{c.env.ImagePath, orasCustomPushTarget},
+			whileLoggedIn: true,
+			expectExit:    0,
+		},
+		{
+			name:          "noauth oras",
+			cmd:           "exec",
+			args:          []string{"--disable-cache", "--no-https", orasCustomPushTarget, "true"},
+			whileLoggedIn: false,
+			expectExit:    255,
+		},
+		{
+			name:          "oras",
+			cmd:           "exec",
+			args:          []string{"--disable-cache", "--no-https", orasCustomPushTarget, "true"},
+			whileLoggedIn: true,
+			expectExit:    0,
+		},
+	}
+
+	for _, tt := range tests {
+		if tt.whileLoggedIn {
+			e2e.PrivateRepoLogin(t, c.env, profile, localAuthFileName)
+		} else {
+			e2e.PrivateRepoLogout(t, c.env, profile, localAuthFileName)
+		}
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(profile),
+			e2e.WithCommand(tt.cmd),
+			e2e.WithArgs(append(authFileArgs, tt.args...)...),
+			e2e.ExpectExit(tt.expectExit),
+		)
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := actionTests{
@@ -3064,5 +3187,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"fakeroot home":                c.actionFakerootHome,    // test home dir in fakeroot
 		"relWorkdirScratch":            np(c.relWorkdirScratch), // test relative --workdir with --scratch
 		"issue 1868":                   c.issue1868,             // https://github.com/apptainer/apptainer/issues/1868
+		"auth":                         np(c.actionAuth),        // tests action cmds w/authenticated pulls from OCI registries
 	}
 }

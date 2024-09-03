@@ -253,7 +253,7 @@ func OverlayCreate(size int, imgPath string, overlaySparse bool, isFakeroot bool
 				// everything was done by the child
 				os.Exit(0)
 			}
-			return fmt.Errorf("Failed to start fakeroot: %v", err)
+			return fmt.Errorf("failed to start fakeroot: %v", err)
 		}
 	}
 

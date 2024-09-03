@@ -21,15 +21,15 @@ import (
 )
 
 // pull will pull an oras image into the cache if directTo="", or a specific file if directTo is set.
-func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (imagePath string, err error) {
-	hash, err := RefHash(ctx, pullFrom, ociAuth, noHTTPS)
+func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, err error) {
+	hash, err := RefHash(ctx, pullFrom, ociAuth, noHTTPS, reqAuthFile)
 	if err != nil {
 		return "", fmt.Errorf("failed to get checksum for %s: %s", pullFrom, err)
 	}
 
 	if directTo != "" {
 		sylog.Infof("Downloading oras image")
-		if err := DownloadImage(ctx, directTo, pullFrom, ociAuth, noHTTPS); err != nil {
+		if err := DownloadImage(ctx, directTo, pullFrom, ociAuth, noHTTPS, reqAuthFile); err != nil {
 			return "", fmt.Errorf("unable to Download Image: %v", err)
 		}
 		imagePath = directTo
@@ -43,7 +43,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 		if !cacheEntry.Exists {
 			sylog.Infof("Downloading oras image")
 
-			if err := DownloadImage(ctx, cacheEntry.TmpPath, pullFrom, ociAuth, noHTTPS); err != nil {
+			if err := DownloadImage(ctx, cacheEntry.TmpPath, pullFrom, ociAuth, noHTTPS, reqAuthFile); err != nil {
 				return "", fmt.Errorf("unable to Download Image: %v", err)
 			}
 			if cacheFileHash, err := ImageHash(cacheEntry.TmpPath); err != nil {
@@ -67,7 +67,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 }
 
 // Pull will pull an oras image to the cache or direct to a temporary file if cache is disabled
-func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom, tmpDir string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (imagePath string, err error) {
+func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom, tmpDir string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, err error) {
 	directTo := ""
 
 	if imgCache.IsDisabled() {
@@ -79,18 +79,18 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom, tmpDir string, 
 		sylog.Infof("Downloading oras image to tmp cache: %s", directTo)
 	}
 
-	return pull(ctx, imgCache, directTo, pullFrom, ociAuth, noHTTPS)
+	return pull(ctx, imgCache, directTo, pullFrom, ociAuth, noHTTPS, reqAuthFile)
 }
 
 // PullToFile will pull an oras image to the specified location, through the cache, or directly if cache is disabled
-func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom, _ string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool) (imagePath string, err error) {
+func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom, _ string, ociAuth *ocitypes.DockerAuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, err error) {
 	directTo := ""
 	if imgCache.IsDisabled() {
 		directTo = pullTo
 		sylog.Debugf("Cache disabled, pulling directly to: %s", directTo)
 	}
 
-	src, err := pull(ctx, imgCache, directTo, pullFrom, ociAuth, noHTTPS)
+	src, err := pull(ctx, imgCache, directTo, pullFrom, ociAuth, noHTTPS, reqAuthFile)
 	if err != nil {
 		return "", fmt.Errorf("error fetching image to cache: %v", err)
 	}

@@ -10,26 +10,17 @@
 package credential
 
 import (
-	"context"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
-	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
-	"github.com/apptainer/apptainer/pkg/syfs"
+	"github.com/apptainer/apptainer/internal/pkg/util/ociauth"
+	"github.com/apptainer/apptainer/pkg/sylog"
 
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
-	"github.com/docker/cli/cli/config"
-	"github.com/docker/cli/cli/config/configfile"
-	"github.com/docker/cli/cli/config/types"
-	"github.com/google/go-containerregistry/pkg/authn"
-	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
 )
 
 // loginHandlers contains the registered handlers by scheme.
@@ -37,8 +28,8 @@ var loginHandlers = make(map[string]loginHandler)
 
 // loginHandler interface implements login and logout for a specific scheme.
 type loginHandler interface {
-	login(url *url.URL, username, password string, insecure bool) (*Config, error)
-	logout(url *url.URL) error
+	login(url *url.URL, username, password string, insecure bool, reqAuthFile string) (*Config, error)
+	logout(url *url.URL, reqAuthFile string) error
 }
 
 func init() {
@@ -73,11 +64,11 @@ func ensurePassword(password string) (string, error) {
 // ociHandler handle login/logout for services with docker:// and oras:// scheme.
 type ociHandler struct{}
 
-func (h *ociHandler) login(u *url.URL, username, password string, insecure bool) (*Config, error) {
+func (h *ociHandler) login(u *url.URL, username, password string, insecure bool, reqAuthFile string) (*Config, error) {
 	if u == nil {
 		return nil, fmt.Errorf("URL not provided for login")
 	}
-	regName := u.Host + u.Path
+	registry := u.Host + u.Path
 
 	if username == "" {
 		return nil, fmt.Errorf("Docker/OCI registry requires a username")
@@ -87,40 +78,8 @@ func (h *ociHandler) login(u *url.URL, username, password string, insecure bool)
 		return nil, err
 	}
 
-	if err := checkOCILogin(regName, username, pass, insecure); err != nil {
+	if err := ociauth.LoginAndStore(registry, username, pass, insecure, reqAuthFile); err != nil {
 		return nil, err
-	}
-
-	ociConfig := syfs.DockerConf()
-
-	cf := configfile.New(syfs.DockerConf())
-	if fs.IsFile(ociConfig) {
-		f, err := os.Open(ociConfig)
-		if err != nil {
-			return nil, err
-		}
-		defer f.Close()
-		cf, err = config.LoadFromReader(f)
-		if err != nil {
-			return nil, err
-		}
-		cf.Filename = syfs.DockerConf()
-	}
-
-	creds := cf.GetCredentialsStore(regName)
-
-	// DockerHub requires special logic for historical reasons.
-	serverAddress := regName
-	if serverAddress == name.DefaultRegistry {
-		serverAddress = authn.DefaultAuthKey
-	}
-
-	if err := creds.Store(types.AuthConfig{
-		Username:      username,
-		Password:      pass,
-		ServerAddress: serverAddress,
-	}); err != nil {
-		return nil, fmt.Errorf("while trying to store new credentials: %w", err)
 	}
 
 	return &Config{
@@ -129,68 +88,42 @@ func (h *ociHandler) login(u *url.URL, username, password string, insecure bool)
 	}, nil
 }
 
-func checkOCILogin(regName string, username, password string, insecure bool) error {
-	regOpts := []name.Option{}
-	if insecure {
-		regOpts = []name.Option{name.Insecure}
+func (h *ociHandler) logout(u *url.URL, reqAuthFile string) error {
+	if u == nil {
+		return fmt.Errorf("URL not provided for logout")
 	}
-	reg, err := name.NewRegistry(regName, regOpts...)
+	registry := u.Host + u.Path
+
+	cf, err := ociauth.ConfigFileFromPath(ociauth.ChooseAuthFile(reqAuthFile))
 	if err != nil {
-		return err
+		return fmt.Errorf("while loading existing OCI registry credentials from %q: %w", ociauth.ChooseAuthFile(reqAuthFile), err)
 	}
 
-	auth := authn.FromConfig(authn.AuthConfig{
-		Username: username,
-		Password: password,
-	})
-
-	// Creating a new transport pings the registry and works through auth flow.
-	_, err = transport.NewWithContext(context.TODO(), reg, auth, http.DefaultTransport, nil)
-	if err != nil {
-		return err
+	if _, ok := cf.GetAuthConfigs()[registry]; !ok {
+		sylog.Warningf("There is no existing login to registry %q.", registry)
+		return nil
 	}
+
+	creds := cf.GetCredentialsStore(registry)
+	if _, err := creds.Get(registry); err != nil {
+		sylog.Warningf("There is no existing login to registry %q.", registry)
+		return nil
+	}
+
+	if err := creds.Erase(registry); err != nil {
+		return fmt.Errorf("while deleting OCI credentials for registry %q: %w", registry, err)
+	}
+
+	sylog.Infof("Token removed from %s", cf.Filename)
 
 	return nil
-}
-
-func (h *ociHandler) logout(u *url.URL) error {
-	ociConfig := syfs.DockerConf()
-	ociConfigNew := syfs.DockerConf() + ".new"
-	cf := configfile.New(syfs.DockerConf())
-	if fs.IsFile(ociConfig) {
-		f, err := os.Open(ociConfig)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-		cf, err = config.LoadFromReader(f)
-		if err != nil {
-			return err
-		}
-	}
-
-	registry := u.Host + u.Path
-	if _, ok := cf.AuthConfigs[registry]; !ok {
-		return fmt.Errorf("%q is not logged in", registry)
-	}
-
-	delete(cf.AuthConfigs, registry)
-
-	configData, err := json.Marshal(cf)
-	if err != nil {
-		return err
-	}
-	if err := os.WriteFile(ociConfigNew, configData, 0o600); err != nil {
-		return err
-	}
-	return os.Rename(ociConfigNew, ociConfig)
 }
 
 // keyserverHandler handle login/logout for keyserver service.
 type keyserverHandler struct{}
 
 //nolint:revive
-func (h *keyserverHandler) login(u *url.URL, username, password string, insecure bool) (*Config, error) {
+func (h *keyserverHandler) login(u *url.URL, username, password string, insecure bool, reqAuthFile string) (*Config, error) {
 	pass, err := ensurePassword(password)
 	if err != nil {
 		return nil, err
@@ -239,7 +172,7 @@ func (h *keyserverHandler) login(u *url.URL, username, password string, insecure
 	}, nil
 }
 
-//nolint:revive
-func (h *keyserverHandler) logout(u *url.URL) error {
+//nolint:revive,nolintlint
+func (h *keyserverHandler) logout(u *url.URL, reqAuthFile string) error {
 	return nil
 }

@@ -72,6 +72,8 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&registryLoginUsernameFlag, RegistryLoginCmd)
 		cmdManager.RegisterFlagForCmd(&registryLoginPasswordFlag, RegistryLoginCmd)
 		cmdManager.RegisterFlagForCmd(&registryLoginPasswordStdinFlag, RegistryLoginCmd)
+		cmdManager.RegisterFlagForCmd(&commonAuthFileFlag, RegistryLoginCmd)
+		cmdManager.RegisterFlagForCmd(&commonAuthFileFlag, RegistryLogoutCmd)
 	})
 }
 
@@ -114,7 +116,7 @@ var RegistryLogoutCmd = &cobra.Command{
 			name = args[0]
 		}
 
-		if err := apptainer.RegistryLogout(remoteConfig, name); err != nil {
+		if err := apptainer.RegistryLogout(remoteConfig, name, reqAuthFile); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 		sylog.Infof("Logout succeeded")

@@ -449,11 +449,98 @@ func (c *ctx) testShareNSMode(t *testing.T) {
 	}
 }
 
+// Test that custom auth file authentication works with instance start
+func (c *ctx) testInstanceAuthFile(t *testing.T) {
+	e2e.EnsureORASImage(t, c.env)
+	instanceName := "actionAuthTesterInstance"
+	localAuthFileName := "./my_local_authfile"
+	authFileArgs := []string{"--authfile", localAuthFileName}
+
+	tmpdir, tmpdirCleanup := e2e.MakeTempDir(t, c.env.TestDir, "action-auth", "")
+	t.Cleanup(func() {
+		if !t.Failed() {
+			tmpdirCleanup(t)
+		}
+	})
+
+	prevCwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("could not get current working directory: %s", err)
+	}
+	defer os.Chdir(prevCwd)
+	if err = os.Chdir(tmpdir); err != nil {
+		t.Fatalf("could not change cwd to %q: %s", tmpdir, err)
+	}
+
+	tests := []struct {
+		name          string
+		subCmd        string
+		args          []string
+		whileLoggedIn bool
+		expectExit    int
+	}{
+		{
+			name:          "start before auth",
+			subCmd:        "start",
+			args:          append(authFileArgs, "--disable-cache", "--no-https", c.env.TestRegistryPrivImage, instanceName),
+			whileLoggedIn: false,
+			expectExit:    255,
+		},
+		{
+			name:          "start",
+			subCmd:        "start",
+			args:          append(authFileArgs, "--disable-cache", "--no-https", c.env.TestRegistryPrivImage, instanceName),
+			whileLoggedIn: true,
+			expectExit:    0,
+		},
+		{
+			name:          "stop",
+			subCmd:        "stop",
+			args:          []string{instanceName},
+			whileLoggedIn: true,
+			expectExit:    0,
+		},
+		{
+			name:          "start noauth",
+			subCmd:        "start",
+			args:          append(authFileArgs, "--disable-cache", "--no-https", c.env.TestRegistryPrivImage, instanceName),
+			whileLoggedIn: false,
+			expectExit:    255,
+		},
+	}
+
+	profiles := []e2e.Profile{
+		e2e.UserProfile,
+		e2e.RootProfile,
+	}
+
+	for _, p := range profiles {
+		t.Run(p.String(), func(t *testing.T) {
+			for _, tt := range tests {
+				if tt.whileLoggedIn {
+					e2e.PrivateRepoLogin(t, c.env, e2e.UserProfile, localAuthFileName)
+				} else {
+					e2e.PrivateRepoLogout(t, c.env, e2e.UserProfile, localAuthFileName)
+				}
+				c.env.RunApptainer(
+					t,
+					e2e.AsSubtest(tt.name),
+					e2e.WithProfile(e2e.UserProfile),
+					e2e.WithCommand("instance "+tt.subCmd),
+					e2e.WithArgs(tt.args...),
+					e2e.ExpectExit(tt.expectExit),
+				)
+			}
+		})
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := &ctx{
 		env: env,
 	}
+	np := testhelper.NoParallel
 
 	return testhelper.Tests{
 		"ordered": func(t *testing.T) {
@@ -497,6 +584,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 				})
 			}
 		},
-		"issue 5033": c.issue5033, // https://github.com/apptainer/singularity/issues/4836
+		"issue 5033": c.issue5033,                // https://github.com/apptainer/singularity/issues/4836
+		"auth":       np(c.testInstanceAuthFile), // custom --authfile with instance start command
 	}
 }

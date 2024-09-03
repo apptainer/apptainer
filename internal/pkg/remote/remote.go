@@ -226,7 +226,7 @@ func (c *Config) GetRemote(name string) (*endpoint.Config, error) {
 
 // Login validates and stores credentials for a service like Docker/OCI registries
 // and keyservers.
-func (c *Config) Login(uri, username, password string, insecure bool) error {
+func (c *Config) Login(uri, username, password string, insecure bool, reqAuthFile string) error {
 	_, err := remoteutil.NormalizeKeyserverURI(uri)
 	// if there is no error, we consider it as a keyserver
 	if err == nil {
@@ -256,9 +256,15 @@ func (c *Config) Login(uri, username, password string, insecure bool) error {
 		}
 	}
 
-	credConfig, err := credential.Manager.Login(uri, username, password, insecure)
+	credConfig, err := credential.Manager.Login(uri, username, password, insecure, reqAuthFile)
 	if err != nil {
 		return err
+	}
+
+	// If we're manipulating an auth-file requested via `--authfile`, don't
+	// update remote.yaml
+	if reqAuthFile != "" {
+		return nil
 	}
 
 	// Remove any existing remote.yaml entry for the same URI.
@@ -277,9 +283,15 @@ func (c *Config) Login(uri, username, password string, insecure bool) error {
 }
 
 // Logout removes previously stored credentials for a service.
-func (c *Config) Logout(uri string) error {
-	if err := credential.Manager.Logout(uri); err != nil {
+func (c *Config) Logout(uri string, reqAuthFile string) error {
+	if err := credential.Manager.Logout(uri, reqAuthFile); err != nil {
 		return err
+	}
+
+	// If we're manipulating an auth-file requested via `--authfile`, don't
+	// update remote.yaml
+	if reqAuthFile != "" {
+		return nil
 	}
 	// Older versions of Apptainer can create duplicate entries with same URI,
 	// so loop must handle removing multiple matches (#214).
