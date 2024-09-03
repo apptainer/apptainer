@@ -37,6 +37,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   suggesting using `--ignore-fakeroot-command` and referring to the
   documentation about how to install and use it inside the container
   definition file.
+- Show a more helpful error message when using fakeroot in suid mode
+  and there's an /etc/subuid mapping even though user namespaces are
+  not available (user namespaces are required for /etc/subuid mapping).
 
 ## v1.3.3 - \[2024-07-03\]
 
