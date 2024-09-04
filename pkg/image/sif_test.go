@@ -28,8 +28,7 @@ func createSIF(t *testing.T, corrupted bool, fns ...func() (sif.DescriptorInput,
 	}
 	sifFile.Close()
 
-	var opts []sif.CreateOpt
-
+	opts := make([]sif.CreateOpt, 0, len(fns))
 	for _, fn := range fns {
 		di, err := fn()
 		if err != nil {

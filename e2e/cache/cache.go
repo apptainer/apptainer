@@ -503,7 +503,7 @@ func retrieveFileNames(t *testing.T, cacheParentDir string) []string {
 		t.Fatalf("Failed to read the cache dir: %s", cachePath)
 	}
 
-	var names []string
+	names := make([]string, 0, len(infos))
 	for _, info := range infos {
 		names = append(names, info.Name())
 	}

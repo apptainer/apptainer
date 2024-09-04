@@ -97,7 +97,7 @@ func (checkpointManager) List() ([]*Entry, error) {
 		return nil, err
 	}
 
-	var entries []*Entry
+	entries := make([]*Entry, 0, len(fis))
 	for _, fi := range fis {
 		if !fi.IsDir() {
 			continue
