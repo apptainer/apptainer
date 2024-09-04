@@ -25,7 +25,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
-// re-exec the command effectively under unshare -r or unshare -rm
+// exec the command effectively under unshare -r or unshare -rm
 func UnshareRootMapped(args []string, includeMountNamespace bool) error {
 	cmd := osExec.Command(args[0], args[1:]...)
 	cmd.Stdout = os.Stdout
@@ -42,7 +42,7 @@ func UnshareRootMapped(args []string, includeMountNamespace bool) error {
 	cmd.SysProcAttr.GidMappings = []syscall.SysProcIDMap{
 		{ContainerID: 0, HostID: syscall.Getgid(), Size: 1},
 	}
-	sylog.Debugf("Re-executing to root-mapped unprivileged user namespace")
+	sylog.Debugf("Executing %s in root-mapped unprivileged user namespace", args[0])
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("error re-executing in root-mapped unprivileged user namespace: %v", err)
 	}
@@ -56,6 +56,17 @@ func UnshareRootMapped(args []string, includeMountNamespace bool) error {
 		sylog.Fatalf("error waiting for root-mapped unprivileged command: %v", err)
 	}
 	return nil
+}
+
+// Make use of UnshareRootMapped to test to see if a user namespace
+// can be allocated
+func UserNamespaceAvailable() bool {
+	err := UnshareRootMapped([]string{"/bin/true"}, false)
+	if err != nil {
+		sylog.Debugf("UnshareRootMapped failed: %v", err)
+		return false
+	}
+	return true
 }
 
 // Look for fakeroot-sysv first and then fakeroot, since fakeroot-sysv

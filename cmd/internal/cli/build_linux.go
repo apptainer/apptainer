@@ -85,29 +85,34 @@ func fakerootExec(isDeffile, unprivEncrypt bool) {
 	// https://github.com/containers/image/blob/master/internal/rootless/rootless.go
 	os.Setenv("_CONTAINERS_ROOTLESS_UID", strconv.FormatUint(uint64(uid), 10))
 
-	if uid != 0 && (!fakeroot.IsUIDMapped(uid) || buildArgs.ignoreSubuid) {
-		sylog.Infof("User not listed in %v, trying root-mapped namespace", fakeroot.SubUIDFile)
-		os.Setenv("_APPTAINER_FAKEFAKEROOT", "1")
-		if buildArgs.ignoreUserns {
-			err = errors.New("could not start root-mapped namespace because --ignore-userns is set")
-		} else {
-			err = fakeroot.UnshareRootMapped(args, true)
+	if uid != 0 {
+		if !fakeroot.IsUIDMapped(uid) || buildArgs.ignoreSubuid {
+			sylog.Infof("User not listed in %v, trying root-mapped namespace", fakeroot.SubUIDFile)
+			os.Setenv("_APPTAINER_FAKEFAKEROOT", "1")
+			if buildArgs.ignoreUserns {
+				err = errors.New("could not start root-mapped namespace because --ignore-userns is set")
+			} else {
+				err = fakeroot.UnshareRootMapped(args, true)
+			}
+			if err == nil {
+				// All the work has been done by the child process
+				os.Exit(0)
+			}
+			sylog.Debugf("UnshareRootMapped failed: %v", err)
+			sylog.Infof("Could not start root-mapped namespace")
+			if !useSuid && isDeffile {
+				sylog.Fatalf("Building from a definition file unprivileged requires either a suid installation or unprivileged user namespaces")
+			}
+			if unprivEncrypt {
+				sylog.Fatalf("Building with encryption unprivileged requires unprivileged user namespaces")
+			}
+			// Returning from here at this point will go on to try
+			// the fakeroot command below
+			return
+		} else if buildArgs.ignoreUserns || !fakeroot.UserNamespaceAvailable() {
+			sylog.Infof("/etc/subuid mapping can be ignored with --ignore-subuid")
+			sylog.Fatalf("/etc/subuid mapping found but no user namespace available for fakeroot")
 		}
-		if err == nil {
-			// All the work has been done by the child process
-			os.Exit(0)
-		}
-		sylog.Debugf("UnshareRootMapped failed: %v", err)
-		sylog.Infof("Could not start root-mapped namespace")
-		if !useSuid && isDeffile {
-			sylog.Fatalf("Building from a definition file unprivileged requires either a suid installation or unprivileged user namespaces")
-		}
-		if unprivEncrypt {
-			sylog.Fatalf("Building with encryption unprivileged requires unprivileged user namespaces")
-		}
-		// Returning from here at this point will go on to try
-		// the fakeroot command below
-		return
 	}
 
 	if buildArgs.nvccli && !buildArgs.noTest {
