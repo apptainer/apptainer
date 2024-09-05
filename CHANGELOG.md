@@ -5,7 +5,7 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes for v1.3.x
+## v1.3.4 - \[2024-09-04\]
 
 - Fixed sif-embedded overlay partitions for containers that are larger
   than 2 gigabytes.
@@ -18,8 +18,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   and hosts files from non-standard outside locations. This can be
   used to run `apptainer build` in a nix-build sandbox that has no
   /etc/resolv.conf.
-- Fix failing builds from local images that have symbolic links for paths that
-  are part of the base container environment (e.g. /var/tmp -> /tmp).
+- Fixed failing builds from local images that have symbolic links for paths
+  that are part of the base container environment (e.g. /var/tmp -> /tmp).
 - Show info messages suggesting to use `enable underlay = preferred` or
   the `--underlay` flag when overlay is implied for bind mounts but the
   kernel is too old to support fuse mounts in user namespaces and so
@@ -30,7 +30,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `--writable-tmpfs`.
 - If an error "no descriptor found for reference" is seen while getting
   an oci container, retry the operation up to five times.
-- Make fakeroot Recommended for SUSE rpms.
+- Make fakeroot Recommended for SUSE rpms instead of Required.
 - Allow bind mounts onto existing files on r/o NFS filesystems.
 - If an error is seen in the %post section when building a container
   using fakeroot mode 3 (with the fakeroot command) then show a message
