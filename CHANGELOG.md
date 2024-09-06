@@ -11,6 +11,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
   for example: `Apptainer runtime parent: example.sif`.
 - Fix the `mconfig -s` option to build the apptainer and starter
   binaries statically as documented.
+- The `registry login` and `registry logout` commands now support a `--authfile
+  <path>` flag, which causes the OCI credentials to be written to / removed from
+  a custom file located at `<path>` instead of the default location
+  (`$HOME/.apptainer/docker-config.json`). The commands `pull`, `push`, `run`,
+  `exec`, `shell` and `instance start` can now also be passed a `--authfile
+  <path>` option, to read OCI registry credentials from this custom file.
 
 ## Changes for v1.3.x
 

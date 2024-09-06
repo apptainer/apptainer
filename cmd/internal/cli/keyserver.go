@@ -206,7 +206,7 @@ var KeyserverLogoutCmd = &cobra.Command{
 			name = args[0]
 		}
 
-		if err := apptainer.KeyserverLogout(remoteConfig, name); err != nil {
+		if err := apptainer.KeyserverLogout(remoteConfig, name, reqAuthFile); err != nil {
 			sylog.Fatalf("%s", err)
 		}
 		sylog.Infof("Logout succeeded")

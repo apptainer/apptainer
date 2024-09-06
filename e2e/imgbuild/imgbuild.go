@@ -2232,11 +2232,113 @@ func (c imgBuildTests) testGocryptfsSIFBuild(t *testing.T) {
 	}
 }
 
+func (c imgBuildTests) buildWithAuth(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	profiles := []e2e.Profile{
+		e2e.FakerootProfile,
+		e2e.RootProfile,
+	}
+
+	for _, p := range profiles {
+		t.Run(p.String(), func(t *testing.T) {
+			t.Run("default", func(t *testing.T) {
+				c.buildWithAuthTester(t, false, p)
+			})
+			t.Run("custom", func(t *testing.T) {
+				c.buildWithAuthTester(t, true, p)
+			})
+		})
+	}
+}
+
+func (c imgBuildTests) buildWithAuthTester(t *testing.T, withCustomAuthFile bool, profile e2e.Profile) {
+	e2e.EnsureImage(t, c.env)
+
+	simpleDef := e2e.PrepareDefFile(e2e.DefFileDetails{
+		Bootstrap: "docker",
+		From:      strings.TrimPrefix(c.env.TestRegistryPrivImage, "docker://"),
+	})
+	t.Cleanup(func() {
+		if !t.Failed() {
+			os.Remove(simpleDef)
+		}
+	})
+
+	tmpdir, tmpdirCleanup := e2e.MakeTempDir(t, c.env.TestDir, "build-auth", "")
+	t.Cleanup(func() {
+		if !t.Failed() {
+			tmpdirCleanup(t)
+		}
+	})
+
+	prevCwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("could not get current working directory: %s", err)
+	}
+	defer os.Chdir(prevCwd)
+	if err = os.Chdir(tmpdir); err != nil {
+		t.Fatalf("could not change cwd to %q: %s", tmpdir, err)
+	}
+
+	localAuthFileName := ""
+	if withCustomAuthFile {
+		localAuthFileName = "./my_local_authfile"
+	}
+
+	authFileArgs := []string{}
+	if withCustomAuthFile {
+		authFileArgs = []string{"--authfile", localAuthFileName}
+	}
+
+	t.Cleanup(func() {
+		e2e.PrivateRepoLogout(t, c.env, profile, localAuthFileName)
+	})
+
+	tests := []struct {
+		name          string
+		args          []string
+		whileLoggedIn bool
+		expectExit    int
+	}{
+		{
+			name:          "privimg logged out",
+			args:          []string{"-F", "--no-https", "--disable-cache", "./my_image_file.sif", simpleDef},
+			whileLoggedIn: false,
+			expectExit:    255,
+		},
+		{
+			name:          "privimg logged in",
+			args:          []string{"-F", "--no-https", "--disable-cache", "./my_image_file.sif", simpleDef},
+			whileLoggedIn: true,
+			expectExit:    0,
+		},
+	}
+
+	for _, tt := range tests {
+		if tt.whileLoggedIn {
+			e2e.PrivateRepoLogin(t, c.env, profile, localAuthFileName)
+		} else {
+			e2e.PrivateRepoLogout(t, c.env, profile, localAuthFileName)
+		}
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(profile),
+			e2e.WithCommand("build"),
+			e2e.WithArgs(append(authFileArgs, tt.args...)...),
+			e2e.ExpectExit(tt.expectExit),
+		)
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := imgBuildTests{
 		env: env,
 	}
+
+	np := testhelper.NoParallel
 
 	return testhelper.Tests{
 		"bad path":                               c.badPath,                              // try to build from a non existent path
@@ -2273,5 +2375,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"build sif image using gocryptfs":        c.testGocryptfsSIFBuild,                // https://github.com/apptainer/apptainer/issues/484
 		"definition build with template support": c.buildDefinitionWithBuildArgs,         // builds from definition with build args (build arg file) support
 		"issue 1812":                             c.issue1812,                            // https://github.com/sylabs/singularity/issues/1812
+		"auth":                                   np(c.buildWithAuth),                    // build with custom auth file
 	}
 }

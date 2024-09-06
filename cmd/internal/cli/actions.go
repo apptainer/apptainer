@@ -85,10 +85,11 @@ func handleOCI(ctx context.Context, imgCache *cache.Handle, cmd *cobra.Command, 
 	}
 
 	pullOpts := oci.PullOptions{
-		TmpDir:     tmpDir,
-		OciAuth:    ociAuth,
-		DockerHost: dockerHost,
-		NoHTTPS:    noHTTPS,
+		TmpDir:      tmpDir,
+		OciAuth:     ociAuth,
+		DockerHost:  dockerHost,
+		NoHTTPS:     noHTTPS,
+		ReqAuthFile: reqAuthFile,
 	}
 
 	return oci.Pull(ctx, imgCache, pullFrom, pullOpts)
@@ -99,7 +100,7 @@ func handleOras(ctx context.Context, imgCache *cache.Handle, cmd *cobra.Command,
 	if err != nil {
 		return "", fmt.Errorf("while creating docker credentials: %v", err)
 	}
-	return oras.Pull(ctx, imgCache, pullFrom, tmpDir, ociAuth, noHTTPS)
+	return oras.Pull(ctx, imgCache, pullFrom, tmpDir, ociAuth, noHTTPS, reqAuthFile)
 }
 
 func handleLibrary(ctx context.Context, imgCache *cache.Handle, pullFrom string) (string, error) {
