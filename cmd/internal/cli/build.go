@@ -359,6 +359,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildVarArgsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildVarArgFileFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildArgUnusedWarn, buildCmd)
+		cmdManager.RegisterFlagForCmd(&commonAuthFileFlag, buildCmd)
 	})
 }
 

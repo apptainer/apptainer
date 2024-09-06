@@ -28,6 +28,7 @@ func ObtainLoginArgs(name string) *apptainer.LoginArgs {
 	loginArgs.Password = loginPassword
 	loginArgs.Tokenfile = loginTokenFile
 	loginArgs.Insecure = loginInsecure
+	loginArgs.ReqAuthFile = reqAuthFile
 
 	if loginPasswordStdin {
 		p, err := io.ReadAll(os.Stdin)

@@ -219,6 +219,10 @@ func runBuild(cmd *cobra.Command, args []string) {
 		os.Setenv("APPTAINER_WRITABLE_TMPFS", "1")
 	}
 
+	if cmd.Flags().Lookup("authfile").Changed && buildArgs.remote {
+		sylog.Fatalf("Custom authfile is not supported for remote build")
+	}
+
 	// check if target collides with existing file
 	if err := checkBuildTarget(dest); err != nil {
 		sylog.Fatalf("While checking build target: %s", err)
@@ -372,6 +376,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 				SandboxTarget:     sandboxTarget,
 				Binds:             buildArgs.bindPaths,
 				Unprivilege:       unprivilege,
+				ReqAuthFile:       reqAuthFile,
 			},
 		})
 	if err != nil {

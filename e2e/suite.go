@@ -173,6 +173,9 @@ func Run(t *testing.T) {
 
 	// Provision local registry
 	testenv.TestRegistryImage = fmt.Sprintf("docker://%s/my-busybox:latest", testenv.TestRegistry)
+	testenv.TestRegistryPrivURI = fmt.Sprintf("docker://%s", testenv.TestRegistry)
+	testenv.TestRegistryPrivPath = fmt.Sprintf("%s/private/e2eprivrepo", testenv.TestRegistry)
+	testenv.TestRegistryPrivImage = fmt.Sprintf("docker://%s/my-busybox:latest", testenv.TestRegistryPrivPath)
 
 	// Copy small test image (busybox:latest) into local registry from DockerHub
 	insecureSource := false
@@ -184,6 +187,11 @@ func Run(t *testing.T) {
 		}
 	}
 	e2e.CopyImage(t, "docker://busybox:latest", testenv.TestRegistryImage, insecureSource, true)
+
+	// Copy same test image into private location in test registry
+	e2e.PrivateRepoLogin(t, testenv, e2e.UserProfile, "")
+	e2e.CopyImage(t, "docker://busybox:latest", testenv.TestRegistryPrivImage, insecureSource, true)
+	e2e.PrivateRepoLogout(t, testenv, e2e.UserProfile, "")
 
 	// SIF base test path, built on demand by e2e.EnsureImage
 	imagePath := path.Join(name, "test.sif")

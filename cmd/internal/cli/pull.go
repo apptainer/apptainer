@@ -166,6 +166,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&pullAllowUnauthenticatedFlag, PullCmd)
 		cmdManager.RegisterFlagForCmd(&pullArchFlag, PullCmd)
 		cmdManager.RegisterFlagForCmd(&pullArchVariantFlag, PullCmd)
+		cmdManager.RegisterFlagForCmd(&commonAuthFileFlag, PullCmd)
 	})
 }
 
@@ -267,7 +268,7 @@ func pullRun(cmd *cobra.Command, args []string) {
 			sylog.Fatalf("Unable to make docker oci credentials: %s", err)
 		}
 
-		_, err = oras.PullToFile(ctx, imgCache, pullTo, pullFrom, tmpDir, ociAuth, noHTTPS)
+		_, err = oras.PullToFile(ctx, imgCache, pullTo, pullFrom, tmpDir, ociAuth, noHTTPS, reqAuthFile)
 		if err != nil {
 			sylog.Fatalf("While pulling image from oci registry: %v", err)
 		}
@@ -288,12 +289,13 @@ func pullRun(cmd *cobra.Command, args []string) {
 			return
 		}
 		pullOpts := oci.PullOptions{
-			TmpDir:     tmpDir,
-			OciAuth:    ociAuth,
-			DockerHost: dockerHost,
-			NoHTTPS:    noHTTPS,
-			NoCleanUp:  buildArgs.noCleanUp,
-			Pullarch:   arch,
+			TmpDir:      tmpDir,
+			OciAuth:     ociAuth,
+			DockerHost:  dockerHost,
+			NoHTTPS:     noHTTPS,
+			NoCleanUp:   buildArgs.noCleanUp,
+			Pullarch:    arch,
+			ReqAuthFile: reqAuthFile,
 		}
 
 		_, err = oci.PullToFile(ctx, imgCache, pullTo, pullFrom, pullOpts)

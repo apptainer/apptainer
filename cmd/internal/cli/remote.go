@@ -303,8 +303,9 @@ var RemoteAddCmd = &cobra.Command{
 			sylog.Infof("Global option detected. Will not automatically log into remote.")
 		} else if !remoteNoLogin {
 			loginArgs := &apptainer.LoginArgs{
-				Name:      name,
-				Tokenfile: loginTokenFile,
+				Name:        name,
+				Tokenfile:   loginTokenFile,
+				ReqAuthFile: reqAuthFile,
 			}
 			if err := apptainer.RemoteLogin(remoteConfig, loginArgs); err != nil {
 				sylog.Fatalf("%s", err)
@@ -392,6 +393,7 @@ var RemoteLoginCmd = &cobra.Command{
 		loginArgs.Password = loginPassword
 		loginArgs.Tokenfile = loginTokenFile
 		loginArgs.Insecure = loginInsecure
+		loginArgs.ReqAuthFile = reqAuthFile
 
 		if loginPasswordStdin {
 			p, err := io.ReadAll(os.Stdin)

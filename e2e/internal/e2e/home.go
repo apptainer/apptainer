@@ -106,6 +106,7 @@ func SetupHomeDirectories(t *testing.T, testRegistry string) {
 			err = errors.Wrapf(err, "changing temporary home directory ownership at %s", unprivSessionHome)
 			t.Fatalf("failed to set temporary home owner: %+v", err)
 		}
+		// Privileged home setup
 		if err := os.Mkdir(privSessionHome, 0o700); err != nil {
 			err = errors.Wrapf(err, "changing temporary home directory %s", privSessionHome)
 			t.Fatalf("failed to create temporary home: %+v", err)

@@ -66,6 +66,8 @@ var (
 	noHTTPS             bool
 	useBuildConfig      bool
 	tmpDir              string
+	// Optional user requested authentication file for writing/reading OCI registry credentials
+	reqAuthFile string
 )
 
 // apptainer command flags
@@ -256,6 +258,16 @@ var singBuildConfigFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "build-config",
 	Usage:        "use configuration needed for building containers",
+}
+
+// --authfile
+var commonAuthFileFlag = cmdline.Flag{
+	ID:           "commonAuthFileFlag",
+	Value:        &reqAuthFile,
+	DefaultValue: "",
+	Name:         "authfile",
+	Usage:        "Docker-style authentication file to use for writing/reading OCI registry credentials",
+	EnvKeys:      []string{"AUTH_FILE"},
 }
 
 func getCurrentUser() *user.User {

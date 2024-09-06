@@ -27,10 +27,10 @@ import (
 	"text/template"
 
 	"github.com/apptainer/apptainer/internal/pkg/build/oci"
+	"github.com/apptainer/apptainer/internal/pkg/util/ociauth"
 	"github.com/apptainer/apptainer/internal/pkg/util/shell"
 	sytypes "github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/image"
-	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	"github.com/containers/image/v5/copy"
@@ -160,7 +160,7 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 		DockerAuthConfig:         cp.b.Opts.DockerAuthConfig,
 		DockerDaemonHost:         cp.b.Opts.DockerDaemonHost,
 		OSChoice:                 "linux",
-		AuthFilePath:             syfs.SearchDockerConf(),
+		AuthFilePath:             ociauth.ChooseAuthFile(cp.b.Opts.ReqAuthFile),
 		DockerRegistryUserAgent:  useragent.Value(),
 		BigFilesTemporaryDir:     b.TmpDir,
 	}
