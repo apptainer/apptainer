@@ -21,6 +21,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
 	keyClient "github.com/apptainer/container-key-client/client"
 	ocitypes "github.com/containers/image/v5/types"
+	"github.com/google/go-containerregistry/pkg/authn"
 	"golang.org/x/sys/unix"
 )
 
@@ -52,7 +53,10 @@ type Options struct {
 	FakerootPath string `json:"fakerootPath"`
 	// KeyServerOpts contains options for keyserver used for SIF fingerprint verification in builds.
 	KeyServerOpts []keyClient.Option
-	// contains docker credentials if specified.
+	// If non-nil, provides credentials to be used when authenticating to OCI registries.
+	OCIAuthConfig *authn.AuthConfig
+	// If non-nil, provides credentials to be used when authenticating to OCI registries.
+	// Deprecated: Use OCIAuthConfig, which takes precedence if both are set.
 	DockerAuthConfig *ocitypes.DockerAuthConfig
 	// Custom docker Daemon host
 	DockerDaemonHost string

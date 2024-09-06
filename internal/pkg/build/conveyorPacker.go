@@ -14,6 +14,7 @@ import (
 	"fmt"
 
 	"github.com/apptainer/apptainer/internal/pkg/build/sources"
+	"github.com/apptainer/apptainer/internal/pkg/ocitransport"
 	"github.com/apptainer/apptainer/pkg/build/types"
 )
 
@@ -36,14 +37,18 @@ type ConveyorPacker interface {
 
 // conveyorPacker returns a valid ConveyorPacker for the given image definition.
 func conveyorPacker(def types.Definition) (ConveyorPacker, error) {
-	switch def.Header["bootstrap"] {
+	bs, ok := def.Header["bootstrap"]
+	if !ok {
+		return nil, fmt.Errorf("no bootstrap specification found")
+	}
+	switch bs {
 	case "library":
 		return &sources.LibraryConveyorPacker{}, nil
 	case "oras":
 		return &sources.OrasConveyorPacker{}, nil
 	case "shub":
 		return &sources.ShubConveyorPacker{}, nil
-	case "docker", "docker-archive", "docker-daemon", "oci", "oci-archive":
+	case ocitransport.SupportedTransport(bs):
 		return &sources.OCIConveyorPacker{}, nil
 	case "busybox":
 		return &sources.BusyBoxConveyorPacker{}, nil

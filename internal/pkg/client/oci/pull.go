@@ -20,22 +20,37 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/build"
 	"github.com/apptainer/apptainer/internal/pkg/build/oci"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/ocitransport"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/ociauth"
 	buildtypes "github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
-	ocitypes "github.com/containers/image/v5/types"
+	"github.com/google/go-containerregistry/pkg/authn"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
 type PullOptions struct {
 	TmpDir      string
-	OciAuth     *ocitypes.DockerAuthConfig
+	OciAuth     *authn.AuthConfig
 	DockerHost  string
 	NoHTTPS     bool
 	NoCleanUp   bool
 	Pullarch    string
 	ReqAuthFile string
+}
+
+// transportOptions maps PullOptions to OCI image transport options
+func transportOptions(opts PullOptions) *ocitransport.TransportOptions {
+	return &ocitransport.TransportOptions{
+		AuthConfig:       opts.OciAuth,
+		AuthFilePath:     ociauth.ChooseAuthFile(opts.ReqAuthFile),
+		Insecure:         opts.NoHTTPS,
+		TmpDir:           opts.TmpDir,
+		UserAgent:        useragent.Value(),
+		DockerDaemonHost: opts.DockerHost,
+		Platform:         v1.Platform{},
+	}
 }
 
 // pull will build a SIF image into the cache if directTo="", or a specific file if directTo is set.
@@ -45,28 +60,19 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 	// can have three possible values true/false and undefined, so we left it as undefined instead
 	// of forcing it to false in order to delegate decision to /etc/containers/registries.conf:
 	// https://github.com/apptainer/singularity/issues/5172
-	sysCtx := &ocitypes.SystemContext{
-		OCIInsecureSkipTLSVerify: opts.NoHTTPS,
-		DockerAuthConfig:         opts.OciAuth,
-		AuthFilePath:             ociauth.ChooseAuthFile(opts.ReqAuthFile),
-		DockerRegistryUserAgent:  useragent.Value(),
-		BigFilesTemporaryDir:     opts.TmpDir,
-	}
+	to := transportOptions(opts)
 	if opts.Pullarch != "" {
 		if arch, ok := oci.ArchMap[opts.Pullarch]; ok {
-			sysCtx.ArchitectureChoice = arch.Arch
-			sysCtx.VariantChoice = arch.Var
+			to.Platform = v1.Platform{
+				Architecture: arch.Arch,
+				Variant:      arch.Var,
+			}
 		} else {
 			keys := reflect.ValueOf(oci.ArchMap).MapKeys()
 			return "", fmt.Errorf("failed to parse the arch value: %s, should be one of %v", opts.Pullarch, keys)
 		}
 	}
-
-	if opts.NoHTTPS {
-		sysCtx.DockerInsecureSkipTLSVerify = ocitypes.NewOptionalBool(true)
-	}
-
-	hash, err := oci.ImageDigest(ctx, pullFrom, sysCtx)
+	hash, err := oci.ImageDigest(ctx, pullFrom, to)
 	if err != nil {
 		return "", fmt.Errorf("failed to get checksum for %s: %s", pullFrom, err)
 	}
@@ -122,7 +128,7 @@ func convertOciToSIF(ctx context.Context, imgCache *cache.Handle, image, cachedI
 				NoCache:          imgCache.IsDisabled(),
 				NoTest:           true,
 				NoHTTPS:          opts.NoHTTPS,
-				DockerAuthConfig: opts.OciAuth,
+				OCIAuthConfig:    opts.OciAuth,
 				DockerDaemonHost: opts.DockerHost,
 				ImgCache:         imgCache,
 				Arch:             opts.Pullarch,

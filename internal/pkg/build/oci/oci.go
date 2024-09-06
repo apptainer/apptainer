@@ -16,10 +16,10 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"runtime"
 	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/ocitransport"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/containers/image/v5/copy"
 	"github.com/containers/image/v5/docker"
@@ -76,22 +76,20 @@ var ArchMap = map[string]GoArch{
 }
 
 // ConvertReference converts a source reference into a cache.ImageReference to cache its blobs
-func ConvertReference(ctx context.Context, imgCache *cache.Handle, src types.ImageReference, sys *types.SystemContext) (types.ImageReference, error) {
+func ConvertReference(ctx context.Context, imgCache *cache.Handle, src types.ImageReference, topts *ocitransport.TransportOptions) (types.ImageReference, error) {
 	if imgCache == nil {
 		return nil, fmt.Errorf("undefined image cache")
+	}
+
+	if topts == nil {
+		// nolint:staticcheck
+		topts = ocitransport.TransportOptionsFromSystemContext(nil)
 	}
 
 	// Our cache dir is an OCI directory. We are using this as a 'blob pool'
 	// storing all incoming containers under unique tags, which are a hash of
 	// their source URI.
-	if sys == nil {
-		var err error
-		sys, err = defaultSysCtx()
-		if err != nil {
-			return nil, fmt.Errorf("unable to create default system context: %v", err)
-		}
-	}
-	cacheTag, err := getRefDigest(ctx, src, sys)
+	cacheTag, err := getRefDigest(ctx, src, topts)
 	if err != nil {
 		return nil, err
 	}
@@ -137,13 +135,13 @@ func (t *ImageReference) newImageSource(ctx context.Context, sys *types.SystemCo
 
 // ParseImageName parses a uri (e.g. docker://ubuntu) into it's transport:reference
 // combination and then returns the proper reference
-func ParseImageName(ctx context.Context, imgCache *cache.Handle, uri string, sys *types.SystemContext) (types.ImageReference, error) {
+func ParseImageName(ctx context.Context, imgCache *cache.Handle, uri string, topts *ocitransport.TransportOptions) (types.ImageReference, error) {
 	ref, _, err := parseURI(uri)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse image name %v: %v", uri, err)
 	}
 
-	return ConvertReference(ctx, imgCache, ref, sys)
+	return ConvertReference(ctx, imgCache, ref, topts)
 }
 
 func parseURI(uri string) (types.ImageReference, *GoArch, error) {
@@ -166,40 +164,25 @@ func parseURI(uri string) (types.ImageReference, *GoArch, error) {
 }
 
 // ImageDigest obtains the digest of a uri's manifest
-func ImageDigest(ctx context.Context, uri string, sys *types.SystemContext) (digest string, err error) {
-	if sys == nil {
-		var err error
-		sys, err = defaultSysCtx()
-		if err != nil {
-			return "", fmt.Errorf("unable to create default system context: %v", err)
-		}
-	}
+func ImageDigest(ctx context.Context, uri string, topts *ocitransport.TransportOptions) (digest string, err error) {
 	ref, arch, err := parseURI(uri)
 	if err != nil {
 		return "", fmt.Errorf("unable to parse image name %v: %v", uri, err)
 	}
 
-	if arch != nil && arch.Arch != sys.ArchitectureChoice {
-		sylog.Warningf("The `--arch` value: %s is not equal to the arch info extracted from uri: %s, will ignore the `--arch` value", sys.ArchitectureChoice, arch)
-		sys.ArchitectureChoice = arch.Arch
-		sys.VariantChoice = arch.Var
+	if arch != nil && arch.Arch != topts.Platform.Architecture {
+		sylog.Warningf("The `--arch` value: %s is not equal to the arch info extracted from uri: %s, will ignore the `--arch` value", topts.Platform.Architecture, arch)
+		topts.Platform.Architecture = arch.Arch
+		topts.Platform.Variant = arch.Var
 	}
-	return getRefDigest(ctx, ref, sys)
+	return getRefDigest(ctx, ref, topts)
 }
 
 // getRefDigest obtains the manifest digest for a ref.
-func getRefDigest(ctx context.Context, ref types.ImageReference, sys *types.SystemContext) (digest string, err error) {
-	if sys.ArchitectureChoice == "" {
-		defaultCtx, err := defaultSysCtx()
-		if err != nil {
-			return "", fmt.Errorf("unable to create default system context: %v", err)
-		}
-		sys.ArchitectureChoice = defaultCtx.ArchitectureChoice
-		sys.VariantChoice = defaultCtx.VariantChoice
-	}
+func getRefDigest(ctx context.Context, ref types.ImageReference, topts *ocitransport.TransportOptions) (digest string, err error) {
 	// Handle docker references specially, using a HEAD request to ensure we don't hit API limits
 	if ref.Transport().Name() == "docker" {
-		digest, err := getDockerRefDigest(ctx, ref, sys)
+		digest, err := getDockerRefDigest(ctx, ref, topts)
 		if err == nil {
 			sylog.Debugf("GetManifest digest for %s is %s", transports.ImageName(ref), digest)
 			return digest, err
@@ -210,7 +193,8 @@ func getRefDigest(ctx context.Context, ref types.ImageReference, sys *types.Syst
 	}
 
 	// Otherwise get the manifest and calculate sha256 over it
-	source, err := ref.NewImageSource(ctx, sys)
+	// nolint:staticcheck
+	source, err := ref.NewImageSource(ctx, ocitransport.SystemContextFromTransportOptions(topts))
 	if err != nil {
 		return "", err
 	}
@@ -226,28 +210,21 @@ func getRefDigest(ctx context.Context, ref types.ImageReference, sys *types.Syst
 	}
 
 	digest = fmt.Sprintf("%x", sha256.Sum256(man))
-	digest = fmt.Sprintf("%x", sha256.Sum256([]byte(digest+sys.ArchitectureChoice+sys.VariantChoice)))
+	digest = fmt.Sprintf("%x", sha256.Sum256([]byte(digest+topts.Platform.Architecture+topts.Platform.Variant)))
 	sylog.Debugf("GetManifest digest for %s is %s", transports.ImageName(ref), digest)
 	return digest, nil
 }
 
 // getDockerRefDigest obtains the manifest digest for a docker ref.
-func getDockerRefDigest(ctx context.Context, ref types.ImageReference, sys *types.SystemContext) (digest string, err error) {
-	if sys.ArchitectureChoice == "" {
-		defaultCtx, err := defaultSysCtx()
-		if err != nil {
-			return "", fmt.Errorf("unable to create default system context: %v", err)
-		}
-		sys.ArchitectureChoice = defaultCtx.ArchitectureChoice
-		sys.VariantChoice = defaultCtx.VariantChoice
-	}
-	d, err := docker.GetDigest(ctx, sys, ref)
+func getDockerRefDigest(ctx context.Context, ref types.ImageReference, topts *ocitransport.TransportOptions) (digest string, err error) {
+	// nolint:staticcheck
+	d, err := docker.GetDigest(ctx, ocitransport.SystemContextFromTransportOptions(topts), ref)
 	if err != nil {
 		return "", err
 	}
 	digest = d.Encoded()
 	sylog.Debugf("docker.GetDigest source image digest for %s is %s", transports.ImageName(ref), digest)
-	digest = fmt.Sprintf("%x", sha256.Sum256([]byte(digest+sys.ArchitectureChoice+sys.VariantChoice)))
+	digest = fmt.Sprintf("%x", sha256.Sum256([]byte(digest+topts.Platform.Architecture+topts.Platform.Variant)))
 	sylog.Debugf("docker.GetDigest digest for %s is %s", transports.ImageName(ref), digest)
 	return digest, nil
 }
@@ -277,27 +254,6 @@ func getArchFromURI(uri string) (arch *GoArch) {
 	}
 
 	return
-}
-
-func defaultSysCtx() (*types.SystemContext, error) {
-	sysCtx := &types.SystemContext{
-		OSChoice: "linux",
-	}
-	switch runtime.GOARCH {
-	case "arm64":
-		sysCtx.ArchitectureChoice = runtime.GOARCH
-		sysCtx.VariantChoice = "v8"
-	case "arm":
-		variance, ok := os.LookupEnv("GOARM")
-		if !ok {
-			return nil, fmt.Errorf("could not get GOARM value")
-		}
-
-		sysCtx.ArchitectureChoice = runtime.GOARCH
-		sysCtx.VariantChoice = "v" + variance
-	default:
-	}
-	return sysCtx, nil
 }
 
 // Convert CLI options GOARCH and arch variant to recognized docker arch

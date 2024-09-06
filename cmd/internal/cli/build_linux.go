@@ -269,7 +269,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 		sylog.Fatalf("Could not check build sections: %v", err)
 	}
 
-	authConf, err := makeDockerCredentials(cmd)
+	authConf, err := makeOCICredentials(cmd)
 	if err != nil {
 		sylog.Fatalf("While creating Docker credentials: %v", err)
 	}
@@ -369,7 +369,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 				LibraryAuthToken:  authToken,
 				FakerootPath:      fakerootPath,
 				KeyServerOpts:     ko,
-				DockerAuthConfig:  authConf,
+				OCIAuthConfig:     authConf,
 				DockerDaemonHost:  dockerHost,
 				EncryptionKeyInfo: keyInfo,
 				FixPerms:          buildArgs.fixPerms,
