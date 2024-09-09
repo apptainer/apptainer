@@ -163,7 +163,7 @@ var PushCmd = &cobra.Command{
 			if cmd.Flag(pushDescriptionFlag.Name).Changed {
 				sylog.Warningf("Description is not supported for push to oras. Ignoring it.")
 			}
-			ociAuth, err := makeDockerCredentials(cmd)
+			ociAuth, err := makeOCICredentials(cmd)
 			if err != nil {
 				sylog.Fatalf("Unable to make docker oci credentials: %s", err)
 			}

@@ -27,6 +27,7 @@ import (
 	"text/template"
 
 	"github.com/apptainer/apptainer/internal/pkg/build/oci"
+	"github.com/apptainer/apptainer/internal/pkg/ocitransport"
 	"github.com/apptainer/apptainer/internal/pkg/util/ociauth"
 	"github.com/apptainer/apptainer/internal/pkg/util/shell"
 	sytypes "github.com/apptainer/apptainer/pkg/build/types"
@@ -41,6 +42,7 @@ import (
 	ocilayout "github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/types"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	imgspecv1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -136,7 +138,7 @@ type OCIConveyorPacker struct {
 	tmpfsRef  types.ImageReference
 	policyCtx *signature.PolicyContext
 	imgConfig imgspecv1.ImageConfig
-	sysCtx    *types.SystemContext
+	topts     *ocitransport.TransportOptions
 }
 
 // Get downloads container information from the specified source
@@ -154,28 +156,25 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 	// can have three possible values true/false and undefined, so we left it as undefined instead
 	// of forcing it to false in order to delegate decision to /etc/containers/registries.conf:
 	// https://github.com/apptainer/singularity/issues/5172
-
-	cp.sysCtx = &types.SystemContext{
-		OCIInsecureSkipTLSVerify: cp.b.Opts.NoHTTPS,
-		DockerAuthConfig:         cp.b.Opts.DockerAuthConfig,
-		DockerDaemonHost:         cp.b.Opts.DockerDaemonHost,
-		OSChoice:                 "linux",
-		AuthFilePath:             ociauth.ChooseAuthFile(cp.b.Opts.ReqAuthFile),
-		DockerRegistryUserAgent:  useragent.Value(),
-		BigFilesTemporaryDir:     b.TmpDir,
+	cp.topts = &ocitransport.TransportOptions{
+		Insecure:         cp.b.Opts.NoHTTPS,
+		DockerDaemonHost: cp.b.Opts.DockerDaemonHost,
+		AuthConfig:       cp.b.Opts.OCIAuthConfig,
+		AuthFilePath:     ociauth.ChooseAuthFile(cp.b.Opts.ReqAuthFile),
+		UserAgent:        useragent.Value(),
+		TmpDir:           b.TmpDir,
 	}
+
 	if cp.b.Opts.Arch != "" {
 		if arch, ok := oci.ArchMap[cp.b.Opts.Arch]; ok {
-			cp.sysCtx.ArchitectureChoice = arch.Arch
-			cp.sysCtx.VariantChoice = arch.Var
+			cp.topts.Platform = v1.Platform{
+				Architecture: arch.Arch,
+				Variant:      arch.Var,
+			}
 		} else {
 			keys := reflect.ValueOf(oci.ArchMap).MapKeys()
 			return fmt.Errorf("failed to parse the arch value: %s, should be one of %v", cp.b.Opts.Arch, keys)
 		}
-	}
-
-	if cp.b.Opts.NoHTTPS {
-		cp.sysCtx.DockerInsecureSkipTLSVerify = types.NewOptionalBool(true)
 	}
 
 	// add registry and namespace to reference if specified
@@ -237,7 +236,7 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 
 	if !cp.b.Opts.NoCache {
 		// Grab the modified source ref from the cache
-		cp.srcRef, err = oci.ConvertReference(ctx, b.Opts.ImgCache, cp.srcRef, cp.sysCtx)
+		cp.srcRef, err = oci.ConvertReference(ctx, b.Opts.ImgCache, cp.srcRef, cp.topts)
 		if err != nil {
 			return fmt.Errorf("while converting reference: %w", err)
 		}
@@ -301,15 +300,17 @@ func (cp *OCIConveyorPacker) Pack(ctx context.Context) (*sytypes.Bundle, error) 
 func (cp *OCIConveyorPacker) fetch(ctx context.Context) error {
 	// cp.srcRef contains the cache source reference
 	_, err := copy.Image(ctx, cp.policyCtx, cp.tmpfsRef, cp.srcRef, &copy.Options{
-		ReportWriter:     io.Discard,
-		SourceCtx:        cp.sysCtx,
+		ReportWriter: io.Discard,
+		// nolint:staticcheck
+		SourceCtx:        ocitransport.SystemContextFromTransportOptions(cp.topts),
 		RemoveSignatures: true,
 	})
 	return err
 }
 
 func (cp *OCIConveyorPacker) getConfig(ctx context.Context) (imgspecv1.ImageConfig, error) {
-	img, err := cp.srcRef.NewImage(ctx, cp.sysCtx)
+	// nolint:staticcheck
+	img, err := cp.srcRef.NewImage(ctx, ocitransport.SystemContextFromTransportOptions(cp.topts))
 	if err != nil {
 		return imgspecv1.ImageConfig{}, err
 	}
@@ -411,7 +412,8 @@ func (cp *OCIConveyorPacker) extractArchive(src string, dst string) error {
 }
 
 func (cp *OCIConveyorPacker) unpackTmpfs(ctx context.Context) error {
-	return unpackRootfs(ctx, cp.b, cp.tmpfsRef, cp.sysCtx)
+	// nolint:staticcheck
+	return unpackRootfs(ctx, cp.b, cp.tmpfsRef, ocitransport.SystemContextFromTransportOptions(cp.topts))
 }
 
 func (cp *OCIConveyorPacker) insertBaseEnv() (err error) {

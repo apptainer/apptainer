@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/ocitransport"
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	buildTypes "github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/containers/image/v5/oci/layout"
@@ -273,7 +274,8 @@ func TestConvertReference(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := ConvertReference(context.Background(), imgCache, tt.ref, tt.ctx)
+			// nolint: staticcheck
+			_, err := ConvertReference(context.Background(), imgCache, tt.ref, ocitransport.TransportOptionsFromSystemContext(tt.ctx))
 			if tt.shouldPass == true && err != nil {
 				t.Fatalf("test expected to succeeded but failed: %s\n", err)
 			}
@@ -344,7 +346,8 @@ func TestImageNameAndImageSHA(t *testing.T) {
 	for _, tt := range tests {
 		testName := "ParseImageName - " + tt.name
 		t.Run(testName, func(t *testing.T) {
-			_, err := ParseImageName(context.Background(), imgCache, tt.uri, tt.ctx)
+			// nolint:staticcheck
+			_, err := ParseImageName(context.Background(), imgCache, tt.uri, ocitransport.TransportOptionsFromSystemContext(tt.ctx))
 			if tt.shouldPass == true && err != nil {
 				t.Fatalf("test expected to succeeded but failed: %s\n", err)
 			}
@@ -355,7 +358,8 @@ func TestImageNameAndImageSHA(t *testing.T) {
 
 		testName = "ImageSHA - " + tt.name
 		t.Run(testName, func(t *testing.T) {
-			_, err := ImageDigest(context.Background(), tt.uri, tt.ctx)
+			// nolint: staticcheck
+			_, err := ImageDigest(context.Background(), tt.uri, ocitransport.TransportOptionsFromSystemContext(tt.ctx))
 			if tt.shouldPass == true && err != nil {
 				t.Fatal("test expected to succeeded but failed")
 			}

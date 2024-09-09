@@ -20,7 +20,6 @@ import (
 	fsutil "github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	ocitypes "github.com/containers/image/v5/types"
 	"github.com/docker/cli/cli/config"
 	"github.com/docker/cli/cli/config/configfile"
 	"github.com/docker/cli/cli/config/types"
@@ -186,16 +185,9 @@ func getCredentialsFromFile(reqAuthFile string) (*configfile.ConfigFile, error) 
 	return cf, nil
 }
 
-func AuthOptn(ociAuth *ocitypes.DockerAuthConfig, reqAuthFile string) remote.Option {
+func AuthOptn(ociAuth *authn.AuthConfig, reqAuthFile string) remote.Option {
 	if ociAuth != nil {
-		// Explicit credentials given on command-line; use those.
-		optn := remote.WithAuth(authn.FromConfig(authn.AuthConfig{
-			Username:      ociAuth.Username,
-			Password:      ociAuth.Password,
-			IdentityToken: ociAuth.IdentityToken,
-		}))
-
-		return optn
+		return remote.WithAuth(authn.FromConfig(*ociAuth))
 	}
 
 	return remote.WithAuthFromKeychain(&apptainerKeychain{reqAuthFile: reqAuthFile})

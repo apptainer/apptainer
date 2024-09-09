@@ -40,7 +40,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	keyClient "github.com/apptainer/container-key-client/client"
 	libClient "github.com/apptainer/container-library-client/client"
-	ocitypes "github.com/containers/image/v5/types"
+	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
@@ -56,9 +56,9 @@ var CurrentUser = getCurrentUser()
 var currentRemoteEndpoint *endpoint.Config
 
 var (
-	dockerAuthConfig ocitypes.DockerAuthConfig
-	dockerLogin      bool
-	dockerHost       string
+	authConfig  authn.AuthConfig
+	dockerLogin bool
+	dockerHost  string
 
 	encryptionPEMPath   string
 	promptForPassphrase bool
@@ -138,7 +138,7 @@ var singVerboseFlag = cmdline.Flag{
 // --docker-username
 var dockerUsernameFlag = cmdline.Flag{
 	ID:            "dockerUsernameFlag",
-	Value:         &dockerAuthConfig.Username,
+	Value:         &authConfig.Username,
 	DefaultValue:  "",
 	Name:          "docker-username",
 	Usage:         "specify a username for docker authentication",
@@ -150,7 +150,7 @@ var dockerUsernameFlag = cmdline.Flag{
 // --docker-password
 var dockerPasswordFlag = cmdline.Flag{
 	ID:            "dockerPasswordFlag",
-	Value:         &dockerAuthConfig.Password,
+	Value:         &authConfig.Password,
 	DefaultValue:  "",
 	Name:          "docker-password",
 	Usage:         "specify a password for docker authentication",
