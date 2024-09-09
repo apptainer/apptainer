@@ -20,7 +20,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/build"
 	"github.com/apptainer/apptainer/internal/pkg/build/oci"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
-	"github.com/apptainer/apptainer/internal/pkg/ocitransport"
+	"github.com/apptainer/apptainer/internal/pkg/ociimage"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/ociauth"
 	buildtypes "github.com/apptainer/apptainer/pkg/build/types"
@@ -41,8 +41,8 @@ type PullOptions struct {
 }
 
 // transportOptions maps PullOptions to OCI image transport options
-func transportOptions(opts PullOptions) *ocitransport.TransportOptions {
-	return &ocitransport.TransportOptions{
+func transportOptions(opts PullOptions) *ociimage.TransportOptions {
+	return &ociimage.TransportOptions{
 		AuthConfig:       opts.OciAuth,
 		AuthFilePath:     ociauth.ChooseAuthFile(opts.ReqAuthFile),
 		Insecure:         opts.NoHTTPS,

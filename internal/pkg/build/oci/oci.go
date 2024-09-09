@@ -19,7 +19,7 @@ import (
 	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/cache"
-	"github.com/apptainer/apptainer/internal/pkg/ocitransport"
+	"github.com/apptainer/apptainer/internal/pkg/ociimage"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/containers/image/v5/copy"
 	"github.com/containers/image/v5/docker"
@@ -76,14 +76,14 @@ var ArchMap = map[string]GoArch{
 }
 
 // ConvertReference converts a source reference into a cache.ImageReference to cache its blobs
-func ConvertReference(ctx context.Context, imgCache *cache.Handle, src types.ImageReference, topts *ocitransport.TransportOptions) (types.ImageReference, error) {
+func ConvertReference(ctx context.Context, imgCache *cache.Handle, src types.ImageReference, topts *ociimage.TransportOptions) (types.ImageReference, error) {
 	if imgCache == nil {
 		return nil, fmt.Errorf("undefined image cache")
 	}
 
 	if topts == nil {
 		// nolint:staticcheck
-		topts = ocitransport.TransportOptionsFromSystemContext(nil)
+		topts = ociimage.TransportOptionsFromSystemContext(nil)
 	}
 
 	// Our cache dir is an OCI directory. We are using this as a 'blob pool'
@@ -135,7 +135,7 @@ func (t *ImageReference) newImageSource(ctx context.Context, sys *types.SystemCo
 
 // ParseImageName parses a uri (e.g. docker://ubuntu) into it's transport:reference
 // combination and then returns the proper reference
-func ParseImageName(ctx context.Context, imgCache *cache.Handle, uri string, topts *ocitransport.TransportOptions) (types.ImageReference, error) {
+func ParseImageName(ctx context.Context, imgCache *cache.Handle, uri string, topts *ociimage.TransportOptions) (types.ImageReference, error) {
 	ref, _, err := parseURI(uri)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse image name %v: %v", uri, err)
@@ -164,7 +164,7 @@ func parseURI(uri string) (types.ImageReference, *GoArch, error) {
 }
 
 // ImageDigest obtains the digest of a uri's manifest
-func ImageDigest(ctx context.Context, uri string, topts *ocitransport.TransportOptions) (digest string, err error) {
+func ImageDigest(ctx context.Context, uri string, topts *ociimage.TransportOptions) (digest string, err error) {
 	ref, arch, err := parseURI(uri)
 	if err != nil {
 		return "", fmt.Errorf("unable to parse image name %v: %v", uri, err)
@@ -179,7 +179,7 @@ func ImageDigest(ctx context.Context, uri string, topts *ocitransport.TransportO
 }
 
 // getRefDigest obtains the manifest digest for a ref.
-func getRefDigest(ctx context.Context, ref types.ImageReference, topts *ocitransport.TransportOptions) (digest string, err error) {
+func getRefDigest(ctx context.Context, ref types.ImageReference, topts *ociimage.TransportOptions) (digest string, err error) {
 	// Handle docker references specially, using a HEAD request to ensure we don't hit API limits
 	if ref.Transport().Name() == "docker" {
 		digest, err := getDockerRefDigest(ctx, ref, topts)
@@ -194,7 +194,7 @@ func getRefDigest(ctx context.Context, ref types.ImageReference, topts *ocitrans
 
 	// Otherwise get the manifest and calculate sha256 over it
 	// nolint:staticcheck
-	source, err := ref.NewImageSource(ctx, ocitransport.SystemContextFromTransportOptions(topts))
+	source, err := ref.NewImageSource(ctx, ociimage.SystemContextFromTransportOptions(topts))
 	if err != nil {
 		return "", err
 	}
@@ -216,9 +216,9 @@ func getRefDigest(ctx context.Context, ref types.ImageReference, topts *ocitrans
 }
 
 // getDockerRefDigest obtains the manifest digest for a docker ref.
-func getDockerRefDigest(ctx context.Context, ref types.ImageReference, topts *ocitransport.TransportOptions) (digest string, err error) {
+func getDockerRefDigest(ctx context.Context, ref types.ImageReference, topts *ociimage.TransportOptions) (digest string, err error) {
 	// nolint:staticcheck
-	d, err := docker.GetDigest(ctx, ocitransport.SystemContextFromTransportOptions(topts), ref)
+	d, err := docker.GetDigest(ctx, ociimage.SystemContextFromTransportOptions(topts), ref)
 	if err != nil {
 		return "", err
 	}
