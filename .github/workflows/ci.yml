@@ -383,7 +383,7 @@ jobs:
 
       - name: Upload artifacts
         if: env.run_tests
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: e2e-artifact
           path: builddir/e2e-cmd-report.txt
