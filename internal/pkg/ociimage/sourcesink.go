@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"strings"
 
+	progressClient "github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/ociauth"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/docker/docker/client"
@@ -36,7 +37,7 @@ const (
 	DaemonSourceSink
 )
 
-func getDockerImage(ctx context.Context, src string, tOpts *TransportOptions) (v1.Image, error) {
+func getDockerImage(ctx context.Context, src string, tOpts *TransportOptions, rt *progressClient.RoundTripper) (v1.Image, error) {
 	var nameOpts []name.Option
 	if tOpts != nil && tOpts.Insecure {
 		nameOpts = append(nameOpts, name.Insecure)
@@ -55,6 +56,10 @@ func getDockerImage(ctx context.Context, src string, tOpts *TransportOptions) (v
 		pullOpts = append(pullOpts,
 			remote.WithPlatform(tOpts.Platform),
 			ociauth.AuthOptn(tOpts.AuthConfig, tOpts.AuthFilePath))
+	}
+
+	if rt != nil {
+		pullOpts = append(pullOpts, remote.WithTransport(rt))
 	}
 
 	return remote.Image(srcRef, pullOpts...)
@@ -145,10 +150,10 @@ func (ss SourceSink) Reference(s string, tOpts *TransportOptions) (name.Referenc
 	}
 }
 
-func (ss SourceSink) Image(ctx context.Context, ref string, tOpts *TransportOptions) (v1.Image, error) {
+func (ss SourceSink) Image(ctx context.Context, ref string, tOpts *TransportOptions, rt *progressClient.RoundTripper) (v1.Image, error) {
 	switch ss {
 	case RegistrySourceSink:
-		return getDockerImage(ctx, ref, tOpts)
+		return getDockerImage(ctx, ref, tOpts, rt)
 	case TarballSourceSink:
 		return tarball.ImageFromPath(ref, nil)
 	case OCISourceSink:
@@ -162,7 +167,7 @@ func (ss SourceSink) Image(ctx context.Context, ref string, tOpts *TransportOpti
 	}
 }
 
-func (ss SourceSink) WriteImage(img v1.Image, dstName string) error {
+func (ss SourceSink) WriteImage(img v1.Image, dstName string, tOpts *TransportOptions) error {
 	switch ss {
 	case OCISourceSink:
 		lp, err := layout.FromPath(dstName)
@@ -173,8 +178,32 @@ func (ss SourceSink) WriteImage(img v1.Image, dstName string) error {
 			}
 		}
 		return lp.AppendImage(img)
+
+	case RegistrySourceSink:
+		var nameOpts []name.Option
+		if tOpts != nil && tOpts.Insecure {
+			nameOpts = append(nameOpts, name.Insecure)
+		}
+		dstRef, err := name.ParseReference(dstName, nameOpts...)
+		if err != nil {
+			return err
+		}
+		remoteOpts := []remote.Option{}
+		if tOpts != nil {
+			remoteOpts = append(remoteOpts,
+				remote.WithPlatform(tOpts.Platform),
+				ociauth.AuthOptn(tOpts.AuthConfig, tOpts.AuthFilePath))
+		}
+		return remote.Write(dstRef, img, remoteOpts...)
+
+	case TarballSourceSink:
+		// Only supports writing a single image per tarball.
+		dstRef := name.MustParseReference("image")
+		return tarball.WriteToFile(dstName, dstRef, img)
+
 	case UnknownSourceSink:
 		return errUnsupportedTransport
+
 	default:
 		return errUnsupportedTransport
 	}

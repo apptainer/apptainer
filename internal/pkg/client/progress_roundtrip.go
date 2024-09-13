@@ -28,6 +28,15 @@ type RoundTripper struct {
 	sizes []int64
 }
 
+// NewRoundTripper wraps inner (or http.DefaultTransport if inner is nil) with
+// progress bar functionality. A separate bar will be displayed for every GET
+// request that returns a body >64KiB, updated as the response body is read. The
+// caller is responsible for calling rt.ProgressWait / rt.ProgressShutdown when
+// all requests are completed, so that the mpb progress container exits
+// correctly. Note that if requests are made, but the response body is not
+// read, the progress bar will remain 'stuck', preventing rt.ProgressWait
+// from returning. rt.ProgressComplete is provided to override all bars to be
+// 100% complete, to satisfy rt.ProgressWait where appropriate.
 func NewRoundTripper(ctx context.Context, inner http.RoundTripper) *RoundTripper {
 	if inner == nil {
 		inner = http.DefaultTransport

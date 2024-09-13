@@ -128,6 +128,7 @@ type OCIConveyorPacker struct {
 
 // Get downloads container information from the specified source
 func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err error) {
+	sylog.Infof("Fetching OCI image...")
 	cp.b = b
 
 	cp.topts = &ociimage.TransportOptions{
@@ -190,11 +191,13 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 
 // Pack puts relevant objects in a Bundle.
 func (cp *OCIConveyorPacker) Pack(ctx context.Context) (*sytypes.Bundle, error) {
+	sylog.Infof("Extracting OCI image...")
 	err := cp.unpackRootfs(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("while unpacking rootfs: %v", err)
 	}
 
+	sylog.Infof("Inserting Apptainer configuration...")
 	err = cp.insertBaseEnv()
 	if err != nil {
 		return nil, fmt.Errorf("while inserting base environment: %v", err)
