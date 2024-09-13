@@ -7,9 +7,10 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package ocitransport
+package ociimage
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
@@ -28,6 +29,8 @@ import (
 )
 
 var ociTransports = []string{"docker", "docker-archive", "docker-daemon", "oci", "oci-archive"}
+
+var errUnsupportedTransport = errors.New("unsupported transport")
 
 // SupportedTransport returns whether or not the transport given is supported. To fit within a switch/case
 // statement, this function will return transport if it is supported
@@ -163,14 +166,14 @@ func SystemContextFromTransportOptions(tOpts *TransportOptions) *types.SystemCon
 	return &sc
 }
 
-// defaultPolicy is Apptainer's default containers/image OCI signature verification policy - accept anything.
+// DefaultPolicy is Apptainer's default containers/image OCI signature verification policy - accept anything.
 func DefaultPolicy() (*signature.PolicyContext, error) {
 	policy := &signature.Policy{Default: []signature.PolicyRequirement{signature.NewPRInsecureAcceptAnything()}}
 	return signature.NewPolicyContext(policy)
 }
 
-// parseImageRef parses a uri-like OCI image reference into a containers/image types.ImageReference.
-func ParseImageRef(imageRef string) (types.ImageReference, error) {
+// URIToImageReference parses a uri-like OCI image reference into a containers/image types.ImageReference.
+func URIToImageReference(imageRef string) (types.ImageReference, error) {
 	parts := strings.SplitN(imageRef, ":", 2)
 	if len(parts) < 2 {
 		return nil, fmt.Errorf("could not parse image ref: %s", imageRef)
@@ -191,13 +194,36 @@ func ParseImageRef(imageRef string) (types.ImageReference, error) {
 	case "oci-archive":
 		srcRef, err = ociarchive.ParseReference(parts[1])
 	default:
-		return nil, fmt.Errorf("cannot create an OCI container from %s source", parts[0])
+		return nil, errUnsupportedTransport
 	}
 	if err != nil {
-		return nil, fmt.Errorf("invalid image source: %v", err)
+		return nil, err
 	}
 
 	return srcRef, nil
+}
+
+// URItoSourceSinkRef parses a uri-like OCI image reference into a SourceSink and ref
+func URItoSourceSinkRef(imageURI string) (SourceSink, string, error) {
+	parts := strings.SplitN(imageURI, ":", 2)
+	if len(parts) < 2 {
+		return UnknownSourceSink, "", fmt.Errorf("could not parse image ref: %s", imageURI)
+	}
+
+	switch parts[0] {
+	case "docker":
+		// Remove slashes from docker:// URI
+		parts[1] = strings.TrimPrefix(parts[1], "//")
+		return RegistrySourceSink, parts[1], nil
+	case "docker-archive":
+		return TarballSourceSink, parts[1], nil
+	case "docker-daemon":
+		return DaemonSourceSink, parts[1], nil
+	case "oci":
+		return OCISourceSink, parts[1], nil
+	}
+
+	return UnknownSourceSink, "", errUnsupportedTransport
 }
 
 func defaultSysCtx() *types.SystemContext {

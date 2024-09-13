@@ -14,7 +14,7 @@ import (
 	"fmt"
 
 	"github.com/apptainer/apptainer/internal/pkg/build/sources"
-	"github.com/apptainer/apptainer/internal/pkg/ocitransport"
+	"github.com/apptainer/apptainer/internal/pkg/ociimage"
 	"github.com/apptainer/apptainer/pkg/build/types"
 )
 
@@ -48,7 +48,7 @@ func conveyorPacker(def types.Definition) (ConveyorPacker, error) {
 		return &sources.OrasConveyorPacker{}, nil
 	case "shub":
 		return &sources.ShubConveyorPacker{}, nil
-	case ocitransport.SupportedTransport(bs):
+	case ociimage.SupportedTransport(bs):
 		return &sources.OCIConveyorPacker{}, nil
 	case "busybox":
 		return &sources.BusyBoxConveyorPacker{}, nil

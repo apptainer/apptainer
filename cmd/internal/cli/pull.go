@@ -23,7 +23,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/client/oci"
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/client/shub"
-	"github.com/apptainer/apptainer/internal/pkg/ocitransport"
+	"github.com/apptainer/apptainer/internal/pkg/ociimage"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/pkg/cmdline"
@@ -278,7 +278,7 @@ func pullRun(cmd *cobra.Command, args []string) {
 		if err != nil {
 			sylog.Fatalf("While pulling from image from http(s): %v\n", err)
 		}
-	case ocitransport.SupportedTransport(transport):
+	case ociimage.SupportedTransport(transport):
 		ociAuth, err := makeOCICredentials(cmd)
 		if err != nil {
 			sylog.Fatalf("While creating Docker credentials: %v", err)
