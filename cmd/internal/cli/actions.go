@@ -27,7 +27,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/client/shub"
 	"github.com/apptainer/apptainer/internal/pkg/instance"
-	"github.com/apptainer/apptainer/internal/pkg/ocitransport"
+	"github.com/apptainer/apptainer/internal/pkg/ociimage"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/launch"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
@@ -158,7 +158,7 @@ func replaceURIWithImage(ctx context.Context, cmd *cobra.Command, args []string)
 		image, err = handleOras(ctx, imgCache, cmd, args[0])
 	case uri.Shub:
 		image, err = handleShub(ctx, imgCache, args[0])
-	case ocitransport.SupportedTransport(t):
+	case ociimage.SupportedTransport(t):
 		image, err = handleOCI(ctx, imgCache, cmd, args[0])
 	case uri.HTTP:
 		image, err = handleNet(ctx, imgCache, args[0])

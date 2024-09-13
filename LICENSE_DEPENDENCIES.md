@@ -917,12 +917,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/titanous/rocacheck/blob/master/LICENSE>
 
-## github.com/urfave/cli
-
-**License:** MIT
-
-**License URL:** <https://github.com/urfave/cli/blob/master/LICENSE>
-
 ## go.mozilla.org/pkcs7
 
 **License:** MIT
