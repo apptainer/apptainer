@@ -100,10 +100,7 @@ func downloadWrapper(ctx context.Context, c *libClient.Client, imagePath, arch s
 		}
 	}(time.Now())
 
-	if err := DownloadImage(ctx, c, imagePath, arch, libraryRef, pb); err != nil {
-		return err
-	}
-	return nil
+	return DownloadImage(ctx, c, imagePath, arch, libraryRef, pb)
 }
 
 // Pull will pull a library image to the cache or direct to a temporary file if cache is disabled

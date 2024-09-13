@@ -45,7 +45,7 @@ type ArchConveyorPacker struct {
 
 // prepareFakerootEnv prepares a build environment to
 // make fakeroot working with pacstrap.
-func (cp *ArchConveyorPacker) prepareFakerootEnv(_ context.Context) (func(), error) {
+func (cp *ArchConveyorPacker) prepareFakerootEnv() (func(), error) {
 	truePath, err := bin.FindBin("true")
 	if err != nil {
 		return nil, fmt.Errorf("while searching true command: %s", err)
@@ -113,7 +113,9 @@ func (cp *ArchConveyorPacker) prepareFakerootEnv(_ context.Context) (func(), err
 }
 
 // Get just stores the source
-func (cp *ArchConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err error) {
+//
+// FIXME: use context for cancellation.
+func (cp *ArchConveyorPacker) Get(_ context.Context, b *types.Bundle) (err error) {
 	cp.b = b
 
 	err = cp.getBootstrapOptions()
@@ -139,7 +141,7 @@ func (cp *ArchConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err err
 
 	insideUserNs, setgroupsAllowed := namespaces.IsInsideUserNamespace(os.Getpid())
 	if insideUserNs && setgroupsAllowed {
-		umountFn, err := cp.prepareFakerootEnv(ctx)
+		umountFn, err := cp.prepareFakerootEnv()
 		if umountFn != nil {
 			defer umountFn()
 		}

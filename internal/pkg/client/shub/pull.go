@@ -196,7 +196,7 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom, tmpDir string, 
 }
 
 // PullToFile will pull a shub image to the specified location, through the cache, or directly if cache is disabled
-func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom, _ string, noHTTPS bool) (imagePath string, err error) {
+func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom string, noHTTPS bool) (imagePath string, err error) {
 	directTo := ""
 	if imgCache.IsDisabled() {
 		directTo = pullTo

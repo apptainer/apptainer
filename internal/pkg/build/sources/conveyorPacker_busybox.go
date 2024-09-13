@@ -34,6 +34,8 @@ type BusyBoxConveyorPacker struct {
 }
 
 // Get just stores the source
+//
+// FIXME: use context for cancellation.
 func (c *BusyBoxConveyor) Get(_ context.Context, b *types.Bundle) (err error) {
 	c.b = b
 

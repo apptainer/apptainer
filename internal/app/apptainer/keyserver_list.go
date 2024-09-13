@@ -22,6 +22,7 @@ import (
 )
 
 // KeyserverList prints information about remote configurations
+// FIXME - remoteName is not being honored
 func KeyserverList(remoteName string, usrConfigFile string) (err error) {
 	c := &remote.Config{}
 

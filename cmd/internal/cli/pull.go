@@ -259,7 +259,7 @@ func pullRun(cmd *cobra.Command, args []string) {
 			sylog.Warningf("Skipping container verification")
 		}
 	case ShubProtocol:
-		_, err := shub.PullToFile(ctx, imgCache, pullTo, pullFrom, tmpDir, noHTTPS)
+		_, err := shub.PullToFile(ctx, imgCache, pullTo, pullFrom, noHTTPS)
 		if err != nil {
 			sylog.Fatalf("While pulling shub image: %v\n", err)
 		}
@@ -269,12 +269,12 @@ func pullRun(cmd *cobra.Command, args []string) {
 			sylog.Fatalf("Unable to make docker oci credentials: %s", err)
 		}
 
-		_, err = oras.PullToFile(ctx, imgCache, pullTo, pullFrom, tmpDir, ociAuth, noHTTPS, reqAuthFile)
+		_, err = oras.PullToFile(ctx, imgCache, pullTo, pullFrom, ociAuth, noHTTPS, reqAuthFile)
 		if err != nil {
 			sylog.Fatalf("While pulling image from oci registry: %v", err)
 		}
 	case HTTPProtocol, HTTPSProtocol:
-		_, err := net.PullToFile(ctx, imgCache, pullTo, pullFrom, tmpDir)
+		_, err := net.PullToFile(ctx, imgCache, pullTo, pullFrom)
 		if err != nil {
 			sylog.Fatalf("While pulling from image from http(s): %v\n", err)
 		}

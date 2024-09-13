@@ -172,7 +172,6 @@ func (h *keyserverHandler) login(u *url.URL, username, password string, insecure
 	}, nil
 }
 
-//nolint:revive,nolintlint
-func (h *keyserverHandler) logout(u *url.URL, reqAuthFile string) error {
+func (h *keyserverHandler) logout(_ *url.URL, _ string) error {
 	return nil
 }

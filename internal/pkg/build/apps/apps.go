@@ -397,7 +397,7 @@ func copyFiles(b *types.Bundle, a *App) error {
 			dst = splitLine[1]
 		}
 
-		if err := copyFile(src, filepath.Join(appBase, dst)); err != nil {
+		if err := copyWithfLr(src, filepath.Join(appBase, dst)); err != nil {
 			return err
 		}
 	}
@@ -457,17 +457,18 @@ func appData(b *types.Bundle, a *App) string {
 	return filepath.Join(b.RootfsPath, "/scif/data/", a.Name)
 }
 
-func copyFile(src, dst string) error {
+// FIXME: Replace with Go, or existing util function?
+func copyWithfLr(src, dst string) error {
 	cp, err := bin.FindBin("cp")
 	if err != nil {
 		return err
 	}
 
 	var stderr bytes.Buffer
-	copyCommand := exec.Command(cp, "-fLr", src, dst)
-	copyCommand.Stderr = &stderr
+	copyCmd := exec.Command(cp, "-fLr", src, dst)
+	copyCmd.Stderr = &stderr
 	sylog.Debugf("Copying %v to %v", src, dst)
-	if err := copyCommand.Run(); err != nil {
+	if err := copyCmd.Run(); err != nil {
 		return fmt.Errorf("while copying %v to %v: %v: %v", src, dst, err, stderr.String())
 	}
 
