@@ -38,6 +38,11 @@ apt-get install -y \
 # for squashfuse_ll build
 apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev
 
+# for libsubid support in Ubuntu 24.04
+if [[ $OS_NAME = "Ubuntu" ]] && [ $OS_MAJOR -gt 23 ]; then
+    apt-get install -y libsubid4 libsubid-dev
+fi
+
 # move source code down a level because debuild writes into parent dir
 shopt -s extglob
 mkdir src

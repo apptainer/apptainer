@@ -312,19 +312,24 @@ func (c *Config) GetUserEntry(username string) (*Entry, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve user information for %s: %s", username, err)
 	}
-	for _, entry := range c.entries {
+
+	entries, err := c.getMappingEntries(u)
+	if err != nil {
+		return nil, fmt.Errorf("failed to look up mapping entries for user %s: %w", username, err)
+	}
+
+	for _, entry := range entries {
 		if entry.invalid {
 			continue
 		}
-		if entry.UID == u.UID {
-			if entry.Count == validRangeCount {
-				return entry, nil
-			} else if entry.Count > validRangeCount {
-				largeRangeEntries = append(largeRangeEntries, entry)
-				continue
-			}
-			entryCount++
+
+		if entry.Count == validRangeCount {
+			return entry, nil
+		} else if entry.Count > validRangeCount {
+			largeRangeEntries = append(largeRangeEntries, entry)
+			continue
 		}
+		entryCount++
 	}
 	var largestEntry *Entry
 
@@ -345,6 +350,7 @@ func (c *Config) GetUserEntry(username string) (*Entry, error) {
 			username, c.file.Name(), errRangeTooLow, validRangeCount,
 		)
 	}
+
 	return nil, fmt.Errorf("%w in %s for %s", errNoMappingEntry, c.file.Name(), username)
 }
 

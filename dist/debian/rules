@@ -45,16 +45,19 @@ DEB_SC_BUILDDIR ?= builddir
 
 # see mconfig for options
 # set environment variables to disable options
-# NOALL, NONETWORK, NOSECCOMP
+# NOALL, NONETWORK, NOSECCOMP, NOLIBSUBID
 SC_OPTIONS =
 ifdef DEB_NOALL
-SC_OPTIONS = --without-network --without-seccomp
+SC_OPTIONS = --without-network --without-seccomp --without-libsubid
 else
 ifdef DEB_NONETWORK
 SC_OPTIONS += --without-network
 endif
 ifdef DEB_NOSECCOMP
 SC_OPTIONS += --without-seccomp
+endif
+ifdef DEB_NOLIBSUBID
+SC_OPTIONS += --without-libsubid
 endif
 endif
 

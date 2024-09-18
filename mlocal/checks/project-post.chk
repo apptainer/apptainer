@@ -326,3 +326,40 @@ if [ "$with_seccomp_check" = "1" ];then
 fi
 
 config_add_footer
+
+########################
+# libsubid
+########################
+if [ "$with_libsubid" = "1" ];then
+    printf " checking: libsubid support... "
+    testprog=$makeit_testprogdir/test_libsubid
+    cat > ${testprog}.c << "EOF"
+    #include <shadow/subid.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+
+    const char *Prog = "test";
+    FILE *shadow_logfd = NULL;
+
+    int main() {
+        struct subid_range *ranges = NULL;
+    #if SUBID_ABI_MAJOR >= 4
+        subid_get_uid_ranges("root", &ranges);
+    #else
+        get_subuid_ranges("root", &ranges);
+    #endif
+        free(ranges);
+        return 0;
+    }
+EOF
+    if ! $tgtcc -x c -o $testprog ${testprog}.c -l subid >/dev/null 2>&1; then
+        echo "no"
+    else
+        if ! $testprog; then
+            echo "no"
+        else
+            echo "yes"
+            libsubid=1
+        fi
+    fi
+fi
