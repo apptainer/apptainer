@@ -106,7 +106,11 @@ Provides: bundled(fuse-overlayfs) = %{fuse_overlayfs_version}
 %if "%{_target_vendor}" == "suse"
 BuildRequires: binutils-gold
 BuildRequires: go
+%if 0%{?suse_version} > 1600
+BuildRequires: libsubid-devel
+%endif
 %else
+BuildRequires: shadow-utils-subid-devel
 BuildRequires: golang
 %endif
 BuildRequires: git

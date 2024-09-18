@@ -15,6 +15,15 @@ cp -r dist/debian .
 Next, make sure all the dependencies are met. See
 [INSTALL.md](../../INSTALL.md#install-system-dependencies)
 for the basic apt-get install list.
+
+To build with libsubid support add the following to the control file (requires
+at least Ubuntu Noble or Debian Bookworm):
+
+```dsc
+Build-Depends:
+ libsubid-dev
+```
+
 Also install the extra required packages needed for
 [dependent FUSE-based packages](../../INSTALL.md#compiling-dependent-fuse-based-packages),
 and these additional dependencies for the packaging:
@@ -56,6 +65,8 @@ See `mconfig --help` for details about the configuration options.
 `export DEB_NONETWORK=1` adds --without-network
 
 `export DEB_NOSECCOMP=1` adds --without-seccomp
+
+`export DEB_NOLIBSUBID=1` adds --without-libsubid
 
 `export DEB_NOALL=1`     adds all of the above
 

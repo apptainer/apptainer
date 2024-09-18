@@ -9,6 +9,7 @@
 # install dependencies
 dnf install -y rpm-build make yum-utils gcc binutils util-linux-ng which git
 dnf install -y libseccomp-devel cryptsetup
+dnf --enablerepo=devel install -y shadow-utils-subid-devel
 if [ $OS_TYPE != fedora ]; then
   dnf install -y epel-release
 fi

@@ -17,6 +17,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   (`$HOME/.apptainer/docker-config.json`). The commands `pull`, `push`, `run`,
   `exec`, `shell` and `instance start` can now also be passed a `--authfile
   <path>` option, to read OCI registry credentials from this custom file.
+- Add support for libsubid
 
 ## Changes for v1.3.x
 

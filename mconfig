@@ -62,6 +62,7 @@ fi
 with_network=1
 with_suid=-1
 with_seccomp_check=1
+with_libsubid=1
 do_go_version_check=1
 
 builddir=
@@ -117,11 +118,12 @@ usage_args () {
 	echo "     -h   this help"
 	echo
 	echo "  Apptainer options:"
-	echo "     --without-suid    do not install SUID binary (default, linux only)"
-	echo "     --with-suid       do install SUID binary (linux only)"
-	echo "     --without-network do not compile/install network plugins (linux only)"
-	echo "     --without-seccomp do not compile/install seccomp support even if available"
-	echo "     --only-rpm        only configure for rpm (lower host go version check)"
+	echo "     --without-suid     do not install SUID binary (default, linux only)"
+	echo "     --with-suid        do install SUID binary (linux only)"
+	echo "     --without-libsubid do not compile libsubid support even if available (linux only)"
+	echo "     --without-network  do not compile/install network plugins (linux only)"
+	echo "     --without-seccomp  do not compile/install seccomp support even if available"
+	echo "     --only-rpm         only configure for rpm (lower host go version check)"
 	echo
 	echo "  Path modification options:"
 	echo "     --prefix         install project in \`prefix'"
@@ -377,6 +379,8 @@ while [ $# -ne 0 ]; do
    with_suid=0; shift;;
   --with-suid)
    with_suid=1; shift;;
+  --without-libsubid)
+   with_libsubid=0; shift;;
   --without-network)
    with_network=0; shift;;
   --without-seccomp)
@@ -791,6 +795,11 @@ fi
 if [ "$appsec" = "1" ]; then
 	drawline $makeit_fragsdir/go_appsec_opts.mk
 	cat $makeit_fragsdir/go_appsec_opts.mk >> $makeit_makefile
+fi
+
+if [ "$libsubid" = "1" ]; then
+	drawline $makeit_fragsdir/go_libsubid_opts.mk
+	cat $makeit_fragsdir/go_libsubid_opts.mk >> $makeit_makefile
 fi
 
 if [ "$build_runtime" = "1" ]; then

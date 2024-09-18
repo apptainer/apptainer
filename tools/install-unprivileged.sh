@@ -330,7 +330,7 @@ if [ "$DIST" = el7 ]; then
 		EPELUTILS="$EPELUTILS fuse2fs"
 	fi
 elif [ "$DIST" = el8 ]; then
-	OSUTILS="$OSUTILS lzo squashfs-tools libzstd fuse3-libs"
+	OSUTILS="$OSUTILS lzo squashfs-tools libzstd fuse3-libs libsepol bzip2-libs audit-libs libcap-ng libattr libacl pcre2 libxcrypt libselinux libsemanage shadow-utils-subid"
 	if $NEEDSFUSE2FS; then
 		OSUTILS="$OSUTILS fuse-libs e2fsprogs-libs e2fsprogs"
 	fi
@@ -349,7 +349,7 @@ elif [ "$DIST" = "suse15" ]; then
 	EPELUTILS=""
 else
 	# el9 & fc*
-	OSUTILS="$OSUTILS lzo squashfs-tools libzstd"
+	OSUTILS="$OSUTILS lzo squashfs-tools libzstd libsepol bzip2-libs audit-libs libcap-ng libattr libacl pcre2 libxcrypt libselinux libsemanage shadow-utils-subid"
 	if $NEEDSFUSE2FS; then
 		OSUTILS="$OSUTILS fuse-libs e2fsprogs-libs e2fsprogs"
 	fi
@@ -421,6 +421,7 @@ rmdir lib 2>/dev/null || true
 # move everything needed out of tmp to utils
 mkdir -p utils/bin utils/lib utils/libexec
 mv tmp/usr/lib*/* utils/lib
+mv tmp/lib*/* utils/lib 2>/dev/null || true # optional
 mv tmp/usr/*bin/*squashfs utils/libexec
 mv tmp/usr/*bin/fuse* utils/libexec 2>/dev/null || true # optional
 mv tmp/usr/bin/fake*sysv utils/bin

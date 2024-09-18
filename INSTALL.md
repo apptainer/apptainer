@@ -30,6 +30,12 @@ sudo apt-get install -y \
     curl wget git
 ```
 
+Including for libsubid support (requires at least Ubuntu Noble or Debian Bookworm):
+
+```sh
+sudo apt-get install -y libsubid-dev
+```
+
 On RHEL or its derivatives:
 
 ```sh
@@ -46,6 +52,13 @@ sudo dnf install -y \
     wget git
 ```
 
+Including for libsubid support, use --enablerepo=devel for el8 and el9 but not
+for fedora:
+
+```sh
+sudo dnf --enablerepo=devel install shadow-utils-subid-devel
+```
+
 On SLE/openSUSE
 
 ```sh
@@ -56,6 +69,12 @@ sudo zypper install -y \
   openssl-devel \
   cryptsetup sysuser-tools \
   gcc go
+```
+
+For libsubid support (requires openSUSE Tumbleweed):
+
+```sh
+sudo zypper -y install libsubid5  libsubid-devel
 ```
 
 ## Install Go
