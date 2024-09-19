@@ -34,9 +34,7 @@ type BusyBoxConveyorPacker struct {
 }
 
 // Get just stores the source
-//
-// FIXME: use context for cancellation.
-func (c *BusyBoxConveyor) Get(_ context.Context, b *types.Bundle) (err error) {
+func (c *BusyBoxConveyor) Get(ctx context.Context, b *types.Bundle) (err error) {
 	c.b = b
 
 	// get mirrorURL, OSVerison, and Includes components to definition
@@ -60,7 +58,7 @@ func (c *BusyBoxConveyor) Get(_ context.Context, b *types.Bundle) (err error) {
 		return fmt.Errorf("while inserting busybox: %v", err)
 	}
 
-	cmd := exec.Command(busyBoxPath, `--install`, filepath.Join(c.b.RootfsPath, "/bin"))
+	cmd := exec.CommandContext(ctx, busyBoxPath, `--install`, filepath.Join(c.b.RootfsPath, "/bin"))
 
 	sylog.Debugf("\n\tBusyBox Path: %s\n\tMirrorURL: %s\n", busyBoxPath, mirrorurl)
 

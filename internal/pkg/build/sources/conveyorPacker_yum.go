@@ -48,9 +48,7 @@ type YumConveyorPacker struct {
 }
 
 // Get downloads container information from the specified source
-//
-// FIXME: use context for cancellation.
-func (c *YumConveyor) Get(_ context.Context, b *types.Bundle) (err error) {
+func (c *YumConveyor) Get(ctx context.Context, b *types.Bundle) (err error) {
 	c.b = b
 
 	// check for dnf or yum on system
@@ -93,7 +91,7 @@ func (c *YumConveyor) Get(_ context.Context, b *types.Bundle) (err error) {
 
 	// Do the install
 	sylog.Debugf("\n\tInstall Command Path: %s\n\tDetected Arch: %s\n\tOSVersion: %s\n\tMirrorURL: %s\n\tUpdateURL: %s\n\tIncludes: %s\n\tSetopt: %s\n", installCommandPath, runtime.GOARCH, c.osversion, c.mirrorurl, c.updateurl, c.include, c.setopt)
-	cmd := exec.Command(installCommandPath, args...)
+	cmd := exec.CommandContext(ctx, installCommandPath, args...)
 	if sylog.GetLevel() >= int(sylog.VerboseLevel) {
 		cmd.Stdout = os.Stdout
 	}

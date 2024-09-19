@@ -60,10 +60,8 @@ func machine() (string, error) {
 
 // Get downloads container information from the specified source
 //
-// FIXME: use context for cancellation.
-//
 //nolint:maintidx
-func (cp *ZypperConveyorPacker) Get(_ context.Context, b *types.Bundle) error {
+func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) error {
 	var suseconnectProduct, suseconnectModver string
 	var suseconnectPath string
 	// dependContainer is a container which shares the repos with the host through container-suseconnect
@@ -237,27 +235,27 @@ func (cp *ZypperConveyorPacker) Get(_ context.Context, b *types.Bundle) error {
 
 	// Add mirrorURL/installURL as repo
 	if mirrorurl != "" {
-		cmd := exec.Command(zypperPath, `--root`, cp.b.RootfsPath, `ar`, mirrorurl, `repo`)
+		cmd := exec.CommandContext(ctx, zypperPath, `--root`, cp.b.RootfsPath, `ar`, mirrorurl, `repo`)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err = cmd.Run(); err != nil {
 			return fmt.Errorf("while adding zypper mirror: %v", err)
 		}
 		// Refreshing gpg keys
-		cmd = exec.Command(zypperPath, `--root`, cp.b.RootfsPath, `--gpg-auto-import-keys`, `refresh`)
+		cmd = exec.CommandContext(ctx, zypperPath, `--root`, cp.b.RootfsPath, `--gpg-auto-import-keys`, `refresh`)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err = cmd.Run(); err != nil {
 			return fmt.Errorf("while refreshing gpg keys: %v", err)
 		}
 		if updateurl != "" {
-			cmd := exec.Command(zypperPath, `--root`, cp.b.RootfsPath, `ar`, `-f`, updateurl, `update`)
+			cmd := exec.CommandContext(ctx, zypperPath, `--root`, cp.b.RootfsPath, `ar`, `-f`, updateurl, `update`)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err = cmd.Run(); err != nil {
 				return fmt.Errorf("while adding zypper update: %v", err)
 			}
-			cmd = exec.Command(zypperPath, `--root`, cp.b.RootfsPath, `--gpg-auto-import-keys`, `refresh`, `-r`, `update`)
+			cmd = exec.CommandContext(ctx, zypperPath, `--root`, cp.b.RootfsPath, `--gpg-auto-import-keys`, `refresh`, `-r`, `update`)
 			if err = cmd.Run(); err != nil {
 				return fmt.Errorf("while refreshing update %v", err)
 			}
@@ -284,7 +282,7 @@ func (cp *ZypperConveyorPacker) Get(_ context.Context, b *types.Bundle) error {
 		if err = os.Symlink(rpmrel+rpmbase+`/rpm`, cp.b.RootfsPath+rpmsys+`/rpm`); err != nil {
 			return fmt.Errorf("cannot create rpm symlink")
 		}
-		cmd := exec.Command("rpmkeys", `--root`, cp.b.RootfsPath, `--import`, pgpfile)
+		cmd := exec.CommandContext(ctx, "rpmkeys", `--root`, cp.b.RootfsPath, `--import`, pgpfile)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err = cmd.Run(); err != nil {
