@@ -34,11 +34,9 @@ import (
 )
 
 // DownloadImage downloads a SIF image specified by an oci reference to a file using the included credentials
-//
-// FIXME: use context for cancellation.
 func DownloadImage(ctx context.Context, path, ref string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
 	rt := client.NewRoundTripper(ctx, nil)
-	im, err := remoteImage(ref, ociAuth, noHTTPS, rt, reqAuthFile)
+	im, err := remoteImage(ctx, ref, ociAuth, noHTTPS, rt, reqAuthFile)
 	if err != nil {
 		rt.ProgressShutdown()
 		return err
@@ -117,9 +115,7 @@ func DownloadImage(ctx context.Context, path, ref string, ociAuth *authn.AuthCon
 
 // UploadImage uploads the image specified by path and pushes it to the provided oci reference,
 // it will use credentials if supplied
-//
-// FIXME: use context for cancellation.
-func UploadImage(_ context.Context, path, ref string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
+func UploadImage(ctx context.Context, path, ref string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
 	// ensure that are uploading a SIF
 	if err := ensureSIF(path); err != nil {
 		return err
@@ -143,7 +139,11 @@ func UploadImage(_ context.Context, path, ref string, ociAuth *authn.AuthConfig,
 		return err
 	}
 
-	remoteOpts := []remote.Option{ociauth.AuthOptn(ociAuth, reqAuthFile), remote.WithUserAgent(useragent.Value())}
+	remoteOpts := []remote.Option{
+		ociauth.AuthOptn(ociAuth, reqAuthFile),
+		remote.WithUserAgent(useragent.Value()),
+		remote.WithContext(ctx),
+	}
 	if term.IsTerminal(2) {
 		pb := &client.DownloadProgressBar{}
 		progChan := make(chan v1.Update, 1)
@@ -191,10 +191,8 @@ func ensureSIF(filepath string) error {
 }
 
 // RefHash returns the digest of the SIF layer of the OCI manifest for supplied ref
-//
-// FIXME: use context for cancellation.
-func RefHash(_ context.Context, ref string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (v1.Hash, error) {
-	im, err := remoteImage(ref, ociAuth, noHTTPS, nil, reqAuthFile)
+func RefHash(ctx context.Context, ref string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (v1.Hash, error) {
+	im, err := remoteImage(ctx, ref, ociAuth, noHTTPS, nil, reqAuthFile)
 	if err != nil {
 		return v1.Hash{}, err
 	}
@@ -252,7 +250,7 @@ func sha256sum(r io.Reader) (result string, nBytes int64, err error) {
 }
 
 // remoteImage returns a v1.Image for the provided remote ref.
-func remoteImage(ref string, ociAuth *authn.AuthConfig, noHTTPS bool, rt *client.RoundTripper, reqAuthFile string) (v1.Image, error) {
+func remoteImage(ctx context.Context, ref string, ociAuth *authn.AuthConfig, noHTTPS bool, rt *client.RoundTripper, reqAuthFile string) (v1.Image, error) {
 	ref = strings.TrimPrefix(ref, "oras://")
 	ref = strings.TrimPrefix(ref, "//")
 
@@ -265,7 +263,10 @@ func remoteImage(ref string, ociAuth *authn.AuthConfig, noHTTPS bool, rt *client
 	if err != nil {
 		return nil, fmt.Errorf("invalid reference %q: %w", ref, err)
 	}
-	remoteOpts := []remote.Option{ociauth.AuthOptn(ociAuth, reqAuthFile)}
+	remoteOpts := []remote.Option{
+		ociauth.AuthOptn(ociAuth, reqAuthFile),
+		remote.WithContext(ctx),
+	}
 	if rt != nil {
 		remoteOpts = append(remoteOpts, remote.WithTransport(rt))
 	}
