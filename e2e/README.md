@@ -939,13 +939,22 @@ parallel.
 
 ## Running the e2e suite
 
-To run the e2e-test suite, use the `e2e-test` script:
+To run the e2e-test suite, after compiling and installing apptainer using
+the standard instructions into `/usr/local`, use the `e2e-test` script:
 
 ```sh
 ./scripts/e2e-test -v
 ```
 
 The `-v` option means verbose so it will list all the tests being run.
+
+The script should be run as a user with sudo privileges.
+If the privileges are defined as NOPASSWD but it prompts for a password
+anyway, add this to the sudoers configuration:
+
+```text
+Defaults verifypw = any
+```
 
 ### Test filtering
 
@@ -961,10 +970,10 @@ For example, to run only the tests in the ACTIONS group:
 or to run only sequential tests that include the word "global":
 
 ```sh
-./scripts/e2e-test -v -run TestE2E/SEQ/.*global.*
+./scripts/e2e-test -v -run TestE2E/SEQ/.*/.*global
 ```
 
-It's not always easy to figure out what the full path of tests of interest.
+It's not always easy to figure out the full path of tests of interest.
 The easiest way is to look at the log of an `e2e_tests` check on any
 https://github.com/apptainer/apptainer pull request.
 
