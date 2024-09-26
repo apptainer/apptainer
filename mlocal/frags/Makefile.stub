@@ -113,7 +113,7 @@ cscope:
 clean:
 	@printf " CLEAN\n"
 	$(V)rm -rf $(BUILDDIR)/mergeddeps cscope.* $(CLEANFILES)
-	$(V)mlocal/scripts/clean-dependencies
+	$(V)$(SOURCEDIR)/scripts/clean-dependencies
 
 .PHONY: install
 install: $(INSTALLFILES)
