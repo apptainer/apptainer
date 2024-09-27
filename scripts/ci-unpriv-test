@@ -10,7 +10,7 @@
 if [ "$OS_TYPE" = debian ] || [ "$OS_TYPE" = ubuntu ]; then
   apt-get update
   apt-get install -y curl rpm2cpio cpio e2fsprogs tzdata
-elif [ "$OS_TYPE" = "opensuse/leap" ] || [ "$OS_TYPE" = "opensuse/tumbleweed" ]; then
+elif [[ "$OS_TYPE" == *suse* ]]; then
   zypper install -y e2fsprogs curl cpio util-linux timezone
 else
   dnf install -y e2fsprogs cpio
@@ -26,7 +26,7 @@ su testuser -c '
   set -x
   set -e
   rm -rf ins image*.sif overlay.img
-  tools/install-unprivileged.sh -e -v apptainer-[1-9]*.$(arch).rpm ins
+  tools/install-unprivileged.sh -e -v apptainer-[1-9]*.$(arch).rpm '"$INS_OPTS"' ins
   (
   echo Bootstrap: docker
   echo From: '"$CONTAINER_VERS"'

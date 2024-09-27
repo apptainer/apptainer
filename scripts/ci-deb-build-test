@@ -36,11 +36,13 @@ apt-get install -y \
     dh-apparmor
 
 # for squashfuse_ll build
-apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev
+apt-get install -y autoconf automake libtool pkg-config libfuse3-dev \
+    zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
 
-# for libsubid support in Ubuntu 24.04
-if [[ $OS_NAME = "Ubuntu" ]] && [ $OS_MAJOR -gt 23 ]; then
-    apt-get install -y libsubid4 libsubid-dev
+# for libsubid support in Ubuntu 24.04+ or Debian 12+
+if { [ $OS_NAME = "Ubuntu" ] && [ $OS_MAJOR -ge 24 ]; } || \
+	{ [ $OS_NAME = "Debian" ] && [ $OS_MAJOR -ge 12 ]; }; then
+    apt-get install -y libsubid-dev
 fi
 
 # move source code down a level because debuild writes into parent dir

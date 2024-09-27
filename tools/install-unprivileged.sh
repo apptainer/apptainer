@@ -111,12 +111,12 @@ case "$DIST" in
 	ubuntu20*|debian10*|debian11*) DIST=el8;;
 	ubuntu*|debian1*|debian) DIST=el9;;
 	el*|fc*);;
-	opensuse-tumbleweed)
+	suse20*|opensuse-tumbleweed)
 		if $NOOPENSUSE; then
 			DIST=el9
 		fi
 	;;
-	suse15)
+	suse15|opensuse-leap)
 		if $NOOPENSUSE; then
 			DIST=el8
 		fi
@@ -160,16 +160,16 @@ case $1 in
 	    OSREPOURL="https://dl.fedoraproject.org/pub/fedora/linux/updates/$FC/Everything/$ARCH/Packages/"
 	    EPELREPOURL="https://dl.fedoraproject.org/pub/fedora/linux/updates$TESTING/$FC/Everything/$ARCH/Packages/"
 	    ;;
-	opensuse-tumbleweed)
+	suse20*|opensuse-tumbleweed)
 	    OSREPOURL="https://download.opensuse.org/tumbleweed/repo/oss/$ARCH"
 	    EPELREPOURL="https://download.opensuse.org/repositories/network:/cluster/openSUSE_Tumbleweed/$ARCH"
 	    EXTRASREPOURL=$OSREPOURL
 	    OSSPLIT=false
 	    ;;
-	suse15)
-	    OSREPOURL="https://download.opensuse.org/distribution/leap/15.4/repo/oss/$ARCH"
-	    EPELREPOURL="https://download.opensuse.org/repositories/network:/cluster/15.4/$ARCH"
-	    EXTRASREPOURL="https://download.opensuse.org/repositories/filesystems/15.4/$ARCH"
+	suse15|opensuse-leap)
+	    OSREPOURL="https://download.opensuse.org/distribution/leap/15.6/repo/oss/$ARCH"
+	    EPELREPOURL="https://download.opensuse.org/repositories/network:/cluster/15.6/$ARCH"
+	    EXTRASREPOURL="https://download.opensuse.org/repositories/filesystems/15.6/$ARCH"
 	    OSSPLIT=false
 	    ;;
 	*) fatal "$1 distribution not supported";;
@@ -199,10 +199,10 @@ latesturl()
 		# optimization: reuse last list if it hasn't changed
 		LASTURL="$URL"
 		LASTPKGS="$(curl $CURLOPTS "$URL")"
-	elif [ $RETRY -gt 0 ]; then
+	elif [ -z "$LASTPKGS" ]; then
 		LASTPKGS="$(curl $CURLOPTS "$URL")"
 	fi
-	typeset LATEST="$(echo "$LASTPKGS"|sed -e 's/.*href="//;s/".*//' -e 's/\.mirrorlist//' -e 's/\-32bit//' -e 's@^\.\/@@' |grep "^$2-[0-9].*$ARCH"|tail -1)"
+	typeset LATEST="$(echo "$LASTPKGS"|sed -e 's/.*href="//;s/".*//' -e 's/\.mirrorlist//' -e 's/\-32bit//' -e 's@^\.\/@@' |grep "^$2-[0-9].*$ARCH\.rpm"|tail -1)"
 	if [ -n "$LATEST" ]; then
 		RETRY=0
 		echo "$URL/$LATEST"
@@ -241,9 +241,10 @@ if [[ "$VERSION" == *.rpm ]]; then
 	# take third from last field separated by dots as the rpm dist
 	# shellcheck disable=SC2001
 	RPMDIST="$(echo "$VERSION"|sed 's/.*\.\(.*\)\.[^.]*\..*$/\1/')"
-	# but if it starts with a number, the dist is missing so just try
-	# to use the default DIST (which happens if RPMDIST is empty)
-	if [[ "$RPMDIST" == [0-9]* ]]; then
+	# but if it starts with a number or contains a dash, the dist is
+	# missing so just try to use the default DIST (which happens if
+	# RPMDIST is empty)
+	if [[ "$RPMDIST" == [0-9]* ]] || [[ "$RPMDIST" == *-* ]]; then
 		RPMDIST=""
 	fi
 elif [ -z "$VERSION" ] || ! $NOOPENSUSE; then
@@ -304,12 +305,16 @@ fi
 
 OSUTILS=""
 NEEDSFUSE2FS=true
-if [ -f libexec/apptainer/bin/fuse2fs ]; then
+LIBEXEC=libexec
+if [ "$DIST" == suse15 ] || [ "$DIST" == opensuse-leap ]; then
+        LIBEXEC=lib
+fi
+if [ -f $LIBEXEC/apptainer/bin/fuse2fs ]; then
 	# apptainer-1.3.0 or newer
 	NEEDSFUSE2FS=false
 fi
 EXTRASUTILS=""
-if [ ! -f libexec/apptainer/bin/fuse-overlayfs ]; then
+if [ ! -f $LIBEXEC/apptainer/bin/fuse-overlayfs ]; then
 	# older than apptainer-1.3.0
 	EXTRASUTILS="fuse-overlayfs"
 fi
@@ -330,26 +335,28 @@ if [ "$DIST" = el7 ]; then
 		EPELUTILS="$EPELUTILS fuse2fs"
 	fi
 elif [ "$DIST" = el8 ]; then
-	OSUTILS="$OSUTILS lzo squashfs-tools libzstd fuse3-libs libsepol bzip2-libs audit-libs libcap-ng libattr libacl pcre2 libxcrypt libselinux libsemanage shadow-utils-subid"
+	# lz4-libs are installed by default on rhel but needed when
+	# these binaries are used on suse
+	OSUTILS="$OSUTILS lzo squashfs-tools lz4-libs libzstd fuse3-libs libsepol bzip2-libs audit-libs libcap-ng libattr libacl pcre2 libxcrypt libselinux libsemanage shadow-utils-subid"
 	if $NEEDSFUSE2FS; then
 		OSUTILS="$OSUTILS fuse-libs e2fsprogs-libs e2fsprogs"
 	fi
-elif [ "$DIST" = "opensuse-tumbleweed" ]; then
-	OSUTILS="$OSUTILS squashfs liblzo2-2 libzstd1 libfuse3-3 $EXTRASUTILS $EPELUTILS"
+elif [[ "$DIST" == suse20* ]] || [ "$DIST" = "opensuse-tumbleweed" ]; then
+	OSUTILS="$OSUTILS squashfs liblzo2-2 liblz4-1 libzstd1 libfuse3-3 $EXTRASUTILS $EPELUTILS"
 	if $NEEDSFUSE2FS; then
 		OSUTILS="$OSUTILS fuse2fs"
 	fi
 	EXTRASUTILS=""
 	EPELUTILS=""
-elif [ "$DIST" = "suse15" ]; then
-	OSUTILS="$OSUTILS squashfs liblzo2-2 libzstd1 libfuse3-3 $EPELUTILS"
+elif [ "$DIST" = "suse15" ] || [ "$DIST" = "opensuse-leap" ]; then
+	OSUTILS="$OSUTILS squashfs liblzo2-2 liblz4-1 libzstd1 libfuse3-3 $EPELUTILS"
 	if $NEEDSFUSE2FS; then
 		EXTRASUTILS="$EXTRASUTILS libext2fs2 libfuse2 fuse2fs"
 	fi
 	EPELUTILS=""
 else
 	# el9 & fc*
-	OSUTILS="$OSUTILS lzo squashfs-tools libzstd libsepol bzip2-libs audit-libs libcap-ng libattr libacl pcre2 libxcrypt libselinux libsemanage shadow-utils-subid"
+	OSUTILS="$OSUTILS lzo squashfs-tools lz4-libs libzstd libsepol bzip2-libs audit-libs libcap-ng libattr libacl pcre2 libxcrypt libselinux libsemanage shadow-utils-subid"
 	if $NEEDSFUSE2FS; then
 		OSUTILS="$OSUTILS fuse-libs e2fsprogs-libs e2fsprogs"
 	fi
@@ -402,6 +409,7 @@ echo "Patching fakeroot-sysv to make it relocatable"
 if ! sed -i -e 's,^FAKEROOT_PREFIX=/.*,FAKEROOT_BINDIR=${0%/*},' \
 	-e 's,FAKEROOT_BINDIR=/.*,FAKEROOT_PREFIX=${FAKEROOT_BINDIR%/*},' \
 	-e 's,^PATHS=/usr/lib[^/]*/libfakeroot:,PATHS=,' \
+	-e 's,/lib32/,/lib/,' \
 	usr/bin/fakeroot-sysv
 then
 	fatal "failure patching fakeroot-sysv"

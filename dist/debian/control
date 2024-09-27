@@ -21,6 +21,9 @@ Build-Depends:
  pkg-config,
  libfuse3-dev,
  zlib1g-dev,
+ liblzo2-dev,
+ liblzma-dev,
+ libzstd-dev,
  dh-apparmor
 Standards-Version: 3.9.8
 Homepage: http://apptainer.org
