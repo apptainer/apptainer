@@ -26,6 +26,7 @@ const (
 	squashfsLzoComp  = 3
 	squashfsXzComp   = 4
 	squashfsLz4Comp  = 5
+	squashfsZstdComp = 6
 )
 
 // this represents the superblock of a v4 squashfs image
@@ -94,6 +95,8 @@ func CheckSquashfsHeader(b []byte) (uint64, error) {
 			compressionType = "lzo"
 		case squashfsXzComp:
 			compressionType = "xz"
+		case squashfsZstdComp:
+			compressionType = "zstd"
 		default:
 			return 0, fmt.Errorf("corrupted image: unknown compression algorithm value %d", sinfo.Compression)
 		}
@@ -124,6 +127,8 @@ func GetSquashfsComp(b []byte) (string, error) {
 			compType = "lzo"
 		case squashfsXzComp:
 			compType = "xz"
+		case squashfsZstdComp:
+			compType = "zstd"
 		}
 		return compType, nil
 	} else if sb.Major < 4 {

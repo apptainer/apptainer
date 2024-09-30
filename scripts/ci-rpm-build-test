@@ -7,17 +7,31 @@
 # this script runs as root under docker --privileged
 
 # install dependencies
-dnf install -y rpm-build make yum-utils gcc binutils util-linux-ng which git
-dnf install -y libseccomp-devel cryptsetup
-dnf --enablerepo=devel install -y shadow-utils-subid-devel
-if [ $OS_TYPE != fedora ]; then
-  dnf install -y epel-release
+if [[ $OS_TYPE == *suse* ]]; then
+  zypper install -y libseccomp-devel libuuid-devel openssl-devel \
+    squashfs fakeroot cryptsetup sysuser-tools wget git go
+  zypper install -y diffutils
+  zypper install -y --replacefiles -t pattern devel_basis
+  if [[ $OS_TYPE == *tumbleweed* ]]; then
+    zypper install -y libsubid-devel
+  fi
+  zypper install -y gzip fuse3-devel lzo-devel liblz4-devel \
+    xz-devel libzstd-devel
+  zypper install -y rpm-build binutils-gold
+  zypper install -y sudo
+else
+  dnf groupinstall -y 'Development Tools'
+  if [ $OS_TYPE != fedora ]; then
+    dnf install -y epel-release
+  fi
+  dnf install -y libseccomp-devel squashfs-tools fakeroot cryptsetup wget git
+  dnf --enablerepo=devel install -y shadow-utils-subid-devel
+  dnf install -y golang
+  dnf install -y fuse3-devel lzo-devel lz4-devel
+  dnf install -y sudo
 fi
-dnf install -y golang fakeroot
-dnf install -y autoconf automake libtool pkgconfig fuse3-devel zlib-devel
 
 # switch to an unprivileged user with sudo privileges
-dnf install -y sudo
 useradd -u 1000 --create-home -s /bin/bash testuser
 echo "Defaults:testuser env_keep=DOCKER_HOST" >>/etc/sudoers
 echo "testuser ALL=(ALL) NOPASSWD: ALL" >>/etc/sudoers
@@ -48,7 +62,11 @@ su testuser -c '
     echo "%dist %{nil}" >$HOME/.rpmmacros
   fi
   make -C builddir rpm
-  sudo dnf install -y $HOME/rpmbuild/RPMS/*/*.rpm
+  if [[ '$OS_TYPE' == *suse* ]]; then
+    sudo zypper install -y --allow-unsigned-rpm $HOME/rpmbuild/RPMS/*/*.rpm
+  else
+    sudo dnf install -y $HOME/rpmbuild/RPMS/*/*.rpm
+  fi
   BLD="$(echo $HOME/rpmbuild/BUILD/apptainer-*)"
   export GOPATH=$BLD/gopath
   PATH=$GOPATH/bin:$PATH

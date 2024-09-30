@@ -36,7 +36,7 @@ Including for libsubid support (requires at least Ubuntu Noble or Debian Bookwor
 sudo apt-get install -y libsubid-dev
 ```
 
-On RHEL or its derivatives:
+On RHEL or its derivatives or Fedora:
 
 ```sh
 # Install basic tools for compiling
@@ -52,11 +52,11 @@ sudo dnf install -y \
     wget git
 ```
 
-Including for libsubid support, use --enablerepo=devel for el8 and el9 but not
+For including libsubid support, use --enablerepo=devel for el8 and el9 but not
 for fedora:
 
 ```sh
-sudo dnf --enablerepo=devel install shadow-utils-subid-devel
+sudo dnf --enablerepo=devel install -y shadow-utils-subid-devel
 ```
 
 On SLE/openSUSE
@@ -67,14 +67,20 @@ sudo zypper install -y \
   libseccomp-devel \
   libuuid-devel \
   openssl-devel \
+  squashfs fakeroot \
   cryptsetup sysuser-tools \
-  gcc go
+  wget git go
+# Install these before devel tools to avoid clashing busybox pkgs on Tumbleweed
+sudo zypper install -y diffutils which
+# Install basic tools for compiling
+# --replacefiles is needed to avoid pam conflict on Tumbleweed
+sudo zypper install -y --replacefiles -t pattern devel_basis
 ```
 
 For libsubid support (requires openSUSE Tumbleweed):
 
 ```sh
-sudo zypper -y install libsubid5  libsubid-devel
+sudo zypper install -y libsubid-devel
 ```
 
 ## Install Go
@@ -166,7 +172,7 @@ make
 sudo make install
 ```
 
-And that's it! Now you can check your Apptainer version by running:
+Now you can check your Apptainer version by running:
 
 ```sh
 apptainer --version
@@ -187,22 +193,29 @@ See the output of `./mconfig -h` for available options.
 
 ## Compiling dependent FUSE-based packages
 
-In many cases Apptainer uses FUSE-based packages in order to mount
-filesystems.  Very often these packages are available in Linux
-distributions but out of date for Apptainer needs, so they need to be
+In most cases Apptainer uses FUSE-based packages in order to mount
+filesystems.  Often some of these packages are available in Linux
+distributions but are out of date for Apptainer needs, so they need to be
 compiled and installed with Apptainer following these directions.
 
 First, make sure that additional required packages are installed.  On Debian:
 
 ```sh
-sudo apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev
+sudo apt-get install -y autoconf automake libtool pkg-config libfuse3-dev \
+    zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
 ```
 
 On RHEL or derivatives:
 
 ```sh
-sudo dnf install -y autoconf automake libtool pkgconfig fuse3-devel zlib-devel
+sudo dnf install -y fuse3-devel lzo-devel lz4-devel
 ```
+
+On SLE/openSUSE:
+
+```sh
+sudo zypper install -y gzip fuse3-devel lzo-devel liblz4-devel \
+    xz-devel libzstd-devel
 
 To download the source code from the top level of the Apptainer source
 tree do:
@@ -269,10 +282,10 @@ sudo sysctl -p /etc/sysctl.d/90-disable-userns-restrictions.conf
 
 ## Building & Installing from RPM
 
-On a RHEL / Fedora machine you can build an Apptainer into rpm
+On a RHEL / Fedora /SUSE machine you can build an Apptainer into rpm
 packages, and install it from them. This is useful if you need to install
 Apptainer across multiple machines, or wish to manage all software via
-`dnf`.
+`dnf` (or `zypper` for SUSE).
 
 To build the rpms, in addition to the
 [system dependencies](#install-system-dependencies)
@@ -282,6 +295,12 @@ also install these extra packages:
 
 ```sh
 sudo dnf install -y rpm-build golang
+```
+
+or on SLE/openSUSE:
+
+```sh
+sudo zypper install -y rpm-build binutils-gold
 ```
 
 The rpm build will use the OS distribution or EPEL version of Go,

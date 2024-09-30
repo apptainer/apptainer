@@ -106,12 +106,14 @@ Provides: bundled(fuse-overlayfs) = %{fuse_overlayfs_version}
 %if "%{_target_vendor}" == "suse"
 BuildRequires: binutils-gold
 BuildRequires: go
+BuildRequires: liblz4-devel
 %if 0%{?suse_version} > 1600
 BuildRequires: libsubid-devel
 %endif
 %else
 BuildRequires: shadow-utils-subid-devel
 BuildRequires: golang
+BuildRequires: lz4-devel
 %endif
 BuildRequires: git
 BuildRequires: gcc
@@ -125,6 +127,9 @@ BuildRequires: automake
 BuildRequires: libtool
 BuildRequires: pkgconfig
 BuildRequires: zlib-devel
+BuildRequires: lzo-devel
+BuildRequires: xz-devel
+BuildRequires: libzstd-devel
 %endif
 %if "%{_target_vendor}" == "suse"
 Requires: squashfs
