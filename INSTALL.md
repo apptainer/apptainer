@@ -403,35 +403,4 @@ Information on how to build Debian packages can be found in
 
 ## Run E2E tests
 
-The test suite is heavily relying on Docker Hub registry, since the introduction
-of the rate pull limit, developers can quickly hit the quota limit leading to
-the e2e tests randomly failed.
-
-There is two possible approaches to minimize/avoid that:
-
-1. if you have an account on Docker Hub you can specify and export your
-credentials via environment variables `E2E_DOCKER_USERNAME` and
-`E2E_DOCKER_PASSWORD` before running the test suite, however if you have
-a free account the quota limit is simply doubled and may not work for you
-2. or you can run a local pull through cache registry and use
-`E2E_DOCKER_MIRROR`/`E2E_DOCKER_MIRROR_INSECURE` environment variables
-
-### Run a local pull through cache registry
-
-The most straightforward way to run it is to run in a terminal:
-
-```sh
-mkdir -p $HOME/.cache/registry
-apptainer run --env REGISTRY_HTTP_ADDR=127.0.0.1:5001 \
-                --env REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
-                --bind $HOME/.cache/registry:/var/lib/registry \
-                docker://registry:2.7
-```
-
-And run the test suite in another terminal:
-
-```sh
-export E2E_DOCKER_MIRROR=127.0.0.1:5001
-export E2E_DOCKER_MIRROR_INSECURE=true
-make -C builddir e2e-test
-```
+To run the E2E test suite see [e2e/README.md](e2e/README.md#running-the-e2e-suite).

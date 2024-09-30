@@ -7,3 +7,7 @@ MD049: false
 MD050: false
 # Allow bare urls
 MD034: false
+# Line-length
+MD013:
+  # Disable line-length check inside code blocks
+  code_blocks: false
