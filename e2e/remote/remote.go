@@ -19,6 +19,7 @@ import (
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/syfs"
 )
 
@@ -570,6 +571,40 @@ func (c ctx) remoteUseExclusive(t *testing.T) {
 		testRemote    = "e2e"
 	)
 
+	// Move the user's and root's remote.yaml files aside for the purposes of this test
+	origRelPath := filepath.Join(".apptainer", "remote.yaml")
+	asideRelPath := fmt.Sprintf("%s.aside-remoteUseExclusive", origRelPath)
+	moveAsideRemoteYAML := func(t *testing.T) {
+		homeDir := e2e.CurrentUser(t).Dir
+		origRemoteYAML := filepath.Join(homeDir, origRelPath)
+		asideRemoteYAML := filepath.Join(homeDir, asideRelPath)
+		if !fs.IsReadable(origRemoteYAML) {
+			return
+		}
+		if err := os.Rename(origRemoteYAML, asideRemoteYAML); err != nil {
+			t.Fatalf("While trying to mv %q to %q: %v", origRemoteYAML, asideRemoteYAML, err)
+		}
+	}
+	restoreRemoteYAML := func(t *testing.T) {
+		homeDir := e2e.CurrentUser(t).Dir
+		origRemoteYAML := filepath.Join(homeDir, origRelPath)
+		asideRemoteYAML := filepath.Join(homeDir, asideRelPath)
+		if !fs.IsReadable(asideRemoteYAML) {
+			return
+		}
+		if err := os.Rename(asideRemoteYAML, origRemoteYAML); err != nil {
+			t.Fatalf("While trying to mv %q to %q: %v", asideRemoteYAML, origRemoteYAML, err)
+		}
+	}
+
+	moveAsideRemoteYAML(t)
+	e2e.Privileged(moveAsideRemoteYAML)(t)
+
+	t.Cleanup(func() {
+		restoreRemoteYAML(t)
+		e2e.Privileged(restoreRemoteYAML)(t)
+	})
+
 	tests := []struct {
 		name       string
 		command    string
@@ -665,7 +700,7 @@ func (c ctx) remoteUseExclusive(t *testing.T) {
 			name:       "no default remote set",
 			command:    "key search",
 			args:       []string{"@"},
-			expectExit: 2,
+			expectExit: 255,
 			profile:    e2e.RootProfile,
 		},
 		{
