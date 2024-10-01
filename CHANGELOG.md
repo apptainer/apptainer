@@ -22,6 +22,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   include the libraries needed for maximum support of compression algorithms
   by squashfuse_ll.
 - Add automated tests for OpenSUSE Leap and Tumbleweed and Debian Bookworm.
+- Fixed typo in `nvliblist.conf` (`libnvoptix.so.1` -> `libnvoptix.so`)
 
 ## Changes for v1.3.x
 
