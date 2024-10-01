@@ -4,6 +4,7 @@
 - Adam Hughes <adam@sylabs.io>, <stickmanica@gmail.com>
 - Adam Simpson <asimpson@nvidia.com>, <adambsimpson@gmail.com>
 - Afif Elghraoui <afif.elghraoui@nih.gov>
+- Alan O'Cais <alan.ocais@cecam.org>
 - Alexander Grund <alexander.grund@tu-dresden.de>
 - Amanda Duffy <aduffy@lenovo.com>
 - Ana Guerrero Lopez <aguerrero@suse.com>
