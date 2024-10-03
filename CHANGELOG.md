@@ -30,6 +30,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   - Resource limits (e.g. `--cpus`) have not been requested.
   The container / instance will be started in the current cgroup, and information
   about the configuration issue displayed to the user as warnings.
+- Fix storage of credentials for `docker.io` to behave the same as for
+  `index.docker.io`.
 
 ## Changes for v1.3.x
 
