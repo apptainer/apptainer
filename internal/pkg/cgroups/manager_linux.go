@@ -133,10 +133,12 @@ func (m *Manager) UpdateFromSpec(resources *specs.LinuxResources) (err error) {
 		},
 	}
 
+	uid := os.Geteuid()
+
 	opts := &lcspecconv.CreateOpts{
 		CgroupName:       m.group,
 		UseSystemdCgroup: false,
-		RootlessCgroups:  os.Getuid() != 0,
+		RootlessCgroups:  uid != 0,
 		Spec:             spec,
 	}
 
@@ -232,25 +234,15 @@ func (m *Manager) Destroy() (err error) {
 	return m.cgroup.Destroy()
 }
 
-// checkRootless identifies if rootless cgroups are required / supported
-func checkRootless(group string, systemd bool) (rootless bool, err error) {
-	if os.Getuid() == 0 {
+// useRootless identifies whether rootless cgroups are required, and verifies the requested cgroup name is valid.
+func useRootless(group string, systemd bool) (rootless bool, err error) {
+	if os.Geteuid() == 0 {
 		if systemd {
 			if !strings.HasPrefix(group, "system.slice:") {
 				return false, fmt.Errorf("systemd cgroups require a cgroups path beginning with 'system.slice:'")
 			}
 		}
 		return false, nil
-	}
-
-	if !lccgroups.IsCgroup2HybridMode() && !lccgroups.IsCgroup2UnifiedMode() {
-		return false, fmt.Errorf("rootless cgroups requires cgroups v2")
-	}
-	if !systemd {
-		return false, fmt.Errorf("rootless cgroups require 'systemd cgroups' to be enabled in apptainer.conf")
-	}
-	if os.Getenv("XDG_RUNTIME_DIR") == "" || os.Getenv("DBUS_SESSION_BUS_ADDRESS") == "" {
-		return false, fmt.Errorf("rootless cgroups require a D-Bus session - check that XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS are set")
 	}
 
 	if !strings.HasPrefix(group, "user.slice:") {
@@ -275,7 +267,7 @@ func newManager(resources *specs.LinuxResources, group string, systemd bool) (ma
 		return nil, fmt.Errorf("a cgroup name/path is required")
 	}
 
-	rootless, err := checkRootless(group, systemd)
+	rootless, err := useRootless(group, systemd)
 	if err != nil {
 		return nil, err
 	}
@@ -352,6 +344,10 @@ func newManager(resources *specs.LinuxResources, group string, systemd bool) (ma
 // If a group name is supplied, it will be used by the manager.
 // If group = "" then "/apptainer/<pid>" is used as a default.
 func NewManagerWithSpec(spec *specs.LinuxResources, pid int, group string, systemd bool) (manager *Manager, err error) {
+	if !CanUseCgroups(systemd, true) {
+		return nil, fmt.Errorf("system configuration does not support cgroup management")
+	}
+
 	if pid == 0 {
 		return nil, fmt.Errorf("a pid is required to create a new cgroup")
 	}

@@ -54,7 +54,6 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	"github.com/apptainer/apptainer/pkg/util/rlimit"
-	lccgroups "github.com/opencontainers/runc/libcontainer/cgroups"
 	"github.com/opencontainers/runtime-spec/specs-go"
 	"golang.org/x/sys/unix"
 )
@@ -1092,16 +1091,7 @@ func (l *Launcher) setCgroups(instanceName string) error {
 	// If we are an instance, always use a cgroup if possible, to enable stats.
 	// root can always create a cgroup.
 	sylog.Debugf("During setting cgroups configuration, uid: %d, namespace.user: %t, fakeroot: %t, unprivileged: %t", l.uid, l.cfg.Namespaces.User, l.cfg.Fakeroot, namespaces.IsUnprivileged())
-	useCG := l.uid == 0 && !namespaces.IsUnprivileged()
-	// non-root needs cgroups v2 unified mode + systemd as cgroups manager.
-	if !useCG && lccgroups.IsCgroup2UnifiedMode() && l.engineConfig.File.SystemdCgroups && !namespaces.IsUnprivileged() && !l.cfg.Fakeroot && !hidePid {
-		if os.Getenv("XDG_RUNTIME_DIR") == "" || os.Getenv("DBUS_SESSION_BUS_ADDRESS") == "" {
-			sylog.Infof("Instance stats will not be available because XDG_RUNTIME_DIR")
-			sylog.Infof("  or DBUS_SESSION_BUS_ADDRESS is not set")
-			return nil
-		}
-		useCG = true
-	}
+	useCG := cgroups.CanUseCgroups(l.engineConfig.File.SystemdCgroups, false) && !namespaces.IsUnprivileged() && !l.cfg.Fakeroot && !hidePid
 
 	if useCG {
 		sylog.Debugf("Using cgroup manager during setting cgroups configuration")
@@ -1125,9 +1115,9 @@ func (l *Launcher) setCgroups(instanceName string) error {
 	}
 
 	if l.cfg.ShareNSMode {
-		sylog.Debugf("Instance stats will not be available - requires cgroups v2 with systemd as manager.")
+		sylog.Debugf("Instance stats will not be available - system configuration does not support cgroup management.")
 	} else {
-		sylog.Infof("Instance stats will not be available - requires cgroups v2 with systemd as manager.")
+		sylog.Infof("Instance stats will not be available - system configuration does not support cgroup management.")
 	}
 	return nil
 }

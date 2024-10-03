@@ -23,6 +23,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
   by squashfuse_ll.
 - Add automated tests for OpenSUSE Leap and Tumbleweed and Debian Bookworm.
 - Fixed typo in `nvliblist.conf` (`libnvoptix.so.1` -> `libnvoptix.so`)
+- Containers and instances can now be successfully
+  started as a non-root user on cgroups v2 systems when both:
+  - The system configuration / environment does not provide the correct
+    information necessary to communicate with systemd via dbus.
+  - Resource limits (e.g. `--cpus`) have not been requested.
+  The container / instance will be started in the current cgroup, and information
+  about the configuration issue displayed to the user as warnings.
 
 ## Changes for v1.3.x
 
