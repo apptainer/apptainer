@@ -723,6 +723,155 @@ func (c *ctx) instanceFlagsRootless(t *testing.T) {
 	}
 }
 
+// On cgroups v2 systems, can run rootless without resource limits with bad
+// XDG_RUNTIME_DIR / DBUS_SESSION_BUS_ADDRESS. Cannot run with resource limits
+// and bad env vars.
+func (c *ctx) actionDbusXDG(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+	require.CgroupsV2Unified(t)
+
+	tests := []struct {
+		name            string
+		args            []string
+		expectErrorCode int
+		expectErrorOut  string
+		xdgVar          string
+		dbusVar         string
+	}{
+		{
+			name:            "bad xdg no limits",
+			args:            []string{c.env.ImagePath, "/bin/true"},
+			expectErrorCode: 0,
+			xdgVar:          "/not/a/dir",
+		},
+		{
+			name:            "bad dbus no limits",
+			args:            []string{c.env.ImagePath, "/bin/true"},
+			expectErrorCode: 0,
+			dbusVar:         "/not/a/dbus/socket",
+		},
+		{
+			name:            "bad xdg limits",
+			args:            []string{"--cpus", "1", c.env.ImagePath, "/bin/true"},
+			expectErrorCode: 255,
+			expectErrorOut:  "XDG_RUNTIME_DIR",
+			xdgVar:          "/not/a/dir",
+		},
+		{
+			name:            "bad dbus limits",
+			args:            []string{"--cpus", "1", c.env.ImagePath, "/bin/true"},
+			expectErrorCode: 255,
+			expectErrorOut:  "DBUS_SESSION_BUS_ADDRESS",
+			dbusVar:         "/not/a/dbus/socket",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, profile := range []e2e.Profile{e2e.UserProfile} {
+				exitFunc := []e2e.ApptainerCmdResultOp{}
+				if tt.expectErrorOut != "" {
+					exitFunc = []e2e.ApptainerCmdResultOp{e2e.ExpectError(e2e.ContainMatch, tt.expectErrorOut)}
+				}
+				testEnv := []string{}
+				if tt.xdgVar != "" {
+					testEnv = append(testEnv, "XDG_RUNTIME_DIR="+tt.xdgVar)
+				}
+				if tt.dbusVar != "" {
+					testEnv = append(testEnv, "DBUS_SESSION_BUS_ADDRESS="+tt.dbusVar)
+				}
+				c.env.RunApptainer(
+					t,
+					e2e.AsSubtest(profile.String()),
+					e2e.WithProfile(profile),
+					e2e.WithCommand("exec"),
+					e2e.WithArgs(tt.args...),
+					e2e.WithEnv(testEnv),
+					e2e.ExpectExit(tt.expectErrorCode, exitFunc...),
+				)
+			}
+		})
+	}
+}
+
+// On cgroups v2 systems, can run rootless without resource limits with bad
+// XDG_RUNTIME_DIR / DBUS_SESSION_BUS_ADDRESS. Cannot run with resource limits
+// and bad env vars.
+func (c *ctx) instanceDbusXdg(t *testing.T) {
+	require.CgroupsV2Unified(t)
+	e2e.EnsureImage(t, c.env)
+
+	// All tests require root
+	tests := []struct {
+		name            string
+		args            []string
+		expectErrorCode int
+		xdgVar          string
+		dbusVar         string
+	}{
+		{
+			name:            "bad xdg no limits",
+			args:            []string{c.env.ImagePath},
+			expectErrorCode: 0,
+			xdgVar:          "/not/a/dir",
+		},
+		{
+			name:            "bad dbus no limits",
+			args:            []string{c.env.ImagePath},
+			expectErrorCode: 0,
+			dbusVar:         "/not/a/dbus/socket",
+		},
+		{
+			name:            "bad xdg limits",
+			args:            []string{"--cpus", "1", c.env.ImagePath},
+			expectErrorCode: 255,
+			xdgVar:          "/not/a/dir",
+		},
+		{
+			name:            "bad dbus limits",
+			args:            []string{"--cpus", "1", c.env.ImagePath},
+			expectErrorCode: 255,
+			dbusVar:         "/not/a/dbus/socket",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			instanceName := randomName(t)
+
+			testEnv := []string{}
+			if tt.xdgVar != "" {
+				testEnv = append(testEnv, "XDG_RUNTIME_DIR="+tt.xdgVar)
+			}
+			if tt.dbusVar != "" {
+				testEnv = append(testEnv, "DBUS_SESSION_BUS_ADDRESS="+tt.dbusVar)
+			}
+
+			createArgs := append(tt.args, instanceName)
+			c.env.RunApptainer(
+				t,
+				e2e.AsSubtest("start"),
+				e2e.WithProfile(e2e.UserProfile),
+				e2e.WithCommand("instance start"),
+				e2e.WithArgs(createArgs...),
+				e2e.WithEnv(testEnv),
+				e2e.ExpectExit(tt.expectErrorCode),
+			)
+
+			if tt.expectErrorCode == 0 {
+				c.env.RunApptainer(
+					t,
+					e2e.AsSubtest("stop"),
+					e2e.WithProfile(e2e.UserProfile),
+					e2e.WithCommand("instance stop"),
+					e2e.WithArgs(instanceName),
+					e2e.ExpectExit(0),
+				)
+			}
+		})
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := &ctx{
@@ -742,5 +891,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"action rootless cgroups":         np(env.WithRootlessManagers(c.actionApplyRootless)),
 		"action flags root cgroups":       np(env.WithRootManagers(c.actionFlagsRoot)),
 		"action flags rootless cgroups":   np(env.WithRootlessManagers(c.actionFlagsRootless)),
+		"action dbus xdg":                 np(c.actionDbusXDG),
+		"instance dbus xdg":               np(c.instanceDbusXdg),
 	}
 }
