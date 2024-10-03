@@ -81,7 +81,8 @@ func UnpackRootfs(_ context.Context, srcImage v1.Image, destDir string) (err err
 	}
 
 	// Allow unpacking as non-root
-	if namespaces.IsUnprivileged() {
+	insideUserNS, _ := namespaces.IsInsideUserNamespace(os.Getpid())
+	if namespaces.IsUnprivileged() || insideUserNS {
 		sylog.Debugf("setting umoci rootless mode")
 		mapOptions.Rootless = true
 

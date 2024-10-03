@@ -55,7 +55,7 @@ func unpackSIF(b *types.Bundle, img *image.Image) (err error) {
 			return fmt.Errorf("could not extract root filesystem: %s", err)
 		}
 
-		s := unpacker.NewSquashfs()
+		s := unpacker.NewSquashfs(false)
 
 		// extract root filesystem
 		if err := s.ExtractAll(reader, b.RootfsPath); err != nil {

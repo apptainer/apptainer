@@ -65,7 +65,7 @@ func checkPartition(t *testing.T, reader io.Reader) error {
 	extracted := "/bin/busybox"
 	dir := t.TempDir()
 
-	s := unpacker.NewSquashfs()
+	s := unpacker.NewSquashfs(false)
 	if s.HasUnsquashfs() {
 		if err := s.ExtractFiles([]string{extracted}, reader, dir); err != nil {
 			return fmt.Errorf("extraction failed: %s", err)

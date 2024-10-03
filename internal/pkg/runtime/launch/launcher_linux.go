@@ -1182,7 +1182,14 @@ func (l *Launcher) prepareImage(_ context.Context, insideUserNs bool, image stri
 				sylog.Fatalf("while extracting %s: %s", image, err)
 			}
 			sylog.Infof("Converting SIF file to temporary sandbox...")
-			rootfsDir, imageDir, err := convertImage(image, unsquashfsPath, l.cfg.TmpDir)
+			// Due to path traversal issues in older unsquashfs versions, we run it
+			// wrapped under apptainer. If the user has requested --userns/-u then
+			// that wrapping should also use a user namespace (to support
+			// container/namespace nesting). An exception is when running as root. As
+			// root, unsquashfs would attempt chown and fail with the single uid/gid
+			// mapping.
+			userns := l.cfg.Namespaces.User && os.Getuid() != 0
+			rootfsDir, imageDir, err := convertImage(image, unsquashfsPath, l.cfg.TmpDir, userns)
 			if err != nil {
 				sylog.Fatalf("while extracting %s: %s", image, err)
 			}
@@ -1318,7 +1325,7 @@ func hidepidProc() bool {
 // convertImage extracts the image found at filename to directory dir within a temporary directory
 // tempDir. If the unsquashfs binary is not located, the binary at unsquashfsPath is used. It is
 // the caller's responsibility to remove rootfsDir when no longer needed.
-func convertImage(filename string, unsquashfsPath string, tmpDir string) (rootfsDir string, imageDir string, err error) {
+func convertImage(filename string, unsquashfsPath string, tmpDir string, userns bool) (rootfsDir string, imageDir string, err error) {
 	img, err := imgutil.Init(filename, false)
 	if err != nil {
 		return "", "", fmt.Errorf("could not open image %s: %s", filename, err)
@@ -1348,7 +1355,8 @@ func convertImage(filename string, unsquashfsPath string, tmpDir string) (rootfs
 	if err != nil {
 		return "", "", fmt.Errorf("could not extract root filesystem: %s", err)
 	}
-	s := unpacker.NewSquashfs()
+
+	s := unpacker.NewSquashfs(userns)
 	if !s.HasUnsquashfs() && unsquashfsPath != "" {
 		s.UnsquashfsPath = unsquashfsPath
 	}

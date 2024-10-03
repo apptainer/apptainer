@@ -30,11 +30,11 @@ const (
 	excludeDevRegex = `^(.{0}[^d]|.{1}[^e]|.{2}[^v]|.{3}[^\x2f]).*$`
 )
 
-var cmdFunc func(unsquashfs string, dest string, filename string, filter string, opts ...string) (*exec.Cmd, error)
+var cmdFunc func(squashfs *Squashfs, dest string, filename string, filter string, opts ...string) (*exec.Cmd, error)
 
 // unsquashfsCmd is the command instance for executing unsquashfs command
 // in a non sandboxed environment when this package is used for unit tests.
-func unsquashfsCmd(unsquashfs string, dest string, filename string, filter string, opts ...string) (*exec.Cmd, error) {
+func unsquashfsCmd(squashfs *Squashfs, dest string, filename string, filter string, opts ...string) (*exec.Cmd, error) {
 	args := []string{}
 	args = append(args, opts...)
 	// remove the destination directory if any, if the directory is
@@ -53,18 +53,23 @@ func unsquashfsCmd(unsquashfs string, dest string, filename string, filter strin
 		args = append(args, filter)
 	}
 
-	sylog.Debugf("Calling %s %v", unsquashfs, args)
-	return exec.Command(unsquashfs, args...), nil
+	sylog.Debugf("Calling %s %v", squashfs.UnsquashfsPath, args)
+	return exec.Command(squashfs.UnsquashfsPath, args...), nil
 }
 
 // Squashfs represents a squashfs unpacker.
 type Squashfs struct {
+	// Path to the unsquashfs executable
 	UnsquashfsPath string
+	// ForceUserns sets --userns when unsquashfs is being run wrapped by apptainer.
+	ForceUserns bool
 }
 
 // NewSquashfs initializes and returns a Squahfs unpacker instance
-func NewSquashfs() *Squashfs {
-	s := &Squashfs{}
+func NewSquashfs(userns bool) *Squashfs {
+	s := &Squashfs{
+		ForceUserns: userns,
+	}
 	s.UnsquashfsPath, _ = bin.FindBin("unsquashfs")
 	return s
 }
@@ -116,7 +121,7 @@ func (s *Squashfs) extract(files []string, reader io.Reader, dest string) (err e
 	if err != nil {
 		return fmt.Errorf("could not get host UID: %s", err)
 	}
-	rootless := hostuid != 0
+	rootless := s.ForceUserns || hostuid != 0
 
 	// Does our target filesystem support user xattrs?
 	ok, err := TestUserXattr(filepath.Dir(dest))
@@ -159,7 +164,7 @@ func (s *Squashfs) extract(files []string, reader io.Reader, dest string) (err e
 
 	// Now run unsquashfs with our 'best' options
 	sylog.Debugf("Trying unsquashfs options: %v", opts)
-	cmd, err := cmdFunc(s.UnsquashfsPath, dest, filename, filter, opts...)
+	cmd, err := cmdFunc(s, dest, filename, filter, opts...)
 	if err != nil {
 		return fmt.Errorf("command error: %s", err)
 	}
