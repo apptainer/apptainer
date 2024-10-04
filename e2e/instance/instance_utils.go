@@ -105,10 +105,18 @@ func (c *ctx) expectInstance(t *testing.T, name string, nb int, showAll bool) {
 	)
 }
 
-// Sends a deterministic message to an echo server and expects the same message
-// in response.
-func echo(t *testing.T, port int) {
-	const message = "b40cbeaaea293f7e8bd40fb61f389cfca9823467\n"
+// Sends a deterministic message to an echo server and expects the same, or a
+// reversed, message in response.
+func echo(t *testing.T, port int, reverse bool) {
+	const (
+		message         = "b40cbeaaea293f7e8bd40fb61f389cfca9823467\n"
+		reversedMessage = "7643289acfc983f16bf04db8e7f392aeaaebc04b\n"
+	)
+
+	expectResponse := message
+	if reverse {
+		expectResponse = reversedMessage
+	}
 
 	// give it some time for responding, attempt 10 times by
 	// waiting 100 millisecond between each try
@@ -125,8 +133,9 @@ func echo(t *testing.T, port int) {
 		fmt.Fprint(sock, message)
 
 		response, responseErr := bufio.NewReader(sock).ReadString('\n')
-		if responseErr != nil || response != message {
-			t.Errorf("Bad response: err = %v, response = %v", responseErr, response)
+
+		if responseErr != nil || response != expectResponse {
+			t.Errorf("Bad response: err = %v, response %q != %q", responseErr, response, expectResponse)
 		}
 		break
 	}
