@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Skip attempting to bind inaccessible mount points when handling the
   `mount hostfs = yes` configuration option.
+- Support parsing nested variables defined inside `%arguments` section of
+  definition file.
 
 ## v1.3.4 - \[2024-09-04\]
 
