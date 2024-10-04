@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"strings"
 
 	"github.com/samber/lo"
 )
@@ -68,7 +69,21 @@ func NewReader(src io.Reader, buildArgsMap map[string]string, defaultArgsMap map
 		if !ok {
 			return nil, fmt.Errorf("build var %s is not defined through either --build-arg (--build-arg-file) or 'arguments' section", argName)
 		}
-		bufWriter.Write([]byte(val))
+
+		// before setting the value, we need to handle nested defined variables inside %arguments section
+		matches := buildArgsRegexp.FindAllStringSubmatchIndex(val, -1)
+		newVal := val
+		for _, m := range matches {
+			k := val[m[2]:m[3]]
+			if v, ok := buildArgsMap[k]; ok {
+				// replace the variable with defined value
+				newVal = strings.Replace(newVal, val[m[0]:m[1]], v, -1)
+			} else if v, ok := defaultArgsMap[k]; ok {
+				newVal = strings.Replace(newVal, val[m[0]:m[1]], v, -1)
+			}
+		}
+
+		bufWriter.Write([]byte(newVal))
 		mapOfConsumedArgs[argName] = true
 		i = m[1]
 	}
