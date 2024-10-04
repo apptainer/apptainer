@@ -29,6 +29,12 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
 )
 
+const (
+	dockerHubRegistry      = "index.docker.io"
+	dockerHubRegistryAlias = "docker.io"
+	dockerHubAuthKey       = "https://index.docker.io/v1/"
+)
+
 type apptainerKeychain struct {
 	mu          sync.Mutex
 	reqAuthFile string
@@ -60,8 +66,9 @@ func (sk *apptainerKeychain) Resolve(target authn.Resource) (authn.Authenticator
 		target.String(),
 		target.RegistryStr(),
 	} {
-		if key == name.DefaultRegistry {
-			key = authn.DefaultAuthKey
+		// index.docker.io || docker.io => "https://index.docker.io/v1/"
+		if key == dockerHubRegistry || key == dockerHubRegistryAlias {
+			key = dockerHubAuthKey
 		}
 
 		cfg, err = cf.GetAuthConfig(key)
@@ -133,9 +140,10 @@ func LoginAndStore(registry, username, password string, insecure bool, reqAuthFi
 	creds := cf.GetCredentialsStore(registry)
 
 	// DockerHub requires special logic for historical reasons.
+	// index.docker.io || docker.io => "https://index.docker.io/v1/"
 	serverAddress := registry
-	if serverAddress == name.DefaultRegistry {
-		serverAddress = authn.DefaultAuthKey
+	if serverAddress == dockerHubRegistry || serverAddress == dockerHubRegistryAlias {
+		serverAddress = dockerHubAuthKey
 	}
 
 	if err := creds.Store(types.AuthConfig{

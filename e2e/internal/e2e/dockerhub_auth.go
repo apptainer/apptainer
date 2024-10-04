@@ -32,6 +32,10 @@ func SetupDockerHubCredentials(t *testing.T) {
 		return
 	}
 
+	if username != "" && pass == "" {
+		t.Fatalf("E2E_DOCKER_USERNAME was set, but E2E_DOCKER_PASSWORD is empty. Please check env vars.")
+	}
+
 	unprivUser = CurrentUser(t)
 	writeDockerHubCredentials(t, unprivUser.Dir, username, pass)
 	Privileged(func(t *testing.T) {
