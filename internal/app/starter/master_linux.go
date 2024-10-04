@@ -58,7 +58,6 @@ func createContainer(ctx context.Context, rpcSocket int, containerPid int, e *en
 			err = errors.New("failed to decrypt, ensure you have supplied appropriate key material")
 		}
 
-		// continue with warnings rather than fatal errors
 		if strings.Contains(err.Error(), "mount hook function failure") && strings.Contains(err.Error(), "permission denied") {
 			sylog.Infof("Try appending ':ro' to your overlay image or using '--fakeroot'")
 		}
