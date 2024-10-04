@@ -59,9 +59,11 @@ export HELLOTHISIS
 
 %appstart foo
     echo "STARTING FOO"
-    exec nc -l -k -p $1 -e /bin/cat
+    # Echo back reverse of strings sent on port $1
+    exec nc -l -k -p $1 -e /bin/rev
 
 %startscript
+    # Echo back strings sent on port $1
     exec nc -l -k -p $1 -e /bin/cat
 
 %runscript
