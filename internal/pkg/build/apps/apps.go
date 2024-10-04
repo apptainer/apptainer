@@ -457,7 +457,6 @@ func appData(b *types.Bundle, a *App) string {
 	return filepath.Join(b.RootfsPath, "/scif/data/", a.Name)
 }
 
-// FIXME: Replace with Go, or existing util function?
 func copyWithfLr(src, dst string) error {
 	cp, err := bin.FindBin("cp")
 	if err != nil {
