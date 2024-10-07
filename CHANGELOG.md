@@ -32,6 +32,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   about the configuration issue displayed to the user as warnings.
 - Fix storage of credentials for `docker.io` to behave the same as for
   `index.docker.io`.
+- Skip attempting to bind inaccessible mount points when handling the
+  `mount hostfs = yes` configuration option.
 
 ## Changes for v1.3.x
 
