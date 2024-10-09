@@ -83,7 +83,7 @@ func (s *stage) runHostScript(name string, script types.Script) error {
 
 func (s *stage) runPostScript(sessionResolv, sessionHosts string) error {
 	if s.b.Recipe.BuildData.Post.Script != "" {
-		cmdArgs := []string{"-s", "--build-config", "exec", "--pwd", "/", "--writable"}
+		cmdArgs := []string{"--build-config", "exec", "--pwd", "/", "--writable"}
 		cmdArgs = append(cmdArgs, "--cleanenv", "--env", aEnvironment, "--env", sEnvironment, "--env", aLabels, "--env", sLabels)
 
 		if sessionResolv != "" {

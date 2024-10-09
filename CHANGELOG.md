@@ -39,6 +39,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   no `--encrypt` from implying fakeroot.
 - Support parsing nested variables defined inside `%arguments` section of
   definition file.
+- Suppress unneeded warnings and remove default silent message level for the
+  post script instance.
 
 ## Changes for v1.3.x
 
