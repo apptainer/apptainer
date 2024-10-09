@@ -34,6 +34,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `index.docker.io`.
 - Skip attempting to bind inaccessible mount points when handling the
   `mount hostfs = yes` configuration option.
+- Avoid timeouts when cleaning up from building gocryptfs-encrypted SIF files.
 
 ## Changes for v1.3.x
 
