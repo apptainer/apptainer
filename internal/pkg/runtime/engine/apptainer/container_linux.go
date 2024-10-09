@@ -2351,7 +2351,9 @@ func (c *container) createCwdDir(system *mount.System) error {
 	cwdHost := filepath.Clean(c.engine.EngineConfig.GetCwd())
 	if cwdHost == "" || cwdHost == "/" {
 		c.skipCwd = true
-		sylog.Warningf("No current working directory set: skipping mount")
+		if cwdHost == "" {
+			sylog.Warningf("No current working directory set: skipping mount")
+		}
 		return nil
 	} else if cwdHost[0] != '/' {
 		return fmt.Errorf("current working directory %s is not an absolute path", cwdHost)
