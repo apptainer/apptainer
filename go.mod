@@ -20,7 +20,7 @@ require (
 	github.com/containernetworking/plugins v1.4.1
 	github.com/containers/image/v5 v5.30.1
 	github.com/creack/pty v1.1.21
-	github.com/cyphar/filepath-securejoin v0.2.5
+	github.com/cyphar/filepath-securejoin v0.3.4
 	github.com/docker/docker v25.0.5+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/fatih/color v1.16.0
@@ -46,7 +46,7 @@ require (
 	github.com/urfave/cli v1.22.14 // indirect
 	github.com/vbauerster/mpb/v8 v8.7.3
 	golang.org/x/crypto v0.22.0
-	golang.org/x/sys v0.19.0
+	golang.org/x/sys v0.21.0
 	golang.org/x/term v0.19.0
 	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
