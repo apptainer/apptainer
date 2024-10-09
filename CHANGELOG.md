@@ -35,6 +35,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Skip attempting to bind inaccessible mount points when handling the
   `mount hostfs = yes` configuration option.
 - Avoid timeouts when cleaning up from building gocryptfs-encrypted SIF files.
+- Fix bug that prevented build with `--passphrase` or `--pem-path` but
+  no `--encrypt` from implying fakeroot.
 
 ## Changes for v1.3.x
 

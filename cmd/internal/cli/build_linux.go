@@ -235,7 +235,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fakerootPath string) {
 	var keyInfo *cryptkey.KeyInfo
 	unprivilege := false
-	if buildArgs.encrypt || promptForPassphrase || cmd.Flags().Lookup("pem-path").Changed {
+	if buildArgs.encrypt {
 		if namespaces.IsUnprivileged() {
 			unprivilege = true
 		}
