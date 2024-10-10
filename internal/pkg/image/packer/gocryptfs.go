@@ -138,7 +138,7 @@ func (g *Gocryptfs) init(tmpDir string) (cryptInfo *cryptInfo, err error) {
 		signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
 		<-ch
 		sylog.Debugf("Received SIGINT/SIGTERM signal")
-		g.driver.Stop(cryptInfo.plainDir)
+		g.stop(cryptInfo.plainDir)
 	}()
 	return cryptInfo, nil
 }
@@ -150,7 +150,7 @@ func (g *Gocryptfs) create(files []string, dest string, opts []string, tmpDir st
 	}
 	g.Pass = cryptInfo.pass
 
-	defer g.driver.Stop(cryptInfo.plainDir)
+	defer g.stop(cryptInfo.plainDir)
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -184,6 +184,17 @@ func (g *Gocryptfs) create(files []string, dest string, opts []string, tmpDir st
 
 func (g *Gocryptfs) Create(src []string, dest string, opts []string, tmpDir string) error {
 	return g.create(src, dest, opts, tmpDir)
+}
+
+func (g *Gocryptfs) stop(p string) error {
+	// Unmount the gocryptfs filesystem before stopping the driver
+	sylog.Debugf("Unmounting %s", p)
+	err := syscall.Unmount(p, 0)
+	for err != nil {
+		sylog.Debugf("Error when unmounting %v, skipping: %v", p, err)
+	}
+	sylog.Debugf("Stopping %s", p)
+	return g.driver.Stop(p)
 }
 
 func cmdRun(commands []string, stdout, stderr io.Writer) error {

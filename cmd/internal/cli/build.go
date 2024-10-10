@@ -377,7 +377,11 @@ var buildCmd = &cobra.Command{
 	TraverseChildren: true,
 }
 
-func preRun(_ *cobra.Command, args []string) {
+func preRun(cmd *cobra.Command, args []string) {
+	if promptForPassphrase || cmd.Flags().Lookup("pem-path").Changed {
+		// these imply --encrypt
+		buildArgs.encrypt = true
+	}
 	spec := args[len(args)-1]
 	isDeffile := fs.IsFile(spec) && !isImage(spec)
 	if buildArgs.fakeroot {
