@@ -37,6 +37,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Avoid timeouts when cleaning up from building gocryptfs-encrypted SIF files.
 - Fix bug that prevented build with `--passphrase` or `--pem-path` but
   no `--encrypt` from implying fakeroot.
+- Support parsing nested variables defined inside `%arguments` section of
+  definition file.
 
 ## Changes for v1.3.x
 
