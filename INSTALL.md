@@ -216,6 +216,7 @@ On SLE/openSUSE:
 ```sh
 sudo zypper install -y gzip fuse3-devel lzo-devel liblz4-devel \
     xz-devel libzstd-devel
+```
 
 To download the source code from the top level of the Apptainer source
 tree do:
