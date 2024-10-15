@@ -1,0 +1,12 @@
+BootStrap: dnf
+OSVersion: 9
+MirrorURL: http://repo.almalinux.org/almalinux/%{OSVERSION}/BaseOS/x86_64/os
+Include: dnf
+
+%runscript
+    echo "This is what happens when you run the container..."
+
+
+%post
+    echo "Hello from inside the container"
+    dnf -y install vim-minimal

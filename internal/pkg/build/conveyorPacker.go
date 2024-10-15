@@ -58,7 +58,7 @@ func conveyorPacker(def types.Definition) (ConveyorPacker, error) {
 		return &sources.ArchConveyorPacker{}, nil
 	case "localimage":
 		return &sources.LocalConveyorPacker{}, nil
-	case "yum":
+	case "yum", "dnf":
 		return &sources.YumConveyorPacker{}, nil
 	case "zypper":
 		return &sources.ZypperConveyorPacker{}, nil

@@ -23,7 +23,10 @@ import (
 	"github.com/apptainer/apptainer/pkg/build/types/parser"
 )
 
-const yumDef = "../../../../examples/centos/Apptainer"
+const (
+	yumDef = "../../../../examples/centos/YumDef"
+	dnfDef = "../../../../examples/centos/DnfDef"
+)
 
 func TestYumConveyor(t *testing.T) {
 	// TODO - Centos puts non-amd64 at a different mirror location
@@ -44,9 +47,14 @@ func TestYumConveyor(t *testing.T) {
 
 	test.EnsurePrivilege(t)
 
-	defFile, err := os.Open(yumDef)
+	def := yumDef
+	if yumErr != nil && dnfErr == nil {
+		t.Logf("using dnf definition")
+		def = dnfDef
+	}
+	defFile, err := os.Open(def)
 	if err != nil {
-		t.Fatalf("unable to open file %s: %v\n", yumDef, err)
+		t.Fatalf("unable to open file %s: %v\n", def, err)
 	}
 	defer defFile.Close()
 
@@ -58,7 +66,7 @@ func TestYumConveyor(t *testing.T) {
 
 	b.Recipe, err = parser.ParseDefinitionFile(defFile)
 	if err != nil {
-		t.Fatalf("failed to parse definition file %s: %v\n", yumDef, err)
+		t.Fatalf("failed to parse definition file %s: %v\n", def, err)
 	}
 
 	yc := &YumConveyor{}
@@ -67,7 +75,7 @@ func TestYumConveyor(t *testing.T) {
 	// clean up bundle since assembler isn't called
 	defer yc.b.Remove()
 	if err != nil {
-		t.Fatalf("failed to Get from %s: %v\n", yumDef, err)
+		t.Fatalf("failed to Get from %s: %v\n", def, err)
 	}
 }
 
@@ -90,9 +98,14 @@ func TestYumPacker(t *testing.T) {
 
 	test.EnsurePrivilege(t)
 
-	defFile, err := os.Open(yumDef)
+	def := yumDef
+	if yumErr != nil && dnfErr == nil {
+		t.Logf("using dnf definition")
+		def = dnfDef
+	}
+	defFile, err := os.Open(def)
 	if err != nil {
-		t.Fatalf("unable to open file %s: %v\n", yumDef, err)
+		t.Fatalf("unable to open file %s: %v\n", def, err)
 	}
 	defer defFile.Close()
 
@@ -104,7 +117,7 @@ func TestYumPacker(t *testing.T) {
 
 	b.Recipe, err = parser.ParseDefinitionFile(defFile)
 	if err != nil {
-		t.Fatalf("failed to parse definition file %s: %v\n", yumDef, err)
+		t.Fatalf("failed to parse definition file %s: %v\n", def, err)
 	}
 
 	ycp := &YumConveyorPacker{}
@@ -113,11 +126,11 @@ func TestYumPacker(t *testing.T) {
 	// clean up tmpfs since assembler isn't called
 	defer ycp.b.Remove()
 	if err != nil {
-		t.Fatalf("failed to Get from %s: %v\n", yumDef, err)
+		t.Fatalf("failed to Get from %s: %v\n", def, err)
 	}
 
 	_, err = ycp.Pack(context.Background())
 	if err != nil {
-		t.Fatalf("failed to Pack from %s: %v\n", yumDef, err)
+		t.Fatalf("failed to Pack from %s: %v\n", def, err)
 	}
 }
