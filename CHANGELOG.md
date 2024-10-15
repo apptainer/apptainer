@@ -41,6 +41,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   definition file.
 - Suppress unneeded warnings and remove default silent message level for the
   post script instance.
+- Add `dnf` definition file bootstrap options as an alias to `yum`.
 
 ## Changes for v1.3.x
 
