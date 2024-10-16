@@ -58,6 +58,8 @@ var (
 	pullArch string
 	// pullArchVariant is the architecture variant, e.g., arm32v5, arm32v6, arm32v7, v5,v6,v7 are variants
 	pullArchVariant string
+	// pullSandbox indicates whether pulling images as sandbox format
+	pullSandbox bool
 )
 
 // --arch
@@ -145,6 +147,17 @@ var pullAllowUnauthenticatedFlag = cmdline.Flag{
 	Hidden:       true,
 }
 
+// -s|--sandbox
+var pullSandboxFlag = cmdline.Flag{
+	ID:           "pullSandboxFlag",
+	Value:        &pullSandbox,
+	DefaultValue: false,
+	Name:         "sandbox",
+	ShortHand:    "",
+	Usage:        "pull image as sandbox format (chroot directory structure)",
+	EnvKeys:      []string{"SANDBOX"},
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(PullCmd)
@@ -168,6 +181,8 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&pullArchFlag, PullCmd)
 		cmdManager.RegisterFlagForCmd(&pullArchVariantFlag, PullCmd)
 		cmdManager.RegisterFlagForCmd(&commonAuthFileFlag, PullCmd)
+
+		cmdManager.RegisterFlagForCmd(&pullSandboxFlag, PullCmd)
 	})
 }
 
@@ -251,7 +266,7 @@ func pullRun(cmd *cobra.Command, args []string) {
 			sylog.Fatalf("Unable to get keyserver client configuration: %v", err)
 		}
 
-		_, err = library.PullToFile(ctx, imgCache, pullTo, ref, pullArch, tmpDir, lc, co)
+		_, err = library.PullToFile(ctx, imgCache, pullTo, ref, pullArch, tmpDir, lc, co, pullSandbox)
 		if err != nil && err != library.ErrLibraryPullUnsigned {
 			sylog.Fatalf("While pulling library image: %v", err)
 		}
@@ -259,7 +274,7 @@ func pullRun(cmd *cobra.Command, args []string) {
 			sylog.Warningf("Skipping container verification")
 		}
 	case ShubProtocol:
-		_, err := shub.PullToFile(ctx, imgCache, pullTo, pullFrom, noHTTPS)
+		_, err := shub.PullToFile(ctx, imgCache, pullTo, pullFrom, noHTTPS, pullSandbox)
 		if err != nil {
 			sylog.Fatalf("While pulling shub image: %v\n", err)
 		}
@@ -269,12 +284,12 @@ func pullRun(cmd *cobra.Command, args []string) {
 			sylog.Fatalf("Unable to make docker oci credentials: %s", err)
 		}
 
-		_, err = oras.PullToFile(ctx, imgCache, pullTo, pullFrom, ociAuth, noHTTPS, reqAuthFile)
+		_, err = oras.PullToFile(ctx, imgCache, pullTo, pullFrom, ociAuth, noHTTPS, reqAuthFile, pullSandbox)
 		if err != nil {
 			sylog.Fatalf("While pulling image from oci registry: %v", err)
 		}
 	case HTTPProtocol, HTTPSProtocol:
-		_, err := net.PullToFile(ctx, imgCache, pullTo, pullFrom)
+		_, err := net.PullToFile(ctx, imgCache, pullTo, pullFrom, pullSandbox)
 		if err != nil {
 			sylog.Fatalf("While pulling from image from http(s): %v\n", err)
 		}
@@ -299,7 +314,7 @@ func pullRun(cmd *cobra.Command, args []string) {
 			ReqAuthFile: reqAuthFile,
 		}
 
-		_, err = oci.PullToFile(ctx, imgCache, pullTo, pullFrom, pullOpts)
+		_, err = oci.PullToFile(ctx, imgCache, pullTo, pullFrom, pullSandbox, pullOpts)
 		if err != nil {
 			sylog.Fatalf("While making image from oci registry: %v", err)
 		}

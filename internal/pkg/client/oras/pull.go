@@ -15,6 +15,7 @@ import (
 	"os"
 
 	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -83,7 +84,7 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom, tmpDir string, 
 }
 
 // PullToFile will pull an oras image to the specified location, through the cache, or directly if cache is disabled
-func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, err error) {
+func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, sandbox bool) (imagePath string, err error) {
 	directTo := ""
 	if imgCache.IsDisabled() {
 		directTo = pullTo
@@ -95,11 +96,17 @@ func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom st
 		return "", fmt.Errorf("error fetching image to cache: %v", err)
 	}
 
-	if directTo == "" {
+	if directTo == "" && !sandbox {
 		// mode is before umask if pullTo doesn't exist
 		err = fs.CopyFileAtomic(src, pullTo, 0o777)
 		if err != nil {
 			return "", fmt.Errorf("error copying image out of cache: %v", err)
+		}
+	}
+
+	if sandbox {
+		if err := client.ConvertSifToSandbox(directTo, src, pullTo); err != nil {
+			return "", err
 		}
 	}
 

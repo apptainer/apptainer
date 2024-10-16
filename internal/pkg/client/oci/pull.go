@@ -20,6 +20,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/build"
 	"github.com/apptainer/apptainer/internal/pkg/build/oci"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/ociimage"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/ociauth"
@@ -160,7 +161,7 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom string, opts Pul
 }
 
 // PullToFile will build a SIF image from the specified oci URI and place it at the specified dest
-func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom string, opts PullOptions) (imagePath string, err error) {
+func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom string, sandbox bool, opts PullOptions) (imagePath string, err error) {
 	directTo := ""
 	if imgCache.IsDisabled() {
 		directTo = pullTo
@@ -175,11 +176,17 @@ func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom st
 		return "", fmt.Errorf("error fetching image to cache: %v", err)
 	}
 
-	if directTo == "" {
+	if directTo == "" && !sandbox {
 		// mode is before umask if pullTo doesn't exist
 		err = fs.CopyFileAtomic(src, pullTo, 0o777)
 		if err != nil {
 			return "", fmt.Errorf("error copying image out of cache: %v", err)
+		}
+	}
+
+	if sandbox {
+		if err := client.ConvertSifToSandbox(directTo, src, pullTo); err != nil {
+			return "", err
 		}
 	}
 
