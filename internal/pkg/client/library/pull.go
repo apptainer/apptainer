@@ -120,7 +120,7 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom *libClient.Ref, 
 }
 
 // PullToFile will pull a library image to the specified location, through the cache, or directly if cache is disabled
-func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pullFrom *libClient.Ref, arch string, _ string, libraryConfig *libClient.Config, co []keyClient.Option) (imagePath string, err error) {
+func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pullFrom *libClient.Ref, arch string, _ string, libraryConfig *libClient.Config, co []keyClient.Option, sandbox bool) (imagePath string, err error) {
 	directTo := ""
 	if imgCache.IsDisabled() {
 		directTo = pullTo
@@ -132,7 +132,12 @@ func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pull
 		return "", fmt.Errorf("error fetching image: %v", err)
 	}
 
-	if directTo == "" {
+	if err := signature.Verify(ctx, src, signature.OptVerifyWithPGP(co...)); err != nil {
+		sylog.Warningf("%v", err)
+		return pullTo, ErrLibraryPullUnsigned
+	}
+
+	if directTo == "" && !sandbox {
 		// mode is before umask if pullTo doesn't exist
 		err = fs.CopyFileAtomic(src, pullTo, 0o777)
 		if err != nil {
@@ -140,9 +145,10 @@ func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pull
 		}
 	}
 
-	if err := signature.Verify(ctx, pullTo, signature.OptVerifyWithPGP(co...)); err != nil {
-		sylog.Warningf("%v", err)
-		return pullTo, ErrLibraryPullUnsigned
+	if sandbox {
+		if err := client.ConvertSifToSandbox(directTo, src, pullTo); err != nil {
+			return "", err
+		}
 	}
 
 	return pullTo, nil

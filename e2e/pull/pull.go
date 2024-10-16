@@ -54,6 +54,7 @@ type testStruct struct {
 	envVars          []string
 	disabled         bool
 	noHTTPS          bool
+	sandbox          bool
 }
 
 func (c *ctx) imagePull(t *testing.T, tt testStruct) {
@@ -106,6 +107,9 @@ func (c *ctx) imagePull(t *testing.T, tt testStruct) {
 			t.Fatalf("unable to get working directory: %s", err)
 		}
 		tt.workDir = wd
+	}
+	if tt.sandbox {
+		argv += "--sandbox "
 	}
 
 	argv += tt.srcURI
@@ -349,6 +353,16 @@ func (c ctx) testPullCmd(t *testing.T) {
 			force:            true,
 			expectedExitCode: 0,
 		},
+		// pulling with --sandbox
+		{
+			desc:             "pulling as sandbox",
+			srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
+			force:            true,
+			createDst:        true,
+			unauthenticated:  true,
+			sandbox:          true,
+			expectedExitCode: 0,
+		},
 	}
 
 	for _, tt := range tests {
@@ -477,6 +491,7 @@ func (c ctx) testPullDisableCacheCmd(t *testing.T) {
 		name      string
 		imagePath string
 		imageSrc  string
+		sandbox   bool
 	}{
 		{
 			name:      "library",
@@ -488,10 +503,20 @@ func (c ctx) testPullDisableCacheCmd(t *testing.T) {
 			imagePath: filepath.Join(c.env.TestDir, "oras.sif"),
 			imageSrc:  fmt.Sprintf("oras://%s/pull_test_sif:latest", c.env.TestRegistry),
 		},
+		{
+			name:      "oras pulls as sandbox",
+			imagePath: filepath.Join(c.env.TestDir, "oras"),
+			imageSrc:  fmt.Sprintf("oras://%s/pull_test_sif:latest", c.env.TestRegistry),
+			sandbox:   true,
+		},
 	}
 
 	for _, tt := range disableCacheTests {
-		cmdArgs := []string{"--disable-cache", tt.imagePath, tt.imageSrc}
+		cmdArgs := []string{"--disable-cache"}
+		if tt.sandbox {
+			cmdArgs = append(cmdArgs, []string{"--sandbox"}...)
+		}
+		cmdArgs = append(cmdArgs, []string{tt.imagePath, tt.imageSrc}...)
 		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
@@ -502,8 +527,22 @@ func (c ctx) testPullDisableCacheCmd(t *testing.T) {
 			e2e.PostRun(func(t *testing.T) {
 				// Cache entry must not have been created
 				cacheEntryPath := filepath.Join(cacheDir, "cache")
-				if _, err := os.Stat(cacheEntryPath); !os.IsNotExist(err) {
-					t.Errorf("cache created while disabled (%s exists)", cacheEntryPath)
+				if _, err := os.Stat(cacheEntryPath); err == nil {
+					dirs, err := os.ReadDir(cacheEntryPath)
+					if err != nil {
+						t.Errorf("could not read the dirs inside cache dir path: %v", err)
+					}
+					for _, dir := range dirs {
+						// check whether each sub-dir is empty
+						subDir := filepath.Join(cacheEntryPath, dir.Name())
+						files, err := os.ReadDir(subDir)
+						if err != nil {
+							t.Errorf("could not read the dirs inside sub-cache dir path: %v", err)
+						}
+						if len(files) > 0 {
+							t.Errorf("cache entry should not be created, but are created")
+						}
+					}
 				}
 				// We also need to check the image pulled is in the correct place!
 				// Issue #5628s
