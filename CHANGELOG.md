@@ -43,6 +43,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   post script instance.
 - Add `dnf` definition file bootstrap options as an alias to `yum`.
 - Add --sandbox option to apptainer pull.
+- Add configuration files binding for `--nv` option, these files are added in
+  the `nvliblist.conf` that are recognized in the NVIDIA Container Toolkit,
+  including files for EGL ICD.
 
 ## Changes for v1.3.x
 

@@ -25,7 +25,8 @@ func RocmPaths(configFilePath string) ([]string, []string, error) {
 		return nil, nil, fmt.Errorf("could not read %s: %v", filepath.Base(configFilePath), err)
 	}
 
-	return paths.Resolve(rocmFiles)
+	libs, bins, _, err := paths.Resolve(rocmFiles)
+	return libs, bins, err
 }
 
 // RocmDevices returns a list of /dev entries required for ROCm functionality.
