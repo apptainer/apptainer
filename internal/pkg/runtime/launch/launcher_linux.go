@@ -892,11 +892,11 @@ func (l *Launcher) setNVLegacyConfig() error {
 	if err != nil {
 		sylog.Warningf("While finding nv ipcs: %v", err)
 	}
-	libs, bins, err := gpu.NvidiaPaths(gpuConfFile)
+	libs, bins, files, err := gpu.NvidiaPaths(gpuConfFile)
 	if err != nil {
 		sylog.Warningf("While finding nv bind points: %v", err)
 	}
-	l.addGPUBinds(libs, bins, ipcs, "nv")
+	l.addGPUBinds(libs, bins, ipcs, files, "nv")
 	return nil
 }
 
@@ -909,13 +909,13 @@ func (l *Launcher) setRocmConfig() error {
 	if err != nil {
 		sylog.Warningf("While finding ROCm bind points: %v", err)
 	}
-	l.addGPUBinds(libs, bins, []string{}, "rocm")
+	l.addGPUBinds(libs, bins, []string{}, []string{}, "rocm")
 	return nil
 }
 
 // addGPUBinds adds EngineConfig entries to bind the provided list of libs, bins, ipc files.
-func (l *Launcher) addGPUBinds(libs, bins, ipcs []string, gpuPlatform string) {
-	files := make([]string, len(bins)+len(ipcs))
+func (l *Launcher) addGPUBinds(libs, bins, ipcs, regularFiles []string, gpuPlatform string) {
+	files := make([]string, len(bins)+len(ipcs)+len(regularFiles))
 	if len(files) == 0 {
 		sylog.Warningf("Could not find any %s files on this host!", gpuPlatform)
 	} else {
@@ -928,6 +928,9 @@ func (l *Launcher) addGPUBinds(libs, bins, ipcs []string, gpuPlatform string) {
 		}
 		for i, ipc := range ipcs {
 			files[i+len(bins)] = ipc
+		}
+		for i, file := range regularFiles {
+			files[i+len(bins)+len(ipcs)] = file
 		}
 		l.engineConfig.AppendFilesPath(files...)
 	}

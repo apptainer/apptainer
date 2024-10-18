@@ -62,7 +62,7 @@ func GetPaths() ([]string, []string, error) {
 		return nil, nil, err
 	}
 
-	libs, bins, err := paths.Resolve(append(conf.Bins, conf.Libs...))
+	libs, bins, _, err := paths.Resolve(append(conf.Bins, conf.Libs...))
 	if err != nil {
 		return nil, nil, err
 	}
