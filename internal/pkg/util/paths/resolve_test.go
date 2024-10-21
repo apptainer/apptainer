@@ -95,17 +95,32 @@ func TestSoLinks(t *testing.T) {
 	}
 }
 
-func TestPaths(t *testing.T) {
-	// Very naive sanity test. Check we can find one lib and one binary without error
-	gotLibs, gotBin, err := Resolve(testLibList)
+func TestResolve(t *testing.T) {
+	// Test whether the `Resolve` method can return lib, bin and file without errors.
+	tmpdir := t.TempDir()
+	filePath := filepath.Join(tmpdir, "/usr/share/glvnd/egl_vendor.d/10_nvidia.json")
+	err := os.MkdirAll(filepath.Dir(filePath), 0o755)
+	if err != nil {
+		t.Errorf("unable to create dirs: %v", err)
+	}
+	f, err := os.Create(filePath)
+	if err != nil {
+		t.Errorf("unable to create file: %v", err)
+	}
+	f.Close()
+
+	testLibList = append(testLibList, filePath)
+	gotLibs, gotBin, gotFiles, err := Resolve(testLibList)
 	if err != nil {
 		t.Errorf("paths() error = %v", err)
-		return
 	}
 	if len(gotLibs) == 0 {
 		t.Error("paths() gave no libraries")
 	}
 	if len(gotBin) == 0 {
 		t.Error("paths() gave no binaries")
+	}
+	if len(gotFiles) == 0 {
+		t.Error("paths() gave no files")
 	}
 }

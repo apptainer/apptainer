@@ -11,6 +11,7 @@ package paths
 
 import (
 	"debug/elf"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -60,22 +61,24 @@ func soLinks(libPath string) (paths []string, err error) {
 
 // Resolve takes a list of library/binary files (absolute paths, or bare filenames) and processes them into lists of
 // resolved library and binary paths to be bound into the container.
-func Resolve(fileList []string) ([]string, []string, error) {
+func Resolve(fileList []string) ([]string, []string, []string, error) {
 	machine, err := elfMachine()
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not retrieve ELF machine ID: %v", err)
+		return nil, nil, nil, fmt.Errorf("could not retrieve ELF machine ID: %v", err)
 	}
 	ldCache, err := ldCache()
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not retrieve ld cache: %v", err)
+		return nil, nil, nil, fmt.Errorf("could not retrieve ld cache: %v", err)
 	}
 
 	// Track processed binaries/libraries to eliminate duplicates
 	bins := make(map[string]struct{})
 	libs := make(map[string]struct{})
+	filesMap := make(map[string]struct{})
 
 	var libraries []string
 	var binaries []string
+	var files []string
 
 	boundLibsDir := "/.singularity.d/libs"
 	boundLibs, err := os.ReadDir(boundLibsDir)
@@ -132,6 +135,15 @@ func Resolve(fileList []string) ([]string, []string, error) {
 					}
 				}
 			}
+		} else if filepath.IsAbs(file) {
+			// if the file is absolute path
+			if _, err := os.Stat(file); err != nil && errors.Is(err, os.ErrNotExist) {
+				continue
+			}
+			if _, ok := filesMap[file]; !ok {
+				filesMap[file] = struct{}{}
+				files = append(files, file)
+			}
 		} else {
 			// treat the file as a binary file - find on PATH and add it to the bind list
 			binary, err := exec.LookPath(file)
@@ -145,7 +157,7 @@ func Resolve(fileList []string) ([]string, []string, error) {
 		}
 	}
 
-	return libraries, binaries, nil
+	return libraries, binaries, files, nil
 }
 
 // ldcache retrieves a map of <library>.so[.version] to its absolute path using

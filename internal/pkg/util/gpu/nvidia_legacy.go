@@ -18,12 +18,12 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
-// NvidiaPaths returns a list of Nvidia libraries/binaries that should be
+// NvidiaPaths returns a list of Nvidia libraries/binaries/files that should be
 // mounted into the container in order to use Nvidia GPUs
-func NvidiaPaths(configFilePath string) ([]string, []string, error) {
+func NvidiaPaths(configFilePath string) ([]string, []string, []string, error) {
 	nvidiaFiles, err := gpuliblist(configFilePath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not read %s: %v", filepath.Base(configFilePath), err)
+		return nil, nil, nil, fmt.Errorf("could not read %s: %v", filepath.Base(configFilePath), err)
 	}
 
 	return paths.Resolve(nvidiaFiles)
