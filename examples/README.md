@@ -21,7 +21,7 @@ folders here, it should go into [contrib](contrib). In this case, please send a
 pull request and contribute it to the examples/contribs directory with the
 format being hyphen ('-') delimited of the following format:
 
-1. Base distribution name and version if applicable (e.g. centos7 or
+1. Base distribution name and version if applicable (e.g. sles15 or
    ubuntu_trusty)
 1. Target nomenclature that describes the container (e.g. tensorflow)
 1. Any relevant version strings to the application or work-flow
