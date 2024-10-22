@@ -5,6 +5,11 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes for v1.3.x
+
+- Skip attempting to bind inaccessible mount points when handling the
+  `mount hostfs = yes` configuration option.
+
 ## v1.3.4 - \[2024-09-04\]
 
 - Fixed sif-embedded overlay partitions for containers that are larger

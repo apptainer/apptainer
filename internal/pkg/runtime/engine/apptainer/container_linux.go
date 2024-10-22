@@ -1733,7 +1733,11 @@ func (c *container) addHostMount(system *mount.System) error {
 		} else if strings.HasPrefix(child, "/var") {
 			sylog.Debugf("Skipping /var based file system")
 			continue
+		} else if _, err = os.Stat(child); err != nil {
+			sylog.Debugf("Skipping %s because %v", child, err)
+			continue
 		}
+
 		sylog.Debugf("Adding %s to mount list\n", child)
 		if err := system.Points.AddBind(mount.HostfsTag, child, child, flags); err != nil {
 			return fmt.Errorf("unable to add %s to mount list: %s", child, err)
