@@ -222,7 +222,7 @@ func TestReader(t *testing.T) {
 		{
 			name: "ok case with variables defined in comment lines",
 			input: `
-			%argument
+			%arguments
 				OS_VER=1 #  comment line {{ OS_VER }}
 			%post
 			    	# comment
@@ -233,7 +233,7 @@ func TestReader(t *testing.T) {
 				#should not be replaced as well 
 			`,
 			output: `
-			%argument
+			%arguments
 				OS_VER=1 #  comment line {{ OS_VER }}
 			%post
 			    	# comment
