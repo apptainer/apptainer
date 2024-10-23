@@ -105,8 +105,18 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 			buildSpec: c.env.OrasTestImage,
 		},
 		{
+			name:      "Yum AlmaLinux 9",
+			buildSpec: "../examples/almalinux/YumDef",
+			requirements: func(t *testing.T) {
+				require.Command(t, "yum")
+				require.RPMMacro(t, "_db_backend", "bdb")
+				require.RPMMacro(t, "_dbpath", "/var/lib/rpm")
+				require.Arch(t, "amd64")
+			},
+		},
+		{
 			name:      "Dnf AlmaLinux 9",
-			buildSpec: "../examples/almalinux/Apptainer",
+			buildSpec: "../examples/almalinux/DnfDef",
 			requirements: func(t *testing.T) {
 				require.Command(t, "dnf")
 				require.RPMMacro(t, "_db_backend", "sqlite")
