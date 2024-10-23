@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	yumDef = "../../../../examples/centos/YumDef"
+	yumDef = "../../../../examples/almalinux/Apptainer"
 	dnfDef = "../../../../examples/centos/DnfDef"
 )
 
