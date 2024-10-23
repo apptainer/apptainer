@@ -46,6 +46,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add configuration files binding for `--nv` option, these files are added in
   the `nvliblist.conf` that are recognized in the NVIDIA Container Toolkit,
   including files for EGL ICD.
+- Ignore invalid environment variables when pulling oci/docker containers.
 
 ## Changes for v1.3.x
 
