@@ -52,6 +52,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - `apptainer.conf` now accepts setting new options regarding namespaces:
   - `allow ipc ns` : disable the use of the `--ipc` flag.
   - `allow uts ns` : invalidate the use of the `--uts` and `--hostname` flags.
+- `allow user ns` : disable creation of user namespaces. This will prevent
+  execution of containers with the `--userns` or `--fakeroot` flags, and
+  unprivileged installations of Apptainer.
 
 ## Changes for v1.3.x
 
