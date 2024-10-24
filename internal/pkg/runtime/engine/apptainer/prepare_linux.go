@@ -536,33 +536,42 @@ func (e *EngineOperations) prepareAutofs(starterConfig *starter.Config) error {
 	return nil
 }
 
+// removeNamespace is used to remove a namespace from the slice of namespaces.
+// It is used mainly within prepareContainerConfig(...)
+func (e *EngineOperations) removeNamespace(namespaceType specs.LinuxNamespaceType) {
+	if e.EngineConfig.OciConfig.Linux == nil {
+		return
+	}
+
+	namespaces := e.EngineConfig.OciConfig.Linux.Namespaces
+	for i, ns := range namespaces {
+		if ns.Type == namespaceType {
+			sylog.Warningf("Not virtualizing %s namespace by configuration", namespaceType)
+			e.EngineConfig.OciConfig.Linux.Namespaces = append(namespaces[:i], namespaces[i+1:]...)
+			break
+		}
+	}
+}
+
 // prepareContainerConfig is responsible for getting and applying
 // user supplied configuration for container creation.
 func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config) error {
 	// always set mount namespace
 	e.EngineConfig.OciConfig.AddOrReplaceLinuxNamespace(specs.MountNamespace, "")
 
-	// if PID namespace is not allowed remove it from namespaces
-	if !e.EngineConfig.File.AllowPidNs && e.EngineConfig.OciConfig.Linux != nil {
-		namespaces := e.EngineConfig.OciConfig.Linux.Namespaces
-		for i, ns := range namespaces {
-			if ns.Type == specs.PIDNamespace {
-				sylog.Debugf("Not virtualizing PID namespace by configuration")
-				e.EngineConfig.OciConfig.Linux.Namespaces = append(namespaces[:i], namespaces[i+1:]...)
-				break
-			}
-		}
+	// If any namespace is not allowed remove it from namespaces
+	if !e.EngineConfig.File.AllowIpcNs {
+		e.removeNamespace(specs.IPCNamespace)
 	}
 
-	// if UTS namespace is not allowed remove it from namespaces
-	if !e.EngineConfig.File.AllowUtsNs && e.EngineConfig.OciConfig.Linux != nil {
-		namespaces := e.EngineConfig.OciConfig.Linux.Namespaces
-		for i, ns := range namespaces {
-			if ns.Type == specs.UTSNamespace {
-				sylog.Warningf("UTS namespace disabled in apptainer.conf. Container hostname cannot be set.")
-				e.EngineConfig.OciConfig.Linux.Namespaces = append(namespaces[:i], namespaces[i+1:]...)
-				break
-			}
+	if !e.EngineConfig.File.AllowPidNs {
+		e.removeNamespace(specs.PIDNamespace)
+	}
+
+	if !e.EngineConfig.File.AllowUtsNs {
+		e.removeNamespace(specs.UTSNamespace)
+		if e.EngineConfig.OciConfig.Hostname != "" {
+			sylog.Warningf("Container hostname cannot be set.")
 		}
 	}
 
