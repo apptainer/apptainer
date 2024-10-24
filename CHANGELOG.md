@@ -47,6 +47,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   the `nvliblist.conf` that are recognized in the NVIDIA Container Toolkit,
   including files for EGL ICD.
 - Ignore invalid environment variables when pulling oci/docker containers.
+- `apptainer.conf` now accepts setting the `allow uts ns` option, and can
+  invalidate the use of the `--uts` and `--hostname` flags.
 
 ## Changes for v1.3.x
 
