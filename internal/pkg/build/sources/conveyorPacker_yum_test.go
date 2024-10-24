@@ -24,8 +24,8 @@ import (
 )
 
 const (
-	yumDef = "../../../../examples/centos/YumDef"
-	dnfDef = "../../../../examples/centos/DnfDef"
+	yumDef = "../../../../examples/almalinux/YumDef"
+	dnfDef = "../../../../examples/almalinux/DnfDef"
 )
 
 func TestYumConveyor(t *testing.T) {
