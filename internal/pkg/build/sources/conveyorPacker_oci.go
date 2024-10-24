@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -117,6 +118,8 @@ fi
 eval "set ${SINGULARITY_OCI_RUN}"
 exec "$@"
 `
+
+const variableRegex = `^[a-zA-Z_]{1,}[a-zA-Z0-9_]{0,}$`
 
 // OCIConveyorPacker holds stuff that needs to be packed into the bundle
 type OCIConveyorPacker struct {
@@ -363,9 +366,14 @@ func (cp *OCIConveyorPacker) insertEnv() error {
 		return err
 	}
 
+	varRegex := regexp.MustCompile(variableRegex)
 	for _, element := range cp.imgConfig.Env {
 		export := ""
 		envParts := strings.SplitN(element, "=", 2)
+		if matched := varRegex.MatchString(envParts[0]); !matched {
+			sylog.Verbosef("env %s has invalid format, skip insertion", envParts[0])
+			continue
+		}
 		if len(envParts) == 1 {
 			export = fmt.Sprintf("export %s=\"${%s:-}\"\n", envParts[0], envParts[0])
 		} else {
