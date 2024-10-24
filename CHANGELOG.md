@@ -49,6 +49,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Ignore invalid environment variables when pulling oci/docker containers.
 - `apptainer.conf` now accepts setting the `allow uts ns` option, and can
   invalidate the use of the `--uts` and `--hostname` flags.
+- `apptainer.conf` now accepts setting new options regarding namespaces:
+  - `allow ipc ns` : disable the use of the `--ipc` flag.
+  - `allow uts ns` : invalidate the use of the `--uts` and `--hostname` flags.
 
 ## Changes for v1.3.x
 

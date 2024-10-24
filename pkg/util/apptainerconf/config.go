@@ -77,6 +77,7 @@ func SetBinaryPath(libexecDir string, nonSuid bool) {
 // File describes the apptainer.conf file options
 type File struct {
 	AllowSetuid               bool     `default:"yes" authorized:"yes,no" directive:"allow setuid"`
+	AllowIpcNs                bool     `default:"yes" authorized:"yes,no" directive:"allow ipc ns"`
 	AllowPidNs                bool     `default:"yes" authorized:"yes,no" directive:"allow pid ns"`
 	AllowUtsNs                bool     `default:"yes" authorized:"yes,no" directive:"allow uts ns"`
 	ConfigPasswd              bool     `default:"yes" authorized:"yes,no" directive:"config passwd"`
@@ -169,6 +170,11 @@ allow setuid = {{ if eq .AllowSetuid true }}yes{{ else }}no{{ end }}
 # Set the maximum number of loop devices that Apptainer should ever attempt
 # to utilize.
 max loop devices = {{ .MaxLoopDevices }}
+
+# ALLOW IPC NS: [BOOL]
+# DEFAULT: yes
+# Should we allow users to request the IPC namespace?
+allow ipc ns = {{ if eq .AllowIpcNs true }}yes{{ else }}no{{ end }}
 
 # ALLOW PID NS: [BOOL]
 # DEFAULT: yes
