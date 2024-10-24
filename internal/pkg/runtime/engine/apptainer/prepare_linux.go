@@ -554,6 +554,18 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 		}
 	}
 
+	// if UTS namespace is not allowed remove it from namespaces
+	if !e.EngineConfig.File.AllowUtsNs && e.EngineConfig.OciConfig.Linux != nil {
+		namespaces := e.EngineConfig.OciConfig.Linux.Namespaces
+		for i, ns := range namespaces {
+			if ns.Type == specs.UTSNamespace {
+				sylog.Warningf("UTS namespace disabled in apptainer.conf. Container hostname cannot be set.")
+				e.EngineConfig.OciConfig.Linux.Namespaces = append(namespaces[:i], namespaces[i+1:]...)
+				break
+			}
+		}
+	}
+
 	if os.Getuid() == 0 {
 		if err := e.prepareRootCaps(); err != nil {
 			return err
