@@ -18,7 +18,7 @@ cni_config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/network
 .PHONY: cniplugins
 cniplugins:
 	$(V)umask 0022 && mkdir -p $(cni_builddir)
-	$(V)for p in $(cni_plugins); do \
+	$(V)cd $(SOURCEDIR) && for p in $(cni_plugins); do \
 		name=`basename $$p`; \
 		cniplugin=$(cni_builddir)/$$name; \
 		if [ ! -f $$cniplugin ]; then \
