@@ -321,7 +321,7 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 		launch.OptRocm(rocm),
 		launch.OptNoRocm(noRocm),
 		launch.OptContainLibs(containLibsPath),
-		launch.OptEnv(apptainerEnv, apptainerEnvFile, isCleanEnv),
+		launch.OptEnv(apptainerEnv, apptainerEnvFiles, isCleanEnv),
 		launch.OptNoEval(noEval),
 		launch.OptNamespaces(ns),
 		launch.OptNetwork(network, networkArgs),

@@ -37,7 +37,6 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/squashfs"
 	"github.com/apptainer/apptainer/internal/pkg/util/gpu"
-	"github.com/apptainer/apptainer/internal/pkg/util/shell/interpreter"
 	"github.com/apptainer/apptainer/internal/pkg/util/starter"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/build/types"
@@ -991,45 +990,36 @@ func (l *Launcher) setNamespaces() {
 
 // setEnvVars sets the environment for the container, from the host environment, glads, env-file.
 func (l *Launcher) setEnvVars(ctx context.Context, args []string) error {
-	if l.cfg.EnvFile != "" {
+	if len(l.cfg.EnvFiles) > 0 {
 		currentEnv := append(
 			os.Environ(),
 			"APPTAINER_IMAGE="+l.engineConfig.GetImage(),
 		)
 
-		content, err := os.ReadFile(l.cfg.EnvFile)
-		if err != nil {
-			return fmt.Errorf("could not read %q environment file: %w", l.cfg.EnvFile, err)
+		// Read all environment files and put the variables into envFilesMap,
+		// environment variables in later files will take precedence.
+		envFilesMap := map[string]string{}
+		for _, envFile := range l.cfg.EnvFiles {
+			tempEnvMap, err := env.FileMap(ctx, envFile, args, currentEnv)
+			if err != nil {
+				return fmt.Errorf("while processing %s: %w", envFile, err)
+			}
+			sylog.Debugf("Setting environment variables from file %s", envFile)
+			envFilesMap = env.MergeMap(envFilesMap, tempEnvMap)
 		}
 
-		shellEnv, err := interpreter.EvaluateEnv(ctx, content, args, currentEnv)
-		if err != nil {
-			return fmt.Errorf("while processing %s: %w", l.cfg.EnvFile, err)
-		}
-		// --env variables will take precedence over variables
-		// defined by the environment file
-		sylog.Debugf("Setting environment variables from file %s", l.cfg.EnvFile)
-
+		// --env variables will take precedence over variables defined by the environment files
 		// Update Env with those from file
-		for _, envar := range shellEnv {
-			e := strings.SplitN(envar, "=", 2)
-			if len(e) != 2 {
-				sylog.Warningf("Ignore environment variable %q: '=' is missing", envar)
-				continue
-			}
-			// Don't attempt to overwrite bash builtin readonly vars
-			// https://github.com/sylabs/singularity/issues/1263
-			if _, ok := env.ReadOnlyVars[e[0]]; ok {
-				continue
-			}
+		for k, v := range envFilesMap {
 			// Ensure we don't overwrite --env variables with environment file
-			if _, ok := l.cfg.Env[e[0]]; ok {
-				sylog.Warningf("Ignore environment variable %s from %s: override from --env", e[0], l.cfg.EnvFile)
+			if _, ok := l.cfg.Env[k]; ok {
+				sylog.Warningf("Ignored environment file variable %s: override from --env", k)
 			} else {
-				l.cfg.Env[e[0]] = e[1]
+				l.cfg.Env[k] = v
 			}
 		}
 	}
+
 	// process --env and --env-file variables for injection
 	// into the environment by prefixing them with APPTAINERENV_
 	for envName, envValue := range l.cfg.Env {
