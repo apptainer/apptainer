@@ -2,7 +2,7 @@
 #   include this file, Makefile_runtime.stub MUST first be included.
 
 # starter suid
-starter_suid := $(BUILDDIR)/cmd/starter/c/starter-suid
+starter_suid := $(BUILDDIR_ABSPATH)/cmd/starter/c/starter-suid
 starter_suid_INSTALL := $(DESTDIR)$(LIBEXECDIR)/apptainer/bin/starter-suid
 
 $(starter_suid): $(starter)

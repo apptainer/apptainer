@@ -2,7 +2,7 @@
 
 # apptainer build config
 apptainer_build_config := $(SOURCEDIR)/internal/pkg/buildcfg/config.go
-$(apptainer_build_config): $(BUILDDIR)/config.h $(SOURCEDIR)/scripts/go-generate
+$(apptainer_build_config): $(BUILDDIR_ABSPATH)/config.h $(SOURCEDIR)/scripts/go-generate
 	$(V)rm -f $(apptainer_build_config)
 	$(V) cd $(SOURCEDIR)/internal/pkg/buildcfg && $(SOURCEDIR)/scripts/go-generate
 
@@ -15,15 +15,15 @@ apptainer_deps := $(BUILDDIR_ABSPATH)/apptainer.deps
 
 $(apptainer_deps): $(GO_MODFILES)
 	@echo " GEN GO DEP" $@
-	$(V)$(SOURCEDIR)/makeit/gengodep -v3 "$(GO)" "apptainer_SOURCE" "$(GO_TAGS)" "$@" "$(SOURCEDIR)/cmd/apptainer"
+	$(V)cd $(SOURCEDIR) && ./makeit/gengodep -v3 "$(GO)" "apptainer_SOURCE" "$(GO_TAGS)" "$@" "$(SOURCEDIR)/cmd/apptainer"
 
 # Look at dependencies file changes via apptainer_deps
 # because it means that a module was updated.
-apptainer := $(BUILDDIR)/apptainer
+apptainer := $(BUILDDIR_ABSPATH)/apptainer
 $(apptainer): $(apptainer_build_config) $(apptainer_deps) $(apptainer_SOURCE)
 	@echo " GO" $@; echo "    [+] GO_TAGS" \"$(GO_TAGS)\"
-	$(V)$(GO) build $(GO_MODFLAGS) $(GO_BUILDMODE) -tags "$(GO_TAGS)" $(GO_LDFLAGS) \
-		-o $(BUILDDIR)/apptainer $(SOURCEDIR)/cmd/apptainer
+	$(V)cd $(SOURCEDIR) && $(GO) build $(GO_MODFLAGS) $(GO_BUILDMODE) -tags "$(GO_TAGS)" $(GO_LDFLAGS) \
+		-o $@ $(SOURCEDIR)/cmd/apptainer
 
 apptainer_INSTALL := $(DESTDIR)$(BINDIR)/apptainer
 $(apptainer_INSTALL): $(apptainer)
@@ -42,15 +42,15 @@ ALL += $(apptainer)
 
 
 # bash_completion files
-bash_completion1 :=  $(BUILDDIR)/bash-completion/completions/apptainer
-bash_completion2 :=  $(BUILDDIR)/bash-completion/completions/singularity
+bash_completion1 :=  $(BUILDDIR_ABSPATH)/bash-completion/completions/apptainer
+bash_completion2 :=  $(BUILDDIR_ABSPATH)/bash-completion/completions/singularity
 bash_completions := $(bash_completion1) $(bash_completion2)
 $(bash_completions): $(apptainer_build_config)
 	@echo " GEN" $@
 	$(V)rm -f $@
 	$(V)mkdir -p $(@D)
-	$(V)$(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" \
-		$(SOURCEDIR)/cmd/bash_completion/bash_completion.go $@
+	$(V)cd $(SOURCEDIR) && $(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" \
+		cmd/bash_completion/bash_completion.go $@
 
 bash_completion1_INSTALL := $(DESTDIR)$(DATADIR)/bash-completion/completions/apptainer
 bash_completion2_INSTALL := $(DESTDIR)$(DATADIR)/bash-completion/completions/singularity
@@ -71,7 +71,7 @@ ALL += $(bash_completions)
 
 
 # apptainer.conf file
-config := $(BUILDDIR)/apptainer.conf
+config := $(BUILDDIR_ABSPATH)/apptainer.conf
 config_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/apptainer.conf
 # override this to empty to avoid merging old configuration settings
 old_config := $(config_INSTALL)
@@ -99,12 +99,12 @@ $(remote_config_INSTALL): $(remote_config)
 
 INSTALLFILES += $(remote_config_INSTALL)
 
-man_pages := $(BUILDDIR)$(MANDIR)/man1
+man_pages := $(BUILDDIR_ABSPATH)$(MANDIR)/man1
 $(man_pages): apptainer
 	@echo " MAN" $@
 	mkdir -p $@
-	$(V)$(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" \
-		$(SOURCEDIR)/cmd/docs/docs.go man --dir $@
+	$(V)cd $(SOURCEDIR) && $(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" \
+		cmd/docs/docs.go man --dir $@
 	$(V)cd $@;							\
 		for M in apptainer*; do					\
 			S="`echo $$M|sed 's/apptainer/singularity/'`";	\
