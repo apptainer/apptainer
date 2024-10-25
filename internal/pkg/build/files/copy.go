@@ -148,7 +148,7 @@ func CopyFromStage(src, dst, srcRootfs, dstRootfs string) error {
 			dstResolved = path.Join(dstResolved, srcName)
 		}
 
-		err = archive.CopyWithTar(srcResolved, dstResolved)
+		err = archive.CopyWithTarWithRoot(srcResolved, dstResolved, dstRootfs)
 		if err != nil {
 			return fmt.Errorf("while copying %s to %s: %s", paths, dstResolved, err)
 		}

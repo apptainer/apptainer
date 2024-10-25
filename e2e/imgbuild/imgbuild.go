@@ -2365,5 +2365,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"definition build with template support": c.buildDefinitionWithBuildArgs,         // builds from definition with build args (build arg file) support
 		"issue 1812":                             c.issue1812,                            // https://github.com/sylabs/singularity/issues/1812
 		"auth":                                   np(c.buildWithAuth),                    // build with custom auth file
+		"issue 2607":                             c.issue2607,                            // https://github.com/sylabs/singularity/issues/2607
 	}
 }
