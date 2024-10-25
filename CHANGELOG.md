@@ -47,6 +47,14 @@ For older changes see the [archived Singularity change log](https://github.com/a
   the `nvliblist.conf` that are recognized in the NVIDIA Container Toolkit,
   including files for EGL ICD.
 - Ignore invalid environment variables when pulling oci/docker containers.
+- `apptainer.conf` now accepts setting the following options
+  - `allow ipc ns`, default value is `yes`, when set to `no`, it will disable
+    the use of the `--ipc` flag.
+  - `allow uts ns`, default value is `yes`, when set to `no`, it will invalidate
+    the use of the `--uts` and `--hostname` flags.
+  - `allow user ns`, default value is `yes`, when set to `no`, it will disable
+    creation of user namespaces. This will prevent execution of containers with
+    the `--userns` or `--fakeroot` flags, and unprivileged installations of Apptainer.
 
 ## Changes for v1.3.x
 

@@ -77,7 +77,10 @@ func SetBinaryPath(libexecDir string, nonSuid bool) {
 // File describes the apptainer.conf file options
 type File struct {
 	AllowSetuid               bool     `default:"yes" authorized:"yes,no" directive:"allow setuid"`
+	AllowIpcNs                bool     `default:"yes" authorized:"yes,no" directive:"allow ipc ns"`
 	AllowPidNs                bool     `default:"yes" authorized:"yes,no" directive:"allow pid ns"`
+	AllowUserNs               bool     `default:"yes" authorized:"yes,no" directive:"allow user ns"`
+	AllowUtsNs                bool     `default:"yes" authorized:"yes,no" directive:"allow uts ns"`
 	ConfigPasswd              bool     `default:"yes" authorized:"yes,no" directive:"config passwd"`
 	ConfigGroup               bool     `default:"yes" authorized:"yes,no" directive:"config group"`
 	ConfigResolvConf          bool     `default:"yes" authorized:"yes,no" directive:"config resolv_conf"`
@@ -169,6 +172,11 @@ allow setuid = {{ if eq .AllowSetuid true }}yes{{ else }}no{{ end }}
 # to utilize.
 max loop devices = {{ .MaxLoopDevices }}
 
+# ALLOW IPC NS: [BOOL]
+# DEFAULT: yes
+# Should we allow users to request the IPC namespace?
+allow ipc ns = {{ if eq .AllowIpcNs true }}yes{{ else }}no{{ end }}
+
 # ALLOW PID NS: [BOOL]
 # DEFAULT: yes
 # Should we allow users to request the PID namespace? Note that for some HPC
@@ -176,6 +184,16 @@ max loop devices = {{ .MaxLoopDevices }}
 # some MPI implementations utilize shared memory. (note, on some older
 # systems, the PID namespace is always used)
 allow pid ns = {{ if eq .AllowPidNs true }}yes{{ else }}no{{ end }}
+
+# ALLOW USER NS: [BOOL]
+# DEFAULT: yes
+# Should we allow users to request the USER namespace?
+allow user ns = {{ if eq .AllowUserNs true }}yes{{ else }}no{{ end }}
+
+# ALLOW UTS NS: [BOOL]
+# DEFAULT: yes
+# Should we allow users to request the UTS namespace?
+allow uts ns = {{ if eq .AllowUtsNs true }}yes{{ else }}no{{ end }}
 
 # CONFIG PASSWD: [BOOL]
 # DEFAULT: yes

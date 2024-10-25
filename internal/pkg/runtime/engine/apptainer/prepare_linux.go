@@ -536,21 +536,62 @@ func (e *EngineOperations) prepareAutofs(starterConfig *starter.Config) error {
 	return nil
 }
 
+// removeNamespace is used to remove a namespace from the slice of namespaces.
+// It is used mainly within prepareContainerConfig(...)
+func (e *EngineOperations) removeNamespace(namespaceType specs.LinuxNamespaceType) {
+	if e.EngineConfig.OciConfig.Linux == nil {
+		return
+	}
+
+	namespaces := e.EngineConfig.OciConfig.Linux.Namespaces
+	for i, ns := range namespaces {
+		if ns.Type == namespaceType {
+			sylog.Warningf("Not virtualizing %s namespace by configuration", namespaceType)
+			e.EngineConfig.OciConfig.Linux.Namespaces = append(namespaces[:i], namespaces[i+1:]...)
+			break
+		}
+	}
+}
+
+// hasNamespaces checks for existence of a specific namespace in the namespaces slice.
+func (e *EngineOperations) hasNamespace(namespaceType specs.LinuxNamespaceType) bool {
+	namespaces := e.EngineConfig.OciConfig.Linux.Namespaces
+	for _, ns := range namespaces {
+		if namespaceType == ns.Type {
+			return true
+		}
+	}
+	return false
+}
+
 // prepareContainerConfig is responsible for getting and applying
 // user supplied configuration for container creation.
 func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config) error {
 	// always set mount namespace
 	e.EngineConfig.OciConfig.AddOrReplaceLinuxNamespace(specs.MountNamespace, "")
 
-	// if PID namespace is not allowed remove it from namespaces
-	if !e.EngineConfig.File.AllowPidNs && e.EngineConfig.OciConfig.Linux != nil {
-		namespaces := e.EngineConfig.OciConfig.Linux.Namespaces
-		for i, ns := range namespaces {
-			if ns.Type == specs.PIDNamespace {
-				sylog.Debugf("Not virtualizing PID namespace by configuration")
-				e.EngineConfig.OciConfig.Linux.Namespaces = append(namespaces[:i], namespaces[i+1:]...)
-				break
-			}
+	// If any namespace is not allowed remove it from namespaces
+	if !e.EngineConfig.File.AllowIpcNs {
+		e.removeNamespace(specs.IPCNamespace)
+	}
+
+	if !e.EngineConfig.File.AllowPidNs {
+		e.removeNamespace(specs.PIDNamespace)
+	}
+
+	if !e.EngineConfig.File.AllowUserNs {
+		if buildcfg.APPTAINER_SUID_INSTALL == 0 {
+			sylog.Fatalf("Unprivileged installation found, user namepace needed but not allowed by configuration.")
+		}
+		if e.hasNamespace(specs.UserNamespace) {
+			sylog.Fatalf("User namespace required but not allowed by configuration.")
+		}
+	}
+
+	if !e.EngineConfig.File.AllowUtsNs {
+		e.removeNamespace(specs.UTSNamespace)
+		if e.EngineConfig.OciConfig.Hostname != "" {
+			sylog.Warningf("Container hostname cannot be set.")
 		}
 	}
 
