@@ -73,8 +73,8 @@ type launchOptions struct {
 
 	// Env is a map of name=value env vars to set in the container.
 	Env map[string]string
-	// EnvFile is a file to read container env vars from.
-	EnvFile string
+	// EnvFiles contains filenames to read container env vars from.
+	EnvFiles []string
 	// CleanEnv starts the container with a clean environment, excluding host env vars.
 	CleanEnv bool
 	// NoEval instructs Apptainer not to shell evaluate args and env vars.
@@ -299,13 +299,13 @@ func OptContainLibs(cl []string) Option {
 
 // OptEnv sets container environment
 //
-// envFile is a path to a file container environment variables to set.
+// envFiles is a slice of paths to files container environment variables to set
 // env is a map of name=value env vars to set.
 // clean removes host variables from the container environment.
-func OptEnv(env map[string]string, envFile string, clean bool) Option {
+func OptEnv(env map[string]string, envFiles []string, clean bool) Option {
 	return func(lo *launchOptions) error {
 		lo.Env = env
-		lo.EnvFile = envFile
+		lo.EnvFiles = envFiles
 		lo.CleanEnv = clean
 		return nil
 	}

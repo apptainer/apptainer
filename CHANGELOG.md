@@ -55,6 +55,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   - `allow user ns`, default value is `yes`, when set to `no`, it will disable
     creation of user namespaces. This will prevent execution of containers with
     the `--userns` or `--fakeroot` flags, and unprivileged installations of Apptainer.
+- It is now possible to use multiple environment variable files using the --env-file
+  flag, files can be specified as a comma-separated list or by using the flag
+  multiple times. Variables defined in later files take precedence.
 
 ## Changes for v1.3.x
 

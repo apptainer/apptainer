@@ -17,28 +17,28 @@ import (
 
 // actionflags.go contains flag variables for action-like commands to draw from
 var (
-	appName          string
-	bindPaths        []string
-	mounts           []string
-	homePath         string
-	overlayPath      []string
-	scratchPath      []string
-	workdirPath      string
-	cwdPath          string
-	shellPath        string
-	hostname         string
-	network          string
-	networkArgs      []string
-	dns              string
-	security         []string
-	cgroupsTOMLFile  string
-	containLibsPath  []string
-	fuseMount        []string
-	apptainerEnv     map[string]string
-	apptainerEnvFile string
-	noMount          []string
-	dmtcpLaunch      string
-	dmtcpRestart     string
+	appName           string
+	bindPaths         []string
+	mounts            []string
+	homePath          string
+	overlayPath       []string
+	scratchPath       []string
+	workdirPath       string
+	cwdPath           string
+	shellPath         string
+	hostname          string
+	network           string
+	networkArgs       []string
+	dns               string
+	security          []string
+	cgroupsTOMLFile   string
+	containLibsPath   []string
+	fuseMount         []string
+	apptainerEnv      map[string]string
+	apptainerEnvFiles []string
+	noMount           []string
+	dmtcpLaunch       string
+	dmtcpRestart      string
 
 	isBoot          bool
 	isFakeroot      bool
@@ -609,8 +609,8 @@ var actionEnvFlag = cmdline.Flag{
 // --env-file
 var actionEnvFileFlag = cmdline.Flag{
 	ID:           "actionEnvFileFlag",
-	Value:        &apptainerEnvFile,
-	DefaultValue: "",
+	Value:        &apptainerEnvFiles,
+	DefaultValue: []string{},
 	Name:         "env-file",
 	Usage:        "pass environment variables from file to contained process",
 	EnvKeys:      []string{"ENV_FILE"},

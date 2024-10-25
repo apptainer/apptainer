@@ -10,7 +10,10 @@
 package env
 
 import (
+	"context"
 	"os"
+	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -150,6 +153,100 @@ func TestGetenvLegacy(t *testing.T) {
 			resultValue := GetenvLegacy(tt.key, tt.legacyKey)
 			if tt.expectedValue != resultValue {
 				t.Errorf("Unexpected error for %s: got %s instead of %s", tt.name, resultValue, tt.expectedValue)
+			}
+		})
+	}
+}
+
+func TestEnvFileMap(t *testing.T) {
+	tests := []struct {
+		name    string
+		envFile string
+		hostEnv []string
+		want    map[string]string
+		wantErr bool
+	}{
+		{
+			name:    "EmptyFile",
+			envFile: "",
+			want:    map[string]string{},
+			wantErr: false,
+		},
+		{
+			name: "Simple",
+			envFile: `FOO=BAR
+			ABC=123`,
+			want: map[string]string{
+				"FOO": "BAR",
+				"ABC": "123",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "DoubleQuote",
+			envFile: `FOO="FOO BAR"`,
+			want: map[string]string{
+				"FOO": "FOO BAR",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "SingleQuote",
+			envFile: `FOO='FOO BAR'`,
+			want: map[string]string{
+				"FOO": "FOO BAR",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "MultiLine",
+			envFile: "FOO=\"FOO\nBAR\"",
+			want: map[string]string{
+				"FOO": "FOO\nBAR",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "Invalid",
+			envFile: "!!!@@NOTAVAR",
+			want:    map[string]string{},
+			wantErr: true,
+		},
+		{
+			name:    "HostEnvUnset",
+			envFile: "HELLO=$YOU",
+			want: map[string]string{
+				"HELLO": "",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "HostEnvSet",
+			envFile: "HELLO=$YOU",
+			hostEnv: []string{"YOU=YOU"},
+			want: map[string]string{
+				"HELLO": "YOU",
+			},
+			wantErr: false,
+		},
+	}
+
+	tmpDir := t.TempDir()
+	envFile := filepath.Join(tmpDir, "env-file")
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := os.WriteFile(envFile, []byte(tt.envFile), 0o755); err != nil {
+				t.Fatalf("Could not write test env-file: %v", err)
+			}
+
+			got, err := FileMap(context.Background(), envFile, []string{}, tt.hostEnv)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("envFileMap() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("envFileMap() = %v, want %v", got, tt.want)
 			}
 		})
 	}
