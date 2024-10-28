@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2024, Sylabs Inc. All rights reserved.
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
@@ -86,7 +86,7 @@ const (
 	RemoteListLong  string = `
   The 'remote list' command lists all remote endpoints configured for use.
 
-  The current remote is indicated by 'YES' in the 'ACTIVE' column and can be changed
+  The current remote is indicated by '✓' in the 'ACTIVE' column and can be changed
   with the 'remote use' command.`
 	RemoteListExample string = `
   $ apptainer remote list`
