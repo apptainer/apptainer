@@ -43,10 +43,6 @@ func (cp *LibraryConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err 
 	libraryURL := b.Opts.LibraryURL
 	authToken := b.Opts.LibraryAuthToken
 
-	if err = makeBaseEnv(cp.b.RootfsPath); err != nil {
-		return fmt.Errorf("while inserting base environment: %v", err)
-	}
-
 	// check for custom library from definition
 	customLib, ok := b.Recipe.Header["library"]
 	if ok {
@@ -82,7 +78,7 @@ func (cp *LibraryConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err 
 	}
 
 	// insert base metadata before unpacking fs
-	if err = makeBaseEnv(cp.b.RootfsPath); err != nil {
+	if err = makeBaseEnv(cp.b.RootfsPath, true); err != nil {
 		return fmt.Errorf("while inserting base environment: %v", err)
 	}
 

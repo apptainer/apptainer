@@ -123,8 +123,10 @@ func (cp *LocalConveyorPacker) Pack(ctx context.Context) (*types.Bundle, error) 
 		return nil, fmt.Errorf("while unpacking local image: %v", err)
 	}
 
-	// insert base metadata AFTER unpacking fs to avoid conflicts with contained files/symlinks
-	if err = makeBaseEnv(b.RootfsPath); err != nil {
+	// Insert base metadata after unpacking fs to avoid unsquashfs failure on
+	// existing files/symlink. Call makeBaseEnv with overwrite=false so we don't
+	// overwrite runscripts etc. that were extracted from the image.
+	if err = makeBaseEnv(b.RootfsPath, false); err != nil {
 		return nil, fmt.Errorf("while inserting base environment: %v", err)
 	}
 

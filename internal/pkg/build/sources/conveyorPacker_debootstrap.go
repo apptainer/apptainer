@@ -271,7 +271,7 @@ func (cp *DebootstrapConveyorPacker) getRecipeHeaderInfo() (err error) {
 }
 
 func (cp *DebootstrapConveyorPacker) insertBaseEnv(b *types.Bundle) (err error) {
-	if err = makeBaseEnv(b.RootfsPath); err != nil {
+	if err = makeBaseEnv(b.RootfsPath, true); err != nil {
 		return
 	}
 	return nil
