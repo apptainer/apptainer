@@ -5,7 +5,7 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes for v1.3.x
+## v1.3.5 - \[2024-10-30\]
 
 - Fix a regression introduced in 1.3.4 that overwrote existing standard
   `/.singularity.d` files such as `runscript` in container images even
