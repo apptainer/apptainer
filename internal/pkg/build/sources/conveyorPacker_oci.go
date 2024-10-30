@@ -264,7 +264,7 @@ func (cp *OCIConveyorPacker) unpackRootfs(ctx context.Context) error {
 }
 
 func (cp *OCIConveyorPacker) insertBaseEnv() (err error) {
-	if err = makeBaseEnv(cp.b.RootfsPath); err != nil {
+	if err = makeBaseEnv(cp.b.RootfsPath, true); err != nil {
 		sylog.Errorf("%v", err)
 	}
 	return

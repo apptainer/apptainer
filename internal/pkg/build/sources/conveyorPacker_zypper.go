@@ -393,7 +393,7 @@ func (cp *ZypperConveyorPacker) Pack(context.Context) (b *types.Bundle, err erro
 }
 
 func (cp *ZypperConveyorPacker) insertBaseEnv() (err error) {
-	if err = makeBaseEnv(cp.b.RootfsPath); err != nil {
+	if err = makeBaseEnv(cp.b.RootfsPath, true); err != nil {
 		return
 	}
 	return nil

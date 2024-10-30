@@ -53,9 +53,9 @@ func TestMakeFiles(t *testing.T) {
 		if err := makeDirs(d); err != nil {
 			return err
 		}
-		return makeFiles(d)
+		return makeFiles(d, false)
 	})
-	testWithBadDir(t, makeFiles)
+	testWithBadDir(t, func(d string) error { return makeFiles(d, false) })
 	// #4532 - Check that we can succeed with an existing file that doesn't have
 	// write permission.
 	testWithGoodDir(t, func(d string) error {
@@ -66,7 +66,7 @@ func TestMakeFiles(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to make test hosts file: %s", err)
 		}
-		return makeFiles(d)
+		return makeFiles(d, false)
 	})
 }
 
@@ -74,6 +74,6 @@ func TestMakeBaseEnv(t *testing.T) {
 	test.DropPrivilege(t)
 	defer test.ResetPrivilege(t)
 
-	testWithGoodDir(t, makeBaseEnv)
-	testWithBadDir(t, makeBaseEnv)
+	testWithGoodDir(t, func(d string) error { return makeBaseEnv(d, false) })
+	testWithBadDir(t, func(d string) error { return makeBaseEnv(d, false) })
 }

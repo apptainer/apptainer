@@ -64,6 +64,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - `%files from` in a definition file will now correctly copy symlinks that point
   to a target above the destination directory, but inside the destination stage
   rootfs.
+- Fix a regression issue that overwrites source image runscript, environment
+  etc. in build from local image.
 
 ## Changes for v1.3.x
 
