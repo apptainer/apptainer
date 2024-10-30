@@ -14,6 +14,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `mount hostfs = yes` configuration option.
 - Support parsing nested variables defined inside `%arguments` section of
   definition files.
+- Ignore invalid environment variables when pulling oci/docker containers.
 
 ## v1.3.4 - \[2024-09-04\]
 
