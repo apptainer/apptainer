@@ -7,10 +7,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.3.x
 
+- Fix a regression introduced in 1.3.4 that overwrote existing standard
+  `/.singularity.d` files such as `runscript` in container images even
+  if they had been modified.
 - Skip attempting to bind inaccessible mount points when handling the
   `mount hostfs = yes` configuration option.
 - Support parsing nested variables defined inside `%arguments` section of
-  definition file.
+  definition files.
 
 ## v1.3.4 - \[2024-09-04\]
 

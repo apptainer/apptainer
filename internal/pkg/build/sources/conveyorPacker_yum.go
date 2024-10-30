@@ -345,7 +345,7 @@ func (c *YumConveyor) makePseudoDevices() (err error) {
 }
 
 func (cp *YumConveyorPacker) insertBaseEnv() (err error) {
-	if err = makeBaseEnv(cp.b.RootfsPath); err != nil {
+	if err = makeBaseEnv(cp.b.RootfsPath, true); err != nil {
 		return
 	}
 	return nil

@@ -147,12 +147,16 @@ func makeSymlinks(rootPath string) error {
 	return nil
 }
 
-func makeFile(name string, perm os.FileMode, s string) (err error) {
+func makeFile(name string, perm os.FileMode, s string, overwrite bool) (err error) {
 	// #4532 - If the file already exists ensure it has requested permissions
 	// as OpenFile won't set on an existing file and some docker
 	// containers have hosts or resolv.conf without write perm.
 	if fs.IsFile(name) {
 		if err = os.Chmod(name, perm); err != nil {
+			return
+		}
+		if !overwrite {
+			sylog.Debugf("Will not write to %s file due to existence of file and overwrite flag is set to false", name)
 			return
 		}
 	}
@@ -168,50 +172,55 @@ func makeFile(name string, perm os.FileMode, s string) (err error) {
 	return
 }
 
-func makeFiles(rootPath string) error {
-	if err := makeFile(filepath.Join(rootPath, "etc", "hosts"), 0o644, ""); err != nil {
+func makeFiles(rootPath string, overwrite bool) error {
+	if err := makeFile(filepath.Join(rootPath, "etc", "hosts"), 0o644, "", overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, "etc", "resolv.conf"), 0o644, ""); err != nil {
+	if err := makeFile(filepath.Join(rootPath, "etc", "resolv.conf"), 0o644, "", overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "exec"), 0o755, execFileContent); err != nil {
+	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "exec"), 0o755, execFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "run"), 0o755, runFileContent); err != nil {
+	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "run"), 0o755, runFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "shell"), 0o755, shellFileContent); err != nil {
+	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "shell"), 0o755, shellFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "start"), 0o755, startFileContent); err != nil {
+	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "start"), 0o755, startFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "test"), 0o755, testFileContent); err != nil {
+	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "test"), 0o755, testFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "01-base.sh"), 0o755, baseShFileContent); err != nil {
+	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "01-base.sh"), 0o755, baseShFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "90-environment.sh"), 0o755, environmentShFileContent); err != nil {
+	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "90-environment.sh"), 0o755, environmentShFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "95-apps.sh"), 0o755, appsShFileContent); err != nil {
+	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "95-apps.sh"), 0o755, appsShFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "99-base.sh"), 0o755, base99ShFileContent); err != nil {
+	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "99-base.sh"), 0o755, base99ShFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "99-runtimevars.sh"), 0o755, base99runtimevarsShFileContent); err != nil {
+	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "99-runtimevars.sh"), 0o755, base99runtimevarsShFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "runscript"), 0o755, runscriptFileContent); err != nil {
+	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "runscript"), 0o755, runscriptFileContent, overwrite); err != nil {
 		return err
 	}
-	return makeFile(filepath.Join(rootPath, ".singularity.d", "startscript"), 0o755, startscriptFileContent)
+	return makeFile(filepath.Join(rootPath, ".singularity.d", "startscript"), 0o755, startscriptFileContent, overwrite)
 }
 
-func makeBaseEnv(rootPath string) (err error) {
+// makeBaseEnv inserts Apptainer specific directories, symlinks, and files
+// into the contatiner rootfs. If overwrite is true, then any existing files
+// will be overwritten with new content. If overwrite is false, existing files
+// (e.g. where the rootfs has been extracted from an existing image) will not be
+// modified.
+func makeBaseEnv(rootPath string, overwrite bool) (err error) {
 	var info os.FileInfo
 
 	// Ensure we can write into the root of rootPath
@@ -235,7 +244,7 @@ func makeBaseEnv(rootPath string) (err error) {
 		err = fmt.Errorf("build: failed to make environment symlinks: %v", err)
 		return err
 	}
-	if err = makeFiles(rootPath); err != nil {
+	if err = makeFiles(rootPath, overwrite); err != nil {
 		err = fmt.Errorf("build: failed to make environment files: %v", err)
 		return err
 	}

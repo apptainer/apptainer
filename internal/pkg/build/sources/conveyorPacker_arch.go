@@ -237,7 +237,7 @@ func (cp *ArchConveyorPacker) getPacConf(pacmanConfURL string) (pacConf string, 
 }
 
 func (cp *ArchConveyorPacker) insertBaseEnv() (err error) {
-	if err = makeBaseEnv(cp.b.RootfsPath); err != nil {
+	if err = makeBaseEnv(cp.b.RootfsPath, true); err != nil {
 		return
 	}
 	return nil

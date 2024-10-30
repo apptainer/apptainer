@@ -642,3 +642,85 @@ func (c *imgBuildTests) issue2347(t *testing.T) {
 		),
 	)
 }
+
+// Check that the build process from an image doesn't fail when the source image
+// includes symlinks. Also confirm that the base environment files from the
+// source image are not overwritten (#3353).
+func (c *imgBuildTests) issue2561(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+	require.Command(t, "mksquashfs")
+
+	// Extract standard test image to a sandbox dir.
+	rootfs := filepath.Join(c.env.TestDir, "issue_3084_rootfs")
+	if err := os.Mkdir(rootfs, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--force", "--sandbox", rootfs, c.env.ImagePath),
+		e2e.ExpectExit(
+			0,
+		),
+	)
+
+	// Remove existing `/tmp`, `/var`. Create `/var/tmp` -> `/tmp` and `/var/log` ->
+	// `/tmp` symlinks that cause unsquashfs extraction issue.
+	if err := os.RemoveAll(filepath.Join(rootfs, "tmp")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.RemoveAll(filepath.Join(rootfs, "var")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(rootfs, "tmp"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(rootfs, "var"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(rootfs, "tmp"), filepath.Join(rootfs, "var", "tmp")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(rootfs, "tmp"), filepath.Join(rootfs, "var", "log")); err != nil {
+		t.Fatal(err)
+	}
+
+	// Build from resulting structure as a squashfs
+	image := filepath.Join(c.env.TestDir, "issue_3084.img")
+	cmd := exec.Command("mksquashfs", rootfs, image, "-comp", "gzip", "-noappend")
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("Unexpected error while running command: %s", err)
+	}
+	destImage := filepath.Join(c.env.TestDir, "issue_3084_dest.img")
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs(destImage, image),
+		e2e.ExpectExit(
+			0,
+		),
+		e2e.PostRun(func(_ *testing.T) {
+			os.Remove(image)
+			os.RemoveAll(rootfs)
+		}),
+	)
+
+	// https://github.com/sylabs/singularity/issues/3353
+	// The source test image runscript outputs "Running command: $*" Make sure
+	// we see it... the runscript should still be in place.
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("run"),
+		e2e.WithArgs(destImage, "/bin/true"),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.ContainMatch, "Running command: /bin/true"),
+		),
+		e2e.PostRun(func(_ *testing.T) {
+			os.Remove(destImage)
+		}),
+	)
+}

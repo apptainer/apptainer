@@ -2269,6 +2269,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"issue 5435":                             c.issue5435,                            // https://github.com/apptainer/singularity/issues/5435
 		"issue 5668":                             c.issue5668,                            // https://github.com/apptainer/singularity/issues/5435
 		"issue 5690":                             c.issue5690,                            // https://github.com/apptainer/singularity/issues/5690
+		"issue 2561":                             c.issue2561,                            // https://github.com/apptainer/apptainer/issues/2561
 		"test sif header and execute image":      c.testSIFHeaderAndExecute,              // https://github.com/apptainer/apptainer/issues/211
 		"build sif image using gocryptfs":        c.testGocryptfsSIFBuild,                // https://github.com/apptainer/apptainer/issues/484
 		"definition build with template support": c.buildDefinitionWithBuildArgs,         // builds from definition with build args (build arg file) support

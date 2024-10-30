@@ -134,7 +134,7 @@ func (c *BusyBoxConveyor) insertBusyBox(mirrorurl string) (busyBoxPath string, e
 }
 
 func (c *BusyBoxConveyor) insertBaseEnv() (err error) {
-	if err = makeBaseEnv(c.b.RootfsPath); err != nil {
+	if err = makeBaseEnv(c.b.RootfsPath, true); err != nil {
 		return
 	}
 	return nil
