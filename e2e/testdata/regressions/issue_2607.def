@@ -1,0 +1,16 @@
+Bootstrap: oras
+From: ghcr.io/apptainer/alpine:3.15.0
+Stage: one
+
+%post
+touch /bar
+mkdir -p /foo
+ln -s ../bar /foo/bar
+
+
+Bootstrap: oras
+From: ghcr.io/apptainer/alpine:3.15.0
+Stage: two
+
+%files from one
+/foo
