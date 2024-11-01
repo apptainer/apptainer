@@ -56,6 +56,7 @@ su testuser -c '
     fi
   fi
   go version
+  export GOTOOLCHAIN=auto
   ./scripts/download-dependencies
   if [ "$HIDE_DIST" = true ]; then
     # eliminate the "dist" part in the rpm name, for the release_assets

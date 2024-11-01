@@ -84,6 +84,7 @@ su testuser -c '
     fi
   fi
   go version
+  export GOTOOLCHAIN=auto
   ./scripts/download-dependencies debian
   export DEB_FULLNAME="'"${DEB_FULLNAME:-CI Test}"'"
   export DEBEMAIL="'${DEBEMAIL:-citest@example.com}'"
