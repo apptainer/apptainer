@@ -66,6 +66,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
   rootfs.
 - Fix a regression issue that overwrites source image runscript, environment
   etc. in build from local image.
+- The new `--netns-path` flag takes a path to a network namespace to join when
+  starting a container. The `root` user may join any network namespace. An
+  unprivileged user can only join a network namespace specified in the new
+  `allowed netns paths` directive in `apptainer.conf`, if they are also listed
+  in `allowed net users` / `allowed net groups`, and apptainer is installed with
+  setuid privileges. Not currently supported with `--fakeroot`.
 
 ## Changes for v1.3.x
 
@@ -244,7 +250,7 @@ Changes since v1.2.5
 - Skip parsing build definition file template variables after comments
   beginning with a hash symbol.
 - Improved the clarity of `apptainer key list` output.
-- The global /tmp directory is no longer used for gocryptfs mountpoints.  
+- The global /tmp directory is no longer used for gocryptfs mountpoints.
 - Updated minimum go version to 1.20
 
 ### New Features & Functionality
@@ -259,7 +265,7 @@ Changes since v1.2.5
 - Added `--config` option to`keyserver` commands.
 - Honor an optional remoteName argument to the `keyserver list` command.
 - Added the `APPTAINER_ENCRYPTION_PEM_DATA` env var to allow for encrypting and
-  running encrypted containers without a PEM file.  
+  running encrypted containers without a PEM file.
 - Adding `--sharens` mode for `apptainer exec/run/shell`, which enables to run multiple
   apptainer instances created by the same parent using the same image in the same
   user namespace.

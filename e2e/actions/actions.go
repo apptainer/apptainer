@@ -1101,6 +1101,87 @@ func (c actionTests) actionNetwork(t *testing.T) {
 	}
 }
 
+func (c actionTests) actionNetnsPath(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+	require.Command(t, "ip")
+
+	nsName := "apptainer-e2e"
+	nsPath := filepath.Join("/run", "netns", nsName)
+
+	netnsInode := uint64(0)
+
+	e2e.Privileged(func(t *testing.T) {
+		t.Log("Creating netns")
+		cmd := exec.Command("ip", "netns", "add", nsName)
+		if res := cmd.Run(t); res.Error != nil {
+			t.Fatalf("While creating network namespace: %s", res)
+		}
+		fi, err := os.Stat(nsPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		stat, ok := fi.Sys().(*syscall.Stat_t)
+		if !ok {
+			t.Fatal("Stat_t assertion error")
+		}
+		netnsInode = stat.Ino
+		t.Logf("Netns inode: %d", netnsInode)
+	})(t)
+
+	defer e2e.Privileged(func(t *testing.T) {
+		t.Log("Deleting netns")
+		cmd := exec.Command("ip", "netns", "delete", nsName)
+		if res := cmd.Run(t); res.Error != nil {
+			t.Fatalf("While deleting network namespace: %s", res)
+		}
+	})(t)
+
+	tests := []struct {
+		name         string
+		profile      e2e.Profile
+		netnsPath    string
+		expectExit   int
+		expectOutput string
+	}{
+		{
+			name:         "root",
+			profile:      e2e.RootProfile,
+			netnsPath:    nsPath,
+			expectExit:   0,
+			expectOutput: fmt.Sprintf("%d", netnsInode),
+		},
+		{
+			name:       "user",
+			profile:    e2e.UserProfile,
+			netnsPath:  nsPath,
+			expectExit: 255,
+		},
+		{
+			name:       "userns",
+			profile:    e2e.UserNamespaceProfile,
+			netnsPath:  nsPath,
+			expectExit: 255,
+		},
+		{
+			name:       "fakeroot",
+			profile:    e2e.FakerootProfile,
+			netnsPath:  nsPath,
+			expectExit: 255,
+		},
+	}
+
+	for _, tt := range tests {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(tt.profile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs("--netns-path", tt.netnsPath, c.env.ImagePath, "stat", "-L", "-c", "%i", "/proc/self/ns/net"),
+			e2e.ExpectExit(tt.expectExit, e2e.ExpectOutput(e2e.ContainMatch, tt.expectOutput)),
+		)
+	}
+}
+
 //nolint:maintidx
 func (c actionTests) actionBinds(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
@@ -3173,6 +3254,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"issue 1097":                   c.issue1097,             // https://github.com/apptainer/apptainer/issues/1097
 		"issue 1848":                   c.issue1848,             // https://github.com/apptainer/apptainer/issues/1848
 		"network":                      c.actionNetwork,         // test basic networking
+		"netns-path":                   c.actionNetnsPath,       // test netns joining
 		"binds":                        c.actionBinds,           // test various binds with --bind and --mount
 		"layerType":                    c.actionLayerType,       // verify the various layer types
 		"exit and signals":             c.exitSignals,           // test exit and signals propagation

@@ -324,6 +324,7 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 		launch.OptEnv(apptainerEnv, apptainerEnvFiles, isCleanEnv),
 		launch.OptNoEval(noEval),
 		launch.OptNamespaces(ns),
+		launch.OptNetnsPath(netnsPath),
 		launch.OptNetwork(network, networkArgs),
 		launch.OptHostname(hostname),
 		launch.OptDNS(dns),

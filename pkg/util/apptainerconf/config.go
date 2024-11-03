@@ -117,6 +117,7 @@ type File struct {
 	AllowNetUsers             []string `directive:"allow net users"`
 	AllowNetGroups            []string `directive:"allow net groups"`
 	AllowNetNetworks          []string `directive:"allow net networks"`
+	AllowNetnsPaths           []string `directive:"allow netns paths"`
 	RootDefaultCapabilities   string   `default:"full" authorized:"full,file,no" directive:"root default capabilities"`
 	MemoryFSType              string   `default:"tmpfs" authorized:"tmpfs,ramfs" directive:"memory fs type"`
 	CniConfPath               string   `directive:"cni configuration path"`
@@ -455,11 +456,13 @@ allow container dir = {{ if eq .AllowContainerDir true }}yes{{ else }}no{{ end }
 
 # ALLOW NET USERS: [STRING]
 # DEFAULT: NULL
-# Allow specified root administered CNI network configurations to be used by the
-# specified list of users. By default only root may use CNI configuration,
-# except in the case of a fakeroot execution where only 40_fakeroot.conflist
-# is used. This feature only applies when Apptainer is running in
-# SUID mode and the user is non-root.
+# A list of non-root users that are permitted to use the CNI configurations
+# specified in the 'allow net networks' directive, and can join existing
+# network namespaces listed in the 'allow netns paths' directive.
+# By default only root may use CNI configurations, or join existing network
+# namespaces, except in the case of a fakeroot execution where only the 
+# 40_fakeroot.conflist CNI configuration is used. The restriction only applies
+# when Apptainer is running in SUID mode and the user is non-root.
 #allow net users = gmk, apptainer
 {{ range $index, $owner := .AllowNetUsers }}
 {{- if eq $index 0 }}allow net users = {{ else }}, {{ end }}{{$owner}}
@@ -467,11 +470,13 @@ allow container dir = {{ if eq .AllowContainerDir true }}yes{{ else }}no{{ end }
 
 # ALLOW NET GROUPS: [STRING]
 # DEFAULT: NULL
-# Allow specified root administered CNI network configurations to be used by the
-# specified list of users. By default only root may use CNI configuration,
-# except in the case of a fakeroot execution where only 40_fakeroot.conflist
-# is used. This feature only applies when Apptainer is running in
-# SUID mode and the user is non-root.
+# A list of non-root groups that are permitted to use the CNI configurations
+# specified in the 'allow net networks' directive, and can join existing
+# network namespaces listed in the 'allow netns paths' directive.
+# By default only root may use CNI configurations, or join existing network
+# namespaces, except in the case of a fakeroot execution where only the 
+# 40_fakeroot.conflist CNI configuration is used. The restriction only applies
+# when Apptainer is running in SUID mode and the user is non-root.
 #allow net groups = group1, apptainer
 {{ range $index, $group := .AllowNetGroups }}
 {{- if eq $index 0 }}allow net groups = {{ else }}, {{ end }}{{$group}}
@@ -480,11 +485,21 @@ allow container dir = {{ if eq .AllowContainerDir true }}yes{{ else }}no{{ end }
 # ALLOW NET NETWORKS: [STRING]
 # DEFAULT: NULL
 # Specify the names of CNI network configurations that may be used by users and
-# groups listed in the allow net users / allow net groups directives. Thus feature
+# groups listed in the allow net users / allow net groups directives. This restriction
 # only applies when Apptainer is running in SUID mode and the user is non-root.
 #allow net networks = bridge
 {{ range $index, $group := .AllowNetNetworks }}
 {{- if eq $index 0 }}allow net networks = {{ else }}, {{ end }}{{$group}}
+{{- end }}
+
+# ALLOW NETNS PATHS: [STRING]
+# DEFAULT: NULL
+# Specify the paths to network namespaces that may be joined by users and groups
+# listed in the allow net users / allow net groups directives. This restriction
+# only applies when Apptainer is running in SUID mode and the user is non-root.
+#allow netns paths = /var/run/netns/my_network
+{{ range $index, $path := .AllowNetnsPaths }}
+{{- if eq $index 0 }}allow netns paths = {{ else }}, {{ end }}{{$path}}
 {{- end }}
 
 # ALWAYS USE NV ${TYPE}: [BOOL]
