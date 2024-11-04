@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -1048,6 +1049,127 @@ func (c configTests) configGlobalCombination(t *testing.T) {
 	}
 }
 
+func (c configTests) configUserNetns(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+	require.Command(t, "ip")
+
+	u := e2e.UserProfile.HostUser(t)
+	g, err := user.GetGrGID(u.GID)
+	if err != nil {
+		t.Fatalf("could not retrieve user group information: %s", err)
+	}
+
+	nsName := "singularity-e2e"
+	nsPath := filepath.Join("/run", "netns", nsName)
+
+	netnsInode := uint64(0)
+
+	e2e.Privileged(func(t *testing.T) {
+		t.Log("Creating netns")
+		cmd := exec.Command("ip", "netns", "add", nsName)
+		if err := cmd.Run(); err != nil {
+			t.Fatalf("While creating network namespace: %v", err)
+		}
+		fi, err := os.Stat(nsPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		stat, ok := fi.Sys().(*syscall.Stat_t)
+		if !ok {
+			t.Fatal("Stat_t assertion error")
+		}
+		netnsInode = stat.Ino
+		t.Logf("Netns inode: %d", netnsInode)
+	})(t)
+
+	defer e2e.Privileged(func(t *testing.T) {
+		t.Log("Deleting netns")
+		cmd := exec.Command("ip", "netns", "delete", nsName)
+		if err := cmd.Run(); err != nil {
+			t.Fatalf("While deleting network namespace: %v", err)
+		}
+	})(t)
+
+	tests := []struct {
+		name         string
+		netnsPath    string
+		directives   map[string]string
+		expectExit   int
+		expectOutput string
+	}{
+		{
+			name:       "Default",
+			netnsPath:  nsPath,
+			expectExit: 255,
+		},
+		{
+			name:      "NetnsPathOnly",
+			netnsPath: nsPath,
+			directives: map[string]string{
+				"allow netns paths": nsPath,
+			},
+			expectExit: 255,
+		},
+		{
+			name:      "NetUserOnly",
+			netnsPath: nsPath,
+			directives: map[string]string{
+				"allow net users": u.Name,
+			},
+			expectExit: 255,
+		},
+		{
+			name:      "NetGroupOnly",
+			netnsPath: nsPath,
+			directives: map[string]string{
+				"allow net groups": g.Name,
+			},
+			expectExit: 255,
+		},
+		{
+			name:      "ValidUser",
+			netnsPath: nsPath,
+			directives: map[string]string{
+				"allow net users":   u.Name,
+				"allow netns paths": nsPath,
+			},
+			expectExit:   0,
+			expectOutput: fmt.Sprintf("%d", netnsInode),
+		},
+		{
+			name:      "ValidGroup",
+			netnsPath: nsPath,
+			directives: map[string]string{
+				"allow net groups":  g.Name,
+				"allow netns paths": nsPath,
+			},
+			expectExit:   0,
+			expectOutput: fmt.Sprintf("%d", netnsInode),
+		},
+	}
+
+	for _, tt := range tests {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(e2e.UserProfile),
+			e2e.PreRun(func(t *testing.T) {
+				for k, v := range tt.directives {
+					e2e.SetDirective(t, c.env, k, v)
+				}
+			}),
+			e2e.PostRun(func(t *testing.T) {
+				for k := range tt.directives {
+					e2e.ResetDirective(t, c.env, k)
+				}
+			}),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs("--netns-path", tt.netnsPath, c.env.ImagePath, "stat", "-L", "-c", "%i", "/proc/self/ns/net"),
+			e2e.ExpectExit(tt.expectExit, e2e.ExpectOutput(e2e.ContainMatch, tt.expectOutput)),
+		)
+	}
+}
+
 func (c configTests) configFile(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
@@ -1120,5 +1242,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"config file":               c.configFile,                  // test --config file option
 		"config global":             np(c.configGlobal),            // test various global configuration
 		"config global combination": np(c.configGlobalCombination), // test various global configuration with combination
+		"config user netns":         np(c.configUserNetns),         // test entering a network namespace as an unpriv user
 	}
 }

@@ -2696,6 +2696,11 @@ func (c *container) prepareNetworkSetup(system *mount.System, pid int) (func(con
 		return nil, nil
 	}
 
+	// If we are joining an existing network namespace, then there is no CNI setup to be done.
+	if _, joinPath := c.engine.hasNamespace(specs.NetworkNamespace); joinPath != "" {
+		return nil, nil
+	}
+
 	// In fakeroot mode only permit the `fakeroot` CNI config, overriding any other request.
 	euid := os.Geteuid()
 	fakeroot := c.engine.EngineConfig.GetFakeroot()

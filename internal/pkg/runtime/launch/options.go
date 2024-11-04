@@ -83,6 +83,10 @@ type launchOptions struct {
 	// Namespaces is the list of optional Namespaces requested for the container.
 	Namespaces Namespaces
 
+	// NetnsPath is the path to a network namespace to join, rather than
+	// creating one / applying a CNI config.
+	NetnsPath string
+
 	// Network is the name of an optional CNI networking configuration to apply.
 	Network string
 	// NetworkArgs are argument to pass to the CNI plugin that will configure networking when Network is set.
@@ -323,6 +327,14 @@ func OptNoEval(b bool) Option {
 func OptNamespaces(n Namespaces) Option {
 	return func(lo *launchOptions) error {
 		lo.Namespaces = n
+		return nil
+	}
+}
+
+// OptJoinNetNamespace sets the network namespace to join, if permitted.
+func OptNetnsPath(n string) Option {
+	return func(lo *launchOptions) error {
+		lo.NetnsPath = n
 		return nil
 	}
 }

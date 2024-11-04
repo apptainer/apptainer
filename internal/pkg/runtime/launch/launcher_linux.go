@@ -955,6 +955,12 @@ func (l *Launcher) setNamespaces() {
 			l.cfg.Network = "bridge"
 			l.engineConfig.SetNetwork(l.cfg.Network)
 		}
+		if l.cfg.NetnsPath != "" {
+			sylog.Warningf("cannot join existing --netns-path and create a new network namespace with --net/-n")
+		}
+		// unprivileged installation could not use fakeroot
+		// network because it requires a setuid installation
+		// so we fallback to none
 		if l.cfg.Fakeroot && l.cfg.Network != "none" {
 			// unprivileged installation could not use fakeroot
 			// network because it requires a setuid installation
@@ -968,6 +974,11 @@ func (l *Launcher) setNamespaces() {
 			}
 		}
 		l.generator.AddOrReplaceLinuxNamespace("network", "")
+	}
+	if l.cfg.NetnsPath != "" {
+		// Note - runtime code checks whether netns-path is permitted (root or
+		// allowed via apptainer.conf).
+		l.generator.AddOrReplaceLinuxNamespace("network", l.cfg.NetnsPath)
 	}
 	if l.cfg.Namespaces.UTS {
 		l.generator.AddOrReplaceLinuxNamespace("uts", "")

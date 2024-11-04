@@ -60,6 +60,7 @@ var (
 	disableCache    bool
 
 	netNamespace   bool
+	netnsPath      string
 	utsNamespace   bool
 	userNamespace  bool
 	pidNamespace   bool
@@ -843,6 +844,16 @@ var actionRunscriptTimeoutFlag = cmdline.Flag{
 	Hidden:       false,
 }
 
+// --netns-path
+var actionNetnsPathFlag = cmdline.Flag{
+	ID:           "actionNetnsPathFlag",
+	Value:        &netnsPath,
+	DefaultValue: "",
+	Name:         "netns-path",
+	Usage:        "join the network namespace at the specified path (as root, or if permitted in apptainer.conf)",
+	EnvKeys:      []string{"NETNS_PATH"},
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(ExecCmd)
@@ -885,6 +896,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&actionKeepPrivsFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionMountFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionNetNamespaceFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionNetnsPathFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionNetworkArgsFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionNetworkFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionNoHomeFlag, actionsInstanceCmd...)
