@@ -24,6 +24,10 @@ func RocmPaths(configFilePath string) ([]string, []string, error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not read %s: %v", filepath.Base(configFilePath), err)
 	}
+	// return nil slices to signal that the input was empty
+	if len(rocmFiles) == 0 {
+		return nil, nil, nil
+	}
 
 	libs, bins, _, err := paths.Resolve(rocmFiles)
 	return libs, bins, err

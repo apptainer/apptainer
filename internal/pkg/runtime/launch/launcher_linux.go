@@ -916,7 +916,10 @@ func (l *Launcher) setRocmConfig() error {
 func (l *Launcher) addGPUBinds(libs, bins, ipcs, regularFiles []string, gpuPlatform string) {
 	files := make([]string, len(bins)+len(ipcs)+len(regularFiles))
 	if len(files) == 0 {
-		sylog.Warningf("Could not find any %s files on this host!", gpuPlatform)
+		if bins != nil {
+			// only warn if we requested files to bind
+			sylog.Warningf("Could not find any %s files on this host!", gpuPlatform)
+		}
 	} else {
 		if l.cfg.Writable {
 			sylog.Warningf("%s files may not be bound with --writable", gpuPlatform)
@@ -934,7 +937,10 @@ func (l *Launcher) addGPUBinds(libs, bins, ipcs, regularFiles []string, gpuPlatf
 		l.engineConfig.AppendFilesPath(files...)
 	}
 	if len(libs) == 0 {
-		sylog.Warningf("Could not find any %s libraries on this host!", gpuPlatform)
+		if libs != nil {
+			// only warn if we requested libraries to bind
+			sylog.Warningf("Could not find any %s libraries on this host!", gpuPlatform)
+		}
 	} else {
 		l.engineConfig.AppendLibrariesPath(libs...)
 	}
