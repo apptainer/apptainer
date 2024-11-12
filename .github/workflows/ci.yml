@@ -309,8 +309,8 @@ jobs:
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
-  short_unit_tests:
-    name: short_unit_tests
+  unit_tests:
+    name: unit_tests
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
@@ -331,7 +331,7 @@ jobs:
           make -C ./builddir all && sudo make -C ./builddir install
 
       - name: Run unit tests
-        run: make -C ./builddir short-unit-test
+        run: make -C ./builddir unit-test
 
       - name: Check NFPM
         run: |
