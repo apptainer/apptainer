@@ -6,7 +6,7 @@ jobs:
   check_go_mod:
     name: check_go_mod
     runs-on: ubuntu-22.04
-    container: golang:1.22.5
+    container: golang:1.22.7
     steps:
       - uses: actions/checkout@v2
 
@@ -87,7 +87,7 @@ jobs:
   check_test_corpus:
     name: check_test_corpus
     runs-on: ubuntu-22.04
-    container: golang:1.22.5
+    container: golang:1.22.7
     steps:
       - uses: actions/checkout@v2
 
@@ -102,7 +102,7 @@ jobs:
   check_license_dependencies:
     name: check_license_dependencies
     runs-on: ubuntu-22.04
-    container: golang:1.22.5
+    container: golang:1.22.7
     steps:
       - uses: actions/checkout@v2
 
@@ -320,7 +320,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.22.5
+          go-version: 1.22.7
 
       - name: Fetch deps
         run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfs-tools squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
@@ -350,7 +350,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.22.5
+          go-version: 1.22.7
 
       - name: Fetch deps
         run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfs-tools libseccomp-dev cryptsetup dbus-user-session
@@ -395,7 +395,7 @@ jobs:
         if: env.run_tests
         uses: actions/setup-go@v2
         with:
-          go-version: 1.22.5
+          go-version: 1.22.7
 
       - name: Fetch deps
         if: env.run_tests
@@ -469,7 +469,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.22.5
+          go-version: 1.22.7
 
       - name: Check pkg/... doesn't depend on buildcfg
         run: |
