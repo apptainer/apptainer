@@ -513,7 +513,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/apptainer/container-library-client/blob/v1.4.6/LICENSE.md>
+**License URL:** <https://github.com/apptainer/container-library-client/blob/v1.4.10/LICENSE.md>
 
 ## github.com/apptainer/sif/v2
 
