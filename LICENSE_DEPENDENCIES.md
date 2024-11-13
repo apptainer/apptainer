@@ -687,7 +687,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/mvdan/sh/blob/v3.8.0/LICENSE>
+**License URL:** <https://github.com/mvdan/sh/blob/v3.10.0/LICENSE>
 
 ## github.com/BurntSushi/toml
 
@@ -874,6 +874,12 @@ The dependencies and their licenses are as follows:
 **License:** MIT
 
 **License URL:** <https://github.com/mitchellh/mapstructure/blob/v1.5.0/LICENSE>
+
+## github.com/muesli/cancelreader
+
+**License:** MIT
+
+**License URL:** <https://github.com/muesli/cancelreader/blob/v0.2.2/LICENSE>
 
 ## github.com/pelletier/go-toml/v2
 
