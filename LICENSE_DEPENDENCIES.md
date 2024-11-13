@@ -885,7 +885,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/pelletier/go-toml/blob/v2.2.2/LICENSE>
+**License URL:** <https://github.com/pelletier/go-toml/blob/v2.2.3/LICENSE>
 
 ## github.com/rivo/uniseg
 
