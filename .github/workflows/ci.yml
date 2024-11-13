@@ -6,7 +6,7 @@ jobs:
   check_go_mod:
     name: check_go_mod
     runs-on: ubuntu-22.04
-    container: golang:1.21.9
+    container: golang:1.22.5
     steps:
       - uses: actions/checkout@v2
 
@@ -71,7 +71,7 @@ jobs:
     name: oldgo
     runs-on: ubuntu-22.04
     # match the minimum version required by mconfig
-    container: golang:1.21-alpine
+    container: golang:1.22-alpine
     steps:
       - name: Fetch deps
         run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
@@ -87,7 +87,7 @@ jobs:
   check_test_corpus:
     name: check_test_corpus
     runs-on: ubuntu-22.04
-    container: golang:1.21.9
+    container: golang:1.22.5
     steps:
       - uses: actions/checkout@v2
 
@@ -102,7 +102,7 @@ jobs:
   check_license_dependencies:
     name: check_license_dependencies
     runs-on: ubuntu-22.04
-    container: golang:1.21.9
+    container: golang:1.22.5
     steps:
       - uses: actions/checkout@v2
 
@@ -320,7 +320,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.21.9
+          go-version: 1.22.5
 
       - name: Fetch deps
         run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfs-tools squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
@@ -350,7 +350,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.21.9
+          go-version: 1.22.5
 
       - name: Fetch deps
         run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfs-tools libseccomp-dev cryptsetup dbus-user-session
@@ -395,7 +395,7 @@ jobs:
         if: env.run_tests
         uses: actions/setup-go@v2
         with:
-          go-version: 1.21.9
+          go-version: 1.22.5
 
       - name: Fetch deps
         if: env.run_tests
@@ -469,7 +469,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.21.9
+          go-version: 1.22.5
 
       - name: Check pkg/... doesn't depend on buildcfg
         run: |

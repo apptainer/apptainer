@@ -137,6 +137,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/go-jose/go-jose/blob/v3.0.3/LICENSE>
 
+## github.com/go-jose/go-jose/v4
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/go-jose/go-jose/blob/v4.0.2/LICENSE>
+
 ## github.com/go-logr/logr
 
 **License:** Apache-2.0
@@ -375,7 +381,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/sigstore/sigstore/blob/v1.8.4/LICENSE>
+**License URL:** <https://github.com/sigstore/sigstore/blob/v1.8.9/LICENSE>
 
 ## github.com/spf13/cobra
 
@@ -417,43 +423,37 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go-contrib/blob/instrumentation/net/http/otelhttp/v0.49.0/instrumentation/net/http/otelhttp/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go-contrib/blob/instrumentation/net/http/otelhttp/v0.52.0/instrumentation/net/http/otelhttp/LICENSE>
 
 ## go.opentelemetry.io/otel
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/v1.24.0/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/v1.27.0/LICENSE>
 
 ## go.opentelemetry.io/otel/metric
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.24.0/metric/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.27.0/metric/LICENSE>
 
 ## go.opentelemetry.io/otel/trace
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.24.0/trace/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.27.0/trace/LICENSE>
 
 ## google.golang.org/genproto/googleapis/rpc/status
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/googleapis/go-genproto/blob/94a12d6c2237/googleapis/rpc/LICENSE>
+**License URL:** <https://github.com/googleapis/go-genproto/blob/dc85e6b867a5/googleapis/rpc/LICENSE>
 
 ## google.golang.org/grpc
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/grpc/grpc-go/blob/v1.62.1/LICENSE>
-
-## gopkg.in/go-jose/go-jose.v2
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/go-jose/go-jose/blob/v2.6.3/LICENSE>
+**License URL:** <https://github.com/grpc/grpc-go/blob/v1.64.0/LICENSE>
 
 ## gopkg.in/yaml.v2
 
@@ -501,7 +501,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/ProtonMail/go-crypto/blob/v1.0.0/LICENSE>
+**License URL:** <https://github.com/ProtonMail/go-crypto/blob/v1.1.2/LICENSE>
 
 ## github.com/apptainer/container-key-client/client
 
@@ -519,7 +519,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/apptainer/sif/blob/v2.15.2/LICENSE.md>
+**License URL:** <https://github.com/apptainer/sif/blob/v2.19.3/LICENSE.md>
 
 ## github.com/cloudflare/circl
 
@@ -538,6 +538,12 @@ The dependencies and their licenses are as follows:
 **License:** BSD-3-Clause
 
 **License URL:** <https://github.com/go-jose/go-jose/blob/v3.0.3/json/LICENSE>
+
+## github.com/go-jose/go-jose/v4/json
+
+**License:** BSD-3-Clause
+
+**License URL:** <https://github.com/go-jose/go-jose/blob/v4.0.2/json/LICENSE>
 
 ## github.com/gogo/protobuf/proto
 
@@ -669,13 +675,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/protocolbuffers/protobuf-go/blob/v1.33.0/LICENSE>
-
-## gopkg.in/go-jose/go-jose.v2/json
-
-**License:** BSD-3-Clause
-
-**License URL:** <https://github.com/go-jose/go-jose/blob/v2.6.3/json/LICENSE>
+**License URL:** <https://github.com/protocolbuffers/protobuf-go/blob/v1.34.2/LICENSE>
 
 ## gotest.tools/v3/internal/difflib
 
@@ -939,7 +939,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MPL-2.0
 
-**License URL:** <https://github.com/letsencrypt/boulder/blob/6d76a0f91e1e/LICENSE.txt>
+**License URL:** <https://github.com/letsencrypt/boulder/blob/de9c06129bec/LICENSE.txt>
 
 ## github.com/garyburd/redigo/internal
 

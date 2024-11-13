@@ -54,6 +54,8 @@ su testuser -c '
       curl -f -L -sS https://golang.org/dl/$GOBIN | tar -xzf - -C /local
       PATH=/local/go/bin:$PATH
     fi
+    # re-do the mconfig to locate the new go
+    ./mconfig --only-rpm
   fi
   go version
   ./scripts/download-dependencies
