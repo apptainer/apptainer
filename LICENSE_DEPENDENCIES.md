@@ -249,7 +249,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/moby/sys/blob/sequential/v0.5.0/sequential/LICENSE>
+**License URL:** <https://github.com/moby/sys/blob/sequential/v0.6.0/sequential/LICENSE>
 
 ## github.com/moby/sys/user
 
