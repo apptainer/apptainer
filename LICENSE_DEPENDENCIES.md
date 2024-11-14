@@ -627,7 +627,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.28.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.29.0:LICENSE>
 
 ## golang.org/x/exp/maps
 
@@ -645,7 +645,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sync/+/v0.8.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sync/+/v0.9.0:LICENSE>
 
 ## golang.org/x/sys
 
@@ -663,7 +663,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/text/+/v0.19.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/text/+/v0.20.0:LICENSE>
 
 ## google.golang.org/protobuf
 
