@@ -777,7 +777,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/creack/pty/blob/v1.1.23/LICENSE>
+**License URL:** <https://github.com/creack/pty/blob/v1.1.24/LICENSE>
 
 ## github.com/docker/docker-credential-helpers
 
