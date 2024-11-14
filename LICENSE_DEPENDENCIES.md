@@ -297,7 +297,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/opencontainers/runc/blob/v1.1.15/LICENSE>
+**License URL:** <https://github.com/opencontainers/runc/blob/v1.2.1/LICENSE>
 
 ## github.com/opencontainers/runtime-spec/specs-go
 
@@ -760,12 +760,6 @@ The dependencies and their licenses are as follows:
 **License:** MIT
 
 **License URL:** <https://github.com/cespare/xxhash/blob/v2.3.0/LICENSE.txt>
-
-## github.com/cilium/ebpf
-
-**License:** MIT
-
-**License URL:** <https://github.com/cilium/ebpf/blob/v0.9.1/LICENSE>
 
 ## github.com/cpuguy83/go-md2man/v2/md2man
 
