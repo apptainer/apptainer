@@ -8,10 +8,58 @@ updates:
   - package-ecosystem: "gomod" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "friday"
+      time: "07:00"
     target-branch: main
+    groups:
+      moby:
+        applies-to: "version-updates"
+        patterns:
+          - "github.com/moby/*"
+          - "github.com/docker/*"
+      containerd:
+        applies-to: "version-updates"
+        patterns:
+          - "github.com/containerd/*"
+      opencontainers:
+        applies-to: "version-updates"
+        patterns:
+          - "github.com/opencontainers/*"
+      minor:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
   - package-ecosystem: "gomod" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "friday"
+      time: "08:00"
     target-branch: release-1.3
+    groups:
+      moby:
+        applies-to: "version-updates"
+        patterns:
+          - "github.com/moby/*"
+          - "github.com/docker/*"
+      containerd:
+        applies-to: "version-updates"
+        patterns:
+          - "github.com/containerd/*"
+      opencontainers:
+        applies-to: "version-updates"
+        patterns:
+          - "github.com/opencontainers/*"
+      minor:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
