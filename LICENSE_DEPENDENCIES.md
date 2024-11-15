@@ -789,7 +789,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/fatih/color/blob/v1.17.0/LICENSE.md>
+**License URL:** <https://github.com/fatih/color/blob/v1.18.0/LICENSE.md>
 
 ## github.com/felixge/httpsnoop
 
