@@ -31,7 +31,7 @@ the [keys](keys/) directory:
 
 - ECDSA: [ecdsa-public.pem](keys/ecdsa-public.pem)/
   [ecdsa-private.pem](keys/ecdsa-private.pem)
-- Ed25519: [ed25519-public.pem](ed25519-public.pem)/
+- Ed25519: [ed25519-public.pem](keys/ed25519-public.pem)/
   [ed25519-private.pem](keys/ed25519-private.pem)
 - RSA: [rsa-public.pem](keys/rsa-public.pem)/
   [rsa-private.pem](keys/rsa-private.pem)
