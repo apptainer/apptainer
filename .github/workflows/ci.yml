@@ -146,8 +146,8 @@ jobs:
           GO_ARCH: linux-amd64
         run: ./scripts/ci-docker-run
 
-  debbuild-ubuntu23:
-    name: debbuild-ubuntu23
+  debbuild-ubuntu22:
+    name: debbuild-ubuntu22
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
@@ -157,7 +157,7 @@ jobs:
       - name: Build and test deb under docker
         env:
           OS_TYPE: ubuntu
-          OS_VERSION: '23.10'
+          OS_VERSION: '22.04'
           GO_ARCH: linux-amd64
         run: ./scripts/ci-docker-run
   
