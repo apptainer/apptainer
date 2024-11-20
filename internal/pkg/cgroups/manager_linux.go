@@ -25,6 +25,9 @@ import (
 	lcconfigs "github.com/opencontainers/runc/libcontainer/configs"
 	lcspecconv "github.com/opencontainers/runc/libcontainer/specconv"
 	"github.com/opencontainers/runtime-spec/specs-go"
+
+	// See https://github.com/opencontainers/runc/pull/3452
+	_ "github.com/opencontainers/runc/libcontainer/cgroups/devices"
 )
 
 var ErrUninitialized = errors.New("cgroups manager is not initialized")
