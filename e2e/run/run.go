@@ -300,7 +300,7 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 	e2e.EnsureDebianImage(t, c.env)
 
 	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
-	defer e2e.Privileged(cleanup)
+	defer e2e.Privileged(cleanup)(t)
 
 	sandbox, err := os.MkdirTemp(tempDir, "sandbox")
 	if err != nil {

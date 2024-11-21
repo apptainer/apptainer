@@ -529,7 +529,7 @@ from: %s
 				t, c.env.TestDir, fmt.Sprintf("issue1812-sandbox-%s-", testName), "")
 			t.Cleanup(func() {
 				if !t.Failed() {
-					e2e.Privileged(cleanup)
+					e2e.Privileged(cleanup)(t)
 				}
 			})
 
@@ -550,7 +550,7 @@ from: %s
 				t, c.env.TestDir, fmt.Sprintf("issue1812-sandbox-%s-", testName), "")
 			t.Cleanup(func() {
 				if !t.Failed() {
-					e2e.Privileged(cleanup)
+					e2e.Privileged(cleanup)(t)
 				}
 			})
 
