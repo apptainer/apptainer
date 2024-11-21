@@ -11,85 +11,44 @@ package sources
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
-	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/build/types/parser"
 )
 
-const (
-	yumDef = "../../../../examples/almalinux/YumDef"
-	dnfDef = "../../../../examples/almalinux/DnfDef"
-)
-
-func TestYumConveyor(t *testing.T) {
-	// TODO - Centos puts non-amd64 at a different mirror location
-	// need multiple def files to test on other archs
-	require.Arch(t, "amd64")
-	require.RPMMacro(t, "_db_backend", "bdb")
-	require.RPMMacro(t, "_dbpath", "/var/lib/rpm")
-
+func TestYumEL(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()
 	}
+	// EL9 uses newer sqlite DB, but older /var/lib/rpm DB path.
+	require.RPMMacro(t, "_db_backend", "sqlite")
+	require.RPMMacro(t, "_dbpath", "/var/lib/rpm")
+	require.ArchIn(t, []string{"amd64", "arm64"})
 
-	_, dnfErr := bin.FindBin("dnf")
-	_, yumErr := bin.FindBin("yum")
-	if dnfErr != nil && yumErr != nil {
-		t.Skip("skipping test, neither dnf nor yum found")
-	}
-
-	test.EnsurePrivilege(t)
-
-	def := yumDef
-	if yumErr != nil && dnfErr == nil {
-		t.Logf("using dnf definition")
-		def = dnfDef
-	}
-	defFile, err := os.Open(def)
-	if err != nil {
-		t.Fatalf("unable to open file %s: %v\n", def, err)
-	}
-	defer defFile.Close()
-
-	// create bundle to build into
-	b, err := types.NewBundle(filepath.Join(os.TempDir(), "sbuild-yum"), os.TempDir())
-	if err != nil {
-		return
-	}
-
-	b.Recipe, err = parser.ParseDefinitionFile(defFile)
-	if err != nil {
-		t.Fatalf("failed to parse definition file %s: %v\n", def, err)
-	}
-
-	yc := &YumConveyor{}
-
-	err = yc.Get(context.Background(), b)
-	// clean up bundle since assembler isn't called
-	defer yc.b.Remove()
-	if err != nil {
-		t.Fatalf("failed to Get from %s: %v\n", def, err)
-	}
+	testYumConveyorPacker(t, fmt.Sprintf("../../../../examples/almalinux-%s/Apptainer", runtime.GOARCH))
 }
 
-func TestYumPacker(t *testing.T) {
-	// TODO - Centos puts non-amd64 at a different mirror location
-	// need multiple def files to test on other archs
-	require.Arch(t, "amd64")
-	require.RPMMacro(t, "_db_backend", "bdb")
-	require.RPMMacro(t, "_dbpath", "/var/lib/rpm")
-
+func TestYumFedora(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()
 	}
+	// Fedora 39+ uses newer sqlite DB, and newer /usr/lib/sysimage/rpmDB path.
+	require.RPMMacro(t, "_db_backend", "sqlite")
+	require.RPMMacro(t, "_dbpath", "/usr/lib/sysimage/rpm")
+	require.ArchIn(t, []string{"amd64", "arm64"})
 
+	testYumConveyorPacker(t, fmt.Sprintf("../../../../examples/fedora-%s/Apptainer", runtime.GOARCH))
+}
+
+func testYumConveyorPacker(t *testing.T, yumDef string) {
 	_, dnfErr := exec.LookPath("dnf")
 	_, yumErr := exec.LookPath("yum")
 	if dnfErr != nil && yumErr != nil {
@@ -98,26 +57,22 @@ func TestYumPacker(t *testing.T) {
 
 	test.EnsurePrivilege(t)
 
-	def := yumDef
-	if yumErr != nil && dnfErr == nil {
-		t.Logf("using dnf definition")
-		def = dnfDef
-	}
-	defFile, err := os.Open(def)
+	defFile, err := os.Open(yumDef)
 	if err != nil {
-		t.Fatalf("unable to open file %s: %v\n", def, err)
+		t.Fatalf("unable to open file %s: %v\n", yumDef, err)
 	}
 	defer defFile.Close()
 
 	// create bundle to build into
-	b, err := types.NewBundle(filepath.Join(os.TempDir(), "sbuild-yum"), os.TempDir())
+	tmpDir := t.TempDir()
+	b, err := types.NewBundle(filepath.Join(tmpDir, "sbuild-yum"), tmpDir)
 	if err != nil {
 		return
 	}
 
 	b.Recipe, err = parser.ParseDefinitionFile(defFile)
 	if err != nil {
-		t.Fatalf("failed to parse definition file %s: %v\n", def, err)
+		t.Fatalf("failed to parse definition file %s: %v\n", yumDef, err)
 	}
 
 	ycp := &YumConveyorPacker{}
@@ -126,11 +81,11 @@ func TestYumPacker(t *testing.T) {
 	// clean up tmpfs since assembler isn't called
 	defer ycp.b.Remove()
 	if err != nil {
-		t.Fatalf("failed to Get from %s: %v\n", def, err)
+		t.Fatalf("failed to Get from %s: %v\n", yumDef, err)
 	}
 
 	_, err = ycp.Pack(context.Background())
 	if err != nil {
-		t.Fatalf("failed to Pack from %s: %v\n", def, err)
+		t.Fatalf("failed to Pack from %s: %v\n", yumDef, err)
 	}
 }

@@ -62,7 +62,6 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 	// see https://github.com/apptainer/singularity/issues/4407
 	tt := []struct {
 		name         string
-		dependency   string
 		buildSpec    string
 		requirements func(t *testing.T)
 	}{
@@ -106,7 +105,7 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 		},
 		{
 			name:      "Yum AlmaLinux 9",
-			buildSpec: "../examples/almalinux/YumDef",
+			buildSpec: "../examples/almalinux-amd64/Apptainer",
 			requirements: func(t *testing.T) {
 				require.Command(t, "yum")
 				require.RPMMacro(t, "_db_backend", "bdb")
@@ -116,7 +115,7 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 		},
 		{
 			name:      "Dnf AlmaLinux 9",
-			buildSpec: "../examples/almalinux/DnfDef",
+			buildSpec: "../examples/almalinux-amd64/DnfDef",
 			requirements: func(t *testing.T) {
 				require.Command(t, "dnf")
 				require.RPMMacro(t, "_db_backend", "sqlite")
@@ -125,9 +124,9 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 			},
 		},
 		{
-			name:       "DnfArm64 AlmaLinux 9",
-			dependency: "yum",
-			buildSpec:  "../examples/almalinux-arm64/Apptainer",
+			name: "DnfArm64 AlmaLinux 9",
+			// dependency: "yum",
+			buildSpec: "../examples/almalinux-arm64/Apptainer",
 			requirements: func(t *testing.T) {
 				require.Command(t, "dnf")
 				require.RPMMacro(t, "_db_backend", "sqlite")
@@ -137,7 +136,7 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 		},
 		{
 			name:      "Dnf Fedora 37",
-			buildSpec: "../examples/fedora/Apptainer",
+			buildSpec: "../examples/fedora-amd64/Apptainer",
 			requirements: func(t *testing.T) {
 				require.Command(t, "dnf")
 				require.RPMMacro(t, "_db_backend", "sqlite")
@@ -146,9 +145,9 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 			},
 		},
 		{
-			name:       "DnfArm64 Fedora 37",
-			dependency: "yum",
-			buildSpec:  "../examples/fedora-arm64/Apptainer",
+			name: "DnfArm64 Fedora 37",
+			// dependency: "yum",
+			buildSpec: "../examples/fedora-arm64/Apptainer",
 			requirements: func(t *testing.T) {
 				require.Command(t, "dnf")
 				require.RPMMacro(t, "_db_backend", "sqlite")
@@ -158,7 +157,7 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 		},
 		{
 			name:      "Zypper",
-			buildSpec: "../examples/opensuse/Apptainer",
+			buildSpec: "../examples/opensuse-amd64/Apptainer",
 			requirements: func(t *testing.T) {
 				require.Command(t, "zypper")
 				require.Arch(t, "amd64")
