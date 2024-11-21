@@ -89,7 +89,7 @@ func (c *ctx) testCheckpointInstance(t *testing.T) {
 	require.DMTCP(t)
 
 	imageDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "checkpoint-", "")
-	defer e2e.Privileged(cleanup)
+	defer e2e.Privileged(cleanup)(t)
 
 	imagePath := filepath.Join(imageDir, "state-server.sif")
 	checkpointName := randomName(t)

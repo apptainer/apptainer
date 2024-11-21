@@ -118,7 +118,7 @@ func Run(t *testing.T) {
 	testenv.PrivCacheDir = privCacheDir
 	defer e2e.Privileged(func(t *testing.T) {
 		cleanPrivCache(t)
-	})
+	})(t)
 
 	unprivCacheDir, cleanUnprivCache := e2e.MakeCacheDir(t, testenv.TestDir)
 	testenv.UnprivCacheDir = unprivCacheDir

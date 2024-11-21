@@ -675,7 +675,7 @@ func (c actionTests) issue6165(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
 	workspace, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "issue6165-", "")
-	defer e2e.Privileged(cleanup)
+	defer e2e.Privileged(cleanup)(t)
 
 	hostCanaryFile := filepath.Join(workspace, "file")
 

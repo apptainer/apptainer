@@ -1418,7 +1418,7 @@ func (c imgBuildTests) buildUpdateSandbox(t *testing.T) {
 	testDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "build-sandbox-", "")
 	t.Cleanup(func() {
 		if !t.Failed() {
-			e2e.Privileged(cleanup)
+			e2e.Privileged(cleanup)(t)
 		}
 	})
 
