@@ -297,7 +297,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/opencontainers/runc/blob/v1.1.15/LICENSE>
+**License URL:** <https://github.com/opencontainers/runc/blob/v1.2.1/LICENSE>
 
 ## github.com/opencontainers/runtime-spec/specs-go
 
@@ -629,7 +629,7 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.29.0:LICENSE>
 
-## golang.org/x/exp/maps
+## golang.org/x/exp
 
 **License:** BSD-3-Clause
 
@@ -765,7 +765,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/cilium/ebpf/blob/v0.9.1/LICENSE>
+**License URL:** <https://github.com/cilium/ebpf/blob/v0.16.0/LICENSE>
 
 ## github.com/cpuguy83/go-md2man/v2/md2man
 
