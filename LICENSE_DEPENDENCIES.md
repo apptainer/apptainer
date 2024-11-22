@@ -297,7 +297,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/opencontainers/runc/blob/v1.2.1/LICENSE>
+**License URL:** <https://github.com/opencontainers/runc/blob/v1.2.2/LICENSE>
 
 ## github.com/opencontainers/runtime-spec/specs-go
 
