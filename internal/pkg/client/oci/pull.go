@@ -39,6 +39,7 @@ type PullOptions struct {
 	NoCleanUp   bool
 	Pullarch    string
 	ReqAuthFile string
+	Platform    v1.Platform
 }
 
 // transportOptions maps PullOptions to OCI image transport options
@@ -50,7 +51,7 @@ func transportOptions(opts PullOptions) *ociimage.TransportOptions {
 		TmpDir:           opts.TmpDir,
 		UserAgent:        useragent.Value(),
 		DockerDaemonHost: opts.DockerHost,
-		Platform:         v1.Platform{},
+		Platform:         opts.Platform,
 	}
 }
 
@@ -134,6 +135,7 @@ func convertOciToSIF(ctx context.Context, imgCache *cache.Handle, image, cachedI
 				ImgCache:         imgCache,
 				Arch:             opts.Pullarch,
 				ReqAuthFile:      opts.ReqAuthFile,
+				Platform:         opts.Platform,
 			},
 		},
 	)
