@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/machine"
 	"github.com/apptainer/sif/v2/pkg/sif"
 )
 
@@ -122,12 +123,17 @@ func TestSIFInitializer(t *testing.T) {
 			expectedSections:   0,
 		},
 		{
-			name:               "PrimaryPartitionOtherArchSIF",
-			path:               createSIF(t, false, primPartOtherArch),
-			writable:           false,
-			expectedSuccess:    false,
-			expectedPartitions: 0,
-			expectedSections:   0,
+			name:            "PrimaryPartitionOtherArchSIF",
+			path:            createSIF(t, false, primPartOtherArch),
+			writable:        false,
+			expectedSuccess: machine.CompatibleWith("s390x"),
+			expectedPartitions: func() int {
+				if machine.CompatibleWith("s390x") {
+					return 1
+				}
+				return 0
+			}(),
+			expectedSections: 0,
 		},
 		{
 			name:               "PrimaryPartitionSIF",
