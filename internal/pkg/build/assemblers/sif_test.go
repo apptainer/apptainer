@@ -19,6 +19,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/build/assemblers"
 	"github.com/apptainer/apptainer/internal/pkg/build/sources"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/ociplatform"
 	testCache "github.com/apptainer/apptainer/internal/pkg/test/tool/cache"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
@@ -67,6 +68,11 @@ func TestSIFAssemblerDocker(t *testing.T) {
 		t.Fatalf("failed to create an image cache handle: %s", err)
 	}
 	b.Opts.ImgCache = imgCache
+	p, err := ociplatform.DefaultPlatform()
+	if err != nil {
+		t.Fatalf("failed to get DefaultPlatform: %v", err)
+	}
+	b.Opts.Platform = *p
 
 	ocp := &sources.OCIConveyorPacker{}
 
