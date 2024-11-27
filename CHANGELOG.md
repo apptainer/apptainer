@@ -76,6 +76,14 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## Changes for v1.3.x
 
+- Avoid using kernel overlayfs when the lower layer is a sandbox on an
+  incompatible filesystem type such as GPFS or Lustre.  For those cases
+  use fuse-overlayfs instead.  This fixes a regression introduced in
+  1.3.0.  The regression didn't much impact Lustre because kernel
+  overlayfs refused to try to use it and Apptainer proceeded to use
+  fuse-overlayfs anyway, but with GPFS the kernel overlayfs allowed
+  mounting but returned stale file handle errors.
+
 ## v1.3.4 - \[2024-09-04\]
 
 - Fixed sif-embedded overlay partitions for containers that are larger
