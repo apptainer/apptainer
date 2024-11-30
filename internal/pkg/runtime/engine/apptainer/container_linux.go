@@ -775,24 +775,34 @@ mount:
 				if strings.HasPrefix(opt, "lowerdir=") {
 					lowerdirs = opt[len("lowerdir="):]
 				} else if strings.HasPrefix(opt, "upperdir=") {
+					// this is a writable overlay
 					hasUpper = true
 				}
 			}
-			if hasUpper {
-				// This is an overlay and there is an overlay image
-				//  driver.  When a lower layer is of type FUSE
-				//  we want to skip trying the kernel overlayfs. That's
-				//  because sometimes the mount succeeds but the
-				//  operation doesn't work, due to a kernel regression
-				//  related to fuse under overlayfs that first showed up
-				//  in kernel version 5.15, as discussed at
-				//   https://lore.kernel.org/lkml/CAJfpegvaUyCUkucNwP0P419hC8v78PEM25pW5mBho94HRCgO3Q@mail.gmail.com/
+			// This is an overlay and there is an overlay image
+			//  driver.  When a lower layer is of type FUSE while
+			//  the upper layer is writable, we want to skip
+			//  trying the kernel overlayfs.  That's because
+			//  sometimes the mount succeeds but the operation
+			//  doesn't work, due to a kernel regression related
+			//  to fuse under overlayfs that first showed up
+			//  in kernel version 5.15, as discussed at
+			//   https://lore.kernel.org/lkml/CAJfpegvaUyCUkucNwP0P419hC8v78PEM25pW5mBho94HRCgO3Q@mail.gmail.com/
+			// Likewise if the lower layer is known to be
+			//  incompatible with kernel overlayfs, skip trying it.
 
-				for _, ldir := range strings.Split(lowerdirs, ":") {
+			for _, ldir := range strings.Split(lowerdirs, ":") {
+				if hasUpper {
 					err = fsoverlay.CheckFuse(ldir)
 					if err != nil {
+						sylog.Debugf("Not trying kernel overlayfs because writable overlay and %v", err)
 						break
 					}
+				}
+				err = fsoverlay.CheckLower(ldir)
+				if err != nil {
+					sylog.Debugf("Not trying kernel overlayfs because %v", err)
+					break
 				}
 			}
 		}
