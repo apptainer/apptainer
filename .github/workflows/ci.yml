@@ -130,8 +130,24 @@ jobs:
           GO_ARCH: linux-amd64
         run: ./scripts/ci-docker-run
 
-  ubuntu-2310:
-    name: debbuild-ubuntu23
+  debbuild-debian12:
+    name: debbuild-debian12
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      # fetch tags as checkout@v2 doesn't do that by default
+      - run: git fetch --prune --unshallow --tags --force
+
+      - name: Build and test deb under docker
+        env:
+          OS_TYPE: debian
+          OS_VERSION: 12
+          # setting GO_ARCH speeds things by using go binaries instead of source
+          GO_ARCH: linux-amd64
+        run: ./scripts/ci-docker-run
+
+  debbuild-ubuntu22:
+    name: debbuild-ubuntu22
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
@@ -141,7 +157,7 @@ jobs:
       - name: Build and test deb under docker
         env:
           OS_TYPE: ubuntu
-          OS_VERSION: '23.10'
+          OS_VERSION: '22.04'
           GO_ARCH: linux-amd64
         run: ./scripts/ci-docker-run
   

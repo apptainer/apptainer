@@ -5,6 +5,16 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## Changes for v1.3.x
+
+- Avoid using kernel overlayfs when the lower layer is a sandbox on an
+  incompatible filesystem type such as GPFS or Lustre.  For those cases
+  use fuse-overlayfs instead.  This fixes a regression introduced in
+  1.3.0.  The regression didn't much impact Lustre because kernel
+  overlayfs refused to try to use it and Apptainer proceeded to use
+  fuse-overlayfs anyway, but with GPFS the kernel overlayfs allowed
+  mounting but returned stale file handle errors.
+
 ## v1.3.5 - \[2024-10-30\]
 
 - Fix a regression introduced in 1.3.4 that overwrote existing standard
