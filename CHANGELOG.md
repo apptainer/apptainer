@@ -74,7 +74,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   setuid privileges. Not currently supported with `--fakeroot`.
 - Go version 1.22 is now required.
 
-## Changes for v1.3.x
+## v1.3.6 - \[2024-12-02\]
 
 - Avoid using kernel overlayfs when the lower layer is a sandbox on an
   incompatible filesystem type such as GPFS or Lustre.  For those cases
@@ -83,6 +83,17 @@ For older changes see the [archived Singularity change log](https://github.com/a
   overlayfs refused to try to use it and Apptainer proceeded to use
   fuse-overlayfs anyway, but with GPFS the kernel overlayfs allowed
   mounting but returned stale file handle errors.
+
+## v1.3.5 - \[2024-10-30\]
+
+- Fix a regression introduced in 1.3.4 that overwrote existing standard
+  `/.singularity.d` files such as `runscript` in container images even
+  if they had been modified.
+- Skip attempting to bind inaccessible mount points when handling the
+  `mount hostfs = yes` configuration option.
+- Support parsing nested variables defined inside `%arguments` section of
+  definition files.
+- Ignore invalid environment variables when pulling oci/docker containers.
 
 ## v1.3.4 - \[2024-09-04\]
 
