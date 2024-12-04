@@ -5,7 +5,7 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## Changes for v1.3.x
+## v1.3.6 - \[2024-12-02\]
 
 - Avoid using kernel overlayfs when the lower layer is a sandbox on an
   incompatible filesystem type such as GPFS or Lustre.  For those cases
