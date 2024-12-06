@@ -25,6 +25,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/fakeroot"
+	"github.com/apptainer/apptainer/internal/pkg/ociplatform"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	fakerootConfig "github.com/apptainer/apptainer/internal/pkg/runtime/engine/fakeroot/config"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
@@ -350,6 +351,11 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 
 	}
 
+	dp, err := ociplatform.DefaultPlatform()
+	if err != nil {
+		sylog.Fatalf("%v", err)
+	}
+
 	b, err := build.New(
 		defs,
 		build.Config{
@@ -377,6 +383,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 				Binds:             buildArgs.bindPaths,
 				Unprivilege:       unprivilege,
 				ReqAuthFile:       reqAuthFile,
+				Platform:          *dp,
 			},
 		})
 	if err != nil {

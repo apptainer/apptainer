@@ -22,6 +22,7 @@ import (
 	keyClient "github.com/apptainer/container-key-client/client"
 	ocitypes "github.com/containers/image/v5/types"
 	"github.com/google/go-containerregistry/pkg/authn"
+	ggcrv1 "github.com/google/go-containerregistry/pkg/v1"
 	"golang.org/x/sys/unix"
 )
 
@@ -94,6 +95,8 @@ type Options struct {
 	Arch string
 	// Authentication file for registry credentials
 	ReqAuthFile string
+	// Which Platform to use when retrieving images for the build
+	Platform ggcrv1.Platform
 }
 
 // NewEncryptedBundle creates an Encrypted Bundle environment.

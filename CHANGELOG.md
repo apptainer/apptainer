@@ -73,6 +73,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   in `allowed net users` / `allowed net groups`, and apptainer is installed with
   setuid privileges. Not currently supported with `--fakeroot`.
 - Go version 1.22 is now required.
+- Refactor image arch variation using go-containerregistry's platform.
 
 ## v1.3.6 - \[2024-12-02\]
 

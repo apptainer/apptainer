@@ -91,6 +91,7 @@ func handleOCI(ctx context.Context, imgCache *cache.Handle, cmd *cobra.Command, 
 		DockerHost:  dockerHost,
 		NoHTTPS:     noHTTPS,
 		ReqAuthFile: reqAuthFile,
+		Platform:    getOCIPlatform(),
 	}
 
 	return oci.Pull(ctx, imgCache, pullFrom, pullOpts)
@@ -124,7 +125,10 @@ func handleLibrary(ctx context.Context, imgCache *cache.Handle, pullFrom string)
 	if err != nil {
 		return "", err
 	}
-	return library.Pull(ctx, imgCache, r, runtime.GOARCH, tmpDir, c)
+	pullOpts := library.PullOptions{
+		LibraryConfig: c,
+	}
+	return library.Pull(ctx, imgCache, r, runtime.GOARCH, tmpDir, pullOpts)
 }
 
 func handleShub(ctx context.Context, imgCache *cache.Handle, pullFrom string) (string, error) {

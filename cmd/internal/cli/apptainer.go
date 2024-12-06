@@ -27,6 +27,7 @@ import (
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/ociplatform"
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
 	"github.com/apptainer/apptainer/internal/pkg/remote"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
@@ -41,6 +42,7 @@ import (
 	keyClient "github.com/apptainer/container-key-client/client"
 	libClient "github.com/apptainer/container-library-client/client"
 	"github.com/google/go-containerregistry/pkg/authn"
+	ggcrv1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
@@ -68,6 +70,9 @@ var (
 	tmpDir              string
 	// Optional user requested authentication file for writing/reading OCI registry credentials
 	reqAuthFile string
+	// Platform for retrieving images
+	arch     string
+	platform string
 )
 
 // apptainer command flags
@@ -891,4 +896,28 @@ func getLibraryClientConfig(uri string) (*libClient.Config, error) {
 		return nil, fmt.Errorf("remote has no library client (see https://apptainer.org/docs/user/latest/endpoint.html#no-default-remote)")
 	}
 	return libClientConfig, nil
+}
+
+// getOCIPlatform returns the appropriate OCI platform to use according to `--arch` and `--platform`
+func getOCIPlatform() ggcrv1.Platform {
+	var (
+		p   *ggcrv1.Platform
+		err error
+	)
+	if arch != "" && platform != "" {
+		err = fmt.Errorf("--arch and --platform cannot be used together")
+	}
+	if arch == "" && platform == "" {
+		p, err = ociplatform.DefaultPlatform()
+	}
+	if arch != "" {
+		p, err = ociplatform.PlatformFromArch(arch)
+	}
+	if platform != "" {
+		p, err = ociplatform.PlatformFromString(platform)
+	}
+	if err != nil {
+		sylog.Fatalf("%v", err)
+	}
+	return *p
 }

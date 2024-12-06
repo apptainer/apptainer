@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/build/sources"
+	"github.com/apptainer/apptainer/internal/pkg/ociplatform"
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	"github.com/apptainer/apptainer/pkg/build/types"
 )
@@ -39,6 +40,11 @@ func TestLibraryConveyor(t *testing.T) {
 	}
 
 	b.Opts.LibraryURL = libraryURL
+	p, err := ociplatform.DefaultPlatform()
+	if err != nil {
+		t.Fatalf("failed to get DefaultPlatform: %v", err)
+	}
+	b.Opts.Platform = *p
 
 	b.Recipe, err = types.NewDefinitionFromURI(libraryURI)
 	if err != nil {
@@ -70,6 +76,12 @@ func TestLibraryPacker(t *testing.T) {
 	}
 
 	b.Opts.LibraryURL = libraryURL
+
+	p, err := ociplatform.DefaultPlatform()
+	if err != nil {
+		t.Fatalf("failed to get DefaultPlatform: %v", err)
+	}
+	b.Opts.Platform = *p
 
 	b.Recipe, err = types.NewDefinitionFromURI(libraryURI)
 	if err != nil {

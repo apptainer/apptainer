@@ -30,9 +30,14 @@ import (
 // ErrLibraryPullUnsigned indicates that the interactive portion of the pull was aborted.
 var ErrLibraryPullUnsigned = errors.New("failed to verify container")
 
+type PullOptions struct {
+	LibraryConfig *libClient.Config
+	KeyClientOpts []keyClient.Option
+}
+
 // pull will pull a library image into the cache if directTo="", or a specific file if directTo is set.
-func pull(ctx context.Context, imgCache *cache.Handle, directTo string, imageRef *libClient.Ref, arch string, libraryConfig *libClient.Config) (string, error) {
-	c, err := libClient.NewClient(libraryConfig)
+func pull(ctx context.Context, imgCache *cache.Handle, directTo string, imageRef *libClient.Ref, arch string, opts PullOptions) (string, error) {
+	c, err := libClient.NewClient(opts.LibraryConfig)
 	if err != nil {
 		return "", fmt.Errorf("unable to initialize client library: %v", err)
 	}
@@ -104,7 +109,7 @@ func downloadWrapper(ctx context.Context, c *libClient.Client, imagePath, arch s
 }
 
 // Pull will pull a library image to the cache or direct to a temporary file if cache is disabled
-func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom *libClient.Ref, arch string, tmpDir string, libraryConfig *libClient.Config) (imagePath string, err error) {
+func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom *libClient.Ref, arch string, tmpDir string, opts PullOptions) (imagePath string, err error) {
 	directTo := ""
 
 	if imgCache.IsDisabled() {
@@ -116,23 +121,23 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom *libClient.Ref, 
 		sylog.Infof("Downloading library image to tmp cache: %s", directTo)
 	}
 
-	return pull(ctx, imgCache, directTo, pullFrom, arch, libraryConfig)
+	return pull(ctx, imgCache, directTo, pullFrom, arch, opts)
 }
 
 // PullToFile will pull a library image to the specified location, through the cache, or directly if cache is disabled
-func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pullFrom *libClient.Ref, arch string, _ string, libraryConfig *libClient.Config, co []keyClient.Option, sandbox bool) (imagePath string, err error) {
+func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo string, pullFrom *libClient.Ref, arch string, _ string, opts PullOptions, sandbox bool) (imagePath string, err error) {
 	directTo := ""
 	if imgCache.IsDisabled() {
 		directTo = pullTo
 		sylog.Debugf("Cache disabled, pulling directly to: %s", directTo)
 	}
 
-	src, err := pull(ctx, imgCache, directTo, pullFrom, arch, libraryConfig)
+	src, err := pull(ctx, imgCache, directTo, pullFrom, arch, opts)
 	if err != nil {
 		return "", fmt.Errorf("error fetching image: %v", err)
 	}
 
-	if err := signature.Verify(ctx, src, signature.OptVerifyWithPGP(co...)); err != nil {
+	if err := signature.Verify(ctx, src, signature.OptVerifyWithPGP(opts.KeyClientOpts...)); err != nil {
 		sylog.Warningf("%v", err)
 		return pullTo, ErrLibraryPullUnsigned
 	}

@@ -266,7 +266,12 @@ func pullRun(cmd *cobra.Command, args []string) {
 			sylog.Fatalf("Unable to get keyserver client configuration: %v", err)
 		}
 
-		_, err = library.PullToFile(ctx, imgCache, pullTo, ref, pullArch, tmpDir, lc, co, pullSandbox)
+		pullOpts := library.PullOptions{
+			KeyClientOpts: co,
+			LibraryConfig: lc,
+		}
+
+		_, err = library.PullToFile(ctx, imgCache, pullTo, ref, pullArch, tmpDir, pullOpts, pullSandbox)
 		if err != nil && err != library.ErrLibraryPullUnsigned {
 			sylog.Fatalf("While pulling library image: %v", err)
 		}
@@ -312,6 +317,7 @@ func pullRun(cmd *cobra.Command, args []string) {
 			NoCleanUp:   buildArgs.noCleanUp,
 			Pullarch:    arch,
 			ReqAuthFile: reqAuthFile,
+			Platform:    getOCIPlatform(),
 		}
 
 		_, err = oci.PullToFile(ctx, imgCache, pullTo, pullFrom, pullSandbox, pullOpts)

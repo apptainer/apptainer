@@ -141,6 +141,7 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 		AuthFilePath:     ociauth.ChooseAuthFile(cp.b.Opts.ReqAuthFile),
 		UserAgent:        useragent.Value(),
 		TmpDir:           b.TmpDir,
+		Platform:         cp.b.Opts.Platform,
 	}
 
 	if cp.b.Opts.OCIAuthConfig == nil && cp.b.Opts.DockerAuthConfig != nil {
