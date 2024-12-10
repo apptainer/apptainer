@@ -74,6 +74,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   setuid privileges. Not currently supported with `--fakeroot`.
 - Go version 1.22 is now required.
 - Refactor image arch variation using go-containerregistry's platform.
+- Changing log level to Debug when variables already having value and not
+  forwarded.
 
 ## v1.3.6 - \[2024-12-02\]
 

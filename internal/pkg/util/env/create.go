@@ -165,7 +165,7 @@ EnvKeys:
 		if mustAddToHostEnv(e[0], cleanEnv) {
 			if value, ok := envKeys[e[0]]; ok {
 				if value != e[1] {
-					sylog.Warningf("Environment variable %s already has value [%s], will not forward new value [%s] from parent process environment", e[0], value, e[1])
+					sylog.Debugf("Environment variable %s already has value [%s], will not forward new value [%s] from parent process environment", e[0], value, e[1])
 				} else {
 					sylog.Debugf("Environment variable %s already has duplicate value [%s], will not forward from parent process environment", e[0], value)
 				}
