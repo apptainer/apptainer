@@ -121,6 +121,10 @@ func CopyWithTarWithRoot(src, dst, dstRoot string) error {
 	}
 
 	ar.Untar = func(tarArchive io.Reader, dest string, options *da.TarOptions) error {
+		if options == nil {
+			options = &da.TarOptions{}
+		}
+
 		if eIdentity != nil {
 			options.IDMap = idtools.IdentityMapping{}
 			options.ChownOpts = eIdentity
@@ -130,9 +134,6 @@ func CopyWithTarWithRoot(src, dst, dstRoot string) error {
 			return fmt.Errorf("empty archive")
 		}
 		dest = filepath.Clean(dest)
-		if options == nil {
-			options = &da.TarOptions{}
-		}
 		if options.ExcludePatterns == nil {
 			options.ExcludePatterns = []string{}
 		}
