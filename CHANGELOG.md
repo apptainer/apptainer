@@ -77,6 +77,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Change message log level from warning to debug when environment variables
   set inside a container or by APPTAINERENV have a different value than the
   environment variable on the host.
+- Fix hang when copying files between build stages while using suid mode without
+  user namespaces.
 
 ## v1.3.6 - \[2024-12-02\]
 
