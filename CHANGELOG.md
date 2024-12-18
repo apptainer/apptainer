@@ -79,6 +79,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   environment variable on the host.
 - Fix hang when copying files between build stages while using suid mode without
   user namespaces.
+- Remove runtime and compute libraries from `rocmliblist.conf`,
+  they should be provided by the container image.
 
 ## v1.3.6 - \[2024-12-02\]
 
