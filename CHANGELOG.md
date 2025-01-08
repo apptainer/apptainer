@@ -81,6 +81,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   user namespaces.
 - Remove runtime and compute libraries from `rocmliblist.conf`,
   they should be provided by the container image.
+- Make binary builds more reproducible by deriving the GNU build ID
+  from the Go build ID instead of using a randomly generated one.
 
 ## v1.3.6 - \[2024-12-02\]
 
