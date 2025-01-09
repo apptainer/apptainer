@@ -12,10 +12,13 @@ install, use, modify, prepare derivative works, incorporate into other computer
 software, distribute, and sublicense such enhancements or derivative works
 thereof, in binary and source code form.
 
-## [Technical Charter](https://apptainer.org/technical-charter)
+## Technical Charter
 
-- section 2(b) requires a list of Technical Steering Committee (TSC) members
-here
+See the [Technical Charter](https://apptainer.org/technical-charter)
+for details on the responsibilities and procedures for technical
+contribution to and oversight of the Apptainer project.
+Section 2(b) requires a list of Technical Steering Committee (TSC)
+members here.
 
 ### Technical Steering Committee
 
@@ -26,7 +29,7 @@ here
 - Dave Dykstra <dwd@fnal.gov>
 - Ian Kaneshiro <ian@ctrliq.com>, <iankane@umich.edu>
 - Gregory M. Kurtzer <gmkurtzer@gmail.com>
-- Krishna Muriki <kmuriki@lbl.gov>, <kmuriki@gmail.com>
+- Krishna Muriki <kmuriki@gmail.com>
 ```
 
 ## Getting Started
