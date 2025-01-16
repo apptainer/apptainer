@@ -12,9 +12,12 @@ package packer
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
 // Squashfs represents a squashfs packer
@@ -46,10 +49,16 @@ func (s Squashfs) create(files []string, dest string, opts []string) error {
 	args = append(args, dest)
 	args = append(args, opts...)
 
+	sylog.Verbosef("Executing %s %s", s.MksquashfsPath, strings.Join(args, " "))
 	cmd := exec.Command(s.MksquashfsPath, args...)
+	if sylog.GetLevel() >= int(sylog.VerboseLevel) {
+		cmd.Stdout = os.Stdout
+	} else {
+		sylog.Infof("To see mksquashfs output with progress bar enable verbose logging")
+	}
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("create command failed: %v: %s", err, stderr.String())
+		return fmt.Errorf("%s command failed: %v: %s", s.MksquashfsPath, err, stderr.String())
 	}
 	return nil
 }

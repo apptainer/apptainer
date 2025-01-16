@@ -34,6 +34,7 @@ var buildArgs struct {
 	libraryURL          string
 	keyServerURL        string
 	webURL              string
+	mksquashfsArgs      string
 	encrypt             bool
 	fakeroot            bool
 	fakefakeroot        bool
@@ -170,6 +171,16 @@ var buildFixPermsFlag = cmdline.Flag{
 	Name:         "fix-perms",
 	Usage:        "ensure owner has rwX permissions on all container content for oci/docker sources",
 	EnvKeys:      []string{"FIXPERMS"},
+}
+
+// --mksquashfs-args
+var buildMksquashfsArgsFlag = cmdline.Flag{
+	ID:           "mksquashfsArgsFlag",
+	Value:        &buildArgs.mksquashfsArgs,
+	DefaultValue: "",
+	Name:         "mksquashfs-args",
+	Usage:        "extra arguments to pass to mksquashfs when creating SIF files",
+	EnvKeys:      []string{"MKSQUASHFS_ARGS"},
 }
 
 // --nv
@@ -324,6 +335,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildEncryptFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildFakerootFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildFixPermsFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildMksquashfsArgsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildJSONFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildLibraryFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildNoCleanupFlag, buildCmd)

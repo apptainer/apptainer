@@ -380,6 +380,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 				EncryptionKeyInfo: keyInfo,
 				FixPerms:          buildArgs.fixPerms,
 				SandboxTarget:     sandboxTarget,
+				MksquashfsArgs:    buildArgs.mksquashfsArgs,
 				Binds:             buildArgs.bindPaths,
 				Unprivilege:       unprivilege,
 				ReqAuthFile:       reqAuthFile,

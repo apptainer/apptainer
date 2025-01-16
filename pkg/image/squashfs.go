@@ -100,45 +100,9 @@ func CheckSquashfsHeader(b []byte) (uint64, error) {
 		default:
 			return 0, fmt.Errorf("corrupted image: unknown compression algorithm value %d", sinfo.Compression)
 		}
-		sylog.Infof("squashfs image was compressed with %s, if it failed to run, please contact image's author", compressionType)
+		sylog.Debugf("squashfs image compression type %s", compressionType)
 	}
 	return offset, nil
-}
-
-// GetSquashfsComp checks if byte content contains a valid squashfs header
-// and returns type of compression used
-func GetSquashfsComp(b []byte) (string, error) {
-	sb, _, err := parseSquashfsHeader(b)
-	if err != nil {
-		return "", fmt.Errorf("while parsing squashfs super block: %v", err)
-	}
-
-	// tighten up this check to at least look a the major version
-	if sb.Major == 4 {
-		var compType string
-		switch sb.Compression {
-		case squashfsZlib:
-			compType = "gzip"
-		case squashfsLzmaComp:
-			compType = "lzma"
-		case squashfsLz4Comp:
-			compType = "lz4"
-		case squashfsLzoComp:
-			compType = "lzo"
-		case squashfsXzComp:
-			compType = "xz"
-		case squashfsZstdComp:
-			compType = "zstd"
-		}
-		return compType, nil
-	} else if sb.Major < 4 {
-		// v3 and earlier super blocks always use gzip comp
-		// different compressors were introduced after the change
-		// to v4 super blocks
-		return "gzip", nil
-	}
-
-	return "", fmt.Errorf("not a valid squashfs image")
 }
 
 func (f *squashfsFormat) initializer(img *Image, fileinfo os.FileInfo) error {
