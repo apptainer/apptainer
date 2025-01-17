@@ -786,6 +786,7 @@ func (c *ctx) actionDbusXDG(t *testing.T) {
 					e2e.WithProfile(profile),
 					e2e.WithCommand("exec"),
 					e2e.WithArgs(tt.args...),
+					e2e.WithRootlessEnv(),
 					e2e.WithEnv(testEnv),
 					e2e.ExpectExit(tt.expectErrorCode, exitFunc...),
 				)

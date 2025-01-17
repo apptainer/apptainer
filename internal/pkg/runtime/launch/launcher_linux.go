@@ -1097,37 +1097,32 @@ func (l *Launcher) setCgroups(instanceName string) error {
 		return nil
 	}
 
-	hidePid := hidepidProc()
 	// If we are an instance, always use a cgroup if possible, to enable stats.
-	// root can always create a cgroup.
-	sylog.Debugf("During setting cgroups configuration, uid: %d, namespace.user: %t, fakeroot: %t, unprivileged: %t", l.uid, l.cfg.Namespaces.User, l.cfg.Fakeroot, namespaces.IsUnprivileged())
-	useCG := cgroups.CanUseCgroups(l.engineConfig.File.SystemdCgroups, false) && !namespaces.IsUnprivileged() && !l.cfg.Fakeroot && !hidePid
-
-	if useCG {
-		sylog.Debugf("Using cgroup manager during setting cgroups configuration")
-		cg := cgroups.Config{}
-		cgJSON, err := cg.MarshalJSON()
-		if err != nil {
-			return err
+	err := cgroups.CanUseCgroups(l.engineConfig.File.SystemdCgroups)
+	if err == nil {
+		// CanUseCgroups catches cases where fakeroot is already
+		// in effect but sometimes when l.cfg.Fakeroot is set it
+		// takes effect later, so also check that here
+		if l.cfg.Fakeroot {
+			err = fmt.Errorf("doesn't work with fakeroot mode")
+		} else if hidepidProc() {
+			err = fmt.Errorf("hidepid option is set on /proc mount")
+		} else {
+			sylog.Debugf("Using cgroup manager during setting cgroups configuration")
+			cg := cgroups.Config{}
+			cgJSON, err := cg.MarshalJSON()
+			if err != nil {
+				return err
+			}
+			l.engineConfig.SetCgroupsJSON(cgJSON)
+			return nil
 		}
-		l.engineConfig.SetCgroupsJSON(cgJSON)
-		return nil
-	}
-
-	if l.cfg.Fakeroot {
-		sylog.Debugf("Instance stats will not be available because of fakeroot mode")
-		return nil
-	}
-
-	if hidePid {
-		sylog.Debugf("Instance stats will not be available because of hidepid option is set on /proc mount")
-		return nil
 	}
 
 	if l.cfg.ShareNSMode {
-		sylog.Debugf("Instance stats will not be available - system configuration does not support cgroup management.")
+		sylog.Debugf("Instance stats will not be available - %v", err)
 	} else {
-		sylog.Infof("Instance stats will not be available - system configuration does not support cgroup management.")
+		sylog.Infof("Instance stats will not be available - %v", err)
 	}
 	return nil
 }
@@ -1294,9 +1289,9 @@ func withPrivilege(uid uint32, cond bool, desc string, fn func() error) error {
 	return fn()
 }
 
-// hidepidProc checks if hidepid is set on /proc mount point, when this
-// option is an instance started with setuid workflow could not even be
-// joined later or stopped correctly.
+// hidepidProc checks if hidepid is set on /proc mount point.  When this
+// is set an instance started with setuid workflow could not even be
+// joined later or stopped correctly.  It also interferes with cgroups.
 func hidepidProc() bool {
 	entries, err := proc.GetMountInfoEntry("/proc/self/mountinfo")
 	if err != nil {

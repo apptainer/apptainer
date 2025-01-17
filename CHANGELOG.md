@@ -23,13 +23,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
   by squashfuse_ll.
 - Add automated tests for OpenSUSE Leap and Tumbleweed and Debian Bookworm.
 - Fixed typo in `nvliblist.conf` (`libnvoptix.so.1` -> `libnvoptix.so`)
-- Containers and instances can now be successfully
-  started as a non-root user on cgroups v2 systems when both:
-  - The system configuration / environment does not provide the correct
-    information necessary to communicate with systemd via dbus.
-  - Resource limits (e.g. `--cpus`) have not been requested.
-  The container / instance will be started in the current cgroup, and information
-  about the configuration issue displayed to the user as warnings.
+- Statistics are now normally available for instances that are
+  started by non-root users on cgroups v2 systems.  
+  The instance will be started in the current cgroup.  Information
+  about configuration issues that prevent collection of statistics are
+  displayed as INFO messages by default.
 - Fix storage of credentials for `docker.io` to behave the same as for
   `index.docker.io`.
 - Skip attempting to bind inaccessible mount points when handling the
