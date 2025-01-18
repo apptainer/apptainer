@@ -347,8 +347,8 @@ func newManager(resources *specs.LinuxResources, group string, systemd bool) (ma
 // If a group name is supplied, it will be used by the manager.
 // If group = "" then "/apptainer/<pid>" is used as a default.
 func NewManagerWithSpec(spec *specs.LinuxResources, pid int, group string, systemd bool) (manager *Manager, err error) {
-	if !CanUseCgroups(systemd, true) {
-		return nil, fmt.Errorf("system configuration does not support cgroup management")
+	if err := CanUseCgroups(systemd); err != nil {
+		return nil, fmt.Errorf("cannot use cgroups - %v", err)
 	}
 
 	if pid == 0 {

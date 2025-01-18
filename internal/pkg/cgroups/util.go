@@ -14,7 +14,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	"github.com/opencontainers/runc/libcontainer/cgroups"
 	"golang.org/x/sys/unix"
 )
@@ -101,49 +101,33 @@ func HasXDGRuntimeDir() (bool, error) {
 // - Rootless needs systemd manager.
 // - Rootless needs DBUS_SESSION_BUS_ADDRESS and XDG_RUNTIME_DIR set properly.
 // warn controls whether configuration problems preventing use of cgroups will be logged as warnings, or debug messages.
-func CanUseCgroups(systemd bool, warn bool) bool {
+// - Rootless needs to not be running as fakeroot
+// Returns nil if can be used, otherwise returns an error explaining why
+// it can't be used
+func CanUseCgroups(systemd bool) error {
 	uid := os.Geteuid()
 	if uid == 0 {
-		return true
+		if !namespaces.IsUnprivileged() {
+			return nil
+		}
+		return fmt.Errorf("rootless cgroups is not usable in fakeroot mode")
 	}
 
-	rootlessOK := true
-
 	if !cgroups.IsCgroup2UnifiedMode() {
-		rootlessOK = false
-		if warn {
-			sylog.Warningf("Rootless cgroups require the system to be configured for cgroups v2 in unified mode.")
-		} else {
-			sylog.Debugf("Rootless cgroups require 'systemd cgroups' to be enabled in apptainer.conf")
-		}
+		return fmt.Errorf("system is not configured for cgroups v2 in unified mode")
 	}
 
 	if !systemd {
-		rootlessOK = false
-		if warn {
-			sylog.Warningf("Rootless cgroups require 'systemd cgroups' to be enabled in apptainer.conf")
-		} else {
-			sylog.Debugf("Rootless cgroups require 'systemd cgroups' to be enabled in apptainer.conf")
-		}
-	}
-
-	if ok, err := HasXDGRuntimeDir(); !ok {
-		rootlessOK = false
-		if warn {
-			sylog.Warningf("%s", err)
-		} else {
-			sylog.Debugf("%s", err)
-		}
+		return fmt.Errorf("'systemd cgroups' is not enabled in apptainer.conf")
 	}
 
 	if ok, err := HasDbus(); !ok {
-		rootlessOK = false
-		if warn {
-			sylog.Warningf("%s", err)
-		} else {
-			sylog.Debugf("%s", err)
-		}
+		return err
 	}
 
-	return rootlessOK
+	if ok, err := HasXDGRuntimeDir(); !ok {
+		return err
+	}
+
+	return nil
 }
