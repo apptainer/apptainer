@@ -297,7 +297,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/opencontainers/runc/blob/v1.2.2/LICENSE>
+**License URL:** <https://github.com/opencontainers/runc/blob/v1.2.4/LICENSE>
 
 ## github.com/opencontainers/runtime-spec/specs-go
 
@@ -525,7 +525,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.3.4/LICENSE>
+**License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.3.5/LICENSE>
 
 ## github.com/go-jose/go-jose/v4/json
 
