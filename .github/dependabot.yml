@@ -26,13 +26,15 @@ updates:
         applies-to: "version-updates"
         patterns:
           - "github.com/opencontainers/*"
-      minor:
-        applies-to: "version-updates"
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
+# Leave the "minor" group separated because some require too-new golang
+# and others don't
+#      minor:
+#        applies-to: "version-updates"
+#        patterns:
+#          - "*"
+#        update-types:
+#          - "minor"
+#          - "patch"
 
   - package-ecosystem: "gomod" # See documentation for possible values
     directory: "/" # Location of package manifests
@@ -55,11 +57,11 @@ updates:
         applies-to: "version-updates"
         patterns:
           - "github.com/opencontainers/*"
-      minor:
-        applies-to: "version-updates"
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
+#      minor:
+#        applies-to: "version-updates"
+#        patterns:
+#          - "*"
+#        update-types:
+#          - "minor"
+#          - "patch"
 
