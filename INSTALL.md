@@ -158,7 +158,7 @@ To build a specific version of Apptainer, check out a
 for example:
 
 ```sh
-git checkout v1.3.6
+git checkout v1.4.0-rc.1
 ```
 
 ## Compiling Apptainer
@@ -327,7 +327,7 @@ Then download the latest
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-VERSION=1.3.6  # this is the apptainer version, change as you need
+VERSION=1.4.0-rc.1  # this is the apptainer version, change as you need
 # Fetch the source
 wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
 ```
