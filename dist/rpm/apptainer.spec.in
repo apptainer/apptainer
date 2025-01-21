@@ -33,10 +33,10 @@
 # For example, it has dash instead of tilde for release candidates.
 %global package_version @PACKAGE_VERSION@
 
-%global gocryptfs_version 2.4.0
-%global squashfuse_version 0.5.1
-%global e2fsprogs_version 1.47.0
-%global fuse_overlayfs_version 1.13
+%global gocryptfs_version 2.5.0
+%global squashfuse_version 0.5.2
+%global e2fsprogs_version 1.47.2
+%global fuse_overlayfs_version 1.14
 
 # The last singularity version number in EPEL/Fedora
 %global last_singularity_version 3.8.7-3
@@ -66,12 +66,6 @@ Source11: https://github.com/vasi/squashfuse/archive/%{squashfuse_version}/squas
 %if "%{?e2fsprogs_version}" != ""
 # URL: https://github.com/tytso/e2fsprogs/archive/refs/tags/v%%{e2fsprogs_version}.tar.gz
 Source12: e2fsprogs-%{e2fsprogs_version}.tar.gz
-# URL: https://github.com/tytso/e2fsprogs/commit/5598a96.patch
-Patch121: e2fsprogs-1.patch
-# URL: https://github.com/tytso/e2fsprogs/commit/1ac0061.patch
-Patch122: e2fsprogs-2.patch
-# URL: https://github.com/tytso/e2fsprogs/commit/448a3f8.patch
-Patch123: e2fsprogs-3.patch
 %endif
 Source13: https://github.com/containers/fuse-overlayfs/archive/v%{fuse_overlayfs_version}/fuse-overlayfs-%{fuse_overlayfs_version}.tar.gz
 

@@ -21,6 +21,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Expand the build instructions for squashfuse and apptainer packaging to
   include the libraries needed for maximum support of compression algorithms
   by squashfuse_ll.
+- Updated the bundled fuse programs to their latest releases.
 - Add automated tests for OpenSUSE Leap and Tumbleweed and Debian Bookworm.
 - Fixed typo in `nvliblist.conf` (`libnvoptix.so.1` -> `libnvoptix.so`)
 - Statistics are now normally available for instances that are
