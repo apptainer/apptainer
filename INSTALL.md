@@ -74,7 +74,7 @@ sudo zypper install -y \
 sudo zypper install -y diffutils which
 # Install basic tools for compiling
 # --replacefiles is needed to avoid pam conflict on Tumbleweed
-sudo zypper install -y --replacefiles -t pattern devel_basis
+sudo zypper install -y --replacefiles --allow-downgrade -t pattern devel_basis
 ```
 
 For libsubid support (requires openSUSE Tumbleweed):
