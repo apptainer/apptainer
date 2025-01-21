@@ -651,13 +651,13 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.28.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.29.0:LICENSE>
 
 ## golang.org/x/term
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/term/+/v0.27.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/term/+/v0.28.0:LICENSE>
 
 ## golang.org/x/text
 
