@@ -26,7 +26,6 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/build/args"
 	"github.com/apptainer/apptainer/internal/pkg/build/assemblers"
 	"github.com/apptainer/apptainer/internal/pkg/build/sources"
-	"github.com/apptainer/apptainer/internal/pkg/image/packer"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/squashfs"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/pkg/build/types"
@@ -197,10 +196,6 @@ func newBuild(defs []types.Definition, conf Config) (*Build, error) {
 			return nil, fmt.Errorf("while searching for mksquashfs: %v", err)
 		}
 
-		flag, err := ensureGzipComp(b.stages[lastStageIndex].b.TmpDir, mksquashfsPath)
-		if err != nil {
-			return nil, fmt.Errorf("while ensuring correct compression algorithm: %v", err)
-		}
 		mksquashfsProcs, err := squashfs.GetProcs()
 		if err != nil {
 			return nil, fmt.Errorf("while searching for mksquashfs processor limits: %v", err)
@@ -210,102 +205,16 @@ func newBuild(defs []types.Definition, conf Config) (*Build, error) {
 			return nil, fmt.Errorf("while searching for mksquashfs mem limits: %v", err)
 		}
 		b.stages[lastStageIndex].a = &assemblers.SIFAssembler{
-			GzipFlag:        flag,
-			MksquashfsProcs: mksquashfsProcs,
-			MksquashfsMem:   mksquashfsMem,
-			MksquashfsPath:  mksquashfsPath,
+			MksquashfsExtraArgs: conf.Opts.MksquashfsArgs,
+			MksquashfsProcs:     mksquashfsProcs,
+			MksquashfsMem:       mksquashfsMem,
+			MksquashfsPath:      mksquashfsPath,
 		}
 	default:
 		return nil, fmt.Errorf("unrecognized output format %s", conf.Format)
 	}
 
 	return b, nil
-}
-
-// ensureGzipComp builds dummy squashfs images and checks the type of compression used
-// to deduce if we can successfully build with gzip compression. It returns an error
-// if we cannot and a boolean to indicate if the `-comp` flag is needed to specify
-// gzip compression when the final squashfs is built
-func ensureGzipComp(tmpdir, mksquashfsPath string) (bool, error) {
-	sylog.Debugf("Ensuring gzip compression for mksquashfs")
-
-	var err error
-	s := packer.NewSquashfs()
-	s.MksquashfsPath = mksquashfsPath
-
-	srcf, err := os.CreateTemp(tmpdir, "squashfs-gzip-comp-test-src")
-	if err != nil {
-		return false, fmt.Errorf("while creating temporary file for squashfs source: %v", err)
-	}
-
-	srcf.Write([]byte("Test File Content"))
-	srcf.Close()
-
-	f, err := os.CreateTemp(tmpdir, "squashfs-gzip-comp-test-")
-	if err != nil {
-		return false, fmt.Errorf("while creating temporary file for squashfs: %v", err)
-	}
-	f.Close()
-
-	flags := []string{"-noappend"}
-
-	mksquashfsProcs, err := squashfs.GetProcs()
-	if err != nil {
-		return false, fmt.Errorf("while searching for mksquashfs processor limits: %v", err)
-	}
-	mksquashfsMem, err := squashfs.GetMem()
-	if err != nil {
-		return false, fmt.Errorf("while searching for mksquashfs mem limits: %v", err)
-	}
-	if mksquashfsMem != "" {
-		flags = append(flags, "-mem", mksquashfsMem)
-	}
-	if mksquashfsProcs != 0 {
-		flags = append(flags, "-processors", fmt.Sprint(mksquashfsProcs))
-	}
-
-	if err := s.Create([]string{srcf.Name()}, f.Name(), flags); err != nil {
-		return false, fmt.Errorf("while creating squashfs: %v", err)
-	}
-
-	content, err := os.ReadFile(f.Name())
-	if err != nil {
-		return false, fmt.Errorf("while reading test squashfs: %v", err)
-	}
-
-	comp, err := image.GetSquashfsComp(content)
-	if err != nil {
-		return false, fmt.Errorf("could not verify squashfs compression type: %v", err)
-	}
-
-	if comp == "gzip" {
-		sylog.Debugf("Gzip compression by default ensured")
-		return false, nil
-	}
-
-	// Now force add `-comp gzip` in addition to -noappend -mem -processors
-	flags = append(flags, "-comp", "gzip")
-
-	if err := s.Create([]string{srcf.Name()}, f.Name(), flags); err != nil {
-		return false, fmt.Errorf("could not build squashfs with required gzip compression")
-	}
-
-	content, err = os.ReadFile(f.Name())
-	if err != nil {
-		return false, fmt.Errorf("while reading test squashfs: %v", err)
-	}
-
-	comp, err = image.GetSquashfsComp(content)
-	if err != nil {
-		return false, fmt.Errorf("could not verify squashfs compression type: %v", err)
-	}
-
-	if comp == "gzip" {
-		sylog.Debugf("Gzip compression with -comp flag ensured")
-		return true, nil
-	}
-
-	return false, fmt.Errorf("could not build squashfs with required gzip compression")
 }
 
 // cleanUp removes remnants of build from file system unless NoCleanUp is specified.

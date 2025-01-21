@@ -17,6 +17,7 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/image/packer"
@@ -31,10 +32,10 @@ import (
 
 // SIFAssembler doesn't store anything.
 type SIFAssembler struct {
-	GzipFlag        bool
-	MksquashfsProcs uint
-	MksquashfsMem   string
-	MksquashfsPath  string
+	MksquashfsProcs     uint
+	MksquashfsMem       string
+	MksquashfsExtraArgs string
+	MksquashfsPath      string
 }
 
 type encryptionOptions struct {
@@ -173,16 +174,35 @@ func (a *SIFAssembler) Assemble(b *types.Bundle, path string) error {
 	if syscall.Getuid() != 0 {
 		flags = append(flags, "-all-root")
 	}
-	// specify compression if needed
-	if a.GzipFlag {
-		flags = append(flags, "-comp", "gzip")
-	}
+
 	if a.MksquashfsMem != "" {
 		flags = append(flags, "-mem", a.MksquashfsMem)
 	}
 	if a.MksquashfsProcs != 0 {
 		flags = append(flags, "-processors", fmt.Sprint(a.MksquashfsProcs))
 	}
+
+	extraArgs := strings.Fields(a.MksquashfsExtraArgs)
+	extraCompArg := false
+	for _, arg := range extraArgs {
+		if extraCompArg {
+			if arg != "gzip" {
+				sylog.Infof("Non-gzip squashfs compression might not work with some installations")
+			}
+			break
+		}
+		if arg == "-comp" {
+			extraCompArg = true
+		}
+	}
+	if !extraCompArg {
+		// specify compression type if not already set in extra args,
+		// in case it isn't the default
+		flags = append(flags, "-comp", "gzip")
+	}
+
+	flags = append(flags, extraArgs...)
+
 	arch := machine.ArchFromContainer(b.RootfsPath)
 	if arch == "" {
 		sylog.Infof("Architecture not recognized, use native")

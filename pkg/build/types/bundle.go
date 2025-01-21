@@ -113,6 +113,8 @@ type Options struct {
 	Arch string
 	// Authentication file for registry credentials
 	ReqAuthFile string
+	// Extra arguments for mksquashfs
+	MksquashfsArgs string
 	// Which Platform to use when retrieving images for the build
 	Platform ggcrv1.Platform
 }

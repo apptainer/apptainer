@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -143,7 +142,7 @@ func (g *Gocryptfs) init(tmpDir string) (cryptInfo *cryptInfo, err error) {
 	return cryptInfo, nil
 }
 
-func (g *Gocryptfs) create(files []string, dest string, opts []string, tmpDir string) error {
+func (g *Gocryptfs) Create(files []string, dest string, opts []string, tmpDir string) error {
 	cryptInfo, err := g.init(tmpDir)
 	if err != nil {
 		return err
@@ -152,38 +151,24 @@ func (g *Gocryptfs) create(files []string, dest string, opts []string, tmpDir st
 
 	defer g.stop(cryptInfo.plainDir)
 
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
 	// First mksquashfs, which will squash rootfs
 	fileName := filepath.Base(dest)
 	newDest := filepath.Join(cryptInfo.plainDir, fileName)
-	cmds := []string{g.MksquashfsPath}
-	cmds = append(cmds, files...)
-	cmds = append(cmds, newDest)
-	cmds = append(cmds, opts...)
-	err = cmdRun(cmds, &stdout, &stderr)
+	// invoke squashfs parent's create function
+	err = g.create(files, newDest, opts)
 	if err != nil {
-		return fmt.Errorf("calling mksquashfs encounters error: %w, stderr: %s", err, &stderr)
+		return err
 	}
 
 	// Second mksquashfs, which will squash encrypted image and gocryptfs.conf
 	encryptFile := filepath.Join(cryptInfo.cipherDir, fileName)
-	cmds = []string{g.MksquashfsPath}
-	cmds = append(cmds, []string{encryptFile, cryptInfo.confPath}...)
-	cmds = append(cmds, dest)
-	cmds = append(cmds, opts...)
-	stdout.Reset()
-	stderr.Reset()
-	err = cmdRun(cmds, &stdout, &stderr)
-	if err != nil {
-		return fmt.Errorf("calling mksquashfs encounters error: %w, stderr: %s", err, &stderr)
-	}
+	files = []string{encryptFile, cryptInfo.confPath}
+	// Compressing again is counter-productive so disable compressing
+	// data and fragments
+	opts = append(opts, "-noD", "-noF")
+	err = g.create(files, dest, opts)
 
-	return nil
-}
-
-func (g *Gocryptfs) Create(src []string, dest string, opts []string, tmpDir string) error {
-	return g.create(src, dest, opts, tmpDir)
+	return err
 }
 
 func (g *Gocryptfs) stop(p string) error {
@@ -195,16 +180,4 @@ func (g *Gocryptfs) stop(p string) error {
 	}
 	sylog.Debugf("Stopping %s", p)
 	return g.driver.Stop(p)
-}
-
-func cmdRun(commands []string, stdout, stderr io.Writer) error {
-	sylog.Debugf("Executing commands: %v", commands)
-	cmd := exec.Command(commands[0], commands[1:]...)
-	if stdout != nil {
-		cmd.Stdout = stdout
-	}
-	if stderr != nil {
-		cmd.Stderr = stderr
-	}
-	return cmd.Run()
 }

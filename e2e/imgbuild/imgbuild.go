@@ -384,6 +384,41 @@ func (c imgBuildTests) buildLocalImage(t *testing.T) {
 	}
 }
 
+func (c imgBuildTests) buildExtraArgs(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	tmpdir, cleanup := c.tempDir(t, "build-extra-args")
+
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup()
+		}
+	})
+	liDefFile := e2e.PrepareDefFile(e2e.DefFileDetails{
+		Bootstrap: "localimage",
+		From:      c.env.ImagePath,
+	})
+	t.Cleanup(func() {
+		if !t.Failed() {
+			os.Remove(liDefFile)
+		}
+	})
+
+	img := path.Join(tmpdir, "test.sif")
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--mksquashfs-args", "-comp lz4", img, liDefFile),
+		e2e.WithEnv(append(os.Environ(), "APPTAINER_VERBOSE=true")),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.ContainMatch, "lz4 compressed"),
+		),
+	)
+}
+
 func (c imgBuildTests) badPath(t *testing.T) {
 	dn, cleanup := c.tempDir(t, "bad-path")
 	t.Cleanup(func() {
@@ -2333,6 +2368,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"build encrypt with PEM file":            c.buildEncryptPemFile,                  // build encrypted images with certificate
 		"build encrypted with passphrase":        c.buildEncryptPassphrase,               // build encrypted images with passphrase
 		"definition":                             c.buildDefinition,                      // builds from definition template
+		"extra mksquashfs args":                  c.buildExtraArgs,                       // build with extra mksquashfs args
 		"from local image":                       c.buildLocalImage,                      // build and image from an existing image
 		"from":                                   c.buildFrom,                            // builds from definition file and URI
 		"multistage":                             c.buildMultiStageDefinition,            // multistage build from definition templates

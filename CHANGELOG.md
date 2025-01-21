@@ -81,6 +81,20 @@ For older changes see the [archived Singularity change log](https://github.com/a
   they should be provided by the container image.
 - Make binary builds more reproducible by deriving the GNU build ID
   from the Go build ID instead of using a randomly generated one.
+- Add new build option `--mksquashfs-args` to pass additional arguments
+  to the mksquashfs command when building SIF files.  If a compression
+  method other than gzip is selected, the SIF file might not work with
+  older installations of Apptainer or Singularity, so an INFO message
+  about that is printed.  On the other hand, an INFO message that was
+  printed (twice) when running an image with non-gzip compression has
+  been removed.
+- When the logging level is verbose or debug, builds of SIF files now show
+  the output of mksquashfs including the progress bar.
+- When building encrypted SIF files using unprivileged (gocryptfs) format,
+  the second mksquashfs is now done with compression disabled.
+- A test mksquashfs is no longer done when building SIF files.  That
+  used to be done every build to verify that squashfs tools were new
+  enough to support the `-comp gzip` option.
 
 ## v1.3.6 - \[2024-12-02\]
 
