@@ -1,6 +1,7 @@
 module github.com/apptainer/apptainer
 
 go 1.21
+toolchain go1.22.5
 
 require (
 	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2
@@ -20,7 +21,7 @@ require (
 	github.com/containernetworking/plugins v1.4.1
 	github.com/containers/image/v5 v5.30.1
 	github.com/creack/pty v1.1.21
-	github.com/cyphar/filepath-securejoin v0.2.5
+	github.com/cyphar/filepath-securejoin v0.3.5
 	github.com/docker/docker v25.0.5+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/fatih/color v1.16.0
@@ -29,10 +30,10 @@ require (
 	github.com/gosimple/slug v1.14.0
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0
-	github.com/opencontainers/runc v1.1.12
+	github.com/opencontainers/runc v1.2.4
 	github.com/opencontainers/runtime-spec v1.2.0
 	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626
-	github.com/opencontainers/selinux v1.11.0
+	github.com/opencontainers/selinux v1.11.1
 	github.com/opencontainers/umoci v0.4.7
 	github.com/pelletier/go-toml/v2 v2.1.1
 	github.com/pkg/errors v0.9.1
@@ -46,7 +47,7 @@ require (
 	github.com/urfave/cli v1.22.14 // indirect
 	github.com/vbauerster/mpb/v8 v8.7.3
 	golang.org/x/crypto v0.22.0
-	golang.org/x/sys v0.19.0
+	golang.org/x/sys v0.28.0
 	golang.org/x/term v0.19.0
 	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -74,7 +75,6 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/cilium/ebpf v0.9.1 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.15.1 // indirect
@@ -135,7 +135,8 @@ require (
 	github.com/moby/patternmatcher v0.5.0 // indirect
 	github.com/moby/sys/mountinfo v0.7.1 // indirect
 	github.com/moby/sys/sequential v0.5.0 // indirect
-	github.com/moby/sys/user v0.1.0 // indirect
+	github.com/moby/sys/user v0.3.0 // indirect
+	github.com/moby/sys/userns v0.1.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/networkplumbing/go-nft v0.4.0 // indirect
@@ -146,6 +147,7 @@ require (
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/rootless-containers/proto v0.1.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/safchain/ethtool v0.3.0 // indirect
@@ -171,7 +173,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.19.0 // indirect
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // indirect
 	golang.org/x/mod v0.15.0 // indirect
-	golang.org/x/net v0.22.0 // indirect
+	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/tools v0.18.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 // indirect
