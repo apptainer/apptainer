@@ -93,7 +93,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/docker/cli/blob/v27.5.0/LICENSE>
+**License URL:** <https://github.com/docker/cli/blob/v27.5.1/LICENSE>
 
 ## github.com/docker/distribution
 
@@ -105,7 +105,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/docker/docker/blob/v27.5.0/LICENSE>
+**License URL:** <https://github.com/docker/docker/blob/v27.5.1/LICENSE>
 
 ## github.com/docker/go-connections
 
