@@ -42,7 +42,7 @@ updates:
       interval: "weekly"
       day: "friday"
       time: "08:00"
-    target-branch: release-1.3
+    target-branch: release-1.4
     groups:
       moby:
         applies-to: "version-updates"

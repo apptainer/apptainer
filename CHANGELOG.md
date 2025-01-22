@@ -25,8 +25,6 @@ Changes since 1.3.6
 - Expand the build instructions for squashfuse and apptainer packaging to
   include the libraries needed for maximum support of compression algorithms
   by squashfuse_ll.
-- When the logging level is verbose or debug, builds of SIF files now show
-  the output of mksquashfs including the progress bar.
 - Statistics are now normally available for instances that are
   started by non-root users on cgroups v2 systems.  
   The instance will be started in the current cgroup.  Information
