@@ -17,7 +17,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/containernetworking/cni v1.2.3
 	github.com/containernetworking/plugins v1.5.1
-	github.com/containers/image/v5 v5.33.0
+	github.com/containers/image/v5 v5.33.1
 	github.com/creack/pty v1.1.24
 	github.com/cyphar/filepath-securejoin v0.3.5
 	github.com/docker/docker v27.5.1+incompatible
@@ -81,7 +81,7 @@ require (
 	github.com/containerd/stargz-snapshotter/estargz v0.15.1 // indirect
 	github.com/containers/libtrust v0.0.0-20230121012942-c1716e8a8d01 // indirect
 	github.com/containers/ocicrypt v1.2.0 // indirect
-	github.com/containers/storage v1.56.0 // indirect
+	github.com/containers/storage v1.56.1 // indirect
 	github.com/coreos/go-iptables v0.7.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
