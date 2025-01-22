@@ -74,9 +74,9 @@ enum goexec {
 #endif
 
 typedef enum {
-    false,
-    true
-} bool;
+    False,
+    True
+} Bool;
 
 /* container capabilities */
 struct capabilities {
@@ -94,9 +94,9 @@ struct namespace {
     /* container mount namespace propagation */
     unsigned long mountPropagation;
     /* namespace join only */
-    bool joinOnly;
+    Bool joinOnly;
     /* should bring up loopback interface with network namespace */
-    bool bringLoopbackInterface;
+    Bool bringLoopbackInterface;
 
     /* namespaces inodes paths used to join namespaces */
     char network[MAX_PATH_SIZE];
@@ -111,12 +111,12 @@ struct namespace {
 /* container privileges */
 struct privileges {
     /* value for PR_SET_NO_NEW_PRIVS */
-    bool noNewPrivs;
+    Bool noNewPrivs;
 
     /* user namespace mappings and setgroups control */
     char uidMap[MAX_MAP_SIZE];
     char gidMap[MAX_MAP_SIZE];
-    bool allowSetgroups;
+    Bool allowSetgroups;
 
     /* path to external newuidmap/newgidmap binaries */
     char newuidmapPath[MAX_PATH_SIZE];
@@ -136,7 +136,7 @@ struct container {
     /* container process ID */
     pid_t pid;
     /* is container will run as instance */
-    bool isInstance;
+    Bool isInstance;
 
     /* container privileges */
     struct privileges privileges;
@@ -154,14 +154,14 @@ struct starter {
     int numfds;
 
     /* is starter run as setuid */
-    bool isSuid;
+    Bool isSuid;
     /* master process will share a mount namespace for container mount propagation */
-    bool masterPropagateMount;
+    Bool masterPropagateMount;
     /* hybrid workflow where master process and container doesn't share user namespace */
-    bool hybridWorkflow;
+    Bool hybridWorkflow;
 
     /* bounding capability set will include caps needed by nvidia-container-cli */
-    bool nvCCLICaps;
+    Bool nvCCLICaps;
 };
 
 /* engine configuration */
