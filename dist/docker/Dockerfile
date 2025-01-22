@@ -1,8 +1,8 @@
 ARG BASE_IMAGE=debian:bookworm-slim
-ARG GOLANG_IMAGE=golang:1.21.5-bookworm
+ARG GOLANG_IMAGE=golang:1.23.5-bookworm
 
-FROM --platform=${TARGETPLATFORM} ${BASE_IMAGE} as debian-target
-FROM --platform=${BUILDPLATFORM} ${GOLANG_IMAGE} as build
+FROM --platform=${TARGETPLATFORM} ${BASE_IMAGE} AS debian-target
+FROM --platform=${BUILDPLATFORM} ${GOLANG_IMAGE} AS build
 
 ARG SYSROOT_BUILD=/sysroot-build
 ARG TARGETPLATFORM
