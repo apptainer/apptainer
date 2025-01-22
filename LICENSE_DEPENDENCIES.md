@@ -627,7 +627,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.31.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.32.0:LICENSE>
 
 ## golang.org/x/exp
 
