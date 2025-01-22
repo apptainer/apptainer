@@ -115,7 +115,7 @@ __attribute__ ((returns_twice)) __attribute__((noinline)) static int fork_ns(uns
     return clone(clone_fn, child_stack.ptr, (SIGCHLD|flags), env);
 }
 
-static void priv_escalate(bool keep_fsuid) {
+static void priv_escalate(Bool keep_fsuid) {
     uid_t uid = getuid();
 
     verbosef("Get root privileges\n");
@@ -144,7 +144,7 @@ static void priv_escalate(bool keep_fsuid) {
     }
 }
 
-static void priv_drop(bool permanent) {
+static void priv_drop(Bool permanent) {
     uid_t uid = getuid();
     gid_t gid = getgid();
 
@@ -176,12 +176,12 @@ static void set_parent_death_signal(int signo) {
 }
 
 /* helper to check if namespace flag is set */
-static inline bool is_namespace_create(struct namespace *nsconfig, unsigned int nsflag) {
+static inline Bool is_namespace_create(struct namespace *nsconfig, unsigned int nsflag) {
     return (nsconfig->flags & nsflag) != 0;
 }
 
 /* helper to check if the corresponding namespace need to be joined */
-static bool is_namespace_enter(const char *nspath, const char *selfns) {
+static Bool is_namespace_enter(const char *nspath, const char *selfns) {
     if ( selfns != NULL && nspath[0] != 0 ) {
         struct stat selfns_st;
         struct stat ns_st;
@@ -197,17 +197,17 @@ static bool is_namespace_enter(const char *nspath, const char *selfns) {
             if ( errno != ENOENT ) {
                 debugf("Could not stat %s: %s\n", selfns, strerror(errno));
             }
-            return false;
+            return False;
         }
         if ( stat(nspath, &ns_st) < 0 ) {
             if ( errno != ENOENT ) {
                 debugf("Could not stat %s: %s\n", nspath, strerror(errno));
             }
-            return false;
+            return False;
         }
         /* same namespace, don't join */
         if ( selfns_st.st_ino == ns_st.st_ino ) {
-            return false;
+            return False;
         }
     }
     return nspath[0] != 0;
@@ -809,7 +809,7 @@ static int cgroup_namespace_init(struct namespace *nsconfig) {
     }
 }
 
-static int mount_namespace_init(struct namespace *nsconfig, bool masterPropagateMount) {
+static int mount_namespace_init(struct namespace *nsconfig, Bool masterPropagateMount) {
     if ( is_namespace_enter(nsconfig->mount, SELF_MNT_NS) ) {
         if ( enter_namespace(nsconfig->mount, CLONE_NEWNS) < 0 ) {
             fatalf("Failed to enter in mount namespace: %s\n", strerror(errno));
@@ -867,10 +867,10 @@ static int shared_mount_namespace_init(struct namespace *nsconfig) {
 }
 
 /*
- * is_suid returns true if this binary has suid bit set or if it
+ * is_suid returns True if this binary has suid bit set or if it
  * has additional capabilities in extended file attributes
  */
-static bool is_suid(void) {
+static Bool is_suid(void) {
     unsigned long auxval;
 
     errno = 0;
@@ -954,7 +954,7 @@ static void cleanup_fd(fdlist_t *master, struct starter *starter) {
     DIR *dir;
     struct dirent *dirent;
     int i, fd;
-    bool found;
+    Bool found;
 
     if ( ( fd_proc = open("/proc/self/fd", O_RDONLY) ) < 0 ) {
         fatalf("Failed to open /proc/self/fd: %s\n", strerror(errno));
@@ -973,12 +973,12 @@ static void cleanup_fd(fdlist_t *master, struct starter *starter) {
             continue;
         }
 
-        found = false;
+        found = False;
 
         /* check if the file descriptor was open before stage 1 execution */
         for ( i = 0; i < master->num; i++ ) {
             if ( master->fds[i] == fd ) {
-                found = true;
+                found = True;
                 break;
             }
         }
@@ -986,12 +986,12 @@ static void cleanup_fd(fdlist_t *master, struct starter *starter) {
             continue;
         }
 
-        found = false;
+        found = False;
 
         /* check if the file descriptor need to remain opened */
         for ( i = 0; i < starter->numfds; i++ ) {
             if ( starter->fds[i] == fd ) {
-                found = true;
+                found = True;
                 /* set force close on exec */
                 if ( fcntl(starter->fds[i], F_SETFD, FD_CLOEXEC) < 0 ) {
                     debugf("Can't set FD_CLOEXEC on file descriptor %d: %s\n", starter->fds[i], strerror(errno));
@@ -1094,7 +1094,7 @@ static void fix_userns_devfuse_fd(struct starter *starter) {
     }
 }
 
-static void wait_child(const char *name, pid_t child_pid, bool noreturn) {
+static void wait_child(const char *name, pid_t child_pid, Bool noreturn) {
     int status;
     int exit_status = 0;
 
@@ -1263,7 +1263,7 @@ __attribute__((constructor)) static void init(void) {
 
     /* temporarily drop privileges while running as setuid */
     if ( sconfig->starter.isSuid ) {
-        priv_drop(false);
+        priv_drop(False);
     }
 
     /* retrieve engine configuration from environment variables */
@@ -1298,7 +1298,7 @@ __attribute__((constructor)) static void init(void) {
          */
         if ( sconfig->starter.isSuid ) {
             /* drop privileges permanently */
-            priv_drop(true);
+            priv_drop(True);
         }
         set_parent_death_signal(SIGKILL);
         verbosef("Spawn stage 1\n");
@@ -1310,7 +1310,7 @@ __attribute__((constructor)) static void init(void) {
     }
 
     debugf("Wait completion of stage1\n");
-    wait_child("stage 1", process, false);
+    wait_child("stage 1", process, False);
 
     /* change current working directory if requested by stage 1 */
     if ( sconfig->starter.workingDirectoryFd >= 0 ) {
@@ -1369,7 +1369,7 @@ __attribute__((constructor)) static void init(void) {
                 fatalf("Unblock signals error: %s\n", strerror(errno));
             }
             /* loop until master process exits with error */
-            wait_child("instance", process, true);
+            wait_child("instance", process, True);
 
             /* we should never return from the previous wait_child call */
             exit(1);
@@ -1412,7 +1412,7 @@ __attribute__((constructor)) static void init(void) {
          * this will fail if starter is run without suid
          */
         if ( sconfig->starter.isSuid ) {
-            priv_escalate(true);
+            priv_escalate(True);
         } else if ( uid != 0 ) {
             fatalf("Installation issue: starter-suid doesn't have setuid bit set\n");
         }
@@ -1489,10 +1489,10 @@ __attribute__((constructor)) static void init(void) {
             if ( wait_event(master_socket[1]) < 0 ) {
                 fatalf("Error while waiting event for shared mount namespace\n");
             }
-            mount_namespace_init(&sconfig->container.namespace, true);
+            mount_namespace_init(&sconfig->container.namespace, True);
         } else {
             send_event(master_socket[1]);
-            mount_namespace_init(&sconfig->container.namespace, false);
+            mount_namespace_init(&sconfig->container.namespace, False);
         }
 
         if ( !sconfig->container.namespace.joinOnly ) {
@@ -1518,7 +1518,7 @@ __attribute__((constructor)) static void init(void) {
                 close(rpc_socket[1]);
 
                 /* wait RPC server exits before running container process */
-                wait_child("rpc server", process, false);
+                wait_child("rpc server", process, False);
 
                 if ( sconfig->starter.hybridWorkflow && sconfig->starter.isSuid ) {
                     /* make /proc/self readable by user to join instance without SUID workflow */
@@ -1584,7 +1584,7 @@ __attribute__((constructor)) static void init(void) {
                      * user mappings setup. User filesystem UID will be restored below by setresuid
                      * call.
                      */
-                    priv_escalate(false);
+                    priv_escalate(False);
                     chdir_to_proc_pid(sconfig->container.pid);
                     setup_userns_mappings(&sconfig->container.privileges);
                 } else {
@@ -1611,7 +1611,7 @@ __attribute__((constructor)) static void init(void) {
         /* wait child finish namespaces initialization */
         if ( wait_event(master_socket[0]) < 0 ) {
             /* child has exited before sending data */
-            wait_child("stage 2", sconfig->container.pid, true);
+            wait_child("stage 2", sconfig->container.pid, True);
         }
 
         /* engine requested to propagate mount to container */
@@ -1669,11 +1669,11 @@ __attribute__((constructor)) static void init(void) {
         if ( sconfig->container.namespace.joinOnly ) {
             /* joining container, don't execute Go runtime, just wait that container process exit */
             if ( sconfig->starter.isSuid ) {
-                priv_drop(true);
+                priv_drop(True);
             }
             debugf("Wait stage 2 child process\n");
             release_memory(sconfig);
-            wait_child("stage 2", process, true);
+            wait_child("stage 2", process, True);
         } else {
             /* close container end of rpc communication socket */
             close(rpc_socket[1]);

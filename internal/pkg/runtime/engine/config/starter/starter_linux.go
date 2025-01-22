@@ -55,10 +55,10 @@ func NewConfig(config SConfig) *Config {
 	}
 }
 
-// GetIsSUID returns true if the SUID workflow is enabled.
+// GetIsSUID returns True if the SUID workflow is enabled.
 // This field is set by starter at the very beginning of its execution.
 func (c *Config) GetIsSUID() bool {
-	return c.config.starter.isSuid == C.true
+	return c.config.starter.isSuid == C.True
 }
 
 // GetContainerPid returns the container PID (if any).
@@ -68,54 +68,54 @@ func (c *Config) GetContainerPid() int {
 }
 
 // SetInstance changes starter config so that it will spawn an instance
-// instead of a regular container if the passed value is true.
+// instead of a regular container if the passed value is True.
 func (c *Config) SetInstance(instance bool) {
 	if instance {
-		c.config.container.isInstance = C.true
+		c.config.container.isInstance = C.True
 	} else {
-		c.config.container.isInstance = C.false
+		c.config.container.isInstance = C.False
 	}
 }
 
 // SetNoNewPrivs changes starter config so that it will set NO_NEW_PRIVS
-// flag for a container before it starts up if noprivs is true.
+// flag for a container before it starts up if noprivs is True.
 func (c *Config) SetNoNewPrivs(noprivs bool) {
 	if noprivs {
-		c.config.container.privileges.noNewPrivs = C.true
+		c.config.container.privileges.noNewPrivs = C.True
 	} else {
-		c.config.container.privileges.noNewPrivs = C.false
+		c.config.container.privileges.noNewPrivs = C.False
 	}
 }
 
 // SetMasterPropagateMount changes starter config so that the mount propagation
 // between master (process that monitors container) and a container itself
-// is set to MS_SHARED if propagate is true.
+// is set to MS_SHARED if propagate is True.
 func (c *Config) SetMasterPropagateMount(propagate bool) {
 	if propagate {
-		c.config.starter.masterPropagateMount = C.true
+		c.config.starter.masterPropagateMount = C.True
 	} else {
-		c.config.starter.masterPropagateMount = C.false
+		c.config.starter.masterPropagateMount = C.False
 	}
 }
 
 // SetNamespaceJoinOnly changes starter config so that the created process
 // will join an already running container (used for `apptainer shell` and
-// `apptainer oci exec`) if join is true.
+// `apptainer oci exec`) if join is True.
 func (c *Config) SetNamespaceJoinOnly(join bool) {
 	if join {
-		c.config.container.namespace.joinOnly = C.true
+		c.config.container.namespace.joinOnly = C.True
 	} else {
-		c.config.container.namespace.joinOnly = C.false
+		c.config.container.namespace.joinOnly = C.False
 	}
 }
 
 // SetBringLoopbackInterface changes starter config so that it will bring up
-// a loopback network interface during container creation if bring is true.
+// a loopback network interface during container creation if bring is True.
 func (c *Config) SetBringLoopbackInterface(bring bool) {
 	if bring {
-		c.config.container.namespace.bringLoopbackInterface = C.true
+		c.config.container.namespace.bringLoopbackInterface = C.True
 	} else {
-		c.config.container.namespace.bringLoopbackInterface = C.false
+		c.config.container.namespace.bringLoopbackInterface = C.False
 	}
 }
 
@@ -166,9 +166,9 @@ func (c *Config) KeepFileDescriptor(fd int) error {
 // nvidia-container-cli
 func (c *Config) SetNvCCLICaps(enabled bool) {
 	if enabled {
-		c.config.starter.nvCCLICaps = C.true
+		c.config.starter.nvCCLICaps = C.True
 	} else {
-		c.config.starter.nvCCLICaps = C.false
+		c.config.starter.nvCCLICaps = C.False
 	}
 }
 
@@ -179,18 +179,18 @@ func (c *Config) SetNvCCLICaps(enabled bool) {
 // lives in its own user namespace.
 func (c *Config) SetHybridWorkflow(hybrid bool) {
 	if hybrid {
-		c.config.starter.hybridWorkflow = C.true
+		c.config.starter.hybridWorkflow = C.True
 	} else {
-		c.config.starter.hybridWorkflow = C.false
+		c.config.starter.hybridWorkflow = C.False
 	}
 }
 
 // SetAllowSetgroups allows use of setgroups syscall from user namespace.
 func (c *Config) SetAllowSetgroups(allow bool) {
 	if allow {
-		c.config.container.privileges.allowSetgroups = C.true
+		c.config.container.privileges.allowSetgroups = C.True
 	} else {
-		c.config.container.privileges.allowSetgroups = C.false
+		c.config.container.privileges.allowSetgroups = C.False
 	}
 }
 
