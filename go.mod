@@ -20,7 +20,7 @@ require (
 	github.com/containers/image/v5 v5.33.0
 	github.com/creack/pty v1.1.24
 	github.com/cyphar/filepath-securejoin v0.3.5
-	github.com/docker/docker v27.5.0+incompatible
+	github.com/docker/docker v27.5.1+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/fatih/color v1.18.0
 	github.com/go-log/log v0.2.0
@@ -54,7 +54,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.4.0
-	github.com/docker/cli v27.5.0+incompatible
+	github.com/docker/cli v27.5.1+incompatible
 	github.com/docker/distribution v2.8.3+incompatible
 	github.com/google/go-containerregistry v0.20.2
 	github.com/moby/sys/sequential v0.6.0
