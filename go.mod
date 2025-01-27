@@ -25,7 +25,7 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/go-log/log v0.2.0
 	github.com/google/uuid v1.6.0
-	github.com/gosimple/slug v1.14.0
+	github.com/gosimple/slug v1.15.0
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/opencontainers/runc v1.2.4
