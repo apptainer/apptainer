@@ -45,7 +45,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/containers/image/blob/v5.33.0/LICENSE>
+**License URL:** <https://github.com/containers/image/blob/v5.33.1/LICENSE>
 
 ## github.com/containers/libtrust
 
@@ -63,7 +63,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/containers/storage/blob/v1.56.0/LICENSE>
+**License URL:** <https://github.com/containers/storage/blob/v1.56.1/LICENSE>
 
 ## github.com/coreos/go-iptables/iptables
 
