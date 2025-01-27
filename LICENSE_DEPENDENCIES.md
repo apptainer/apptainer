@@ -933,7 +933,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MPL-2.0
 
-**License URL:** <https://github.com/gosimple/slug/blob/v1.14.0/LICENSE>
+**License URL:** <https://github.com/gosimple/slug/blob/v1.15.0/LICENSE>
 
 ## github.com/letsencrypt/boulder
 
