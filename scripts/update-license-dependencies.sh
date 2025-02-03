@@ -10,8 +10,6 @@
 set -e
 set -u
 
-go install github.com/google/go-licenses@v1.6.0
-
 if [ -d "vendor" ]; then
   echo "Please remove vendor directory before running this script"
   exit 255
@@ -23,4 +21,4 @@ if [ ! -f "go.mod" ]; then
   exit 255
 fi
 
-go-licenses report ./... --ignore github.com/apptainer/apptainer --template scripts/LICENSE_DEPENDENCIES.tpl > LICENSE_DEPENDENCIES.md
+$(go env GOROOT)/bin/go run github.com/google/go-licenses@v1.6.0 report ./... --ignore github.com/apptainer/apptainer --template scripts/LICENSE_DEPENDENCIES.tpl > LICENSE_DEPENDENCIES.md
