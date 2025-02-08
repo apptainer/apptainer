@@ -8,6 +8,7 @@
 - Alexander Grund <alexander.grund@tu-dresden.de>
 - Amanda Duffy <aduffy@lenovo.com>
 - Ana Guerrero Lopez <aguerrero@suse.com>
+- Anders F Björklund <anders.f.bjorklund@gmail.com>
 - Andrew Bruno <aebruno2@buffalo.edu>
 - Ángel Bejarano <abejarano@ontropos.com>
 - Apuã Paquola <apuapaquola@gmail.com>
