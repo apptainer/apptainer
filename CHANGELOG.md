@@ -5,6 +5,13 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.4.x changes
+
+Changes since 1.4.0-rc.1
+
+- Fix running and building containers of different architectures
+  than the host via binfmt_misc when using rootless fakeroot.
+
 ## v1.4.0 Release Candidate 1 - \[2025-01-21\]
 
 Changes since 1.3.6
