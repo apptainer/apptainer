@@ -819,6 +819,11 @@ func (l *Launcher) SetGPUConfig() error {
 		}
 	}
 
+	if l.cfg.Hpu {
+		sylog.Debugf("Using HPU accelerator setup")
+		l.engineConfig.SetHpu(true)
+	}
+
 	if l.cfg.Nvidia {
 		// If nvccli was not enabled by flag or config, drop down to legacy binds immediately
 		if !l.engineConfig.File.UseNvCCLI && !l.cfg.NvCCLI {
