@@ -157,6 +157,7 @@ type JSONConfig struct {
 	ShareNSMode           bool              `json:"sharensMode,omitempty"`
 	ShareNSFd             int               `json:"sharensFd,omitempty"`
 	RunscriptTimeout      string            `json:"runscriptTimeout,omitempty"`
+	Hpu                   bool              `json:"hpu,omitempty"`
 }
 
 // SetImage sets the container image path to be used by EngineConfig.JSON.
@@ -986,4 +987,14 @@ func (e *EngineConfig) SetRunscriptTimout(timeout string) {
 // GetRunscriptTimeout gets the set runscript timeout
 func (e *EngineConfig) GetRunscriptTimeout() string {
 	return e.JSON.RunscriptTimeout
+}
+
+// SetHpu sets hpu flag.
+func (e *EngineConfig) SetHpu(hpu bool) {
+	e.JSON.Hpu = hpu
+}
+
+// GetHpu returns if hpu flag is set or not.
+func (e *EngineConfig) GetHpu() bool {
+	return e.JSON.Hpu
 }
