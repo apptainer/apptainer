@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"runtime"
 	"syscall"
 
@@ -266,6 +267,7 @@ func fakerootSeccompProfile() *specs.LinuxSeccomp {
 func (e *EngineOperations) StartProcess(_ int) error {
 	const (
 		mountInfo    = "/proc/self/mountinfo"
+		binfmtMisc   = "/proc/sys/fs/binfmt_misc"
 		selinuxMount = "/sys/fs/selinux"
 	)
 
@@ -294,9 +296,25 @@ func (e *EngineOperations) StartProcess(_ int) error {
 	if err != nil {
 		return fmt.Errorf("failed to mount %s to /root: %s", e.EngineConfig.Home, err)
 	}
-	err = syscall.Mount("proc", "/proc", "proc", syscall.MS_NOSUID|syscall.MS_NOEXEC|syscall.MS_NODEV, "")
+	tmpdir, err := os.MkdirTemp("", "bind-mount-*")
+	if err != nil {
+		return fmt.Errorf("failed to create temporary directory: %s", err)
+	}
+	err = syscall.Mount("proc", tmpdir, "proc", syscall.MS_NOSUID|syscall.MS_NOEXEC|syscall.MS_NODEV, "")
 	if err != nil {
 		return fmt.Errorf("failed to mount proc filesystem: %s", err)
+	}
+	err = syscall.Mount(binfmtMisc, filepath.Join(tmpdir, "sys", "fs", "binfmt_misc"), "", syscall.MS_BIND, "")
+	if err != nil {
+		return fmt.Errorf("failed to mount binfmt_misc filesystem: %s", err)
+	}
+	err = syscall.Mount(tmpdir, "/proc", "", syscall.MS_MOVE, "")
+	if err != nil {
+		return fmt.Errorf("failed to mount proc filesystem: %s", err)
+	}
+	err = os.Remove(tmpdir)
+	if err != nil {
+		return fmt.Errorf("failed to remove temporary directory: %s", err)
 	}
 
 	// fix potential issue with SELinux (https://github.com/apptainer/singularity/issues/4038)
