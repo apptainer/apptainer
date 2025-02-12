@@ -91,9 +91,11 @@ func (e *EngineOperations) StartProcess(masterConnFd int) error {
 		if customCwd {
 			return fmt.Errorf("failed to set working directory: %s", err)
 		}
-		if err := os.Chdir(e.EngineConfig.GetHomeDest()); err != nil {
-			sylog.Debugf("Error setting the working directory. Using '/' instead: %s", err)
+		if cerr := os.Chdir(e.EngineConfig.GetHomeDest()); cerr != nil {
+			sylog.Warningf("Error changing the container working directory. Using '/' instead: %s", cerr)
 			os.Chdir("/")
+		} else {
+			sylog.Warningf("Error changing the container working directory. Using '%s' instead: %s", e.EngineConfig.GetHomeDest(), err)
 		}
 	}
 
