@@ -20,6 +20,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/apptainer/apptainer/internal/pkg/build/oci"
 	"github.com/apptainer/apptainer/internal/pkg/image/packer"
 	"github.com/apptainer/apptainer/internal/pkg/util/crypt"
 	"github.com/apptainer/apptainer/internal/pkg/util/machine"
@@ -208,6 +209,13 @@ func (a *SIFAssembler) Assemble(b *types.Bundle, path string) error {
 		sylog.Infof("Architecture not recognized, use native")
 		arch = runtime.GOARCH
 	}
+	if buildarch, ok := oci.ArchMap[b.Opts.Arch]; ok {
+		if arch != buildarch.Arch {
+			// the container arch overrides the build arch (!), for backwards compatibility
+			sylog.Warningf("Architecture %s does not match build arch %s", arch, b.Opts.Arch)
+		}
+	}
+
 	sylog.Verbosef("Set SIF container architecture to %s", arch)
 
 	var encOpts *encryptionOptions
