@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"runtime"
 	"syscall"
 
 	"github.com/apptainer/apptainer/docs"
@@ -31,6 +32,8 @@ var buildArgs struct {
 	sections            []string
 	bindPaths           []string
 	mounts              []string
+	buildArch           string
+	buildArchVariant    string
 	libraryURL          string
 	keyServerURL        string
 	webURL              string
@@ -109,6 +112,26 @@ var buildNoTestFlag = cmdline.Flag{
 	ShortHand:    "T",
 	Usage:        "build without running tests in %test section",
 	EnvKeys:      []string{"NOTEST"},
+}
+
+// --arch
+var buildArchFlag = cmdline.Flag{
+	ID:           "buildArchFlag",
+	Value:        &buildArgs.buildArch,
+	DefaultValue: runtime.GOARCH,
+	Name:         "arch",
+	Usage:        "architecture to build for",
+	EnvKeys:      []string{"BUILD_ARCH"},
+}
+
+// --arch-variant
+var buildArchVariantFlag = cmdline.Flag{
+	ID:           "buildArchVariantFlag",
+	Value:        &buildArgs.buildArchVariant,
+	DefaultValue: "",
+	Name:         "arch-variant",
+	Usage:        "architecture variant to build for",
+	EnvKeys:      []string{"BUILD_ARCH_VARIANT"},
 }
 
 // --library
@@ -337,6 +360,8 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildFixPermsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildMksquashfsArgsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildJSONFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildArchFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildArchVariantFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildLibraryFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildNoCleanupFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildNoTestFlag, buildCmd)
