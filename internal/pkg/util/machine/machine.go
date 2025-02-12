@@ -242,7 +242,11 @@ func canEmulate(arch string) bool {
 	}
 
 	// look at /proc/sys/fs/binfmt_misc
-	content, _ := os.ReadFile(filepath.Join(binfmtMisc, "status"))
+	content, err := os.ReadFile(filepath.Join(binfmtMisc, "status"))
+	if err != nil {
+		sylog.Warningf("%v", err)
+		return false
+	}
 	if string(content) != "enabled\n" {
 		return false
 	}
