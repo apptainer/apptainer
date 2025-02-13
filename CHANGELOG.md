@@ -11,6 +11,8 @@ Changes since 1.4.0-rc.1
 
 - Fix running and building containers of different architectures
   than the host via binfmt_misc when using rootless fakeroot.
+- Show a warning message if changing directory to the cwd fails, instead
+  of silently switching to the home directory or `/`.
 
 ## v1.4.0 Release Candidate 1 - \[2025-01-21\]
 
