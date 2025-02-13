@@ -16,11 +16,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/apptainer/apptainer/internal/pkg/build/oci"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/build/types/parser"
@@ -342,8 +342,8 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 	}
 
 	// Architecture of build
-	// Local builds currently always use the host architecture.
-	labels["org.label-schema.build-arch"] = runtime.GOARCH
+	buildarch := oci.ArchMap[b.Opts.Arch]
+	labels["org.label-schema.build-arch"] = buildarch.Arch
 
 	return nil
 }

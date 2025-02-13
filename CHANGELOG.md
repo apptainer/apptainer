@@ -13,6 +13,10 @@ Changes since 1.4.0-rc.1
   than the host via binfmt_misc when using rootless fakeroot.
 - Show a warning message if changing directory to the cwd fails, instead
   of silently switching to the home directory or `/`.
+- Allow overriding the build architecture with `--arch` and
+  `--arch-variant`, to build images for another architecture
+  than the current host arch. This requires that the host has
+  been set up to support multiple architectures (binfmt_misc).
 
 ## v1.4.0 Release Candidate 1 - \[2025-01-21\]
 
