@@ -22,6 +22,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/build"
 	"github.com/apptainer/apptainer/internal/pkg/build/args"
+	"github.com/apptainer/apptainer/internal/pkg/build/oci"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/fakeroot"
@@ -351,6 +352,11 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 
 	}
 
+	arch, err := oci.ConvertArch(buildArgs.buildArch, buildArgs.buildArchVariant)
+	if err != nil {
+		sylog.Fatalf("While processing the arch and arch variant: %v", err)
+		return
+	}
 	dp, err := ociplatform.DefaultPlatform()
 	if err != nil {
 		sylog.Fatalf("%v", err)
@@ -384,6 +390,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 				Binds:             buildArgs.bindPaths,
 				Unprivilege:       unprivilege,
 				ReqAuthFile:       reqAuthFile,
+				Arch:              arch,
 				Platform:          *dp,
 			},
 		})
