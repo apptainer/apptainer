@@ -141,7 +141,6 @@ overrides:
   deb:
     depends:
       - libseccomp2
-      - squashfs-tools
 {{- if .Rootless }}
     recommends:
       - uidmap
@@ -149,7 +148,6 @@ overrides:
   rpm:
     depends:
       - libseccomp
-      - squashfs-tools
 {{- if .Rootless }}
     recommends:
       - shadow-utils
