@@ -66,8 +66,8 @@ Changes since 1.3.6
 - A new `--netns-path` option takes a path to a network namespace to join when
   starting a container. The `root` user may join any network namespace. An
   unprivileged user can only join a network namespace specified in the new
-  `allowed netns paths` directive in `apptainer.conf`, if they are also listed
-  in `allowed net users` / `allowed net groups` and apptainer is installed with
+  `allow netns paths` directive in `apptainer.conf`, if they are also listed
+  in `allow net users` / `allow net groups` and apptainer is installed with
   setuid privileges. Not supported with `--fakeroot`.
 - `apptainer.conf` now accepts setting the following options:
   - `allow ipc ns` -- Default value is `yes`; when set to `no`, it will disable
