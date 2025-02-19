@@ -17,6 +17,10 @@ Changes since 1.4.0-rc.1
   `--arch-variant`, to build images for another architecture
   than the current host arch. This requires that the host has
   been set up to support multiple architectures (binfmt_misc).
+- If the `mksquashfs` version is new enough (version 4.6 or later),
+  then show a percentage progress bar (with ETA) during SIF creation.
+  If the mksquashfs version is older, than fallback to the old message:
+  "To see mksquashfs output with progress bar enable verbose logging"
 
 ## v1.4.0 Release Candidate 1 - \[2025-01-21\]
 
