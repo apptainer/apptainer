@@ -22,6 +22,7 @@ Build-Depends:
  libfuse3-dev,
  zlib1g-dev,
  liblzo2-dev,
+ liblz4-dev,
  liblzma-dev,
  libzstd-dev,
  dh-apparmor
@@ -36,7 +37,6 @@ Depends:
  ${misc:Depends},
  ${shlibs:Depends},
  uidmap,
- squashfs-tools,
  fakeroot
 Conflicts: singularity-container
 Description: container platform focused on supporting "Mobility of Compute" formerly known as Singularity

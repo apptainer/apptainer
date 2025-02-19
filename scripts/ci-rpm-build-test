@@ -9,7 +9,7 @@
 # install dependencies
 if [[ $OS_TYPE == *suse* ]]; then
   zypper install -y libseccomp-devel libuuid-devel openssl-devel \
-    squashfs fakeroot cryptsetup sysuser-tools wget git go
+    fakeroot cryptsetup sysuser-tools wget git go
   zypper install -y diffutils
   zypper install -y --replacefiles --allow-downgrade -t pattern devel_basis
   if [[ $OS_TYPE == *tumbleweed* ]]; then
@@ -24,7 +24,7 @@ else
   if [ $OS_TYPE != fedora ]; then
     dnf install -y epel-release
   fi
-  dnf install -y libseccomp-devel squashfs-tools fakeroot cryptsetup wget git
+  dnf install -y libseccomp-devel fakeroot cryptsetup wget git
   dnf --enablerepo=devel install -y shadow-utils-subid-devel
   dnf install -y golang
   dnf install -y fuse3-devel lzo-devel lz4-devel
