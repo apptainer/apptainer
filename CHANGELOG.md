@@ -11,6 +11,8 @@ Changes since 1.4.0-rc.1
 
 - Fix running and building containers of different architectures
   than the host via binfmt_misc when using rootless fakeroot.
+- Write starter messages to stderr when an instance fails to start.
+  Previously they were incorrectly written to stdout.
 - Allow overriding the build architecture with `--arch` and
   `--arch-variant`, to build images for another architecture
   than the current host arch. This requires that the host has
