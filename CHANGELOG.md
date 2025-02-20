@@ -13,6 +13,8 @@ Changes since 1.4.0-rc.1
   than the host via binfmt_misc when using rootless fakeroot.
 - Show a warning message if changing directory to the cwd fails, instead
   of silently switching to the home directory or `/`.
+- Write starter messages to stderr when an instance fails to start.
+  Previously they were incorrectly written to stdout.
 - Allow overriding the build architecture with `--arch` and
   `--arch-variant`, to build images for another architecture
   than the current host arch. This requires that the host has
