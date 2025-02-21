@@ -17,6 +17,8 @@ Changes since 1.4.0-rc.1
   `--arch-variant`, to build images for another architecture
   than the current host arch. This requires that the host has
   been set up to support multiple architectures (binfmt_misc).
+- Show a warning message if changing directory to the cwd fails, instead
+  of silently switching to the home directory or `/`.
 
 ## v1.4.0 Release Candidate 1 - \[2025-01-21\]
 
