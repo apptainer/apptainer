@@ -47,6 +47,10 @@
 			"subArchitectures": [
 				"SCMP_ARCH_S390"
 			]
+		},
+		{
+			"architecture": "SCMP_ARCH_RISCV64",
+			"subArchitectures": null
 		}
 	],
 	"syscalls": [
@@ -534,6 +538,20 @@
 				"arches": [
 					"s390",
 					"s390x"
+				]
+			},
+			"excludes": {}
+		},
+		{
+			"names": [
+				"riscv_flush_icache"
+			],
+			"action": "SCMP_ACT_ALLOW",
+			"args": [],
+			"comment": "",
+			"includes": {
+				"arches": [
+					"riscv64"
 				]
 			},
 			"excludes": {}
