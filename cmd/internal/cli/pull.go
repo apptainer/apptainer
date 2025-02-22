@@ -72,7 +72,7 @@ var pullArchFlag = cmdline.Flag{
 	EnvKeys:      []string{"PULL_ARCH"},
 }
 
-// --arch
+// --arch-variant
 var pullArchVariantFlag = cmdline.Flag{
 	ID:           "pullArchVariantFlag",
 	Value:        &pullArchVariant,
