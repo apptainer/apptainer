@@ -92,7 +92,12 @@ func getPwUIDMock(uid uint32) (*user.User, error) {
 }
 
 func testGetIDRange(t *testing.T, s set) {
+<<<<<<< HEAD:internal/pkg/fakeroot/fakeroot_test.go
 	idRange, err := GetIDRange(s.path, s.uid)
+=======
+	//nolint:typecheck
+	idRange, err := getIDRange(s.path, s.uid)
+>>>>>>> ce826b18c (test nolint:typecheck):internal/pkg/fakeroot/config_test.go
 	if err != nil && s.expectedMapping != nil {
 		t.Errorf("unexpected error for %q: %s", s.name, err)
 	} else if err == nil && s.expectedMapping == nil {
