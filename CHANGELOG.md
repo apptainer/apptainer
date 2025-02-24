@@ -23,6 +23,7 @@ Changes since 1.4.0-rc.1
   then show a percentage progress bar (with ETA) during SIF creation.
   If the mksquashfs version is older, than fallback to the old message:
   "To see mksquashfs output with progress bar enable verbose logging"
+- Complete the previously partial support for the `riscv64` architecture.
 
 ## v1.4.0 Release Candidate 1 - \[2025-01-21\]
 

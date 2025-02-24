@@ -73,6 +73,10 @@ var ArchMap = map[string]GoArch{
 		Arch: "s390x",
 		Var:  "",
 	},
+	"riscv64": {
+		Arch: "riscv64",
+		Var:  "",
+	},
 }
 
 // ConvertReference converts a source reference into a cache.ImageReference to cache its blobs
@@ -258,7 +262,7 @@ func getArchFromURI(uri string) (arch *GoArch) {
 
 // Convert CLI options GOARCH and arch variant to recognized docker arch
 func ConvertArch(arch, archVariant string) (string, error) {
-	supportedArchs := []string{"arm", "arm64", "amd64", "386", "ppc64le", "s390x"}
+	supportedArchs := []string{"arm", "arm64", "amd64", "386", "ppc64le", "s390x", "riscv64"}
 	switch arch {
 	case "arm64":
 		if archVariant == "" {

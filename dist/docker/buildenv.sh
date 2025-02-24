@@ -26,6 +26,11 @@ case "${TARGETPLATFORM##*/}" in
     export DEBIANARCH=s390x
     export GOARCH=s390x
     ;;
+"riscv64")
+    export TARGETARCH=riscv64
+    export DEBIANARCH=riscv64
+    export GOARCH=riscv64
+    ;;
 *)
     echo "${TARGETPLATFORM##*/} not supported, see dist/docker/build.sh to add it"
     exit 1
