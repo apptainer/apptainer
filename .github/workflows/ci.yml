@@ -3,30 +3,30 @@ on:
   pull_request:
 
 jobs:
-  # check_go_mod:
-  #   name: check_go_mod
-  #   runs-on: ubuntu-22.04
-  #   container: golang:1.22.7
-  #   steps:
-  #     - uses: actions/checkout@v2
+  check_go_mod:
+    name: check_go_mod
+    runs-on: ubuntu-22.04
+    container: golang:1.22.7
+    steps:
+      - uses: actions/checkout@v2
 
-  #     - name: Check go.mod
-  #       run: |
-  #         git config --global --add safe.directory $(pwd)
-  #         ./scripts/check-go.mod
+      - name: Check go.mod
+        run: |
+          git config --global --add safe.directory $(pwd)
+          ./scripts/check-go.mod
 
-  # lint_markdown:
-  #   name: lint_markdown
-  #   runs-on: ubuntu-22.04
-  #   container: node:20-slim
-  #   steps:
-  #     - uses: actions/checkout@v2
+  lint_markdown:
+    name: lint_markdown
+    runs-on: ubuntu-22.04
+    container: node:20-slim
+    steps:
+      - uses: actions/checkout@v2
 
-  #     - name: Install markdownlint
-  #       run: npm install -g markdownlint-cli
+      - name: Install markdownlint
+        run: npm install -g markdownlint-cli
 
-  #     - name: Check for Lint
-  #       run: markdownlint --ignore LICENSE_DEPENDENCIES.md .
+      - name: Check for Lint
+        run: markdownlint --ignore LICENSE_DEPENDENCIES.md .
 
   check_source:
     name: check_source
@@ -42,15 +42,15 @@ jobs:
           ./mconfig -v -p /usr/local --with-suid
           make -C ./builddir check
 
-  # shellcheck:
-  #   name: shellcheck
-  #   runs-on: ubuntu-22.04
-  #   container: koalaman/shellcheck-alpine
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: shellcheck files that appear to be sh or bash scripts (or some cousin thereof)
-  #       run: |
-  #         shellcheck $( ./scripts/get-shell-files.sh )
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-22.04
+    container: koalaman/shellcheck-alpine
+    steps:
+      - uses: actions/checkout@v2
+      - name: shellcheck files that appear to be sh or bash scripts (or some cousin thereof)
+        run: |
+          shellcheck $( ./scripts/get-shell-files.sh )
 
   # alpine:
   #   name: alpine
