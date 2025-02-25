@@ -12,10 +12,13 @@ package nested
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
+	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 )
 
@@ -101,6 +104,94 @@ func (c ctx) podman(t *testing.T) {
 	c.nestedContainerTest(t, "podman", "localhost/apptainer-e2e-podman-nested")
 }
 
+func (c ctx) apptainer(t *testing.T) {
+	e2e.EnsureORASImage(t, c.env)
+
+	tmpDir, cleanupTmpDir := e2e.MakeTempDir(t, c.env.TestDir, "nested-apptainer-", "")
+	t.Cleanup(func() { e2e.Privileged(cleanupTmpDir)(t) })
+	nestedDef := "e2e/testdata/nested.def"
+	nestedSIF := filepath.Join(tmpDir, "nested.sif")
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("build"),
+		e2e.WithDir(buildcfg.SOURCEDIR),
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs(
+			"--build-arg", "GOVERSION="+runtime.Version(),
+			"--build-arg", "GOOS="+runtime.GOOS,
+			"--build-arg", "GOARCH="+runtime.GOARCH,
+			nestedSIF, nestedDef,
+		),
+		e2e.ExpectExit(0),
+	)
+
+	tmpBuildSIF := filepath.Join(tmpDir, "build.sif")
+
+	tests := []struct {
+		name         string
+		outerProfile e2e.Profile
+		outerArgs    []string
+		innerCommand string
+		innerArgs    []string
+	}{
+		// Root host -> root outer -> root inner
+		{
+			name:         "root/exec",
+			outerProfile: e2e.RootProfile,
+			outerArgs:    []string{},
+			innerCommand: "exec",
+			innerArgs:    []string{c.env.OrasTestImage, "/bin/true"},
+		},
+		{
+			name:         "root/build",
+			outerProfile: e2e.FakerootProfile,
+			outerArgs:    []string{},
+			innerCommand: "build",
+			innerArgs:    []string{"--force", tmpBuildSIF, "examples/library/Apptainer"},
+		},
+		// User host -> fakeroot outer -> fakeroot inner
+		{
+			name:         "fakeroot/exec",
+			outerProfile: e2e.FakerootProfile,
+			outerArgs:    []string{},
+			innerCommand: "exec",
+			innerArgs:    []string{c.env.OrasTestImage, "/bin/true"},
+		},
+		{
+			name:         "fakeroot/build",
+			outerProfile: e2e.FakerootProfile,
+			outerArgs:    []string{},
+			innerCommand: "build",
+			innerArgs:    []string{"--force", tmpBuildSIF, "examples/library/Apptainer"},
+		},
+		// User outside -> user (userns) outer -> user (userns) inner
+		{
+			name:         "userns/exec",
+			outerProfile: e2e.UserNamespaceProfile,
+			outerArgs:    []string{},
+			innerCommand: "exec",
+			innerArgs:    []string{"-u", c.env.OrasTestImage, "/bin/true"},
+		},
+	}
+	for _, tt := range tests {
+		cmdArgs := tt.outerArgs
+		cmdArgs = append(cmdArgs, nestedSIF)
+		cmdArgs = append(cmdArgs, tt.innerCommand)
+		cmdArgs = append(cmdArgs, tt.innerArgs...)
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithDir(buildcfg.SOURCEDIR),
+			e2e.WithProfile(e2e.RootProfile),
+			e2e.WithCommand("run"),
+			e2e.WithArgs(cmdArgs...),
+			e2e.ExpectExit(0),
+		)
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -108,7 +199,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"Docker": c.docker,
-		"Podman": c.podman,
+		"Docker":    c.docker,
+		"Podman":    c.podman,
+		"Apptainer": c.apptainer,
 	}
 }

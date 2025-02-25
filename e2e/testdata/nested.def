@@ -1,0 +1,42 @@
+Bootstrap: docker
+From: ubuntu:24.10
+
+%files
+    ./   /apptainer-src/
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt-get -q update && apt-get -q install -y autoconf \
+        automake \
+        crun \
+        cryptsetup \
+        fuse2fs \
+        fuse \
+        fuse-overlayfs \
+        git \
+        libfuse-dev \
+        libglib2.0-dev \
+        libseccomp-dev \
+        libsubid-dev \
+        libtool \
+        make \
+        pkg-config \
+        squashfs-tools \
+        squashfs-tools-ng \
+        tzdata \
+        uidmap \
+        wget
+
+    wget -O /tmp/go.tar.gz https://go.dev/dl/{{ GOVERSION }}.{{ GOOS }}-{{ GOARCH }}.tar.gz && tar -C /usr/local -xzf /tmp/go.tar.gz
+    export PATH="/usr/local/go/bin:$PATH"
+
+    cd /apptainer-src
+    git clean -fdx || true
+    ./mconfig
+    make -C builddir && make -C builddir install
+    cd ../
+    rm -rf /apptainer-src
+
+%runscript
+    /usr/local/bin/apptainer "$@"
