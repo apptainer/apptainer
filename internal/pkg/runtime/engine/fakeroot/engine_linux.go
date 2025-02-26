@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2020, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -19,15 +19,13 @@ import (
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
-	fakerootutil "github.com/apptainer/apptainer/internal/pkg/fakeroot"
-	"github.com/apptainer/apptainer/internal/pkg/plugin"
+	"github.com/apptainer/apptainer/internal/pkg/fakeroot"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/starter"
 	fakerootConfig "github.com/apptainer/apptainer/internal/pkg/runtime/engine/fakeroot/config"
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
-	fakerootcallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/fakeroot"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
@@ -108,21 +106,8 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	uid := uint32(os.Getuid())
 	gid := uint32(os.Getgid())
 
-	getIDRange := fakerootutil.GetIDRange
-
-	callbackType := (fakerootcallback.UserMapping)(nil)
-	callbacks, err := plugin.LoadCallbacks(callbackType)
-	if err != nil {
-		return fmt.Errorf("while loading plugins callbacks '%T': %s", callbackType, err)
-	}
-	if len(callbacks) > 1 {
-		return fmt.Errorf("multiple plugins have registered hook callback for fakeroot")
-	} else if len(callbacks) == 1 {
-		getIDRange = callbacks[0].(fakerootcallback.UserMapping)
-	}
-
 	g.AddLinuxUIDMapping(uid, 0, 1)
-	idRange, err := getIDRange(fakerootutil.SubUIDFile, uid)
+	idRange, err := fakeroot.GetUIDRange(uid)
 	if err != nil {
 		return fmt.Errorf("could not use fakeroot: %s", err)
 	}
@@ -130,7 +115,7 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	starterConfig.AddUIDMappings(g.Config.Linux.UIDMappings)
 
 	g.AddLinuxGIDMapping(gid, 0, 1)
-	idRange, err = getIDRange(fakerootutil.SubGIDFile, uid)
+	idRange, err = fakeroot.GetGIDRange(uid)
 	if err != nil {
 		return fmt.Errorf("could not use fakeroot: %s", err)
 	}

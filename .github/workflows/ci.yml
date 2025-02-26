@@ -37,8 +37,9 @@ jobs:
 
       - name: Check apptainer source
         run: |
+          apt update && apt install -y libsubid-dev
           git config --global --add safe.directory $(pwd)
-          ./mconfig -v -p /usr/local --with-suid
+          ./mconfig -v -p /usr/local --with-suid --without-libsubid
           make -C ./builddir check
 
   shellcheck:
@@ -323,7 +324,7 @@ jobs:
           go-version: 1.22.7
 
       - name: Fetch deps
-        run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfs-tools squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
+        run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
 
       - name: Build and install Apptainer
         run: |
@@ -353,7 +354,7 @@ jobs:
           go-version: 1.22.7
 
       - name: Fetch deps
-        run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfs-tools libseccomp-dev cryptsetup dbus-user-session
+        run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libseccomp-dev cryptsetup dbus-user-session
 
       - name: Build and install Apptainer
         run: |
@@ -402,8 +403,8 @@ jobs:
         run: |
           set -e
           sudo apt-get -q update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential uidmap squashfs-tools squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential uidmap squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
 
       - name: Download, compile, and install dependent packages
         if: env.run_tests

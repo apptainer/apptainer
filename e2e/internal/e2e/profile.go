@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -192,7 +192,7 @@ func fakerootRequirements(t *testing.T) {
 	uid := uint32(origUID)
 
 	// check that current user has valid mappings in /etc/subuid
-	if _, err := fakeroot.GetIDRange(fakeroot.SubUIDFile, uid); err != nil {
+	if _, err := fakeroot.GetUIDRange(uid); err != nil {
 		t.Fatalf("fakeroot configuration error: %s", err)
 	}
 
@@ -201,7 +201,7 @@ func fakerootRequirements(t *testing.T) {
 	// *name*, it is keyed by user name, not by group name. This
 	// means that even if we are requesting the *group* mappings, we
 	// need to pass the *user* ID.
-	if _, err := fakeroot.GetIDRange(fakeroot.SubGIDFile, uid); err != nil {
+	if _, err := fakeroot.GetGIDRange(uid); err != nil {
 		t.Fatalf("fakeroot configuration error: %s", err)
 	}
 }

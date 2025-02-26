@@ -18,7 +18,7 @@ if [ -n "$1" ]; then
 fi
 
 set -ex
-for PKG in squashfuse e2fsprogs fuse-overlayfs gocryptfs; do
+for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs; do
     TGZ="$(echo $SRC/${PKG}-*.tar.gz)"
     if [ ! -f "$TGZ" ]; then
 	echo "$PKG-*.tar.gz not found in $SRC" >&2
@@ -35,6 +35,10 @@ for PKG in squashfuse e2fsprogs fuse-overlayfs gocryptfs; do
 	fi
     done
     case "$PKG" in
+	squashfs-tools)
+	    make -C squashfs-tools mksquashfs unsquashfs GZIP_SUPPORT=1 \
+	    LZO_SUPPORT=1 LZ4_SUPPORT=1 XZ_SUPPORT=1 ZSTD_SUPPORT=1
+	    ;;
 	squashfuse)
 	    ./autogen.sh
 	    FLAGS=-std=c99 ./configure --enable-multithreading
