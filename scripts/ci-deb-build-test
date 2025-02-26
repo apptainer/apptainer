@@ -18,7 +18,6 @@ apt-get install -y \
     libseccomp-dev \
     pkg-config \
     uidmap \
-    squashfs-tools \
     fakeroot \
     cryptsetup \
     tzdata \
@@ -35,7 +34,7 @@ apt-get install -y \
     golang-go \
     dh-apparmor
 
-# for squashfuse_ll build
+# for squashfs-tools and squashfuse_ll build
 apt-get install -y autoconf automake libtool pkg-config libfuse3-dev \
     zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
 

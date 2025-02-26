@@ -6,6 +6,7 @@ e2fsprogs-*
 fuse-overlayfs-*
 gocryptfs-*
 squashfuse-*
+squashfs-tools-*
 *.m4
 *.pyc
 *.swp

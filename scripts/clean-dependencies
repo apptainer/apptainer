@@ -8,6 +8,6 @@
 # FUSE-based packages.
 
 set -ex
-for PKG in squashfuse e2fsprogs fuse-overlayfs gocryptfs; do
+for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs; do
     rm -rf $PKG-*
 done
