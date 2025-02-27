@@ -27,6 +27,8 @@ Changes since 1.4.0-rc.1
 - Apptainer now includes a bundled copy of squashfs-tools to make the
   progress bar available and to ensure that all compression types are
   available. This includes the programs `mksquashfs` and `unsquashfs`.
+- Revised the libsubid implementation and removed the `fakerootcallback`
+  functionality.
 
 ## v1.4.0 Release Candidate 1 - \[2025-01-21\]
 
