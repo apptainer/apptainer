@@ -37,8 +37,9 @@ jobs:
 
       - name: Check apptainer source
         run: |
+          apt update && apt install -y libsubid-dev
           git config --global --add safe.directory $(pwd)
-          ./mconfig -v -p /usr/local --with-suid
+          ./mconfig -v -p /usr/local --with-suid --without-libsubid
           make -C ./builddir check
 
   shellcheck:

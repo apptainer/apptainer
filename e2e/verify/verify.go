@@ -40,6 +40,14 @@ func (c *ctx) verify(t *testing.T) {
 		ocspOk = false
 	}
 
+	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
+	defer cleanup(t)
+	output, err := exec.Command("verify/ocspcertificates/download_chain.sh", tempDir).Output()
+	if err != nil {
+		// will cause OCSPThirdPartyChain test to fail
+		t.Errorf("could not download oscp certificate chain, output: %s, error: %s", string(output), err.Error())
+	}
+
 	tests := []struct {
 		name       string
 		envs       []string
@@ -207,8 +215,8 @@ func (c *ctx) verify(t *testing.T) {
 		{
 			name: "OCSPThirdPartyChain",
 			flags: []string{
-				"--certificate", filepath.Join("./verify", "ocspcertificates", "leaf.pem"),
-				"--certificate-intermediates", filepath.Join("./verify", "ocspcertificates", "intermediate.pem"),
+				"--certificate", filepath.Join(tempDir, "leaf.pem"),
+				"--certificate-intermediates", filepath.Join(tempDir, "intermediate.pem"),
 				"--ocsp-verify",
 			},
 			imagePath:  filepath.Join("..", "test", "images", "one-group-signed-dsse.sif"),
