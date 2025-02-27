@@ -12,6 +12,7 @@ package verify
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 	"time"
@@ -23,7 +24,7 @@ import (
 )
 
 type ctx struct {
-	e2e.TestEnv
+	env e2e.TestEnv
 }
 
 func (c *ctx) verify(t *testing.T) {
@@ -38,6 +39,14 @@ func (c *ctx) verify(t *testing.T) {
 	if err := c.startOCSPResponder(priKeyPath, rootPath); err != nil {
 		t.Errorf("OCSP responder could not start: %s", err)
 		ocspOk = false
+	}
+
+	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
+	defer cleanup(t)
+	output, err := exec.Command("verify/ocspcertificates/download_chain.sh", tempDir).Output()
+	if err != nil {
+		// will cause OCSPThirdPartyChain test to fail
+		t.Errorf("could not download oscp certificate chain, output: %s, error: %s", string(output), err.Error())
 	}
 
 	tests := []struct {
@@ -207,8 +216,8 @@ func (c *ctx) verify(t *testing.T) {
 		{
 			name: "OCSPThirdPartyChain",
 			flags: []string{
-				"--certificate", filepath.Join("./verify", "ocspcertificates", "leaf.pem"),
-				"--certificate-intermediates", filepath.Join("./verify", "ocspcertificates", "intermediate.pem"),
+				"--certificate", filepath.Join(tempDir, "leaf.pem"),
+				"--certificate-intermediates", filepath.Join(tempDir, "intermediate.pem"),
 				"--ocsp-verify",
 			},
 			imagePath:  filepath.Join("..", "test", "images", "one-group-signed-dsse.sif"),
@@ -224,7 +233,7 @@ func (c *ctx) verify(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c.RunApptainer(t,
+		c.env.RunApptainer(t,
 			e2e.AsSubtest(tt.name),
 			e2e.PreRun(func(t *testing.T) {
 				if tt.needOCSP && !ocspOk {
@@ -241,7 +250,7 @@ func (c *ctx) verify(t *testing.T) {
 }
 
 func (c *ctx) importPGPKeypairs(t *testing.T) {
-	c.RunApptainer(
+	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("key import"),
@@ -280,7 +289,7 @@ func (c *ctx) startOCSPResponder(rootKeyPath string, rootCertPath string) error 
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
-		TestEnv: env,
+		env: env,
 	}
 
 	return testhelper.Tests{
@@ -288,12 +297,12 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			var err error
 
 			// Create a temporary PGP keyring.
-			c.KeyringDir, err = os.MkdirTemp("", "e2e-sign-keyring-")
+			c.env.KeyringDir, err = os.MkdirTemp("", "e2e-sign-keyring-")
 			if err != nil {
 				t.Fatalf("failed to create temporary directory: %s", err)
 			}
 			defer func() {
-				err := os.RemoveAll(c.KeyringDir)
+				err := os.RemoveAll(c.env.KeyringDir)
 				if err != nil {
 					t.Fatalf("failed to delete temporary directory: %s", err)
 				}
