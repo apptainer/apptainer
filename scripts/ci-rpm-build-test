@@ -13,7 +13,7 @@ if [[ $OS_TYPE == *suse* ]]; then
   zypper install -y diffutils
   zypper install -y --replacefiles --allow-downgrade -t pattern devel_basis
   if [[ $OS_TYPE == *tumbleweed* ]]; then
-    zypper install -y libsubid-devel
+    zypper install -y --allow-downgrade libsubid-devel
   fi
   zypper install -y gzip fuse3-devel lzo-devel liblz4-devel \
     xz-devel libzstd-devel
