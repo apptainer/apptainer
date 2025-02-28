@@ -15,8 +15,8 @@ github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERo
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2 h1:+vx7roKuyA63nhn5WAunQHLTznkw5W8b1Xc0dNjp83s=
 github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2/go.mod h1:HBCaDeC1lPdgDeDbhX8XFpy1jqjK0IBG8W5K+xYqA0w=
-github.com/ProtonMail/go-crypto v1.1.2 h1:A7JbD57ThNqh7XjmHE+PXpQ3Dqt3BrSAC0AL0Go3KS0=
-github.com/ProtonMail/go-crypto v1.1.2/go.mod h1:rA3QumHc/FZ8pAHreoekgiAbzpNsfQAosU5td4SnOrE=
+github.com/ProtonMail/go-crypto v1.1.5 h1:eoAQfK2dwL+tFSFpr7TbOaPNUbPiJj4fLYwwGE1FQO4=
+github.com/ProtonMail/go-crypto v1.1.5/go.mod h1:rA3QumHc/FZ8pAHreoekgiAbzpNsfQAosU5td4SnOrE=
 github.com/VividCortex/ewma v1.2.0 h1:f58SaIzcDXrSy3kWaHNvuJgJ3Nmz59Zji6XoJR/q1ow=
 github.com/VividCortex/ewma v1.2.0/go.mod h1:nz4BbCtbLyFDeC9SUHbtcT5644juEuWfUAUnGx7j5l4=
 github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d h1:licZJFw2RwpHMqeKTCYkitsPqHNxTmd4SNR5r94FGM8=
@@ -38,8 +38,8 @@ github.com/apptainer/container-key-client v0.8.0 h1:K181Zrejb53mR2YQZwCathSj8YRe
 github.com/apptainer/container-key-client v0.8.0/go.mod h1:wMeJdiMXlPRiwJfUyae2WRHsZlHG9Af6iPQ9TZcBnS8=
 github.com/apptainer/container-library-client v1.4.10 h1:U3dOJfOorCt5ucSyOXqITwITTQwmlG0IgwScoNLr0e4=
 github.com/apptainer/container-library-client v1.4.10/go.mod h1:BScWxE4Yk7raM+B2dbAbLL1iOdxtl+bkOS4/f3X5yzA=
-github.com/apptainer/sif/v2 v2.19.3 h1:Zu78kyd/Ck1Ax8CTr+QDagg1kbBxDPpzHP87IJSOzBo=
-github.com/apptainer/sif/v2 v2.19.3/go.mod h1:BZ1cI3nPlPCrBQ0tTViCngeHj35+v30aU9ZBr8oDujI=
+github.com/apptainer/sif/v2 v2.20.2 h1:YlxgoUCIfMwjtzuyikTohX3dbQyz+pJiE6KiU7f6EKw=
+github.com/apptainer/sif/v2 v2.20.2/go.mod h1:ISVcYK9kBORz9z7AzD+Lj/FLhbe/JKMHgiOateUCSrM=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 h1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
 github.com/astromechza/etcpwdparse v0.0.0-20170319193008-f0e5f0779716 h1:MWNxJj2HIBx5Skyz30rxjHkXwGCr05O2bAz0VrwgADM=
