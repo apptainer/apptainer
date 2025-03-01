@@ -12,6 +12,8 @@ package client
 import (
 	"context"
 	"io"
+	"strconv"
+	"strings"
 
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/vbauerster/mpb/v8"
@@ -35,6 +37,16 @@ var unknownSizeOption = []mpb.BarOption{
 	),
 	mpb.AppendDecorators(
 		decor.AverageSpeed(decor.SizeB1024(0), " % .1f "),
+	),
+}
+
+var percentageOption = []mpb.BarOption{
+	mpb.BarFillerTrim(),
+	mpb.AppendDecorators(
+		decor.Name(" "),
+		decor.Percentage(),
+		decor.Name(" "),
+		decor.AverageETA(decor.ET_STYLE_GO),
 	),
 }
 
@@ -181,4 +193,59 @@ func (upb *UploadProgressBar) Finish() {
 	}
 	// wait for our bar to complete and flush
 	upb.progress.Wait()
+}
+
+// PercentageProgressBar is a progress bar that reads percentages (as ints) from an input stream.
+type PercentageProgressBar struct {
+	progress *mpb.Progress
+	bar      *mpb.Bar
+	w        io.Writer
+}
+
+type proxyWriter struct {
+	io.Writer
+	bar *mpb.Bar
+}
+
+func (x proxyWriter) Write(p []byte) (int, error) {
+	s := strings.Trim(string(p), "\n")
+	if i, err := strconv.Atoi(s); err == nil {
+		if i >= 0 && i <= 100 {
+			x.bar.SetCurrent(int64(i))
+		}
+	}
+	// discard any input that is not percentage
+	return len(p), nil
+}
+
+func (ppb *PercentageProgressBar) Init() {
+	p := mpb.New()
+
+	ppb.progress, ppb.bar = p, p.AddBar(100, percentageOption...)
+	ppb.w = proxyWriter{bar: ppb.bar}
+}
+
+func (ppb *PercentageProgressBar) Done() {
+	if ppb.bar == nil {
+		return
+	}
+	ppb.bar.SetCurrent(int64(100))
+}
+
+func (ppb *PercentageProgressBar) GetWriter() io.Writer {
+	return ppb.w
+}
+
+func (ppb *PercentageProgressBar) Abort(drop bool) {
+	if ppb.bar == nil {
+		return
+	}
+	ppb.bar.Abort(drop)
+}
+
+func (ppb *PercentageProgressBar) Wait() {
+	if ppb.progress == nil {
+		return
+	}
+	ppb.progress.Wait()
 }

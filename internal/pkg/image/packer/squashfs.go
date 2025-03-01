@@ -16,8 +16,10 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/blang/semver/v4"
 )
 
 // Squashfs represents a squashfs packer
@@ -44,15 +46,38 @@ func (s Squashfs) create(files []string, dest string, opts []string) error {
 		return fmt.Errorf("could not create squashfs, mksquashfs not found")
 	}
 
+	// check if mksquashfs is new enough to have the -percentage option
+	hasPercentage := false
+	if out, err := exec.Command(s.MksquashfsPath, "-version").Output(); err == nil {
+		line := strings.Split(string(out), "\n")[0]
+		if strings.HasPrefix(line, "mksquashfs version ") {
+			v := strings.Split(line, " ")[2]
+			if sv, err := semver.ParseTolerant(v); err == nil {
+				sylog.Debugf("mksquashfs version: %s", sv)
+				min := semver.MustParse("4.6.0")
+				hasPercentage = sv.GTE(min)
+			}
+		}
+	}
+
 	// mksquashfs takes args of the form: source1 source2 ... destination [options]
 	args := files
 	args = append(args, dest)
 	args = append(args, opts...)
 
+	progressBar := &client.PercentageProgressBar{}
+	defer progressBar.Abort(true)
+	if sylog.GetLevel() < int(sylog.VerboseLevel) && hasPercentage {
+		args = append(args, "-quiet", "-percentage")
+	}
+
 	sylog.Verbosef("Executing %s %s", s.MksquashfsPath, strings.Join(args, " "))
 	cmd := exec.Command(s.MksquashfsPath, args...)
 	if sylog.GetLevel() >= int(sylog.VerboseLevel) {
 		cmd.Stdout = os.Stdout
+	} else if hasPercentage {
+		progressBar.Init()
+		cmd.Stdout = progressBar.GetWriter()
 	} else {
 		sylog.Infof("To see mksquashfs output with progress bar enable verbose logging")
 	}
@@ -60,6 +85,8 @@ func (s Squashfs) create(files []string, dest string, opts []string) error {
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("%s command failed: %v: %s", s.MksquashfsPath, err, stderr.String())
 	}
+	progressBar.Done()
+	progressBar.Wait()
 	return nil
 }
 

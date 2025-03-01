@@ -21,6 +21,10 @@ Changes since 1.4.0-rc.1
   of silently switching to the home directory or `/`.
 - Revised the libsubid implementation and removed the `fakerootcallback`
   functionality.
+- If the `mksquashfs` version is new enough (version 4.6 or later),
+  then show a percentage progress bar (with ETA) during SIF creation.
+  If the mksquashfs version is older, than fallback to the old message:
+  "To see mksquashfs output with progress bar enable verbose logging"
 
 ## v1.4.0 Release Candidate 1 - \[2025-01-21\]
 
