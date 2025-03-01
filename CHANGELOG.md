@@ -21,6 +21,7 @@ Changes since 1.4.0-rc.1
   of silently switching to the home directory or `/`.
 - Revised the libsubid implementation and removed the `fakerootcallback`
   functionality.
+- Complete the previously partial support for the `riscv64` architecture.
 
 ## v1.4.0 Release Candidate 1 - \[2025-01-21\]
 
