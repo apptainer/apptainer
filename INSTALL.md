@@ -22,7 +22,6 @@ sudo apt-get install -y \
     libseccomp-dev \
     pkg-config \
     uidmap \
-    squashfs-tools \
     fakeroot \
     cryptsetup \
     tzdata \
@@ -46,7 +45,6 @@ sudo dnf install -y epel-release
 # Install RPM packages for dependencies
 sudo dnf install -y \
     libseccomp-devel \
-    squashfs-tools \
     fakeroot \
     cryptsetup \
     wget git
@@ -67,7 +65,7 @@ sudo zypper install -y \
   libseccomp-devel \
   libuuid-devel \
   openssl-devel \
-  squashfs fakeroot \
+  fakeroot \
   cryptsetup sysuser-tools \
   wget git go
 # Install these before devel tools to avoid clashing busybox pkgs on Tumbleweed
