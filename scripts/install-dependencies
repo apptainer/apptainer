@@ -33,7 +33,7 @@ if [ ! -w "$DIR" ]; then
 fi
 
 set -ex
-for CMD in squashfuse-*/squashfuse_ll e2fsprogs-*/fuse2fs fuse-overlayfs-*/fuse-overlayfs gocryptfs-*/gocryptfs; do
+for CMD in squashfs-tools-*/squashfs-tools/{mksquashfs,unsquashfs} squashfuse-*/squashfuse_ll e2fsprogs-*/fuse2fs fuse-overlayfs-*/fuse-overlayfs gocryptfs-*/gocryptfs; do
     if [ ! -f "$CMD" ]; then
 	echo "$CMD not found" >&2
 	exit 1
