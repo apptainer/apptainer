@@ -25,6 +25,7 @@ var setnsSysNo = map[string]uintptr{
 	"ppc64":   350,
 	"ppc64le": 350,
 	"s390x":   339,
+	"riscv64": 268,
 }
 
 var nsMap = map[string]uintptr{
