@@ -37,6 +37,7 @@
 %global squashfuse_version 0.5.2
 %global e2fsprogs_version 1.47.2
 %global fuse_overlayfs_version 1.14
+%global squashfs_tools_version 4.6.1
 
 # The last singularity version number in EPEL/Fedora
 %global last_singularity_version 3.8.7-3
@@ -68,6 +69,9 @@ Source11: https://github.com/vasi/squashfuse/archive/%{squashfuse_version}/squas
 Source12: e2fsprogs-%{e2fsprogs_version}.tar.gz
 %endif
 Source13: https://github.com/containers/fuse-overlayfs/archive/v%{fuse_overlayfs_version}/fuse-overlayfs-%{fuse_overlayfs_version}.tar.gz
+%if "%{?squashfs_tools_version}" != ""
+Source14: https://github.com/plougher/squashfs-tools/archive/%{squashfs_tools_version}/squashfs-tools-%{squashfs_tools_version}.tar.gz
+%endif
 
 # This Conflicts is in case someone tries to install the main apptainer
 # package when an old singularity package is installed.  An Obsoletes is on
@@ -95,6 +99,7 @@ Provides: bundled(squashfuse) = %{squashfuse_version}
 Provides: bundled(e2fsprogs) = %{e2fsprogs_version}
 Provides: bundled(fuse2fs) = %{e2fsprogs_version}
 Provides: bundled(fuse-overlayfs) = %{fuse_overlayfs_version}
+Provides: bundled(squashfs-tools) = %{squashfs_tools_version}
 @BUNDLED_PROVIDES@
 
 %if "%{_target_vendor}" == "suse"
@@ -115,7 +120,7 @@ BuildRequires: make
 BuildRequires: libseccomp-devel
 BuildRequires: cryptsetup
 BuildRequires: fuse3-devel
-%if ("%{?squashfuse_version}" != "") || ("%{e2fsprogs_version}" != "") || ("%{fuse_overlayfs_version}" != "")
+%if ("%{?squashfuse_version}" != "") || ("%{e2fsprogs_version}" != "") || ("%{fuse_overlayfs_version}" != "") || ("%{?squashfs_tools_version}" != "")
 BuildRequires: autoconf
 BuildRequires: automake
 BuildRequires: libtool
@@ -126,10 +131,8 @@ BuildRequires: xz-devel
 BuildRequires: libzstd-devel
 %endif
 %if "%{_target_vendor}" == "suse"
-Requires: squashfs
 Recommends: fakeroot
 %else
-Requires: squashfs-tools
 Requires: fakeroot
 %endif
 
@@ -214,6 +217,11 @@ install -m 755 e2fsprogs-%{e2fsprogs_version}/fuse2fs %{buildroot}%{_libexecdir}
 install -m 755 fuse-overlayfs-%{fuse_overlayfs_version}/fuse-overlayfs %{buildroot}%{_libexecdir}/%{name}/bin/fuse-overlayfs
 %endif
 
+%if "%{?squashfs_tools_version}" != ""
+install -m 755 squashfs-tools-%{squashfs_tools_version}/squashfs-tools/mksquashfs %{buildroot}%{_libexecdir}/%{name}/bin/mksquashfs
+install -m 755 squashfs-tools-%{squashfs_tools_version}/squashfs-tools/unsquashfs %{buildroot}%{_libexecdir}/%{name}/bin/unsquashfs
+%endif
+
 %post
 # $1 in %%posttrans cannot distinguish between fresh installs and upgrades,
 # so check it here and create a file to pass the knowledge to that step
@@ -280,6 +288,10 @@ fi
 %endif
 %if "%{?fuse_overlayfs_version}" != ""
 %{_libexecdir}/%{name}/bin/fuse-overlayfs
+%endif
+%if "%{?squashfs_tools_version}" != ""
+%{_libexecdir}/%{name}/bin/mksquashfs
+%{_libexecdir}/%{name}/bin/unsquashfs
 %endif
 %{_libexecdir}/%{name}/cni
 %{_libexecdir}/%{name}/lib

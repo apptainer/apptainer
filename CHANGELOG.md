@@ -25,6 +25,9 @@ Changes since 1.4.0-rc.1
   then show a percentage progress bar (with ETA) during SIF creation.
   If the mksquashfs version is older, than fallback to the old message:
   "To see mksquashfs output with progress bar enable verbose logging"
+- Apptainer now includes a bundled copy of squashfs-tools to make the
+  progress bar available and to ensure that all compression types are
+  available. This includes the programs `mksquashfs` and `unsquashfs`.
 
 ## v1.4.0 Release Candidate 1 - \[2025-01-21\]
 
