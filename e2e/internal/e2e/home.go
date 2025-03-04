@@ -204,7 +204,7 @@ func SetupHomeDirectories(t *testing.T, testRegistry string) {
 			t.Fatalf("could not create directory: %+v", err)
 		}
 		if err := os.WriteFile(registryFile, registriesContent, 0o444); err != nil {
-			err = errors.Wrapf(err, "writing macros file at %s", macrosFile)
+			err = errors.Wrapf(err, "writing registry file at %s", registryFile)
 			t.Fatalf("could not write registries.conf file: %+v", err)
 		}
 
@@ -215,7 +215,7 @@ func SetupHomeDirectories(t *testing.T, testRegistry string) {
 			t.Fatalf("could not create directory: %+v", err)
 		}
 		if err := os.WriteFile(registryFile, registriesContent, 0o444); err != nil {
-			err = errors.Wrapf(err, "writing macros file at %s", macrosFile)
+			err = errors.Wrapf(err, "writing registry file at %s", registryFile)
 			t.Fatalf("could not write registries.conf file: %+v", err)
 		}
 	})(t)
