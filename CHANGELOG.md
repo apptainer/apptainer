@@ -5,30 +5,30 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## v1.4.x changes
+## v1.4.0 Release Candidate 2 - \[2025-03-4\]
 
 Changes since 1.4.0-rc.1
 
+- If the `mksquashfs` version is new enough (version 4.6 or later),
+  then show a percentage progress bar (with ETA) during SIF creation.
+  If the mksquashfs version is older, than fallback to the message
+  "To see mksquashfs output with progress bar enable verbose logging"
+- Include a bundled copy of squashfs-tools to make the progress bar
+  available and to ensure that all compression types are available.
+  This includes the programs `mksquashfs` and `unsquashfs`.
+- Revise the libsubid implementation including removing the
+  `fakerootcallback` functionality.
 - Fix running and building containers of different architectures
   than the host via binfmt_misc when using rootless fakeroot.
-- Write starter messages to stderr when an instance fails to start.
-  Previously they were incorrectly written to stdout.
 - Allow overriding the build architecture with `--arch` and
   `--arch-variant`, to build images for another architecture
   than the current host arch. This requires that the host has
   been set up to support multiple architectures (binfmt_misc).
+- Complete the previously partial support for the `riscv64` architecture.
 - Show a warning message if changing directory to the cwd fails, instead
   of silently switching to the home directory or `/`.
-- Revised the libsubid implementation and removed the `fakerootcallback`
-  functionality.
-- If the `mksquashfs` version is new enough (version 4.6 or later),
-  then show a percentage progress bar (with ETA) during SIF creation.
-  If the mksquashfs version is older, than fallback to the old message:
-  "To see mksquashfs output with progress bar enable verbose logging"
-- Apptainer now includes a bundled copy of squashfs-tools to make the
-  progress bar available and to ensure that all compression types are
-  available. This includes the programs `mksquashfs` and `unsquashfs`.
-- Complete the previously partial support for the `riscv64` architecture.
+- Write starter messages to stderr when an instance fails to start.
+  Previously they were incorrectly written to stdout.
 
 ## v1.4.0 Release Candidate 1 - \[2025-01-21\]
 
