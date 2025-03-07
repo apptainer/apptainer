@@ -24,6 +24,7 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/fatih/color v1.18.0
 	github.com/go-log/log v0.2.0
+	github.com/google/go-containerregistry v0.20.4-0.20250225234217-098045d5e61f
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.15.0
 	github.com/opencontainers/go-digest v1.0.0 // indirect
@@ -56,7 +57,6 @@ require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/docker/cli v28.0.4+incompatible
 	github.com/docker/distribution v2.8.3+incompatible
-	github.com/google/go-containerregistry v0.20.3
 	github.com/moby/sys/sequential v0.6.0
 	github.com/moby/sys/userns v0.1.0
 	github.com/samber/lo v1.49.1
