@@ -38,10 +38,6 @@ When migrating from Singularity see the
 and
 [user compatibility documentation](https://apptainer.org/docs/user/main/singularity_compatibility.html).
 
-Check out [talks about Apptainer](https://apptainer.org/talks)
-and some [use cases of Apptainer](https://apptainer.org/usecases)
-on our website.
-
 ## Getting Started with Apptainer
 
 To install Apptainer from source, see the [installation
