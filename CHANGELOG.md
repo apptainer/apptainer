@@ -9,6 +9,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.4.0-rc.2
 
+- Fix `target: no such file or directory` error when extracting
+  layers from certain OCI images that manipulate hard links across layers.
+
 ## v1.4.0 Release Candidate 2 - \[2025-03-4\]
 
 Changes since 1.4.0-rc.1
