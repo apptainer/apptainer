@@ -106,8 +106,6 @@ func (c ctx) testConcurrentPulls(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
 			tmpdir, err := os.MkdirTemp(c.env.TestDir, "pull_test.")
 			if err != nil {

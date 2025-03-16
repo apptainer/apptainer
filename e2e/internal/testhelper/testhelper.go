@@ -61,15 +61,10 @@ func (s *Suite) Run() {
 	// Run parallel test first
 	s.t.Run("PAR", func(t *testing.T) {
 		for name := range s.groups {
-			name := name
-
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
 				for testName, fn := range tests[name] {
-					fn := fn
-					testName := testName
-
 					pc := reflect.ValueOf(fn).Pointer()
 					if _, ok := npTests[pc]; ok {
 						continue
@@ -86,8 +81,6 @@ func (s *Suite) Run() {
 
 	s.t.Run("SEQ", func(t *testing.T) {
 		for name := range s.groups {
-			name := name
-
 			t.Run(name, func(t *testing.T) {
 				for testName, fn := range tests[name] {
 					pc := reflect.ValueOf(fn).Pointer()
