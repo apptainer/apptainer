@@ -14,16 +14,9 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
 )
-
-func init() {
-	// TODO - go 1.20 initializes seed randomly by default, so can drop this
-	// deprecated call in future.
-	rand.Seed(time.Now().UnixNano()) // nolint:staticcheck
-}
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
