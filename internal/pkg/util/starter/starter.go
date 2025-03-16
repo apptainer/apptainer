@@ -144,14 +144,14 @@ func copyConfigToEnv(data []byte) ([]string, error) {
 	)
 
 	// get the current stack limit in kilobytes
-	cur, max, err := rlimit.Get("RLIMIT_STACK")
+	stackCur, stackMax, err := rlimit.Get("RLIMIT_STACK")
 	if err != nil {
 		return nil, fmt.Errorf("failed to determine stack size: %s", err)
 	}
 
 	// stack size divided by four to determine the arguments+environments
 	// size limit
-	argSizeLimit := cur / 4
+	argSizeLimit := (stackCur / 4)
 
 	// config length to be passed via environment variables + some space
 	// for apptainer first argument
@@ -182,7 +182,7 @@ func copyConfigToEnv(data []byte) ([]string, error) {
 	}
 
 	roundLimitKB := 4 * ((configLength / kbyte) + 1)
-	hardLimitKB := max / kbyte
+	hardLimitKB := stackMax / kbyte
 	// the hard limit is reached, maybe user screw up himself by
 	// setting the hard limit with ulimit or this is a limit set
 	// by administrator, in this case returns some hints

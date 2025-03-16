@@ -19,27 +19,27 @@ func TestGetSet(t *testing.T) {
 	test.DropPrivilege(t)
 	defer test.ResetPrivilege(t)
 
-	cur, max, err := Get("RLIMIT_NOFILE")
+	fileCur, fileMax, err := Get("RLIMIT_NOFILE")
 	if err != nil {
 		t.Error(err)
 	}
 
-	if err := Set("RLIMIT_NOFILE", cur, max); err != nil {
+	if err := Set("RLIMIT_NOFILE", fileCur, fileMax); err != nil {
 		t.Error(err)
 	}
 
-	max++
+	fileMax++
 
-	if err := Set("RLIMIT_NOFILE", cur, max); err == nil {
+	if err := Set("RLIMIT_NOFILE", fileCur, fileMax); err == nil {
 		t.Errorf("process doesn't have privileges to do that")
 	}
 
-	cur, max, err = Get("RLIMIT_FAKE")
+	fileCur, fileMax, err = Get("RLIMIT_FAKE")
 	if err == nil {
 		t.Errorf("resource limit RLIMIT_FAKE doesn't exist")
 	}
 
-	if err := Set("RLIMIT_FAKE", cur, max); err == nil {
+	if err := Set("RLIMIT_FAKE", fileCur, fileMax); err == nil {
 		t.Errorf("resource limit RLIMIT_FAKE doesn't exist")
 	}
 }

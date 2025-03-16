@@ -74,10 +74,10 @@ func (c ctx) issue5057(t *testing.T) {
 		t.Skipf("stack limit too low")
 	}
 
-	max := uint64(buildcfg.MAX_CHUNK_SIZE)
+	maxChunkSize := uint64(buildcfg.MAX_CHUNK_SIZE)
 
-	big := make([]byte, max)
-	for i := uint64(0); i < max; i++ {
+	big := make([]byte, maxChunkSize)
+	for i := uint64(0); i < maxChunkSize; i++ {
 		big[i] = 'A'
 	}
 	bigEnv := make([]string, buildcfg.MAX_ENGINE_CONFIG_CHUNK)
