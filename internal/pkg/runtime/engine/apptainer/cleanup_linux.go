@@ -171,7 +171,9 @@ func umount() (err error) {
 	}()
 
 	// empty target to signify to driver we are entering in the stop phase
-	imageDriver.Stop("")
+	if imageDriver != nil {
+		imageDriver.Stop("")
+	}
 
 	// gocryptfs related temp folders
 	var gocryptfsTmp []string
