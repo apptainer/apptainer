@@ -11,6 +11,7 @@ Changes since 1.4.0-rc.2
 
 - Fix `target: no such file or directory` error when extracting
   layers from certain OCI images that manipulate hard links across layers.
+- Update the default pacman `confURL` for `Bootstrap: arch` container builds.
 
 ## v1.4.0 Release Candidate 2 - \[2025-03-4\]
 
