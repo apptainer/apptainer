@@ -5,43 +5,7 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## v1.4.x changes
-
-Changes since 1.4.0-rc.2
-
-- Fix `target: no such file or directory` error when extracting
-  layers from certain OCI images that manipulate hard links across layers.
-- Fix the crash that happens when executing a privilege-encrypted container as
-  root.
-- Update the default pacman `confURL` for `Bootstrap: arch` container builds.
-- Update the bundled gocryptfs to 2.5.1 and squashfuse to 0.6.0.
-
-## v1.4.0 Release Candidate 2 - \[2025-03-4\]
-
-Changes since 1.4.0-rc.1
-
-- If the `mksquashfs` version is new enough (version 4.6 or later),
-  then show a percentage progress bar (with ETA) during SIF creation.
-  If the mksquashfs version is older, than fallback to the message
-  "To see mksquashfs output with progress bar enable verbose logging"
-- Include a bundled copy of squashfs-tools to make the progress bar
-  available and to ensure that all compression types are available.
-  This includes the programs `mksquashfs` and `unsquashfs`.
-- Revise the libsubid implementation including removing the
-  `fakerootcallback` functionality.
-- Fix running and building containers of different architectures
-  than the host via binfmt_misc when using rootless fakeroot.
-- Allow overriding the build architecture with `--arch` and
-  `--arch-variant`, to build images for another architecture
-  than the current host arch. This requires that the host has
-  been set up to support multiple architectures (binfmt_misc).
-- Complete the previously partial support for the `riscv64` architecture.
-- Show a warning message if changing directory to the cwd fails, instead
-  of silently switching to the home directory or `/`.
-- Write starter messages to stderr when an instance fails to start.
-  Previously they were incorrectly written to stdout.
-
-## v1.4.0 Release Candidate 1 - \[2025-01-21\]
+## v1.4.0 - \[2025-03-18\]
 
 Changes since 1.3.6
 
@@ -61,8 +25,14 @@ Changes since 1.3.6
 - Expand the build instructions for squashfuse and apptainer packaging to
   include the libraries needed for maximum support of compression algorithms
   by squashfuse_ll.
-- When the logging level is verbose or debug, builds of SIF files now show
-  the output of mksquashfs including the progress bar.
+- If the `mksquashfs` version is new enough (version 4.6 or later),
+  then show a percentage progress bar (with ETA) during SIF creation
+  in the default log level.
+  If the mksquashfs version is older, then in verbose or debug log level
+  show the output of mksquashfs with its own progress bar.
+- Include a bundled copy of squashfs-tools to make the progress bar
+  available and to ensure that all compression types are available.
+  This includes the programs `mksquashfs` and `unsquashfs`.
 - Statistics are now normally available for instances that are
   started by non-root users on cgroups v2 systems.  
   The instance will be started in the current cgroup.  Information
@@ -105,10 +75,17 @@ Changes since 1.3.6
 
 - Label the starter process seen in `ps` with the image filename,
   for example: `Apptainer runtime parent: example.sif`.
-- When the logging level is verbose or debug, builds of SIF files now show
-  the output of mksquashfs including the progress bar.
 - Remove runtime and compute libraries from `rocmliblist.conf`.
   They should instead be provided by the container image.
+- Allow overriding the build architecture with `--arch` and
+  `--arch-variant`, to build images for another architecture
+  than the current host arch. This requires that the host has
+  been set up to support multiple architectures (binfmt_misc).
+- Complete the previously partial support for the `riscv64` architecture.
+- Show a warning message if changing directory to the cwd fails, instead
+  of silently switching to the home directory or `/`.
+- Write starter messages to stderr when an instance fails to start.
+  Previously they were incorrectly written to stdout.
 - Skip attempting to bind inaccessible mount points when handling the
   `mount hostfs = yes` configuration option.
 - Make binary builds more reproducible by deriving the GNU build ID
@@ -123,6 +100,8 @@ Changes since 1.3.6
   and suppress an unnecessary warning message.
 - Ignore invalid environment variables when pulling oci/docker containers.
 - Improve documentation for `remote list` command.
+- Removing the little-known `fakerootcallback` functionality.
+- Update the default pacman `confURL` for `Bootstrap: arch` container builds.
 - Update the bundled fuse programs to their latest releases.
 - A go version of at least 1.22 is now required to build from source.
 
@@ -141,6 +120,12 @@ Changes since 1.3.6
   without `--encrypt` from implying fakeroot.
 - Fix hang when copying files between build stages while using suid mode
   without user namespaces.
+- Fix running and building containers of different architectures
+  than the host via binfmt_misc when using rootless fakeroot.
+- Fix `target: no such file or directory` error when extracting
+  layers from certain OCI images that manipulate hard links across layers.
+- Fix the crash that happened when executing a privilege-encrypted container
+  as root.
 
 ### Internal
 
