@@ -14,6 +14,7 @@ Changes since 1.4.0-rc.2
 - Fix the crash that happens when executing a privilege-encrypted container as
   root.
 - Update the default pacman `confURL` for `Bootstrap: arch` container builds.
+- Update the bundled gocryptfs to 2.5.1 and squashfuse to 0.6.0.
 
 ## v1.4.0 Release Candidate 2 - \[2025-03-4\]
 
