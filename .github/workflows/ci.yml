@@ -323,7 +323,19 @@ jobs:
           go-version: 1.22.7
 
       - name: Fetch deps
-        run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
+        run: |
+          set -e
+          sudo apt-get -q update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libseccomp-dev fakeroot cryptsetup dbus-user-session 
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
+
+      - name: Download, compile, and install dependent packages
+        run: |
+          set -ex
+          ./scripts/download-dependencies 
+          ./scripts/compile-dependencies
+          sudo mkdir -p /usr/local/libexec/apptainer/bin
+          sudo ./scripts/install-dependencies /usr/local/libexec
 
       - name: Build and install Apptainer
         run: |
@@ -402,7 +414,7 @@ jobs:
         run: |
           set -e
           sudo apt-get -q update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential uidmap squashfuse fuse-overlayfs fakeroot fuse2fs libseccomp-dev cryptsetup dbus-user-session
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libseccomp-dev uidmap fakeroot cryptsetup dbus-user-session
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
 
       - name: Download, compile, and install dependent packages
@@ -413,15 +425,6 @@ jobs:
           ./scripts/compile-dependencies
           sudo mkdir -p /usr/local/libexec/apptainer/bin
           sudo ./scripts/install-dependencies /usr/local/libexec
-
-      # The fuse-overlayfs version from ubuntu-22.04, 1.7, is buggy,
-      # so update to version 1.9
-      # See https://github.com/apptainer/apptainer/issues/796
-      - name: Update fuse-overlayfs version
-        if: env.run_tests
-        run: |
-          sudo sh -c "echo 'deb http://old-releases.ubuntu.com/ubuntu kinetic universe' >/etc/apt/sources.list.d/kinetic.list"
-          sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y fuse-overlayfs
 
       - name: Enable full cgroups v2 delegation
         if: env.run_tests
