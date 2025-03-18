@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	defaultPacmanConfURL = "https://github.com/archlinux/svntogit-packages/raw/master/pacman/trunk/pacman.conf"
+	defaultPacmanConfURL = "https://gitlab.archlinux.org/archlinux/packaging/packages/pacman/-/raw/main/pacman.conf"
 )
 
 // Default list of packages to install when bootstrapping arch
