@@ -33,8 +33,8 @@
 # For example, it has dash instead of tilde for release candidates.
 %global package_version @PACKAGE_VERSION@
 
-%global gocryptfs_version 2.5.0
-%global squashfuse_version 0.5.2
+%global gocryptfs_version 2.5.1
+%global squashfuse_version 0.6.0
 %global e2fsprogs_version 1.47.2
 %global fuse_overlayfs_version 1.14
 %global squashfs_tools_version 4.6.1
