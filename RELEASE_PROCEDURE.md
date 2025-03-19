@@ -115,8 +115,7 @@ release of a new major or minor version. Each new RC follows step 5 and above.
 1. Apply an annotated tag via `git tag -a -m "Apptainer v1.2.0" v1.2.0`.
 1. Push the tag via `git push upstream v1.2.0`.
 1. Create a GitHub release, using the previous release as a guide and
-   incorporating `CHANGELOG.md` information. Attach the tarball, rpms, debs, and
-   `sha256sums` to it.
+   incorporating `CHANGELOG.md` information.
 1. Notify the community about the release candidate via the announce Google Group
    and the Slack #general channel.
 1. Ensure the user and admin documentation is up-to-date for the new
@@ -138,11 +137,11 @@ release of a new major or minor version. Each new RC follows step 5 and above.
    * Look in replacements.py in both the User Docs and Admin Docs for
      any needed updates to the `variable_replacements` and also update
      `version` in conf.py.
-   * If a new branch was created, add it to the docsVersion list in the
-     [web page](https://github.com/apptainer/apptainer.org/blob/master/src/pages/docs.js).
+   * If a new branch was created, add it to the list in the
+     [web page](https://github.com/apptainer/apptainer.org/blob/master/src/pages/documentation.astro).
      The `latest` symlinks in `static/docs/user` and `static/docs/admin`
      should get automatically updated.
-   * Make a web announcement of the new release at `src/posts`.
+   * Make a web announcement of the new release at `src/content/news`.
 
 ### After the Release
 
