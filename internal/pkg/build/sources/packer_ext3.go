@@ -50,8 +50,12 @@ func unpackExt3(b *types.Bundle, img *image.Image) error {
 	}
 
 	var number int
+	maxLoopDev, err := loop.GetMaxLoopDevices()
+	if err != nil {
+		return err
+	}
 	loopdev := &loop.Device{
-		MaxLoopDevices: loop.GetMaxLoopDevices(),
+		MaxLoopDevices: maxLoopDev,
 		Info:           info,
 	}
 

@@ -15,6 +15,8 @@ import (
 	"fmt"
 	"os"
 	"unsafe"
+
+	"github.com/ccoveille/go-safecast"
 )
 
 const (
@@ -47,9 +49,13 @@ type ext3Format struct{}
 func CheckExt3Header(b []byte) (uint64, error) {
 	var offset uint64 = extMagicOffset
 
-	o := bytes.Index(b, []byte(launchString))
-	if o > 0 {
-		offset += uint64(o + len(launchString) + 1)
+	launchStart := bytes.Index(b, []byte(launchString))
+	if launchStart > 0 {
+		launchEnd, err := safecast.ToUint64(launchStart + len(launchString) + 1)
+		if err != nil {
+			return 0, err
+		}
+		offset += launchEnd
 	}
 	einfo := &extFSInfo{}
 
@@ -89,11 +95,15 @@ func (f *ext3Format) initializer(img *Image, fileinfo os.FileInfo) error {
 	if err != nil {
 		return err
 	}
+	fSize, err := safecast.ToUint64(fileinfo.Size())
+	if err != nil {
+		return err
+	}
 	img.Type = EXT3
 	img.Partitions = []Section{
 		{
 			Offset:       offset,
-			Size:         uint64(fileinfo.Size()) - offset,
+			Size:         fSize - offset,
 			ID:           1,
 			Type:         EXT3,
 			Name:         RootFs,

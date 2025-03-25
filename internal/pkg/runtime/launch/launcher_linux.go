@@ -53,6 +53,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	"github.com/apptainer/apptainer/pkg/util/rlimit"
+	"github.com/ccoveille/go-safecast"
 	"github.com/opencontainers/runtime-spec/specs-go"
 	"golang.org/x/sys/unix"
 )
@@ -78,9 +79,17 @@ func NewLauncher(opts ...Option) (*Launcher, error) {
 	generator := generate.New(&ociConfig.Spec)
 	engineConfig.OciConfig = ociConfig
 
+	uid32, err := safecast.ToUint32(os.Getuid())
+	if err != nil {
+		return nil, err
+	}
+	gid32, err := safecast.ToUint32(os.Getgid())
+	if err != nil {
+		return nil, err
+	}
 	l := Launcher{
-		uid:          uint32(os.Getuid()),
-		gid:          uint32(os.Getgid()),
+		uid:          uid32,
+		gid:          gid32,
 		cfg:          lo,
 		engineConfig: engineConfig,
 		generator:    generator,
@@ -478,7 +487,10 @@ func (l *Launcher) setTargetIDs(useSuid bool) (err error) {
 			return fmt.Errorf("failed to parse provided UID: %w", err)
 		}
 		targetUID = int(u)
-		l.uid = uint32(targetUID)
+		l.uid, err = safecast.ToUint32(targetUID)
+		if err != nil {
+			return err
+		}
 
 		l.engineConfig.SetTargetUID(targetUID)
 		return nil
@@ -498,7 +510,10 @@ func (l *Launcher) setTargetIDs(useSuid bool) (err error) {
 			targetGID = append(targetGID, int(g))
 		}
 		if len(gids) > 0 {
-			l.gid = uint32(targetGID[0])
+			l.gid, err = safecast.ToUint32(targetGID[0])
+			if err != nil {
+				return err
+			}
 		}
 
 		l.engineConfig.SetTargetGID(targetGID)

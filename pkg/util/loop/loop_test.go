@@ -27,13 +27,17 @@ func TestLoop(t *testing.T) {
 	info := &unix.LoopInfo64{
 		Flags: unix.LO_FLAGS_AUTOCLEAR | unix.LO_FLAGS_READ_ONLY,
 	}
+	maxLoopDev, err := GetMaxLoopDevices()
+	if err != nil {
+		t.Fatal(err)
+	}
 	loopDevOne := &Device{
-		MaxLoopDevices: GetMaxLoopDevices(),
+		MaxLoopDevices: maxLoopDev,
 		Info:           info,
 	}
 	defer loopDevOne.Close()
 	loopDevTwo := &Device{
-		MaxLoopDevices: GetMaxLoopDevices(),
+		MaxLoopDevices: maxLoopDev,
 		Info:           info,
 	}
 	defer loopDevTwo.Close()

@@ -15,6 +15,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/ccoveille/go-safecast"
 )
 
 // IsInsideUserNamespace checks if a process is already running in a
@@ -65,16 +67,24 @@ func IsInsideUserNamespace(pid int) (bool, bool) {
 // HostUID attempts to find the original host UID if the current
 // process is root running inside a user namespace, and if not it
 // simply returns the current UID
-func HostUID() (int, error) {
-	return getHostID("uid", os.Getuid())
+func HostUID() (uint32, error) {
+	uid, err := safecast.ToUint32(os.Getuid())
+	if err != nil {
+		return 0, err
+	}
+	return getHostID("uid", uid)
 }
 
 // Likewise for HostGID
-func HostGID() (int, error) {
-	return getHostID("gid", os.Getgid())
+func HostGID() (uint32, error) {
+	gid, err := safecast.ToUint32(os.Getgid())
+	if err != nil {
+		return 0, err
+	}
+	return getHostID("gid", gid)
 }
 
-func getHostID(typ string, currentID int) (int, error) {
+func getHostID(typ string, currentID uint32) (uint32, error) {
 	if currentID != 0 {
 		return currentID, nil
 	}
@@ -105,19 +115,20 @@ func getHostID(typ string, currentID int) (int, error) {
 		}
 
 		// we are inside a user namespace
-		containerID, err := strconv.ParseUint(fields[0], 10, 32)
+		parsedID, err := strconv.ParseUint(fields[0], 10, 32)
 		if err != nil {
 			return 0, fmt.Errorf("failed to convert container %s field %s: %s", typ, fields[0], err)
 		}
+		containerID := uint32(parsedID)
 		// we can safely assume that a user won't have two
 		// consequent ID and we look if current ID match
 		// a 1:1 user mapping
-		if size == 1 && uint32(currentID) == uint32(containerID) {
+		if size == 1 && currentID == containerID {
 			id, err := strconv.ParseUint(fields[1], 10, 32)
 			if err != nil {
 				return 0, fmt.Errorf("failed to convert host %v field %s: %s", typ, fields[1], err)
 			}
-			return int(id), nil
+			return uint32(id), nil
 		}
 	}
 

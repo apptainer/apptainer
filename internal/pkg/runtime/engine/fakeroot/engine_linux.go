@@ -31,6 +31,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
+	"github.com/ccoveille/go-safecast"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 
@@ -103,8 +104,14 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	g.AddOrReplaceLinuxNamespace(specs.MountNamespace, "")
 	g.AddOrReplaceLinuxNamespace(specs.PIDNamespace, "")
 
-	uid := uint32(os.Getuid())
-	gid := uint32(os.Getgid())
+	uid, err := safecast.ToUint32(os.Getuid())
+	if err != nil {
+		return err
+	}
+	gid, err := safecast.ToUint32(os.Getgid())
+	if err != nil {
+		return err
+	}
 
 	g.AddLinuxUIDMapping(uid, 0, 1)
 	idRange, err := fakeroot.GetUIDRange(uid)

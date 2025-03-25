@@ -22,6 +22,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	libClient "github.com/apptainer/container-library-client/client"
+	"github.com/ccoveille/go-safecast"
 )
 
 const defaultTag = "latest"
@@ -59,15 +60,15 @@ func NormalizeLibraryRef(ref string) (*libClient.Ref, error) {
 	return &libClient.Ref{Host: host, Path: elem[0], Tags: tags}, nil
 }
 
-func getEnvInt(key string, defval int64) int64 {
+func getEnvInt64(key string, defval uint) (int64, error) {
 	envKey := env.TrimApptainerKey(key)
 	if env := env.GetenvLegacy(envKey, envKey); env != "" {
 		if n, err := strconv.ParseInt(env, 10, 0); err == nil {
-			return n
+			return n, nil
 		}
 		sylog.Warningf("Error parsing %s; using default (%d)", key, defval)
 	}
-	return defval
+	return safecast.ToInt64(defval)
 }
 
 func getDownloadConfig() (libClient.Downloader, error) {
@@ -86,17 +87,16 @@ func getDownloadConfig() (libClient.Downloader, error) {
 		}
 	}
 
-	concurrency := int64(getEnvInt("APPTAINER_DOWNLOAD_CONCURRENCY", int64(conf.DownloadConcurrency)))
-	partSize := int64(getEnvInt("APPTAINER_DOWNLOAD_PART_SIZE", int64(conf.DownloadPartSize)))
-	bufferSize := int64(getEnvInt("APPTAINER_DOWNLOAD_BUFFER_SIZE", int64(conf.DownloadBufferSize)))
-
-	if concurrency < 1 {
+	concurrency, err := getEnvInt64("APPTAINER_DOWNLOAD_CONCURRENCY", conf.DownloadConcurrency)
+	if err != nil {
 		return libClient.Downloader{}, fmt.Errorf("invalid download concurrency value (%v)", concurrency)
 	}
-	if partSize < 1 {
+	partSize, err := getEnvInt64("APPTAINER_DOWNLOAD_PART_SIZE", conf.DownloadPartSize)
+	if err != nil {
 		return libClient.Downloader{}, fmt.Errorf("invalid concurrent download part size (%v)", partSize)
 	}
-	if bufferSize < 1 {
+	bufferSize, err := getEnvInt64("APPTAINER_DOWNLOAD_BUFFER_SIZE", conf.DownloadBufferSize)
+	if err != nil {
 		return libClient.Downloader{}, fmt.Errorf("invalid concurrent download buffer size (%v)", bufferSize)
 	}
 

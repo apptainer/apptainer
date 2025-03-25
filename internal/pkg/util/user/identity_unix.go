@@ -63,5 +63,5 @@ func CurrentOriginal() (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return GetPwUID(uint32(uid))
+	return GetPwUID(uid)
 }

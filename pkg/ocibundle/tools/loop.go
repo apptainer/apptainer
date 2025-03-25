@@ -21,8 +21,12 @@ import (
 // CreateLoop associates a file to loop device and returns
 // path of loop device used and a closer to close the loop device
 func CreateLoop(file *os.File, offset, size uint64) (string, io.Closer, error) {
+	maxLoopDev, err := loop.GetMaxLoopDevices()
+	if err != nil {
+		return "", nil, err
+	}
 	loopDev := &loop.Device{
-		MaxLoopDevices: loop.GetMaxLoopDevices(),
+		MaxLoopDevices: maxLoopDev,
 		Shared:         true,
 		Info: &unix.LoopInfo64{
 			Sizelimit: size,

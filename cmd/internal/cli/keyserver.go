@@ -174,7 +174,7 @@ var KeyserverRemoveCmd = &cobra.Command{
 }
 
 func setKeyserver(_ *cobra.Command, _ []string) {
-	if uint32(os.Getuid()) != 0 {
+	if os.Getuid() != 0 {
 		sylog.Fatalf("Unable to modify keyserver configuration: not root user")
 	}
 }

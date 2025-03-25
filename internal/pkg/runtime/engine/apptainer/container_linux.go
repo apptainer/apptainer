@@ -44,6 +44,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	"github.com/apptainer/apptainer/pkg/util/slice"
+	"github.com/ccoveille/go-safecast"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 	"golang.org/x/sys/unix"
@@ -147,7 +148,10 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 	}
 
 	if os.Geteuid() != 0 {
-		c.sessionSize = int(c.engine.EngineConfig.File.SessiondirMaxSize)
+		c.sessionSize, err = safecast.ToInt(c.engine.EngineConfig.File.SessiondirMaxSize)
+		if err != nil {
+			return err
+		}
 	} else if engine.EngineConfig.GetAllowSUID() && !c.userNS {
 		c.suidFlag = 0
 	}
@@ -918,7 +922,10 @@ mount:
 func (c *container) mountImage(mnt *mount.Point, system *mount.System) error {
 	var key []byte
 
-	maxDevices := int(c.engine.EngineConfig.File.MaxLoopDevices)
+	maxDevices, err := safecast.ToInt(c.engine.EngineConfig.File.MaxLoopDevices)
+	if err != nil {
+		return err
+	}
 	flags, opts := mount.ConvertOptions(mnt.Options)
 	optsString := strings.Join(opts, ",")
 
@@ -3150,10 +3157,18 @@ func (c *container) GetPwUID(uid uint32) (*user.User, error) {
 	if c.engine.EngineConfig.JSON.UserInfo.Username == "" {
 		return nil, osuser.UnknownUserIdError(uid)
 	}
+	uid32, err := safecast.ToUint32(c.engine.EngineConfig.JSON.UserInfo.UID)
+	if err != nil {
+		return nil, err
+	}
+	gid32, err := safecast.ToUint32(c.engine.EngineConfig.JSON.UserInfo.GID)
+	if err != nil {
+		return nil, err
+	}
 	return &user.User{
 		Name:  c.engine.EngineConfig.JSON.UserInfo.Username,
-		UID:   uint32(c.engine.EngineConfig.JSON.UserInfo.UID),
-		GID:   uint32(c.engine.EngineConfig.JSON.UserInfo.GID),
+		UID:   uid32,
+		GID:   gid32,
 		Gecos: c.engine.EngineConfig.JSON.UserInfo.Gecos,
 		Dir:   c.engine.EngineConfig.JSON.UserInfo.Home,
 		Shell: c.engine.EngineConfig.JSON.UserInfo.Shell,
