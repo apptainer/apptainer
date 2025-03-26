@@ -63,6 +63,7 @@
 - Justin Cook <justin@sylabs.io>
 - Justin Riley <justin_riley@harvard.edu>
 - Kir Kolyshkin <kolyshkin@gmail.com>
+- Kirill Priadko <kirill.priadko@intel.com>
 - Krishna Muriki <kmuriki@lbl.gov>
 - Kumar Sukhani <kumarsukhani@gmail.com>
 - Kundan Kumar <iamkundankumar28@gmail.com>
