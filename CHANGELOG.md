@@ -9,6 +9,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.4.x changes
 
+- Check for existence of `/run/systemd/system` when verifying cgroups can be
+  used via systemd manager.
+
 Changes since 1.4.0
 
 ## v1.4.0 - \[2025-03-18\]
