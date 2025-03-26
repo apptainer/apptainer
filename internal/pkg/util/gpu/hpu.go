@@ -71,9 +71,17 @@ func HpuUverbsForIDs(visibleDevIDs string) ([]string, error) {
 
 // HpuGetDevIdFromPath extracts the device ID (the last numeric part) from a device path.
 func HpuGetDevIDFromPath(devPath string) (string, error) {
-	value := strings.IndexFunc(devPath, unicode.IsDigit)
-	if value >= 0 && value <= len(devPath) {
-		return devPath[value:], nil
+	// Find last non-digit character
+	pos := len(devPath)
+	for i := pos - 1; i >= 0; i-- {
+		if !unicode.IsNumber(rune(devPath[i])) {
+			pos = i + 1
+			break
+		}
+	}
+
+	if pos > 0 && pos < len(devPath) {
+		return devPath[pos:], nil
 	}
 
 	return "", fmt.Errorf("couldn't find device ID in '%s'", devPath)
@@ -89,11 +97,14 @@ func HpuFilterDevsByIDs(devs []string, filterIDs string) ([]string, error) {
 	}
 
 	askedIDs := strings.Split(filterIDs, ",")
+	for i := range askedIDs {
+		askedIDs[i] = strings.TrimSpace(askedIDs[i])
+	}
 	sylog.Debugf("Parsed IDs filter: %v", askedIDs)
 
 	// No IDs were requested, returning empty array
 	if len(askedIDs) == 0 {
-		return askedIDs, nil
+		return nil, nil
 	}
 
 	// Actual filtering by device IDs
