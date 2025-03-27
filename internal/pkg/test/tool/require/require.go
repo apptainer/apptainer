@@ -243,6 +243,18 @@ func Rocm(t *testing.T) {
 	}
 }
 
+// Hpu checks that a Gaudi acceleartor stack is available
+func Hpu(t *testing.T) {
+	hlsmi, err := exec.LookPath("hl-smi")
+	if err != nil {
+		t.Skipf("hl-smi not found on PATH: %v", err)
+	}
+	cmd := exec.Command(hlsmi)
+	if output, err := cmd.Output(); err != nil {
+		t.Skipf("hl-smi failed to run: %v - %v", err, string(output))
+	}
+}
+
 // DMTCP checks that a DMTCP stack is available
 func DMTCP(t *testing.T) {
 	_, err := exec.LookPath("dmtcp_launch")
