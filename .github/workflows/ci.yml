@@ -441,6 +441,16 @@ jobs:
         run: |
           ./mconfig -v -p /usr/local --with-suid
           make -C ./builddir all && sudo make -C ./builddir install
+      
+      - name: Pull and run qemu-user-static
+        if: env.run_tests
+        run: |
+          sudo apptainer run docker://multiarch/qemu-user-static --reset -p yes
+          supported_misc=`ls -al /proc/sys/fs/binfmt_misc/qemu-* | wc -l`
+          if [ "$supported_misc" -le 1 ]; then
+              echo "binfmt_misc registerred failed"
+              exit 1
+          fi
 
       - name: Run E2E tests
         if: env.run_tests

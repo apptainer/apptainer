@@ -277,12 +277,16 @@ func CopyImage(t *testing.T, source, dest string, insecureSource, insecureDest b
 	}
 }
 
-// BusyboxImage will provide the path to a local busybox SIF image for the current architecture
 func BusyboxSIF(t *testing.T) string {
-	busyboxSIF := "testdata/busybox_" + runtime.GOARCH + ".sif"
+	return BusyboxSIFArch(t, runtime.GOARCH)
+}
+
+// BusyboxImage will provide the path to a local busybox SIF image for the current architecture
+func BusyboxSIFArch(t *testing.T, arch string) string {
+	busyboxSIF := "testdata/busybox_" + arch + ".sif"
 	_, err := os.Stat(busyboxSIF)
 	if os.IsNotExist(err) {
-		t.Fatalf("busybox image not found for %s", runtime.GOARCH)
+		t.Fatalf("busybox image not found for %s", arch)
 	}
 	if err != nil {
 		t.Error(err)
