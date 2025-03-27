@@ -512,6 +512,47 @@ func (c ctx) testExecGocryptfsEncryptedSIF(t *testing.T) {
 	)
 }
 
+func (c ctx) testMultiArchRun(t *testing.T) {
+	imgPath := e2e.BusyboxSIFArch(t, "amd64")
+	cmdArgs := []string{"--cleanenv", imgPath, "uname", "-m"}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("run"),
+		e2e.WithArgs(cmdArgs...),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.ExactMatch, "x86_64"),
+		),
+	)
+
+	imgPath = e2e.BusyboxSIFArch(t, "arm64")
+	cmdArgs = []string{"--cleanenv", imgPath, "uname", "-m"}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("run"),
+		e2e.WithArgs(cmdArgs...),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.ExactMatch, "aarch64"),
+		),
+	)
+
+	imgPath = e2e.BusyboxSIFArch(t, "ppc64le")
+	cmdArgs = []string{"--cleanenv", imgPath, "uname", "-m"}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("run"),
+		e2e.WithArgs(cmdArgs...),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.ExactMatch, "ppc64le"),
+		),
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -528,5 +569,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"fuse ext3 mount":                     c.testFuseExt3Mount,
 		"add package with fakeroot and tmpfs": c.testAddPackageWithFakerootAndTmpfs,
 		"gocryptfs sif execution":             c.testExecGocryptfsEncryptedSIF,
+		"test running on multiple archs":      c.testMultiArchRun,
 	}
 }
