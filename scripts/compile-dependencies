@@ -55,6 +55,8 @@ for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs; do
 	    make
 	    ;;
 	gocryptfs)
+	    # Don't hardcode the amd64 microarchitecture
+	    sed -e '/GOAMD64.*v2/d' -i.orig build.bash
 	    # GOPROXY=off makes sure we fail instead of making network requests
 	    # the -B ldflags prevent rpm complaints about "No build ID note found"
 	    CGO_ENABLED=0 GOPROXY=off ./build.bash \
