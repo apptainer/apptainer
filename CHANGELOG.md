@@ -11,9 +11,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Check for existence of `/run/systemd/system` when verifying cgroups can be
   used via systemd manager.
-- Compile gocryptfs as v1 instead of v2 for x86_64, to work with older CPUs.
-  It now uses the default value of the go compiler, "GOAMD64=v1" upstream.
-  It is still _possible_ to set `GOAMD64` to a newer microarchitecture (v2+).
+- Compile gocryptfs with the default `GOAMD64` microarchitecture of the go
+  compiler instead of always using `GOAMD64=v2`.
+  The default value in the upstream go compiler is `GOAMD64=v1`, to work with
+  older CPUs, although it can have a cost in performance on newer CPUs.
+  It is still possible to set `GOAMD64` to a newer microarchitecture (v2+).
   For instance RHEL 9 uses v2 and RHEL 10 uses v3 as their default values.
 
 Changes since 1.4.0
