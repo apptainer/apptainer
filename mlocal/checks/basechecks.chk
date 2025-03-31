@@ -320,7 +320,7 @@ fi
 if echo | $hstcc -E -dM - | grep -qs -e __ARCH_PPC64 -e __PPC64__; then
 	hst_arch=ppc64
 fi
-if echo | $hstcc -E -dM - | grep -qs -e __riscv -e "__riscv_xlen 64"; then
+if echo | $hstcc -E -dM - | grep -qs -e "__riscv_xlen 64"; then
 	hst_arch=riscv64
 fi
 if [ "$hst_arch" != "" ]; then
@@ -353,7 +353,7 @@ fi
 if echo | $tgtcc -E -dM - | grep -qs -e __ARCH_PPC64 -e __PPC64__; then
 	tgt_arch=ppc64
 fi
-if echo | $tgtcc -E -dM - | grep -qs -e __riscv -e "__riscv_xlen 64"; then
+if echo | $tgtcc -E -dM - | grep -qs -e "__riscv_xlen 64"; then
 	tgt_arch=riscv64
 fi
 if [ "$tgt_arch" != "" ]; then
@@ -387,7 +387,7 @@ fi
 if echo | $hstcc -E -dM - | grep -qs -e __ARCH_PPC64 -e __PPC64__; then
 	hst_word=64
 fi
-if echo | $hstcc -E -dM - | grep -qs -e __riscv -e "__riscv_xlen 64"; then
+if echo | $hstcc -E -dM - | grep -qs -e "__riscv_xlen 64"; then
 	hst_word=64
 fi
 if [ "$hst_word" != "" ]; then
@@ -420,7 +420,7 @@ fi
 if echo | $tgtcc -E -dM - | grep -qs -e __ARCH_PPC64 -e __PPC64__; then
 	tgt_word=64
 fi
-if echo | $tgtcc -E -dM - | grep -qs -e __riscv -e "__riscv_xlen 64"; then
+if echo | $tgtcc -E -dM - | grep -qs -e "__riscv_xlen 64"; then
 	tgt_word=64
 fi
 if [ "$tgt_word" != "" ]; then
