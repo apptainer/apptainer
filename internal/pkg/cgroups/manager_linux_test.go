@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -23,6 +23,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 )
 
 // This file contains tests that will run under cgroups v1 & v2, and test utility functions.
@@ -59,6 +60,9 @@ func runCgroupfsTests(t *testing.T, tests CgroupTests) {
 
 func runSystemdTests(t *testing.T, tests CgroupTests) {
 	t.Run("systemd", func(t *testing.T) {
+		if !fs.IsDir("/run/systemd/system") {
+			t.Skip("systemd not running as init on this host")
+		}
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				tt.testFunc(t, true)

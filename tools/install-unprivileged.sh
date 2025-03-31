@@ -342,7 +342,11 @@ elif [ "$DIST" = el8 ]; then
 		OSUTILS="$OSUTILS fuse-libs e2fsprogs-libs e2fsprogs"
 	fi
 elif [[ "$DIST" == suse20* ]] || [ "$DIST" = "opensuse-tumbleweed" ]; then
-	OSUTILS="$OSUTILS squashfs liblzo2-2 liblz4-1 libzstd1 libfuse3-3 $EXTRASUTILS $EPELUTILS"
+	FUSELIBSO=3
+	if [ "$DIST" = "opensuse-tumbleweed" ]; then
+		FUSELIBSO=4
+	fi
+	OSUTILS="$OSUTILS squashfs liblzo2-2 liblz4-1 libzstd1 libfuse3-$FUSELIBSO $EXTRASUTILS $EPELUTILS"
 	if $NEEDSFUSE2FS; then
 		OSUTILS="$OSUTILS fuse2fs"
 	fi
