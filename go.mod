@@ -1,6 +1,7 @@
 module github.com/apptainer/apptainer
 
 go 1.22.7
+toolchain go1.24.1
 
 require (
 	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2
@@ -44,7 +45,7 @@ require (
 	github.com/sylabs/json-resp v0.9.4
 	github.com/vbauerster/mpb/v8 v8.9.1
 	golang.org/x/crypto v0.33.0
-	golang.org/x/sys v0.30.0
+	golang.org/x/sys v0.31.0
 	golang.org/x/term v0.29.0
 	golang.org/x/text v0.22.0
 	gopkg.in/yaml.v3 v3.0.1
