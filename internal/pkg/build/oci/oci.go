@@ -41,6 +41,10 @@ type GoArch struct {
 }
 
 var ArchMap = map[string]GoArch{
+	"arm64": {
+		Arch: "arm64",
+		Var:  "",
+	},
 	"amd64": {
 		Arch: "amd64",
 		Var:  "",
@@ -266,7 +270,7 @@ func ConvertArch(arch, archVariant string) (string, error) {
 	switch arch {
 	case "arm64":
 		if archVariant == "" {
-			return "arm64v8", nil
+			return "arm64", nil
 		}
 		tmpArch := ""
 		if strings.HasPrefix(archVariant, "v") {

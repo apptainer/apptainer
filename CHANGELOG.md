@@ -17,6 +17,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   older CPUs, although it can have a cost in performance on newer CPUs.
   It is still possible to set `GOAMD64` to a newer microarchitecture (v2+).
   For instance RHEL 9 uses v2 and RHEL 10 uses v3 as their default values.
+- Fix a bug introduced in 1.4.0 that caused arm64 to be mis-converted to arm64v8
+  and resulted in a failure when pulling OCI containers.
 
 Changes since 1.4.0
 

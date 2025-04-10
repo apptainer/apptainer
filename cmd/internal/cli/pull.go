@@ -24,6 +24,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/client/shub"
 	"github.com/apptainer/apptainer/internal/pkg/ociimage"
+	"github.com/apptainer/apptainer/internal/pkg/ociplatform"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/pkg/cmdline"
@@ -309,6 +310,11 @@ func pullRun(cmd *cobra.Command, args []string) {
 			sylog.Fatalf("While processing the arch and arch variant: %v", err)
 			return
 		}
+		platform, err := ociplatform.PlatformFromArch(arch)
+		if err != nil {
+			sylog.Fatalf("While processing arch and platform: %v", err)
+			return
+		}
 		pullOpts := oci.PullOptions{
 			TmpDir:      tmpDir,
 			OciAuth:     ociAuth,
@@ -317,7 +323,7 @@ func pullRun(cmd *cobra.Command, args []string) {
 			NoCleanUp:   buildArgs.noCleanUp,
 			Pullarch:    arch,
 			ReqAuthFile: reqAuthFile,
-			Platform:    getOCIPlatform(),
+			Platform:    *platform,
 		}
 
 		_, err = oci.PullToFile(ctx, imgCache, pullTo, pullFrom, pullSandbox, pullOpts)
