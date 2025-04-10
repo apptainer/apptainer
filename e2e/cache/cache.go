@@ -293,7 +293,8 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 	)
 
 	shamap := map[string]string{
-		"arm64":      "b118e86313b8da65a597ae0f773fb7cac49fac8e6666147a9443b172288c5306",
+		"arm64":      "ee74dfacff0fba9ec53b5f48dca94b1716b4e176425cb174fb1b58e973746ef8",
+		"arm64v8":    "b118e86313b8da65a597ae0f773fb7cac49fac8e6666147a9443b172288c5306",
 		"amd64":      "f38acf33dd020a91d4673e16c6ab14048b00a5fd83e334edd8b33d339103cf83",
 		"arm32v6":    "9fe584fc821b9ceaf4e04cd21ed191dfa553517728da94e3f50632523b3ab374",
 		"amd64uri":   "82e895f183a2f926f72ad8d28c3c36444ce37de4f9e1efeba35f4ed1643232d6",
@@ -358,6 +359,16 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 
 	c.env.RunApptainer(
 		t,
+		e2e.AsSubtest("pull arm64 image"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", "--arch", "arm64", "--arch-variant", "v8", sifname, "docker://alpine:3.6"}...),
+		e2e.ExpectExit(0),
+	)
+	ensureCachedWithSha(t, cacheDir, shamap["arm64v8"])
+
+	c.env.RunApptainer(
+		t,
 		e2e.AsSubtest("pull arm32v6 image"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
@@ -367,7 +378,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 	ensureCachedWithSha(t, cacheDir, shamap["arm32v6"])
 
 	files = retrieveFileNames(t, cacheDir)
-	if len(files) != 3 {
+	if len(files) != 4 {
 		t.Fatalf("Unexpected cache files: %v", files)
 	}
 
@@ -392,7 +403,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 	ensureCachedWithSha(t, cacheDir, shamap["arm64v8uri"])
 
 	files = retrieveFileNames(t, cacheDir)
-	if len(files) != 5 {
+	if len(files) != 6 {
 		t.Fatalf("Unexpected cache files: %v", files)
 	}
 
@@ -452,7 +463,7 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 	)
 
 	files = retrieveFileNames(t, cacheDir)
-	if len(files) != 5 {
+	if len(files) != 6 {
 		t.Fatalf("Unexpected cache files: %v", files)
 	}
 }
