@@ -2725,7 +2725,7 @@ func (c *container) prepareNetworkSetup(system *mount.System, pid int) (func(con
 	}
 
 	allowedNetUnpriv := false
-	if euid != 0 && !forceFakerootNet {
+	if euid != 0 && !forceFakerootNet && !c.userNS {
 		// Is the user permitted in the list of unpriv users / groups permitted to use CNI?
 		allowedNetUser, err := user.UIDInList(euid, c.engine.EngineConfig.File.AllowNetUsers)
 		if err != nil {
