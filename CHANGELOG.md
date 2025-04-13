@@ -17,6 +17,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   For instance RHEL 9 uses v2 and RHEL 10 uses v3 as their default values.
 - Add a clear error message if someone tries to use privileged network options
   while not using setuid mode.
+- Fix a bug introduced in 1.4.0 that caused arm64 to be mis-converted to arm64v8
+  and resulted in a failure when pulling OCI containers.
 
 Changes since 1.4.0
 

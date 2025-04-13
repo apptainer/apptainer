@@ -357,7 +357,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 		sylog.Fatalf("While processing the arch and arch variant: %v", err)
 		return
 	}
-	dp, err := ociplatform.DefaultPlatform()
+	dp, err := ociplatform.PlatformFromArch(arch)
 	if err != nil {
 		sylog.Fatalf("%v", err)
 	}
