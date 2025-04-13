@@ -68,7 +68,7 @@ func getDockerImage(ctx context.Context, src string, tOpts *TransportOptions, rt
 // getOCIImage retrieves an image from a layout ref provided in <dir>[@digest] format.
 // If no digest is provided, and there is only one image in the layout, it will be returned.
 // A digest must be specified when retrieving an image from a layout containing multiple images.
-func getOCIImage(src string) (v1.Image, error) {
+func getOCIImage(src string, tOpts *TransportOptions) (v1.Image, error) {
 	refParts := strings.SplitN(src, "@", 2)
 
 	lp, err := layout.FromPath(refParts[0])
@@ -94,7 +94,15 @@ func getOCIImage(src string) (v1.Image, error) {
 		return nil, fmt.Errorf("must specify a digest - layout contains multiple images")
 	}
 	if len(refParts) == 1 {
-		return lp.Image(im.Manifests[0].Digest)
+		mf := im.Manifests[0]
+		if mf.MediaType.IsIndex() {
+			ii, err := ii.ImageIndex(mf.Digest)
+			if err != nil {
+				return nil, err
+			}
+			return getPlatformImage(ii, tOpts.Platform)
+		}
+		return lp.Image(mf.Digest)
 	}
 
 	for _, mf := range im.Manifests {
@@ -105,6 +113,35 @@ func getOCIImage(src string) (v1.Image, error) {
 	}
 
 	return nil, fmt.Errorf("image %q not found in layout", src)
+}
+
+func getPlatformImage(ii v1.ImageIndex, platform v1.Platform) (v1.Image, error) {
+	im, err := ii.IndexManifest()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, mf := range im.Manifests {
+		// skip attestation manifest
+		if mf.Platform.OS == "unknown" && mf.Platform.Architecture == "unknown" {
+			continue
+		}
+		sylog.Debugf("%v =? %v", mf.Digest.String(), mf.Platform.String())
+		if mf.Platform.Satisfies(platform) {
+			image, err := ii.Image(mf.Digest)
+			if err != nil {
+				return nil, err
+			}
+			// check that blob exists
+			_, err = image.ConfigFile()
+			if err != nil {
+				return nil, fmt.Errorf("%s image not found in blobs", platform)
+			}
+			return image, nil
+		}
+	}
+
+	return nil, fmt.Errorf("%s image not found in index", platform)
 }
 
 func getDaemonImage(ctx context.Context, src string, tOpts *TransportOptions) (v1.Image, error) {
@@ -157,7 +194,7 @@ func (ss SourceSink) Image(ctx context.Context, ref string, tOpts *TransportOpti
 	case TarballSourceSink:
 		return tarball.ImageFromPath(ref, nil)
 	case OCISourceSink:
-		return getOCIImage(ref)
+		return getOCIImage(ref, tOpts)
 	case DaemonSourceSink:
 		return getDaemonImage(ctx, ref, tOpts)
 	case UnknownSourceSink:
