@@ -598,4 +598,6 @@ var validHeaders = map[string]bool{
 	"fingerprints": true,
 	"confurl":      true,
 	"setopt":       true,
+	"frontend":     true,
+	"filename":     true,
 }
