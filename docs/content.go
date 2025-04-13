@@ -56,6 +56,7 @@ Enterprise Performance Computing (EPC)`
   formats exist:
 
       def file  : This is a recipe for building a container (examples below)
+      buildkit:   A build context directory, containing a Dockerfile to build
       directory:  A directory structure containing a (ch)root file system
       image:      A local image on your machine (will convert to sif if
                   it is legacy format)
