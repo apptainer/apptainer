@@ -143,6 +143,25 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 	}
 	defer os.Remove(tmpfile.Name())
 
+	env := os.Environ()
+	cfgdir, err := os.MkdirTemp("", "docker-config-*")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(cfgdir)
+	cfgfile := filepath.Join(cfgdir, "config.json")
+	if cp.topts.AuthConfig != nil {
+		cfg, err := cp.topts.AuthConfig.MarshalJSON()
+		if err != nil {
+			return err
+		}
+		err = os.WriteFile(cfgfile, cfg, 0o600)
+		if err != nil {
+			return err
+		}
+	}
+	env = append(env, fmt.Sprintf("DOCKER_CONFIG=%s", cfgdir))
+
 	platform := cp.topts.Platform.String()
 
 	buildargs := []string{
@@ -155,6 +174,7 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 		"--output", fmt.Sprintf("type=oci,dest=%s", tmpfile.Name()),
 	}
 	cmd := exec.CommandContext(ctx, "buildctl", buildargs...)
+	cmd.Env = env
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
