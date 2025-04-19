@@ -17,6 +17,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"strings"
 
 	build_oci "github.com/apptainer/apptainer/internal/pkg/build/oci"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
@@ -33,8 +34,10 @@ import (
 type BuildKitConveyorPacker struct {
 	OCIConveyorPacker
 	context   string
+	target    string
 	frontend  string
 	filename  string
+	buildargs map[string]string
 }
 
 // Get just stores the source
@@ -81,6 +84,7 @@ func (cp *BuildKitConveyorPacker) Get(_ context.Context, b *types.Bundle) (err e
 	if err != nil {
 		return err
 	}
+	cp.target = b.Recipe.Header["target"]
 	cp.frontend = b.Recipe.Header["frontend"]
 	if cp.frontend == "" {
 		cp.frontend = "dockerfile.v0"
@@ -88,6 +92,14 @@ func (cp *BuildKitConveyorPacker) Get(_ context.Context, b *types.Bundle) (err e
 	cp.filename = b.Recipe.Header["filename"]
 	if cp.filename == "" {
 		cp.filename = "Dockerfile"
+	}
+	cp.buildargs = map[string]string{}
+	args := b.Recipe.Header["buildargs"]
+	for _, pair := range strings.Split(args, " ") {
+		fields := strings.SplitN(pair, "=", 2)
+		if len(fields) == 2 {
+			cp.buildargs[fields[0]] = fields[1]
+		}
 	}
 
 	return nil
@@ -171,8 +183,21 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 		"--local", fmt.Sprintf("dockerfile=%s", cp.context),
 		"--opt", fmt.Sprintf("filename=%s", cp.filename),
 		"--opt", fmt.Sprintf("platform=%s", platform),
-		"--output", fmt.Sprintf("type=oci,dest=%s", tmpfile.Name()),
 	}
+	if cp.target != "" {
+		buildargs = append(buildargs,
+			"--opt", fmt.Sprintf("target=%s", cp.target),
+		)
+	}
+	for key, val := range cp.buildargs {
+		buildargs = append(buildargs,
+			"--opt", fmt.Sprintf("build-arg:%s=%s", key, val),
+		)
+	}
+	buildargs = append(buildargs,
+		"--output", fmt.Sprintf("type=oci,dest=%s", tmpfile.Name()),
+	)
+
 	cmd := exec.CommandContext(ctx, "buildctl", buildargs...)
 	cmd.Env = env
 	cmd.Stderr = os.Stderr
