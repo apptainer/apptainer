@@ -109,6 +109,10 @@ type Options struct {
 	Binds []string
 	// whether using gocryptfs to build and run encrypted containers
 	Unprivilege bool
+	// Tag info (from RepoTags)
+	Tag string
+	// Digest info (from RepoDigests)
+	Digest string
 	// Arch info
 	Arch string
 	// Authentication file for registry credentials

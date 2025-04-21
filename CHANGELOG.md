@@ -7,6 +7,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.5.x changes
 
+- Record image digest metadata (sha256 from `RepoDigests`), for OCI registry images.
+  Also add the image name (ref) of the image from "docker", with registry and tag.
+  This is useful for traceability, when using `docker.io` or a tag like `latest`.
+  Unfortunately the feature does not work with "docker-archive" or "docker-daemon".
+
 ## v1.4.x changes
 
 - Check for existence of `/run/systemd/system` when verifying cgroups can be
