@@ -176,6 +176,12 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 
 	platform := cp.topts.Platform.String()
 
+	reffile, err := os.CreateTemp("", "buildkit-*.txt")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(reffile.Name())
+
 	buildargs := []string{
 		"build",
 		fmt.Sprintf("--frontend=%s", cp.frontend),
@@ -196,11 +202,33 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 	}
 	buildargs = append(buildargs,
 		"--output", fmt.Sprintf("type=oci,dest=%s", tmpfile.Name()),
+		"--ref-file", reffile.Name(),
 	)
 
 	cmd := exec.CommandContext(ctx, "buildctl", buildargs...)
 	cmd.Env = env
 	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	buildref, err := os.ReadFile(reffile.Name())
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(filepath.Join(cp.b.RootfsPath, ".singularity.d"), 0o755)
+	if err != nil {
+		return err
+	}
+	buildlog, err := os.OpenFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/buildkit_build.log"), os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		return err
+	}
+	defer buildlog.Close()
+	cmd = exec.CommandContext(ctx, "buildctl", "debug", "logs", string(buildref))
+	cmd.Stdout = buildlog
 	err = cmd.Run()
 	if err != nil {
 		return err

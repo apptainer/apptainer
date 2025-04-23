@@ -15,6 +15,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   variable. The variables GOOS, GOARCH and GOARM are only used when building.
 - Add new bootstrap `buildkit:` (and `buildkit:` URL) for building SIF images
   directly from Dockerfile, without having to use Docker/Podman but only BuildKit.
+  The full buildkit log file is included in the image, for traceability.
+  It is also showed on the console, as a progress update while building.
 
 ## v1.4.x changes
 
