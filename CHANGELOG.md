@@ -26,6 +26,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   a comma-separated list of device IDs (e.g., `"1,2,3"`) or "all" to
   import all of them.  The default if `HABANA_VISIBLE_DEVICES` is not
   set is "all".
+- Add support for downloading SIF images from an IPFS peer-to-peer cluster using
+  a HTTP gateway (similar to the existing support for IPFS in the `curl` tool).
+  The location of the address can set in the `IPFS_GATEWAY` environment variable,
+  any local gateway will be picked up automatically (e.g. `http://127.0.0.1:8080`)
 
 ## v1.4.x changes
 
