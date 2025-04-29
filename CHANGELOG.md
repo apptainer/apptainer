@@ -28,6 +28,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   set is "all".
 - debugsource rpms are now generated in addition to debuginfo rpms on
   RHEL-derived and Fedora operating systems.
+- Create reproducible SIF images, if the environment variable `SOURCE_DATE_EPOCH`
+  has been set (it is a Unix timestamp in seconds, in the UTC timezone).
 
 ## v1.4.x changes
 
