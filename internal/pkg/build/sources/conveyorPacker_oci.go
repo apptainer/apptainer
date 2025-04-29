@@ -194,6 +194,13 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 		imgCache = cp.b.Opts.ImgCache
 	}
 
+	tag, digest, err := build_oci.RepoDigest(ctx, ref, cp.topts)
+	if err != nil {
+		return err
+	}
+	b.Opts.Tag = tag
+	b.Opts.Digest = digest
+
 	// Fetch the image into a temporary containers/image oci layout dir.
 	cp.srcImg, err = ociimage.FetchToLayout(ctx, cp.topts, imgCache, ref, b.TmpDir)
 	if err != nil {

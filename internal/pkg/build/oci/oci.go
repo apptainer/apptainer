@@ -171,6 +171,23 @@ func parseURI(uri string) (types.ImageReference, *GoArch, error) {
 	return imgRef, arch, err
 }
 
+// RepoDigest returns the (tag and) digest of a docker image
+func RepoDigest(ctx context.Context, uri string, topts *ociimage.TransportOptions) (tag string, digest string, err error) {
+	ref, _, err := parseURI(uri)
+	if err != nil {
+		return "", "", fmt.Errorf("unable to parse image name %v: %v", uri, err)
+	}
+	if ref.Transport().Name() != "docker" {
+		return "", "", nil
+	}
+	// nolint:staticcheck
+	d, err := docker.GetDigest(ctx, ociimage.SystemContextFromTransportOptions(topts), ref)
+	if err != nil {
+		return "", "", err
+	}
+	return ref.DockerReference().String(), d.String(), nil
+}
+
 // ImageDigest obtains the digest of a uri's manifest
 func ImageDigest(ctx context.Context, uri string, topts *ociimage.TransportOptions) (digest string, err error) {
 	ref, arch, err := parseURI(uri)

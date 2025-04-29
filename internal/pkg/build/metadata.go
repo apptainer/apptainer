@@ -341,6 +341,12 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 		}
 	}
 
+	// Digest of image
+	if b.Opts.Tag != "" && b.Opts.Digest != "" {
+		labels["org.opencontainers.image.base.name"] = b.Opts.Tag
+		labels["org.opencontainers.image.base.digest"] = b.Opts.Digest
+	}
+
 	// Architecture of build
 	buildarch := oci.ArchMap[b.Opts.Arch]
 	labels["org.label-schema.build-arch"] = buildarch.Arch
