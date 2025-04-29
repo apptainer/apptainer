@@ -317,6 +317,10 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 
 	// build date and time, lots of time formatting
 	currentTime := time.Now()
+	if !b.SourceDateEpoch.IsZero() {
+		// create reproducible timestamp
+		currentTime = b.SourceDateEpoch
+	}
 	year, month, day := currentTime.Date()
 	date := strconv.Itoa(day) + `_` + month.String() + `_` + strconv.Itoa(year)
 	hours, minutes, secs := currentTime.Clock()

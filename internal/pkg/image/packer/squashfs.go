@@ -71,6 +71,8 @@ func (s Squashfs) create(files []string, dest string, opts []string) error {
 		args = append(args, "-quiet", "-percentage")
 	}
 
+	// mksquashfs -reproducible automatically clamps everything to SOURCE_DATE_EPOCH
+	// (note: -reproducible is the default, there is also a -not-reproducible option)
 	sylog.Verbosef("Executing %s %s", s.MksquashfsPath, strings.Join(args, " "))
 	cmd := exec.Command(s.MksquashfsPath, args...)
 	if sylog.GetLevel() >= int(sylog.VerboseLevel) {

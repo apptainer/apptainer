@@ -17,8 +17,10 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/apptainer/apptainer/e2e/ecl"
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -2349,6 +2351,63 @@ func (c imgBuildTests) buildWithAuthTester(t *testing.T, withCustomAuthFile bool
 	}
 }
 
+func (c imgBuildTests) reproducibleBuild(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	tmpdir, cleanup := c.tempDir(t, "reproducible-build")
+
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup()
+		}
+	})
+	liDefFile := e2e.PrepareDefFile(e2e.DefFileDetails{
+		Bootstrap: "localimage",
+		From:      c.env.ImagePath,
+	})
+	t.Cleanup(func() {
+		if !t.Failed() {
+			os.Remove(liDefFile)
+		}
+	})
+
+	sde := time.Now()
+
+	img1 := path.Join(tmpdir, "test1.sif")
+	img2 := path.Join(tmpdir, "test2.sif")
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs(img1, liDefFile),
+		e2e.WithEnv(append(os.Environ(), fmt.Sprintf("SOURCE_DATE_EPOCH=%d", sde.Unix()))),
+		e2e.ExpectExit(0),
+	)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs(img2, liDefFile),
+		e2e.WithEnv(append(os.Environ(), fmt.Sprintf("SOURCE_DATE_EPOCH=%d", sde.Unix()))),
+		e2e.ExpectExit(0),
+	)
+
+	bin1, err := os.ReadFile(img1)
+	if err != nil {
+		log.Fatal(err)
+	}
+	bin2, err := os.ReadFile(img2)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(bin1, bin2) {
+		t.Errorf("unreproducible sifs")
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := imgBuildTests{
@@ -2396,5 +2455,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"issue 1812":                             c.issue1812,                            // https://github.com/sylabs/singularity/issues/1812
 		"auth":                                   np(c.buildWithAuth),                    // build with custom auth file
 		"issue 2607":                             c.issue2607,                            // https://github.com/sylabs/singularity/issues/2607
+		"reproducible build":                     c.reproducibleBuild,                    // build sifs as reproducible
 	}
 }

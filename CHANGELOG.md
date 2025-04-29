@@ -33,6 +33,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   a HTTP gateway (similar to the existing support for IPFS in the `curl` tool).
   The location of the address can set in the `IPFS_GATEWAY` environment variable,
   any local gateway will be picked up automatically (e.g. `http://127.0.0.1:8080`)
+- Create reproducible SIF images, if the environment variable `SOURCE_DATE_EPOCH`
+  has been set (it is a Unix timestamp given as seconds, in the UTC timezone).
 
 ## v1.4.x changes
 
