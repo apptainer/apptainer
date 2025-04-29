@@ -14,9 +14,14 @@ import (
 	"fmt"
 	"net"
 	"net/rpc"
+	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc/client"
+	"github.com/apptainer/apptainer/internal/pkg/util/crypt"
+	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
+	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/pkg/errors"
 )
 
 // CreateContainer is called from master process to prepare container
@@ -36,6 +41,18 @@ func (e *EngineOperations) CreateContainer(ctx context.Context, pid int, rpcConn
 		return fmt.Errorf("engineName configuration doesn't match runtime name")
 	}
 
+	// force the user information for the current (master) process to avoid
+	// user database lookup with potential error, see:
+	// https://github.com/apptainer/apptainer/issues/2640
+	user.SetCurrentOriginal(&user.User{
+		Name:  e.EngineConfig.JSON.UserInfo.Username,
+		UID:   uint32(e.EngineConfig.JSON.UserInfo.UID),
+		GID:   uint32(e.EngineConfig.JSON.UserInfo.GID),
+		Gecos: e.EngineConfig.JSON.UserInfo.Gecos,
+		Dir:   e.EngineConfig.JSON.UserInfo.Home,
+		Shell: e.EngineConfig.JSON.UserInfo.Shell,
+	})
+
 	if e.EngineConfig.GetInstanceJoin() {
 		return nil
 	}
@@ -48,5 +65,18 @@ func (e *EngineOperations) CreateContainer(ctx context.Context, pid int, rpcConn
 		return fmt.Errorf("failed to initialize RPC client")
 	}
 
-	return create(ctx, e, rpcOps, pid)
+	if err := create(ctx, e, rpcOps, pid); err != nil {
+		if strings.Contains(err.Error(), crypt.ErrInvalidPassphrase.Error()) {
+			sylog.Debugf("%s", err)
+			return errors.New("failed to decrypt, ensure you have supplied appropriate key material")
+		}
+
+		if strings.Contains(err.Error(), "mount hook function failure") && strings.Contains(err.Error(), "permission denied") {
+			sylog.Infof("Try appending ':ro' to your overlay image or using '--fakeroot'")
+		}
+
+		return err
+	}
+
+	return nil
 }
