@@ -1,61 +1,134 @@
 BootStrap: docker
-From: rockylinux:8
+From: rockylinux:9
 
 %post
     # Set build time env variable
     NOW=`date`
     echo "export NOW=\"${NOW}\"" >> $APPTAINER_ENVIRONMENT
 
-    # Install build dependencies
-    dnf -y install cryptsetup gcc git golang libseccomp-devel libuuid-devel make rpm-build wget
+    # Install basic tools for compiling
+    dnf groupinstall -y 'Development Tools'
 
-    # Build/Install alien package converter
-    dnf -y install 'dnf-command(config-manager)'
-    dnf config-manager --set-enabled powertools
-    dnf -y install epel-release perl
-    dnf -y install debhelper dpkg-dev fakeroot
-    dnf -y install alien
+    # Ensure EPEL repository is available
+    dnf install -y epel-release
+
+    # Install RPM packages for dependencies
+    dnf install -y libseccomp-devel fakeroot cryptsetup wget
+
+    # For including libsubid support, use --enablerepo=devel for el8 and el9 but not for fedora
+    dnf --enablerepo=devel install -y shadow-utils-subid-devel
+
+    # Compiling dependent FUSE-based packages
+    dnf install -y fuse3-devel lzo-devel lz4-devel
+
+    # Building & Installing from RPM
+    dnf install -y rpm-build golang
+
+    # Install debian package build tools
+    dnf install -y dpkg
+
+    # Generate template debian control file
+    mkdir -p /template
+    cat > /template/control <<EOF
+Package:
+Version:
+Architecture:
+Maintainer:
+Description: Converted package from RPM
+EOF
+
+%environment
+    export LANG=C.UTF-8
+    export VERSION=$*
+    export ROOT_DIR=/tmp
+    export WORK_DIR=$(mktemp -d -p "$ROOT_DIR")
+    export OUTDIR=$(pwd)
 
 %runscript
+    # set -e
     uname -r
-    cat /etc/centos-release 
+    cat /etc/os-release 
     echo "Container created: $NOW"
-    echo "Apptainer build target: $* "
-    export EL_VERSION=8
-    export VERSION=$*
-    export TMP_DIR=$(mktemp -d -u -p .)
-    curl -L -o apptainer-${VERSION}.tar.gz https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
-    rpmbuild --define "_topdir `pwd`/${TMP_DIR}" -tb apptainer-${VERSION}.tar.gz
-    cp ./${TMP_DIR}/RPMS/x86_64/apptainer-${VERSION}-1.el${EL_VERSION}.x86_64.rpm .
-    fakeroot alien apptainer-${VERSION}-1.el${EL_VERSION}.x86_64.rpm
-    chmod -R 777 ./${TMP_DIR}
-    rm -rf ./${TMP_DIR}
-    rm apptainer-${VERSION}.tar.gz
+    echo "Apptainer build target: $VERSION "
+
+    # Move to work directory
+    cd "${WORK_DIR}"
+
+    # Fetch the source
+    wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
+
+    # Extract scripts and spec
+    tar xvf apptainer-${VERSION}.tar.gz
+
+    # Download dependencies
+    cd apptainer-${VERSION}
+    ./scripts/download-dependencies ..
+    cd ..
+
+    # Build rpm
+    rpmbuild --define "_topdir `pwd`" -tb apptainer-${VERSION}.tar.gz
+
+    # Build .deb packages
+    cd RPMS/x86_64
+    # unpack rpms
+    for rpm in *.rpm; do
+        mkdir -p "${rpm%.rpm}"
+        cd "${rpm%.rpm}"
+        rpm2cpio "../$rpm" | cpio -idmv
+        cd ..
+    done
+    # generate control file
+    for rpm in *.rpm; do
+        namever="${rpm%.rpm}"
+        name=$(rpm -qp --qf "%{NAME}\n" "$rpm")
+        ver=$(rpm -qp --qf "%{VERSION}-%{RELEASE}\n" "$rpm" | sed 's/\.el[0-9]\+.*$//; s/\.fc[0-9]\+.*$//')
+        arch=$(dpkg --print-architecture)
+        mkdir -p "$namever/DEBIAN"
+        sed \
+            -e "s/^Package:.*/Package: $name/" \
+            -e "s/^Version:.*/Version: $ver/" \
+            -e "s/^Architecture:.*/Architecture: $arch/" \
+            -e "s/^Maintainer:.*/Maintainer: $(whoami)/" \
+            /template/control > "$namever/DEBIAN/control"
+    done
+    # build .deb packages
+    for dir in */; do
+        [ -f "$dir/DEBIAN/control" ] && dpkg-deb --build --root-owner-group "$dir"
+    done
+
+    # Copy packages to original directory
+    cp *.rpm *.deb "$OUTDIR"
+
+    # Remove work directory
+    rm -rf "$WORK_DIR"
 
 %help
 
     SUMMARY
-    This is a build container that generates installable apptainer packages for apptainer v1.x.x .
-    The container will output a deb and rpm in the current directory.
+    This is a build container that generates installable packages for apptainer v1.x.x .
+    The container will output a deb and rpm packages to the current directory.
 
     USAGE
 
         ./build-apptainer.sif {version}
 
-    	./build-apptainer.sif 1.0.0
+    	./build-apptainer.sif 1.4.0
 
     CHANGELOG
 
+    v1.0.3
+    Updated to match INSTALL.md
+
     v1.0.2
     changed CentOS to RockyLinux
-    
+
     v1.0.1
     changed PowerTools -> powertools
     removed manual alien build for rpm package
-    
+
     v1.0.0
     initial release
 
 %labels
     Author chrismmaggio
-    Version 1.0.2
+    Version 1.0.3

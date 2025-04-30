@@ -2,9 +2,9 @@
 
 ## Summary
 
-This is a build container that generates installable apptainer packages for
-apptainer v1.X.X. The container will output a deb and rpm in the current
-directory.
+This is a build container that generates installable packages for
+apptainer v1.x.x. The container will output deb and rpm packages
+in the current directory.
 
 ## Usage
 
