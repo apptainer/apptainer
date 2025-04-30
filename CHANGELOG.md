@@ -28,6 +28,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   while not using setuid mode.
 - Allow multi-arch oci-archive files that have a nested index with the manifest.
   This is the default format (both for Docker and OCI) when using `nerdctl save`.
+- Fix user database lookup in master process preventing instance from starting
+  correctly on systems using winbind.
 
 Changes since 1.4.0
 

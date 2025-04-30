@@ -11,18 +11,15 @@ package starter
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/metric"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
-	"github.com/apptainer/apptainer/internal/pkg/util/crypt"
 	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
 	signalutil "github.com/apptainer/apptainer/internal/pkg/util/signal"
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -53,15 +50,6 @@ func createContainer(ctx context.Context, rpcSocket int, containerPid int, e *en
 
 	err = e.CreateContainer(ctx, containerPid, rpcConn)
 	if err != nil {
-		if strings.Contains(err.Error(), crypt.ErrInvalidPassphrase.Error()) {
-			sylog.Debugf("%s", err)
-			err = errors.New("failed to decrypt, ensure you have supplied appropriate key material")
-		}
-
-		if strings.Contains(err.Error(), "mount hook function failure") && strings.Contains(err.Error(), "permission denied") {
-			sylog.Infof("Try appending ':ro' to your overlay image or using '--fakeroot'")
-		}
-
 		fatalChan <- fmt.Errorf("container creation failed: %s", err)
 		return
 	}
