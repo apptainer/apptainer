@@ -10,6 +10,8 @@
 package user
 
 import (
+	"sync/atomic"
+
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 )
 
@@ -54,14 +56,25 @@ func Current() (*User, error) {
 	return current()
 }
 
+var currentOriginalUser atomic.Pointer[User]
+
 // CurrentOriginal returns a pointer to User structure associated with the
 // original current user, if current user is inside a user namespace with a
 // custom user mappings, it will returns information about the original user
 // otherwise it returns information about the current user
 func CurrentOriginal() (*User, error) {
+	if u := currentOriginalUser.Load(); u != nil {
+		return u, nil
+	}
 	uid, err := namespaces.HostUID()
 	if err != nil {
 		return nil, err
 	}
 	return GetPwUID(uint32(uid))
+}
+
+// SetCurrentOriginal sets the current original user, used to set the
+// original user when user database lookup could fail.
+func SetCurrentOriginal(u *User) {
+	currentOriginalUser.Store(u)
 }
