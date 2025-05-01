@@ -9,7 +9,7 @@ in the current directory.
 ## Usage
 
 ```sh
-sudo apptainer build build-apptainer.sif build-singularity.def
+sudo apptainer build build-apptainer.sif build-apptainer.def
 
 ./build-apptainer.sif {version}
 
