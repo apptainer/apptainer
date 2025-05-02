@@ -45,7 +45,7 @@ EOF
     export OUTDIR=$(pwd)
 
 %runscript
-    # set -e
+    set -x
     uname -r
     cat /etc/os-release 
     echo "Container created: $NOW"
