@@ -1,8 +1,6 @@
 run:
   concurrency: 4
   timeout: 10m
-  issues.exclude-files:
-    - "internal/pkg/util/user/cgo_lookup_unix.go"
 
 linters:
   disable-all: true
