@@ -254,7 +254,7 @@ func (c ctx) testFuseSquashMount(t *testing.T) {
 	squashfile := fmt.Sprintf("%s/input.squashfs", tempDir)
 	_, err = exec.Command("mksquashfs", dataDir, squashfile).Output()
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf("%v", err.Error())
 	}
 
 	c.env.RunApptainer(
@@ -284,7 +284,7 @@ func (c ctx) testFuseExt3Mount(t *testing.T) {
 	ext3file := fmt.Sprintf("%s/input.img", tempDir)
 	_, err = exec.Command("mkfs.ext3", "-d", dataDir, ext3file, "64M").Output()
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf("%v", err.Error())
 	}
 
 	c.env.RunApptainer(
