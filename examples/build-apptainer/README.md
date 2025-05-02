@@ -9,9 +9,9 @@ in the current directory.
 ## Usage
 
 ```sh
-sudo apptainer build build-apptainer.sif build-apptainer.def
+apptainer build build-apptainer.sif build-apptainer.def
 
-./build-apptainer.sif {version}
+apptainer run build-apptainer.sif {version}
 
-./build-apptainer.sif 1.0.0
+apptainer run build-apptainer.sif 1.4.0
 ```
