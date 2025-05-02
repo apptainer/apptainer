@@ -7,6 +7,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.4.x changes
 
+Changes since 1.4.0
+
+- Update minimum go version to 1.23.6 now that it is current in el8 & el9.
 - Check for existence of `/run/systemd/system` when verifying cgroups can be
   used via systemd manager.
 - Compile gocryptfs with the default `GOAMD64` microarchitecture of the go
@@ -23,8 +26,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
   This is the default format (both for Docker and OCI) when using `nerdctl save`.
 - Fix user database lookup in master process preventing instance from starting
   correctly on systems using winbind.
-
-Changes since 1.4.0
 
 ## v1.4.0 - \[2025-03-18\]
 

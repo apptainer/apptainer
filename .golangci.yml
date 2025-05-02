@@ -1,7 +1,7 @@
 run:
   concurrency: 4
-  timeout: 3m
-  skip-files:
+  timeout: 10m
+  issues.exclude-files:
     - "internal/pkg/util/user/cgo_lookup_unix.go"
 
 linters:
