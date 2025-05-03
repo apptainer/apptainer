@@ -22,7 +22,7 @@ import (
 func init() {
 	// TODO - go 1.20 initializes seed randomly by default, so can drop this
 	// deprecated call in future.
-	rand.Seed(time.Now().UnixNano()) // nolint:staticcheck
+	rand.Seed(time.Now().UnixNano())
 }
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")

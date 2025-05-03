@@ -2450,9 +2450,9 @@ func (c *container) addLibsMount(system *mount.System) error {
 	if !c.engine.EngineConfig.File.UserBindControl {
 		msg := "Ignoring libraries bind request: user bind control disabled by system administrator"
 		if len(libraries) > 0 {
-			sylog.Warningf(msg)
+			sylog.Warningf("%s", msg)
 		} else {
-			sylog.Verbosef(msg)
+			sylog.Verbosef("%s", msg)
 		}
 		return nil
 	}
@@ -2515,9 +2515,9 @@ func (c *container) addFilesMount(system *mount.System) error {
 	if !c.engine.EngineConfig.File.UserBindControl {
 		msg := "Ignoring binaries bind request: user bind control disabled by system administrator"
 		if len(files) > 0 {
-			sylog.Warningf(msg)
+			sylog.Warningf("%s", msg)
 		} else {
-			sylog.Verbosef(msg)
+			sylog.Verbosef("%s", msg)
 		}
 		return nil
 	}

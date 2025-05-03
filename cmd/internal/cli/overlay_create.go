@@ -66,7 +66,7 @@ var OverlayCreateCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	RunE: func(_ *cobra.Command, args []string) error {
 		if err := apptainer.OverlayCreate(overlaySize, args[0], overlaySparse, isOverlayFakeroot, overlayDirs...); err != nil {
-			sylog.Fatalf(err.Error())
+			sylog.Fatalf("%v", err.Error())
 		}
 		return nil
 	},

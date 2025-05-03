@@ -133,7 +133,7 @@ var deleteImageCmd = &cobra.Command{
 		if !deleteForce {
 			y, err := interactive.AskYNQuestion("n", "Are you sure you want to delete %s (%s) [y/N] ", r, deleteImageArch)
 			if err != nil {
-				sylog.Fatalf(err.Error())
+				sylog.Fatalf("%v", err.Error())
 			}
 			if y == "n" {
 				return
