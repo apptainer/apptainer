@@ -11,8 +11,10 @@
 package sources
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,14 +32,18 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
-// BuildKitConveyorPacker only needs to hold the conveyor to have the needed data to pack
-type BuildKitConveyorPacker struct {
-	OCIConveyorPacker
+type buildkitOptions struct {
 	context   string
 	target    string
 	frontend  string
 	filename  string
 	buildargs map[string]string
+}
+
+// BuildKitConveyorPacker only needs to hold the conveyor to have the needed data to pack
+type BuildKitConveyorPacker struct {
+	OCIConveyorPacker
+	bk buildkitOptions
 }
 
 // Get just stores the source
@@ -79,26 +85,28 @@ func (cp *BuildKitConveyorPacker) Get(_ context.Context, b *types.Bundle) (err e
 	}
 	sylog.Debugf("Platform: %s", cp.topts.Platform)
 
-	cp.context = b.Recipe.Header["from"]
-	_, err = os.Stat(cp.context)
+	bk := &cp.bk
+
+	bk.context = b.Recipe.Header["from"]
+	_, err = os.Stat(bk.context)
 	if err != nil {
 		return err
 	}
-	cp.target = b.Recipe.Header["target"]
-	cp.frontend = b.Recipe.Header["frontend"]
-	if cp.frontend == "" {
-		cp.frontend = "dockerfile.v0"
+	bk.target = b.Recipe.Header["target"]
+	bk.frontend = b.Recipe.Header["frontend"]
+	if bk.frontend == "" {
+		bk.frontend = "dockerfile.v0"
 	}
-	cp.filename = b.Recipe.Header["filename"]
-	if cp.filename == "" {
-		cp.filename = "Dockerfile"
+	bk.filename = b.Recipe.Header["filename"]
+	if bk.filename == "" {
+		bk.filename = "Dockerfile"
 	}
-	cp.buildargs = map[string]string{}
+	bk.buildargs = map[string]string{}
 	args := b.Recipe.Header["buildargs"]
 	for _, pair := range strings.Split(args, " ") {
 		fields := strings.SplitN(pair, "=", 2)
 		if len(fields) == 2 {
-			cp.buildargs[fields[0]] = fields[1]
+			bk.buildargs[fields[0]] = fields[1]
 		}
 	}
 
@@ -148,6 +156,59 @@ func (cp *BuildKitConveyorPacker) Pack(ctx context.Context) (b *types.Bundle, er
 	return cp.b, nil
 }
 
+func buildkitBuild(ctx context.Context, env []string, platform, output string, opts buildkitOptions, buildlog io.Writer) error {
+	reffile, err := os.CreateTemp("", "buildkit-*.txt")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(reffile.Name())
+
+	args := []string{
+		"build",
+		fmt.Sprintf("--frontend=%s", opts.frontend),
+		"--local", fmt.Sprintf("context=%s", opts.context),
+		"--local", fmt.Sprintf("dockerfile=%s", opts.context),
+		"--opt", fmt.Sprintf("filename=%s", opts.filename),
+		"--opt", fmt.Sprintf("platform=%s", platform),
+	}
+	if opts.target != "" {
+		args = append(args,
+			"--opt", fmt.Sprintf("target=%s", opts.target),
+		)
+	}
+	for key, val := range opts.buildargs {
+		args = append(args,
+			"--opt", fmt.Sprintf("build-arg:%s=%s", key, val),
+		)
+	}
+	args = append(args,
+		"--output", fmt.Sprintf("type=oci,dest=%s", output),
+		"--ref-file", reffile.Name(),
+	)
+
+	cmd := exec.CommandContext(ctx, "buildctl", args...)
+	cmd.Env = env
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	buildref, err := os.ReadFile(reffile.Name())
+	if err != nil {
+		return err
+	}
+
+	cmd = exec.CommandContext(ctx, "buildctl", "debug", "logs", string(buildref))
+	cmd.Stdout = buildlog
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 	tmpfile, err := os.CreateTemp("/var/tmp", "buildkit-*.tar")
 	if err != nil {
@@ -176,47 +237,10 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 
 	platform := cp.topts.Platform.String()
 
-	reffile, err := os.CreateTemp("", "buildkit-*.txt")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(reffile.Name())
+	output := tmpfile.Name()
 
-	buildargs := []string{
-		"build",
-		fmt.Sprintf("--frontend=%s", cp.frontend),
-		"--local", fmt.Sprintf("context=%s", cp.context),
-		"--local", fmt.Sprintf("dockerfile=%s", cp.context),
-		"--opt", fmt.Sprintf("filename=%s", cp.filename),
-		"--opt", fmt.Sprintf("platform=%s", platform),
-	}
-	if cp.target != "" {
-		buildargs = append(buildargs,
-			"--opt", fmt.Sprintf("target=%s", cp.target),
-		)
-	}
-	for key, val := range cp.buildargs {
-		buildargs = append(buildargs,
-			"--opt", fmt.Sprintf("build-arg:%s=%s", key, val),
-		)
-	}
-	buildargs = append(buildargs,
-		"--output", fmt.Sprintf("type=oci,dest=%s", tmpfile.Name()),
-		"--ref-file", reffile.Name(),
-	)
-
-	cmd := exec.CommandContext(ctx, "buildctl", buildargs...)
-	cmd.Env = env
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	buildref, err := os.ReadFile(reffile.Name())
-	if err != nil {
-		return err
-	}
+	var imgCache *cache.Handle
+	var ref string
 
 	err = os.MkdirAll(filepath.Join(cp.b.RootfsPath, ".singularity.d"), 0o755)
 	if err != nil {
@@ -227,16 +251,13 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 		return err
 	}
 	defer buildlog.Close()
-	cmd = exec.CommandContext(ctx, "buildctl", "debug", "logs", string(buildref))
-	cmd.Stdout = buildlog
-	err = cmd.Run()
+
+	err := buildkitBuild(ctx, env, platform, output, cp.bk, buildlog)
 	if err != nil {
 		return err
 	}
 
-	var imgCache *cache.Handle
-
-	ref := "oci-archive:" + tmpfile.Name()
+	ref = "oci-archive:" + output
 
 	// Fetch the image into a temporary containers/image oci layout dir.
 	cp.srcImg, err = ociimage.FetchToLayout(ctx, cp.topts, imgCache, ref, cp.b.TmpDir)
