@@ -11,6 +11,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   Also add the image name (ref) of the image from "docker", with registry and tag.
   This is useful for traceability, when using `docker.io` or a tag like `latest`.
   Unfortunately the feature does not work with "docker-archive" or "docker-daemon".
+- Test if docker-archive is actually an oci-archive (since Docker version 25),
+  and if it is oci then use the OCI parser to avoid bugs in the Docker parser.
 
 ## v1.4.x changes
 
