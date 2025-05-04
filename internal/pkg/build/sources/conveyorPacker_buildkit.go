@@ -209,6 +209,45 @@ func buildkitBuild(ctx context.Context, env []string, platform, output string, o
 	return nil
 }
 
+func dockerBuild(ctx context.Context, env []string, platform, output string, opts buildkitOptions) error {
+	args := []string{
+		"build",
+		"--quiet", // output id
+		"--file", filepath.Join(opts.context, opts.filename),
+		"--platform", platform,
+		opts.context,
+	}
+	if opts.target != "" {
+		args = append(args,
+			"--target", opts.target,
+		)
+	}
+	for key, val := range opts.buildargs {
+		args = append(args,
+			"--build-arg", fmt.Sprintf("%s=%s", key, val),
+		)
+	}
+
+	buffer := bytes.Buffer{}
+	cmd := exec.CommandContext(ctx, "docker", args...)
+	cmd.Env = env
+	cmd.Stdout = &buffer
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	id := strings.TrimSuffix(buffer.String(), "\n")
+
+	cmd = exec.CommandContext(ctx, "docker", "save", "--output", output, id)
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 	tmpfile, err := os.CreateTemp("/var/tmp", "buildkit-*.tar")
 	if err != nil {
@@ -233,6 +272,18 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 			return err
 		}
 	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	err = os.Symlink(filepath.Join(home, ".docker", "cli-plugins"), filepath.Join(cfgdir, "cli-plugins"))
+	if err != nil {
+		return err
+	}
+	err = os.Symlink(filepath.Join(home, ".docker", "buildx"), filepath.Join(cfgdir, "buildx"))
+	if err != nil {
+		return err
+	}
 	env = append(env, fmt.Sprintf("DOCKER_CONFIG=%s", cfgdir))
 
 	platform := cp.topts.Platform.String()
@@ -242,22 +293,40 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 	var imgCache *cache.Handle
 	var ref string
 
-	err = os.MkdirAll(filepath.Join(cp.b.RootfsPath, ".singularity.d"), 0o755)
-	if err != nil {
-		return err
-	}
-	buildlog, err := os.OpenFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/buildkit_build.log"), os.O_CREATE|os.O_WRONLY, 0o644)
-	if err != nil {
-		return err
-	}
-	defer buildlog.Close()
-
-	err := buildkitBuild(ctx, env, platform, output, cp.bk, buildlog)
-	if err != nil {
-		return err
+	db := os.Getenv("DOCKER_BUILDKIT")
+	if _, err := exec.LookPath("buildctl"); err != nil {
+		// buildkit not found, use docker instead
+	        if _, err := exec.LookPath("docker"); err != nil {
+			return fmt.Errorf("neither %q nor %q could be found in the PATH, please install one of them to build", "buildctl", "docker")
+		}
+		db = "1"
 	}
 
-	ref = "oci-archive:" + output
+	if db == "" {
+		err = os.MkdirAll(filepath.Join(cp.b.RootfsPath, ".singularity.d"), 0o755)
+		if err != nil {
+			return err
+		}
+		buildlog, err := os.OpenFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/buildkit_build.log"), os.O_CREATE|os.O_WRONLY, 0o644)
+		if err != nil {
+			return err
+		}
+		defer buildlog.Close()
+
+		err = buildkitBuild(ctx, env, platform, output, cp.bk, buildlog)
+		if err != nil {
+			return err
+		}
+
+		ref = "oci-archive:" + output
+	} else {
+		err := dockerBuild(ctx, env, platform, output, cp.bk)
+		if err != nil {
+			return err
+		}
+
+		ref = "docker-archive:" + output
+	}
 
 	// Fetch the image into a temporary containers/image oci layout dir.
 	cp.srcImg, err = ociimage.FetchToLayout(ctx, cp.topts, imgCache, ref, cp.b.TmpDir)
