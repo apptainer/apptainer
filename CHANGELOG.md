@@ -26,6 +26,8 @@ Changes since 1.4.0
   This is the default format (both for Docker and OCI) when using `nerdctl save`.
 - Fix user database lookup in master process preventing instance from starting
   correctly on systems using winbind.
+- Test if docker-archive is actually an oci-archive (since Docker version 25),
+  and if it is oci then use the OCI parser to avoid bugs in the Docker parser.
 
 ## v1.4.0 - \[2025-03-18\]
 

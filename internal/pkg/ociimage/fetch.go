@@ -61,6 +61,20 @@ func cachedImage(ctx context.Context, imgCache *cache.Handle, srcImg v1.Image) (
 // subdirectory of the provided tmpDir. The caller is responsible for cleaning
 // up tmpDir.
 func FetchToLayout(ctx context.Context, tOpts *TransportOptions, imgCache *cache.Handle, imageURI, tmpDir string) (ggcrv1.Image, error) {
+	// docker-archive - First test if it is also an oci-archive, and if so use it.
+	//                  The newer format avoids go-containerregistry sha256 issues.
+	if strings.HasPrefix(imageURI, "docker-archive:") {
+		// docker-archive:<path>[:tag]
+		refParts := strings.SplitN(imageURI, ":", 3)
+		sylog.Debugf("Reading docker-archive %q", refParts[1])
+		oci, err := ociArchive(refParts[1])
+		if err != nil {
+			return nil, fmt.Errorf("error reading the docker archive file: %v", err)
+		}
+		if oci {
+			imageURI = strings.Replace(imageURI, "docker-archive:", "oci-archive:", 1)
+		}
+	}
 	// oci-archive - Perform a tar extraction first, and handle as an oci layout.
 	if strings.HasPrefix(imageURI, "oci-archive:") {
 		var tmpDir string
@@ -123,6 +137,61 @@ func FetchToLayout(ctx context.Context, tOpts *TransportOptions, imgCache *cache
 	rt.ProgressWait()
 
 	return OCISourceSink.Image(ctx, tmpLayout, tOpts, nil)
+}
+
+// Check if tar(gz) is really a oci-archive in addition to docker-archive
+func ociArchive(src string) (bool, error) {
+	f, err := os.Open(src)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	r := bufio.NewReader(f)
+	header, err := r.Peek(10) // read a few bytes without consuming
+	if err != nil {
+		return false, err
+	}
+	gzipped := strings.Contains(http.DetectContentType(header), "x-gzip")
+
+	if gzipped {
+		r, err := gzip.NewReader(f)
+		if err != nil {
+			return false, err
+		}
+		defer r.Close()
+	}
+
+	tr := tar.NewReader(r)
+
+	haveOciLayout := false
+	haveIndexJSON := false
+
+loop:
+	for {
+		header, err := tr.Next()
+		switch {
+		case err == io.EOF:
+			break loop
+
+		case err != nil:
+			return false, err
+
+		case header == nil:
+			continue
+		}
+
+		if header.Typeflag == tar.TypeReg {
+			if header.Name == "oci-layout" {
+				haveOciLayout = true
+			}
+			if header.Name == "index.json" {
+				haveIndexJSON = true
+			}
+		}
+	}
+
+	return haveOciLayout && haveIndexJSON, nil
 }
 
 // Perform a dumb tar(gz) extraction with no chown, id remapping etc.
