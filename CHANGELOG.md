@@ -28,6 +28,8 @@ Changes since 1.4.0
   correctly on systems using winbind.
 - Test if docker-archive is actually an oci-archive (since Docker version 25),
   and if it is oci then use the OCI parser to avoid bugs in the Docker parser.
+  Save the daemon-daemon references to a temporary docker-archive, to benefit
+  from the same improvements also for those references. Parse as oci-archive.
 
 ## v1.4.0 - \[2025-03-18\]
 
