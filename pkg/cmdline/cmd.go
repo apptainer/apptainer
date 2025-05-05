@@ -37,7 +37,7 @@ type warnDeprecated struct{}
 func (w *warnDeprecated) Write(b []byte) (n int, err error) {
 	s := string(b[:])
 	if strings.Contains(s, "has been deprecated") {
-		sylog.Warningf(s)
+		sylog.Warningf("%v", s)
 		return len(s), nil
 	}
 	// This is only supposed to be for the "Out" stream, but some

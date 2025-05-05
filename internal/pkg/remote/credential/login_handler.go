@@ -50,7 +50,7 @@ func init() {
 func ensurePassword(password string) (string, error) {
 	if password == "" {
 		question := "Password / Token: "
-		input, err := interactive.AskQuestionNoEcho(question)
+		input, err := interactive.AskQuestionNoEcho("%s", question)
 		if err != nil {
 			return "", fmt.Errorf("failed to read password: %s", err)
 		}

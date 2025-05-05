@@ -99,6 +99,7 @@ func lookupUserId(uid string) (*User, error) {
 	return lookupUnixUid(i)
 }
 
+//nolint
 func lookupUnixUid(uid int) (*User, error) {
 	var pwd C.struct_passwd
 	var result *C.struct_passwd
