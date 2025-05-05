@@ -11,6 +11,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   Also add the image name (ref) of the image from "docker", with registry and tag.
   This is useful for traceability, when using `docker.io` or a tag like `latest`.
   Unfortunately the feature does not work with "docker-archive" or "docker-daemon".
+- Add new bootstrap `buildkit:` for building SIF images directly from
+  Dockerfile, without having to use Docker (or Podman) but only BuildKit.
+  The full buildkit log file is included in the image, for traceability.
+  It is also showed on the console, as a progress update while building.
 
 ## v1.4.x changes
 
