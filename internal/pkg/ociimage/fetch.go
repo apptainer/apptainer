@@ -24,6 +24,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	progressClient "github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/docker/docker/client"
 	ggcrv1 "github.com/google/go-containerregistry/pkg/v1"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
@@ -61,6 +62,27 @@ func cachedImage(ctx context.Context, imgCache *cache.Handle, srcImg v1.Image) (
 // subdirectory of the provided tmpDir. The caller is responsible for cleaning
 // up tmpDir.
 func FetchToLayout(ctx context.Context, tOpts *TransportOptions, imgCache *cache.Handle, imageURI, tmpDir string) (ggcrv1.Image, error) {
+	// docker-daemon - Save archive to a temporary file, possibly in OCI format.
+	//                 This is to be able to use the new docker-archive code below.
+	if strings.HasPrefix(imageURI, "docker-daemon:") {
+		tmp, err := os.CreateTemp(tOpts.TmpDir, "*.tar")
+		if err != nil {
+			return nil, fmt.Errorf("could not create temporary docker archive: %v", err)
+		}
+
+		// docker-daemon:<name>[:tag|digest]
+		refParts := strings.SplitN(imageURI, ":", 3)
+		ref := refParts[1]
+		if len(refParts) == 3 {
+			ref = ref + ":" + refParts[2]
+		}
+		sylog.Debugf("Saving docker-daemon %q to %q", ref, tmp.Name())
+		err = saveArchive(ctx, tOpts, ref, tmp.Name())
+		if err != nil {
+			return nil, fmt.Errorf("error saving the docker archive file: %v", err)
+		}
+		imageURI = "docker-archive:" + tmp.Name()
+	}
 	// docker-archive - First test if it is also an oci-archive, and if so use it.
 	//                  The newer format avoids go-containerregistry sha256 issues.
 	if strings.HasPrefix(imageURI, "docker-archive:") {
@@ -137,6 +159,32 @@ func FetchToLayout(ctx context.Context, tOpts *TransportOptions, imgCache *cache
 	rt.ProgressWait()
 
 	return OCISourceSink.Image(ctx, tmpLayout, tOpts, nil)
+}
+
+// Save as tar from the docker-daemon, using the given image reference
+func saveArchive(ctx context.Context, tOpts *TransportOptions, src string, dst string) error {
+	var opt client.Opt
+	if tOpts != nil && tOpts.DockerDaemonHost != "" {
+		opt = client.WithHost(tOpts.DockerDaemonHost)
+	} else {
+		opt = client.WithHostFromEnv()
+	}
+	dc, err := client.NewClientWithOpts(opt, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+	r, err := dc.ImageSave(ctx, []string{src})
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+	w, err := os.OpenFile(dst, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		return err
+	}
+	defer w.Close()
+	_, err = io.Copy(w, r)
+	return err
 }
 
 // Check if tar(gz) is really a oci-archive in addition to docker-archive
