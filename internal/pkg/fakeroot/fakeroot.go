@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2021, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -23,6 +23,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/fs/lock"
+	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 const (
@@ -301,17 +302,6 @@ func (c *Config) DisableUser(username string) error {
 	return nil
 }
 
-func (c *Config) getMappingEntries(user *user.User) ([]*Entry, error) {
-	entries := make([]*Entry, 0)
-	for _, entry := range c.entries {
-		if entry.UID == user.UID {
-			entries = append(entries, entry)
-		}
-	}
-
-	return entries, nil
-}
-
 // GetUserEntry returns a user entry associated to a user and returns
 // an error if there is no entry for this user.
 func (c *Config) GetUserEntry(username string) (*Entry, error) {
@@ -369,6 +359,33 @@ var (
 	getPwUID = user.GetPwUID
 	getPwNam = user.GetPwNam
 )
+
+// GetIDRange determines UID/GID mappings based on configuration
+// file provided in path.
+func GetIDRange(path string, uid uint32) (*specs.LinuxIDMapping, error) {
+	config, err := GetConfig(path, false, getPwNam)
+	if err != nil {
+		return nil, err
+	}
+	defer config.Close()
+
+	userinfo, err := getPwUID(uid)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve user with UID %d: %s", uid, err)
+	}
+	e, err := config.GetUserEntry(userinfo.Name)
+	if err != nil {
+		return nil, err
+	}
+	if e.disabled {
+		return nil, fmt.Errorf("your fakeroot mapping has been disabled by the administrator")
+	}
+	return &specs.LinuxIDMapping{
+		ContainerID: 1,
+		HostID:      e.Start,
+		Size:        e.Count,
+	}, nil
+}
 
 // IsUIDMapped returns true if the given uid is mapped in SubUIDFile
 // and otherwise it returns false

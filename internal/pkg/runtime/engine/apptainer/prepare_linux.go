@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -25,9 +25,10 @@ import (
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/cgroups"
-	"github.com/apptainer/apptainer/internal/pkg/fakeroot"
+	fakerootutil "github.com/apptainer/apptainer/internal/pkg/fakeroot"
 	"github.com/apptainer/apptainer/internal/pkg/image/driver"
 	"github.com/apptainer/apptainer/internal/pkg/instance"
+	"github.com/apptainer/apptainer/internal/pkg/plugin"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/starter"
 	"github.com/apptainer/apptainer/internal/pkg/security"
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
@@ -40,6 +41,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/image"
+	fakerootcallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/fakeroot"
 	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -99,7 +101,7 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		if fakerootPath := e.EngineConfig.GetFakerootPath(); fakerootPath != "" {
 			// look for fakeroot again because the PATH used is
 			//  more restricted at this point than it was earlier
-			newPath, err := fakeroot.FindFake()
+			newPath, err := fakerootutil.FindFake()
 			if err != nil {
 				return fmt.Errorf("error finding fakeroot in privileged PATH: %v", err)
 			}
@@ -663,7 +665,7 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 		uid := uint32(os.Getuid())
 		gid := uint32(os.Getgid())
 
-		if !starterConfig.GetIsSUID() && fakeroot.IsUIDMapped(uid) {
+		if !starterConfig.GetIsSUID() && fakerootutil.IsUIDMapped(uid) {
 			// no SUID workflow, check if newuidmap/newgidmap are present
 			sylog.Verbosef("Fakeroot requested with unprivileged workflow, fallback to newuidmap/newgidmap")
 			sylog.Debugf("Search for newuidmap binary")
@@ -676,8 +678,21 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 			}
 		}
 
+		getIDRange := fakerootutil.GetIDRange
+
+		callbackType := (fakerootcallback.UserMapping)(nil)
+		callbacks, err := plugin.LoadCallbacks(callbackType)
+		if err != nil {
+			return fmt.Errorf("while loading plugins callbacks '%T': %s", callbackType, err)
+		}
+		if len(callbacks) > 1 {
+			return fmt.Errorf("multiple plugins have registered hook callback for fakeroot")
+		} else if len(callbacks) == 1 {
+			getIDRange = callbacks[0].(fakerootcallback.UserMapping)
+		}
+
 		e.EngineConfig.OciConfig.AddLinuxUIDMapping(uid, 0, 1)
-		idRange, err := fakeroot.GetUIDRange(uid)
+		idRange, err := getIDRange(fakerootutil.SubUIDFile, uid)
 		if err != nil {
 			return fmt.Errorf("could not use fakeroot: %s", err)
 		}
@@ -685,7 +700,7 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 		starterConfig.AddUIDMappings(e.EngineConfig.OciConfig.Linux.UIDMappings)
 
 		e.EngineConfig.OciConfig.AddLinuxGIDMapping(gid, 0, 1)
-		idRange, err = fakeroot.GetGIDRange(uid)
+		idRange, err = getIDRange(fakerootutil.SubGIDFile, uid)
 		if err != nil {
 			return fmt.Errorf("could not use fakeroot: %s", err)
 		}
