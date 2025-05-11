@@ -63,7 +63,7 @@ func ipfsGateway() (string, error) {
 
 // DownloadImage will retrieve an image from an ipfs URI,
 // saving it into the specified file
-func DownloadImage(ctx context.Context, filePath string, ipfsURL string) error {
+func DownloadImage(ctx context.Context, filePath string, ipfsURL string, outCid *string) error {
 	if !IsIpfsPullRef(ipfsURL) {
 		return fmt.Errorf("not a valid url reference: %s", ipfsURL)
 	}
@@ -108,6 +108,13 @@ func DownloadImage(ctx context.Context, filePath string, ipfsURL string) error {
 		s := buf.String()
 		return fmt.Errorf("Download did not succeed: %d %s\n\t",
 			res.StatusCode, s)
+	}
+
+	if etag := res.Header.Get("ETag"); etag != "" {
+		sylog.Debugf("ETag: %s", etag)
+		if outCid != nil {
+			*outCid = strings.Replace(etag, "\"", "", -1)
+		}
 	}
 
 	sylog.Debugf("OK response received, beginning body download\n")
@@ -188,7 +195,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 
 	if directTo != "" {
 		sylog.Infof("Downloading network image")
-		if err := DownloadImage(ctx, directTo, pullFrom); err != nil {
+		if err := DownloadImage(ctx, directTo, pullFrom, nil); err != nil {
 			return "", fmt.Errorf("unable to Download Image: %v", err)
 		}
 		imagePath = directTo
@@ -201,8 +208,10 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 		defer cacheEntry.CleanTmp()
 
 		if !cacheEntry.Exists {
+			var filecid string
+
 			sylog.Infof("Downloading network image")
-			err := DownloadImage(ctx, cacheEntry.TmpPath, pullFrom)
+			err := DownloadImage(ctx, cacheEntry.TmpPath, pullFrom, &filecid)
 			if err != nil {
 				sylog.Fatalf("%v\n", err)
 			}
@@ -210,6 +219,29 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 			err = cacheEntry.Finalize()
 			if err != nil {
 				return "", err
+			}
+
+			// if this cid is for the directory, then link it to the file cid
+			if cid != filecid && filecid != "" {
+				sha, err := decodeCID(filecid)
+				if err != nil {
+					return "", err
+				}
+				hash := hex.EncodeToString(sha)
+
+				fileCacheEntry, err := imgCache.GetEntry(cache.IpfsCacheType, hash)
+				if err != nil {
+					return "", fmt.Errorf("unable to check if %v exists in cache: %v", hash, err)
+				}
+				defer fileCacheEntry.CleanTmp()
+				err = os.Rename(cacheEntry.Path, fileCacheEntry.Path)
+				if err != nil {
+					return "", err
+				}
+				err = os.Symlink(hash, cacheEntry.Path)
+				if err != nil {
+					return "", err
+				}
 			}
 
 		} else {
