@@ -21,6 +21,7 @@ import (
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/client/ipfs"
 	"github.com/apptainer/apptainer/internal/pkg/client/library"
 	"github.com/apptainer/apptainer/internal/pkg/client/net"
 	"github.com/apptainer/apptainer/internal/pkg/client/oci"
@@ -105,6 +106,10 @@ func handleOras(ctx context.Context, imgCache *cache.Handle, cmd *cobra.Command,
 	return oras.Pull(ctx, imgCache, pullFrom, tmpDir, ociAuth, noHTTPS, reqAuthFile)
 }
 
+func handleIpfs(ctx context.Context, imgCache *cache.Handle, pullFrom string) (string, error) {
+	return ipfs.Pull(ctx, imgCache, pullFrom, tmpDir)
+}
+
 func handleLibrary(ctx context.Context, imgCache *cache.Handle, pullFrom string) (string, error) {
 	r, err := library.NormalizeLibraryRef(pullFrom)
 	if err != nil {
@@ -160,6 +165,8 @@ func replaceURIWithImage(ctx context.Context, cmd *cobra.Command, args []string)
 		image, err = handleLibrary(ctx, imgCache, args[0])
 	case uri.Oras:
 		image, err = handleOras(ctx, imgCache, cmd, args[0])
+	case uri.IPFS:
+		image, err = handleIpfs(ctx, imgCache, args[0])
 	case uri.Shub:
 		image, err = handleShub(ctx, imgCache, args[0])
 	case ociimage.SupportedTransport(t):
