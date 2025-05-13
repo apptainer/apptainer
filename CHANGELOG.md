@@ -15,6 +15,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   and if it is oci then use the OCI parser to avoid bugs in the Docker parser.
   Save the daemon-daemon references to a temporary docker-archive, to benefit
   from the same improvements also for those references. Parse as oci-archive.
+- Fix the use of libsubid which had been broken by the revision applied in
+  1.4.0-rc.2.
 
 ## v1.4.x changes
 
