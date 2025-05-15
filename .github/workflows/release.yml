@@ -122,6 +122,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Get golang version
+        id: min-go-version
+        run: echo "GOLANG_VERSION=$(scripts/get-min-go-version)" >> "$GITHUB_OUTPUT"
+
       - name: Build and push
         if: env.do_release
         uses: docker/build-push-action@v5
@@ -131,6 +135,7 @@ jobs:
           file: dist/docker/Dockerfile
           build-args: |
             VERSION=${{ env.git_tag }}
+            GOLANG_VERSION=${{ steps.min-go-version.outputs.GOLANG_VERSION }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
