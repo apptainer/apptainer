@@ -1,5 +1,6 @@
 ARG BASE_IMAGE=debian:bookworm-slim
-ARG GOLANG_IMAGE=golang:1.23.5-bookworm
+ARG GOLANG_VERSION="pass-in-as-build-arg"
+ARG GOLANG_IMAGE=golang:${GOLANG_VERSION}-bookworm
 
 FROM --platform=${TARGETPLATFORM} ${BASE_IMAGE} AS debian-target
 FROM --platform=${BUILDPLATFORM} ${GOLANG_IMAGE} AS build
