@@ -11,17 +11,19 @@ For older changes see the [archived Singularity change log](https://github.com/a
   Also add the image name (ref) of the image from "docker", with registry and tag.
   This is useful for traceability, when using `docker.io` or a tag like `latest`.
   Unfortunately the feature does not work with "docker-archive" or "docker-daemon".
-- Test if docker-archive is actually an oci-archive (since Docker version 25),
-  and if it is oci then use the OCI parser to avoid bugs in the Docker parser.
-  Save the daemon-daemon references to a temporary docker-archive, to benefit
-  from the same improvements also for those references. Parse as oci-archive.
-- Fix the use of libsubid which had been broken by the revision applied in
-  1.4.0-rc.2.
 
 ## v1.4.x changes
 
-Changes since 1.4.0
+Changes since 1.4.1
 
+## v1.4.1 - \[2025-05-14\]
+
+- Fix the use of libsubid which had been broken by the revision applied in
+  1.4.0-rc.2.
+- Fix a bug introduced in 1.4.0 that caused arm64 to be mis-converted to arm64v8
+  and resulted in a failure when pulling OCI containers.
+- Fix user database lookup in master process preventing instance from starting
+  correctly on systems using winbind.
 - Update minimum go version to 1.23.6 now that it is current in el8 & el9.
 - Check for existence of `/run/systemd/system` when verifying cgroups can be
   used via systemd manager.
@@ -31,14 +33,14 @@ Changes since 1.4.0
   older CPUs, although it can have a cost in performance on newer CPUs.
   It is still possible to set `GOAMD64` to a newer microarchitecture (v2+).
   For instance RHEL 9 uses v2 and RHEL 10 uses v3 as their default values.
-- Fix a bug introduced in 1.4.0 that caused arm64 to be mis-converted to arm64v8
-  and resulted in a failure when pulling OCI containers.
 - Add a clear error message if someone tries to use privileged network options
   while not using setuid mode.
 - Allow multi-arch oci-archive files that have a nested index with the manifest.
   This is the default format (both for Docker and OCI) when using `nerdctl save`.
-- Fix user database lookup in master process preventing instance from starting
-  correctly on systems using winbind.
+- Test if docker-archive is actually an oci-archive (since Docker version 25),
+  and if it is oci then use the OCI parser to avoid bugs in the Docker parser.
+  Save the daemon-daemon references to a temporary docker-archive, to benefit
+  from the same improvements also for those references. Parse as oci-archive.
 
 ## v1.4.0 - \[2025-03-18\]
 
