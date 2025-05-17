@@ -11,6 +11,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   Also add the image name (ref) of the image from "docker", with registry and tag.
   This is useful for traceability, when using `docker.io` or a tag like `latest`.
   Unfortunately the feature does not work with "docker-archive" or "docker-daemon".
+- Fix use of the image cache, when the home directory contains `@` characters.
+  Previously it would assume that it was the start of a digest in the oci-dir.
 
 ## v1.4.x changes
 
