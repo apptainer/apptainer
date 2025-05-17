@@ -13,6 +13,8 @@ Changes since 1.4.1
   and related files.  This had been inadvertently dropped beginning in 1.4.0.
 - Add support of automatic triggering of Ubuntu PPA builds.
 - Fix the signature verification failure for unsigned images.
+- Fix use of the image cache, when the home directory contains `@` characters.
+  Previously it would assume that it was the start of a digest in the oci-dir.
 
 ## v1.4.1 - \[2025-05-14\]
 
