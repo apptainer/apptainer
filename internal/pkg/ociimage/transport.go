@@ -12,7 +12,6 @@ package ociimage
 import (
 	"errors"
 	"fmt"
-	"os"
 	"runtime"
 	"strings"
 
@@ -26,6 +25,7 @@ import (
 	"github.com/containers/image/v5/types"
 	"github.com/google/go-containerregistry/pkg/authn"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"golang.org/x/sys/cpu"
 )
 
 var ociTransports = []string{"docker", "docker-archive", "docker-daemon", "oci", "oci-archive"}
@@ -235,9 +235,12 @@ func defaultSysCtx() *types.SystemContext {
 		sysCtx.ArchitectureChoice = runtime.GOARCH
 		sysCtx.VariantChoice = "v8"
 	case "arm":
-		if variance, ok := os.LookupEnv("GOARM"); ok {
+		if !cpu.ARM.HasVFP {
 			sysCtx.ArchitectureChoice = runtime.GOARCH
-			sysCtx.VariantChoice = "v" + variance
+			sysCtx.VariantChoice = "v5"
+		} else if !cpu.ARM.HasVFPv3 {
+			sysCtx.ArchitectureChoice = runtime.GOARCH
+			sysCtx.VariantChoice = "v6"
 		} else {
 			// by default, we are using arm32v7
 			sysCtx.ArchitectureChoice = runtime.GOARCH

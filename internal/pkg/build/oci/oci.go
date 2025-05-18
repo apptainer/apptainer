@@ -15,7 +15,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/cache"
@@ -302,11 +301,7 @@ func ConvertArch(arch, archVariant string) (string, error) {
 		return tmpArch, nil
 	case "arm":
 		if archVariant == "" {
-			armVal, ok := os.LookupEnv("GOARM")
-			if !ok {
-				return "", fmt.Errorf("arch: %s needs variant specification, supported variants are [5, 6, 7], please set --arch-variant option", arch)
-			}
-			archVariant = armVal
+			return "arm32v7", nil
 		}
 		tmpArch := ""
 		if strings.HasPrefix(archVariant, "v") {
@@ -316,7 +311,7 @@ func ConvertArch(arch, archVariant string) (string, error) {
 		}
 		// verification
 		if _, ok := ArchMap[tmpArch]; !ok {
-			return "", fmt.Errorf("arch: %s is not valid, supported archs are: %v, supported variants are [5, 6, 7]", tmpArch, supportedArchs)
+			return "", fmt.Errorf("arch: %s is not valid, supported archs are: %v, supported variants are [5, 6, 7], please remove --arch-variant option", tmpArch, supportedArchs)
 		}
 		return tmpArch, nil
 	default:
