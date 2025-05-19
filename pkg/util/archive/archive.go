@@ -36,11 +36,11 @@ import (
 	"time"
 
 	"github.com/apptainer/apptainer/pkg/sylog"
-	da "github.com/docker/docker/pkg/archive"
-	"github.com/docker/docker/pkg/idtools"
 	"github.com/docker/docker/pkg/pools"
 	"github.com/docker/docker/pkg/system"
+	"github.com/moby/go-archive"
 	"github.com/moby/sys/sequential"
+	"github.com/moby/sys/user"
 	"github.com/moby/sys/userns"
 	"github.com/pkg/errors"
 )
@@ -48,7 +48,7 @@ import (
 // Unpack unpacks the decompressedArchive to dest with options. The target of
 // any symlinks and hard links must be under destRoot. This differs from the
 // unmodified upstream code, which requires that they are under dest.
-func UnpackWithRoot(decompressedArchive io.Reader, dest, destRoot string, options *da.TarOptions) error {
+func UnpackWithRoot(decompressedArchive io.Reader, dest, destRoot string, options *archive.TarOptions) error {
 	tr := tar.NewReader(decompressedArchive)
 	trBuf := pools.BufioReader32KPool.Get(nil)
 	defer pools.BufioReader32KPool.Put(trBuf)
@@ -167,7 +167,7 @@ loop:
 // The caller should have performed filepath.Clean(hdr.Name), so hdr.Name will now be in the filepath format for the OS
 // on which the daemon is running. This precondition is required because this function assumes a OS-specific path
 // separator when checking that a path is not the root.
-func createImpliedDirectories(dest string, hdr *tar.Header, options *da.TarOptions) error {
+func createImpliedDirectories(dest string, hdr *tar.Header, options *archive.TarOptions) error {
 	// Not the root directory, ensure that the parent directory exists
 	if !strings.HasSuffix(hdr.Name, string(os.PathSeparator)) {
 		parent := filepath.Dir(hdr.Name)
@@ -176,9 +176,9 @@ func createImpliedDirectories(dest string, hdr *tar.Header, options *da.TarOptio
 			// RootPair() is confined inside this loop as most cases will not require a call, so we can spend some
 			// unneeded function calls in the uncommon case to encapsulate logic -- implied directories are a niche
 			// usage that reduces the portability of an image.
-			rootIDs := options.IDMap.RootPair()
+			uid, gid := options.IDMap.RootPair()
 
-			err = idtools.MkdirAllAndChownNew(parentPath, da.ImpliedDirectoryMode, rootIDs)
+			err = user.MkdirAllAndChown(parentPath, archive.ImpliedDirectoryMode, uid, gid, user.WithOnlyNew)
 			if err != nil {
 				return err
 			}
@@ -188,9 +188,9 @@ func createImpliedDirectories(dest string, hdr *tar.Header, options *da.TarOptio
 	return nil
 }
 
-func remapIDs(idMapping idtools.IdentityMapping, hdr *tar.Header) error {
-	ids, err := idMapping.ToHost(idtools.Identity{UID: hdr.Uid, GID: hdr.Gid})
-	hdr.Uid, hdr.Gid = ids.UID, ids.GID
+func remapIDs(idMapping user.IdentityMapping, hdr *tar.Header) error {
+	uid, gid, err := idMapping.ToHost(hdr.Uid, hdr.Gid)
+	hdr.Uid, hdr.Gid = uid, gid
 	return err
 }
 
@@ -199,11 +199,11 @@ const paxSchilyXattr = "SCHILY.xattr."
 // createTarFile creates a file from a tar record. The target of any symlinks
 // and hard links must be under extractRoot. This differs from the unmodified upstream
 // code, which requires that they are under extractDir.
-func createTarFile(path, extractDir, extractRoot string, hdr *tar.Header, reader io.Reader, opts *da.TarOptions) error {
+func createTarFile(path, extractDir, extractRoot string, hdr *tar.Header, reader io.Reader, opts *archive.TarOptions) error {
 	var (
 		Lchown           = true
 		bestEffortXattrs bool
-		chownOpts        *idtools.Identity
+		chownOpts        *archive.ChownOpts
 	)
 	if opts != nil {
 		Lchown = !opts.NoLchown
@@ -284,7 +284,7 @@ func createTarFile(path, extractDir, extractRoot string, hdr *tar.Header, reader
 	// Lchown is not supported on Windows.
 	if Lchown && runtime.GOOS != "windows" {
 		if chownOpts == nil {
-			chownOpts = &idtools.Identity{UID: hdr.Uid, GID: hdr.Gid}
+			chownOpts = &archive.ChownOpts{UID: hdr.Uid, GID: hdr.Gid}
 		}
 		if err := os.Lchown(path, chownOpts.UID, chownOpts.GID); err != nil {
 			msg := "failed to Lchown %q for UID %d, GID %d"
