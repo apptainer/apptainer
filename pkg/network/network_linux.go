@@ -88,17 +88,19 @@ func GetAllNetworkConfigList(cniPath *CNIPath) ([]*libcni.NetworkConfigList, err
 
 	for _, file := range files {
 		if strings.HasSuffix(file, ".conflist") {
-			conf, err := libcni.ConfListFromFile(file)
+			conf, err := libcni.NetworkConfFromFile(file)
 			if err != nil {
 				return nil, fmt.Errorf("%s: %s", file, err)
 			}
 			networks = append(networks, conf)
 		} else {
-			conf, err := libcni.ConfFromFile(file)
+			// Note - deprecations warnings disabled - this code is explicitly
+			// to handle files in non-conflist format.
+			conf, err := libcni.ConfFromFile(file) //nolint:staticcheck
 			if err != nil {
 				return nil, fmt.Errorf("%s: %s", file, err)
 			}
-			confList, err := libcni.ConfListFromConf(conf)
+			confList, err := libcni.ConfListFromConf(conf) //nolint:staticcheck
 			if err != nil {
 				return nil, fmt.Errorf("%s: %s", file, err)
 			}
