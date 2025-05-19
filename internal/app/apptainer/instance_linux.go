@@ -30,7 +30,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/buger/goterm"
 	units "github.com/docker/go-units"
-	libcgroups "github.com/opencontainers/runc/libcontainer/cgroups"
+	libcgroups "github.com/opencontainers/cgroups"
 )
 
 type instanceInfo struct {
@@ -271,7 +271,7 @@ func InstanceStats(ctx context.Context, name, instanceUser string, formatJSON bo
 			}
 
 			// Stats can be added from this set
-			// https://github.com/opencontainers/runc/blob/main/libcontainer/cgroups/stats.go
+			// https://github.com/opencontainers/cgroups/blob/main/stats.go
 			_, err = fmt.Fprintln(tabWriter, "INSTANCE NAME\tCPU USAGE\tMEM USAGE / LIMIT\tMEM %\tBLOCK I/O\tPIDS")
 			if err != nil {
 				return fmt.Errorf("could not write stats header: %v", err)
