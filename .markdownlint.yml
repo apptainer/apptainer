@@ -11,3 +11,5 @@ MD034: false
 MD013:
   # Disable line-length check inside code blocks
   code_blocks: false
+# Allow non-descriptive link texts.
+MD059: false
