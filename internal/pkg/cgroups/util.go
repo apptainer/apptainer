@@ -17,7 +17,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
-	"github.com/opencontainers/runc/libcontainer/cgroups"
+	"github.com/opencontainers/cgroups"
 	"golang.org/x/sys/unix"
 )
 
@@ -48,7 +48,7 @@ func pidToPath(pid int) (path string, err error) {
 
 	// For cgroups v1 we are relying on fetching the 'devices' subsystem path.
 	// The devices subsystem is needed for our OCI engine and its presence is
-	// enforced in runc/libcontainer/cgroups/fs initialization without 'skipDevices'.
+	// enforced in opencontainers/cgroups/fs initialization without 'skipDevices'.
 	// This means we never explicitly put a container into a cgroup without a
 	// set 'devices' path.
 	path, ok = paths["devices"]

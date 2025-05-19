@@ -19,30 +19,29 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	lccgroups "github.com/opencontainers/runc/libcontainer/cgroups"
-	lcmanager "github.com/opencontainers/runc/libcontainer/cgroups/manager"
-	lcsystemd "github.com/opencontainers/runc/libcontainer/cgroups/systemd"
-	lcconfigs "github.com/opencontainers/runc/libcontainer/configs"
+	lccgroups "github.com/opencontainers/cgroups"
+	lcmanager "github.com/opencontainers/cgroups/manager"
+	lcsystemd "github.com/opencontainers/cgroups/systemd"
 	lcspecconv "github.com/opencontainers/runc/libcontainer/specconv"
 	"github.com/opencontainers/runtime-spec/specs-go"
 
 	// See https://github.com/opencontainers/runc/pull/3452
-	_ "github.com/opencontainers/runc/libcontainer/cgroups/devices"
+	_ "github.com/opencontainers/cgroups/devices"
 )
 
 var ErrUninitialized = errors.New("cgroups manager is not initialized")
 
 // Manager provides functions to modify, freeze, thaw, and destroy a cgroup.
-// Apptainer's cgroups.Manager is a wrapper around runc/libcontainer/cgroups.
+// Apptainer's cgroups.Manager is a wrapper around opencontainers/cgroups.
 // The manager supports v1 cgroups, and v2 cgroups with a unified hierarchy.
 // Resource specifications are handles in specs.LinuxResources format and
-// translated to runc/libcontainer/cgroups format internally.
+// translated to opencontainers/cgroups format internally.
 type Manager struct {
 	// The name of the cgroup
 	group string
 	// Are we using systemd?
 	systemd bool
-	// The underlying runc/libcontainer/cgroups manager
+	// The underlying opencontainers/cgroups manager
 	cgroup lccgroups.Manager
 }
 
@@ -61,7 +60,7 @@ func (m *Manager) GetCgroupRootPath() (rootPath string, err error) {
 	subPaths := m.cgroup.GetPaths()
 	// For cgroups v1 we are relying on fetching the 'devices' subsystem path.
 	// The devices subsystem is needed for our OCI engine and its presence is
-	// enforced in runc/libcontainer/cgroups/fs initialization without 'skipDevices'.
+	// enforced in opencontainers/cgroups/fs initialization without 'skipDevices'.
 	// This means we never explicitly put a container into a cgroup without a
 	// set 'devices' path.
 	devicePath, ok := subPaths["devices"]
@@ -95,7 +94,7 @@ func (m *Manager) GetCgroupRelPath() (relPath string, err error) {
 	subPaths := m.cgroup.GetPaths()
 	// For cgroups v1 we are relying on fetching the 'devices' subsystem path.
 	// The devices subsystem is needed for our OCI engine and its presence is
-	// enforced in runc/libcontainer/cgroups/fs initialization without 'skipDevices'.
+	// enforced in opencontainers/cgroups/fs initialization without 'skipDevices'.
 	// This means we never explicitly put a container into a cgroup without a
 	// set 'devices' path.
 	devicePath, ok := subPaths["devices"]
@@ -150,7 +149,7 @@ func (m *Manager) UpdateFromSpec(resources *specs.LinuxResources) (err error) {
 		return fmt.Errorf("could not create cgroup config: %w", err)
 	}
 
-	// runc/libcontainer/cgroups defaults to a deny-all policy, while
+	// opencontainers/cgroups defaults to a deny-all policy, while
 	// apptainer has always allowed access to devices by default. If no device
 	// rules are provided in the spec, then skip setting them so the deny-all is
 	// not applied when we update the cgroup.
@@ -199,9 +198,9 @@ func (m *Manager) AddProc(pid int) (err error) {
 		if err != nil {
 			return err
 		}
-		lcConfig := &lcconfigs.Cgroup{
+		lcConfig := &lccgroups.Cgroup{
 			Path:      relPath,
-			Resources: &lcconfigs.Resources{},
+			Resources: &lccgroups.Resources{},
 			Systemd:   false,
 		}
 		procMgr, err = lcmanager.New(lcConfig)
@@ -218,7 +217,7 @@ func (m *Manager) Freeze() (err error) {
 	if m.group == "" || m.cgroup == nil {
 		return ErrUninitialized
 	}
-	return m.cgroup.Freeze(lcconfigs.Frozen)
+	return m.cgroup.Freeze(lccgroups.Frozen)
 }
 
 // Thaw unfreezes process in the managed cgroup.
@@ -226,7 +225,7 @@ func (m *Manager) Thaw() (err error) {
 	if m.group == "" || m.cgroup == nil {
 		return ErrUninitialized
 	}
-	return m.cgroup.Freeze(lcconfigs.Thawed)
+	return m.cgroup.Freeze(lccgroups.Thawed)
 }
 
 // Destroy deletes the managed cgroup.
@@ -308,7 +307,7 @@ func newManager(resources *specs.LinuxResources, group string, systemd bool) (ma
 		return nil, fmt.Errorf("could not create cgroup config: %w", err)
 	}
 
-	// runc/libcontainer/cgroups defaults to a deny-all policy, while
+	// opencontainers/cgroups defaults to a deny-all policy, while
 	// apptainer has always allowed access to devices by default.
 	if len(resources.Devices) == 0 {
 		resources.Devices = []specs.LinuxDeviceCgroup{
@@ -418,12 +417,12 @@ func GetManagerForGroup(group string) (manager *Manager, err error) {
 		return nil, fmt.Errorf("cannot load cgroup - no name/path specified")
 	}
 
-	// Create an empty runc/libcontainer/configs resource spec directly.
+	// Create an empty opencontainers/cgroups resource spec directly.
 	// We could call newManager() with an empty LinuxResources spec, but this
 	// saves the specconv processing.
-	lcConfig := &lcconfigs.Cgroup{
+	lcConfig := &lccgroups.Cgroup{
 		Path:      group,
-		Resources: &lcconfigs.Resources{},
+		Resources: &lccgroups.Resources{},
 		Systemd:   false,
 	}
 	cgroup, err := lcmanager.New(lcConfig)
