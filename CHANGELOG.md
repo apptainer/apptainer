@@ -11,6 +11,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   Also add the image name (ref) of the image from "docker", with registry and tag.
   This is useful for traceability, when using `docker.io` or a tag like `latest`.
   Unfortunately the feature does not work with "docker-archive" or "docker-daemon".
+- Change the default `arm` variant to `v7`, and stop using the GOARM environment
+  variable. The variables GOOS, GOARCH and GOARM are only used when building.
 
 ## v1.4.x changes
 

@@ -320,15 +320,6 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 
 	c.env.RunApptainer(
 		t,
-		e2e.AsSubtest("pull image failure because --arch-variant is required"),
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", "--arch", "arm", sifname, "docker://alpine:3.6"}...),
-		e2e.ExpectExit(255, e2e.ExpectError(e2e.ContainMatch, "arm needs variant specification")),
-	)
-
-	c.env.RunApptainer(
-		t,
 		e2e.AsSubtest("pull image failure because of wrong --arch-variant"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
