@@ -18,6 +18,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.4.1
 
+- Fix use of the image cache, when the home directory contains `@` characters.
+  Previously it would assume that it was the start of a digest in the oci-dir.
+
 ## v1.4.1 - \[2025-05-14\]
 
 - Fix the use of libsubid which had been broken by the revision applied in

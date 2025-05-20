@@ -12,6 +12,7 @@ package ociimage
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	progressClient "github.com/apptainer/apptainer/internal/pkg/client"
@@ -69,9 +70,11 @@ func getDockerImage(ctx context.Context, src string, tOpts *TransportOptions, rt
 // If no digest is provided, and there is only one image in the layout, it will be returned.
 // A digest must be specified when retrieving an image from a layout containing multiple images.
 func getOCIImage(src string, tOpts *TransportOptions) (v1.Image, error) {
-	refParts := strings.SplitN(src, "@", 2)
+	dir, base := filepath.Split(src)
+	refParts := strings.SplitN(base, "@", 2)
 
-	lp, err := layout.FromPath(refParts[0])
+	file := filepath.Join(dir, refParts[0])
+	lp, err := layout.FromPath(file)
 	if err != nil {
 		return nil, err
 	}
