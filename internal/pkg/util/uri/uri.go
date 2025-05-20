@@ -25,6 +25,8 @@ const (
 	HTTPS = "https"
 	// Oras is the keyword for an oras ref
 	Oras = "oras"
+	// IPFS is the keyword for ipfs ref
+	IPFS = "ipfs"
 )
 
 // validURIs contains a list of known uris
@@ -39,6 +41,7 @@ var validURIs = map[string]bool{
 	"http":           true,
 	"https":          true,
 	"oras":           true,
+	"ipfs":           true,
 }
 
 // IsValid returns whether or not the given source is valid
