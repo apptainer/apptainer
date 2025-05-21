@@ -13,6 +13,7 @@ package sources
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -296,13 +297,20 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 	db := os.Getenv("DOCKER_BUILDKIT")
 	if _, err := exec.LookPath("buildctl"); err != nil {
 		// buildkit not found, use docker instead
-	        if _, err := exec.LookPath("docker"); err != nil {
+		if _, err := exec.LookPath("docker"); err != nil {
 			return fmt.Errorf("neither %q nor %q could be found in the PATH, please install one of them to build", "buildctl", "docker")
 		}
 		db = "1"
 	}
 
 	if db == "" {
+		if _, ok := os.LookupEnv("BUILDKIT_HOST"); !ok {
+			sock := "/run/buildkit/buildkitd.sock"
+			if _, err := os.Stat(sock); err != nil && errors.Is(err, os.ErrNotExist) {
+				// make the error message from `buildctl` look more like the traditional error message from `docker`
+				return fmt.Errorf("Cannot connect to the BuildKit daemon at unix://%s. Is the buildkit daemon running?", sock)
+			}
+		}
 		err = os.MkdirAll(filepath.Join(cp.b.RootfsPath, ".singularity.d"), 0o755)
 		if err != nil {
 			return err
