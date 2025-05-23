@@ -39,6 +39,8 @@ var validURIs = map[string]bool{
 	"http":           true,
 	"https":          true,
 	"oras":           true,
+	"buildkit":       true,
+	"dockerfile":     true,
 }
 
 // IsValid returns whether or not the given source is valid
