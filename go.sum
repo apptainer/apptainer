@@ -36,8 +36,8 @@ github.com/aphistic/golf v0.0.0-20180712155816-02c07f170c5a/go.mod h1:3NqKYiepwy
 github.com/aphistic/sweet v0.2.0/go.mod h1:fWDlIh/isSE9n6EPsRmC0det+whmX6dJid3stzu0Xys=
 github.com/apptainer/container-key-client v0.8.0 h1:K181Zrejb53mR2YQZwCathSj8YReCen+Wi2YuBxGH60=
 github.com/apptainer/container-key-client v0.8.0/go.mod h1:wMeJdiMXlPRiwJfUyae2WRHsZlHG9Af6iPQ9TZcBnS8=
-github.com/apptainer/container-library-client v1.4.10 h1:U3dOJfOorCt5ucSyOXqITwITTQwmlG0IgwScoNLr0e4=
-github.com/apptainer/container-library-client v1.4.10/go.mod h1:BScWxE4Yk7raM+B2dbAbLL1iOdxtl+bkOS4/f3X5yzA=
+github.com/apptainer/container-library-client v1.4.12 h1:6kqtG7qiwZ20ZCox0ayD9RqTq8akGMIewXKl300bhVk=
+github.com/apptainer/container-library-client v1.4.12/go.mod h1:egSrd5HgP7OfZpnqrbZmcr95kihVXEzQv4TqXwwa/4E=
 github.com/apptainer/sif/v2 v2.21.1 h1:RPRBhlw5ZOAORbLTCoCCTRVRLuHoebSx1TknrgBd0NM=
 github.com/apptainer/sif/v2 v2.21.1/go.mod h1:n9YSqALOT2SOSFXYgYecw8Ne1mwF99wsBKHNOsjXs2I=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 h1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=
