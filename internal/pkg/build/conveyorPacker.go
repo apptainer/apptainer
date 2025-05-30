@@ -64,6 +64,8 @@ func conveyorPacker(def types.Definition) (ConveyorPacker, error) {
 		return &sources.ZypperConveyorPacker{}, nil
 	case "scratch":
 		return &sources.ScratchConveyorPacker{}, nil
+	case "buildkit", "dockerfile":
+		return &sources.BuildKitConveyorPacker{}, nil
 	case "":
 		return nil, fmt.Errorf("no bootstrap specification found")
 	default:
