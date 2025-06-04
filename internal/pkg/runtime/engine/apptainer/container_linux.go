@@ -1694,9 +1694,13 @@ func (c *container) addDevMount(system *mount.System) error {
 			}
 		}
 
-		if c.engine.EngineConfig.GetHpu() {
-			devIDs := c.engine.EngineConfig.GetApptainerEnv()["HABANA_VISIBLE_DEVICES"]
-			devs, err := gpu.HpuDevices(devIDs)
+		if c.engine.EngineConfig.GetIntelHpu() {
+			devIDs, exists := c.engine.EngineConfig.GetApptainerEnv()["HABANA_VISIBLE_DEVICES"]
+			if !exists {
+				// If the user doesn't specify exact devices, bind all
+				devIDs = "all"
+			}
+			devs, err := gpu.IntelHpuDevices(devIDs)
 			if err != nil {
 				return fmt.Errorf("failed to get hpu devices: %v", err)
 			}

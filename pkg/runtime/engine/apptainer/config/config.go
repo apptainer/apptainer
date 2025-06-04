@@ -157,7 +157,7 @@ type JSONConfig struct {
 	ShareNSMode           bool              `json:"sharensMode,omitempty"`
 	ShareNSFd             int               `json:"sharensFd,omitempty"`
 	RunscriptTimeout      string            `json:"runscriptTimeout,omitempty"`
-	Hpu                   bool              `json:"hpu,omitempty"`
+	IntelHpu              bool              `json:"intelHpu,omitempty"`
 }
 
 // SetImage sets the container image path to be used by EngineConfig.JSON.
@@ -989,12 +989,12 @@ func (e *EngineConfig) GetRunscriptTimeout() string {
 	return e.JSON.RunscriptTimeout
 }
 
-// SetHpu sets hpu flag.
-func (e *EngineConfig) SetHpu(hpu bool) {
-	e.JSON.Hpu = hpu
+// SetIntelHpu sets IntelHpu flag for Intel(R) Gaudi accelerator setup
+func (e *EngineConfig) SetIntelHpu(hpu bool) {
+	e.JSON.IntelHpu = hpu
 }
 
-// GetHpu returns if hpu flag is set or not.
-func (e *EngineConfig) GetHpu() bool {
-	return e.JSON.Hpu
+// GetHpu returns if IntelHpu flag is set or not.
+func (e *EngineConfig) GetIntelHpu() bool {
+	return e.JSON.IntelHpu
 }
