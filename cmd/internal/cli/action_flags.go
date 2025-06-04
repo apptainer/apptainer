@@ -96,7 +96,7 @@ var (
 
 	runscriptTimeout string // runscript timeout
 
-	hpu bool
+	intelHpu bool
 )
 
 // --app
@@ -856,14 +856,14 @@ var actionNetnsPathFlag = cmdline.Flag{
 	EnvKeys:      []string{"NETNS_PATH"},
 }
 
-// --hpu
-var actionHpuFlag = cmdline.Flag{
-	ID:           "actionHpuFlag",
-	Value:        &hpu,
+// --intel-hpu
+var actionIntelHpuFlag = cmdline.Flag{
+	ID:           "actionIntelHpuFlag",
+	Value:        &intelHpu,
 	DefaultValue: false,
-	Name:         "hpu",
+	Name:         "intel-hpu",
 	Usage:        "enable Intel(R) Gaudi accelerator support",
-	EnvKeys:      []string{"HPU"},
+	EnvKeys:      []string{"INTEL_HPU"},
 }
 
 func init() {
@@ -965,6 +965,6 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&actionShareNSFlag, actionsCmd...)
 		cmdManager.RegisterFlagForCmd(&commonAuthFileFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionRunscriptTimeoutFlag, actionsRunscriptCmd...)
-		cmdManager.RegisterFlagForCmd(&actionHpuFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionIntelHpuFlag, actionsInstanceCmd...)
 	})
 }

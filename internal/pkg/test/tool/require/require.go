@@ -243,8 +243,8 @@ func Rocm(t *testing.T) {
 	}
 }
 
-// Hpu checks that a Gaudi acceleartor stack is available
-func Hpu(t *testing.T) {
+// IntelHpu checks that a Gaudi acceleartor stack is available
+func IntelHpu(t *testing.T) {
 	hlsmi, err := exec.LookPath("hl-smi")
 	if err != nil {
 		t.Skipf("hl-smi not found on PATH: %v", err)
