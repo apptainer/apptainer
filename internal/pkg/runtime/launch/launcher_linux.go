@@ -819,7 +819,7 @@ func (l *Launcher) SetGPUConfig() error {
 		}
 	}
 
-	if l.cfg.Hpu {
+	if l.cfg.IntelHpu {
 		sylog.Debugf("Using HPU accelerator setup")
 		l.engineConfig.SetHpu(true)
 	}

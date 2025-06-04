@@ -298,8 +298,8 @@ func (c ctx) testRocm(t *testing.T) {
 }
 
 //nolint:dupl
-func (c ctx) testHpu(t *testing.T) {
-	require.Hpu(t)
+func (c ctx) testIntelHpu(t *testing.T) {
+	require.IntelHpu(t)
 
 	imageURL := "docker://vault.habana.ai/gaudi-docker/1.20.0/ubuntu22.04/habanalabs/pytorch-installer-2.6.0:latest"
 	imageFile, err := fs.MakeTmpFile("", "test-hpu-", 0o755)
@@ -335,20 +335,20 @@ func (c ctx) testHpu(t *testing.T) {
 		{
 			name:        "UserContainNoDevices",
 			profile:     e2e.UserProfile,
-			args:        []string{"--contain", "--hpu", logsEnv, imagePath, "hl-smi"},
+			args:        []string{"--contain", "--intel-hpu", logsEnv, imagePath, "hl-smi"},
 			expectMatch: e2e.ExpectOutput(e2e.ContainMatch, "no AIPs available"),
 			expectExit:  1,
 		},
 		{
 			name:       "UserContainAllDevices",
 			profile:    e2e.UserProfile,
-			args:       []string{"--contain", "--hpu", logsEnv, "--env=HABANA_VISIBLE_DEVICES=all", imagePath, "hl-smi"},
+			args:       []string{"--contain", "--intel-hpu", logsEnv, "--env=HABANA_VISIBLE_DEVICES=all", imagePath, "hl-smi"},
 			expectExit: 0,
 		},
 		{
 			name:        "UserContainSelectedDevice",
 			profile:     e2e.UserProfile,
-			args:        []string{"--contain", "--hpu", logsEnv, "--env=HABANA_VISIBLE_DEVICES=0", imagePath, "hl-smi", "--query-aip=index", "--format=csv,noheader"},
+			args:        []string{"--contain", "--intel-hpu", logsEnv, "--env=HABANA_VISIBLE_DEVICES=0", imagePath, "hl-smi", "--query-aip=index", "--format=csv,noheader"},
 			expectMatch: e2e.ExpectOutput(e2e.ExactMatch, "0"),
 			expectExit:  0,
 		},
@@ -629,7 +629,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"nvidia":       c.testNvidiaLegacy,
 		"nvccli":       c.testNvCCLI,
 		"rocm":         c.testRocm,
-		"hpu":          c.testHpu,
+		"intel-hpu":    c.testIntelHpu,
 		"build nvidia": c.testBuildNvidiaLegacy,
 		"build nvccli": c.testBuildNvCCLI,
 		"build rocm":   c.testBuildRocm,
