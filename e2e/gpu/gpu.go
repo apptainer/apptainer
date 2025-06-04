@@ -335,12 +335,18 @@ func (c ctx) testIntelHpu(t *testing.T) {
 		{
 			name:        "UserContainNoDevices",
 			profile:     e2e.UserProfile,
-			args:        []string{"--contain", "--intel-hpu", logsEnv, imagePath, "hl-smi"},
+			args:        []string{"--contain", "--intel-hpu", logsEnv, "--env=HABANA_VISIBLE_DEVICES=''", imagePath, "hl-smi"},
 			expectMatch: e2e.ExpectOutput(e2e.ContainMatch, "no AIPs available"),
 			expectExit:  1,
 		},
 		{
-			name:       "UserContainAllDevices",
+			name:       "UserContainAllDevicesImplicit",
+			profile:    e2e.UserProfile,
+			args:       []string{"--contain", "--intel-hpu", logsEnv, imagePath, "hl-smi"},
+			expectExit: 0,
+		},
+		{
+			name:       "UserContainAllDevicesExplicit",
 			profile:    e2e.UserProfile,
 			args:       []string{"--contain", "--intel-hpu", logsEnv, "--env=HABANA_VISIBLE_DEVICES=all", imagePath, "hl-smi"},
 			expectExit: 0,
