@@ -20,8 +20,8 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
-// HpuInfinibandDevices returns infiniband cards for the accelerators.
-func HpuInfinibandDevices() ([]string, error) {
+// IntelHpuInfinibandDevices returns infiniband cards for the accelerators.
+func IntelHpuInfinibandDevices() ([]string, error) {
 	devs, err := filepath.Glob("/sys/class/infiniband/hbl_*")
 	if err != nil {
 		return nil, fmt.Errorf("could not list infiniband cards for HPU accelerators: %v", err)
@@ -38,15 +38,15 @@ func HpuInfinibandDevices() ([]string, error) {
 	return devs, nil
 }
 
-// HpuUverbsForIds returns InfiniBand devices corresponding to the accelerator IDs specified in the filter string.
+// IntelHpuUverbsForIds returns InfiniBand devices corresponding to the accelerator IDs specified in the filter string.
 // The filter string is a comma-separated list of device IDs (e.g., "1,2,3").
-func HpuUverbsForIDs(visibleDevIDs string) ([]string, error) {
-	devs, err := HpuInfinibandDevices()
+func IntelHpuUverbsForIDs(visibleDevIDs string) ([]string, error) {
+	devs, err := IntelHpuInfinibandDevices()
 	if err != nil {
 		return nil, err
 	}
 
-	devs, err = HpuFilterDevsByIDs(devs, visibleDevIDs)
+	devs, err = IntelHpuFilterDevsByIDs(devs, visibleDevIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +78,8 @@ func HpuUverbsForIDs(visibleDevIDs string) ([]string, error) {
 	return res, nil
 }
 
-// HpuGetDevIdFromPath extracts the device ID (the last numeric part) from a device path.
-func HpuGetDevIDFromPath(devPath string) (string, error) {
+// IntelHpuGetDevIdFromPath extracts the device ID (the last numeric part) from a device path.
+func IntelHpuGetDevIDFromPath(devPath string) (string, error) {
 	// Find last non-digit character
 	pos := len(devPath)
 	for i := pos - 1; i >= 0; i-- {
@@ -96,10 +96,10 @@ func HpuGetDevIDFromPath(devPath string) (string, error) {
 	return "", fmt.Errorf("couldn't find device ID in '%s'", devPath)
 }
 
-// HpuFilterDevsByIDs returns a filtered devices array based on the filter string.
+// IntelHpuFilterDevsByIDs returns a filtered devices array based on the filter string.
 // The filter string is a comma-separated string of device IDs, e.g., "1,2,3,4".
 // A special value of "all" is also supported. An empty filter string yields an empty resulting array.
-func HpuFilterDevsByIDs(devs []string, filterIDs string) ([]string, error) {
+func IntelHpuFilterDevsByIDs(devs []string, filterIDs string) ([]string, error) {
 	sylog.Debugf("Using filter=%s for HPU devices", filterIDs)
 	if strings.ToLower(filterIDs) == "all" {
 		return devs, nil
@@ -119,7 +119,7 @@ func HpuFilterDevsByIDs(devs []string, filterIDs string) ([]string, error) {
 	// Actual filtering by device IDs
 	var res []string
 	for _, dev := range devs {
-		if id, err := HpuGetDevIDFromPath(dev); err != nil {
+		if id, err := IntelHpuGetDevIDFromPath(dev); err != nil {
 			sylog.Warningf("Unable to parse HPU device path: %s", err)
 		} else {
 			if slices.Contains(askedIDs, id) {
@@ -131,11 +131,11 @@ func HpuFilterDevsByIDs(devs []string, filterIDs string) ([]string, error) {
 	return res, nil
 }
 
-// HpuDevices returns a list of HPU accelerator devices based on the visible device IDs string.
+// IntelHpuDevices returns a list of HPU accelerator devices based on the visible device IDs string.
 // The string is a comma-separated list of device IDs (e.g., "1,2,3").
 // A special value of "all" returns all available devices.
 // An empty string yields an empty result.
-func HpuDevices(visibleDevIDs string) ([]string, error) {
+func IntelHpuDevices(visibleDevIDs string) ([]string, error) {
 	sylog.Debugf("Discovering HPU devices")
 
 	devs, err := filepath.Glob("/dev/accel/accel*")
@@ -143,12 +143,12 @@ func HpuDevices(visibleDevIDs string) ([]string, error) {
 		return nil, fmt.Errorf("could not list HPU accelerators: %v", err)
 	}
 
-	devs, err = HpuFilterDevsByIDs(devs, visibleDevIDs)
+	devs, err = IntelHpuFilterDevsByIDs(devs, visibleDevIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to filter HPU accelerators: %v", err)
 	}
 
-	uverbDevs, err := HpuUverbsForIDs(visibleDevIDs)
+	uverbDevs, err := IntelHpuUverbsForIDs(visibleDevIDs)
 	if err != nil {
 		return nil, fmt.Errorf("could not list uverb devices for HPU accelerators: %v", err)
 	}

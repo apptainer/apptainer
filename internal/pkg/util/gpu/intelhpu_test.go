@@ -14,7 +14,7 @@ import (
 	"testing"
 )
 
-func TestHpuGetDevIDFromPath(t *testing.T) {
+func TestIntelHpuGetDevIDFromPath(t *testing.T) {
 	tests := []struct {
 		name    string
 		path    string
@@ -48,20 +48,20 @@ func TestHpuGetDevIDFromPath(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := HpuGetDevIDFromPath(tt.path)
+			res, err := IntelHpuGetDevIDFromPath(tt.path)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("HpuGetDevIDFromPath() error = %v, wantErr = %v", err, tt.wantErr)
+				t.Errorf("IntelHpuGetDevIDFromPath() error = %v, wantErr = %v", err, tt.wantErr)
 				return
 			}
 
 			if res != tt.wantRes {
-				t.Errorf("HpuGetDevIDFromPath() = %v, want = %v", res, tt.wantRes)
+				t.Errorf("IntelHpuGetDevIDFromPath() = %v, want = %v", res, tt.wantRes)
 			}
 		})
 	}
 }
 
-func TestHpuFilterDevsByIDs(t *testing.T) {
+func TestIntelHpuFilterDevsByIDs(t *testing.T) {
 	defaultDevs := []string{
 		"/dev/accel/accel0",
 		"/dev/accel/accel1",
@@ -140,14 +140,14 @@ func TestHpuFilterDevsByIDs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			devs, err := HpuFilterDevsByIDs(tt.devs, tt.filter)
+			devs, err := IntelHpuFilterDevsByIDs(tt.devs, tt.filter)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("HpuFilterDevsByIDs() error = %v, wantErr = %v", err, tt.wantErr)
+				t.Errorf("IntelHpuFilterDevsByIDs() error = %v, wantErr = %v", err, tt.wantErr)
 				return
 			}
 
 			if !reflect.DeepEqual(devs, tt.wantDevs) {
-				t.Errorf("HpuFilterDevsByIDs() = %v, want = %v", devs, tt.wantDevs)
+				t.Errorf("IntelHpuFilterDevsByIDs() = %v, want = %v", devs, tt.wantDevs)
 			}
 		})
 	}
