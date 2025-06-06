@@ -42,9 +42,9 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
 	github.com/sylabs/json-resp v0.9.4
-	github.com/vbauerster/mpb/v8 v8.9.1
+	github.com/vbauerster/mpb/v8 v8.10.2
 	golang.org/x/crypto v0.33.0
-	golang.org/x/sys v0.30.0
+	golang.org/x/sys v0.33.0
 	golang.org/x/term v0.29.0
 	golang.org/x/text v0.22.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -175,7 +175,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
 	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/sync v0.13.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240814211410-ddb44dafa142 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/grpc v1.67.0 // indirect
