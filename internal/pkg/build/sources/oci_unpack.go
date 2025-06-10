@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2024, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -123,8 +123,12 @@ func extractLayer(l v1.Layer, mapOptions umocilayer.MapOptions, destDir string) 
 		}
 	}()
 
-	unpackOptions := umocilayer.UnpackOptions{MapOptions: mapOptions}
-	err = umocilayer.UnpackLayer(destDir, layerReader, &unpackOptions)
+	unpackOptions := &umocilayer.UnpackOptions{
+		OnDiskFormat: umocilayer.DirRootfs{
+			MapOptions: mapOptions,
+		},
+	}
+	err = umocilayer.UnpackLayer(destDir, layerReader, unpackOptions)
 	if err != nil {
 		return fmt.Errorf("while unpacking layer %s: %w", layerDigest, err)
 	}
