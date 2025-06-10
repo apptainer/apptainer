@@ -862,7 +862,7 @@ var actionIntelHpuFlag = cmdline.Flag{
 	Value:        &intelHpu,
 	DefaultValue: false,
 	Name:         "intel-hpu",
-	Usage:        "enable Intel(R) Gaudi accelerator support",
+	Usage:        "enable Intel(R) Gaudi accelerator support while using a minimal /dev",
 	EnvKeys:      []string{"INTEL_HPU"},
 }
 
