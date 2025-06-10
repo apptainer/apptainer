@@ -59,7 +59,6 @@ var buildArgs struct {
 	buildVarArgs        []string // Variables passed to build procedure.
 	buildVarArgFile     string   // Variables file passed to build procedure.
 	buildArgsUnusedWarn bool     // Variables passed to build procedure to turn fatal error to warn.
-	intelHpu            bool
 }
 
 // -s|--sandbox
@@ -351,15 +350,6 @@ var buildArgUnusedWarn = cmdline.Flag{
 	Usage:        "shows warning instead of fatal message when build args are not exact matched",
 }
 
-// --intel-hpu
-var buildArgIntelHpuFlag = cmdline.Flag{
-	ID:           "actionIntelHpuFlag",
-	Value:        &intelHpu,
-	DefaultValue: false,
-	Name:         "intel-hpu",
-	Usage:        "enable Intel(R) Gaudi accelerator support",
-}
-
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(buildCmd)
@@ -407,7 +397,6 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildVarArgFileFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildArgUnusedWarn, buildCmd)
 		cmdManager.RegisterFlagForCmd(&commonAuthFileFlag, buildCmd)
-		cmdManager.RegisterFlagForCmd(&buildArgIntelHpuFlag, buildCmd)
 	})
 }
 

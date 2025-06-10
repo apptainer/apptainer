@@ -208,9 +208,6 @@ func runBuild(cmd *cobra.Command, args []string) {
 	if buildArgs.rocm {
 		os.Setenv("APPTAINER_ROCM", "1")
 	}
-	if buildArgs.intelHpu {
-		os.Setenv("APPTAINER_INTEL_HPU", "1")
-	}
 	if len(buildArgs.bindPaths) > 0 {
 		os.Setenv("APPTAINER_BINDPATH", strings.Join(buildArgs.bindPaths, ","))
 	}
