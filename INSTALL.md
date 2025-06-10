@@ -66,9 +66,7 @@ sudo zypper install -y \
   openssl-devel \
   fakeroot \
   cryptsetup sysuser-tools \
-  wget git go
-# Install these before devel tools to avoid clashing busybox pkgs on Tumbleweed
-sudo zypper install -y diffutils which
+  diffutils wget which git go
 # Install basic tools for compiling
 # --replacefiles is needed to avoid pam conflict on Tumbleweed
 sudo zypper install -y --replacefiles --allow-downgrade -t pattern devel_basis
@@ -77,7 +75,7 @@ sudo zypper install -y --replacefiles --allow-downgrade -t pattern devel_basis
 For libsubid support (requires openSUSE Tumbleweed):
 
 ```sh
-sudo zypper install -y libsubid-devel
+sudo zypper install -y --allow-downgrade libsubid-devel
 ```
 
 ## Install Go
@@ -211,8 +209,8 @@ sudo dnf install -y fuse3-devel lzo-devel lz4-devel
 On SLE/openSUSE:
 
 ```sh
-sudo zypper install -y gzip fuse3-devel lzo-devel liblz4-devel \
-    xz-devel libzstd-devel
+sudo zypper install -y --allow-downgrade gzip fuse3-devel \
+    lzo-devel liblz4-devel xz-devel libzstd-devel
 ```
 
 To download the source code from the top level of the Apptainer source

@@ -10,8 +10,8 @@
 if [[ $OS_TYPE == *suse* ]]; then
   zypper install -y --allow-downgrade \
     libseccomp-devel libuuid-devel openssl-devel \
-    fakeroot cryptsetup sysuser-tools wget git go
-  zypper install -y diffutils
+    fakeroot cryptsetup sysuser-tools \
+    diffutils wget which git go
   zypper install -y --replacefiles --allow-downgrade -t pattern devel_basis
   if [[ $OS_TYPE == *tumbleweed* ]]; then
     zypper install -y --allow-downgrade libsubid-devel
