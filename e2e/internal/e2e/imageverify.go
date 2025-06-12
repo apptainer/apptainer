@@ -264,13 +264,13 @@ func appDetailImageVerify(t *testing.T, cmdPath, imagePath string, apps []AppDet
 	}
 }
 
-func verifyFile(t *testing.T, original, copy string) error {
+func verifyFile(t *testing.T, original, duplicated string) error {
 	ofi, err := os.Stat(original)
 	if err != nil {
 		t.Fatalf("While getting file info: %v", err)
 	}
 
-	cfi, err := os.Stat(copy)
+	cfi, err := os.Stat(duplicated)
 	if err != nil {
 		t.Fatalf("While getting file info: %v", err)
 	}
@@ -288,7 +288,7 @@ func verifyFile(t *testing.T, original, copy string) error {
 		t.Fatalf("While reading file: %v", err)
 	}
 
-	c, err := os.ReadFile(copy)
+	c, err := os.ReadFile(duplicated)
 	if err != nil {
 		t.Fatalf("While reading file: %v", err)
 	}

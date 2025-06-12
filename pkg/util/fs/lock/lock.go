@@ -70,8 +70,8 @@ type ByteRange struct {
 }
 
 // NewByteRange returns a file byte-range lock.
-func NewByteRange(fd int, start, len int64) *ByteRange {
-	return &ByteRange{fd, start, len}
+func NewByteRange(fd int, start, length int64) *ByteRange {
+	return &ByteRange{fd, start, length}
 }
 
 // flock places a byte-range lock.

@@ -319,8 +319,8 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 	currentTime := time.Now()
 	year, month, day := currentTime.Date()
 	date := strconv.Itoa(day) + `_` + month.String() + `_` + strconv.Itoa(year)
-	hour, min, sec := currentTime.Clock()
-	time := strconv.Itoa(hour) + `:` + strconv.Itoa(min) + `:` + strconv.Itoa(sec)
+	hours, minutes, secs := currentTime.Clock()
+	time := strconv.Itoa(hours) + `:` + strconv.Itoa(minutes) + `:` + strconv.Itoa(secs)
 	zone, _ := currentTime.Zone()
 	timeString := currentTime.Weekday().String() + `_` + date + `_` + time + `_` + zone
 	labels["org.label-schema.build-date"] = timeString
