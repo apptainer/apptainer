@@ -43,10 +43,10 @@ const (
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// remote get-login-password
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	RemoteGetLoginPasswordUse     string = `get-login-password` //nolint:gosec
+	RemoteGetLoginPasswordUse     string = `get-login-password`
 	RemoteGetLoginPasswordShort   string = `Retrieves the cli secret for the current logged in user`
 	RemoteGetLoginPasswordLong    string = `The 'remote get-login-password' command allows you to retrieve the cli secret for the current user.`
-	RemoteGetLoginPasswordExample string = `$ apptainer remote get-login-password | docker login -u user --password-stdin` //nolint:gosec
+	RemoteGetLoginPasswordExample string = `$ apptainer remote get-login-password | docker login -u user --password-stdin`
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// remote add command
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
