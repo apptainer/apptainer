@@ -236,8 +236,7 @@ func setGlobalRemoteConfig(_ *cobra.Command, _ []string) {
 		return
 	}
 
-	uid := uint32(os.Getuid())
-	if uid != 0 {
+	if os.Getuid() != 0 {
 		sylog.Fatalf("Unable to modify global endpoint configuration file: not root user")
 	}
 

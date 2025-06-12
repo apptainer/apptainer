@@ -14,9 +14,10 @@ package loop
 import (
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
+	"github.com/ccoveille/go-safecast"
 )
 
-func GetMaxLoopDevices() int {
+func GetMaxLoopDevices() (int, error) {
 	// if the caller has set the current config use it
 	// otherwise parse the default configuration file
 	cfg := apptainerconf.GetCurrentConfig()
@@ -26,8 +27,8 @@ func GetMaxLoopDevices() int {
 		configFile := buildcfg.APPTAINER_CONF_FILE
 		cfg, err = apptainerconf.Parse(configFile)
 		if err != nil {
-			return 256
+			return 256, nil
 		}
 	}
-	return int(cfg.MaxLoopDevices)
+	return safecast.ToInt(cfg.MaxLoopDevices)
 }

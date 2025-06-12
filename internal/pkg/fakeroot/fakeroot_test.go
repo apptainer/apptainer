@@ -220,7 +220,7 @@ func getUserFn(username string) (*user.User, error) {
 
 	splitted := strings.Split(username, "_")
 	prefix = splitted[0]
-	uid, err := strconv.Atoi(splitted[1])
+	uid, err := strconv.ParseUint(splitted[1], 10, 32)
 	if err != nil {
 		return nil, err
 	}

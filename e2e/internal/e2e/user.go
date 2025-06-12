@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
+	"github.com/ccoveille/go-safecast"
 )
 
 // CurrentUser returns the current user account information. Use of user.Current is
@@ -22,7 +23,11 @@ import (
 // user.Current was first called in unprivileged context and called after in a
 // privileged context as it will return information of unprivileged user.
 func CurrentUser(t *testing.T) *user.User {
-	u, err := user.GetPwUID(uint32(os.Getuid()))
+	uid, err := safecast.ToUint32(os.Getuid())
+	if err != nil {
+		t.Fatal(err)
+	}
+	u, err := user.GetPwUID(uid)
 	if err != nil {
 		t.Fatalf("failed to retrieve user information")
 	}

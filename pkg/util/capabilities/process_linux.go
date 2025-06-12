@@ -12,6 +12,7 @@ package capabilities
 import (
 	"fmt"
 
+	"github.com/ccoveille/go-safecast"
 	"golang.org/x/sys/unix"
 )
 
@@ -75,20 +76,26 @@ func SetProcessEffective(caps uint64) (uint64, error) {
 
 	oldEffective := uint64(data[0].Effective) | uint64(data[1].Effective)<<32
 
-	data[0].Effective = uint32(caps)
-	data[1].Effective = uint32(caps >> 32)
+	// We are intentionally discarding upper and lower bits here.
+	data[0].Effective = uint32(caps)       //nolint:gosec
+	data[1].Effective = uint32(caps >> 32) //nolint:gosec
 
 	effective := uint64(data[0].Effective) | uint64(data[1].Effective)<<32
 	permitted := uint64(data[0].Permitted) | uint64(data[1].Permitted)<<32
 
-	for i := 0; i <= len(Map); i++ {
+	mapLen, err := safecast.ToUint(len(Map))
+	if err != nil {
+		return 0, err
+	}
+
+	for i := uint(0); i <= mapLen; i++ {
 		if effective&uint64(1<<i) != 0 {
 			if permitted&uint64(1<<i) != 0 {
 				continue
 			}
 			strCap := "UNKNOWN"
 			for _, capability := range Map {
-				if uint(i) == capability.Value {
+				if i == capability.Value {
 					strCap = capability.Name
 					break
 				}

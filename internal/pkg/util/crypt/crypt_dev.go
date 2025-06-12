@@ -24,6 +24,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/fs/lock"
 	"github.com/apptainer/apptainer/pkg/util/loop"
+	"github.com/ccoveille/go-safecast"
 	"github.com/google/uuid"
 	"golang.org/x/sys/unix"
 )
@@ -45,8 +46,12 @@ var (
 // createLoop attaches the specified file to the next available loop
 // device and sets the sizelimit on it
 func createLoop(path string, offset, size uint64) (string, error) {
+	maxLoopDev, err := loop.GetMaxLoopDevices()
+	if err != nil {
+		return "", err
+	}
 	loopDev := &loop.Device{
-		MaxLoopDevices: loop.GetMaxLoopDevices(),
+		MaxLoopDevices: maxLoopDev,
 		Info: &unix.LoopInfo64{
 			Sizelimit: size,
 			Offset:    offset,
@@ -152,7 +157,11 @@ func (crypt *Device) EncryptFilesystem(path string, key []byte, tempdir string) 
 	cryptF.Close()
 
 	// Associate the temporary crypt file with a loop device
-	loop, err := createLoop(cryptF.Name(), 0, uint64(devSize))
+	uintDevSize, err := safecast.ToUint64(devSize)
+	if err != nil {
+		return "", err
+	}
+	loop, err := createLoop(cryptF.Name(), 0, uintDevSize)
 	if err != nil {
 		return "", err
 	}

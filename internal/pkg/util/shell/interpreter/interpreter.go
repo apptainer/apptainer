@@ -22,6 +22,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ccoveille/go-safecast"
 	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"
@@ -89,7 +90,11 @@ func defaultExecHandler(ctx context.Context, args []string) error {
 				c := strings.Join(args, " ")
 				return fmt.Errorf("command %q was killed after %s timeout", c, execTimeout)
 			}
-			return interp.NewExitStatus(uint8(status.ExitStatus()))
+			es, err := safecast.ToUint8(status.ExitStatus())
+			if err != nil {
+				return err
+			}
+			return interp.NewExitStatus(es)
 		}
 		return interp.NewExitStatus(1)
 	case *exec.Error:

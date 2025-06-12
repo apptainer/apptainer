@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	pwd "github.com/astromechza/etcpwdparse"
+	"github.com/ccoveille/go-safecast"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
@@ -54,7 +55,11 @@ func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (co
 		getPwUID = customLookup.GetPwUID
 	}
 
-	pwInfo, err := getPwUID(uint32(uid))
+	uid32, err := safecast.ToUint32(uid)
+	if err != nil {
+		return nil, err
+	}
+	pwInfo, err := getPwUID(uid32)
 	if err != nil {
 		return content, err
 	}
