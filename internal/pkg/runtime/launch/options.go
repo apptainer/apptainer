@@ -158,6 +158,9 @@ type launchOptions struct {
 	ShareNSMode       bool   // whether running in sharens mode
 	ShareNSFd         int    // fd opened in sharens mode
 	RunscriptTimeout  string // runscript timeout
+
+	// IntelHpu enables Intel(R) Gaudi accelerator support.
+	IntelHpu bool
 }
 
 type Launcher struct {
@@ -604,6 +607,14 @@ func OptShareNSFd(fd int) Option {
 func OptRunscriptTimeout(timeout string) Option {
 	return func(lo *launchOptions) error {
 		lo.RunscriptTimeout = timeout
+		return nil
+	}
+}
+
+// OptIntelHpu
+func OptIntelHpu(b bool) Option {
+	return func(lo *launchOptions) error {
+		lo.IntelHpu = b
 		return nil
 	}
 }

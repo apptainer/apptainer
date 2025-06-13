@@ -298,6 +298,81 @@ func (c ctx) testRocm(t *testing.T) {
 }
 
 //nolint:dupl
+func (c ctx) testIntelHpu(t *testing.T) {
+	require.IntelHpu(t)
+
+	imageURL := "docker://vault.habana.ai/gaudi-docker/1.20.0/ubuntu22.04/habanalabs/pytorch-installer-2.6.0:latest"
+	imageFile, err := fs.MakeTmpFile("", "test-hpu-", 0o755)
+	if err != nil {
+		t.Fatalf("Could not create test file: %v", err)
+	}
+
+	imageFile.Close()
+	imagePath := imageFile.Name()
+	defer os.Remove(imagePath)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs("--force", imagePath, imageURL),
+		e2e.ExpectExit(0),
+	)
+
+	// Need to override default logs location
+	// which is /var/log/habana_logs since it's read-only
+	// without --writable-tmpfs flag
+	logsEnv := "--env=HABANA_LOGS=/tmp/habana_logs"
+
+	// Basic test that we can see HPU devices and select devices
+	tests := []struct {
+		name        string
+		profile     e2e.Profile
+		args        []string
+		expectExit  int
+		expectMatch e2e.ApptainerCmdResultOp
+	}{
+		{
+			name:        "UserContainNoDevices",
+			profile:     e2e.UserProfile,
+			args:        []string{"--contain", "--intel-hpu", logsEnv, "--env=HABANA_VISIBLE_DEVICES=''", imagePath, "hl-smi"},
+			expectMatch: e2e.ExpectOutput(e2e.ContainMatch, "no AIPs available"),
+			expectExit:  1,
+		},
+		{
+			name:       "UserContainAllDevicesImplicit",
+			profile:    e2e.UserProfile,
+			args:       []string{"--contain", "--intel-hpu", logsEnv, imagePath, "hl-smi"},
+			expectExit: 0,
+		},
+		{
+			name:       "UserContainAllDevicesExplicit",
+			profile:    e2e.UserProfile,
+			args:       []string{"--contain", "--intel-hpu", logsEnv, "--env=HABANA_VISIBLE_DEVICES=all", imagePath, "hl-smi"},
+			expectExit: 0,
+		},
+		{
+			name:        "UserContainSelectedDevice",
+			profile:     e2e.UserProfile,
+			args:        []string{"--contain", "--intel-hpu", logsEnv, "--env=HABANA_VISIBLE_DEVICES=0", imagePath, "hl-smi", "--query-aip=index", "--format=csv,noheader"},
+			expectMatch: e2e.ExpectOutput(e2e.ExactMatch, "0"),
+			expectExit:  0,
+		},
+	}
+
+	for _, tt := range tests {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(tt.profile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(tt.args...),
+			e2e.ExpectExit(tt.expectExit, tt.expectMatch),
+		)
+	}
+}
+
+//nolint:dupl
 func (c ctx) testBuildNvidiaLegacy(t *testing.T) {
 	require.Nvidia(t)
 
@@ -560,6 +635,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"nvidia":       c.testNvidiaLegacy,
 		"nvccli":       c.testNvCCLI,
 		"rocm":         c.testRocm,
+		"intel-hpu":    c.testIntelHpu,
 		"build nvidia": c.testBuildNvidiaLegacy,
 		"build nvccli": c.testBuildNvCCLI,
 		"build rocm":   c.testBuildRocm,

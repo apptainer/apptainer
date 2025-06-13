@@ -95,6 +95,8 @@ var (
 	shareNS bool // mode for launching container using shared namespace
 
 	runscriptTimeout string // runscript timeout
+
+	intelHpu bool
 )
 
 // --app
@@ -854,6 +856,16 @@ var actionNetnsPathFlag = cmdline.Flag{
 	EnvKeys:      []string{"NETNS_PATH"},
 }
 
+// --intel-hpu
+var actionIntelHpuFlag = cmdline.Flag{
+	ID:           "actionIntelHpuFlag",
+	Value:        &intelHpu,
+	DefaultValue: false,
+	Name:         "intel-hpu",
+	Usage:        "enable Intel(R) Gaudi accelerator support while using a minimal /dev",
+	EnvKeys:      []string{"INTEL_HPU"},
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(ExecCmd)
@@ -953,5 +965,6 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&actionShareNSFlag, actionsCmd...)
 		cmdManager.RegisterFlagForCmd(&commonAuthFileFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionRunscriptTimeoutFlag, actionsRunscriptCmd...)
+		cmdManager.RegisterFlagForCmd(&actionIntelHpuFlag, actionsInstanceCmd...)
 	})
 }

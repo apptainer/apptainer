@@ -17,6 +17,15 @@ For older changes see the [archived Singularity change log](https://github.com/a
   directly from Dockerfile, without having to use Docker/Podman but only BuildKit.
   The full buildkit log file is included in the image, for traceability.
   It is also showed on the console, as a progress update while building.
+- Add support for selective mounting of Intel(R) Gaudi accelerators.
+  This feature is only for use in combination with a minimal `/dev` directory,
+  selected either with the `--contain` flag or by configuring `mount dev`
+  with the `minimal` option; otherwise all the devices are available.
+  This feature is enabled via the `--intel-hpu` option and by specifying the
+  `HABANA_VISIBLE_DEVICES` environment variable, which should contain
+  a comma-separated list of device IDs (e.g., `"1,2,3"`) or "all" to
+  import all of them.  The default if `HABANA_VISIBLE_DEVICES` is not
+  set is "all".
 
 ## v1.4.x changes
 
