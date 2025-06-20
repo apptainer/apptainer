@@ -40,7 +40,7 @@ require (
 	github.com/seccomp/containers-golang v0.6.0
 	github.com/seccomp/libseccomp-golang v0.11.0
 	github.com/shopspring/decimal v1.4.0
-	github.com/sigstore/sigstore v1.9.4
+	github.com/sigstore/sigstore v1.9.5
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
 	github.com/sylabs/json-resp v0.9.4
