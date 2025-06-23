@@ -54,8 +54,8 @@ func (s Squashfs) create(files []string, dest string, opts []string) error {
 			v := strings.Split(line, " ")[2]
 			if sv, err := semver.ParseTolerant(v); err == nil {
 				sylog.Debugf("mksquashfs version: %s", sv)
-				min := semver.MustParse("4.6.0")
-				hasPercentage = sv.GTE(min)
+				minVer := semver.MustParse("4.6.0")
+				hasPercentage = sv.GTE(minVer)
 			}
 		}
 	}

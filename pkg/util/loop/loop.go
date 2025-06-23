@@ -131,8 +131,8 @@ func (loop *Device) shareLoop(imageInfo *syscall.Stat_t, mode int, number *int) 
 // When setting loop device status, some kernel may return EAGAIN, this function would sync
 // workaround this error.
 func (loop *Device) attachLoop(imageFd uintptr, imageInfo *syscall.Stat_t, mode int, number *int) error {
-	releaseDevice := func(fd int, clear bool, releaseLock func()) {
-		if clear {
+	releaseDevice := func(fd int, clearDev bool, releaseLock func()) {
+		if clearDev {
 			unix.IoctlSetInt(fd, unix.LOOP_CLR_FD, 0)
 		}
 		syscall.Close(fd)

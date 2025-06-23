@@ -670,7 +670,7 @@ const (
 	uidFieldsCount = iota
 )
 
-func max(parts []int) (maxVal int) {
+func maxOfParts(parts []int) (maxVal int) {
 	maxVal = 0
 	if len(parts) > 0 {
 		maxVal = parts[0]
@@ -713,7 +713,7 @@ func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 		l = strings.TrimSpace(l)
 		// the spec allows the server to strip trailing field separators, add enough
 		// separators to prevent invalid index during remaining parse operations
-		l = l + strings.Repeat(":", max([]int{infoFieldsCount, pubFieldsCount, uidFieldsCount}))
+		l = l + strings.Repeat(":", maxOfParts([]int{infoFieldsCount, pubFieldsCount, uidFieldsCount}))
 
 		fields := strings.Split(strings.TrimSpace(l), ":")
 		switch fields[tagField] {
