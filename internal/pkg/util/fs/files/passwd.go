@@ -59,6 +59,7 @@ func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (co
 	if err != nil {
 		return nil, err
 	}
+
 	pwInfo, err := getPwUID(uid32)
 	if err != nil {
 		return content, err
@@ -83,7 +84,11 @@ func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (co
 		if entry.Uid() == uid {
 			userExists = true
 			// If user already exists in container, update their homedir
-			lines[i] = makePasswdLine(entry.Username(), uint32(entry.Uid()), uint32(entry.Gid()), entry.Info(), homeDir, entry.Shell())
+			gid32, err := safecast.ToUint32(entry.Gid())
+			if err != nil {
+				return nil, err
+			}
+			lines[i] = makePasswdLine(entry.Username(), uid32, gid32, entry.Info(), homeDir, entry.Shell())
 			break
 		}
 	}

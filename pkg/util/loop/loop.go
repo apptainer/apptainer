@@ -19,6 +19,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/fs/lock"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
+	"github.com/ccoveille/go-safecast"
 	"golang.org/x/sys/unix"
 )
 
@@ -435,7 +436,14 @@ func getLoopPath(device int) string {
 
 func createLoopDevice(device int) error {
 	// create loop device with mknod as a fallback
-	dev := int(unix.Mkdev(uint32(7), uint32(device)))
+	dev32, err := safecast.ToUint32(device)
+	if err != nil {
+		return fmt.Errorf("failed to convert device to uint32: %s", err)
+	}
+	dev, err := safecast.ToInt(unix.Mkdev(7, dev32))
+	if err != nil {
+		return fmt.Errorf("failed to convert device to int: %s", err)
+	}
 	path := getLoopPath(device)
 	esys := syscall.Mknod(path, syscall.S_IFBLK|0o660, dev)
 	if errno, ok := esys.(syscall.Errno); ok {

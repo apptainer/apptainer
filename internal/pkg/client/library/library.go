@@ -87,9 +87,13 @@ func getDownloadConfig() (libClient.Downloader, error) {
 		}
 	}
 
-	concurrency, err := getEnvInt64("APPTAINER_DOWNLOAD_CONCURRENCY", conf.DownloadConcurrency)
+	concurrency64, err := getEnvInt64("APPTAINER_DOWNLOAD_CONCURRENCY", conf.DownloadConcurrency)
 	if err != nil {
-		return libClient.Downloader{}, fmt.Errorf("invalid download concurrency value (%v)", concurrency)
+		return libClient.Downloader{}, fmt.Errorf("invalid download concurrency value (%v)", concurrency64)
+	}
+	concurrency, err := safecast.ToUint(concurrency64)
+	if err != nil {
+		return libClient.Downloader{}, fmt.Errorf("failed to convert concurrency to uint: %s", err)
 	}
 	partSize, err := getEnvInt64("APPTAINER_DOWNLOAD_PART_SIZE", conf.DownloadPartSize)
 	if err != nil {
@@ -101,7 +105,7 @@ func getDownloadConfig() (libClient.Downloader, error) {
 	}
 
 	return libClient.Downloader{
-		Concurrency: uint(concurrency),
+		Concurrency: concurrency,
 		PartSize:    partSize,
 		BufferSize:  bufferSize,
 	}, nil
