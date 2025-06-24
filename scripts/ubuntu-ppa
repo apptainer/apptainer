@@ -1,0 +1,68 @@
+#!/bin/bash
+
+set -e
+
+if [ $# -ne 1 ];then
+   echo "Should be exactly one arg passed"
+   exit 1
+fi
+
+if [ -z $1 ]; then
+   echo "The input param is empty"
+   exit 1
+fi
+
+APPTAINER_VERSION=$1
+URL="https://github.com/apptainer/apptainer/releases/download/v$APPTAINER_VERSION/apptainer-$APPTAINER_VERSION.tar.gz"
+
+if [ -z "${OS_TYPE}" ]; then
+   echo "OS_TYPE is unset"
+   exit 1
+fi
+
+if [ -z "${OS_VERSION}" ]; then
+   echo "OS_VERSION is unset"
+   exit 1
+fi
+
+if [ -z "${OS_NAME}" ]; then
+   echo "OS_NAME is unset"
+   exit 1
+fi
+
+if [ -z "${GO_ARCH}" ]; then
+   echo "GO_ARCH is unset"
+   exit 1
+fi
+
+UBUNTU_VERSION="$OS_TYPE$OS_VERSION"
+
+ls -al
+wget -O apptainer.tar.gz "$URL" && tar -xzvf apptainer.tar.gz
+cd "apptainer-$APPTAINER_VERSION"
+
+BUILD_VERSION="0.0.20-1~$UBUNTU_VERSION"
+#BUILD_VERSION="$APPTAINER_VERSION-1~$UBUNTU_VERSION"
+echo "0.0.20" > VERSION
+# echo "$APPTAINER_VERSION" > VERSION
+
+sed -i "s/0.1.0-1/$BUILD_VERSION/g" dist/debian/changelog
+sed -i "s/unstable/$OS_NAME/g" dist/debian/changelog
+sed -i "s/Placeholder/rebuild for $OS_NAME/g" dist/debian/changelog
+
+sed -i '31i GOMODCACHE = $${TMPDIR:-/tmp}/appdebgo/modcache' dist/debian/rules
+sed -i 's/GOCACHE=\$(GOCACHE)/GOCACHE=\$(GOCACHE) GOMODCACHE=\$(GOMODCACHE)/g' dist/debian/rules
+
+sed -i "88,94d" scripts/ci-deb-build-test
+sed -i '88i \ \ debuild --prepend-path $PATH -S -uc -us --lintian-opts --display-info --show-overrides' scripts/ci-deb-build-test
+sed -i '86i \ \ find debian/ -type f -name "*.tar.gz" -printf "debian/%f\n" >> debian/source/include-binaries' scripts/ci-deb-build-test
+#sed -i "50i tar -czf apptainer_$APPTAINER_VERSION.orig.tar.gz -C src/ ." scripts/ci-deb-build-test
+sed -i "50i tar -czf apptainer_0.0.20.orig.tar.gz -C src/ ." scripts/ci-deb-build-test
+
+./scripts/ci-docker-run
+
+ls -al
+find . -maxdepth 1 -type f -exec sudo chown -R "$USER:$USER" {} \;
+sed -i "s/Changed-By: Gregory M\. Kurtzer <gmkurtzer@gmail\.com>/Changed-By: Xu Yang <jasonyangshadow@gmail\.com>/" "apptainer_${BUILD_VERSION}_source.changes"
+debsign -p "gpg --pinentry-mode loopback --passphrase $GPG_PASSPHRASE" -S -k FECD51E916A94E226507325F20DCFCC7C2389D6B apptainer_${BUILD_VERSION}_source.changes
+dput -f ppa:jasonyangshadow/apptainer "apptainer_${BUILD_VERSION}_source.changes" 

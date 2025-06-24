@@ -1,0 +1,50 @@
+name: ubuntu-ppa
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        type: string
+        description: 'apptaienr tag version'
+        required: true
+  pull_request:
+
+jobs:
+  ubuntu_ppa_release:
+    name: ubuntu_ppa_release
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+            #- version: '24.04'
+            #  name: noble
+             - version: '22.04'
+               name: jammy
+            # - version: '20.04'
+            #   name: focal
+    steps:
+      - uses: actions/checkout@v4
+      - run: git fetch --prune --unshallow --tags --force
+
+      - name: Check if release is needed because tag matches latest annotated
+        env:
+          GITHUB_REF: ${{github.ref}}
+        run: |
+          echo "do_release=true" >> $GITHUB_ENV
+          echo "git_tag=1.4.1" >> $GITHUB_ENV
+          echo "${{ inputs.tag }}"
+
+      - name: Build and push to Ubuntu PPA
+        if: env.do_release
+        env:
+          OS_TYPE: ubuntu
+          OS_VERSION: ${{matrix.version}}
+          OS_NAME: ${{matrix.name}}
+          GO_ARCH: linux-amd64
+        run: |
+          sudo apt update && sudo apt install -y devscripts
+          #echo "${{ secrets.APPTAINRE_UBUNTU_PPA_PRIVATE_KEY }}" | gpg --batch --import --passphrase "${{ secrets.APPTAINRE_UBUNTU_PPA_PRIVATE_KEY_PASSPHRASE }}" 
+          #export GPG_PASSPHRASE="${{ secrets.APPTAINRE_UBUNTU_PPA_PRIVATE_KEY_PASSPHRASE }}"
+          #gpg --list-keys
+          #./scripts/ubuntu-ppa "$git_tag"
+          #unset GPG_PASSPHRASE
