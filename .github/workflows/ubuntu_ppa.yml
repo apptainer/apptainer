@@ -1,0 +1,56 @@
+name: ubuntu-ppa
+
+on:
+    push:
+        tags:
+            - 'v*.*.*'
+    workflow_dispatch:
+        inputs:
+            tag:
+                description: apptainer tag
+                required: true
+                default: ''
+
+jobs:
+  ubuntu_ppa_release:
+    name: ubuntu_ppa_release
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        version: [24.04, 22.04, 20.04]
+        name: [noble, jammy, focal]
+    steps:
+      - name: Check if release is needed because tag matches latest annotated
+        env:
+          GITHUB_REF: ${{github.ref}}
+        run: |
+          GETVERSION="$(./scripts/get-version)"
+          GITTAG="${GITHUB_REF#refs/tags/v*}"
+          if [ "$GETVERSION" == "$GITTAG" ]
+          then
+            echo "do_release=true" >> $GITHUB_ENV
+            echo "git_tag=$GITTAG" >> $GITHUB_ENV
+            # need update vendor
+            go mod vendor
+            go mod tidy
+          elif [ ${{ inputs.tag }} != "" ]
+          then
+            echo "do_release=true" >> $GITHUB_ENV
+            echo "git_tag=${{ inputs.tag }}" >> $GITHUB_ENV
+            git checkout v${{ inputs.tag }}
+            # need update vendor
+            go mod vendor
+            go mod tidy
+          else
+            echo "Skipping because $GETVERSION did not match $GITTAG"
+          fi
+      
+      - name: Debuild
+        if: env.do_release
+        env:
+          OS_TYPE: ubuntu
+          OS_VERSION: ${{matrix.version}}
+          OS_NAME: ${{matrix.name}}
+          GO_ARCH: linux-amd64
+        run: |
+          ./scripts/ubuntu-ppa ${{ inputs.tag }}
