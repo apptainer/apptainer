@@ -1,0 +1,65 @@
+#!/bin/bash
+
+set -e
+
+if [ $# -ne 2 ];then
+   echo "Should be exactly two args passed"
+   exit 1
+fi
+
+if [ -z $1 ]; then
+   echo "Apptainer version is empty"
+   exit 1
+fi
+
+APPTAINER_VERSION=$1
+APPTAINER_REVISION=$2
+
+if [ -z "${OS_TYPE}" ]; then
+   echo "OS_TYPE is unset"
+   exit 1
+fi
+
+if [ -z "${OS_VERSION}" ]; then
+   echo "OS_VERSION is unset"
+   exit 1
+fi
+
+if [ -z "${OS_NAME}" ]; then
+   echo "OS_NAME is unset"
+   exit 1
+fi
+
+if [ -z "${TARGET_PPA}" ]; then
+   echo "TARGET_PPA is unset"
+   exit 1
+fi
+
+if [ -z "${GO_ARCH}" ]; then
+   GO_ARCH="linux-amd64"
+fi
+
+BUILD_VERSION="$APPTAINER_VERSION-$APPTAINER_REVISION~$OS_NAME"
+
+# replace debian related stuffs for debuild
+sed -i "s/0.1.0-1/$BUILD_VERSION/g" dist/debian/changelog
+sed -i "s/unstable/$OS_NAME/g" dist/debian/changelog
+sed -i "s/Placeholder/rebuild for $OS_NAME/g" dist/debian/changelog
+
+sed -i '82,83d' dist/debian/rules
+sed -i "81c \ \ \ \ \ \ \ \ \ \ \ \ tar -xf \$\$HERE/debian/go\$(MINGO_VERSION).\$(GO_ARCH).tar.gz; \\\\" dist/debian/rules
+# sed -i '81c \    \    \    tar -xf $$HERE/debian/go$(MINGO_VERSION).$(GO_ARCH).tar.gz; \\' dist/debian/rules
+sed -i '31i GOMODCACHE = $${TMPDIR:-/tmp}/appdebgo/modcache' dist/debian/rules
+sed -i '9i GO_ARCH := linux-$(shell dpkg --print-architecture)' dist/debian/rules
+sed -i 's/GOCACHE=\$(GOCACHE)/GOCACHE=\$(GOCACHE) GOMODCACHE=\$(GOMODCACHE)/g' dist/debian/rules
+
+# real build
+./scripts/ci-docker-run
+
+# change permission, sign the changes and upload via dput
+sudo chown "$USER:$USER" .
+sudo chown "$USER:$USER" ..
+find . -maxdepth 1 -type f -exec sudo chown -R "$USER:$USER" {} \;
+sed -i "s/Changed-By: Gregory M\. Kurtzer <gmkurtzer@gmail\.com>/Changed-By: Xu Yang <jasonyangshadow@gmail\.com>/" "apptainer_${BUILD_VERSION}_source.changes"
+debsign -p "gpg --pinentry-mode loopback --passphrase $GPG_PASSPHRASE" -S -k FECD51E916A94E226507325F20DCFCC7C2389D6B apptainer_${BUILD_VERSION}_source.changes
+dput -f -U "${TARGET_PPA}" "apptainer_${BUILD_VERSION}_source.changes" 
