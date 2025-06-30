@@ -1,0 +1,139 @@
+name: ubuntu-ppa
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        type: string
+        description: 'apptainer published tag (e.g. 1.4.1), this is used for retrieving tagged source code)'
+        required: true
+      revision:
+        type: number
+        description: 'publish revision number (default: 1)'
+        required: false
+        default: 1
+      sub_tag:
+        type: string
+        description: 'sub tags to append (e.g. stable => 1.4.1-stable),this will add sub tags to the above main tag to create different changelogs and uploads'
+        required: false
+jobs:
+  prepare:
+    name: prepare
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: git fetch --prune --unshallow --tags --force
+
+      - name: Prepare the apptainer source package
+        run: |
+          if [ -z "${{ inputs.tag }}"]; then
+            echo "Skipping because no apptainer tag is defined"
+            # terminate the job
+            exit 1
+          fi
+
+          APPTAINER_VERSION="${{ inputs.tag }}"
+
+          # download released apptainer-{APPTAINER_VERSION}.tar.gz from github
+          URL="https://github.com/apptainer/apptainer/releases/download/v$APPTAINER_VERSION/apptainer-$APPTAINER_VERSION.tar.gz"
+          wget -O "apptainer-$APPTAINER_VERSION.tar.gz" "$URL" && tar -xzvf "apptainer-$APPTAINER_VERSION.tar.gz" && rm -rf "apptainer-$APPTAINER_VERSION.tar.gz"
+
+          # update scripts/ci-deb-build-test script
+          new_content=$(cat << 'EOF'
+          su testuser -c '
+            set -x
+            set -e
+            mv dist/debian .
+            MIN_VERSION="$(scripts/get-min-go-version)"
+            GOSRC="go$MIN_VERSION.src.tar.gz"
+            GOBIN_AMD64="go$MIN_VERSION.linux-amd64.tar.gz"
+            GOBIN_ARM64="go$MIN_VERSION.linux-arm64.tar.gz"
+            curl -f -L -sS -o debian/$GOBIN_AMD64 https://golang.org/dl/$GOBIN_AMD64
+            curl -f -L -sS -o debian/$GOBIN_ARM64 https://golang.org/dl/$GOBIN_ARM64
+            if [ -n "'$GO_ARCH'" ]; then
+              # Download and install binary too to avoid debuild having to compile the
+              #  go toolchain from source
+              GOBIN="$(echo "$GOSRC"|sed "s/\.src./.'$GO_ARCH'./")"
+              tar -xzf debian/"$GOBIN" -C /local
+              PATH=/local/go/bin:$PATH
+            fi
+            go version
+            ./scripts/download-dependencies debian
+            find debian/ -type f -name "*.tar.gz" -printf "debian/%f\n" >> debian/source/include-binaries
+            export DEB_FULLNAME="'"${DEB_FULLNAME:-CI Test}"'"
+            export DEBEMAIL="'${DEBEMAIL:-citest@example.com}'"
+            debuild --prepend-path $PATH -S -uc -us --lintian-opts --display-info --show-overrides
+          '
+          EOF
+          )
+
+          sed -i "69,95d" "apptainer-$APPTAINER_VERSION/scripts/ci-deb-build-test"
+          echo "$new_content" >> "apptainer-$APPTAINER_VERSION/scripts/ci-deb-build-test"
+          sed -i '49c mv .??* !(src|*.orig.tar.gz) src' "apptainer-$APPTAINER_VERSION/scripts/ci-deb-build-test"
+
+          # copy the latest scripts/ubuntu-ppa into the orig.tar.gz
+          cp scripts/ubuntu-ppa "apptainer-$APPTAINER_VERSION/scripts/ubuntu-ppa"
+
+          # retar the apptainer folder to create .orig.tar.gz file for debuild to use
+          tar --exclude="apptainer-$APPTAINER_VERSION/dist/debian" -czf "apptainer_$APPTAINER_VERSION.orig.tar.gz" -C "apptainer-$APPTAINER_VERSION/" .
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apptainer-artifact
+          path: "*.orig.tar.gz"
+
+  ubuntu-ppa-release:
+    runs-on: ubuntu-22.04
+    needs: prepare
+    strategy:
+      matrix:
+        include:
+            - version: '24.04'
+              name: noble
+            - version: '22.04'
+              name: jammy
+            - version: '20.04'
+              name: focal
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: apptainer-artifact
+
+      - name: Build and push to Ubuntu PPA
+        env:
+          OS_TYPE: ubuntu
+          OS_VERSION: ${{matrix.version}}
+          OS_NAME: ${{matrix.name}}
+          GO_ARCH: linux-amd64
+        run: |
+          APPTAINER_VERSION="${{ inputs.tag }}"
+          BUILD_VERSION="${{ inputs.tag }}"
+          if [ -n "${{ inputs.sub_tag }}" ]; then
+            BUILD_VERSION="${{ inputs.tag }}-${{ inputs.sub_tag }}"
+          fi
+          APPTAINER_REVISION="${{ inputs.revision }}"
+
+          # install necessary packages
+          sudo apt update && sudo apt install -y devscripts
+
+          # set target_ppa environment variable
+          export TARGET_PPA="${{ vars.TARGET_PPA }}"
+
+          # set gpg keys
+          echo "${{ secrets.APPTAINER_UBUNTU_PPA_PRIVATE_KEY }}" | gpg --batch --import --passphrase "${{ secrets.APPTAINER_UBUNTU_PPA_PRIVATE_KEY_PASSPHRASE }}" 
+          export GPG_PASSPHRASE="${{ secrets.APPTAINER_UBUNTU_PPA_PRIVATE_KEY_PASSPHRASE }}"
+          gpg --list-keys
+
+          # uncompress the apptainer source code
+          mkdir -p "apptainer-$APPTAINER_VERSION"
+          tar -xzvf "apptainer_$APPTAINER_VERSION.orig.tar.gz" -C "apptainer-$APPTAINER_VERSION/"
+          mv "apptainer_$APPTAINER_VERSION.orig.tar.gz" "apptainer-$APPTAINER_VERSION/apptainer_$BUILD_VERSION.orig.tar.gz"
+          cd "apptainer-$APPTAINER_VERSION"
+
+          # call real script to build and push
+          ./scripts/ubuntu-ppa "$BUILD_VERSION" "$APPTAINER_REVISION"
+
+          # cleanup
+          unset GPG_PASSPHRASE
