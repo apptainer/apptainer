@@ -35,6 +35,11 @@ if [ -z "${TARGET_PPA}" ]; then
    exit 1
 fi
 
+if [ -z "${PPA_SIGN_KEY}" ]; then
+   echo "PPA_SIGN_KEY is unset"
+   exit 1
+fi
+
 if [ -z "${GO_ARCH}" ]; then
    GO_ARCH="linux-amd64"
 fi
@@ -60,6 +65,6 @@ sed -i 's/GOCACHE=\$(GOCACHE)/GOCACHE=\$(GOCACHE) GOMODCACHE=\$(GOMODCACHE)/g' d
 sudo chown "$USER:$USER" .
 sudo chown "$USER:$USER" ..
 find . -maxdepth 1 -type f -exec sudo chown -R "$USER:$USER" {} \;
-sed -i "s/Changed-By: Gregory M\. Kurtzer <gmkurtzer@gmail\.com>/Changed-By: Xu Yang <jasonyangshadow@gmail\.com>/" "apptainer_${BUILD_VERSION}_source.changes"
-debsign -p "gpg --pinentry-mode loopback --passphrase $GPG_PASSPHRASE" -S -k FECD51E916A94E226507325F20DCFCC7C2389D6B apptainer_${BUILD_VERSION}_source.changes
+sed -i "s/Changed-By: Gregory M\. Kurtzer <gmkurtzer@gmail\.com>/Changed-By: TSC <tsc@apptainer\.org>/" "apptainer_${BUILD_VERSION}_source.changes"
+debsign -p "gpg --pinentry-mode loopback --passphrase $GPG_PASSPHRASE" -S -k "${PPA_SIGN_KEY}" "apptainer_${BUILD_VERSION}_source.changes"
 dput -f -U "${TARGET_PPA}" "apptainer_${BUILD_VERSION}_source.changes" 
