@@ -121,6 +121,9 @@ jobs:
           # set target_ppa environment variable
           export TARGET_PPA="${{ vars.TARGET_PPA }}"
 
+          # set PPA_SIGN_KEY environment variable
+          export PPA_SIGN_KEY="${{ vars.PPA_SIGN_KEY }}"
+
           # set gpg keys
           echo "${{ secrets.APPTAINER_UBUNTU_PPA_PRIVATE_KEY }}" | gpg --batch --import --passphrase "${{ secrets.APPTAINER_UBUNTU_PPA_PRIVATE_KEY_PASSPHRASE }}" 
           export GPG_PASSPHRASE="${{ secrets.APPTAINER_UBUNTU_PPA_PRIVATE_KEY_PASSPHRASE }}"
