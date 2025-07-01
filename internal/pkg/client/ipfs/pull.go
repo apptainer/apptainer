@@ -122,8 +122,7 @@ func DownloadImage(ctx context.Context, filePath string, ipfsURL string, outCid 
 	return nil
 }
 
-// pull will pull a http(s) image into the cache if directTo="", or a specific file if directTo is set.
-func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string) (imagePath string, err error) {
+func decode(pullFrom string, outCid *string) (hash string, err error) {
 	// We will cache using the sha256 from the URL, assuming that it is
 	// a multibase base32 string containing a multihash sha2-256 string
 	// of a multicodec merkle tree dag in protobuf format (i.e. a CIDv1)
@@ -133,12 +132,26 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 	cid := strings.Replace(pullFrom, "ipfs://", "", 1)
 	cid = strings.Split(cid, "/")[0]
 	cid = strings.Split(cid, "?")[0]
+	if outCid != nil {
+		*outCid = cid
+	}
 
 	sha, err := decodeCID(cid)
 	if err != nil {
 		return "", err
 	}
-	hash := hex.EncodeToString(sha)
+	hash = hex.EncodeToString(sha)
+	return hash, nil
+}
+
+// pull will pull a http(s) image into the cache if directTo="", or a specific file if directTo is set.
+func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string) (imagePath string, err error) {
+	var cid string
+
+	hash, err := decode(pullFrom, &cid)
+	if err != nil {
+		return "", err
+	}
 	sylog.Debugf("Image hash for cache is: %s", hash)
 
 	if directTo != "" {
@@ -170,7 +183,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 			}
 
 			// if this cid is for the directory, then link it to the file cid
-			if cid != filecid && filecid != "" {
+			if cid != "" && filecid != "" && cid != filecid {
 				sha, err := decodeCID(filecid)
 				if err != nil {
 					return "", err

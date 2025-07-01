@@ -111,8 +111,7 @@ func DownloadImage(ctx context.Context, filePath string, netURL string) error {
 	return nil
 }
 
-// pull will pull a http(s) image into the cache if directTo="", or a specific file if directTo is set.
-func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string) (imagePath string, err error) {
+func head(pullFrom string) (hash string, err error) {
 	// We will cache using a sha256 over the URL and the date of the file that
 	// is to be fetched, as returned by an HTTP HEAD call and the Last-Modified
 	// header. If no date is available, use the current date-time, which will
@@ -137,7 +136,16 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 
 	h := sha256.New()
 	h.Write([]byte(pullFrom + imageDate))
-	hash := hex.EncodeToString(h.Sum(nil))
+	hash = hex.EncodeToString(h.Sum(nil))
+	return hash, nil
+}
+
+// pull will pull a http(s) image into the cache if directTo="", or a specific file if directTo is set.
+func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string) (imagePath string, err error) {
+	hash, err := head(pullFrom)
+	if err != nil {
+		return "", err
+	}
 	sylog.Debugf("Image hash for cache is: %s", hash)
 
 	if directTo != "" {
