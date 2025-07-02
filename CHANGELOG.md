@@ -5,6 +5,12 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.4.x changes
+
+Changes since 1.4.1
+
+- Add support of automatic triggering of Ubuntu PPA builds.
+
 ## v1.4.1 - \[2025-05-14\]
 
 - Fix the use of libsubid which had been broken by the revision applied in
