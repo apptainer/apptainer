@@ -675,6 +675,9 @@ Enterprise Performance Computing (EPC)`
   oras: Pull a SIF image from an OCI registry that supports ORAS.
       oras://registry/namespace/image:tag
 
+  ipfs: Pull a SIF image from an IPFS cluster, using a HTTP gateway.
+      ipfs://cid
+
   http, https: Pull an image using the http(s?) protocol
       https://example.com/alpine.sif`
 	PullExample string = `
