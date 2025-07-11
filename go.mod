@@ -45,10 +45,10 @@ require (
 	github.com/spf13/pflag v1.0.6
 	github.com/sylabs/json-resp v0.9.4
 	github.com/vbauerster/mpb/v8 v8.10.2
-	golang.org/x/crypto v0.39.0
+	golang.org/x/crypto v0.40.0
 	golang.org/x/sys v0.34.0
-	golang.org/x/term v0.32.0
-	golang.org/x/text v0.26.0
+	golang.org/x/term v0.33.0
+	golang.org/x/text v0.27.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools/v3 v3.5.2
 	mvdan.cc/sh/v3 v3.11.0
@@ -180,8 +180,8 @@ require (
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
-	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/sync v0.15.0 // indirect
+	golang.org/x/net v0.41.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250303144028-a0af3efb3deb // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
 	google.golang.org/grpc v1.71.1 // indirect
