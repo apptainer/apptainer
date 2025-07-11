@@ -41,7 +41,7 @@ require (
 	github.com/sigstore/sigstore v1.8.14
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
-	github.com/sylabs/json-resp v0.9.4
+	github.com/sylabs/json-resp v0.9.5
 	github.com/vbauerster/mpb/v8 v8.9.1
 	golang.org/x/crypto v0.33.0
 	golang.org/x/sys v0.30.0
