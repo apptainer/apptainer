@@ -10,6 +10,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 Changes since 1.4.1
 
 - Add support of automatic triggering of Ubuntu PPA builds.
+- Fix the signature verification failure for unsigned images.
 
 ## v1.4.1 - \[2025-05-14\]
 
