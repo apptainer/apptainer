@@ -1,3 +1,12 @@
+---
+name: Default issue template
+about: Default template for all
+title: ''
+labels: ''
+assignees: ''
+
+---
+
 ### Version of Apptainer
 
 What version of Apptainer (or Singularity) are you using? Run
