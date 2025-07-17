@@ -49,6 +49,8 @@ const (
 	ShubCacheType = "shub"
 	// OrasCacheType specifies the cache holds SIF images pulled from Oras sources
 	OrasCacheType = "oras"
+	// OrasCacheType specifies the cache holds SIF images pulled from IPFS sources
+	IpfsCacheType = "ipfs"
 	// NetCacheType specifies the cache holds images pulled from http(s) internet sources
 	NetCacheType = "net"
 )
@@ -60,6 +62,7 @@ var (
 		OciTempCacheType,
 		ShubCacheType,
 		OrasCacheType,
+		IpfsCacheType,
 		NetCacheType,
 	}
 	// OciCacheTypes specifies the OCI cache types.
