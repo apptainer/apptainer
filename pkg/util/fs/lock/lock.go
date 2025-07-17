@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -70,8 +70,8 @@ type ByteRange struct {
 }
 
 // NewByteRange returns a file byte-range lock.
-func NewByteRange(fd int, start, len int64) *ByteRange {
-	return &ByteRange{fd, start, len}
+func NewByteRange(fd int, start, length int64) *ByteRange {
+	return &ByteRange{fd, start, length}
 }
 
 // flock places a byte-range lock.

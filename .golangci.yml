@@ -11,11 +11,11 @@ linters:
     - bodyclose
     - containedctx
     - contextcheck
+    - copyloopvar
     - decorder
     - dogsled
     - dupl
     - dupword
-    - exportloopref
     - gofumpt
     - goimports
     - gomodguard
@@ -41,7 +41,7 @@ linters-settings:
     locale: US
 
 issues:
-  max-per-linter: 0
+  max-issues-per-linter: 0
   max-same-issues: 0
   exclude-rules:
     - linters:

@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2018-2023, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -41,6 +41,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	keyClient "github.com/apptainer/container-key-client/client"
+	"github.com/ccoveille/go-safecast"
 	"github.com/spf13/cobra"
 )
 
@@ -79,7 +80,10 @@ func fakerootExec(isDeffile, unprivEncrypt bool) {
 	}
 
 	var err error
-	uid := uint32(os.Getuid())
+	uid, err := safecast.ToUint32(os.Getuid())
+	if err != nil {
+		sylog.Fatalf("while getting uid: %v", err)
+	}
 
 	// Append the user's real UID to the environment as _CONTAINERS_ROOTLESS_UID.
 	// This is required in fakeroot builds that may use containers/image 5.7 and above.

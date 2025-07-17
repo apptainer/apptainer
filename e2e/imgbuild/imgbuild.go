@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -175,8 +175,6 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 
 	profiles := []e2e.Profile{e2e.RootProfile, e2e.FakerootProfile}
 	for _, profile := range profiles {
-		profile := profile
-
 		t.Run(profile.String(), func(t *testing.T) {
 			for _, tc := range tt {
 
@@ -355,8 +353,6 @@ func (c imgBuildTests) buildLocalImage(t *testing.T) {
 
 	profiles := []e2e.Profile{e2e.RootProfile, e2e.FakerootProfile}
 	for _, profile := range profiles {
-		profile := profile
-
 		t.Run(profile.String(), func(t *testing.T) {
 			for i, tc := range tt {
 				imagePath := filepath.Join(tmpdir, fmt.Sprintf("image-%d", i))
@@ -930,8 +926,6 @@ func (c imgBuildTests) buildDefinition(t *testing.T) {
 
 	profiles := []e2e.Profile{e2e.RootProfile, e2e.FakerootProfile}
 	for _, profile := range profiles {
-		profile := profile
-
 		t.Run(profile.String(), func(t *testing.T) {
 			for name, dfd := range tt {
 				dn, cleanup := c.tempDir(t, "build-definition")

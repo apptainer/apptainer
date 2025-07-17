@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2022-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the LICENSE.md file
 // distributed with the sources of this project regarding your rights to use or distribute this
 // software.
@@ -80,7 +80,11 @@ func createRoot(start time.Time) (crypto.PrivateKey, *x509.Certificate, error) {
 		OCSPServer:            []string{"http://localhost:9999"},
 	}
 
-	c, err := createCertificate(tmpl, tmpl, key.(crypto.Signer).Public(), key)
+	cs, ok := key.(crypto.Signer)
+	if !ok {
+		return nil, nil, fmt.Errorf("couldn't get crypto.Signer for %v", key)
+	}
+	c, err := createCertificate(tmpl, tmpl, cs.Public(), key)
 	return key, c, err
 }
 
@@ -107,7 +111,11 @@ func createIntermediate(start time.Time, parentKey crypto.PrivateKey, parent *x5
 		OCSPServer:            []string{"http://localhost:9999"},
 	}
 
-	c, err := createCertificate(tmpl, parent, key.(crypto.Signer).Public(), parentKey)
+	cs, ok := key.(crypto.Signer)
+	if !ok {
+		return nil, nil, fmt.Errorf("couldn't get crypto.Signer for %v", key)
+	}
+	c, err := createCertificate(tmpl, parent, cs.Public(), parentKey)
 	return key, c, err
 }
 

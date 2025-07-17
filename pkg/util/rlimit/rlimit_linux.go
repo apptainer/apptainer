@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -34,7 +34,7 @@ var resource = map[string]int{
 }
 
 // Set sets soft and hard resource limit
-func Set(res string, cur uint64, max uint64) error {
+func Set(res string, rCur uint64, rMax uint64) error {
 	var rlim syscall.Rlimit
 
 	resVal, ok := resource[res]
@@ -42,8 +42,8 @@ func Set(res string, cur uint64, max uint64) error {
 		return fmt.Errorf("%s is not a valid resource type", res)
 	}
 
-	rlim.Cur = cur
-	rlim.Max = max
+	rlim.Cur = rCur
+	rlim.Max = rMax
 
 	if err := syscall.Setrlimit(resVal, &rlim); err != nil {
 		return fmt.Errorf("failed to set resource limit %s: %s", res, err)
@@ -53,7 +53,7 @@ func Set(res string, cur uint64, max uint64) error {
 }
 
 // Get retrieves soft and hard resource limit
-func Get(res string) (cur uint64, max uint64, err error) {
+func Get(res string) (rCur uint64, rMax uint64, err error) {
 	var rlim syscall.Rlimit
 
 	resVal, ok := resource[res]
@@ -67,8 +67,8 @@ func Get(res string) (cur uint64, max uint64, err error) {
 		return
 	}
 
-	cur = rlim.Cur
-	max = rlim.Max
+	rCur = rlim.Cur
+	rMax = rlim.Max
 
 	return
 }

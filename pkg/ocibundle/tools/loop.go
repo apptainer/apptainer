@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -21,8 +21,12 @@ import (
 // CreateLoop associates a file to loop device and returns
 // path of loop device used and a closer to close the loop device
 func CreateLoop(file *os.File, offset, size uint64) (string, io.Closer, error) {
+	maxLoopDev, err := loop.GetMaxLoopDevices()
+	if err != nil {
+		return "", nil, err
+	}
 	loopDev := &loop.Device{
-		MaxLoopDevices: loop.GetMaxLoopDevices(),
+		MaxLoopDevices: maxLoopDev,
 		Shared:         true,
 		Info: &unix.LoopInfo64{
 			Sizelimit: size,

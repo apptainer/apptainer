@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2019, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/ccoveille/go-safecast"
 )
 
 func TestGetPwUID(t *testing.T) {
@@ -69,13 +70,16 @@ func TestGetGrNam(t *testing.T) {
 }
 
 func testCurrent(t *testing.T, fn func() (*User, error)) {
-	uid := os.Getuid()
+	uid, err := safecast.ToUint32(os.Getuid())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	u, err := fn()
 	if err != nil {
 		t.Fatalf("Failed to retrieve information for current user")
 	}
-	if u.UID != uint32(uid) {
+	if u.UID != uid {
 		t.Fatalf("returned UID (%d) doesn't match current UID (%d)", uid, u.UID)
 	}
 }

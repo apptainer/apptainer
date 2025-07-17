@@ -21,6 +21,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/ccoveille/go-safecast"
 	"github.com/pkg/errors"
 )
 
@@ -44,10 +45,18 @@ func (e *EngineOperations) CreateContainer(ctx context.Context, pid int, rpcConn
 	// force the user information for the current (master) process to avoid
 	// user database lookup with potential error, see:
 	// https://github.com/apptainer/apptainer/issues/2640
+	uid32, err := safecast.ToUint32(e.EngineConfig.JSON.UserInfo.UID)
+	if err != nil {
+		return fmt.Errorf("failed to safely convert UID to uint32: %s", err)
+	}
+	gid32, err := safecast.ToUint32(e.EngineConfig.JSON.UserInfo.GID)
+	if err != nil {
+		return fmt.Errorf("failed to safely convert GID to uint32: %s", err)
+	}
 	user.SetCurrentOriginal(&user.User{
 		Name:  e.EngineConfig.JSON.UserInfo.Username,
-		UID:   uint32(e.EngineConfig.JSON.UserInfo.UID),
-		GID:   uint32(e.EngineConfig.JSON.UserInfo.GID),
+		UID:   uid32,
+		GID:   gid32,
 		Gecos: e.EngineConfig.JSON.UserInfo.Gecos,
 		Dir:   e.EngineConfig.JSON.UserInfo.Home,
 		Shell: e.EngineConfig.JSON.UserInfo.Shell,

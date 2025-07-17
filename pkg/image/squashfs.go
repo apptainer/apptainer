@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2020, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -17,6 +17,7 @@ import (
 	"unsafe"
 
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/ccoveille/go-safecast"
 )
 
 const (
@@ -54,9 +55,13 @@ type squashfsFormat struct{}
 func parseSquashfsHeader(b []byte) (*squashfsInfo, uint64, error) {
 	var offset uint64
 
-	o := bytes.Index(b, []byte(launchString))
-	if o > 0 {
-		offset += uint64(o + len(launchString) + 1)
+	launchStart := bytes.Index(b, []byte(launchString))
+	if launchStart > 0 {
+		launchEnd, err := safecast.ToUint64(launchStart + len(launchString) + 1)
+		if err != nil {
+			return nil, 0, err
+		}
+		offset += launchEnd
 	}
 	sinfo := &squashfsInfo{}
 
@@ -117,11 +122,15 @@ func (f *squashfsFormat) initializer(img *Image, fileinfo os.FileInfo) error {
 	if err != nil {
 		return err
 	}
+	fSize, err := safecast.ToUint64(fileinfo.Size())
+	if err != nil {
+		return err
+	}
 	img.Type = SQUASHFS
 	img.Partitions = []Section{
 		{
 			Offset:       offset,
-			Size:         uint64(fileinfo.Size()) - offset,
+			Size:         fSize - offset,
 			ID:           1,
 			Type:         SQUASHFS,
 			Name:         RootFs,

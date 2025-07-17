@@ -23,6 +23,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/image"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/sif/v2/pkg/sif"
+	"github.com/ccoveille/go-safecast"
 	"golang.org/x/sys/unix"
 )
 
@@ -222,7 +223,11 @@ func OverlayCreate(size int, imgPath string, overlaySparse bool, isFakeroot bool
 	defer unix.Umask(oldumask)
 
 	if uid != 0 {
-		if !fakeroot.IsUIDMapped(uint32(uid)) {
+		uid32, err := safecast.ToUint32(uid)
+		if err != nil {
+			return fmt.Errorf("failed to convert UID to uint32: %s", err)
+		}
+		if !fakeroot.IsUIDMapped(uid32) {
 			// Using --fakeroot here for use with --fakeroot
 			//  overlay is only necessary when only root-mapped
 			//  user namespaces are in use: real root of course

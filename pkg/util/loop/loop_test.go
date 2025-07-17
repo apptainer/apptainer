@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -27,13 +27,17 @@ func TestLoop(t *testing.T) {
 	info := &unix.LoopInfo64{
 		Flags: unix.LO_FLAGS_AUTOCLEAR | unix.LO_FLAGS_READ_ONLY,
 	}
+	maxLoopDev, err := GetMaxLoopDevices()
+	if err != nil {
+		t.Fatal(err)
+	}
 	loopDevOne := &Device{
-		MaxLoopDevices: GetMaxLoopDevices(),
+		MaxLoopDevices: maxLoopDev,
 		Info:           info,
 	}
 	defer loopDevOne.Close()
 	loopDevTwo := &Device{
-		MaxLoopDevices: GetMaxLoopDevices(),
+		MaxLoopDevices: maxLoopDev,
 		Info:           info,
 	}
 	defer loopDevTwo.Close()

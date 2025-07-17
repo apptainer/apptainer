@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
@@ -236,8 +236,7 @@ func setGlobalRemoteConfig(_ *cobra.Command, _ []string) {
 		return
 	}
 
-	uid := uint32(os.Getuid())
-	if uid != 0 {
+	if os.Getuid() != 0 {
 		sylog.Fatalf("Unable to modify global endpoint configuration file: not root user")
 	}
 

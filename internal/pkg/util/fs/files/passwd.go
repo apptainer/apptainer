@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	pwd "github.com/astromechza/etcpwdparse"
+	"github.com/ccoveille/go-safecast"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
@@ -54,7 +55,12 @@ func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (co
 		getPwUID = customLookup.GetPwUID
 	}
 
-	pwInfo, err := getPwUID(uint32(uid))
+	uid32, err := safecast.ToUint32(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	pwInfo, err := getPwUID(uid32)
 	if err != nil {
 		return content, err
 	}
@@ -78,7 +84,11 @@ func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (co
 		if entry.Uid() == uid {
 			userExists = true
 			// If user already exists in container, update their homedir
-			lines[i] = makePasswdLine(entry.Username(), uint32(entry.Uid()), uint32(entry.Gid()), entry.Info(), homeDir, entry.Shell())
+			gid32, err := safecast.ToUint32(entry.Gid())
+			if err != nil {
+				return nil, err
+			}
+			lines[i] = makePasswdLine(entry.Username(), uid32, gid32, entry.Info(), homeDir, entry.Shell())
 			break
 		}
 	}

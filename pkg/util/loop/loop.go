@@ -19,6 +19,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/fs/lock"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
+	"github.com/ccoveille/go-safecast"
 	"golang.org/x/sys/unix"
 )
 
@@ -131,8 +132,8 @@ func (loop *Device) shareLoop(imageInfo *syscall.Stat_t, mode int, number *int) 
 // When setting loop device status, some kernel may return EAGAIN, this function would sync
 // workaround this error.
 func (loop *Device) attachLoop(imageFd uintptr, imageInfo *syscall.Stat_t, mode int, number *int) error {
-	releaseDevice := func(fd int, clear bool, releaseLock func()) {
-		if clear {
+	releaseDevice := func(fd int, clearDev bool, releaseLock func()) {
+		if clearDev {
 			unix.IoctlSetInt(fd, unix.LOOP_CLR_FD, 0)
 		}
 		syscall.Close(fd)
@@ -435,7 +436,14 @@ func getLoopPath(device int) string {
 
 func createLoopDevice(device int) error {
 	// create loop device with mknod as a fallback
-	dev := int(unix.Mkdev(uint32(7), uint32(device)))
+	dev32, err := safecast.ToUint32(device)
+	if err != nil {
+		return fmt.Errorf("failed to convert device to uint32: %s", err)
+	}
+	dev, err := safecast.ToInt(unix.Mkdev(7, dev32))
+	if err != nil {
+		return fmt.Errorf("failed to convert device to int: %s", err)
+	}
 	path := getLoopPath(device)
 	esys := syscall.Mknod(path, syscall.S_IFBLK|0o660, dev)
 	if errno, ok := esys.(syscall.Errno); ok {

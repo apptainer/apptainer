@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -144,14 +144,14 @@ func copyConfigToEnv(data []byte) ([]string, error) {
 	)
 
 	// get the current stack limit in kilobytes
-	cur, max, err := rlimit.Get("RLIMIT_STACK")
+	stackCur, stackMax, err := rlimit.Get("RLIMIT_STACK")
 	if err != nil {
 		return nil, fmt.Errorf("failed to determine stack size: %s", err)
 	}
 
 	// stack size divided by four to determine the arguments+environments
 	// size limit
-	argSizeLimit := cur / 4
+	argSizeLimit := (stackCur / 4)
 
 	// config length to be passed via environment variables + some space
 	// for apptainer first argument
@@ -182,7 +182,7 @@ func copyConfigToEnv(data []byte) ([]string, error) {
 	}
 
 	roundLimitKB := 4 * ((configLength / kbyte) + 1)
-	hardLimitKB := max / kbyte
+	hardLimitKB := stackMax / kbyte
 	// the hard limit is reached, maybe user screw up himself by
 	// setting the hard limit with ulimit or this is a limit set
 	// by administrator, in this case returns some hints

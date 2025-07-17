@@ -90,7 +90,7 @@ func lookupUser(username string) (*User, error) {
 	return buildUser(&pwd), err
 }
 
-//nolint
+// nolint
 func lookupUserId(uid string) (*User, error) {
 	i, e := strconv.Atoi(uid)
 	if e != nil {
@@ -99,7 +99,7 @@ func lookupUserId(uid string) (*User, error) {
 	return lookupUnixUid(i)
 }
 
-//nolint
+// nolint
 func lookupUnixUid(uid int) (*User, error) {
 	var pwd C.struct_passwd
 	var result *C.struct_passwd
@@ -165,7 +165,7 @@ func lookupGroup(groupname string) (*Group, error) {
 	return buildGroup(&grp), nil
 }
 
-//nolint
+// nolint
 func lookupGroupId(gid string) (*Group, error) {
 	i, e := strconv.Atoi(gid)
 	if e != nil {
@@ -277,7 +277,7 @@ func isSizeReasonable(sz int64) bool {
 }
 
 // Because we can't use cgo in tests:
-//nolint
+// nolint
 func structPasswdForNegativeTest() C.struct_passwd {
 	sp := C.struct_passwd{}
 	sp.pw_uid = 1<<32 - 2

@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2023, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -24,6 +24,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	progressClient "github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/ccoveille/go-safecast"
 	"github.com/docker/docker/client"
 	ggcrv1 "github.com/google/go-containerregistry/pkg/v1"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -304,7 +305,11 @@ func extractArchive(src string, dst string) error {
 			}
 		// if it's a file create it
 		case tar.TypeReg:
-			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			tarMode, err := safecast.ToUint32(header.Mode)
+			if err != nil {
+				return err
+			}
+			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(tarMode))
 			if err != nil {
 				return err
 			}

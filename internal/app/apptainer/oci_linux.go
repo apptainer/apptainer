@@ -69,10 +69,10 @@ func getState(containerID string) (*ociruntime.State, error) {
 	return &engineConfig.State, nil
 }
 
-func exitContainer(ctx context.Context, containerID string, delete bool) {
+func exitContainer(ctx context.Context, containerID string, deleteRes bool) {
 	state, err := getState(containerID)
 	if err != nil {
-		if !delete {
+		if !deleteRes {
 			sylog.Errorf("%s", err)
 			os.Exit(1)
 		}
@@ -83,7 +83,7 @@ func exitContainer(ctx context.Context, containerID string, delete bool) {
 		defer os.Exit(*state.ExitCode)
 	}
 
-	if delete {
+	if deleteRes {
 		if err := OciDelete(ctx, containerID); err != nil {
 			sylog.Errorf("%s", err)
 		}

@@ -21,6 +21,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"github.com/apptainer/apptainer/pkg/util/capabilities"
+	"github.com/ccoveille/go-safecast"
 	"github.com/creack/pty"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
@@ -170,8 +171,15 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 			if consoleSize != nil {
 				var size pty.Winsize
 
-				size.Cols = uint16(consoleSize.Width)
-				size.Rows = uint16(consoleSize.Height)
+				size.Cols, err = safecast.ToUint16(consoleSize.Width)
+				if err != nil {
+					return err
+				}
+				size.Rows, err = safecast.ToUint16(consoleSize.Height)
+				if err != nil {
+					return err
+				}
+
 				if err := pty.Setsize(slave, &size); err != nil {
 					return err
 				}

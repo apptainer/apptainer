@@ -31,6 +31,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/copy"
 	"github.com/apptainer/apptainer/pkg/util/rlimit"
 	"github.com/apptainer/apptainer/pkg/util/unix"
+	"github.com/ccoveille/go-safecast"
 	"github.com/creack/pty"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
@@ -460,9 +461,19 @@ func (e *EngineOperations) handleControl(masterConn net.Conn, attach, control ne
 			e.waitStatusUpdate()
 		}
 		if ctrl.ConsoleSize != nil && master != nil {
+			width, err := safecast.ToUint16(ctrl.ConsoleSize.Width)
+			if err != nil {
+				fatalChan <- fmt.Errorf("failed to convert console width to uint16: %s", err)
+				return
+			}
+			height, err := safecast.ToUint16(ctrl.ConsoleSize.Height)
+			if err != nil {
+				fatalChan <- fmt.Errorf("failed to convert console height to uint16: %s", err)
+				return
+			}
 			size := &pty.Winsize{
-				Cols: uint16(ctrl.ConsoleSize.Width),
-				Rows: uint16(ctrl.ConsoleSize.Height),
+				Cols: width,
+				Rows: height,
 			}
 			if err := pty.Setsize(master, size); err != nil {
 				fatalChan <- err

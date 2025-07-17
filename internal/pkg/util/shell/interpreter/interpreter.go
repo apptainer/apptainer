@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2020-2022, Sylabs, Inc. All rights reserved.
+// Copyright (c) 2020-2025, Sylabs, Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license.  Please
 // consult LICENSE.md file distributed with the sources of this project regarding
 // your rights to use or distribute this software.
@@ -22,6 +22,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ccoveille/go-safecast"
 	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"
@@ -89,7 +90,11 @@ func defaultExecHandler(ctx context.Context, args []string) error {
 				c := strings.Join(args, " ")
 				return fmt.Errorf("command %q was killed after %s timeout", c, execTimeout)
 			}
-			return interp.NewExitStatus(uint8(status.ExitStatus()))
+			es, err := safecast.ToUint8(status.ExitStatus())
+			if err != nil {
+				return err
+			}
+			return interp.NewExitStatus(es)
 		}
 		return interp.NewExitStatus(1)
 	case *exec.Error:
