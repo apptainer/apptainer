@@ -44,12 +44,12 @@ require (
 	github.com/sylabs/json-resp v0.9.4
 	github.com/vbauerster/mpb/v8 v8.9.1
 	golang.org/x/crypto v0.33.0
-	golang.org/x/sys v0.30.0
-	golang.org/x/term v0.29.0
+	golang.org/x/sys v0.33.0
+	golang.org/x/term v0.32.0
 	golang.org/x/text v0.22.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools/v3 v3.5.2
-	mvdan.cc/sh/v3 v3.10.0
+	mvdan.cc/sh/v3 v3.12.0
 )
 
 require (
@@ -111,7 +111,7 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
@@ -139,7 +139,6 @@ require (
 	github.com/moby/sys/user v0.3.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/networkplumbing/go-nft v0.4.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
