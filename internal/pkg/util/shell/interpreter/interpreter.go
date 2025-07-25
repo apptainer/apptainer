@@ -12,6 +12,7 @@ package interpreter
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -61,7 +62,7 @@ func defaultExecHandler(ctx context.Context, args []string) error {
 	path, err := interp.LookPath(hc.Env, args[0])
 	if err != nil {
 		fmt.Fprintln(hc.Stderr, err)
-		return interp.NewExitStatus(127)
+		return interp.ExitStatus(127)
 	}
 
 	ectx := ctx
@@ -94,9 +95,9 @@ func defaultExecHandler(ctx context.Context, args []string) error {
 			if err != nil {
 				return err
 			}
-			return interp.NewExitStatus(es)
+			return interp.ExitStatus(es)
 		}
-		return interp.NewExitStatus(1)
+		return interp.ExitStatus(1)
 	case *exec.Error:
 		c := strings.Join(args, " ")
 		return fmt.Errorf("command %q execution failed: %s", c, err)
@@ -251,8 +252,9 @@ func (s *Shell) Run(ctx context.Context) error {
 	}
 
 	if err := s.runner.Run(ctx, node); err != nil {
-		if status, ok := interp.IsExitStatus(err); ok {
-			s.status = status
+		var status interp.ExitStatus
+		if ok := errors.As(err, &status); ok {
+			s.status = uint8(status)
 		}
 		return err
 	}
