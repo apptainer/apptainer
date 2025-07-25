@@ -85,10 +85,8 @@ if [ -z "$ARCH" ]; then
 	ARCH="$(arch)"
 fi
 
-echo "----------- $DIST $ARCH $VERSION -----------"
-
 if [ -z "$DIST" ]; then
-	DIST=el8
+	DIST=el9
 fi
 
 if ! $NOOPENSUSE && [[ "$DIST" != *suse* ]]; then
@@ -134,6 +132,7 @@ EPELREPOURL=""
 setrepourls()
 {
 OSSPLIT=true
+echo "------------- setrepourls $1 -----------------"
 case $1 in
 	el7)
 	    OSREPOURL="https://linux-mirrors.fnal.gov/linux/centos/7/os/$ARCH/Packages"
@@ -329,7 +328,7 @@ RPMUTILS=""
 mkdir tmp
 cd tmp
 
-echo "================= $DIST $ARCH ===================="
+echo "================= $DIST $ARCH $RPMDIST ===================="
 
 if [ "$DIST" = el7 ]; then
 	OSUTILS="$OSUTILS lzo squashfs-tools"

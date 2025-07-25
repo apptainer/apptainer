@@ -13,7 +13,7 @@ if [ "$OS_TYPE" = debian ] || [ "$OS_TYPE" = ubuntu ]; then
 elif [[ "$OS_TYPE" == *suse* ]]; then
   zypper install -y e2fsprogs curl cpio util-linux timezone
 else
-  dnf install -y e2fsprogs cpio
+  dnf install -y e2fsprogs cpio shadow-utils-subid
 fi
 
 # switch to an unprivileged user
