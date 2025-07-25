@@ -85,6 +85,8 @@ if [ -z "$ARCH" ]; then
 	ARCH="$(arch)"
 fi
 
+echo "----------- $DIST $ARCH $VERSION -----------"
+
 if [ -z "$DIST" ]; then
 	DIST=el8
 fi
@@ -326,6 +328,8 @@ RPMUTILS=""
 
 mkdir tmp
 cd tmp
+
+echo "================= $DIST $ARCH ===================="
 
 if [ "$DIST" = el7 ]; then
 	OSUTILS="$OSUTILS lzo squashfs-tools"
