@@ -364,7 +364,11 @@ else
 	if $NEEDSFUSE2FS; then
 		OSUTILS="$OSUTILS fuse-libs e2fsprogs-libs e2fsprogs"
 	fi
-	EXTRASUTILS="$EXTRASUTILS fuse3-libs"
+	if [ "$DIST" = "el9" ]; then
+		EXTRASUTILS="$EXTRASUTILS fuse3-libs"
+	else
+		OSUTILS="$OSUTILS fuse3-libs"
+	fi
 fi
 if [[ "$RPMDIST" == *suse* ]]; then
 	RPMUTILS=libseccomp2
