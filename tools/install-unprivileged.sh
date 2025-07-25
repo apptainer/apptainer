@@ -86,7 +86,7 @@ if [ -z "$ARCH" ]; then
 fi
 
 if [ -z "$DIST" ]; then
-	DIST=el8
+	DIST=el9
 fi
 
 if ! $NOOPENSUSE && [[ "$DIST" != *suse* ]]; then
@@ -132,6 +132,7 @@ EPELREPOURL=""
 setrepourls()
 {
 OSSPLIT=true
+echo "------------- setrepourls $1 -----------------"
 case $1 in
 	el7)
 	    OSREPOURL="https://linux-mirrors.fnal.gov/linux/centos/7/os/$ARCH/Packages"
@@ -327,6 +328,8 @@ RPMUTILS=""
 mkdir tmp
 cd tmp
 
+echo "================= $DIST $ARCH $RPMDIST ===================="
+
 if [ "$DIST" = el7 ]; then
 	OSUTILS="$OSUTILS lzo squashfs-tools"
 	EPELUTILS="$EPELUTILS libzstd fuse3-libs"
@@ -364,7 +367,11 @@ else
 	if $NEEDSFUSE2FS; then
 		OSUTILS="$OSUTILS fuse-libs e2fsprogs-libs e2fsprogs"
 	fi
-	EXTRASUTILS="$EXTRASUTILS fuse3-libs"
+	if [ "$DIST" = "el9" ]; then
+		EXTRASUTILS="$EXTRASUTILS fuse3-libs"
+	else
+		OSUTILS="$OSUTILS fuse3-libs"
+	fi
 fi
 if [[ "$RPMDIST" == *suse* ]]; then
 	RPMUTILS=libseccomp2
