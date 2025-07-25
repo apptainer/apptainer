@@ -7,14 +7,23 @@ Uploaders:
 Build-Depends:
  debhelper (>= 9),
  dh-autoreconf,
+ devscripts,
  help2man,
  libarchive-dev,
  libssl-dev,
  uuid-dev,
- devscripts,
  libseccomp-dev,
- cryptsetup,
  golang-go (>= 2:1.13~~),
+ libseccomp-dev,
+ uidmap,
+ fakeroot,
+ cryptsetup,
+ tzdata,
+ dh-apparmor,
+ curl,
+ wget,
+ git,
+ libsubid-dev,
  autoconf,
  automake,
  libtool,
@@ -25,7 +34,6 @@ Build-Depends:
  liblz4-dev,
  liblzma-dev,
  libzstd-dev,
- dh-apparmor
 Standards-Version: 3.9.8
 Homepage: http://apptainer.org
 Vcs-Git: https://github.com/apptainer/apptainer.git
@@ -52,7 +60,10 @@ Description: container platform focused on supporting "Mobility of Compute" form
 
 Package: apptainer-suid
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}, apptainer (= ${binary:Version})
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+ apptainer (= ${binary:Version})
 Description: setuid-root portion of apptainer
  This package is the optional setuid-root portion of Apptainer.  
  Without it, Apptainer will run only unprivileged command flows.

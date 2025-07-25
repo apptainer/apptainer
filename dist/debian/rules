@@ -26,6 +26,7 @@ endif
 
 # For locally compiled go
 MINGO_VERSION = $(shell scripts/get-min-go-version)
+TARBALL = go$(MINGO_VERSION).src.tar.gz
 GOROOT = $${TMPDIR:-/tmp}/appdebgo/go
 GOCACHE = $${TMPDIR:-/tmp}/appdebgo/cache
 
@@ -62,6 +63,7 @@ endif
 endif
 
 MAKEPARALLEL = $(shell nproc --ignore=2 || echo 1 )
+
 override pkgdir = debian/tmp
 override apppkgdir = debian/apptainer
 
@@ -74,11 +76,14 @@ override_dh_auto_configure:
 	@export GOPATH=$(GOROOT)/bin PATH=$(GOROOT)/bin:$$PATH GOCACHE=$(GOCACHE); \
 	  set -ex; \
 	  if ! ./mlocal/scripts/check-min-go-version go $(MINGO_VERSION); then \
-	    if [ -d $(GOROOT) ]; then rm -rf $(GOROOT); fi; \
+	    wget -nc -O debian/$(TARBALL) https://dl.google.com/go/$(TARBALL); \
+	    if [ -d $(GOROOT) ]; then \
+	      rm -rf $(GOROOT); \
+	    fi; \
 	    mkdir -p $(GOROOT); \
 	    HERE=$$PWD; \
 	    cd $(GOROOT)/..; \
-	    tar -xf $$HERE/debian/go$(MINGO_VERSION).src.tar.gz; \
+	    tar -xf $$HERE/debian/$(TARBALL); \
 	    cd go/src; \
 	    ./make.bash; \
 	    cd $$HERE; \
