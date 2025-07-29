@@ -20,6 +20,8 @@ Build-Depends:
  cryptsetup,
  tzdata,
  dh-apparmor,
+ curl,
+ wget,
  git,
  autoconf,
  automake,
