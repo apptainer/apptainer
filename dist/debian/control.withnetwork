@@ -13,7 +13,7 @@ Build-Depends:
  libssl-dev,
  uuid-dev,
  libseccomp-dev,
- golang-go (>= 2:1.20.6),
+ golang-go (>= 2:1.19),
  libseccomp-dev,
  uidmap,
  fakeroot,
