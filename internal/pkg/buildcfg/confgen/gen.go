@@ -211,7 +211,7 @@ func relocatePath(original string) string {
 		relativePath, err = filepath.Rel("{{.Prefix}}", original)
 	}
 	if err != nil {
-		sylog.Fatalf(err.Error())
+		sylog.Fatalf("%s", err.Error())
 	}
 
 	result := filepath.Join(prefix, relativePath)
