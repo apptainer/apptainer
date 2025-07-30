@@ -121,7 +121,6 @@ override_dh_auto_install:
 	# create debian/apptainer.conffiles
 	find debian/*/etc -type f | sort | sed 's~debian/[^/]*~~' \
 	    | tee debian/apptainer.conffiles
-	diff -u debian/apptainer.conffiles.ex debian/apptainer.conffiles || true
 
 override_dh_install:
 	@dh_install -papptainer-suid usr/libexec/apptainer/bin/starter-suid
