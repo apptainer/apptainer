@@ -22,11 +22,11 @@ require (
 	github.com/containers/image/v5 v5.35.0
 	github.com/creack/pty v1.1.24
 	github.com/cyphar/filepath-securejoin v0.4.1
-	github.com/docker/docker v28.1.1+incompatible
+	github.com/docker/docker v28.2.2+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/fatih/color v1.18.0
 	github.com/go-log/log v0.2.0
-	github.com/google/go-containerregistry v0.20.4-0.20250225234217-098045d5e61f
+	github.com/google/go-containerregistry v0.20.6
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.15.0
 	github.com/moby/go-archive v0.1.0
@@ -60,7 +60,7 @@ require (
 require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/buger/goterm v1.0.4
-	github.com/docker/cli v28.1.1+incompatible
+	github.com/docker/cli v28.2.2+incompatible
 	github.com/docker/distribution v2.8.3+incompatible
 	github.com/moby/sys/sequential v0.6.0
 	github.com/moby/sys/user v0.4.0
@@ -82,6 +82,8 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cilium/ebpf v0.17.3 // indirect
 	github.com/cloudflare/circl v1.6.0 // indirect
+	github.com/containerd/errdefs v1.0.0 // indirect
+	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.16.3 // indirect
 	github.com/containers/libtrust v0.0.0-20230121012942-c1716e8a8d01 // indirect
@@ -89,7 +91,7 @@ require (
 	github.com/containers/storage v1.58.0 // indirect
 	github.com/coreos/go-iptables v0.8.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.6 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20241213102144-19d51d7fe467 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/docker-credential-helpers v0.9.3 // indirect
@@ -99,7 +101,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/garyburd/redigo v0.0.0-20150301180006-535138d7bcd7 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
-	github.com/go-logr/logr v1.4.2 // indirect
+	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.23.0 // indirect
 	github.com/go-openapi/errors v0.22.1 // indirect
@@ -178,11 +180,10 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	go.mongodb.org/mongo-driver v1.14.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.59.0 // indirect
-	go.opentelemetry.io/otel v1.35.0 // indirect
-	go.opentelemetry.io/otel/metric v1.35.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.35.0 // indirect
-	go.opentelemetry.io/otel/trace v1.35.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.61.0 // indirect
+	go.opentelemetry.io/otel v1.36.0 // indirect
+	go.opentelemetry.io/otel/metric v1.36.0 // indirect
+	go.opentelemetry.io/otel/trace v1.36.0 // indirect
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250303144028-a0af3efb3deb // indirect
