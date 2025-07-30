@@ -6,7 +6,7 @@ jobs:
   check_go_mod:
     name: check_go_mod
     runs-on: ubuntu-22.04
-    container: golang:1.23.6
+    container: golang:1.24.1
     steps:
       - uses: actions/checkout@v2
 
@@ -54,7 +54,7 @@ jobs:
   alpine:
     name: alpine
     runs-on: ubuntu-22.04
-    container: golang:1.23-alpine
+    container: golang:1.24-alpine
     steps:
       - name: Fetch deps
         run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
@@ -71,7 +71,7 @@ jobs:
     name: oldgo
     runs-on: ubuntu-22.04
     # match the minimum version required by mconfig
-    container: golang:1.23-alpine
+    container: golang:1.24-alpine
     steps:
       - name: Fetch deps
         run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
@@ -87,7 +87,7 @@ jobs:
   check_test_corpus:
     name: check_test_corpus
     runs-on: ubuntu-22.04
-    container: golang:1.23.6
+    container: golang:1.24.1
     steps:
       - uses: actions/checkout@v2
 
@@ -102,7 +102,7 @@ jobs:
   check_license_dependencies:
     name: check_license_dependencies
     runs-on: ubuntu-22.04
-    container: golang:1.23.6
+    container: golang:1.24.1
     steps:
       - uses: actions/checkout@v2
 
@@ -320,7 +320,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.23.6
+          go-version: 1.24.1
 
       - name: Fetch deps
         run: |
@@ -362,7 +362,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.23.6
+          go-version: 1.24.1
 
       - name: Fetch deps
         run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libseccomp-dev cryptsetup dbus-user-session
@@ -407,7 +407,7 @@ jobs:
         if: env.run_tests
         uses: actions/setup-go@v2
         with:
-          go-version: 1.23.6
+          go-version: 1.24.1
 
       - name: Fetch deps
         if: env.run_tests
@@ -482,7 +482,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.23.6
+          go-version: 1.24.1
 
       - name: Check pkg/... doesn't depend on buildcfg
         run: |
