@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd `dirname $0`
+cd `dirname $0` || exit 0
 
 # control, rules, source/include-binaries, ...
 find . -name \*.withoutnetwork \
@@ -13,4 +13,4 @@ done
 echo "Don't forget to include:"
 cat source/include-binaries
 
-read -p "Confirm... " x
+read -r -p "Confirm... " x
