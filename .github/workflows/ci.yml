@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-22.04
     container: golang:1.24.1
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Check go.mod
         run: |
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-22.04
     container: node:20-slim
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install markdownlint
         run: npm install -g markdownlint-cli
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-22.04
     container: golangci/golangci-lint:v1.64
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Check apptainer source
         run: |
@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-22.04
     container: koalaman/shellcheck-alpine
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: shellcheck files that appear to be sh or bash scripts (or some cousin thereof)
         run: |
           shellcheck $( ./scripts/get-shell-files.sh )
@@ -59,7 +59,7 @@ jobs:
       - name: Fetch deps
         run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Build Apptainer
         run: |
@@ -76,7 +76,7 @@ jobs:
       - name: Fetch deps
         run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Build Apptainer
         run: |
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-22.04
     container: golang:1.24.1
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Generate Certificates
         run: |
@@ -104,7 +104,7 @@ jobs:
     runs-on: ubuntu-22.04
     container: golang:1.24.1
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Update LICENSE_DEPENDENCIES.md
         run: |
@@ -118,9 +118,9 @@ jobs:
     name: debbuild-debian11
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Build and test deb under docker
         env:
@@ -134,9 +134,9 @@ jobs:
     name: debbuild-debian12
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Build and test deb under docker
         env:
@@ -150,9 +150,9 @@ jobs:
     name: debbuild-ubuntu22
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Build and test deb under docker
         env:
@@ -165,9 +165,9 @@ jobs:
     name: debbuild-ubuntu24
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Build and test deb under docker
         env:
@@ -180,9 +180,9 @@ jobs:
     name: rpmbuild-rocky8
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Build and test rpm under docker
         env:
@@ -238,9 +238,9 @@ jobs:
     name: rpmbuild-rocky9
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Build and test rpm under docker
         env:
@@ -267,9 +267,9 @@ jobs:
     name: rpmbuild-opensuse-leap
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Build and test rpm under docker
         env:
@@ -290,9 +290,9 @@ jobs:
     name: rpmbuild-opensuse-tumbleweed
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Build and test rpm under docker
         env:
@@ -313,9 +313,9 @@ jobs:
     name: unit_tests
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Go
         uses: actions/setup-go@v2
@@ -355,9 +355,9 @@ jobs:
     name: integration_tests
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Go
         uses: actions/setup-go@v2
@@ -379,9 +379,9 @@ jobs:
     name: e2e_tests
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Check changes
         env:
@@ -475,9 +475,9 @@ jobs:
     name: check_pkg_no_buildcfg
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Go
         uses: actions/setup-go@v2
