@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.4.1
 
+- Restore looking for registry mirrors in `/etc/containers/registry.conf`
+  and related files.  This had been inadvertently dropped beginning in 1.4.0.
 - Add support of automatic triggering of Ubuntu PPA builds.
 - Fix the signature verification failure for unsigned images.
 
