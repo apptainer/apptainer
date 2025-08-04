@@ -17,6 +17,9 @@ import (
 	progressClient "github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/ociauth"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/containers/image/v5/docker/reference"
+	"github.com/containers/image/v5/pkg/sysregistriesv2"
+	"github.com/containers/image/v5/types"
 	"github.com/docker/docker/client"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -46,6 +49,57 @@ func getDockerImage(ctx context.Context, src string, tOpts *TransportOptions, rt
 	srcRef, err := name.ParseReference(src, nameOpts...)
 	if err != nil {
 		return nil, err
+	}
+
+	// See if there's a mirror to use for this registry by applying
+	// containers/image library functions.
+	// This may one day be done automatically by go-containerregistry.
+	// If that happens we can remove this code.
+	// See https://github.com/apptainer/apptainer/issues/2919
+	host := srcRef.Context().Registry.Name()
+	var regctx types.SystemContext
+	registry, _ := sysregistriesv2.FindRegistry(&regctx, host)
+	if host == "index.docker.io" {
+		// This is the default registry; if it failed to find a mirror,
+		// instead try the equivalent shorter version that might be
+		// defined with a mirror.
+		host = "docker.io"
+		if registry == nil {
+			registry, _ = sysregistriesv2.FindRegistry(&regctx, host)
+		}
+	}
+	if (registry != nil) && (len(registry.Mirrors) > 0) {
+		mirror := registry.Mirrors[0].Location
+		nameOpts = []name.Option{}
+		if registry.Mirrors[0].Insecure {
+			nameOpts = append(nameOpts, name.Insecure)
+		}
+		mirrorSrc := src
+		// Normalize the src, for example by prefixing docker.io and
+		// adding library/ for standard docker.io containers, because
+		// mirrors expect this to already be done.
+		normalizedRef, err := reference.ParseNormalizedNamed(mirrorSrc)
+		if err != nil {
+			sylog.Debugf("Normalizing %s failed, using as-is: %v", mirrorSrc, err)
+		} else {
+			mirrorSrc = normalizedRef.String()
+		}
+		// remove the first component if it was an explicit registry
+		mirrorParts := strings.Split(mirrorSrc, "/")
+		if (host != "docker.io") || strings.HasSuffix(mirrorParts[0], host) {
+			// this should always happen unless normalizing
+			// failed and the src is missing a registry name
+			mirrorSrc = strings.Join(mirrorParts[1:], "/")
+		}
+		// then add the mirror in its place
+		mirrorSrc = mirror + "/" + mirrorSrc
+		sylog.Debugf("Using %s mirror in place of %s", mirrorSrc, src)
+		mirrorRef, err := name.ParseReference(mirrorSrc, nameOpts...)
+		if err != nil {
+			sylog.Warningf("Error parsing registry mirror reference %s, skipping mirror: %v", mirrorSrc, err)
+		} else {
+			srcRef = mirrorRef
+		}
 	}
 
 	pullOpts := []remote.Option{
