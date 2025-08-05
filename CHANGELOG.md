@@ -31,6 +31,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.4.1
 
+Additional .deb packages have been added to the release assets that
+include the label "trixie+" to indicate that they are for installing on
+Debian 13 or later.  Those packages are necessary to work with the new
+libfuse3 library in Debian 13.  They also support libsubid, unlike the
+default packages because they are built on Debian 11 which doesn't have
+that library.
+
 - Restore looking for registry mirrors in `/etc/containers/registry.conf`
   and related files.  This had been inadvertently dropped beginning in 1.4.0.
 - Fix use of the image cache, when the home directory contains `@` characters.

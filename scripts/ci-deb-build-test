@@ -7,7 +7,7 @@
 # this script runs as root under docker --privileged
 
 OS_MAJOR=$(grep ^VERSION_ID /etc/os-release | cut -d'=' -f2 | sed 's/\"//gI' | cut -d'.' -f1)
-OS_NAME=$(grep ^NAME /etc/os-release | cut -d '=' -f2 | sed 's/\"//gI')
+OS_NAME=$(grep ^NAME /etc/os-release | cut -d '=' -f2 | sed 's/\"//gI;s/ .*//')
 OS_VERSION=$(grep ^VERSION_ID /etc/os-release | cut -d'=' -f2 | sed 's/\"//gI')
 
 # install dependencies
