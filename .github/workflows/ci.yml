@@ -267,9 +267,9 @@ jobs:
     name: rpmbuild-rocky10
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      # fetch tags as checkout@v2 doesn't do that by default
-      - run: git fetch --prune --unshallow --tags --force
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Build and test rpm under docker
         env:

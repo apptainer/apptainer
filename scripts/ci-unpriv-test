@@ -43,13 +43,13 @@ su testuser -c '
   if [[ "$OS_TYPE" == *rockylinux* ]] && [[ "$OS_VERSION" -gt 9 ]]; then
     # Copy newer system libraries to override older extracted versions
     if [ -f /usr/lib64/libfuse3.so.3 ]; then
-      cp /usr/lib64/libfuse3.so.3 ins/x86_64/utils/lib/libfuse3.so.3
+      cp /usr/lib64/libfuse3.so.3 ins/$(arch)/utils/lib/libfuse3.so.3
     fi
     if [ -f /usr/lib64/libselinux.so.1 ]; then
-      cp /usr/lib64/libselinux.so.1 ins/x86_64/utils/lib/libselinux.so.1
+      cp /usr/lib64/libselinux.so.1 ins/$(arch)/utils/lib/libselinux.so.1
     fi
     if [ -f /usr/lib64/libsubid.so.4 ]; then
-      cp /usr/lib64/libsubid.so.4 ins/x86_64/utils/lib/libsubid.so.4
+      cp /usr/lib64/libsubid.so.4 ins/$(arch)/utils/lib/libsubid.so.4
     fi
   fi
   
