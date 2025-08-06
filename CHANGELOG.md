@@ -44,6 +44,7 @@ that library.
   Previously it would assume that it was the start of a digest in the oci-dir.
 - Add support of automatic triggering of Ubuntu PPA builds.
 - Fix the signature verification failure for unsigned images.
+- Add a CI check for rocky linux version 10.
 
 ## v1.4.1 - \[2025-05-14\]
 
