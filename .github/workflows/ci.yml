@@ -263,6 +263,28 @@ jobs:
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
+  rpmbuild-rocky10:
+    name: rpmbuild-rocky10
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      # fetch tags as checkout@v2 doesn't do that by default
+      - run: git fetch --prune --unshallow --tags --force
+
+      - name: Build and test rpm under docker
+        env:
+          OS_TYPE: rockylinux/rockylinux
+          OS_VERSION: 10
+          GO_ARCH: linux-amd64
+        run: ./scripts/ci-docker-run
+
+      - name: Install and test unprivileged for rocky 10
+        env:
+          OS_TYPE: rockylinux/rockylinux
+          OS_VERSION: 10
+          TEST_TYPE: unpriv
+        run: ./scripts/ci-docker-run
+
   rpmbuild-opensuse-leap:
     name: rpmbuild-opensuse-leap
     runs-on: ubuntu-22.04

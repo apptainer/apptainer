@@ -13,7 +13,18 @@ if [ "$OS_TYPE" = debian ] || [ "$OS_TYPE" = ubuntu ]; then
 elif [[ "$OS_TYPE" == *suse* ]]; then
   zypper install -y e2fsprogs curl cpio util-linux timezone
 else
+  # For Rocky Linux, CentOS, Fedora, etc.
   dnf install -y e2fsprogs cpio
+  
+  # Install runtime for rocky linux to build apptainer
+  if [[ "$OS_TYPE" == *rockylinux* ]] && [[ "$OS_VERSION" -gt 9 ]]; then
+    if ! dnf install -y shadow-utils-subid; then
+      echo "Warning: Could not install shadow-utils-subid, apptainer may fail to run"
+    fi
+    if ! dnf install -y fuse3-libs fuse3-devel; then
+      echo "Warning: Could not install fuse3 packages, container operations may fail"
+    fi
+  fi
 fi
 
 # switch to an unprivileged user
@@ -27,6 +38,21 @@ su testuser -c '
   set -e
   rm -rf ins image*.sif overlay.img
   tools/install-unprivileged.sh -e -v apptainer-[1-9]*.$(arch).rpm '"$INS_OPTS"' ins
+  
+  # Handle library compatibility issues for Rocky Linux
+  if [[ "$OS_TYPE" == *rockylinux* ]] && [[ "$OS_VERSION" -gt 9 ]]; then
+    # Copy newer system libraries to override older extracted versions
+    if [ -f /usr/lib64/libfuse3.so.3 ]; then
+      cp /usr/lib64/libfuse3.so.3 ins/x86_64/utils/lib/libfuse3.so.3
+    fi
+    if [ -f /usr/lib64/libselinux.so.1 ]; then
+      cp /usr/lib64/libselinux.so.1 ins/x86_64/utils/lib/libselinux.so.1
+    fi
+    if [ -f /usr/lib64/libsubid.so.4 ]; then
+      cp /usr/lib64/libsubid.so.4 ins/x86_64/utils/lib/libsubid.so.4
+    fi
+  fi
+  
   (
   echo Bootstrap: docker
   echo From: '"$CONTAINER_VERS"'
