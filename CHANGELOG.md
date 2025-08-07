@@ -5,23 +5,20 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## v1.4.x changes
-
-Changes since 1.4.1
-
-Additional .deb packages have been added to the release assets that
-include the label "trixie+" to indicate that they are for installing on
-Debian 13 or later.  Those packages are necessary to work with the new
-libfuse3 library in Debian 13.  They also support libsubid, unlike the
-default packages because they are built on Debian 11 which doesn't have
-that library.
+## v1.4.2 - \[2025-07-07\]
 
 - Restore looking for registry mirrors in `/etc/containers/registry.conf`
   and related files.  This had been inadvertently dropped beginning in 1.4.0.
-- Add support of automatic triggering of Ubuntu PPA builds.
-- Fix the signature verification failure for unsigned images.
-- Fix use of the image cache, when the home directory contains `@` characters.
+- Fix use of the image cache when the home directory contains `@` characters.
   Previously it would assume that it was the start of a digest in the oci-dir.
+- Fix signature verification failures on unsigned images.
+- Add additional `.deb` packages to the release assets that include the label
+  `trixie+` to indicate that they are for installing on Debian 13 or later.
+  Those packages are necessary to work with the new libfuse3 library in Debian
+  13.  They also support libsubid, unlike the default packages because they are
+  built on Debian 11 which doesn't have that library.
+- Add automatic triggering of Ubuntu PPA builds whenever there's a new
+  apptainer release.
 
 ## v1.4.1 - \[2025-05-14\]
 
