@@ -5,7 +5,6 @@
 #   project policies see https://lfprojects.org/policies
 
 export BUILDDIR='@BUILDDIR@'
-export GO111MODULE='@GO111MODULE@'
 export GO_BUILD_TAGS='@GO_TAGS@'
 export GOFLAGS='@GOFLAGS@'
 export GO_TOOL='@GO@'

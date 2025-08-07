@@ -150,7 +150,7 @@ func CompilePlugin(sourceDir, destSif, buildTags string) error {
 		buildTags: buildTags,
 		workPath:  apptainerSrc,
 		goPath:    goPath,
-		envs:      append(os.Environ(), "GO111MODULE=on"),
+		envs:      os.Environ(),
 	}
 
 	// build plugin object using go build

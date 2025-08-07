@@ -10,7 +10,7 @@
 package main
 
 // Note that the inclusion of builddir here only works when mconfig -b has not
-//  renamed it; that is handled via a setting of CGO_CFLAGS in mconfig. It is
+//  renamed it; that is handled via a setting of CGO_CPPFLAGS in mconfig. It is
 //  included here also so that Go tools such as code editors and linters can
 //  find config.h when the default builddir is used.
 

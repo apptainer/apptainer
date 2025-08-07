@@ -42,7 +42,6 @@ gotest_postprocess() {
 }
 
 export GOFLAGS='@GOFLAGS@'
-export GO111MODULE='@GO111MODULE@'
 
 GO='@GO@'
 GO_TAGS='@GO_TAGS@'

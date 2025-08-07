@@ -25,10 +25,6 @@
 #
 #
 
-# Disable debugsource packages; otherwise it ends up with an empty %%files
-#   file in debugsourcefiles.list on Fedora
-%undefine _debugsource_packages
-
 # This can be slightly different than %%{version}.
 # For example, it has dash instead of tilde for release candidates.
 %global package_version @PACKAGE_VERSION@
@@ -192,7 +188,7 @@ fi
         --mandir=%{_mandir} \
         --infodir=%{_infodir}
 
-%make_build -C builddir V= old_config=
+%make_build -C builddir V= SUPPORT_PLUGINS= old_config=
 
 %install
 %if "%{?SOURCE1}" != ""
