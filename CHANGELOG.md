@@ -26,6 +26,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   a comma-separated list of device IDs (e.g., `"1,2,3"`) or "all" to
   import all of them.  The default if `HABANA_VISIBLE_DEVICES` is not
   set is "all".
+- debugsource rpms are now generated in addition to debuginfo rpms on
+  RHEL-derived and Fedora operating systems.
 
 ## v1.4.x changes
 

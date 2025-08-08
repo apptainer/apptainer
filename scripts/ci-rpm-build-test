@@ -74,7 +74,13 @@ su testuser -c '
   export GOPATH=$BLD/gopath
   PATH=$GOPATH/bin:$PATH
 
+  # do a minimal test
   apptainer exec oras://ghcr.io/apptainer/alpine:3.15.0 /bin/true
+
+  if [[ '$OS_TYPE' != *suse* ]]; then
+    # make sure an example go source file is actually in the debugsource rpm 
+    rpm2cpio $HOME/rpmbuild/RPMS/$(arch)/apptainer-debugsource*.rpm | cpio -it | grep cmd/apptainer/cli.go
+  fi
 
   # copy the rpms into the current directory for later use
   cp $HOME/rpmbuild/SRPMS/*.rpm $HOME/rpmbuild/RPMS/*/*.rpm .

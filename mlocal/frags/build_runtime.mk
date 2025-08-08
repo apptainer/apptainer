@@ -25,7 +25,8 @@ $(BUILDDIR_ABSPATH)/.clean-starter: $(starter_CSOURCE)
 starter := $(BUILDDIR_ABSPATH)/cmd/starter/c/starter
 $(starter): $(BUILDDIR_ABSPATH)/.clean-starter $(apptainer_build_config) $(starter_deps) $(starter_SOURCE)
 	@echo " GO" $@
-	$(V)cd $(SOURCEDIR) && $(GO) build $(GO_MODFLAGS) $(GO_BUILDMODE) -tags "$(GO_TAGS)" $(GO_LDFLAGS) \
+	$(V)cd $(SOURCEDIR) && $(GO) build $(GO_MODFLAGS) $(GO_BUILDMODE) \
+		$(GO_GCFLAGS) $(GO_LDFLAGS) -tags "$(GO_TAGS)" \
 		-o $@ cmd/starter/main_linux.go
 
 starter_INSTALL := $(DESTDIR)$(LIBEXECDIR)/apptainer/bin/starter
