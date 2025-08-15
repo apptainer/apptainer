@@ -85,6 +85,33 @@ if [ -z "$ARCH" ]; then
 	ARCH="$(arch)"
 fi
 
+RPMDIST=""
+LOCALAPPTAINER=false
+if [[ "$VERSION" == *.rpm ]]; then
+	# use a local rpm
+	if [ ! -f "$VERSION" ]; then
+		fatal "$VERSION not found"
+	fi
+	LOCALAPPTAINER=true
+	if [[ "$VERSION" != /* ]]; then
+		# not a complete path
+		VERSION="$PWD/$VERSION"
+	fi
+	# take third from last field separated by dots as the rpm dist,
+	# removing an underscore and following if present (like in el10).
+	# shellcheck disable=SC2001
+	RPMDIST="$(echo "$VERSION"|sed 's/.*\.\(.*\)\.[^.]*\..*$/\1/;s/_.*//')"
+	# but if it starts with a number or contains a dash, the dist is
+	# missing so just try to use the default DIST (which happens if
+	# RPMDIST is empty)
+	if [[ "$RPMDIST" == [0-9]* ]] || [[ "$RPMDIST" == *-* ]]; then
+		RPMDIST=""
+	elif [ -z "$DIST" ]; then
+		# infer the distribution from the rpm name by default
+		DIST="$RPMDIST"
+	fi
+fi
+
 if [ -z "$DIST" ]; then
 	DIST=el8
 fi
@@ -128,6 +155,7 @@ esac
 OSREPOURL=""
 EXTRASREPOURL=""
 EPELREPOURL=""
+EL=""
 
 setrepourls()
 {
@@ -226,27 +254,8 @@ latesturl()
 	fi
 }
 
-RPMDIST=""
-LOCALAPPTAINER=false
 if [[ "$VERSION" == *.rpm ]]; then
-	# use a local rpm
-	if [ ! -f "$VERSION" ]; then
-		fatal "$VERSION not found"
-	fi
-	LOCALAPPTAINER=true
-	if [[ "$VERSION" != /* ]]; then
-		# not a complete path
-		VERSION="$PWD/$VERSION"
-	fi
-	# take third from last field separated by dots as the rpm dist
-	# shellcheck disable=SC2001
-	RPMDIST="$(echo "$VERSION"|sed 's/.*\.\(.*\)\.[^.]*\..*$/\1/')"
-	# but if it starts with a number or contains a dash, the dist is
-	# missing so just try to use the default DIST (which happens if
-	# RPMDIST is empty)
-	if [[ "$RPMDIST" == [0-9]* ]] || [[ "$RPMDIST" == *-* ]]; then
-		RPMDIST=""
-	fi
+	: # do not lookup URL of apptainer
 elif [ -z "$VERSION" ] || ! $NOOPENSUSE; then
 	# shellcheck disable=SC2310,SC2311
 	if ! APPTAINERURL="$(latesturl "$EPELREPOURL" apptainer $NOOPENSUSE false)"; then
@@ -359,12 +368,16 @@ elif [ "$DIST" = "suse15" ] || [ "$DIST" = "opensuse-leap" ]; then
 	fi
 	EPELUTILS=""
 else
-	# el9 & fc*
+	# el9+ & fc*
 	OSUTILS="$OSUTILS lzo squashfs-tools lz4-libs libzstd libsepol bzip2-libs audit-libs libcap-ng libattr libacl pcre2 libxcrypt libselinux libsemanage shadow-utils-subid"
 	if $NEEDSFUSE2FS; then
 		OSUTILS="$OSUTILS fuse-libs e2fsprogs-libs e2fsprogs"
 	fi
-	EXTRASUTILS="$EXTRASUTILS fuse3-libs"
+	if [[ "$DIST" == el* ]] && [ "$EL" -ge 10 ]; then
+		OSUTILS="$OSUTILS fuse3-libs"
+	else
+		EXTRASUTILS="$EXTRASUTILS fuse3-libs"
+	fi
 fi
 if [[ "$RPMDIST" == *suse* ]]; then
 	RPMUTILS=libseccomp2
