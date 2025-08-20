@@ -29,6 +29,7 @@ linters:
     - revive
     - staticcheck
     - unused
+    - usetesting
   settings:
     misspell:
       locale: US
