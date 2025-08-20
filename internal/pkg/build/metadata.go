@@ -130,6 +130,10 @@ func insertRunScript(b *types.Bundle) error {
 		if err != nil {
 			return err
 		}
+		err = os.Chtimes(filepath.Join(b.RootfsPath, "/.singularity.d/runscript"), b.SourceDateEpoch, b.SourceDateEpoch)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -139,6 +143,10 @@ func insertStartScript(b *types.Bundle) error {
 		sylog.Infof("Adding startscript")
 		shebang, script := handleShebangScript(b.Recipe.ImageData.Startscript)
 		err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/startscript"), []byte(shebang+"\n\n"+script+"\n"), 0o755)
+		if err != nil {
+			return err
+		}
+		err = os.Chtimes(filepath.Join(b.RootfsPath, "/.singularity.d/startscript"), b.SourceDateEpoch, b.SourceDateEpoch)
 		if err != nil {
 			return err
 		}
@@ -154,6 +162,10 @@ func insertTestScript(b *types.Bundle) error {
 		if err != nil {
 			return err
 		}
+		err = os.Chtimes(filepath.Join(b.RootfsPath, "/.singularity.d/test"), b.SourceDateEpoch, b.SourceDateEpoch)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -164,6 +176,10 @@ func insertHelpScript(b *types.Bundle) error {
 		if err != nil || b.Opts.Force {
 			sylog.Infof("Adding help info")
 			err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/runscript.help"), []byte(b.Recipe.ImageData.Help.Script+"\n"), 0o644)
+			if err != nil {
+				return err
+			}
+			err = os.Chtimes(filepath.Join(b.RootfsPath, "/.singularity.d/runscript.help"), b.SourceDateEpoch, b.SourceDateEpoch)
 			if err != nil {
 				return err
 			}
@@ -201,6 +217,10 @@ func insertDefinition(b *types.Bundle) error {
 	}
 
 	err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity"), b.Recipe.FullRaw, 0o644)
+	if err != nil {
+		return err
+	}
+	err = os.Chtimes(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity"), b.SourceDateEpoch, b.SourceDateEpoch)
 	if err != nil {
 		return err
 	}
@@ -261,7 +281,15 @@ func insertLabelsJSON(b *types.Bundle) (err error) {
 	}
 
 	err = os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/labels.json"), []byte(text), 0o644)
-	return err
+	if err != nil {
+		return err
+	}
+	err = os.Chtimes(filepath.Join(b.RootfsPath, "/.singularity.d/labels.json"), b.SourceDateEpoch, b.SourceDateEpoch)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func insertJSONInspectMetadata(b *types.Bundle) error {
@@ -317,6 +345,9 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 
 	// build date and time, lots of time formatting
 	currentTime := time.Now()
+	if !b.SourceDateEpoch.IsZero() {
+		currentTime = b.SourceDateEpoch
+	}
 	year, month, day := currentTime.Date()
 	date := strconv.Itoa(day) + `_` + month.String() + `_` + strconv.Itoa(year)
 	hours, minutes, secs := currentTime.Clock()
