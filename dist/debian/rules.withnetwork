@@ -77,6 +77,10 @@ override_dh_auto_configure:
 	  set -ex; \
 	  which go; go version; \
 	  if ! ./mlocal/scripts/check-min-go-version go $(MINGO_VERSION); then \
+	    if [ ! -f debian/$(TARBALL) ]; then \
+	      echo Downloading $(TARBALL); \
+	      wget -O debian/$(TARBALL) https://dl.google.com/go/$(TARBALL); \
+	    fi; \
 	    if [ -d $(GOROOT) ]; then rm -rf $(GOROOT); fi; \
 	    mkdir -p $(GOROOT); \
 	    HERE=$$PWD; \
@@ -87,6 +91,7 @@ override_dh_auto_configure:
 	    cd $$HERE; \
 	  fi; \
 	  which go; go version; \
+	  ./scripts/download-dependencies debian; \
 	  ./scripts/compile-dependencies debian
 ifneq ($(NEW_VERSION),)
 	$(warning "Setting new version in debian changelog: $(NEW_VERSION)")
