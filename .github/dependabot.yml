@@ -49,10 +49,6 @@ updates:
         patterns:
           - "github.com/moby/*"
           - "github.com/docker/*"
-      containerd:
-        applies-to: "version-updates"
-        patterns:
-          - "github.com/containerd/*"
       opencontainers:
         applies-to: "version-updates"
         patterns:
