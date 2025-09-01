@@ -1,10 +1,8 @@
+version: "2"
 run:
   concurrency: 4
-  timeout: 10m
-
 linters:
-  disable-all: true
-  enable-all: false
+  default: none
   enable:
     - asciicheck
     - bidichk
@@ -16,12 +14,9 @@ linters:
     - dogsled
     - dupl
     - dupword
-    - gofumpt
-    - goimports
     - gomodguard
     - goprintffuncname
     - gosec
-    - gosimple
     - govet
     - grouper
     - ineffassign
@@ -33,18 +28,43 @@ linters:
     - reassign
     - revive
     - staticcheck
-    - typecheck
     - unused
-
-linters-settings:
-  misspell:
-    locale: US
-
+  settings:
+    misspell:
+      locale: US
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - gosec
+        text: '^(G107|G204|G306):'
+      - linters:
+          - revive
+        path: "internal/pkg/remote/util/.*.go$"
+        text: "var-naming: avoid meaningless package names"
+      - linters:
+          - revive
+        path: "pkg/build/types/.*.go$"
+        text: "var-naming: avoid meaningless package names"
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
-  exclude-rules:
-    - linters:
-        - gosec
-      text: "^(G107|G204|G306):"
-
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

@@ -96,10 +96,10 @@ func callbackTestCmd(manager *cmdline.CommandManager) {
 		DisableFlagsInUseLine: true,
 		Args:                  cobra.MinimumNArgs(1),
 		Use:                   "test-cmd [args ...]",
-		Short:                 "Test test test",
+		Short:                 "Test test",
 		Long:                  "Long test long test long test",
 		Example:               "apptainer test-cmd my test",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			fmt.Println("test-cmd is printing args:", args)
 		},
 		TraverseChildren: true,

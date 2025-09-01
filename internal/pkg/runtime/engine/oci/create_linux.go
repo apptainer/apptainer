@@ -886,11 +886,7 @@ func (c *container) mount(point *mount.Point, _ *mount.System) error {
 	dest := point.Destination
 	flags, opts := mount.ConvertOptions(point.Options)
 	optsString := strings.Join(opts, ",")
-	ignore := false
-
-	if flags&syscall.MS_REMOUNT != 0 {
-		ignore = true
-	}
+	ignore := flags&syscall.MS_REMOUNT != 0
 
 	if !strings.HasPrefix(dest, c.rootfs) {
 		rootfsPath := filepath.Join(c.rpcRoot, c.rootfs)

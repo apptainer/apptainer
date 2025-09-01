@@ -151,10 +151,10 @@ func GetFakeBinds(fakerootPath string) ([]string, error) {
 	}
 	_ = cmd.Wait()
 	if preload == "" {
-		return binds, fmt.Errorf("No LD_PRELOAD in fakeroot environment")
+		return binds, fmt.Errorf("no LD_PRELOAD in fakeroot environment")
 	}
 	if libraryPath == "" {
-		return binds, fmt.Errorf("No LD_LIBRARY_PATH in fakeroot environment")
+		return binds, fmt.Errorf("no LD_LIBRARY_PATH in fakeroot environment")
 	}
 	preloadEntries := strings.Split(preload, ":")
 	for _, entry := range preloadEntries {

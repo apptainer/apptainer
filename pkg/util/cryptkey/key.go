@@ -148,7 +148,7 @@ func PlaintextKey(k KeyInfo, image string) ([]byte, error) {
 		}
 
 		msglen := len(encKey)
-		step := privateKey.PublicKey.Size()
+		step := privateKey.Size()
 		var plainText bytes.Buffer
 
 		for start := 0; start < msglen; start = start + step {

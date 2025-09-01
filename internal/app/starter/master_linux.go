@@ -45,7 +45,7 @@ func createContainer(ctx context.Context, rpcSocket int, containerPid int, e *en
 		if err != nil {
 			sylog.Debugf("Failed to establish connection to apptheus, err: %s", err)
 		}
-		e.Common.ApptheusSocket = apptheusMetric
+		e.ApptheusSocket = apptheusMetric
 	}
 
 	err = e.CreateContainer(ctx, containerPid, rpcConn)

@@ -266,7 +266,7 @@ func (cp *DebootstrapConveyorPacker) getRecipeHeaderInfo() (err error) {
 	include = strings.TrimSpace(include)
 
 	// convert Requires string to comma separated list
-	cp.include = strings.Replace(include, ` `, `,`, -1)
+	cp.include = strings.ReplaceAll(include, ` `, `,`)
 
 	return nil
 }

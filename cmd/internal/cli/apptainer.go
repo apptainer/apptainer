@@ -312,10 +312,7 @@ func setSylogMessageLevel() {
 		level = int(math.Max(float64(level), 1))
 	}
 
-	color := true
-	if nocolor || !term.IsTerminal(2) {
-		color = false
-	}
+	color := !nocolor && term.IsTerminal(2)
 
 	sylog.SetLevel(level, color)
 }

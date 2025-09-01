@@ -839,7 +839,7 @@ mount:
 		}
 	} else if err != nil {
 		if !bindMount && !remount {
-			xinolessOptsString := strings.Replace(optsString, ",xino=on", "", -1)
+			xinolessOptsString := strings.ReplaceAll(optsString, ",xino=on", "")
 			if mnt.Type == "devpts" {
 				sylog.Verbosef("Couldn't mount devpts filesystem, continuing with PTY allocation functionality disabled")
 				return nil
@@ -961,15 +961,16 @@ func (c *container) mountImage(mnt *mount.Point, system *mount.System) error {
 
 	if imageDriver != nil {
 		features := imageDriver.Features()
-		if mountType == "gocryptfs" {
+		switch mountType {
+		case "gocryptfs":
 			if features&image.GocryptFeature != 0 {
 				return c.gocryptfsMount(params, system, c.rpcOps.Mount)
 			}
-		} else if mountType == "squashfs" {
+		case "squashfs":
 			if features&image.SquashFeature != 0 {
 				return c.mountImageDriver(params, system, c.rpcOps.Mount)
 			}
-		} else if mountType == "ext3" {
+		case "ext3":
 			if features&image.Ext3Feature != 0 {
 				return c.mountImageDriver(params, system, c.rpcOps.Mount)
 			}
@@ -2659,7 +2660,7 @@ func (c *container) addResolvConfMount(system *mount.System) error {
 				return err
 			}
 		} else {
-			dns = strings.Replace(dns, " ", "", -1)
+			dns = strings.ReplaceAll(dns, " ", "")
 			content, err = files.ResolvConf(strings.Split(dns, ","))
 			if err != nil {
 				return err
