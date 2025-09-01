@@ -32,6 +32,21 @@ linters:
   settings:
     misspell:
       locale: US
+    staticcheck:
+      # SAxxxx checks in https://staticcheck.dev/docs/configuration/options/#checks
+      # Default: ["all", "-ST1000", "-ST1003", "-ST1016", "-ST1020", "-ST1021", "-ST1022"]
+      checks:
+        - all
+        - "-ST1000"
+        - "-ST1003"
+        - "-ST1016"
+        - "-ST1020"
+        - "-ST1021"
+        - "-ST1022"
+        # Disable: Apply De Morgan's law.
+        - "-QF1001"
+        # Disable: Merge conditional assignment into variable declaration
+        - "-QF1007"
   exclusions:
     generated: lax
     presets:

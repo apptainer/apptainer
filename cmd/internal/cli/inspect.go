@@ -626,7 +626,7 @@ func printSortedMap(m map[string]string, fn func(key string)) {
 
 // returns true if flags for other forms of information are unset.
 func defaultToLabels() bool {
-	return !helpfile && !deffile && !runscript && !startscript && !testfile && !environment && !listApps
+	return !(helpfile || deffile || runscript || startscript || testfile || environment || listApps)
 }
 
 // InspectCmd represents the 'inspect' command.

@@ -66,8 +66,11 @@ func (a *authnz) Authorize(req *registry.AuthorizationRequest) ([]string, error)
 	// release previous lock
 	defer a.Unlock()
 
-	requireAuth := strings.HasPrefix(req.Name, privateNamespace) || req.Type == ""
+	requireAuth := false
 
+	if strings.HasPrefix(req.Name, privateNamespace) || req.Type == "" {
+		requireAuth = true
+	}
 	if requireAuth {
 		if a.username != DefaultUsername || a.password != DefaultPassword {
 			return nil, fmt.Errorf("unauthorized")

@@ -118,7 +118,7 @@ func revocationCheck(cert *x509.Certificate, pool map[string]*x509.Certificate) 
 			return false
 		}
 
-		if !isCase1() && !isCase2() && !isCase3() {
+		if !(isCase1() || isCase2() || isCase3()) {
 			return fmt.Errorf("ocsp response is rejected")
 		}
 

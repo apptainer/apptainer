@@ -611,7 +611,7 @@ func (e *EngineOperations) joinNetns(starterConfig *starter.Config) error {
 		return fmt.Errorf("%q is not an allowed netns path in singularity.conf", netnsPath)
 	}
 
-	if !allowedNetUser && !allowedNetGroup {
+	if !(allowedNetUser || allowedNetGroup) {
 		return fmt.Errorf("you are not permitted to join network namespaces in apptainer.conf")
 	}
 

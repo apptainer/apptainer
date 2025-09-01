@@ -457,7 +457,7 @@ func getEncryptionMaterial(cmd *cobra.Command) (*cryptkey.KeyInfo, error) {
 	}
 
 	// checks for no flags/envvars being set
-	if !PEMFlag.Changed && !pemPathEnvOK && !pemDataEnvOK && !passphraseFlag.Changed && !passphraseEnvOK {
+	if !(PEMFlag.Changed || pemPathEnvOK || pemDataEnvOK || passphraseFlag.Changed || passphraseEnvOK) {
 		return nil, nil
 	}
 
