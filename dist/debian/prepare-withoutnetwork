@@ -4,7 +4,7 @@ cd `dirname $0` || exit 0
 
 # rules, source/include-binaries, ...
 find . -name \*.withoutnetwork \
-| while read file
+| while read -r file
 do
     cp -p ${file} `dirname ${file}`/`basename ${file} .withoutnetwork`
 done
