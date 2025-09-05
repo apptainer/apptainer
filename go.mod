@@ -42,8 +42,8 @@ require (
 	github.com/seccomp/libseccomp-golang v0.11.1
 	github.com/shopspring/decimal v1.4.0
 	github.com/sigstore/sigstore v1.9.5
-	github.com/spf13/cobra v1.9.1
-	github.com/spf13/pflag v1.0.7
+	github.com/spf13/cobra v1.10.1
+	github.com/spf13/pflag v1.0.9
 	github.com/sylabs/json-resp v0.9.5
 	github.com/vbauerster/mpb/v8 v8.10.2
 	golang.org/x/crypto v0.41.0
