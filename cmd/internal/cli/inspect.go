@@ -282,20 +282,20 @@ func (c *command) setAttribute(section, value, file string) error {
 	case "apps":
 		c.metadata.AddApp(value)
 	case "deffile":
-		if c.metadata.Data.Attributes.Deffile == "" {
-			c.metadata.Data.Attributes.Deffile = value
+		if c.metadata.Attributes.Deffile == "" {
+			c.metadata.Attributes.Deffile = value
 		}
 	case "test":
 		if app != "" {
 			c.metadata.Data.Attributes.Apps[app].Test = value
 		} else {
-			c.metadata.Data.Attributes.Test = value
+			c.metadata.Attributes.Test = value
 		}
 	case "helpfile":
 		if app != "" {
 			c.metadata.Data.Attributes.Apps[app].Helpfile = value
 		} else {
-			c.metadata.Data.Attributes.Helpfile = value
+			c.metadata.Attributes.Helpfile = value
 		}
 	case "labels":
 		labels := make(map[string]string)
@@ -305,25 +305,25 @@ func (c *command) setAttribute(section, value, file string) error {
 		if app != "" {
 			c.metadata.Data.Attributes.Apps[app].Labels = labels
 		} else {
-			c.metadata.Data.Attributes.Labels = labels
+			c.metadata.Attributes.Labels = labels
 		}
 	case "runscript":
 		if app != "" {
 			c.metadata.Data.Attributes.Apps[app].Runscript = value
 		} else {
-			c.metadata.Data.Attributes.Runscript = value
+			c.metadata.Attributes.Runscript = value
 		}
 	case "startscript":
 		if app != "" {
 			c.metadata.Data.Attributes.Apps[app].Startscript = value
 		} else {
-			c.metadata.Data.Attributes.Startscript = value
+			c.metadata.Attributes.Startscript = value
 		}
 	case "environment":
 		if app != "" {
 			c.metadata.Data.Attributes.Apps[app].Environment[file] = value
 		} else {
-			c.metadata.Data.Attributes.Environment[file] = value
+			c.metadata.Attributes.Environment[file] = value
 		}
 	default:
 		return fmt.Errorf("badly formatted content, unknown section %s", section)
@@ -703,9 +703,9 @@ var InspectCmd = &cobra.Command{
 			sylog.Fatalf("%s", err)
 		}
 
-		for app := range inspectData.Data.Attributes.Apps {
+		for app := range inspectData.Attributes.Apps {
 			if !listApps && !allData && appName != app {
-				delete(inspectData.Data.Attributes.Apps, app)
+				delete(inspectData.Attributes.Apps, app)
 			}
 		}
 
@@ -717,47 +717,47 @@ var InspectCmd = &cobra.Command{
 			}
 			fmt.Printf("%s\n", string(jsonObj))
 		} else {
-			appAttr := inspectData.Data.Attributes.Apps[appName]
+			appAttr := inspectData.Attributes.Apps[appName]
 
 			if listApps {
-				printSortedApp(inspectData.Data.Attributes.Apps)
+				printSortedApp(inspectData.Attributes.Apps)
 			}
 
-			if inspectData.Data.Attributes.Deffile != "" {
-				fmt.Printf("%s\n", inspectData.Data.Attributes.Deffile)
+			if inspectData.Attributes.Deffile != "" {
+				fmt.Printf("%s\n", inspectData.Attributes.Deffile)
 			}
-			if inspectData.Data.Attributes.Runscript != "" {
-				fmt.Printf("%s\n", inspectData.Data.Attributes.Runscript)
+			if inspectData.Attributes.Runscript != "" {
+				fmt.Printf("%s\n", inspectData.Attributes.Runscript)
 			} else if appAttr != nil && appAttr.Runscript != "" {
 				fmt.Printf("%s\n", appAttr.Runscript)
 			}
-			if inspectData.Data.Attributes.Startscript != "" {
-				fmt.Printf("%s\n", inspectData.Data.Attributes.Startscript)
+			if inspectData.Attributes.Startscript != "" {
+				fmt.Printf("%s\n", inspectData.Attributes.Startscript)
 			} else if appAttr != nil && appAttr.Startscript != "" {
 				fmt.Printf("%s\n", appAttr.Startscript)
 			}
-			if inspectData.Data.Attributes.Test != "" {
-				fmt.Printf("%s\n", inspectData.Data.Attributes.Test)
+			if inspectData.Attributes.Test != "" {
+				fmt.Printf("%s\n", inspectData.Attributes.Test)
 			} else if appAttr != nil && appAttr.Test != "" {
 				fmt.Printf("%s\n", appAttr.Test)
 			}
-			if inspectData.Data.Attributes.Helpfile != "" {
-				fmt.Printf("%s\n", inspectData.Data.Attributes.Helpfile)
+			if inspectData.Attributes.Helpfile != "" {
+				fmt.Printf("%s\n", inspectData.Attributes.Helpfile)
 			} else if appAttr != nil && appAttr.Helpfile != "" {
 				fmt.Printf("%s\n", appAttr.Helpfile)
 			}
-			if len(inspectData.Data.Attributes.Environment) > 0 {
-				printSortedMap(inspectData.Data.Attributes.Environment, func(k string) {
-					fmt.Printf("=== %s ===\n%s\n\n", k, inspectData.Data.Attributes.Environment[k])
+			if len(inspectData.Attributes.Environment) > 0 {
+				printSortedMap(inspectData.Attributes.Environment, func(k string) {
+					fmt.Printf("=== %s ===\n%s\n\n", k, inspectData.Attributes.Environment[k])
 				})
 			} else if appAttr != nil && len(appAttr.Environment) > 0 {
 				printSortedMap(appAttr.Environment, func(k string) {
 					fmt.Printf("=== %s ===\n%s\n\n", k, appAttr.Environment[k])
 				})
 			}
-			if len(inspectData.Data.Attributes.Labels) > 0 {
-				printSortedMap(inspectData.Data.Attributes.Labels, func(k string) {
-					fmt.Printf("%s: %s\n", k, inspectData.Data.Attributes.Labels[k])
+			if len(inspectData.Attributes.Labels) > 0 {
+				printSortedMap(inspectData.Attributes.Labels, func(k string) {
+					fmt.Printf("%s: %s\n", k, inspectData.Attributes.Labels[k])
 				})
 			} else if appAttr != nil && len(appAttr.Labels) > 0 {
 				printSortedMap(appAttr.Labels, func(k string) {

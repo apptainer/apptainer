@@ -308,7 +308,7 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 			sock := "/run/buildkit/buildkitd.sock"
 			if _, err := os.Stat(sock); err != nil && errors.Is(err, os.ErrNotExist) {
 				// make the error message from `buildctl` look more like the traditional error message from `docker`
-				return fmt.Errorf("Cannot connect to the BuildKit daemon at unix://%s. Is the buildkit daemon running?", sock)
+				return fmt.Errorf("cannot connect to the BuildKit daemon at unix://%s. Is the buildkit daemon running?", sock)
 			}
 		}
 		err = os.MkdirAll(filepath.Join(cp.b.RootfsPath, ".singularity.d"), 0o755)

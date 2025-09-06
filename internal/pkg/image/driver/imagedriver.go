@@ -232,7 +232,7 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, _ image.MountFunc) err
 			optsStr += "," + strings.Join(params.FSOptions, ",")
 		}
 		// Ignore xino=on option with fuse-overlayfs
-		optsStr = strings.Replace(optsStr, ",xino=on", "", -1)
+		optsStr = strings.ReplaceAll(optsStr, ",xino=on", "")
 		// noacl is needed to avoid failures when the upper layer
 		// filesystem type (for example tmpfs) does not support it,
 		// when the fuse-overlayfs version is 1.8 or greater.

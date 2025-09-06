@@ -128,7 +128,7 @@ func getProcInfo(pid int) (ppid int, uid int, gid int) {
 // process with a non-root UID, then returns the UID and GID of that process.
 // Calls os.Exit on error, or if no non-root process is found.
 func getUnprivIDs(pid int) (uid int, gid int) {
-	if 1 == pid {
+	if pid == 1 {
 		log.Fatal("no unprivileged process found")
 	}
 

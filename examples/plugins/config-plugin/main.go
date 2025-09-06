@@ -49,7 +49,7 @@ func callbackCgroups(common *config.Common) {
 
 	data, err := cfg.MarshalJSON()
 	if err != nil {
-		sylog.Errorf("While Marshalling cgroups config to JSON: %s", err)
+		sylog.Errorf("While Marshaling cgroups config to JSON: %s", err)
 		return
 	}
 	sylog.Infof("Overriding cgroups config")

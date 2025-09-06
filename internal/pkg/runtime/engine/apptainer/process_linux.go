@@ -689,7 +689,7 @@ func injectEnvHandler(senv map[string]string, noEval bool) interpreter.OpenHandl
 				export PATH=%q
 			fi
 			`
-			b.WriteString(fmt.Sprintf(defaultPathSnippet, env.DefaultPath))
+			fmt.Fprintf(b, defaultPathSnippet, env.DefaultPath)
 
 			snippet := `
 			if test -v %[1]s; then
@@ -711,7 +711,7 @@ func injectEnvHandler(senv map[string]string, noEval bool) interpreter.OpenHandl
 					// Shell evaluation when the export is sourced
 					value = "\"" + shell.EscapeDoubleQuotes(value) + "\""
 				}
-				b.WriteString(fmt.Sprintf(snippet, key, value))
+				fmt.Fprintf(b, snippet, key, value)
 			}
 		})
 
@@ -779,7 +779,7 @@ func getAllEnvBuiltin() interpreter.ShellBuiltin {
 			// string in the action script. This is too awkward and slow in
 			// shell code. If we can use `printf -v VAR "%b" ...` from mvdan.cc/sh
 			// in future, we may be able to revisit this.
-			env := strings.Replace(env, "\n", "\\u000A", -1)
+			env := strings.ReplaceAll(env, "\n", "\\u000A")
 			fmt.Fprintf(hc.Stdout, "%s\n", env)
 		}
 		return nil

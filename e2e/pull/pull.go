@@ -24,7 +24,6 @@ import (
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
-	syoras "github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
@@ -159,17 +158,17 @@ func (c *ctx) setup(t *testing.T) {
 		{
 			srcPath:        c.env.ImagePath,
 			uri:            fmt.Sprintf("%s/pull_test_sif:latest", c.env.TestRegistry),
-			layerMediaType: syoras.SifLayerMediaTypeV1,
+			layerMediaType: oras.SifLayerMediaTypeV1,
 		},
 		{
 			srcPath:        c.env.ImagePath,
 			uri:            fmt.Sprintf("%s/pull_test_sif_mediatypeproto:latest", c.env.TestRegistry),
-			layerMediaType: syoras.SifLayerMediaTypeProto,
+			layerMediaType: oras.SifLayerMediaTypeProto,
 		},
 		{
 			srcPath:        orasInvalidFile,
 			uri:            fmt.Sprintf("%s/pull_test_invalid_file:latest", c.env.TestRegistry),
-			layerMediaType: syoras.SifLayerMediaTypeV1,
+			layerMediaType: oras.SifLayerMediaTypeV1,
 		},
 	}
 

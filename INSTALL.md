@@ -122,7 +122,7 @@ run:
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.59.1
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.3.1
 ```
 
 <!-- markdownlint-enable MD013 -->

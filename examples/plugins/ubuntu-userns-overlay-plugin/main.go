@@ -66,11 +66,11 @@ func (d *ubuntuOvlDriver) MountErr() error {
 	return nil
 }
 
-func (d *ubuntuOvlDriver) Start(params *image.DriverParams, containerPid int, hybrid bool) error {
+func (d *ubuntuOvlDriver) Start(_ *image.DriverParams, _ int, _ bool) error {
 	return nil
 }
 
-func (d *ubuntuOvlDriver) Stop(target string) error {
+func (d *ubuntuOvlDriver) Stop(_ string) error {
 	return nil
 }
 

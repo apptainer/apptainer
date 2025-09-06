@@ -36,7 +36,7 @@ func (c *Common) GetPluginConfig(pl plugin.Plugin, cfg interface{}) error {
 	if c.PluginConfig == nil {
 		c.PluginConfig = make(map[string]json.RawMessage)
 	}
-	if raw, found := c.PluginConfig[pl.Manifest.Name]; found {
+	if raw, found := c.PluginConfig[pl.Name]; found {
 		return json.Unmarshal(raw, cfg)
 	}
 	return nil
@@ -51,7 +51,7 @@ func (c *Common) SetPluginConfig(pl plugin.Plugin, cfg interface{}) error {
 	if c.PluginConfig == nil {
 		c.PluginConfig = make(map[string]json.RawMessage)
 	}
-	c.PluginConfig[pl.Manifest.Name] = raw
+	c.PluginConfig[pl.Name] = raw
 	return nil
 }
 

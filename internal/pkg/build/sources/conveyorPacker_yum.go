@@ -152,14 +152,14 @@ func (c *YumConveyor) getRPMPath() (err error) {
 			sylog.Warningf("Bootstrapping of older distributions that use /var/lib/rpm will fail.")
 		} else {
 			// If we're on a 'foreign' system, with neither old or new paths, and ~/.rpmmacros will be required.
-			return fmt.Errorf("RPM database is using a non-standard path: %s\n"+
+			return fmt.Errorf("rpm database is using a non-standard path: %s\n"+
 				"You are probably running this bootstrap on Debian or Ubuntu.\n"+
 				"There is a way to work around this problem:\n"+
 				"Create a file at path %s/.rpmmacros.\n"+
 				"Place the following lines into the '.rpmmacros' file:\n"+
 				"%s\n"+
 				"%s\n"+
-				"After creating the file, re-run the bootstrap.\n",
+				"After creating the file, re-run the bootstrap",
 				rpmDBPath, os.Getenv("HOME"), `%_var /var`, `%_dbpath %{_var}/lib/rpm`)
 		}
 	}

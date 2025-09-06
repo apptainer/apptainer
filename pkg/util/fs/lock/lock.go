@@ -84,9 +84,10 @@ func (r *ByteRange) flock(lockType int16, cmd int) error {
 	}
 
 	err := unix.FcntlFlock(uintptr(r.fd), cmd, lk)
-	if err == unix.EAGAIN || err == unix.EACCES {
+	switch err {
+	case unix.EAGAIN, unix.EACCES:
 		return ErrByteRangeAcquired
-	} else if err == unix.ENOLCK {
+	case unix.ENOLCK:
 		return ErrLockNotSupported
 	}
 

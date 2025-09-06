@@ -23,19 +23,19 @@ func ArgsQuoted(a []string) (quoted string) {
 // Escape performs escaping of shell double quotes, backticks and $ characters.
 // Does not escape single quotes - apply EscapeSingleQuotes separately for this.
 func Escape(s string) string {
-	escaped := strings.Replace(s, `\`, `\\`, -1)
-	escaped = strings.Replace(escaped, `"`, `\"`, -1)
-	escaped = strings.Replace(escaped, "`", "\\`", -1)
-	escaped = strings.Replace(escaped, `$`, `\$`, -1)
+	escaped := strings.ReplaceAll(s, `\`, `\\`)
+	escaped = strings.ReplaceAll(escaped, `"`, `\"`)
+	escaped = strings.ReplaceAll(escaped, "`", "\\`")
+	escaped = strings.ReplaceAll(escaped, `$`, `\$`)
 	return escaped
 }
 
 // EscapeDoubleQuotes performs shell escaping of double quotes only
 func EscapeDoubleQuotes(s string) string {
-	return strings.Replace(s, `"`, `\"`, -1)
+	return strings.ReplaceAll(s, `"`, `\"`)
 }
 
 // EscapeSingleQuotes performs shell escaping of single quotes only
 func EscapeSingleQuotes(s string) string {
-	return strings.Replace(s, `'`, `'"'"'`, -1)
+	return strings.ReplaceAll(s, `'`, `'"'"'`)
 }

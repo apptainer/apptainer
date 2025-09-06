@@ -74,12 +74,12 @@ func (s *stage) insertMetadata() error {
 }
 
 func insertEnvScript(b *types.Bundle) error {
-	if b.RunSection("environment") && b.Recipe.ImageData.Environment.Script != "" {
+	if b.RunSection("environment") && b.Recipe.Environment.Script != "" {
 		sylog.Infof("Adding environment to container")
 		envScriptPath := filepath.Join(b.RootfsPath, "/.singularity.d/env/90-environment.sh")
 		_, err := os.Stat(envScriptPath)
 		if os.IsNotExist(err) {
-			err := os.WriteFile(envScriptPath, []byte("#!/bin/sh\n\n"+b.Recipe.ImageData.Environment.Script+"\n"), 0o755)
+			err := os.WriteFile(envScriptPath, []byte("#!/bin/sh\n\n"+b.Recipe.Environment.Script+"\n"), 0o755)
 			if err != nil {
 				return err
 			}
@@ -91,7 +91,7 @@ func insertEnvScript(b *types.Bundle) error {
 			}
 			defer f.Close()
 
-			_, err = f.WriteString("\n" + b.Recipe.ImageData.Environment.Script + "\n")
+			_, err = f.WriteString("\n" + b.Recipe.Environment.Script + "\n")
 			if err != nil {
 				return err
 			}
@@ -123,9 +123,9 @@ func handleShebangScript(s types.Script) (string, string) {
 }
 
 func insertRunScript(b *types.Bundle) error {
-	if b.RunSection("runscript") && b.Recipe.ImageData.Runscript.Script != "" {
+	if b.RunSection("runscript") && b.Recipe.Runscript.Script != "" {
 		sylog.Infof("Adding runscript")
-		shebang, script := handleShebangScript(b.Recipe.ImageData.Runscript)
+		shebang, script := handleShebangScript(b.Recipe.Runscript)
 		err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/runscript"), []byte(shebang+"\n\n"+script+"\n"), 0o755)
 		if err != nil {
 			return err
@@ -135,9 +135,9 @@ func insertRunScript(b *types.Bundle) error {
 }
 
 func insertStartScript(b *types.Bundle) error {
-	if b.RunSection("startscript") && b.Recipe.ImageData.Startscript.Script != "" {
+	if b.RunSection("startscript") && b.Recipe.Startscript.Script != "" {
 		sylog.Infof("Adding startscript")
-		shebang, script := handleShebangScript(b.Recipe.ImageData.Startscript)
+		shebang, script := handleShebangScript(b.Recipe.Startscript)
 		err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/startscript"), []byte(shebang+"\n\n"+script+"\n"), 0o755)
 		if err != nil {
 			return err
@@ -147,9 +147,9 @@ func insertStartScript(b *types.Bundle) error {
 }
 
 func insertTestScript(b *types.Bundle) error {
-	if b.RunSection("test") && b.Recipe.ImageData.Test.Script != "" {
+	if b.RunSection("test") && b.Recipe.Test.Script != "" {
 		sylog.Infof("Adding testscript")
-		shebang, script := handleShebangScript(b.Recipe.ImageData.Test)
+		shebang, script := handleShebangScript(b.Recipe.Test)
 		err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/test"), []byte(shebang+"\n\n"+script+"\n"), 0o755)
 		if err != nil {
 			return err
@@ -159,11 +159,11 @@ func insertTestScript(b *types.Bundle) error {
 }
 
 func insertHelpScript(b *types.Bundle) error {
-	if b.RunSection("help") && b.Recipe.ImageData.Help.Script != "" {
+	if b.RunSection("help") && b.Recipe.Help.Script != "" {
 		_, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/runscript.help"))
 		if err != nil || b.Opts.Force {
 			sylog.Infof("Adding help info")
-			err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/runscript.help"), []byte(b.Recipe.ImageData.Help.Script+"\n"), 0o644)
+			err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/runscript.help"), []byte(b.Recipe.Help.Script+"\n"), 0o644)
 			if err != nil {
 				return err
 			}
@@ -234,11 +234,11 @@ func insertLabelsJSON(b *types.Bundle) (err error) {
 		return err
 	}
 
-	if b.RunSection("labels") && len(b.Recipe.ImageData.Labels) > 0 {
+	if b.RunSection("labels") && len(b.Recipe.Labels) > 0 {
 		sylog.Infof("Adding labels")
 
 		// add new labels to new map and check for collisions
-		for key, value := range b.Recipe.ImageData.Labels {
+		for key, value := range b.Recipe.Labels {
 			// check if label already exists
 			if _, ok := labels[key]; ok {
 				// overwrite collision if it exists and force flag is set
@@ -329,7 +329,7 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 	labels["org.label-schema.usage.apptainer.version"] = buildcfg.PACKAGE_VERSION
 
 	// help info if help exists in the definition and is run in the build
-	if b.RunSection("help") && b.Recipe.ImageData.Help.Script != "" {
+	if b.RunSection("help") && b.Recipe.Help.Script != "" {
 		labels["org.label-schema.usage"] = "/.singularity.d/runscript.help"
 		labels["org.label-schema.usage.apptainer.runscript.help"] = "/.singularity.d/runscript.help"
 	}

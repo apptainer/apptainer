@@ -343,12 +343,13 @@ func lockSection(i *Image, section Section) error {
 		}
 	}
 
-	if err == lock.ErrByteRangeAcquired {
+	switch err {
+	case lock.ErrByteRangeAcquired:
 		if i.Writable {
 			return fmt.Errorf("can't open %s for writing, currently in use by another process", i.Path)
 		}
 		return fmt.Errorf("can't open %s for reading, currently in use for writing by another process", i.Path)
-	} else if err == lock.ErrLockNotSupported {
+	case lock.ErrLockNotSupported:
 		// ENOLCK means that the underlying filesystem doesn't support
 		// lock, so we simply ignore the error in order to allow ext3
 		// images located on the underlying filesystem to run correctly

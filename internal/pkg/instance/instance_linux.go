@@ -221,9 +221,10 @@ func (i *File) isExited() bool {
 	// delete instance files after checking that instance
 	// parent process
 	err := syscall.Kill(i.PPid, 0)
-	if err == syscall.ESRCH {
+	switch err {
+	case syscall.ESRCH:
 		return true
-	} else if err == nil {
+	case nil:
 		// process is alive and is owned by you otherwise
 		// we would have obtained permission denied error,
 		// now check if it's an instance parent process
