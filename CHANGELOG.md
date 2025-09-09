@@ -38,6 +38,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.4.2
 
+- Include the home directory in the `--workdir` option (which is a
+  modifier of the `--contain` option).  This has always been in the
+  `--workdir` usage description but the home directory has not actually
+  been included at least since singularity-2.
+
 ## v1.4.2 - \[2025-07-07\]
 
 - Restore looking for registry mirrors in `/etc/containers/registry.conf`
