@@ -82,14 +82,14 @@ func DownloadImage(ctx context.Context, filePath string, ipfsURL string, outCid 
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(res.Body)
 		s := buf.String()
-		return fmt.Errorf("Download did not succeed: %d %s\n\t",
+		return fmt.Errorf("download did not succeed: %d %s\n\t",
 			res.StatusCode, s)
 	}
 
 	if etag := res.Header.Get("ETag"); etag != "" {
 		sylog.Debugf("ETag: %s", etag)
 		if outCid != nil {
-			*outCid = strings.Replace(etag, "\"", "", -1)
+			*outCid = strings.ReplaceAll(etag, "\"", "")
 		}
 	}
 

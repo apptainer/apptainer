@@ -742,11 +742,11 @@ func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 					return -1, nil, err
 				}
 				keyDateCreated := ""
-				if "" != fields[pubCreationDateField] {
+				if fields[pubCreationDateField] != "" {
 					keyDateCreated = date(fields[pubCreationDateField])
 				}
 				keyDateExpired := ""
-				if "" != fields[pubExpirationDateField] {
+				if fields[pubExpirationDateField] != "" {
 					keyDateExpired = date(fields[pubExpirationDateField])
 				}
 
@@ -758,7 +758,7 @@ func formatMROutput(mrString string, longOutput bool) (int, []byte, error) {
 				} else if strings.Contains(fields[pubFlagField], "e") {
 					keyStatus += "[expired]"
 				}
-				if "" == keyStatus {
+				if keyStatus == "" {
 					keyStatus = "[enabled]"
 				}
 

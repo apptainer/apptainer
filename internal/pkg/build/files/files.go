@@ -30,7 +30,7 @@ done
 func expandPath(path string) ([]string, error) {
 	var output, stderr bytes.Buffer
 
-	path = strings.Replace(path, " ", "\\ ", -1)
+	path = strings.ReplaceAll(path, " ", "\\ ")
 	cmdline := fmt.Sprintf(filenameExpansionScript, path)
 	parser, err := syntax.NewParser().Parse(strings.NewReader(cmdline), "")
 	if err != nil {

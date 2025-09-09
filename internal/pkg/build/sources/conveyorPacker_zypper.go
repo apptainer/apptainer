@@ -146,7 +146,7 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) error 
 			return fmt.Errorf("SUSEConnect is not in PATH: %v", err)
 		}
 
-		array := strings.SplitN(osversion, ".", -1)
+		array := strings.Split(osversion, ".")
 		osmajor := array[0]
 		iosmajor, err = strconv.Atoi(osmajor)
 		if err != nil {
@@ -171,7 +171,7 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) error 
 			mirrorurl = regex.ReplaceAllString(mirrorurl, osmajor+osservicepack)
 		}
 		sleproduct = regex.ReplaceAllString(sleproduct, osmajor+osservicepack)
-		array = strings.SplitN(sleproduct, "/", -1)
+		array = strings.Split(sleproduct, "/")
 		machine, _ := machine()
 		if len(array) == 3 {
 			machine = array[2]
@@ -310,7 +310,7 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) error 
 			return fmt.Errorf("while registering: %v", err)
 		}
 		if slemodulesOk {
-			array := strings.SplitN(slemodules, ",", -1)
+			array := strings.Split(slemodules, ",")
 			for i := 0; i < len(array); i++ {
 				array[i] = strings.TrimSpace(array[i])
 				cmd := exec.Command(suseconnectPath, `--root`, cp.b.RootfsPath,
@@ -492,14 +492,14 @@ func rpmPathCheck() (err error) {
 	}
 
 	if rpmDBPath != `%{_var}/lib/rpm` && rpmDBPath != `%{_usr}/lib/sysimage/rpm` {
-		return fmt.Errorf("RPM database is using a non-standard path: %s\n"+
+		return fmt.Errorf("rpm database is using a non-standard path: %s\n"+
 			"There is a way to work around this problem:\n"+
 			"Create a file at path %s/.rpmmacros.\n"+
 			"Place the following lines into the '.rpmmacros' file:\n"+
 			"%s\n"+
 			"%s\n"+
 			"After creating the file, re-run the bootstrap.\n"+
-			"More info: https://github.com/apptainer/singularity/issues/241\n",
+			"More info: https://github.com/apptainer/singularity/issues/241",
 			rpmDBPath, os.Getenv("HOME"), `%_var /var`, `%_dbpath %{_var}/lib/rpm`)
 	}
 

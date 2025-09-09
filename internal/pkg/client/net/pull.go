@@ -78,7 +78,7 @@ func DownloadImage(ctx context.Context, filePath string, netURL string) error {
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(res.Body)
 		s := buf.String()
-		return fmt.Errorf("Download did not succeed: %d %s\n\t",
+		return fmt.Errorf("download did not succeed: %d %s\n\t",
 			res.StatusCode, s)
 	}
 

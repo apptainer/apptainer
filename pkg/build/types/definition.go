@@ -207,14 +207,14 @@ func populateRaw(d *Definition, w io.Writer) {
 	}
 	fmt.Fprintln(w)
 
-	writeLabelsIfExists(w, d.ImageData.Labels)
+	writeLabelsIfExists(w, d.Labels)
 	writeFilesIfExists(w, d.BuildData.Files)
 
-	writeSectionIfExists(w, "help", d.ImageData.Help)
-	writeSectionIfExists(w, "environment", d.ImageData.Environment)
-	writeSectionIfExists(w, "runscript", d.ImageData.Runscript)
-	writeSectionIfExists(w, "test", d.ImageData.Test)
-	writeSectionIfExists(w, "startscript", d.ImageData.Startscript)
+	writeSectionIfExists(w, "help", d.Help)
+	writeSectionIfExists(w, "environment", d.Environment)
+	writeSectionIfExists(w, "runscript", d.Runscript)
+	writeSectionIfExists(w, "test", d.Test)
+	writeSectionIfExists(w, "startscript", d.Startscript)
 	writeSectionIfExists(w, "pre", d.BuildData.Pre)
 	writeSectionIfExists(w, "setup", d.BuildData.Setup)
 	writeSectionIfExists(w, "post", d.BuildData.Post)

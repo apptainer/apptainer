@@ -29,7 +29,7 @@ func OciUpdate(containerID string, args *OciArgs) error {
 		return err
 	}
 
-	if state.State.Status != ociruntime.Running && state.State.Status != ociruntime.Created {
+	if state.Status != ociruntime.Running && state.Status != ociruntime.Created {
 		return fmt.Errorf("container %s is neither running nor created", containerID)
 	}
 
@@ -38,7 +38,7 @@ func OciUpdate(containerID string, args *OciArgs) error {
 	}
 
 	resources := &specs.LinuxResources{}
-	manager, err := cgroups.GetManagerForPid(state.State.Pid)
+	manager, err := cgroups.GetManagerForPid(state.Pid)
 	if err != nil {
 		return fmt.Errorf("failed to get cgroups manager: %v", err)
 	}

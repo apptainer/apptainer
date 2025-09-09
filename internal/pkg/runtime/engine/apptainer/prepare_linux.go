@@ -78,7 +78,7 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		return fmt.Errorf("incorrect engine")
 	}
 
-	if e.EngineConfig.OciConfig.Generator.Config != &e.EngineConfig.OciConfig.Spec {
+	if e.EngineConfig.OciConfig.Config != &e.EngineConfig.OciConfig.Spec {
 		return fmt.Errorf("bad engine configuration provided")
 	}
 
@@ -960,7 +960,7 @@ func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Conf
 			return fmt.Errorf("failed to read %s: %s", path, err)
 		}
 		// check that we are currently joining appinit process
-		if "appinit" != strings.Trim(string(b), "\n") {
+		if strings.Trim(string(b), "\n") != "appinit" {
 			return fmt.Errorf("appinit not found in %s, wrong instance process", path)
 		}
 	}
