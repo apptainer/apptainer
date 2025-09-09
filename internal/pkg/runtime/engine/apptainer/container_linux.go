@@ -1917,7 +1917,7 @@ func (c *container) addHomeStagingDir(system *mount.System, source string, dest 
 
 	bindSource := !c.engine.EngineConfig.GetContain() || c.engine.EngineConfig.GetCustomHome()
 
-	// use the session home directory is the user home directory doesn't exist (issue #4208)
+	// use the session home directory if the user home directory doesn't exist (issue #4208)
 	if _, err := os.Stat(source); os.IsNotExist(err) {
 		bindSource = false
 	}
@@ -1931,7 +1931,25 @@ func (c *container) addHomeStagingDir(system *mount.System, source string, dest 
 		system.Points.AddRemount(mount.HomeTag, homeStage, flags)
 		c.session.OverrideDir(dest, source)
 	} else {
-		sylog.Debugf("Using session directory for home directory")
+		// c.engine.EngineConfig.GetContain() is true here unless
+		// the home directory didn't exist.  We could let it always
+		// use the workdir if workdir was defined, but that might be
+		// surprising so check again.
+		workdir := c.engine.EngineConfig.GetWorkdir()
+		if workdir != "" && c.engine.EngineConfig.GetContain() {
+			sylog.Debugf("Using work directory for home directory")
+			workdir, err := filepath.Abs(filepath.Clean(workdir))
+			if err != nil {
+				return "", fmt.Errorf("can't determine absolute path of workdir %s: %s", workdir, err)
+			}
+
+			homeStage = filepath.Join(workdir, "home")
+			if err := fs.Mkdir(homeStage, 0o700); err != nil && !os.IsExist(err) {
+				return "", fmt.Errorf("failed to create %s: %s", homeStage, err)
+			}
+		} else {
+			sylog.Debugf("Using session directory for home directory")
+		}
 		c.session.OverrideDir(dest, homeStage)
 	}
 

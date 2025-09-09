@@ -246,7 +246,7 @@ func (c actionTests) actionExecMultiProfile(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// Create a temp testfile
+			// Create a temp testfile in tmp
 			tmpfile, err := fs.MakeTmpFile(testdataTmp, "testApptainerExec.", 0o644)
 			if err != nil {
 				t.Fatal(err)
@@ -255,8 +255,36 @@ func (c actionTests) actionExecMultiProfile(t *testing.T) {
 
 			basename := filepath.Base(tmpfile.Name())
 			tmpfilePath := filepath.Join("/tmp", basename)
+
+			// These two are for testing of binds at those paths to testdataTmp
 			vartmpfilePath := filepath.Join("/var/tmp", basename)
-			homePath := filepath.Join("/home", basename)
+			hometmpfilePath := filepath.Join("/home", basename)
+
+			// Create a test file in var_tmp
+			testdataVarTmp := filepath.Join(testdata, "var_tmp")
+			if err := os.Mkdir(testdataVarTmp, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			varTmpfile, err := fs.MakeTmpFile(testdataVarTmp, "testApptainerExec.", 0o644)
+			if err != nil {
+				t.Fatal(err)
+			}
+			varTmpfile.Close()
+
+			// Create a test file in home
+			testdataHome := filepath.Join(testdata, "home")
+			if err := os.Mkdir(testdataHome, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			homeTmpfile, err := fs.MakeTmpFile(testdataHome, "testApptainerExec.", 0o644)
+			if err != nil {
+				t.Fatal(err)
+			}
+			homeTmpfile.Close()
+
+			// These two are for testing if workdir+contain sees them
+			vartmpWorkPath := filepath.Join("/var/tmp", filepath.Base(varTmpfile.Name()))
+			homeWorkPath := "$HOME/" + filepath.Base(homeTmpfile.Name())
 
 			tests := []struct {
 				name        string
@@ -275,8 +303,18 @@ func (c actionTests) actionExecMultiProfile(t *testing.T) {
 					exit: 1,
 				},
 				{
-					name: "WorkdirContain",
+					name: "WorkdirContainTmp",
 					argv: []string{"--workdir", testdata, "--contain", c.env.ImagePath, "test", "-f", tmpfilePath},
+					exit: 0,
+				},
+				{
+					name: "WorkdirContainVarTmp",
+					argv: []string{"--workdir", testdata, "--contain", c.env.ImagePath, "test", "-f", vartmpWorkPath},
+					exit: 0,
+				},
+				{
+					name: "WorkdirContainHome",
+					argv: []string{"--workdir", testdata, "--contain", c.env.ImagePath, "sh", "-c", "test -f " + homeWorkPath},
 					exit: 0,
 				},
 				{
@@ -296,7 +334,7 @@ func (c actionTests) actionExecMultiProfile(t *testing.T) {
 				},
 				{
 					name: "HomePath",
-					argv: []string{"--home", testdataTmp + ":/home", c.env.ImagePath, "test", "-f", homePath},
+					argv: []string{"--home", testdataTmp + ":/home", c.env.ImagePath, "test", "-f", hometmpfilePath},
 					exit: 0,
 				},
 				{
