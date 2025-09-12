@@ -779,6 +779,7 @@ static int uts_namespace_init(struct namespace *nsconfig) {
         }
         return CREATE_NAMESPACE;
     }
+    return NO_NAMESPACE;
 }
 
 static int ipc_namespace_init(struct namespace *nsconfig) {
@@ -793,6 +794,7 @@ static int ipc_namespace_init(struct namespace *nsconfig) {
         }
         return CREATE_NAMESPACE;
     }
+    return NO_NAMESPACE;
 }
 
 static int cgroup_namespace_init(struct namespace *nsconfig) {
@@ -807,6 +809,7 @@ static int cgroup_namespace_init(struct namespace *nsconfig) {
         }
         return CREATE_NAMESPACE;
     }
+    return NO_NAMESPACE;
 }
 
 static int mount_namespace_init(struct namespace *nsconfig, Bool masterPropagateMount) {
