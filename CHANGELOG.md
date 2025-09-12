@@ -42,6 +42,7 @@ Changes since 1.4.2
   modifier of the `--contain` option).  This has always been in the
   `--workdir` usage description but the home directory has not actually
   been included at least since singularity-2.
+- Add support for building and publishing Apptainer for Ubuntu 25.04 PPA.
 
 ## v1.4.2 - \[2025-07-07\]
 

@@ -90,6 +90,8 @@ jobs:
     strategy:
       matrix:
         include:
+            - version: '25.04'
+              name: plucky
             - version: '24.04'
               name: noble
             - version: '22.04'
