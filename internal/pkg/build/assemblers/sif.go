@@ -137,10 +137,16 @@ func createSIF(path string, b *types.Bundle, squashfile string, encOpts *encrypt
 		return fmt.Errorf("sif id generation failed: %v", err)
 	}
 
+	idopt := sif.OptCreateWithID(id.String())
+	if !b.SourceDateEpoch.IsZero() {
+		// create reproducible uuid (nil)
+		idopt = sif.OptCreateDeterministic()
+	}
+
 	f, err := sif.CreateContainerAtPath(
 		path,
 		sif.OptCreateWithDescriptors(dis...),
-		sif.OptCreateWithID(id.String()),
+		idopt,
 		sif.OptCreateWithLaunchScript("#!/usr/bin/env run-singularity\n"),
 	)
 	if err != nil {

@@ -31,7 +31,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
@@ -54,6 +56,8 @@ type Bundle struct {
 
 	RootfsPath string `json:"rootfsPath"` // where actual fs to chroot will appear
 	TmpDir     string `json:"tmpPath"`    // where temp files required during build will appear
+
+	SourceDateEpoch time.Time // SOURCE_DATE_EPOCH, or Zero (`time.Time{}`) for Now
 
 	parentPath string // parent directory for RootfsPath
 }
@@ -211,10 +215,25 @@ func newBundle(parentPath, tempDir string, keyInfo *cryptkey.KeyInfo) (*Bundle, 
 	}
 	sylog.Debugf("Created temporary directory %q for the bundle", tmpPath)
 
+	sourceDateEpoch := time.Time{}
+	if env, ok := os.LookupEnv("SOURCE_DATE_EPOCH"); ok {
+		sde, err := strconv.ParseInt(env, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse %q: %v", env, err)
+		}
+		sourceDateEpoch = time.Unix(sde, 0)
+	}
+
 	if err := os.MkdirAll(rootfsPath, 0o755); err != nil {
 		cleanupDir(tmpPath)
 		cleanupDir(parentPath)
 		return nil, fmt.Errorf("could not create %q: %v", rootfsPath, err)
+	}
+	if !sourceDateEpoch.IsZero() {
+		err = os.Chtimes(rootfsPath, sourceDateEpoch, sourceDateEpoch)
+		if err != nil {
+			return nil, fmt.Errorf("could not change %q: %v", rootfsPath, err)
+		}
 	}
 
 	// check that chown works with the underlying filesystem containing
@@ -267,10 +286,11 @@ func newBundle(parentPath, tempDir string, keyInfo *cryptkey.KeyInfo) (*Bundle, 
 	sylog.Debugf("Created directory %q for the bundle", rootfsPath)
 
 	return &Bundle{
-		parentPath:  parentPath,
-		RootfsPath:  rootfsPath,
-		TmpDir:      tmpPath,
-		JSONObjects: make(map[string][]byte),
+		parentPath:      parentPath,
+		RootfsPath:      rootfsPath,
+		SourceDateEpoch: sourceDateEpoch,
+		TmpDir:          tmpPath,
+		JSONObjects:     make(map[string][]byte),
 		Opts: Options{
 			EncryptionKeyInfo: keyInfo,
 		},
