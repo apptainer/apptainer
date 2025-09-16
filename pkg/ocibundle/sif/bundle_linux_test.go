@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -10,7 +10,7 @@
 package sifbundle
 
 import (
-	"os"
+	"path/filepath"
 	"runtime"
 	"testing"
 
@@ -30,14 +30,7 @@ func TestFromSif(t *testing.T) {
 	test.EnsurePrivilege(t)
 
 	bundlePath := t.TempDir()
-	f, err := os.CreateTemp("", "busybox")
-	if err != nil {
-		t.Fatal(err)
-	}
-	sifFile := f.Name()
-	f.Close()
-	defer os.Remove(sifFile)
-
+	sifFile := filepath.Join(t.TempDir(), "test.sif")
 	if err := fs.CopyFileAtomic(busyboxSIF, sifFile, 0o755); err != nil {
 		t.Fatalf("Could not copy test image: %v", err)
 	}

@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -12,6 +12,7 @@ package instance
 import (
 	"bytes"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
@@ -76,12 +77,7 @@ func TestLogger(t *testing.T) {
 		},
 	}
 
-	logfile, err := os.CreateTemp("", "log-")
-	if err != nil {
-		t.Errorf("failed to create temporary log file: %s", err)
-	}
-	filename := logfile.Name()
-	logfile.Close()
+	filename := filepath.Join(t.TempDir(), "log")
 
 	for _, f := range formatTest {
 		logger, err := NewLogger(filename, f.formatter)

@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -125,20 +125,13 @@ func testNewUpdateV1(t *testing.T, systemd bool) {
 
 	// Write a new config with [pids] limit = 512
 	content := []byte("[pids]\nlimit = 512")
-	tmpfile, err := os.CreateTemp("", "cgroups")
-	if err != nil {
-		t.Fatalf("While creating update file: %v", err)
-	}
-	defer os.Remove(tmpfile.Name())
-	if _, err := tmpfile.Write(content); err != nil {
+	tmpfile := filepath.Join(t.TempDir(), "cgroups")
+	if err := os.WriteFile(tmpfile, content, 0o644); err != nil {
 		t.Fatalf("While writing update file: %v", err)
-	}
-	if err := tmpfile.Close(); err != nil {
-		t.Fatalf("While closing update file: %v", err)
 	}
 
 	// Update existing cgroup from new config
-	if err := manager.UpdateFromFile(tmpfile.Name()); err != nil {
+	if err := manager.UpdateFromFile(tmpfile); err != nil {
 		t.Fatalf("While updating cgroup: %v", err)
 	}
 

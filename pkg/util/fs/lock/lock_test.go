@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -11,6 +11,7 @@ package lock
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -59,22 +60,14 @@ func TestByteRange(t *testing.T) {
 	}
 
 	// create the temporary test file used for locking
-	f, err := os.CreateTemp("", "byterange-")
-	if err != nil {
-		t.Fatalf("failed to create temporary lock file: %s", err)
-	}
-	testFile := f.Name()
-	defer os.Remove(testFile)
-
-	f.Close()
-
+	testFile := filepath.Join(t.TempDir(), "byterange")
 	// write some content in test file
 	if err := os.WriteFile(testFile, []byte("testing\n"), 0o644); err != nil {
 		t.Fatalf("failed to write content in testfile %s: %s", testFile, err)
 	}
 
 	// re-open it and use it for testing
-	f, err = os.OpenFile(testFile, os.O_RDWR, 0)
+	f, err := os.OpenFile(testFile, os.O_RDWR, 0)
 	if err != nil {
 		t.Fatalf("failed to open %s: %s", testFile, err)
 	}
