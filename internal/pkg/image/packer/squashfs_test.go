@@ -43,7 +43,7 @@ func isExist(path string) bool {
 }
 
 func createSquashfs(t *testing.T, s *Squashfs) (string, error) {
-	image, err := os.CreateTemp("", "packer-")
+	image, err := os.CreateTemp(t.TempDir(), "packer-")
 	if err != nil {
 		t.Fatal(err)
 	}

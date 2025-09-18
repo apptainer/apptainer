@@ -80,20 +80,13 @@ func TestLogEnvSuite(t *testing.T) {
 
 		for _, test := range tests {
 			t.Log("starting test:" + test.Name)
-			err := os.Setenv(messageLevelEnv, strconv.Itoa(test.MessageLevel))
-			if err != nil {
-				t.Error(err)
-			}
-
+			t.Setenv(messageLevelEnv, strconv.Itoa(test.MessageLevel))
 			for _, env := range test.Envs {
-				err := os.Setenv(env, "1")
-				if err != nil {
-					t.Error(err)
-				}
+				t.Setenv(env, "1")
 			}
 
 			// call persistentPreRunE to update cmd
-			err = apptainerCmd.PersistentPreRunE(apptainerCmd, []string{})
+			err := apptainerCmd.PersistentPreRunE(apptainerCmd, []string{})
 			if err != nil {
 				t.Error(err)
 			}
@@ -164,10 +157,7 @@ func TestLogEnvSuite(t *testing.T) {
 		for _, test := range tests {
 			t.Log("starting test:" + test.Name)
 			for _, env := range test.Envs {
-				err := os.Setenv(env, "1")
-				if err != nil {
-					t.Error(err)
-				}
+				t.Setenv(env, "1")
 			}
 
 			// call persistentPreRunE to update cmd
