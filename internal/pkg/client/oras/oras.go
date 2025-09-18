@@ -64,7 +64,14 @@ func DownloadImage(ctx context.Context, path, ref string, ociAuth *authn.AuthCon
 	}
 
 	// Retrieve image to a temporary OCI layout
-	tmpDir, err := os.MkdirTemp("", "oras-tmp-")
+	tmpDirFlag := ""
+	if v := ctx.Value(TmpDirKey); v != nil {
+		if s, ok := v.(string); ok {
+			tmpDirFlag = s
+		}
+	}
+	// if tmpDirFlag is still "", os.MkdirTemp will use the system default temp dir
+	tmpDir, err := os.MkdirTemp(tmpDirFlag, "oras-tmp-")
 	if err != nil {
 		rt.ProgressShutdown()
 		return err
