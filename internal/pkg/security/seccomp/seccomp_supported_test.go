@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -42,13 +42,10 @@ func defaultProfile() *specs.LinuxSeccomp {
 }
 
 func testFchmod(t *testing.T) {
-	tmpfile, err := os.CreateTemp("", "chmod_file")
+	tmpfile, err := os.CreateTemp(t.TempDir(), "chmod_file-")
 	if err != nil {
 		t.Fatal(err)
 	}
-	file := tmpfile.Name()
-
-	defer os.Remove(file)
 	defer tmpfile.Close()
 
 	if hasConditionSupport() {

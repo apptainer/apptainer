@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2024, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -48,12 +48,7 @@ func isExist(path string) bool {
 
 func TestLocalPackerSquashfs(t *testing.T) {
 	require.Command(t, "mksquashfs")
-
-	tempDirPath, err := os.MkdirTemp("", "test-localpacker-squashfs")
-	if err != nil {
-		t.Fatalf("while creating temp dir: %v", err)
-	}
-	defer os.RemoveAll(tempDirPath)
+	tempDirPath := t.TempDir()
 
 	// Image root directory
 	inputDir := filepath.Join(tempDirPath, "input")
@@ -83,9 +78,7 @@ func TestLocalPackerSquashfs(t *testing.T) {
 	defer os.Remove(image)
 
 	// Create bundle
-	bundleTmp, _ := os.MkdirTemp("", "bundle-tmp-")
-	defer os.RemoveAll(bundleTmp)
-
+	bundleTmp := t.TempDir()
 	b, err := types.NewBundle(tempDirPath, bundleTmp)
 	if err != nil {
 		t.Fatalf("while creating bundle: %v", err)

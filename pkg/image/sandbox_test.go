@@ -58,15 +58,12 @@ func TestSandboxInitializer(t *testing.T) {
 	}
 
 	// Invalid case using a file
-	f, err := os.CreateTemp("", "")
+	f, err := os.CreateTemp(t.TempDir(), "")
 	if err != nil {
 		t.Fatalf("cannot create temporary file: %s\n", err)
 	}
 	defer f.Close()
-
 	path = f.Name()
-	defer os.Remove(path)
-
 	f.Close()
 
 	err = runSandboxInitializerTest(t, img, path)

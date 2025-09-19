@@ -29,6 +29,7 @@ linters:
     - revive
     - staticcheck
     - unused
+    - usetesting
   settings:
     misspell:
       locale: US
@@ -66,6 +67,14 @@ linters:
           - revive
         path: "pkg/build/types/.*.go$"
         text: "var-naming: avoid meaningless package names"
+      - linters:
+          - usetesting
+        # The usetesting linter shows a lot of lint for env var handling and
+        # tempdir creation in e2e tests. It's not really valid lint - the e2e
+        # tests were explicitly written to keep tempdirs in a per-run outer dir,
+        # and env var handling is complicated by the e2e.SingularityCmd
+        # execution flow etc.
+        path: "e2e/"
     paths:
       - third_party$
       - builtin$

@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -26,8 +26,8 @@ func TestFindOnPath(t *testing.T) {
 	// Forcing this avoid issues with PATH across sudo calls for the tests,
 	// differing orders, /usr/bin -> /bin symlinks etc.
 	oldPath := os.Getenv("PATH")
-	os.Setenv("PATH", env.DefaultPath)
-	defer os.Setenv("PATH", oldPath)
+	t.Setenv("PATH", env.DefaultPath)
+	defer t.Setenv("PATH", oldPath)
 	truePath, err := exec.LookPath("cp")
 	if err != nil {
 		t.Fatalf("exec.LookPath failed to find cp: %v", err)
@@ -45,7 +45,7 @@ func TestFindOnPath(t *testing.T) {
 
 	t.Run("bad path", func(t *testing.T) {
 		// Force a PATH that doesn't contain cp
-		os.Setenv("PATH", "/invalid/dir:/another/invalid/dir")
+		t.Setenv("PATH", "/invalid/dir:/another/invalid/dir")
 
 		gotPath, err := findOnPath("cp", false)
 		if err != nil {
