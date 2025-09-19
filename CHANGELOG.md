@@ -14,6 +14,8 @@ Changes since 1.4.2
   `--workdir` usage description but the home directory has not actually
   been included at least since singularity-2.
 - Add support for building and publishing Apptainer for Ubuntu 25.04 PPA.
+- Fix reading images using the oras protocol to store temporary files in `APPTAINER_TMPDIR`
+  instead of `TMPDIR`.
 
 ## v1.4.2 - \[2025-07-07\]
 

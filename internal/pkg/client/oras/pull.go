@@ -21,6 +21,12 @@ import (
 	"github.com/google/go-containerregistry/pkg/authn"
 )
 
+// contextKey is a custom type for context keys to avoid collisions
+type contextKey string
+
+// TmpDirKey is the context key for passing tmpDir
+const TmpDirKey contextKey = "tmpDir"
+
 // pull will pull an oras image into the cache if directTo="", or a specific file if directTo is set.
 func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, err error) {
 	hash, err := RefHash(ctx, pullFrom, ociAuth, noHTTPS, reqAuthFile)
@@ -80,6 +86,8 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom, tmpDir string, 
 		sylog.Infof("Downloading oras image to tmp cache: %s", directTo)
 	}
 
+	// always pass the tmpDir through context down to DownloadImage
+	ctx = context.WithValue(ctx, TmpDirKey, tmpDir)
 	return pull(ctx, imgCache, directTo, pullFrom, ociAuth, noHTTPS, reqAuthFile)
 }
 
