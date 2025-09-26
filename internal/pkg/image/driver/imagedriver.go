@@ -639,6 +639,9 @@ func (i *fuseappsInstance) filterMsg() string {
 	ignoreMsgs := []string{
 		// from fuse2fs
 		"journal is not supported.",
+		"fuse2fs does not support using the journal.",
+		"There may be file system corruption",
+		"the file system is not gracefully unmounted.",
 		"Mounting read-only.",
 		// from squashfuse_ll
 		"failed to clone device fd",
