@@ -736,13 +736,14 @@ func (c actionTests) RunFromURI(t *testing.T) {
 	}
 }
 
-func (c actionTests) overlayCreate(t *testing.T, testdir string) string {
-	// create overlay dir
-	dir, err := os.MkdirTemp(testdir, "overlay-dir-")
-	if err != nil {
+func (c actionTests) overlayRecreate(t *testing.T, dir string) {
+	// create or recreate overlay dir
+	if err := os.RemoveAll(dir); err != nil {
 		t.Fatal(err)
 	}
-	return dir
+	if err := os.Mkdir(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func (c actionTests) squashfsCreate(t *testing.T, testdir string) string {
@@ -766,10 +767,8 @@ func (c actionTests) squashfsCreate(t *testing.T, testdir string) string {
 	return squashfsImage
 }
 
-func (c actionTests) ext3Create(t *testing.T, testdir string) string {
-	// create the ext3 overlay image
-	ext3Img := filepath.Join(testdir, "ext3_fs.img")
-	// create the overlay ext3 image
+func (c actionTests) ext3Recreate(t *testing.T, ext3Img string) {
+	// create or recreate the overlay ext3 image
 	cmd := exec.Command("dd", "if=/dev/zero", "of="+ext3Img, "bs=1M", "count=64", "status=none")
 	if res := cmd.Run(t); res.Error != nil {
 		t.Fatalf("Unexpected error while running command.\n%s", res)
@@ -778,7 +777,6 @@ func (c actionTests) ext3Create(t *testing.T, testdir string) string {
 	if res := cmd.Run(t); res.Error != nil {
 		t.Fatalf("Unexpected error while running command.\n%s", res)
 	}
-	return ext3Img
 }
 
 func (c actionTests) sandboxCreate(t *testing.T, testdir string) string {
@@ -849,9 +847,9 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 		}
 	})(t)
 
-	dir := c.overlayCreate(t, testdir)
+	dir := filepath.Join(testdir, "overlay-dir")
+	ext3Img := filepath.Join(testdir, "ext3_fs.img")
 	squashfsImage := c.squashfsCreate(t, testdir)
-	ext3Img := c.ext3Create(t, testdir)
 	sandboxImage := c.sandboxCreate(t, testdir)
 	embeddedSif := c.embeddedSifCreate(t, testdir)
 
@@ -960,6 +958,31 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 			exit:     0,
 		},
 		{
+			name:     "overlay_remove",
+			argv:     []string{"--overlay", dir, c.env.ImagePath, "rm", "/etc/hostname"},
+			fakeroot: true,
+			exit:     0,
+		},
+		{
+			name:     "overlay_check_removed",
+			argv:     []string{"--overlay", dir, c.env.ImagePath, "test", "!", "-f", "/etc/hostname"},
+			fakeroot: true,
+			exit:     0,
+		},
+		{
+			name:     "overlay_ext3_remove",
+			argv:     []string{"--overlay", ext3Img, c.env.ImagePath, "rm", "/etc/hostname"},
+			fakeroot: true,
+			exit:     0,
+		},
+		{
+			// https://github.com/apptainer/apptainer/issues/2950
+			name:     "overlay_ext3_check_removed",
+			argv:     []string{"--overlay", ext3Img, c.env.ImagePath, "test", "!", "-f", "/etc/hostname"},
+			fakeroot: true,
+			exit:     0,
+		},
+		{
 			name: "Embedded overlay partition in SIF",
 			argv: []string{embeddedSif, "ps"},
 			exit: 0,
@@ -967,6 +990,8 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 	}
 
 	for _, profile := range profiles {
+		c.overlayRecreate(t, dir)
+		c.ext3Recreate(t, ext3Img)
 		for _, tt := range tests {
 			var args []string
 			if (profile.String() == "User" || profile.String() == "UserNamespace") && tt.fakeroot {

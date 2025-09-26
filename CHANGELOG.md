@@ -13,9 +13,12 @@ Changes since 1.4.2
   modifier of the `--contain` option).  This has always been in the
   `--workdir` usage description but the home directory has not actually
   been included at least since singularity-2.
+- Update the bundled fuse2fs to version 1.47.3.  This fixes a bug that
+  caused removal of files in the `--overlay` mode to silently fail.
+- Update the bundled fuse-overlayfs to version 1.15.
 - Add support for building and publishing Apptainer for Ubuntu 25.04 PPA.
-- Fix reading images using the oras protocol to store temporary files in `APPTAINER_TMPDIR`
-  instead of `TMPDIR`.
+- Fix reading images using the oras protocol to store temporary files in
+  `APPTAINER_TMPDIR` instead of `TMPDIR`.
 
 ## v1.4.2 - \[2025-07-07\]
 
