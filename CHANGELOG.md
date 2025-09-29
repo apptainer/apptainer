@@ -38,7 +38,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.4.x changes
 
-Changes since 1.4.2
+Changes since 1.4.3
+
+## v1.4.3 - \[2025-09-29\]
 
 - Include the home directory in the `--workdir` option (which is a
   modifier of the `--contain` option).  This has always been in the
