@@ -40,6 +40,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.4.3
 
+- Fix 32-bit builds which was accidentally broken by a library upgrade
+  that was done for a minor security issue.
+
 ## v1.4.3 - \[2025-09-29\]
 
 - Include the home directory in the `--workdir` option (which is a
