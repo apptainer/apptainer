@@ -5,6 +5,11 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.4.x changes
+
+- Fix 32-bit builds which were accidentally broken by a library upgrade
+  that was done for a minor security issue.
+
 ## v1.4.3 - \[2025-09-29\]
 
 - Include the home directory in the `--workdir` option (which is a
