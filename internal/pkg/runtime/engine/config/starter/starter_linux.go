@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -10,6 +10,7 @@
 package starter
 
 /*
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -58,7 +59,7 @@ func NewConfig(config SConfig) *Config {
 // GetIsSUID returns True if the SUID workflow is enabled.
 // This field is set by starter at the very beginning of its execution.
 func (c *Config) GetIsSUID() bool {
-	return c.config.starter.isSuid == C.True
+	return c.config.starter.isSuid == true //nolint
 }
 
 // GetContainerPid returns the container PID (if any).
@@ -71,9 +72,9 @@ func (c *Config) GetContainerPid() int {
 // instead of a regular container if the passed value is True.
 func (c *Config) SetInstance(instance bool) {
 	if instance {
-		c.config.container.isInstance = C.True
+		c.config.container.isInstance = true
 	} else {
-		c.config.container.isInstance = C.False
+		c.config.container.isInstance = false
 	}
 }
 
@@ -81,9 +82,9 @@ func (c *Config) SetInstance(instance bool) {
 // flag for a container before it starts up if noprivs is True.
 func (c *Config) SetNoNewPrivs(noprivs bool) {
 	if noprivs {
-		c.config.container.privileges.noNewPrivs = C.True
+		c.config.container.privileges.noNewPrivs = true
 	} else {
-		c.config.container.privileges.noNewPrivs = C.False
+		c.config.container.privileges.noNewPrivs = false
 	}
 }
 
@@ -92,9 +93,9 @@ func (c *Config) SetNoNewPrivs(noprivs bool) {
 // is set to MS_SHARED if propagate is True.
 func (c *Config) SetMasterPropagateMount(propagate bool) {
 	if propagate {
-		c.config.starter.masterPropagateMount = C.True
+		c.config.starter.masterPropagateMount = true
 	} else {
-		c.config.starter.masterPropagateMount = C.False
+		c.config.starter.masterPropagateMount = false
 	}
 }
 
@@ -103,9 +104,9 @@ func (c *Config) SetMasterPropagateMount(propagate bool) {
 // `apptainer oci exec`) if join is True.
 func (c *Config) SetNamespaceJoinOnly(join bool) {
 	if join {
-		c.config.container.namespace.joinOnly = C.True
+		c.config.container.namespace.joinOnly = true
 	} else {
-		c.config.container.namespace.joinOnly = C.False
+		c.config.container.namespace.joinOnly = false
 	}
 }
 
@@ -113,9 +114,9 @@ func (c *Config) SetNamespaceJoinOnly(join bool) {
 // a loopback network interface during container creation if bring is True.
 func (c *Config) SetBringLoopbackInterface(bring bool) {
 	if bring {
-		c.config.container.namespace.bringLoopbackInterface = C.True
+		c.config.container.namespace.bringLoopbackInterface = true
 	} else {
-		c.config.container.namespace.bringLoopbackInterface = C.False
+		c.config.container.namespace.bringLoopbackInterface = false
 	}
 }
 
@@ -166,9 +167,9 @@ func (c *Config) KeepFileDescriptor(fd int) error {
 // nvidia-container-cli
 func (c *Config) SetNvCCLICaps(enabled bool) {
 	if enabled {
-		c.config.starter.nvCCLICaps = C.True
+		c.config.starter.nvCCLICaps = true
 	} else {
-		c.config.starter.nvCCLICaps = C.False
+		c.config.starter.nvCCLICaps = false
 	}
 }
 
@@ -179,18 +180,18 @@ func (c *Config) SetNvCCLICaps(enabled bool) {
 // lives in its own user namespace.
 func (c *Config) SetHybridWorkflow(hybrid bool) {
 	if hybrid {
-		c.config.starter.hybridWorkflow = C.True
+		c.config.starter.hybridWorkflow = true
 	} else {
-		c.config.starter.hybridWorkflow = C.False
+		c.config.starter.hybridWorkflow = false
 	}
 }
 
 // SetAllowSetgroups allows use of setgroups syscall from user namespace.
 func (c *Config) SetAllowSetgroups(allow bool) {
 	if allow {
-		c.config.container.privileges.allowSetgroups = C.True
+		c.config.container.privileges.allowSetgroups = true
 	} else {
-		c.config.container.privileges.allowSetgroups = C.False
+		c.config.container.privileges.allowSetgroups = false
 	}
 }
 
