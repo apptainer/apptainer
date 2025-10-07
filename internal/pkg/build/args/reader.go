@@ -77,9 +77,9 @@ func NewReader(src io.Reader, buildArgsMap map[string]string, defaultArgsMap map
 			k := val[m[2]:m[3]]
 			if v, ok := buildArgsMap[k]; ok {
 				// replace the variable with defined value
-				newVal = strings.Replace(newVal, val[m[0]:m[1]], v, -1)
+				newVal = strings.ReplaceAll(newVal, val[m[0]:m[1]], v)
 			} else if v, ok := defaultArgsMap[k]; ok {
-				newVal = strings.Replace(newVal, val[m[0]:m[1]], v, -1)
+				newVal = strings.ReplaceAll(newVal, val[m[0]:m[1]], v)
 			}
 		}
 

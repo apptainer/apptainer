@@ -104,18 +104,13 @@ func TestAPutConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tf, err := os.CreateTemp("", "eclconfig-test")
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer os.Remove(tf.Name())
-			tf.Close()
+			tf := filepath.Join(t.TempDir(), "ecl.toml")
 
-			if err := PutConfig(tt.c, tf.Name()); err != nil {
+			if err := PutConfig(tt.c, tf); err != nil {
 				t.Fatal(err)
 			}
 
-			b, err := os.ReadFile(tf.Name())
+			b, err := os.ReadFile(tf)
 			if err != nil {
 				t.Fatal(err)
 			}

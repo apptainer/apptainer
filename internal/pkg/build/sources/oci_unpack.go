@@ -23,9 +23,10 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
+	"github.com/ccoveille/go-safecast"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/opencontainers/runtime-spec/specs-go"
 	umocilayer "github.com/opencontainers/umoci/oci/layer"
-	"github.com/opencontainers/umoci/pkg/idtools"
 )
 
 // isExtractable checks if we have extractable layers in the image. Shouldn't be
@@ -82,15 +83,25 @@ func UnpackRootfs(_ context.Context, srcImage v1.Image, destDir string) (err err
 		sylog.Debugf("setting umoci rootless mode")
 		mapOptions.Rootless = true
 
-		uidMap, err := idtools.ParseMapping(fmt.Sprintf("0:%d:1", os.Geteuid()))
+		uid, err := safecast.ToUint32(os.Geteuid())
 		if err != nil {
-			return fmt.Errorf("error parsing uidmap: %s", err)
+			sylog.Fatalf("while getting uid: %v", err)
+		}
+		uidMap := specs.LinuxIDMapping{
+			ContainerID: 0,
+			HostID:      uid,
+			Size:        1,
 		}
 		mapOptions.UIDMappings = append(mapOptions.UIDMappings, uidMap)
 
-		gidMap, err := idtools.ParseMapping(fmt.Sprintf("0:%d:1", os.Getegid()))
+		gid, err := safecast.ToUint32(os.Getegid())
 		if err != nil {
-			return fmt.Errorf("error parsing gidmap: %s", err)
+			sylog.Fatalf("while getting gid: %v", err)
+		}
+		gidMap := specs.LinuxIDMapping{
+			ContainerID: 0,
+			HostID:      gid,
+			Size:        1,
 		}
 		mapOptions.GIDMappings = append(mapOptions.GIDMappings, gidMap)
 	}

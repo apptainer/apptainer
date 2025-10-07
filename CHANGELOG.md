@@ -7,6 +7,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.5.x changes
 
+- Update minimum go version to 1.24.2.
 - Record image digest metadata (sha256 from `RepoDigests`), for OCI registry images.
   Also add the image name (ref) of the image from "docker", with registry and tag.
   This is useful for traceability, when using `docker.io` or a tag like `latest`.
@@ -26,15 +27,49 @@ For older changes see the [archived Singularity change log](https://github.com/a
   a comma-separated list of device IDs (e.g., `"1,2,3"`) or "all" to
   import all of them.  The default if `HABANA_VISIBLE_DEVICES` is not
   set is "all".
+- debugsource rpms are now generated in addition to debuginfo rpms on
+  RHEL-derived and Fedora operating systems.
+- Add support for downloading SIF images from an IPFS peer-to-peer cluster using
+  a HTTP gateway (similar to the existing support for IPFS in the `curl` tool).
+  The location of the address can set in the `IPFS_GATEWAY` environment variable,
+  any local gateway will be picked up automatically (e.g. `http://127.0.0.1:8080`)
+- Create reproducible SIF images, if the environment variable `SOURCE_DATE_EPOCH`
+  has been set (it is a Unix timestamp given as seconds, in the UTC timezone).
 
 ## v1.4.x changes
 
-Changes since 1.4.1
+Changes since 1.4.3
 
-- Fix use of the image cache, when the home directory contains `@` characters.
+- Fix 32-bit builds which was accidentally broken by a library upgrade
+  that was done for a minor security issue.
+
+## v1.4.3 - \[2025-09-29\]
+
+- Include the home directory in the `--workdir` option (which is a
+  modifier of the `--contain` option).  This has always been in the
+  `--workdir` usage description but the home directory has not actually
+  been included at least since singularity-2.
+- Update the bundled fuse2fs to version 1.47.3.  This fixes a bug that
+  caused removal of files in the `--overlay` mode to silently fail.
+- Update the bundled fuse-overlayfs to version 1.15.
+- Add support for building and publishing Apptainer for Ubuntu 25.04 PPA.
+- Fix reading images using the oras protocol to store temporary files in
+  `APPTAINER_TMPDIR` instead of `TMPDIR`.
+
+## v1.4.2 - \[2025-07-07\]
+
+- Restore looking for registry mirrors in `/etc/containers/registry.conf`
+  and related files.  This had been inadvertently dropped beginning in 1.4.0.
+- Fix use of the image cache when the home directory contains `@` characters.
   Previously it would assume that it was the start of a digest in the oci-dir.
-- Add support of automatic triggering of Ubuntu PPA builds.
-- Fix the signature verification failure for unsigned images.
+- Fix signature verification failures on unsigned images.
+- Add additional `.deb` packages to the release assets that include the label
+  `trixie+` to indicate that they are for installing on Debian 13 or later.
+  Those packages are necessary to work with the new libfuse3 library in Debian
+  13.  They also support libsubid, unlike the default packages because they are
+  built on Debian 11 which doesn't have that library.
+- Add automatic triggering of Ubuntu PPA builds whenever there's a new
+  apptainer release.
 
 ## v1.4.1 - \[2025-05-14\]
 

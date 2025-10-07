@@ -19,7 +19,7 @@ import (
 const procSys = "/proc/sys"
 
 func convertKey(key string) string {
-	return strings.Replace(strings.TrimSpace(key), ".", string(os.PathSeparator), -1)
+	return strings.ReplaceAll(strings.TrimSpace(key), ".", string(os.PathSeparator))
 }
 
 func getPath(key string) (string, error) {

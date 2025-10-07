@@ -839,7 +839,7 @@ mount:
 		}
 	} else if err != nil {
 		if !bindMount && !remount {
-			xinolessOptsString := strings.Replace(optsString, ",xino=on", "", -1)
+			xinolessOptsString := strings.ReplaceAll(optsString, ",xino=on", "")
 			if mnt.Type == "devpts" {
 				sylog.Verbosef("Couldn't mount devpts filesystem, continuing with PTY allocation functionality disabled")
 				return nil
@@ -961,15 +961,16 @@ func (c *container) mountImage(mnt *mount.Point, system *mount.System) error {
 
 	if imageDriver != nil {
 		features := imageDriver.Features()
-		if mountType == "gocryptfs" {
+		switch mountType {
+		case "gocryptfs":
 			if features&image.GocryptFeature != 0 {
 				return c.gocryptfsMount(params, system, c.rpcOps.Mount)
 			}
-		} else if mountType == "squashfs" {
+		case "squashfs":
 			if features&image.SquashFeature != 0 {
 				return c.mountImageDriver(params, system, c.rpcOps.Mount)
 			}
-		} else if mountType == "ext3" {
+		case "ext3":
 			if features&image.Ext3Feature != 0 {
 				return c.mountImageDriver(params, system, c.rpcOps.Mount)
 			}
@@ -1941,7 +1942,7 @@ func (c *container) addHomeStagingDir(system *mount.System, source string, dest 
 
 	bindSource := !c.engine.EngineConfig.GetContain() || c.engine.EngineConfig.GetCustomHome()
 
-	// use the session home directory is the user home directory doesn't exist (issue #4208)
+	// use the session home directory if the user home directory doesn't exist (issue #4208)
 	if _, err := os.Stat(source); os.IsNotExist(err) {
 		bindSource = false
 	}
@@ -1955,7 +1956,25 @@ func (c *container) addHomeStagingDir(system *mount.System, source string, dest 
 		system.Points.AddRemount(mount.HomeTag, homeStage, flags)
 		c.session.OverrideDir(dest, source)
 	} else {
-		sylog.Debugf("Using session directory for home directory")
+		// c.engine.EngineConfig.GetContain() is true here unless
+		// the home directory didn't exist.  We could let it always
+		// use the workdir if workdir was defined, but that might be
+		// surprising so check again.
+		workdir := c.engine.EngineConfig.GetWorkdir()
+		if workdir != "" && c.engine.EngineConfig.GetContain() {
+			sylog.Debugf("Using work directory for home directory")
+			workdir, err := filepath.Abs(filepath.Clean(workdir))
+			if err != nil {
+				return "", fmt.Errorf("can't determine absolute path of workdir %s: %s", workdir, err)
+			}
+
+			homeStage = filepath.Join(workdir, "home")
+			if err := fs.Mkdir(homeStage, 0o700); err != nil && !os.IsExist(err) {
+				return "", fmt.Errorf("failed to create %s: %s", homeStage, err)
+			}
+		} else {
+			sylog.Debugf("Using session directory for home directory")
+		}
 		c.session.OverrideDir(dest, homeStage)
 	}
 
@@ -2659,7 +2678,7 @@ func (c *container) addResolvConfMount(system *mount.System) error {
 				return err
 			}
 		} else {
-			dns = strings.Replace(dns, " ", "", -1)
+			dns = strings.ReplaceAll(dns, " ", "")
 			content, err = files.ResolvConf(strings.Split(dns, ","))
 			if err != nil {
 				return err

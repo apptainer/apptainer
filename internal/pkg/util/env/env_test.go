@@ -142,7 +142,7 @@ func TestGetenvLegacy(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			for _, e := range tt.envVar {
 				s := strings.SplitN(e, "=", 2)
-				os.Setenv(s[0], s[1])
+				t.Setenv(s[0], s[1])
 			}
 			defer func() {
 				for _, e := range tt.envVar {

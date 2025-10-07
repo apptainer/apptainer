@@ -15,11 +15,10 @@ import (
 
 	"github.com/apptainer/apptainer/pkg/sylog"
 	ggcrv1 "github.com/google/go-containerregistry/pkg/v1"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
 // CheckImagePlatform ensures that an image reference satisfies the provided platform requirements.
-func CheckImagePlatform(platform v1.Platform, img v1.Image) error {
+func CheckImagePlatform(platform ggcrv1.Platform, img ggcrv1.Image) error {
 	cf, err := img.ConfigFile()
 	if err != nil {
 		return err

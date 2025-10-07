@@ -11,7 +11,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: git fetch --prune --unshallow --tags --force
 
       - name: Check if release is needed because tag matches latest annotated
@@ -46,9 +46,8 @@ jobs:
           ./scripts/ci-docker-run
           cp *.tar.gz *.rpm ..
           cd ..
-          sha256sum *.tar.gz *.rpm > sha256sums
 
-      - name: Make deb packages
+      - name: Make standard deb packages
         if: env.do_release
         env:
           OS_TYPE: debian
@@ -62,7 +61,23 @@ jobs:
           ./scripts/ci-docker-run
           cp *.deb ..
           cd ..
-          sha256sum *.deb >> sha256sums
+
+      - name: Make trixie deb packages
+        if: env.do_release
+        env:
+          OS_TYPE: debian
+          # once released, this version should change to 13
+          OS_VERSION: trixie
+          GO_ARCH: linux-amd64
+        run: |
+          # Make another new copy of the source files for this build
+          set -x
+          sudo rm -rf `basename apptainer-*.tar.gz .tar.gz`
+          tar xf apptainer-*.tar.gz
+          cd `basename apptainer-*.tar.gz .tar.gz`
+          ./scripts/ci-docker-run
+          for d in *.deb; do cp $d ../`echo $d|sed 's/\(_[^_]*$\)/-trixie+\1/'`; done
+          cd ..
 
       - name: Release
         if: env.do_release
@@ -72,7 +87,6 @@ jobs:
             *.tar.gz
             *.rpm
             *.deb
-            sha256sums
 
   release_container_images:
     name: release_container_images
@@ -81,7 +95,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - run: git fetch --prune --unshallow --tags --force
+        with:
+          fetch-depth: 0
 
       - name: Check if release is needed because tag matches latest annotated
         env:

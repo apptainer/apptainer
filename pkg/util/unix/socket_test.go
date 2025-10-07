@@ -81,7 +81,7 @@ func TestCreateSocket(t *testing.T) {
 		<-syncCh
 
 		// close socket implies to delete file automatically
-		os.Chdir(dir)
+		t.Chdir(dir)
 		ln.Close()
 
 		// socket file is deleted by net package at close

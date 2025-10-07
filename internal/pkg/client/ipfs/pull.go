@@ -7,12 +7,11 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package net
+package ipfs
 
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"net/http"
@@ -31,26 +30,31 @@ import (
 // Timeout for an image pull in seconds - could be a large download...
 const pullTimeout = 1800
 
-// IsNetPullRef returns true if the provided string is a valid url
+// IsIpfsPullRef returns true if the provided string is a valid url
 // reference for a pull operation.
-func IsNetPullRef(netRef string) bool {
-	match, _ := regexp.MatchString("^http(s)?://", netRef)
+func IsIpfsPullRef(netRef string) bool {
+	match, _ := regexp.MatchString("^ipfs://b[a-z2-7]+", netRef)
 	return match
 }
 
-// DownloadImage will retrieve an image from an http(s) URI,
+// DownloadImage will retrieve an image from an ipfs URI,
 // saving it into the specified file
-func DownloadImage(ctx context.Context, filePath string, netURL string) error {
-	if !IsNetPullRef(netURL) {
-		return fmt.Errorf("not a valid url reference: %s", netURL)
+func DownloadImage(ctx context.Context, filePath string, ipfsURL string, outCid *string) error {
+	if !IsIpfsPullRef(ipfsURL) {
+		return fmt.Errorf("not a valid url reference: %s", ipfsURL)
 	}
 	if filePath == "" {
-		refParts := strings.Split(netURL, "/")
+		refParts := strings.Split(ipfsURL, "/")
 		filePath = refParts[len(refParts)-1]
 		sylog.Infof("Download filename not provided. Downloading to: %s\n", filePath)
 	}
 
-	url := netURL
+	gateway, err := ipfsGateway()
+	if err != nil {
+		return err
+	}
+	addr := strings.Replace(ipfsURL, "ipfs://", "", 1)
+	url := gateway + "/ipfs/" + addr
 	sylog.Debugf("Pulling from URL: %s\n", url)
 
 	httpClient := &http.Client{
@@ -80,6 +84,13 @@ func DownloadImage(ctx context.Context, filePath string, netURL string) error {
 		s := buf.String()
 		return fmt.Errorf("download did not succeed: %d %s\n\t",
 			res.StatusCode, s)
+	}
+
+	if etag := res.Header.Get("ETag"); etag != "" {
+		sylog.Debugf("ETag: %s", etag)
+		if outCid != nil {
+			*outCid = strings.ReplaceAll(etag, "\"", "")
+		}
 	}
 
 	sylog.Debugf("OK response received, beginning body download\n")
@@ -113,50 +124,42 @@ func DownloadImage(ctx context.Context, filePath string, netURL string) error {
 
 // pull will pull a http(s) image into the cache if directTo="", or a specific file if directTo is set.
 func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string) (imagePath string, err error) {
-	// We will cache using a sha256 over the URL and the date of the file that
-	// is to be fetched, as returned by an HTTP HEAD call and the Last-Modified
-	// header. If no date is available, use the current date-time, which will
-	// effectively result in no caching.
-	imageDate := time.Now().String()
+	// We will cache using the sha256 from the URL, assuming that it is
+	// a multibase base32 string containing a multihash sha2-256 string
+	// of a multicodec merkle tree dag in protobuf format (i.e. a CIDv1)
+	// If it is a directory, assume it only contains a single SIF file.
+	// (that is: use the CID of the directory as the hash for the file,
+	// this means that *all* files in it will use the same cache entry)
+	cid := strings.Replace(pullFrom, "ipfs://", "", 1)
+	cid = strings.Split(cid, "/")[0]
+	cid = strings.Split(cid, "?")[0]
 
-	req, err := http.NewRequest("HEAD", pullFrom, nil)
+	sha, err := decodeCID(cid)
 	if err != nil {
-		sylog.Fatalf("Error constructing http request: %v\n", err)
+		return "", err
 	}
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		sylog.Fatalf("Error making http request: %v\n", err)
-	}
-	defer res.Body.Close()
-
-	headerDate := res.Header.Get("Last-Modified")
-	sylog.Debugf("HTTP Last-Modified header is: %s", headerDate)
-	if headerDate != "" {
-		imageDate = headerDate
-	}
-
-	h := sha256.New()
-	h.Write([]byte(pullFrom + imageDate))
-	hash := hex.EncodeToString(h.Sum(nil))
+	hash := hex.EncodeToString(sha)
 	sylog.Debugf("Image hash for cache is: %s", hash)
 
 	if directTo != "" {
 		sylog.Infof("Downloading network image")
-		if err := DownloadImage(ctx, directTo, pullFrom); err != nil {
+		if err := DownloadImage(ctx, directTo, pullFrom, nil); err != nil {
 			return "", fmt.Errorf("unable to Download Image: %v", err)
 		}
 		imagePath = directTo
 
 	} else {
-		cacheEntry, err := imgCache.GetEntry(cache.NetCacheType, hash)
+		cacheEntry, err := imgCache.GetEntry(cache.IpfsCacheType, hash)
 		if err != nil {
 			return "", fmt.Errorf("unable to check if %v exists in cache: %v", hash, err)
 		}
 		defer cacheEntry.CleanTmp()
 
 		if !cacheEntry.Exists {
+			var filecid string
+
 			sylog.Infof("Downloading network image")
-			err := DownloadImage(ctx, cacheEntry.TmpPath, pullFrom)
+			err := DownloadImage(ctx, cacheEntry.TmpPath, pullFrom, &filecid)
 			if err != nil {
 				sylog.Fatalf("%v\n", err)
 			}
@@ -164,6 +167,29 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 			err = cacheEntry.Finalize()
 			if err != nil {
 				return "", err
+			}
+
+			// if this cid is for the directory, then link it to the file cid
+			if cid != filecid && filecid != "" {
+				sha, err := decodeCID(filecid)
+				if err != nil {
+					return "", err
+				}
+				hash := hex.EncodeToString(sha)
+
+				fileCacheEntry, err := imgCache.GetEntry(cache.IpfsCacheType, hash)
+				if err != nil {
+					return "", fmt.Errorf("unable to check if %v exists in cache: %v", hash, err)
+				}
+				defer fileCacheEntry.CleanTmp()
+				err = os.Rename(cacheEntry.Path, fileCacheEntry.Path)
+				if err != nil {
+					return "", err
+				}
+				err = os.Symlink(hash, cacheEntry.Path)
+				if err != nil {
+					return "", err
+				}
 			}
 
 		} else {

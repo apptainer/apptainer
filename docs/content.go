@@ -67,6 +67,7 @@ Enterprise Performance Computing (EPC)`
       docker://   a Docker/OCI registry (default Docker Hub)
       shub://     an Apptainer registry (default Singularity Hub)
       oras://     an OCI registry that holds SIF files using ORAS
+      ipfs://     an IPFS cluster, using a HTTP gateway
 
   Temporary files:
   
@@ -498,7 +499,9 @@ Enterprise Performance Computing (EPC)`
   shub://*            A container hosted on Singularity Hub.
 
   oras://*            A SIF container hosted on an OCI registry that supports
-                      the OCI Registry As Storage (ORAS) specification.`
+                      the OCI Registry As Storage (ORAS) specification.
+
+  ipfs://*            A SIF image from an IPFS cluster, using a HTTP gateway.`
 	ExecUse   string = `exec [exec options...] <container> <command>`
 	ExecShort string = `Run a command within a container`
 	ExecLong  string = `
@@ -675,6 +678,9 @@ Enterprise Performance Computing (EPC)`
   oras: Pull a SIF image from an OCI registry that supports ORAS.
       oras://registry/namespace/image:tag
 
+  ipfs: Pull a SIF image from an IPFS cluster, using a HTTP gateway.
+      ipfs://cid
+
   http, https: Pull an image using the http(s?) protocol
       https://example.com/alpine.sif`
 	PullExample string = `
@@ -689,7 +695,10 @@ Enterprise Performance Computing (EPC)`
   $ apptainer pull apptainer-images.sif shub://vsoch/apptainer-images
 
   From supporting OCI registry (e.g. Azure Container Registry)
-  $ apptainer pull image.sif oras://<username>.azurecr.io/namespace/image:tag`
+  $ apptainer pull image.sif oras://<username>.azurecr.io/namespace/image:tag
+
+  From available IPFS cluster (using a local HTTP IPFS gateway)
+  $ apptainer pull lolcow.sif ipfs://bafybeice667c6gxovimsb6gnk6vex7vhzluhkl5hjv4ac4lhilxn52c43m`
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// push

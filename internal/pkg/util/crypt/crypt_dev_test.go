@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -26,7 +26,7 @@ func TestEncrypt(t *testing.T) {
 
 	dev := &Device{}
 
-	emptyFile, err := os.CreateTemp("", "")
+	emptyFile, err := os.CreateTemp(t.TempDir(), "")
 	if err != nil {
 		t.Fatalf("failed to create temporary file: %s", err)
 	}
@@ -34,7 +34,6 @@ func TestEncrypt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to close file %s: %s", emptyFile.Name(), err)
 	}
-	defer os.Remove(emptyFile.Name())
 
 	// Create a dummy squashfs file
 	dummyDir := t.TempDir()
@@ -55,16 +54,8 @@ func TestEncrypt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to get path to squashfs binary: %s", err)
 	}
-	tempTargetFile, err := os.CreateTemp("", "")
-	if err != nil {
-		t.Fatalf("failed to create temporary file: %s", err)
-	}
-	err = tempTargetFile.Close()
-	if err != nil {
-		t.Fatalf("failed to close file %s: %s", tempTargetFile.Name(), err)
-	}
-	defer os.Remove(tempTargetFile.Name())
-	squashfsArgs := []string{dummyDir, tempTargetFile.Name(), "-noappend"}
+	tempTargetFile := filepath.Join(t.TempDir(), "test.sqfs")
+	squashfsArgs := []string{dummyDir, tempTargetFile, "-noappend"}
 	cmd := exec.Command(squashfsBin, squashfsArgs...)
 	err = cmd.Run()
 	if err != nil {
@@ -92,7 +83,7 @@ func TestEncrypt(t *testing.T) {
 		},
 		{
 			name:      "valid file",
-			path:      tempTargetFile.Name(),
+			path:      tempTargetFile,
 			key:       []byte("dummyKey"),
 			shallPass: true,
 		},

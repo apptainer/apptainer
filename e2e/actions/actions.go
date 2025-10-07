@@ -246,7 +246,7 @@ func (c actionTests) actionExecMultiProfile(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// Create a temp testfile
+			// Create a temp testfile in tmp
 			tmpfile, err := fs.MakeTmpFile(testdataTmp, "testApptainerExec.", 0o644)
 			if err != nil {
 				t.Fatal(err)
@@ -255,8 +255,36 @@ func (c actionTests) actionExecMultiProfile(t *testing.T) {
 
 			basename := filepath.Base(tmpfile.Name())
 			tmpfilePath := filepath.Join("/tmp", basename)
+
+			// These two are for testing of binds at those paths to testdataTmp
 			vartmpfilePath := filepath.Join("/var/tmp", basename)
-			homePath := filepath.Join("/home", basename)
+			hometmpfilePath := filepath.Join("/home", basename)
+
+			// Create a test file in var_tmp
+			testdataVarTmp := filepath.Join(testdata, "var_tmp")
+			if err := os.Mkdir(testdataVarTmp, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			varTmpfile, err := fs.MakeTmpFile(testdataVarTmp, "testApptainerExec.", 0o644)
+			if err != nil {
+				t.Fatal(err)
+			}
+			varTmpfile.Close()
+
+			// Create a test file in home
+			testdataHome := filepath.Join(testdata, "home")
+			if err := os.Mkdir(testdataHome, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			homeTmpfile, err := fs.MakeTmpFile(testdataHome, "testApptainerExec.", 0o644)
+			if err != nil {
+				t.Fatal(err)
+			}
+			homeTmpfile.Close()
+
+			// These two are for testing if workdir+contain sees them
+			vartmpWorkPath := filepath.Join("/var/tmp", filepath.Base(varTmpfile.Name()))
+			homeWorkPath := "$HOME/" + filepath.Base(homeTmpfile.Name())
 
 			tests := []struct {
 				name        string
@@ -275,8 +303,18 @@ func (c actionTests) actionExecMultiProfile(t *testing.T) {
 					exit: 1,
 				},
 				{
-					name: "WorkdirContain",
+					name: "WorkdirContainTmp",
 					argv: []string{"--workdir", testdata, "--contain", c.env.ImagePath, "test", "-f", tmpfilePath},
+					exit: 0,
+				},
+				{
+					name: "WorkdirContainVarTmp",
+					argv: []string{"--workdir", testdata, "--contain", c.env.ImagePath, "test", "-f", vartmpWorkPath},
+					exit: 0,
+				},
+				{
+					name: "WorkdirContainHome",
+					argv: []string{"--workdir", testdata, "--contain", c.env.ImagePath, "sh", "-c", "test -f " + homeWorkPath},
 					exit: 0,
 				},
 				{
@@ -296,7 +334,7 @@ func (c actionTests) actionExecMultiProfile(t *testing.T) {
 				},
 				{
 					name: "HomePath",
-					argv: []string{"--home", testdataTmp + ":/home", c.env.ImagePath, "test", "-f", homePath},
+					argv: []string{"--home", testdataTmp + ":/home", c.env.ImagePath, "test", "-f", hometmpfilePath},
 					exit: 0,
 				},
 				{
@@ -698,13 +736,14 @@ func (c actionTests) RunFromURI(t *testing.T) {
 	}
 }
 
-func (c actionTests) overlayCreate(t *testing.T, testdir string) string {
-	// create overlay dir
-	dir, err := os.MkdirTemp(testdir, "overlay-dir-")
-	if err != nil {
+func (c actionTests) overlayRecreate(t *testing.T, dir string) {
+	// create or recreate overlay dir
+	if err := os.RemoveAll(dir); err != nil {
 		t.Fatal(err)
 	}
-	return dir
+	if err := os.Mkdir(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func (c actionTests) squashfsCreate(t *testing.T, testdir string) string {
@@ -728,10 +767,8 @@ func (c actionTests) squashfsCreate(t *testing.T, testdir string) string {
 	return squashfsImage
 }
 
-func (c actionTests) ext3Create(t *testing.T, testdir string) string {
-	// create the ext3 overlay image
-	ext3Img := filepath.Join(testdir, "ext3_fs.img")
-	// create the overlay ext3 image
+func (c actionTests) ext3Recreate(t *testing.T, ext3Img string) {
+	// create or recreate the overlay ext3 image
 	cmd := exec.Command("dd", "if=/dev/zero", "of="+ext3Img, "bs=1M", "count=64", "status=none")
 	if res := cmd.Run(t); res.Error != nil {
 		t.Fatalf("Unexpected error while running command.\n%s", res)
@@ -740,7 +777,6 @@ func (c actionTests) ext3Create(t *testing.T, testdir string) string {
 	if res := cmd.Run(t); res.Error != nil {
 		t.Fatalf("Unexpected error while running command.\n%s", res)
 	}
-	return ext3Img
 }
 
 func (c actionTests) sandboxCreate(t *testing.T, testdir string) string {
@@ -811,9 +847,9 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 		}
 	})(t)
 
-	dir := c.overlayCreate(t, testdir)
+	dir := filepath.Join(testdir, "overlay-dir")
+	ext3Img := filepath.Join(testdir, "ext3_fs.img")
 	squashfsImage := c.squashfsCreate(t, testdir)
-	ext3Img := c.ext3Create(t, testdir)
 	sandboxImage := c.sandboxCreate(t, testdir)
 	embeddedSif := c.embeddedSifCreate(t, testdir)
 
@@ -922,6 +958,31 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 			exit:     0,
 		},
 		{
+			name:     "overlay_remove",
+			argv:     []string{"--overlay", dir, c.env.ImagePath, "rm", "/etc/hostname"},
+			fakeroot: true,
+			exit:     0,
+		},
+		{
+			name:     "overlay_check_removed",
+			argv:     []string{"--overlay", dir, c.env.ImagePath, "test", "!", "-f", "/etc/hostname"},
+			fakeroot: true,
+			exit:     0,
+		},
+		{
+			name:     "overlay_ext3_remove",
+			argv:     []string{"--overlay", ext3Img, c.env.ImagePath, "rm", "/etc/hostname"},
+			fakeroot: true,
+			exit:     0,
+		},
+		{
+			// https://github.com/apptainer/apptainer/issues/2950
+			name:     "overlay_ext3_check_removed",
+			argv:     []string{"--overlay", ext3Img, c.env.ImagePath, "test", "!", "-f", "/etc/hostname"},
+			fakeroot: true,
+			exit:     0,
+		},
+		{
 			name: "Embedded overlay partition in SIF",
 			argv: []string{embeddedSif, "ps"},
 			exit: 0,
@@ -929,6 +990,8 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 	}
 
 	for _, profile := range profiles {
+		c.overlayRecreate(t, dir)
+		c.ext3Recreate(t, ext3Img)
 		for _, tt := range tests {
 			var args []string
 			if (profile.String() == "User" || profile.String() == "UserNamespace") && tt.fakeroot {

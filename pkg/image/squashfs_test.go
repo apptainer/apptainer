@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -13,24 +13,14 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 )
 
 // createSquashfs creates a small but valid squashfs file that can be used
 // with an image.
 func createSquashfs(t *testing.T) string {
-	sqshFile, fileErr := os.CreateTemp("", "")
-	if fileErr != nil {
-		t.Fatalf("impossible to create temporary file: %s\n", fileErr)
-	}
-	defer sqshFile.Close()
-
-	sqshFilePath := sqshFile.Name()
-	// close and delete the temp file since we will be used with the
-	// mksquashfs command. We still use TempFile to have a clean way
-	// to get a valid path for a temporary file
-	sqshFile.Close()
-	os.Remove(sqshFilePath)
+	sqshFilePath := filepath.Join(t.TempDir(), "test.sqfs")
 
 	cmdBin, lookErr := exec.LookPath("mksquashfs")
 	if lookErr != nil {

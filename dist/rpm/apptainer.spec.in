@@ -25,18 +25,14 @@
 #
 #
 
-# Disable debugsource packages; otherwise it ends up with an empty %%files
-#   file in debugsourcefiles.list on Fedora
-%undefine _debugsource_packages
-
 # This can be slightly different than %%{version}.
 # For example, it has dash instead of tilde for release candidates.
 %global package_version @PACKAGE_VERSION@
 
 %global gocryptfs_version 2.5.1
 %global squashfuse_version 0.6.0
-%global e2fsprogs_version 1.47.2
-%global fuse_overlayfs_version 1.14
+%global e2fsprogs_version 1.47.3
+%global fuse_overlayfs_version 1.15
 %global squashfs_tools_version 4.6.1
 
 # The last singularity version number in EPEL/Fedora
@@ -192,7 +188,7 @@ fi
         --mandir=%{_mandir} \
         --infodir=%{_infodir}
 
-%make_build -C builddir V= old_config=
+%make_build -C builddir V= SUPPORT_PLUGINS= old_config=
 
 %install
 %if "%{?SOURCE1}" != ""

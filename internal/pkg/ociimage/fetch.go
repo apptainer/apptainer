@@ -27,12 +27,11 @@ import (
 	"github.com/ccoveille/go-safecast"
 	"github.com/docker/docker/client"
 	ggcrv1 "github.com/google/go-containerregistry/pkg/v1"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
 // cachedImage will ensure that the provided v1.Image is present in the Apptainer
 // OCI cache layout dir, and return a new v1.Image pointing to the cached copy.
-func cachedImage(ctx context.Context, imgCache *cache.Handle, srcImg v1.Image) (v1.Image, error) {
+func cachedImage(ctx context.Context, imgCache *cache.Handle, srcImg ggcrv1.Image) (ggcrv1.Image, error) {
 	if imgCache == nil || imgCache.IsDisabled() {
 		return nil, fmt.Errorf("undefined image cache")
 	}

@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -12,6 +12,7 @@ package proc
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"syscall"
 	"testing"
 
@@ -140,22 +141,14 @@ func TestGetMountInfo(t *testing.T) {
 		t.Fatalf("unexpected success while parsing bad path")
 	}
 
-	tmpfile, err := os.CreateTemp("", "mountinfo")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.Remove(tmpfile.Name())
-
-	if _, err := tmpfile.Write([]byte(mountInfoData)); err != nil {
-		t.Fatal(err)
-	}
-	if err := tmpfile.Close(); err != nil {
+	tmpfile := filepath.Join(t.TempDir(), "mountinfo")
+	if err := os.WriteFile(tmpfile, []byte(mountInfoData), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
-	entries, err := GetMountInfoEntry(tmpfile.Name())
+	entries, err := GetMountInfoEntry(tmpfile)
 	if err != nil {
-		t.Fatalf("unexpected error while parsing %s: %s", tmpfile.Name(), err)
+		t.Fatalf("unexpected error while parsing %s: %s", tmpfile, err)
 	}
 
 	for _, e := range entries {
@@ -267,19 +260,13 @@ func TestGetMountPointMap(t *testing.T) {
 	if _, err := GetMountPointMap("/proc/self/fakemountinfo"); err == nil {
 		t.Errorf("should have failed with non existent path")
 	}
-	tmpfile, err := os.CreateTemp("", "mountinfo")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.Remove(tmpfile.Name())
 
-	if _, err := tmpfile.Write([]byte(mountInfoData)); err != nil {
+	tmpfile := filepath.Join(t.TempDir(), "mountinfo")
+	if err := os.WriteFile(tmpfile, []byte(mountInfoData), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := tmpfile.Close(); err != nil {
-		t.Fatal(err)
-	}
-	m, err := GetMountPointMap(tmpfile.Name())
+
+	m, err := GetMountPointMap(tmpfile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -375,15 +362,12 @@ func TestReadIDMap(t *testing.T) {
 
 	//nolint:dupword
 	for _, e := range []string{"a a a", "0 a a"} {
-		f, err := os.CreateTemp("", "uid_map-")
-		if err != nil {
-			t.Fatalf("failed to create temporary file")
+		fname := filepath.Join(t.TempDir(), "uid-map")
+		if err := os.WriteFile(fname, []byte(e), 0o644); err != nil {
+			t.Fatalf("failed to create test file")
 		}
-		defer os.Remove(f.Name())
-		f.WriteString(e)
-		f.Close()
 
-		_, _, err = ReadIDMap(f.Name())
+		_, _, err = ReadIDMap(fname)
 		if err == nil {
 			t.Fatalf("unexpected success with bad formatted uid_map")
 		}
