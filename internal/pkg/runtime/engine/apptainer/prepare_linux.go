@@ -635,7 +635,7 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 
 	if !e.EngineConfig.File.AllowUserNs {
 		if buildcfg.APPTAINER_SUID_INSTALL == 0 {
-			sylog.Fatalf("Unprivileged installation found, user namepace needed but not allowed by configuration.")
+			sylog.Fatalf("Unprivileged installation found, user namespace needed but not allowed by configuration.")
 		}
 		if n, _ := e.hasNamespace(specs.UserNamespace); n {
 			sylog.Fatalf("User namespace required but not allowed by configuration.")
