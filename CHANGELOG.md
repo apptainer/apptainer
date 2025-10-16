@@ -7,6 +7,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.4.x changes
 
+- If an overlay or bound data image is asked to be mounted writable but
+  the user has no write access to the image, show a warning message
+  instead of silently switching to readonly.
 - Fix 32-bit builds which were accidentally broken by a library upgrade
   that was done for a minor security issue.
 
