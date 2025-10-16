@@ -640,6 +640,8 @@ func (i *fuseappsInstance) filterMsg() string {
 		// from fuse2fs
 		"journal is not supported.",
 		"fuse2fs does not support using the journal.",
+		"fuse2fs does not support writing the journal.",
+		"Disabling journal recovery",
 		"There may be file system corruption",
 		"the file system is not gracefully unmounted.",
 		"Mounting read-only.",
