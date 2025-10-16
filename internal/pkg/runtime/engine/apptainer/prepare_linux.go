@@ -1394,17 +1394,18 @@ func (e *EngineOperations) loadOverlayImages(starterConfig *starter.Config, writ
 		}
 
 		img, err := e.loadImage(splitted[0], writableOverlay, userNS, elevated)
-		if err != nil {
-			if !image.IsReadOnlyFilesytem(err) {
-				return nil, fmt.Errorf("failed to open overlay image %s: %s", splitted[0], err)
-			}
+		if err != nil && !image.IsReadOnlyFilesytem(err) {
+			return nil, fmt.Errorf("failed to open overlay image %s: %s", splitted[0], err)
+		}
+		if err != nil || (writableOverlay && !img.Writable) {
 			// let's proceed with readonly filesystem and set
 			// writableOverlay to appropriate value
+			sylog.Warningf("Overlay image %s is not writable, proceeding with read-only", img.Path)
 			writableOverlay = false
 		}
 		img.Usage = image.OverlayUsage
 
-		if writableOverlay && img.Writable {
+		if writableOverlay {
 			if writableOverlayPath != "" {
 				return nil, fmt.Errorf(
 					"you can't specify more than one writable overlay, "+
@@ -1449,9 +1450,13 @@ func (e *EngineOperations) loadBindImages(starterConfig *starter.Config, userNS 
 
 		sylog.Debugf("Loading data image %s", imagePath)
 
-		img, err := e.loadImage(imagePath, !binds[i].Readonly(), userNS, elevated)
+		writable := !binds[i].Readonly()
+		img, err := e.loadImage(imagePath, writable, userNS, elevated)
 		if err != nil && !image.IsReadOnlyFilesytem(err) {
 			return nil, fmt.Errorf("failed to load data image %s: %s", imagePath, err)
+		}
+		if err != nil || (writable && !img.Writable) {
+			sylog.Warningf("Data image %s is not writable, proceeding with read-only", img.Path)
 		}
 		img.Usage = image.DataUsage
 
