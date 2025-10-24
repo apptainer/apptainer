@@ -110,7 +110,6 @@ Provides: bundled(squashfs-tools) = %{squashfs_tools_version}
 @BUNDLED_PROVIDES@
 
 %if "%{_target_vendor}" == "suse"
-BuildRequires: binutils-gold
 BuildRequires: go
 BuildRequires: liblz4-devel
 %if 0%{?suse_version} > 1600
