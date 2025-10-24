@@ -66,7 +66,7 @@ sudo zypper install -y \
   openssl-devel \
   fakeroot \
   cryptsetup sysuser-tools \
-  diffutils wget which git go
+  diffutils wget which git
 # Install basic tools for compiling
 # --replacefiles is needed to avoid pam conflict on Tumbleweed
 sudo zypper install -y --replacefiles --allow-downgrade -t pattern devel_basis
@@ -296,7 +296,7 @@ sudo dnf install -y rpm-build golang
 or on SLE/openSUSE:
 
 ```sh
-sudo zypper install -y rpm-build binutils-gold
+sudo zypper install -y rpm-build go
 ```
 
 The rpm build will use the OS distribution or EPEL version of Go,
