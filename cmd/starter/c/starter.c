@@ -115,32 +115,40 @@ __attribute__ ((returns_twice)) __attribute__((noinline)) static int fork_ns(uns
     return clone(clone_fn, child_stack.ptr, (SIGCHLD|flags), env);
 }
 
-static void priv_escalate(Bool keep_fsuid) {
+static void restore_filesystem_uid() {
+    /* Use setfsuid to address issue about root_squash filesystems option */
     uid_t uid = getuid();
 
+    verbosef("Change filesystem uid to %d\n", uid);
+    /*
+     * See BUGS section of recent man 2 setfsuid.
+     * First call will return the previous fsuid, on success or failure.
+     * Return <0 is an error possible on GLIBC <=2.15 only
+     */
+    if ( setfsuid(uid) < 0 ) {
+        fatalf("Failed to set filesystem uid to %d\n", uid);
+    }
+    /*
+     * Have to call again with an effective no-op to check if it really worked.
+     * If first call succeeded, return of second call is the required uid.
+     */
+    if ( setfsuid(uid) != uid ) {
+        fatalf("Failed to set filesystem uid to %d\n", uid);
+    }
+}
+
+static void priv_escalate(Bool restore_fsuid) {
     verbosef("Get root privileges\n");
     if ( seteuid(0) < 0 ) {
         fatalf("Failed to set effective UID to 0\n");
     }
 
-    if ( keep_fsuid ) {
-        /* Use setfsuid to address issue about root_squash filesystems option */
-        verbosef("Change filesystem uid to %d\n", uid);
-        /*
-         * See BUGS section of recent man 2 setfsuid.
-         * First call will return the previous fsuid, on success or failure.
-         * Return <0 is an error possible on GLIBC <=2.15 only
-         */
-        if ( setfsuid(uid) < 0 ) {
-            fatalf("Failed to set filesystem uid to %d\n", uid);
-        }
-        /*
-         * Have to call again with an effective no-op to check if it really worked.
-         * If first call succeeded, return of second call is the required uid.
-         */
-        if ( setfsuid(uid) != uid ) {
-            fatalf("Failed to set filesystem uid to %d\n", uid);
-        }
+    /*
+     * Setting effective UID affects filesystem UID which can be optionally
+     * restored if needed (e.g. NFS with root_squash)
+     */
+    if ( restore_fsuid ) {
+        restore_filesystem_uid();
     }
 }
 
@@ -1579,14 +1587,14 @@ __attribute__((constructor)) static void init(void) {
             if ( sconfig->starter.hybridWorkflow ) {
                 if ( sconfig->starter.isSuid ) {
                     /*
-                     * hybrid workflow requires privileges for user mappings, we also preserve user
-                     * filesystem UID here otherwise we would get a permission denied error during
-                     * user mappings setup. User filesystem UID will be restored below by setresuid
-                     * call.
+                     * Hybrid workflow requires privileges for user mappings. We also preserve root
+                     * filesystem UID at first otherwise we would get a permission denied error
+                     * during user mappings setup. Restore user filesystem UID after that.
                      */
                     priv_escalate(False);
                     chdir_to_proc_pid(sconfig->container.pid);
                     setup_userns_mappings(&sconfig->container.privileges);
+                    restore_filesystem_uid();
                 } else {
                     chdir_to_proc_pid(sconfig->container.pid);
                     /* use newuidmap/newgidmap as fallback for hybrid workflow */

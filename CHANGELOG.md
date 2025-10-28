@@ -13,6 +13,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - If an overlay or bound data image is asked to be mounted writable but
   the user has no write access to the image, show a warning message
   instead of silently switching to readonly.
+- Avoid a fatal error when starting fakeroot from suid mode while in an
+  NFS directory.
 - Fix 32-bit builds which were accidentally broken by a library upgrade
   that was done for a minor security issue.
 
