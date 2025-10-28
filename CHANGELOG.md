@@ -5,7 +5,7 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## v1.4.x changes
+## v1.4.4 - \[2025-10-29\]
 
 - By applying patches to the bundled fuse2fs, allow again the possibility
   of using a non-writable ext3 image file as an overlay.  Fixes regression
