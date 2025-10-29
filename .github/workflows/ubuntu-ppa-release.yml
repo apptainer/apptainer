@@ -88,6 +88,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: prepare
     strategy:
+      fail-fast: false
       matrix:
         include:
             - version: '25.04'
