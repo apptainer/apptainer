@@ -366,7 +366,7 @@ func CopyFileAtomic(from, to string, mode os.FileMode) (err error) {
 	// act like other file copy functions that respect umask
 	oldmask := syscall.Umask(0)
 	syscall.Umask(oldmask)
-	oldmask32, err := safecast.ToUint32(oldmask)
+	oldmask32, err := safecast.Convert[uint32](oldmask)
 	if err != nil {
 		return err
 	}

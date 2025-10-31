@@ -111,11 +111,11 @@ func (f *sifFormat) initializer(img *Image, fi os.FileInfo) error {
 
 		groupID = desc.GroupID()
 
-		offset, err := safecast.ToUint64(desc.Offset())
+		offset, err := safecast.Convert[uint64](desc.Offset())
 		if err != nil {
 			return err
 		}
-		size, err := safecast.ToUint64(desc.Size())
+		size, err := safecast.Convert[uint64](desc.Size())
 		if err != nil {
 			return err
 		}
@@ -132,17 +132,17 @@ func (f *sifFormat) initializer(img *Image, fi os.FileInfo) error {
 	}
 
 	fimg.WithDescriptors(func(desc sif.Descriptor) bool {
-		offset, err := safecast.ToUint64(desc.Offset())
+		offset, err := safecast.Convert[uint64](desc.Offset())
 		if err != nil {
 			sylog.Warningf("Invalid descriptor offset: %v", err)
 			return false
 		}
-		size, err := safecast.ToUint64(desc.Size())
+		size, err := safecast.Convert[uint64](desc.Size())
 		if err != nil {
 			sylog.Warningf("Invalid descriptor size: %v", err)
 			return false
 		}
-		dType, err := safecast.ToUint32(desc.DataType())
+		dType, err := safecast.Convert[uint32](desc.DataType())
 		if err != nil {
 			sylog.Warningf("Invalid descriptor type: %v", err)
 			return false

@@ -148,7 +148,7 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 	}
 
 	if os.Geteuid() != 0 {
-		c.sessionSize, err = safecast.ToInt(c.engine.EngineConfig.File.SessiondirMaxSize)
+		c.sessionSize, err = safecast.Convert[int](c.engine.EngineConfig.File.SessiondirMaxSize)
 		if err != nil {
 			return err
 		}
@@ -922,7 +922,7 @@ mount:
 func (c *container) mountImage(mnt *mount.Point, system *mount.System) error {
 	var key []byte
 
-	maxDevices, err := safecast.ToInt(c.engine.EngineConfig.File.MaxLoopDevices)
+	maxDevices, err := safecast.Convert[int](c.engine.EngineConfig.File.MaxLoopDevices)
 	if err != nil {
 		return err
 	}
@@ -3193,11 +3193,11 @@ func (c *container) GetPwUID(uid uint32) (*user.User, error) {
 	if c.engine.EngineConfig.JSON.UserInfo.Username == "" {
 		return nil, osuser.UnknownUserIdError(uid)
 	}
-	uid32, err := safecast.ToUint32(c.engine.EngineConfig.JSON.UserInfo.UID)
+	uid32, err := safecast.Convert[uint32](c.engine.EngineConfig.JSON.UserInfo.UID)
 	if err != nil {
 		return nil, err
 	}
-	gid32, err := safecast.ToUint32(c.engine.EngineConfig.JSON.UserInfo.GID)
+	gid32, err := safecast.Convert[uint32](c.engine.EngineConfig.JSON.UserInfo.GID)
 	if err != nil {
 		return nil, err
 	}

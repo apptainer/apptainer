@@ -203,11 +203,11 @@ func getCPULimits() (*cgroups.LinuxCPU, error) {
 			return nil, fmt.Errorf("cpus value must be in range %s - %s", minCPU.String(), maxCPU.String())
 		}
 
-		nanoCPUs, err := safecast.ToUint64(dCpus.Mul(decimal.NewFromInt(1e9)).IntPart())
+		nanoCPUs, err := safecast.Convert[uint64](dCpus.Mul(decimal.NewFromInt(1e9)).IntPart())
 		if err != nil {
 			return nil, err
 		}
-		quota, err := safecast.ToInt64(nanoCPUs * period / 1e9)
+		quota, err := safecast.Convert[int64](nanoCPUs * period / 1e9)
 		if err != nil {
 			return nil, err
 		}
