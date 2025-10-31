@@ -68,7 +68,7 @@ func getEnvInt64(key string, confVal uint) (int64, error) {
 		}
 		sylog.Warningf("Error parsing %s; using default (%d)", key, confVal)
 	}
-	return safecast.ToInt64(confVal)
+	return safecast.Convert[int64](confVal)
 }
 
 func getDownloadConfig() (libClient.Downloader, error) {
@@ -91,7 +91,7 @@ func getDownloadConfig() (libClient.Downloader, error) {
 	if err != nil {
 		return libClient.Downloader{}, fmt.Errorf("invalid download concurrency value (%v)", concurrency64)
 	}
-	concurrency, err := safecast.ToUint(concurrency64)
+	concurrency, err := safecast.Convert[uint](concurrency64)
 	if err != nil {
 		return libClient.Downloader{}, fmt.Errorf("failed to convert concurrency to uint: %s", err)
 	}

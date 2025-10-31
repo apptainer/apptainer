@@ -150,7 +150,7 @@ func (p Profile) args(cmd []string) []string {
 
 // ContainerUser returns the container user information.
 func (p Profile) ContainerUser(t *testing.T) *user.User {
-	uid, err := safecast.ToUint32(p.containerUID)
+	uid, err := safecast.Convert[uint32](p.containerUID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,7 +164,7 @@ func (p Profile) ContainerUser(t *testing.T) *user.User {
 
 // HostUser returns the host user information.
 func (p Profile) HostUser(t *testing.T) *user.User {
-	uid, err := safecast.ToUint32(p.hostUID)
+	uid, err := safecast.Convert[uint32](p.hostUID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -198,7 +198,7 @@ func (p Profile) String() string {
 func fakerootRequirements(t *testing.T) {
 	require.UserNamespace(t)
 
-	uid, err := safecast.ToUint32(origUID)
+	uid, err := safecast.Convert[uint32](origUID)
 	if err != nil {
 		t.Fatal(err)
 	}

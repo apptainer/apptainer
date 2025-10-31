@@ -272,7 +272,7 @@ func (e *EngineOperations) prepareUserCaps(enforced bool) error {
 		}
 
 		for _, g := range groups {
-			g32, err := safecast.ToUint32(g)
+			g32, err := safecast.Convert[uint32](g)
 			if err != nil {
 				return err
 			}
@@ -383,7 +383,7 @@ func (e *EngineOperations) prepareRootCaps() error {
 		}
 
 		for _, g := range groups {
-			g32, err := safecast.ToUint32(g)
+			g32, err := safecast.Convert[uint32](g)
 			if err != nil {
 				return err
 			}
@@ -673,11 +673,11 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 	}
 
 	if e.EngineConfig.GetFakeroot() {
-		uid, err := safecast.ToUint32(os.Getuid())
+		uid, err := safecast.Convert[uint32](os.Getuid())
 		if err != nil {
 			return err
 		}
-		gid, err := safecast.ToUint32(os.Getgid())
+		gid, err := safecast.Convert[uint32](os.Getgid())
 		if err != nil {
 			return err
 		}
@@ -793,11 +793,11 @@ func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Conf
 		return err
 	}
 
-	uid, err := safecast.ToUint32(os.Getuid())
+	uid, err := safecast.Convert[uint32](os.Getuid())
 	if err != nil {
 		return err
 	}
-	gid, err := safecast.ToUint32(os.Getgid())
+	gid, err := safecast.Convert[uint32](os.Getgid())
 	if err != nil {
 		return err
 	}
@@ -1599,7 +1599,7 @@ func (e *EngineOperations) setUserInfo(useTargetIDs bool) error {
 	e.EngineConfig.JSON.UserInfo.Home = pw.Dir
 
 	if useTargetIDs {
-		targetUID, uidErr := safecast.ToUint32(e.EngineConfig.GetTargetUID())
+		targetUID, uidErr := safecast.Convert[uint32](e.EngineConfig.GetTargetUID())
 		if uidErr != nil {
 			return err
 		}
@@ -1630,7 +1630,7 @@ func (e *EngineOperations) setUserInfo(useTargetIDs bool) error {
 	}
 
 	for _, gid := range gids {
-		gid32, err := safecast.ToUint32(gid)
+		gid32, err := safecast.Convert[uint32](gid)
 		if err != nil {
 			return err
 		}

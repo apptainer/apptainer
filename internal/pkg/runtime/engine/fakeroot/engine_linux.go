@@ -106,11 +106,11 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	g.AddOrReplaceLinuxNamespace(specs.MountNamespace, "")
 	g.AddOrReplaceLinuxNamespace(specs.PIDNamespace, "")
 
-	uid, err := safecast.ToUint32(os.Getuid())
+	uid, err := safecast.Convert[uint32](os.Getuid())
 	if err != nil {
 		return err
 	}
-	gid, err := safecast.ToUint32(os.Getgid())
+	gid, err := safecast.Convert[uint32](os.Getgid())
 	if err != nil {
 		return err
 	}

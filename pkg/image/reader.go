@@ -39,11 +39,11 @@ func checkImage(image *Image) error {
 }
 
 func getSectionReader(file *os.File, section Section) (io.Reader, error) {
-	start, err := safecast.ToInt64(section.Offset)
+	start, err := safecast.Convert[int64](section.Offset)
 	if err != nil {
 		return nil, err
 	}
-	size, err := safecast.ToInt64(section.Size)
+	size, err := safecast.Convert[int64](section.Size)
 	if err != nil {
 		return nil, err
 	}

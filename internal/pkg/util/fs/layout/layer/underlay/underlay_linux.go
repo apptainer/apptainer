@@ -114,7 +114,7 @@ func (u *Underlay) createLayer(rootFsPath string, system *mount.System) error {
 				}
 			}
 
-			sepCount, err := safecast.ToUint16(strings.Count(dst, "/"))
+			sepCount, err := safecast.Convert[uint16](strings.Count(dst, "/"))
 			if err != nil {
 				return err
 			}

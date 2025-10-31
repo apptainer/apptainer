@@ -171,11 +171,11 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 			if consoleSize != nil {
 				var size pty.Winsize
 
-				size.Cols, err = safecast.ToUint16(consoleSize.Width)
+				size.Cols, err = safecast.Convert[uint16](consoleSize.Width)
 				if err != nil {
 					return err
 				}
-				size.Rows, err = safecast.ToUint16(consoleSize.Height)
+				size.Rows, err = safecast.Convert[uint16](consoleSize.Height)
 				if err != nil {
 					return err
 				}

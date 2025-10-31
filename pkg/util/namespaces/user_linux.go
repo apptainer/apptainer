@@ -68,7 +68,7 @@ func IsInsideUserNamespace(pid int) (bool, bool) {
 // process is root running inside a user namespace, and if not it
 // simply returns the current UID
 func HostUID() (uint32, error) {
-	uid32, err := safecast.ToUint32(os.Getuid())
+	uid32, err := safecast.Convert[uint32](os.Getuid())
 	if err != nil {
 		return 0, fmt.Errorf("failed to convert uid to uint32: %s", err)
 	}
@@ -77,7 +77,7 @@ func HostUID() (uint32, error) {
 
 // Likewise for HostGID
 func HostGID() (uint32, error) {
-	gid32, err := safecast.ToUint32(os.Getgid())
+	gid32, err := safecast.Convert[uint32](os.Getgid())
 	if err != nil {
 		return 0, fmt.Errorf("failed to convert gid to uint32: %s", err)
 	}

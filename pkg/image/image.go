@@ -296,11 +296,11 @@ var readLocks = make(map[string][]Section)
 // from being written while the section is used in read-only mode.
 func lockSection(i *Image, section Section) error {
 	fd := int(i.Fd)
-	start, err := safecast.ToInt64(section.Offset)
+	start, err := safecast.Convert[int64](section.Offset)
 	if err != nil {
 		return err
 	}
-	size, err := safecast.ToInt64(section.Size)
+	size, err := safecast.Convert[int64](section.Size)
 	if err != nil {
 		return err
 	}

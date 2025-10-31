@@ -91,7 +91,7 @@ func defaultExecHandler(ctx context.Context, args []string) error {
 				c := strings.Join(args, " ")
 				return fmt.Errorf("command %q was killed after %s timeout", c, execTimeout)
 			}
-			es, err := safecast.ToUint8(status.ExitStatus())
+			es, err := safecast.Convert[uint8](status.ExitStatus())
 			if err != nil {
 				return err
 			}

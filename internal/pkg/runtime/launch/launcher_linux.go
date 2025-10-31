@@ -79,11 +79,11 @@ func NewLauncher(opts ...Option) (*Launcher, error) {
 	generator := generate.New(&ociConfig.Spec)
 	engineConfig.OciConfig = ociConfig
 
-	uid32, err := safecast.ToUint32(os.Getuid())
+	uid32, err := safecast.Convert[uint32](os.Getuid())
 	if err != nil {
 		return nil, err
 	}
-	gid32, err := safecast.ToUint32(os.Getgid())
+	gid32, err := safecast.Convert[uint32](os.Getgid())
 	if err != nil {
 		return nil, err
 	}
@@ -487,7 +487,7 @@ func (l *Launcher) setTargetIDs(useSuid bool) (err error) {
 			return fmt.Errorf("failed to parse provided UID: %w", err)
 		}
 		targetUID = int(u)
-		l.uid, err = safecast.ToUint32(targetUID)
+		l.uid, err = safecast.Convert[uint32](targetUID)
 		if err != nil {
 			return err
 		}
@@ -510,7 +510,7 @@ func (l *Launcher) setTargetIDs(useSuid bool) (err error) {
 			targetGID = append(targetGID, int(g))
 		}
 		if len(gids) > 0 {
-			l.gid, err = safecast.ToUint32(targetGID[0])
+			l.gid, err = safecast.Convert[uint32](targetGID[0])
 			if err != nil {
 				return err
 			}
@@ -1019,11 +1019,11 @@ func (l *Launcher) setNamespaces() {
 	if l.cfg.Namespaces.User {
 		l.generator.AddOrReplaceLinuxNamespace("user", "")
 		if !l.cfg.Fakeroot {
-			uid32, err := safecast.ToUint32(os.Getuid())
+			uid32, err := safecast.Convert[uint32](os.Getuid())
 			if err != nil {
 				sylog.Warningf("failed to convert uid to uint32: %s", err)
 			}
-			gid32, err := safecast.ToUint32(os.Getgid())
+			gid32, err := safecast.Convert[uint32](os.Getgid())
 			if err != nil {
 				sylog.Warningf("failed to convert gid to uint32: %s", err)
 			}

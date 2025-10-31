@@ -223,7 +223,7 @@ func OverlayCreate(size int, imgPath string, overlaySparse bool, isFakeroot bool
 	defer unix.Umask(oldumask)
 
 	if uid != 0 {
-		uid32, err := safecast.ToUint32(uid)
+		uid32, err := safecast.Convert[uint32](uid)
 		if err != nil {
 			return fmt.Errorf("failed to convert UID to uint32: %s", err)
 		}

@@ -304,7 +304,7 @@ func extractArchive(src string, dst string) error {
 			}
 		// if it's a file create it
 		case tar.TypeReg:
-			tarMode, err := safecast.ToUint32(header.Mode)
+			tarMode, err := safecast.Convert[uint32](header.Mode)
 			if err != nil {
 				return err
 			}

@@ -23,7 +23,7 @@ import (
 // user.Current was first called in unprivileged context and called after in a
 // privileged context as it will return information of unprivileged user.
 func CurrentUser(t *testing.T) *user.User {
-	uid, err := safecast.ToUint32(os.Getuid())
+	uid, err := safecast.Convert[uint32](os.Getuid())
 	if err != nil {
 		t.Fatal(err)
 	}

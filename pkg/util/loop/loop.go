@@ -436,11 +436,11 @@ func getLoopPath(device int) string {
 
 func createLoopDevice(device int) error {
 	// create loop device with mknod as a fallback
-	dev32, err := safecast.ToUint32(device)
+	dev32, err := safecast.Convert[uint32](device)
 	if err != nil {
 		return fmt.Errorf("failed to convert device to uint32: %s", err)
 	}
-	dev, err := safecast.ToInt(unix.Mkdev(7, dev32))
+	dev, err := safecast.Convert[int](unix.Mkdev(7, dev32))
 	if err != nil {
 		return fmt.Errorf("failed to convert device to int: %s", err)
 	}
