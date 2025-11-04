@@ -485,6 +485,9 @@ func (f *fuseappsFeature) stop(target string, kill bool) error {
 		}
 
 		process := instance.cmd.Process
+		if process == nil {
+			continue
+		}
 
 		sylog.Debugf("Waiting for %v pid %v to exit", f.binName, process.Pid)
 
