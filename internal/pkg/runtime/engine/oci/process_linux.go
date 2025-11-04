@@ -461,12 +461,12 @@ func (e *EngineOperations) handleControl(masterConn net.Conn, attach, control ne
 			e.waitStatusUpdate()
 		}
 		if ctrl.ConsoleSize != nil && master != nil {
-			width, err := safecast.ToUint16(ctrl.ConsoleSize.Width)
+			width, err := safecast.Convert[uint16](ctrl.ConsoleSize.Width)
 			if err != nil {
 				fatalChan <- fmt.Errorf("failed to convert console width to uint16: %s", err)
 				return
 			}
-			height, err := safecast.ToUint16(ctrl.ConsoleSize.Height)
+			height, err := safecast.Convert[uint16](ctrl.ConsoleSize.Height)
 			if err != nil {
 				fatalChan <- fmt.Errorf("failed to convert console height to uint16: %s", err)
 				return

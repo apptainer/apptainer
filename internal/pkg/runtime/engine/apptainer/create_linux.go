@@ -45,11 +45,11 @@ func (e *EngineOperations) CreateContainer(ctx context.Context, pid int, rpcConn
 	// force the user information for the current (master) process to avoid
 	// user database lookup with potential error, see:
 	// https://github.com/apptainer/apptainer/issues/2640
-	uid32, err := safecast.ToUint32(e.EngineConfig.JSON.UserInfo.UID)
+	uid32, err := safecast.Convert[uint32](e.EngineConfig.JSON.UserInfo.UID)
 	if err != nil {
 		return fmt.Errorf("failed to safely convert UID to uint32: %s", err)
 	}
-	gid32, err := safecast.ToUint32(e.EngineConfig.JSON.UserInfo.GID)
+	gid32, err := safecast.Convert[uint32](e.EngineConfig.JSON.UserInfo.GID)
 	if err != nil {
 		return fmt.Errorf("failed to safely convert GID to uint32: %s", err)
 	}
