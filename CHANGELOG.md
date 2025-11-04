@@ -40,6 +40,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.4.4
 
+- Run FUSE processes in a separate process group. This detaches them
+  from the main process so they don't receive signals such as interrupts
+  sent to a terminal there.  This was not a problem with interactive
+  shells because they start their own group, but was a problem with some
+  programs with interactive Read/Eval/Print/Loops such as python.  An
+  interrupt there would kill the FUSE processes.
+
 ## v1.4.4 - \[2025-10-29\]
 
 - By applying patches to the bundled fuse2fs, allow again the possibility
