@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -10,14 +10,12 @@
 package security
 
 import (
-	"os"
 	"runtime"
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/security/apparmor"
 	"github.com/apptainer/apptainer/internal/pkg/security/selinux"
 	"github.com/apptainer/apptainer/internal/pkg/test"
-	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
 	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
@@ -94,6 +92,16 @@ func TestConfigure(t *testing.T) {
 			disabled: !selinux.Enabled(),
 		},
 		{
+			desc: "SELinux when not available",
+			spec: specs.Spec{
+				Process: &specs.Process{
+					SelinuxLabel: "unconfined_u:unconfined_r:unconfined_t:s0",
+				},
+			},
+			expectFailure: true,
+			disabled:      selinux.Enabled(),
+		},
+		{
 			desc: "with bad apparmor profile",
 			spec: specs.Spec{
 				Process: &specs.Process{
@@ -112,6 +120,15 @@ func TestConfigure(t *testing.T) {
 			},
 			disabled: !apparmor.Enabled(),
 		},
+		{
+			desc: "apparmor when not available",
+			spec: specs.Spec{
+				Process: &specs.Process{
+					ApparmorProfile: "unconfined",
+				},
+			},
+			disabled: apparmor.Enabled(),
+		},
 	}
 
 	for _, s := range specs {
@@ -122,9 +139,9 @@ func TestConfigure(t *testing.T) {
 
 			var err error
 
-			mainthread.Execute(func() {
-				err = Configure(&s.spec) //nolint:gosec
-			})
+			runtime.LockOSThread()
+			defer runtime.UnlockOSThread()
+			err = Configure(&s.spec)
 
 			if err != nil && !s.expectFailure {
 				t.Errorf("unexpected failure %s: %s", s.desc, err)
@@ -132,20 +149,5 @@ func TestConfigure(t *testing.T) {
 				t.Errorf("unexpected success %s", s.desc)
 			}
 		})
-	}
-}
-
-func init() {
-	runtime.LockOSThread()
-}
-
-func TestMain(m *testing.M) {
-	go func() {
-		os.Exit(m.Run())
-	}()
-
-	// run functions requiring execution in main thread
-	for f := range mainthread.FuncChannel {
-		f()
 	}
 }
