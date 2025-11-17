@@ -19,7 +19,7 @@ require (
 	github.com/containernetworking/plugins v1.5.1
 	github.com/containers/image/v5 v5.33.1
 	github.com/creack/pty v1.1.24
-	github.com/cyphar/filepath-securejoin v0.4.1
+	github.com/cyphar/filepath-securejoin v0.5.1
 	github.com/docker/docker v27.5.1+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/fatih/color v1.18.0
@@ -28,10 +28,10 @@ require (
 	github.com/gosimple/slug v1.15.0
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1
-	github.com/opencontainers/runc v1.2.5
+	github.com/opencontainers/runc v1.2.8
 	github.com/opencontainers/runtime-spec v1.2.1
 	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626
-	github.com/opencontainers/selinux v1.11.1
+	github.com/opencontainers/selinux v1.13.1
 	github.com/opencontainers/umoci v0.4.7
 	github.com/pelletier/go-toml/v2 v2.2.3
 	github.com/pkg/errors v0.9.1
@@ -181,5 +181,3 @@ require (
 	google.golang.org/grpc v1.67.0 // indirect
 	google.golang.org/protobuf v1.36.4 // indirect
 )
-
-replace oras.land/oras-go => github.com/sylabs/oras-go v1.2.4-0.20230628133146-a64659fc0454
