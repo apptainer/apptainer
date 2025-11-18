@@ -59,9 +59,6 @@ Apptainer, check out the [guidelines for contributing](CONTRIBUTING.md).
 Please note we have a [code of conduct](CODE_OF_CONDUCT.md). Please follow it in
 all your interactions with the project members and users.
 
-Our roadmap, other documents, and user/developer meeting information can be
-found in the [apptainer community page](https://apptainer.org/help).
-
 We also welcome contributions to our [user
 guide](https://github.com/apptainer/apptainer-userdocs) and [admin
 guide](https://github.com/apptainer/apptainer-admindocs).
@@ -69,7 +66,7 @@ guide](https://github.com/apptainer/apptainer-admindocs).
 ## Support
 
 To get help with Apptainer, check out the [Apptainer
-Help](https://apptainer.org/help) web page.
+Support](https://apptainer.org/support) web page.
 
 ## Go Version Compatibility
 
