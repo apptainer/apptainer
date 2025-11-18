@@ -893,7 +893,7 @@ if [ "$host" = "unix" ]; then
 		while IFS='' read -r REPLY; do
 			if [ "$REPLY" = "@BUNDLED_PROVIDES@" ]; then
 				# Calculate bundled provides
-				awk '{if (index($1, "/") != 0 && ($1 != "//")) {print "Provides: bundled(golang("$1")) = "$2}}' go.mod | sed -e 's/-/_/g' | sort | uniq
+				awk '{if (index($1, "/") != 0 && ($1 != "//") && ($2 != "=>")) {print "Provides: bundled(golang("$1")) = "$2}}' go.mod | sed -e 's/-/_/g' | sort | uniq
 			else
 				echo "$REPLY"
 			fi
