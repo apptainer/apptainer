@@ -18,7 +18,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/checkpoint"
 	"github.com/apptainer/apptainer/internal/pkg/util/paths"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"gopkg.in/yaml.v2"
+	"go.yaml.in/yaml/v4"
 )
 
 const (
