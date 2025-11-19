@@ -128,6 +128,7 @@ jobs:
           OS_VERSION: 11
           # setting GO_ARCH speeds things by using go binaries instead of source
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
   debbuild-debian12:
@@ -144,6 +145,7 @@ jobs:
           OS_VERSION: 12
           # setting GO_ARCH speeds things by using go binaries instead of source
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
   debbuild-ubuntu22:
@@ -159,6 +161,7 @@ jobs:
           OS_TYPE: ubuntu
           OS_VERSION: '22.04'
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
   
   debbuild-ubuntu24:
@@ -174,6 +177,7 @@ jobs:
           OS_TYPE: ubuntu
           OS_VERSION: 24.04
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
   rpmbuild-rocky8:
