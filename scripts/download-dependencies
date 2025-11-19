@@ -40,7 +40,6 @@ sed -n -e '/^# URL:/{s/^# //;s/%%/%/g;p}' -e 's/^Source[1-9][0-9]*: //p' -e 's/^
 	# take the file name from the base of the URL
 	LINE="${LINE/*\//}"
     fi
-    echo "+ curl -f -L -sS -o $DIR/$LINE $URL" >&2
     curl -f -L -sS -o $DIR/$LINE $URL
     if [[ "$LINE" = gocryptfs*.tar.gz ]]; then
 	# Also download go dependencies
