@@ -50,7 +50,7 @@ sudo dnf install -y \
 ```
 
 For including libsubid support, use --enablerepo=devel for el8 and el9 but not
-for fedora:
+for el10 or fedora:
 
 ```sh
 sudo dnf --enablerepo=devel install -y shadow-utils-subid-devel
