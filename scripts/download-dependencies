@@ -40,7 +40,17 @@ sed -n -e '/^# URL:/{s/^# //;s/%%/%/g;p}' -e 's/^Source[1-9][0-9]*: //p' -e 's/^
 	# take the file name from the base of the URL
 	LINE="${LINE/*\//}"
     fi
-    curl -f -L -sS -o $DIR/$LINE $URL
+    if [ -n "$GITHUB_TOKEN" ] && [[ "$URL" = *github.com/*.patch ]]; then
+	# use github API instead because the public URL downloads 
+	# sometimes hit server busy (429) when run in github actions
+	URL="$(echo "$URL"|sed -e 's,github.com/,api.github.com/repos/,' \
+			       -e 's,/pull/,/pulls/,' -e 's,\.patch,,')"
+	curl -f -L -sS -o $DIR/$LINE \
+	    -H "Accept: application/vnd.github.diff" \
+	    -H "Authorization: Bearer $GITHUB_TOKEN" $URL
+    else
+	curl -f -L -sS -o $DIR/$LINE $URL
+    fi
     if [[ "$LINE" = gocryptfs*.tar.gz ]]; then
 	# Also download go dependencies
 	echo "Adding vendor to $LINE" >&2
