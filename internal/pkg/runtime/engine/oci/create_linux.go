@@ -24,6 +24,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/cgroups"
 	"github.com/apptainer/apptainer/internal/pkg/instance"
+	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/oci/cdi"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/oci/rpc/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/mount"
@@ -179,6 +180,13 @@ func (e *EngineOperations) CreateContainer(_ context.Context, pid int, rpcConn n
 
 	if err := e.createState(pid); err != nil {
 		return err
+	}
+
+	// Handle CDI device injection if devices were specified
+	if len(e.EngineConfig.Devices) > 0 {
+		if err := cdi.AddCdiDevices(&e.EngineConfig.OciConfig.Spec, e.EngineConfig.Devices, e.EngineConfig.CdiDirs); err != nil {
+			return fmt.Errorf("while setting up CDI devices: %w", err)
+		}
 	}
 
 	rootfs := e.EngineConfig.OciConfig.Root.Path

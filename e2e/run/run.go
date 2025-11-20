@@ -266,6 +266,103 @@ func (c ctx) testFuseSquashMount(t *testing.T) {
 	)
 }
 
+// testRunOCICDI checks that passing --device and --cdi-dirs flags to run
+// with an OCI/ORAS image work without causing a crash or hard failure.
+// Apptainer doesn't yet implement full CDI injection on the native
+// launcher; this test primarily ensures the CLI accepts the flags and
+// the image can still be pulled/run successfully.
+func (c ctx) testRunOCICDI(t *testing.T) {
+	// Ensure we have an ORAS image to pull; this also builds the SIF and pushes
+	// it to the local registry so pulling from oras:// works reliably.
+	e2e.EnsureORASImage(t, c.env)
+
+	// Create a small CDI JSON and write it into a temporary directory
+	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
+	defer cleanup(t)
+
+	cdiDir := filepath.Join(tempDir, "cdi")
+	if err := os.MkdirAll(cdiDir, 0o755); err != nil {
+		t.Fatalf("failed to create CDI dir: %v", err)
+	}
+
+	// create a writable host mount used by the generated CDI JSON, chmod it to allow container writes
+	mountDir, _ := e2e.MakeTempDir(t, tempDir, "mount-", "")
+	if err := os.Chmod(mountDir, 0o777); err != nil {
+		t.Fatalf("failed to chmod mount dir: %v", err)
+	}
+
+	// Minimal JSON that will, if supported, add a device and an env var. The cdi
+	// mount hostPath will point at our generated mountDir.
+	cdiJSON := fmt.Sprintf(`{
+	"cdiVersion": "0.5.0",
+	"kind": "apptainer.org/device",
+	"devices": [
+		{
+			"name": "kmsgDevice",
+			"containerEdits": {
+				"deviceNodes": [
+					{
+						"hostPath": "/dev/kmsg",
+						"path": "/dev/kmsg",
+						"permissions": "rw",
+						"uid": 1000,
+						"gid": 1000
+					}
+				],
+				"mounts": [
+					{
+						"containerPath": "/tmpmountforkmsg",
+						"options": ["rw"],
+						"hostPath": %q
+					}
+				]
+			}
+		}
+	],
+	"containerEdits": {
+		"env": ["FOO=VALID_SPEC", "BAR=BARVALUE1"]
+	}
+	}`, mountDir)
+
+	cdiFile := filepath.Join(cdiDir, "cdi.json")
+	if err := os.WriteFile(cdiFile, []byte(cdiJSON), 0o644); err != nil {
+		t.Fatalf("failed to create CDI JSON file: %v", err)
+	}
+
+	// Use the ORAS test image to ensure we test the OCI pull path.
+	imageRef := c.env.OrasTestImage
+
+	// Write a test string into the container mount location and verify its appearance
+	// on the host by reading the mounted file after the container exits.
+	testString := fmt.Sprintf("test_string_for_mount_%s", filepath.Base(mountDir))
+	execCmd := fmt.Sprintf("/bin/sh -c 'if [ -c /dev/kmsg ]; then echo DEVICE_PRESENT; else echo DEVICE_ABSENT; fi; echo $FOO; echo $BAR; echo %s > /tmpmountforkmsg/testfile'", testString)
+	cmdArgs := []string{"--device", "apptainer.org/device=kmsgDevice", "--cdi-dirs", cdiDir, imageRef, "/bin/sh", "-c", execCmd}
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("run"),
+		e2e.WithArgs(cmdArgs...),
+		e2e.ExpectExit(0,
+			e2e.ExpectOutput(e2e.ContainMatch, "FOO=VALID_SPEC"),
+			e2e.ExpectOutput(e2e.ContainMatch, "BAR=BARVALUE1"),
+			e2e.ExpectOutput(e2e.ContainMatch, "DEVICE_PRESENT"),
+		),
+		e2e.PostRun(func(t *testing.T) {
+			// Validate testfile was written to the host mount directory
+			testFilename := filepath.Join(mountDir, "testfile")
+			b, err := os.ReadFile(testFilename)
+			if err != nil {
+				t.Fatalf("could not read testfile %s: %v", testFilename, err)
+			}
+			s := string(b)
+			if s != testString+"\n" {
+				t.Fatalf("mismatched testfile content; expected %q, got %q", testString+"\n", s)
+			}
+		}),
+	)
+}
+
 func (c ctx) testFuseExt3Mount(t *testing.T) {
 	dataDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
 	defer cleanup(t)
@@ -570,5 +667,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"add package with fakeroot and tmpfs": c.testAddPackageWithFakerootAndTmpfs,
 		"gocryptfs sif execution":             c.testExecGocryptfsEncryptedSIF,
 		"test running on multiple archs":      c.testMultiArchRun,
+		"oci cdi device flags":                c.testRunOCICDI,
 	}
 }

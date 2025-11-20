@@ -37,6 +37,8 @@ type EngineConfig struct {
 	Exec           bool             `json:"exec"`
 	SystemdCgroups bool             `json:"systemdCgroups"`
 	Cgroups        *cgroups.Manager `json:"-"`
+	Devices        []string         `json:"devices"`
+	CdiDirs        []string         `json:"cdiDirs"`
 
 	sync.Mutex `json:"-"`
 	State      ociruntime.State `json:"state"`
@@ -109,4 +111,24 @@ func (e *EngineConfig) SetSystemdCgroups(systemd bool) {
 // SetSystemdCgroups gets whether to manage cgroups with systemd.
 func (e *EngineConfig) GetSystemdCgroups() bool {
 	return e.SystemdCgroups
+}
+
+// SetDevices sets the list of fully-qualified CDI device names.
+func (e *EngineConfig) SetDevices(devices []string) {
+	e.Devices = devices
+}
+
+// GetDevices returns the list of fully-qualified CDI device names.
+func (e *EngineConfig) GetDevices() []string {
+	return e.Devices
+}
+
+// SetCdiDirs sets the list of directories in which CDI should look for device definition JSON files.
+func (e *EngineConfig) SetCdiDirs(dirs []string) {
+	e.CdiDirs = dirs
+}
+
+// GetCdiDirs returns the list of directories in which CDI should look for device definition JSON files.
+func (e *EngineConfig) GetCdiDirs() []string {
+	return e.CdiDirs
 }

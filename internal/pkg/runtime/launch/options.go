@@ -159,6 +159,11 @@ type launchOptions struct {
 	ShareNSFd         int    // fd opened in sharens mode
 	RunscriptTimeout  string // runscript timeout
 
+	// Devices lists fully-qualified CDI device names to make available in the container.
+	Devices []string
+	// CdiDirs lists directories in which CDI should look for device definition JSON files.
+	CdiDirs []string
+
 	// IntelHpu enables Intel(R) Gaudi accelerator support.
 	IntelHpu bool
 }
@@ -607,6 +612,22 @@ func OptShareNSFd(fd int) Option {
 func OptRunscriptTimeout(timeout string) Option {
 	return func(lo *launchOptions) error {
 		lo.RunscriptTimeout = timeout
+		return nil
+	}
+}
+
+// OptDevice sets the list of fully-qualified CDI device names.
+func OptDevice(devices []string) Option {
+	return func(lo *launchOptions) error {
+		lo.Devices = devices
+		return nil
+	}
+}
+
+// OptCdiDirs sets the list of directories in which CDI should look for device definition JSON files.
+func OptCdiDirs(dirs []string) Option {
+	return func(lo *launchOptions) error {
+		lo.CdiDirs = dirs
 		return nil
 	}
 }

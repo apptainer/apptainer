@@ -357,6 +357,8 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 		launch.OptAppName(appName),
 		launch.OptKeyInfo(ki),
 		launch.OptCacheDisabled(disableCache),
+		launch.OptDevice(device),
+		launch.OptCdiDirs(cdiDirs),
 		launch.OptDMTCPLaunch(dmtcpLaunch),
 		launch.OptDMTCPRestart(dmtcpRestart),
 		launch.OptUnsquash(unsquash),

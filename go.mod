@@ -66,6 +66,7 @@ require (
 	github.com/samber/lo v1.52.0
 	github.com/sirupsen/logrus v1.9.3
 	gopkg.in/yaml.v2 v2.4.0
+	tags.cncf.io/container-device-interface v1.0.1
 )
 
 require (
@@ -99,6 +100,7 @@ require (
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/garyburd/redigo v0.0.0-20150301180006-535138d7bcd7 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
@@ -166,6 +168,7 @@ require (
 	go.opentelemetry.io/otel v1.36.0 // indirect
 	go.opentelemetry.io/otel/metric v1.36.0 // indirect
 	go.opentelemetry.io/otel/trace v1.36.0 // indirect
+	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/net v0.46.0 // indirect
 	golang.org/x/sync v0.18.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250303144028-a0af3efb3deb // indirect
@@ -173,6 +176,8 @@ require (
 	google.golang.org/grpc v1.72.2 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	sigs.k8s.io/knftables v0.0.18 // indirect
+	sigs.k8s.io/yaml v1.4.0 // indirect
+	tags.cncf.io/container-device-interface/specs-go v1.0.0 // indirect
 )
 
 replace oras.land/oras-go => github.com/sylabs/oras-go v1.2.4-0.20230628133146-a64659fc0454
