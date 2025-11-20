@@ -193,6 +193,7 @@ jobs:
           OS_TYPE: rockylinux
           OS_VERSION: 8
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
       - name: Install and test unprivileged for rocky 8
@@ -251,6 +252,7 @@ jobs:
           OS_TYPE: rockylinux
           OS_VERSION: 9
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
       - name: Install and test unprivileged for rocky 9
@@ -280,6 +282,7 @@ jobs:
           OS_TYPE: rockylinux/rockylinux
           OS_VERSION: 10
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
       - name: Install and test unprivileged for rocky 10
@@ -302,6 +305,7 @@ jobs:
           OS_TYPE: opensuse/leap
           OS_VERSION: latest
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
       - name: Install and test unprivileged for openSUSE leap
@@ -325,6 +329,7 @@ jobs:
           OS_TYPE: opensuse/tumbleweed
           OS_VERSION: latest
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
       - name: Install and test unprivileged for openSUSE tumbleweed
@@ -445,6 +450,8 @@ jobs:
 
       - name: Download, compile, and install dependent packages
         if: env.run_tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -ex
           ./scripts/download-dependencies 
