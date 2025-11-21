@@ -19,7 +19,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v4"
 )
 
 // #nosec G101
