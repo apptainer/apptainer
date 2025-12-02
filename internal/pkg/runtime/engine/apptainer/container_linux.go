@@ -1493,6 +1493,25 @@ func (c *container) addKernelMount(system *mount.System) error {
 	} else {
 		sylog.Verbosef("Skipping /sys mount")
 	}
+
+	// /sys/fs/selinux must be available for opencontainers/selinux.GetEnabled() to detect SELinux.
+	if c.engine.EngineConfig.OciConfig.Process.SelinuxLabel != "" {
+		sylog.Debugf("SELinux requested, ensuring /sys/fs/selinux mount available.")
+
+		if !c.engine.EngineConfig.File.MountSys || c.engine.EngineConfig.GetNoSys() {
+			return fmt.Errorf("SELinux requested, but /sys mount disabled by configuration")
+		}
+
+		if c.userNS {
+			sylog.Debugf("/sys/fs/selinux available via /sys bind")
+		} else {
+			if err := system.Points.AddFS(mount.KernelTag, "/sys/fs/selinux", "selinuxfs", syscall.MS_NOSUID|syscall.MS_NODEV|syscall.MS_NOEXEC, ""); err != nil {
+				return fmt.Errorf("unable to add sys/fs/selinux to mount list: %s", err)
+			}
+			sylog.Verbosef("Default mount: /sys/fs/selinux")
+		}
+	}
+
 	return nil
 }
 

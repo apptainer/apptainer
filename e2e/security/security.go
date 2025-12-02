@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -12,6 +12,7 @@ package security
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -255,6 +256,124 @@ func (c ctx) testSecurityConfOwnership(t *testing.T) {
 	)
 }
 
+// testApparmor tests the apparmor security flag.
+func (c ctx) testApparmor(t *testing.T) {
+	require.Apparmor(t)
+	e2e.EnsureImage(t, c.env)
+
+	tests := []struct {
+		name       string
+		image      string
+		argv       []string
+		opts       []string
+		expectOp   e2e.ApptainerCmdResultOp
+		expectExit int
+	}{
+		// apparmor
+		// Uses the profile for /usr/bin/man which will block `ls` in container root.
+		{
+			name:     "apparmor applied",
+			argv:     []string{"cat", "/proc/self/attr/current"},
+			opts:     []string{"--security", "apparmor:/usr/bin/man"},
+			expectOp: e2e.ExpectOutput(e2e.ExactMatch, "/usr/bin/man (enforce)"),
+		},
+		{
+			name:       "apparmor denial",
+			argv:       []string{"ls", "/"},
+			opts:       []string{"--security", "apparmor:/usr/bin/man"},
+			expectExit: 1,
+			expectOp:   e2e.ExpectError(e2e.ContainMatch, "Permission denied"),
+		},
+	}
+
+	for _, profile := range e2e.Profiles {
+		t.Run(profile.String(), func(t *testing.T) {
+			for _, tt := range tests {
+				optArgs := []string{}
+				optArgs = append(optArgs, tt.opts...)
+				optArgs = append(optArgs, c.env.ImagePath)
+				optArgs = append(optArgs, tt.argv...)
+
+				c.env.RunApptainer(
+					t,
+					e2e.AsSubtest(tt.name),
+					e2e.WithProfile(profile),
+					e2e.WithCommand("exec"),
+					e2e.WithArgs(optArgs...),
+					e2e.ExpectExit(tt.expectExit, tt.expectOp),
+				)
+			}
+		})
+	}
+}
+
+// testSELinux tests the selinux security flag.
+func (c ctx) testSELinux(t *testing.T) {
+	require.Selinux(t)
+	require.Command(t, "chcon")
+	e2e.EnsureImage(t, c.env)
+
+	sandbox, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "sandbox-", "")
+	defer cleanup(t)
+	// convert test image to sandbox
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--force", "--sandbox", sandbox, c.env.ImagePath),
+		e2e.ExpectExit(0),
+	)
+	// label as `container_ro_t`
+	cmd := exec.Command("chcon", "-R", "-t", "container_ro_file_t", sandbox)
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("while labeling sandbox: %v", err)
+	}
+
+	tests := []struct {
+		name       string
+		image      string
+		argv       []string
+		opts       []string
+		expectOp   e2e.ApptainerCmdResultOp
+		expectExit int
+	}{
+		// selinux
+		// Uses the container_t label which will block `ls` in /tmp bind from host.
+		{
+			name:     "selinux applied",
+			argv:     []string{"cat", "/proc/self/attr/current"},
+			opts:     []string{"--security", "selinux:unconfined_u:unconfined_r:container_t:s0"},
+			expectOp: e2e.ExpectOutput(e2e.ContainMatch, "unconfined_u:unconfined_r:container_t:s0"),
+		},
+		{
+			name:       "selinux denial",
+			argv:       []string{"ls", "/tmp"},
+			opts:       []string{"--security", "selinux:unconfined_u:unconfined_r:container_t:s0"},
+			expectExit: 1,
+			expectOp:   e2e.ExpectError(e2e.ContainMatch, "Permission denied"),
+		},
+	}
+	for _, profile := range e2e.Profiles {
+		t.Run(profile.String(), func(t *testing.T) {
+			for _, tt := range tests {
+				optArgs := []string{}
+				optArgs = append(optArgs, tt.opts...)
+				optArgs = append(optArgs, sandbox)
+				optArgs = append(optArgs, tt.argv...)
+
+				c.env.RunApptainer(
+					t,
+					e2e.AsSubtest(tt.name),
+					e2e.WithProfile(profile),
+					e2e.WithCommand("exec"),
+					e2e.WithArgs(optArgs...),
+					e2e.ExpectExit(tt.expectExit, tt.expectOp),
+				)
+			}
+		})
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -267,5 +386,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"apptainerSecurityUnpriv":   c.testSecurityUnpriv,
 		"apptainerSecurityPriv":     c.testSecurityPriv,
 		"testSecurityConfOwnership": np(c.testSecurityConfOwnership),
+		"testApparmor":              c.testApparmor,
+		"testSELinux":               c.testSELinux,
 	}
 }
