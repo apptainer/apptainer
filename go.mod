@@ -180,5 +180,3 @@ replace (
 	gopkg.in/yaml.v2 => go.yaml.in/yaml/v2 v2.4.0
 	gopkg.in/yaml.v3 => go.yaml.in/yaml/v3 v3.0.1
 )
-
-replace oras.land/oras-go => github.com/sylabs/oras-go v1.2.4-0.20230628133146-a64659fc0454

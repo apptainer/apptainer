@@ -38,7 +38,18 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.4.x changes
 
-Changes since 1.4.4
+Changes since 1.4.5
+
+## v1.4.5 - \[2025-12-02\]
+
+## Security Related Fixes
+
+- Fix for moderate severity [CVE-2025-65105 /
+  GHSA-j3rw-fx6g-q46j](https://github.com/apptainer/apptainer/security/advisories/GHSA-j3rw-fx6g-q46j):
+  Ineffective application of selinux / apparmor `--security` option.
+- Updates of a few dependent go libraries for related security fixes.
+
+### Other fix
 
 - Run FUSE processes in a separate process group. This detaches them
   from the main process so they don't receive signals such as interrupts
