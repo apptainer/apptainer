@@ -16,7 +16,7 @@ require (
 	github.com/ccoveille/go-safecast v1.8.2
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/containernetworking/cni v1.3.0
-	github.com/containernetworking/plugins v1.8.0
+	github.com/containernetworking/plugins v1.9.0
 	github.com/containers/image/v5 v5.36.2
 	github.com/creack/pty v1.1.24
 	github.com/cyphar/filepath-securejoin v0.6.1
