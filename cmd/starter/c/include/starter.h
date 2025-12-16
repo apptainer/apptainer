@@ -3,7 +3,7 @@
     Apptainer a Series of LF Projects LLC.
     For website terms of use, trademark policy, privacy policy and other
     project policies see https://lfprojects.org/policies
-  Copyright (c) 2018-2019, Sylabs, Inc. All rights reserved.
+  Copyright (c) 2018-2025, Sylabs, Inc. All rights reserved.
 
   This software is licensed under a 3-clause BSD license.  Please
   consult LICENSE.md file distributed with the sources of this project regarding
@@ -14,6 +14,7 @@
 #define _APPTAINER_STARTER_H
 
 #include <limits.h>
+#include <stdbool.h>
 #include <sys/user.h>
 
 #define fatalf(b...)     apptainer_message(ERROR, b); \
@@ -73,11 +74,6 @@ enum goexec {
 #define CLONE_NEWCGROUP     0x02000000
 #endif
 
-typedef enum {
-    False,
-    True
-} Bool;
-
 /* container capabilities */
 struct capabilities {
     unsigned long long permitted;
@@ -94,9 +90,9 @@ struct namespace {
     /* container mount namespace propagation */
     unsigned long mountPropagation;
     /* namespace join only */
-    Bool joinOnly;
+    bool joinOnly;
     /* should bring up loopback interface with network namespace */
-    Bool bringLoopbackInterface;
+    bool bringLoopbackInterface;
 
     /* namespaces inodes paths used to join namespaces */
     char network[MAX_PATH_SIZE];
@@ -111,12 +107,12 @@ struct namespace {
 /* container privileges */
 struct privileges {
     /* value for PR_SET_NO_NEW_PRIVS */
-    Bool noNewPrivs;
+    bool noNewPrivs;
 
     /* user namespace mappings and setgroups control */
     char uidMap[MAX_MAP_SIZE];
     char gidMap[MAX_MAP_SIZE];
-    Bool allowSetgroups;
+    bool allowSetgroups;
 
     /* path to external newuidmap/newgidmap binaries */
     char newuidmapPath[MAX_PATH_SIZE];
@@ -136,7 +132,7 @@ struct container {
     /* container process ID */
     pid_t pid;
     /* is container will run as instance */
-    Bool isInstance;
+    bool isInstance;
 
     /* container privileges */
     struct privileges privileges;
@@ -154,14 +150,14 @@ struct starter {
     int numfds;
 
     /* is starter run as setuid */
-    Bool isSuid;
+    bool isSuid;
     /* master process will share a mount namespace for container mount propagation */
-    Bool masterPropagateMount;
+    bool masterPropagateMount;
     /* hybrid workflow where master process and container doesn't share user namespace */
-    Bool hybridWorkflow;
+    bool hybridWorkflow;
 
     /* bounding capability set will include caps needed by nvidia-container-cli */
-    Bool nvCCLICaps;
+    bool nvCCLICaps;
 };
 
 /* engine configuration */
