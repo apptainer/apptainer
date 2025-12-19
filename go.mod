@@ -56,7 +56,7 @@ require (
 )
 
 require (
-	github.com/BurntSushi/toml v1.5.0
+	github.com/BurntSushi/toml v1.6.0
 	github.com/buger/goterm v1.0.4
 	github.com/docker/cli v29.1.2+incompatible
 	github.com/docker/distribution v2.8.3+incompatible
