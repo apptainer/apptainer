@@ -1,5 +1,4 @@
 //go:build linux && cgo && libsubid
-// +build linux,cgo,libsubid
 
 // Portions of this code was adopted from github.com/containers/storage
 // Copyright (C) The Linux Foundation and its contributors.

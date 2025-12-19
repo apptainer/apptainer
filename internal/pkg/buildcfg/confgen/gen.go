@@ -254,7 +254,7 @@ func main() {
 					if len(d.Words) != 3 {
 						sylog.Fatalf("Expected %s to contain 3 elements", configVar)
 					}
-					vals[idx] = d.Words[2]
+					vals[idx] = d.Words[2] //nolint:gosec
 				}
 			}
 			header = append(header, d)
