@@ -1,5 +1,4 @@
 //go:build !linux || !libsubid || !cgo
-// +build !linux !libsubid !cgo
 
 // Copyright (c) Contributors to the Apptainer project, established as
 //   Apptainer a Series of LF Projects LLC.
