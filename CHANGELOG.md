@@ -7,7 +7,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.5.x changes
 
-- Update minimum go version to 1.24.2.
+- Update minimum go version to 1.25.3.
 - Record image digest metadata (sha256 from `RepoDigests`), for OCI registry images.
   Also add the image name (ref) of the image from "docker", with registry and tag.
   This is useful for traceability, when using `docker.io` or a tag like `latest`.
