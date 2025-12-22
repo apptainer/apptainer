@@ -50,7 +50,7 @@ sudo dnf install -y \
 ```
 
 For including libsubid support, use --enablerepo=devel for el8 and el9 but not
-for fedora:
+for el10 or fedora:
 
 ```sh
 sudo dnf --enablerepo=devel install -y shadow-utils-subid-devel
@@ -66,7 +66,7 @@ sudo zypper install -y \
   openssl-devel \
   fakeroot \
   cryptsetup sysuser-tools \
-  diffutils wget which git go
+  diffutils wget which git
 # Install basic tools for compiling
 # --replacefiles is needed to avoid pam conflict on Tumbleweed
 sudo zypper install -y --replacefiles --allow-downgrade -t pattern devel_basis
@@ -91,7 +91,7 @@ _**NOTE:** if you are updating Go from a older version, make sure you remove
 `/usr/local/go` before reinstalling it._
 
 ```sh
-export GOVERSION=1.24.2 OS=linux ARCH=amd64  # change this as you need
+export GOVERSION=1.25.3 OS=linux ARCH=amd64  # change this as you need
 
 wget -O /tmp/go${GOVERSION}.${OS}-${ARCH}.tar.gz \
   https://dl.google.com/go/go${GOVERSION}.${OS}-${ARCH}.tar.gz
@@ -153,7 +153,7 @@ To build a specific version of Apptainer, check out a
 for example:
 
 ```sh
-git checkout v1.4.3
+git checkout v1.4.5
 ```
 
 ## Compiling Apptainer
@@ -296,7 +296,7 @@ sudo dnf install -y rpm-build golang
 or on SLE/openSUSE:
 
 ```sh
-sudo zypper install -y rpm-build binutils-gold
+sudo zypper install -y rpm-build go
 ```
 
 The rpm build will use the OS distribution or EPEL version of Go,
@@ -322,7 +322,7 @@ Then download the latest
 <!-- markdownlint-disable MD013 -->
 
 ```sh
-VERSION=1.4.3  # this is the apptainer version, change as you need
+VERSION=1.4.5  # this is the apptainer version, change as you need
 # Fetch the source
 wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
 ```

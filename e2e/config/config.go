@@ -528,7 +528,7 @@ func (c configTests) configGlobal(t *testing.T) {
 			exit:           0,
 		},
 		{
-			name:           "AllowContainerExfs3No",
+			name:           "AllowContainerExtfsNo",
 			argv:           []string{c.ext3Image, "true"},
 			profile:        e2e.UserProfile,
 			directive:      "allow container extfs",

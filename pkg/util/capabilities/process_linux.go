@@ -83,7 +83,7 @@ func SetProcessEffective(caps uint64) (uint64, error) {
 	effective := uint64(data[0].Effective) | uint64(data[1].Effective)<<32
 	permitted := uint64(data[0].Permitted) | uint64(data[1].Permitted)<<32
 
-	mapLen, err := safecast.ToUint(len(Map))
+	mapLen, err := safecast.Convert[uint](len(Map))
 	if err != nil {
 		return 0, err
 	}

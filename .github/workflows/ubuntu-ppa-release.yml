@@ -88,6 +88,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: prepare
     strategy:
+      fail-fast: false
       matrix:
         include:
             - version: '25.04'
@@ -96,8 +97,6 @@ jobs:
               name: noble
             - version: '22.04'
               name: jammy
-            - version: '20.04'
-              name: focal
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4

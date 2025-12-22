@@ -216,7 +216,7 @@ func makeFiles(rootPath string, overwrite bool) error {
 }
 
 // makeBaseEnv inserts Apptainer specific directories, symlinks, and files
-// into the contatiner rootfs. If overwrite is true, then any existing files
+// into the container rootfs. If overwrite is true, then any existing files
 // will be overwritten with new content. If overwrite is false, existing files
 // (e.g. where the rootfs has been extracted from an existing image) will not be
 // modified.

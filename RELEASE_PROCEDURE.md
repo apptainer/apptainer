@@ -42,6 +42,7 @@ for the current stable major.minor version of Apptainer.
 1. Push the tag to the GitHub repository via `git push upstream v1.1.9`.
 1. Create a GitHub release, using the previous release as a guide and
    incorporating `CHANGELOG.md` information.
+1. Run the ubuntu-ppa github action workflow with the new tag.
 1. Notify the community about the release via the Google Group and Slack.
 
 ### After the Patch Release
@@ -116,6 +117,7 @@ release of a new major or minor version. Each new RC follows step 5 and above.
 1. Push the tag via `git push upstream v1.2.0`.
 1. Create a GitHub release, using the previous release as a guide and
    incorporating `CHANGELOG.md` information.
+1. Run the ubuntu-ppa github action workflow with the new tag.
 1. Notify the community about the release candidate via the announce Google Group
    and the Slack #general channel.
 1. Ensure the user and admin documentation is up-to-date for the new

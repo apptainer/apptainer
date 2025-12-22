@@ -70,7 +70,7 @@ func TestGetGrNam(t *testing.T) {
 }
 
 func testCurrent(t *testing.T, fn func() (*User, error)) {
-	uid, err := safecast.ToUint32(os.Getuid())
+	uid, err := safecast.Convert[uint32](os.Getuid())
 	if err != nil {
 		t.Fatal(err)
 	}

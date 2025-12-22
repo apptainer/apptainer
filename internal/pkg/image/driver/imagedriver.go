@@ -354,19 +354,23 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, _ image.MountFunc) err
 		}
 	}
 
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		// Put fuse process in its own process group to avoid
+		// signals from interactive use
+		Setpgid: true,
+	}
+
 	// When using gocryptfs for build step or when running in setuid mode,
 	// we should not run with the elevated CAP_SYS_ADMIN privilege.
 	if !params.DontElevatePrivs {
-		cmd.SysProcAttr = &syscall.SysProcAttr{
-			AmbientCaps: []uintptr{
-				uintptr(capabilities.Map["CAP_SYS_ADMIN"].Value),
-				// Needed for nsenter
-				//  https://stackoverflow.com/a/69724124/10457761
-				uintptr(capabilities.Map["CAP_SYS_PTRACE"].Value),
-				// Required for fuse-overlayfs
-				//  see https://github.com/containers/fuse-overlayfs/issues/414#issuecomment-1956140097
-				uintptr(capabilities.Map["CAP_DAC_OVERRIDE"].Value),
-			},
+		cmd.SysProcAttr.AmbientCaps = []uintptr{
+			uintptr(capabilities.Map["CAP_SYS_ADMIN"].Value),
+			// Needed for nsenter
+			//  https://stackoverflow.com/a/69724124/10457761
+			uintptr(capabilities.Map["CAP_SYS_PTRACE"].Value),
+			// Required for fuse-overlayfs
+			//  see https://github.com/containers/fuse-overlayfs/issues/414#issuecomment-1956140097
+			uintptr(capabilities.Map["CAP_DAC_OVERRIDE"].Value),
 		}
 	}
 
@@ -481,6 +485,9 @@ func (f *fuseappsFeature) stop(target string, kill bool) error {
 		}
 
 		process := instance.cmd.Process
+		if process == nil {
+			continue
+		}
 
 		sylog.Debugf("Waiting for %v pid %v to exit", f.binName, process.Pid)
 
@@ -640,6 +647,8 @@ func (i *fuseappsInstance) filterMsg() string {
 		// from fuse2fs
 		"journal is not supported.",
 		"fuse2fs does not support using the journal.",
+		"fuse2fs does not support writing the journal.",
+		"Disabling journal recovery",
 		"There may be file system corruption",
 		"the file system is not gracefully unmounted.",
 		"Mounting read-only.",

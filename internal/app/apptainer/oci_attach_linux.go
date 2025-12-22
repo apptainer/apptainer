@@ -48,12 +48,12 @@ func resize(controlSocket string, oversized bool) {
 		return
 	}
 
-	urows, err := safecast.ToUint(rows)
+	urows, err := safecast.Convert[uint](rows)
 	if err != nil {
 		sylog.Errorf("failed to convert rows to uint: %s", err)
 		return
 	}
-	ucols, err := safecast.ToUint(cols)
+	ucols, err := safecast.Convert[uint](cols)
 	if err != nil {
 		sylog.Errorf("failed to convert columns to uint: %s", err)
 		return

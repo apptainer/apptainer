@@ -1,10 +1,11 @@
 # Apptainer SCI-F Apps
 
-The Scientific Filesystem is well suited for Apptainer containers to allow you
-to build a container that has multiple entrypoints, along with modular environments,
-libraries, and executables. Here we will review the basic building and using of a
-Apptainer container that implements SCIF. For more quick start tutorials, see
-the [official documentation for SCIF](https://vsoch.github.io/scif/).
+The Scientific Filesystem is well suited for Apptainer containers to
+allow you to build a container that has multiple entrypoints, along with
+modular environments, libraries, and executables. Here we will review
+the basic building and using of a Apptainer container that implements
+SCIF. For more quick start tutorials, see the [official documentation
+for SCIF](https://vsoch.github.io/scif/).
 
 Build your image
 

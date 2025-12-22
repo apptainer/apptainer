@@ -24,7 +24,7 @@ import (
 	remoteutil "github.com/apptainer/apptainer/internal/pkg/remote/util"
 	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v4"
 )
 
 // ErrNoDefault indicates no default remote being set

@@ -63,6 +63,13 @@ Source11: https://github.com/vasi/squashfuse/archive/%{squashfuse_version}/squas
 %if "%{?e2fsprogs_version}" != ""
 # URL: https://github.com/tytso/e2fsprogs/archive/refs/tags/v%%{e2fsprogs_version}.tar.gz
 Source12: e2fsprogs-%{e2fsprogs_version}.tar.gz
+# URL: https://github.com/tytso/e2fsprogs/pull/246.patch
+Patch121: e2fsprogs-246.patch
+# this is PR 250 from tytso/e2fsprogs backported to apply cleanly on v1.47.3
+# URL: https://github.com/DrDaveD/e2fsprogs/pull/2.patch
+Patch122: e2fsprogs-250.patch
+# URL: https://github.com/tytso/e2fsprogs/pull/251.patch
+Patch123: e2fsprogs-251.patch
 %endif
 Source13: https://github.com/containers/fuse-overlayfs/archive/v%{fuse_overlayfs_version}/fuse-overlayfs-%{fuse_overlayfs_version}.tar.gz
 %if "%{?squashfs_tools_version}" != ""
@@ -99,7 +106,6 @@ Provides: bundled(squashfs-tools) = %{squashfs_tools_version}
 @BUNDLED_PROVIDES@
 
 %if "%{_target_vendor}" == "suse"
-BuildRequires: binutils-gold
 BuildRequires: go
 BuildRequires: liblz4-devel
 %if 0%{?suse_version} > 1600

@@ -117,7 +117,7 @@ func (cp *BuildKitConveyorPacker) Get(_ context.Context, b *types.Bundle) (err e
 // Pack puts relevant objects in a Bundle!
 func (cp *BuildKitConveyorPacker) Pack(ctx context.Context) (b *types.Bundle, err error) {
 	sylog.Infof("Building OCI image...")
-	err = cp.buildImage(ctx)
+	err = cp.buildImage(ctx, cp.b.TmpDir)
 	if err != nil {
 		return nil, fmt.Errorf("while building image: %v", err)
 	}
@@ -157,8 +157,8 @@ func (cp *BuildKitConveyorPacker) Pack(ctx context.Context) (b *types.Bundle, er
 	return cp.b, nil
 }
 
-func buildkitBuild(ctx context.Context, env []string, platform, output string, opts buildkitOptions, buildlog io.Writer) error {
-	reffile, err := os.CreateTemp("", "buildkit-*.txt")
+func buildkitBuild(ctx context.Context, tmpDir string, env []string, platform, output string, opts buildkitOptions, buildlog io.Writer) error {
+	reffile, err := os.CreateTemp(tmpDir, "buildkit-*.txt")
 	if err != nil {
 		return err
 	}
@@ -249,15 +249,15 @@ func dockerBuild(ctx context.Context, env []string, platform, output string, opt
 	return nil
 }
 
-func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
-	tmpfile, err := os.CreateTemp("/var/tmp", "buildkit-*.tar")
+func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context, tmpDir string) error {
+	tmpfile, err := os.CreateTemp(tmpDir, "buildkit-*.tar")
 	if err != nil {
 		return err
 	}
 	defer os.Remove(tmpfile.Name())
 
 	env := os.Environ()
-	cfgdir, err := os.MkdirTemp("", "docker-config-*")
+	cfgdir, err := os.MkdirTemp(tmpDir, "docker-config-*")
 	if err != nil {
 		return err
 	}
@@ -321,7 +321,7 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context) error {
 		}
 		defer buildlog.Close()
 
-		err = buildkitBuild(ctx, env, platform, output, cp.bk, buildlog)
+		err = buildkitBuild(ctx, tmpDir, env, platform, output, cp.bk, buildlog)
 		if err != nil {
 			return err
 		}

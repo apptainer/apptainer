@@ -57,7 +57,7 @@ func parseSquashfsHeader(b []byte) (*squashfsInfo, uint64, error) {
 
 	launchStart := bytes.Index(b, []byte(launchString))
 	if launchStart > 0 {
-		launchEnd, err := safecast.ToUint64(launchStart + len(launchString) + 1)
+		launchEnd, err := safecast.Convert[uint64](launchStart + len(launchString) + 1)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -122,7 +122,7 @@ func (f *squashfsFormat) initializer(img *Image, fileinfo os.FileInfo) error {
 	if err != nil {
 		return err
 	}
-	fSize, err := safecast.ToUint64(fileinfo.Size())
+	fSize, err := safecast.Convert[uint64](fileinfo.Size())
 	if err != nil {
 		return err
 	}

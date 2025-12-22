@@ -187,7 +187,7 @@ func calculateMemoryUsage(stats *libcgroups.MemoryStats) (float64, float64, floa
 
 func calculateCPUUsage(prevTime, prevCPU uint64, cpuStats *libcgroups.CpuStats) (cpuPercent float64, curTime, curCPU uint64, err error) {
 	// Update 1s interval CPU ns usage
-	curTime, err = safecast.ToUint64(time.Now().UnixNano())
+	curTime, err = safecast.Convert[uint64](time.Now().UnixNano())
 	if err != nil {
 		return 0, 0, 0, err
 	}
@@ -243,7 +243,7 @@ func InstanceStats(ctx context.Context, name, instanceUser string, formatJSON bo
 		return fmt.Errorf("while getting stats for pid: %v", err)
 	}
 	prevCPU := stats.CpuStats.CpuUsage.TotalUsage
-	prevTime, err := safecast.ToUint64(time.Now().UnixNano())
+	prevTime, err := safecast.Convert[uint64](time.Now().UnixNano())
 	if err != nil {
 		return err
 	}

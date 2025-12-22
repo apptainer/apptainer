@@ -37,10 +37,10 @@ the [keys](keys/) directory:
   [rsa-private.pem](keys/rsa-private.pem)
 
 The above key pairs originated from the
-[SIF test key corpus](https://github.com/apptainer/sif/tree/main/test/keys). When
-adding new key pairs, please consider updating
-[gen_keys.go](https://github.com/apptainer/sif/blob/main/test/keys/gen_keys.go) in
-the SIF repository.
+[SIF test key corpus](https://github.com/apptainer/sif/tree/main/test/keys).
+When adding new key pairs, please consider updating
+[gen_keys.go](https://github.com/apptainer/sif/blob/main/test/keys/gen_keys.go)
+in the SIF repository.
 
 A PGP key pair is also available for testing:
 

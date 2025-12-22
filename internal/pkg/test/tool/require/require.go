@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -23,7 +23,9 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
+	"github.com/apptainer/apptainer/internal/pkg/security/apparmor"
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
+	"github.com/apptainer/apptainer/internal/pkg/security/selinux"
 	"github.com/apptainer/apptainer/internal/pkg/util/rpm"
 	"github.com/apptainer/apptainer/pkg/network"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
@@ -243,7 +245,7 @@ func Rocm(t *testing.T) {
 	}
 }
 
-// IntelHpu checks that a Gaudi acceleartor stack is available
+// IntelHpu checks that a Gaudi accelerator stack is available
 func IntelHpu(t *testing.T) {
 	hlsmi, err := exec.LookPath("hl-smi")
 	if err != nil {
@@ -292,6 +294,22 @@ func Command(t *testing.T, command string) {
 func Seccomp(t *testing.T) {
 	if !seccomp.Enabled() {
 		t.Skipf("seccomp disabled, Apptainer was compiled without the seccomp library")
+	}
+}
+
+// Apparmor checks that apparmor is enabled. If not, the test is skipped with a
+// message.
+func Apparmor(t *testing.T) {
+	if !apparmor.Enabled() {
+		t.Skipf("apparmor is not available")
+	}
+}
+
+// Selinux checks that selinux is enabled. If not, the test is skipped with a
+// message.
+func Selinux(t *testing.T) {
+	if !selinux.Enabled() {
+		t.Skipf("selinux is not available")
 	}
 }
 

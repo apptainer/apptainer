@@ -272,7 +272,7 @@ func (e *EngineOperations) prepareUserCaps(enforced bool) error {
 		}
 
 		for _, g := range groups {
-			g32, err := safecast.ToUint32(g)
+			g32, err := safecast.Convert[uint32](g)
 			if err != nil {
 				return err
 			}
@@ -383,7 +383,7 @@ func (e *EngineOperations) prepareRootCaps() error {
 		}
 
 		for _, g := range groups {
-			g32, err := safecast.ToUint32(g)
+			g32, err := safecast.Convert[uint32](g)
 			if err != nil {
 				return err
 			}
@@ -635,7 +635,7 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 
 	if !e.EngineConfig.File.AllowUserNs {
 		if buildcfg.APPTAINER_SUID_INSTALL == 0 {
-			sylog.Fatalf("Unprivileged installation found, user namepace needed but not allowed by configuration.")
+			sylog.Fatalf("Unprivileged installation found, user namespace needed but not allowed by configuration.")
 		}
 		if n, _ := e.hasNamespace(specs.UserNamespace); n {
 			sylog.Fatalf("User namespace required but not allowed by configuration.")
@@ -673,11 +673,11 @@ func (e *EngineOperations) prepareContainerConfig(starterConfig *starter.Config)
 	}
 
 	if e.EngineConfig.GetFakeroot() {
-		uid, err := safecast.ToUint32(os.Getuid())
+		uid, err := safecast.Convert[uint32](os.Getuid())
 		if err != nil {
 			return err
 		}
-		gid, err := safecast.ToUint32(os.Getgid())
+		gid, err := safecast.Convert[uint32](os.Getgid())
 		if err != nil {
 			return err
 		}
@@ -793,11 +793,11 @@ func (e *EngineOperations) prepareInstanceJoinConfig(starterConfig *starter.Conf
 		return err
 	}
 
-	uid, err := safecast.ToUint32(os.Getuid())
+	uid, err := safecast.Convert[uint32](os.Getuid())
 	if err != nil {
 		return err
 	}
-	gid, err := safecast.ToUint32(os.Getgid())
+	gid, err := safecast.Convert[uint32](os.Getgid())
 	if err != nil {
 		return err
 	}
@@ -1394,17 +1394,18 @@ func (e *EngineOperations) loadOverlayImages(starterConfig *starter.Config, writ
 		}
 
 		img, err := e.loadImage(splitted[0], writableOverlay, userNS, elevated)
-		if err != nil {
-			if !image.IsReadOnlyFilesytem(err) {
-				return nil, fmt.Errorf("failed to open overlay image %s: %s", splitted[0], err)
-			}
+		if err != nil && !image.IsReadOnlyFilesytem(err) {
+			return nil, fmt.Errorf("failed to open overlay image %s: %s", splitted[0], err)
+		}
+		if err != nil || (writableOverlay && !img.Writable) {
 			// let's proceed with readonly filesystem and set
 			// writableOverlay to appropriate value
+			sylog.Warningf("Overlay image %s is not writable, proceeding with read-only", img.Path)
 			writableOverlay = false
 		}
 		img.Usage = image.OverlayUsage
 
-		if writableOverlay && img.Writable {
+		if writableOverlay {
 			if writableOverlayPath != "" {
 				return nil, fmt.Errorf(
 					"you can't specify more than one writable overlay, "+
@@ -1449,9 +1450,13 @@ func (e *EngineOperations) loadBindImages(starterConfig *starter.Config, userNS 
 
 		sylog.Debugf("Loading data image %s", imagePath)
 
-		img, err := e.loadImage(imagePath, !binds[i].Readonly(), userNS, elevated)
+		writable := !binds[i].Readonly()
+		img, err := e.loadImage(imagePath, writable, userNS, elevated)
 		if err != nil && !image.IsReadOnlyFilesytem(err) {
 			return nil, fmt.Errorf("failed to load data image %s: %s", imagePath, err)
+		}
+		if err != nil || (writable && !img.Writable) {
+			sylog.Warningf("Data image %s is not writable, proceeding with read-only", img.Path)
 		}
 		img.Usage = image.DataUsage
 
@@ -1594,7 +1599,7 @@ func (e *EngineOperations) setUserInfo(useTargetIDs bool) error {
 	e.EngineConfig.JSON.UserInfo.Home = pw.Dir
 
 	if useTargetIDs {
-		targetUID, uidErr := safecast.ToUint32(e.EngineConfig.GetTargetUID())
+		targetUID, uidErr := safecast.Convert[uint32](e.EngineConfig.GetTargetUID())
 		if uidErr != nil {
 			return err
 		}
@@ -1625,7 +1630,7 @@ func (e *EngineOperations) setUserInfo(useTargetIDs bool) error {
 	}
 
 	for _, gid := range gids {
-		gid32, err := safecast.ToUint32(gid)
+		gid32, err := safecast.Convert[uint32](gid)
 		if err != nil {
 			return err
 		}

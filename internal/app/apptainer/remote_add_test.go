@@ -17,7 +17,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/remote"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/internal/pkg/test"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v4"
 )
 
 const (

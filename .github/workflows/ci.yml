@@ -6,7 +6,7 @@ jobs:
   check_go_mod:
     name: check_go_mod
     runs-on: ubuntu-22.04
-    container: golang:1.24.2
+    container: golang:1.25.3
     steps:
       - uses: actions/checkout@v4
 
@@ -31,7 +31,7 @@ jobs:
   check_source:
     name: check_source
     runs-on: ubuntu-22.04
-    container: golangci/golangci-lint:v2.3.1
+    container: golangci/golangci-lint:v2.6
     steps:
       - uses: actions/checkout@v4
 
@@ -54,7 +54,7 @@ jobs:
   alpine:
     name: alpine
     runs-on: ubuntu-22.04
-    container: golang:1.24.2-alpine
+    container: golang:1.25.3-alpine
     steps:
       - name: Fetch deps
         run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
@@ -71,7 +71,7 @@ jobs:
     name: oldgo
     runs-on: ubuntu-22.04
     # match the minimum version required by mconfig
-    container: golang:1.24.2-alpine
+    container: golang:1.25.3-alpine
     steps:
       - name: Fetch deps
         run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
@@ -87,7 +87,7 @@ jobs:
   check_test_corpus:
     name: check_test_corpus
     runs-on: ubuntu-22.04
-    container: golang:1.24.2
+    container: golang:1.25.3
     steps:
       - uses: actions/checkout@v4
 
@@ -102,7 +102,7 @@ jobs:
   check_license_dependencies:
     name: check_license_dependencies
     runs-on: ubuntu-22.04
-    container: golang:1.24.2
+    container: golang:1.25.3
     steps:
       - uses: actions/checkout@v4
 
@@ -128,6 +128,7 @@ jobs:
           OS_VERSION: 11
           # setting GO_ARCH speeds things by using go binaries instead of source
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
   debbuild-debian12:
@@ -144,6 +145,7 @@ jobs:
           OS_VERSION: 12
           # setting GO_ARCH speeds things by using go binaries instead of source
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
   debbuild-ubuntu22:
@@ -159,6 +161,7 @@ jobs:
           OS_TYPE: ubuntu
           OS_VERSION: '22.04'
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
   
   debbuild-ubuntu24:
@@ -174,6 +177,7 @@ jobs:
           OS_TYPE: ubuntu
           OS_VERSION: 24.04
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
   rpmbuild-rocky8:
@@ -189,6 +193,7 @@ jobs:
           OS_TYPE: rockylinux
           OS_VERSION: 8
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
       - name: Install and test unprivileged for rocky 8
@@ -247,6 +252,7 @@ jobs:
           OS_TYPE: rockylinux
           OS_VERSION: 9
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
       - name: Install and test unprivileged for rocky 9
@@ -276,6 +282,7 @@ jobs:
           OS_TYPE: rockylinux/rockylinux
           OS_VERSION: 10
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
       - name: Install and test unprivileged for rocky 10
@@ -298,6 +305,7 @@ jobs:
           OS_TYPE: opensuse/leap
           OS_VERSION: latest
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
       - name: Install and test unprivileged for openSUSE leap
@@ -321,6 +329,7 @@ jobs:
           OS_TYPE: opensuse/tumbleweed
           OS_VERSION: latest
           GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
 
       - name: Install and test unprivileged for openSUSE tumbleweed
@@ -342,7 +351,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.24.2
+          go-version: 1.25.3
 
       - name: Fetch deps
         run: |
@@ -384,7 +393,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.24.2
+          go-version: 1.25.3
 
       - name: Fetch deps
         run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libseccomp-dev cryptsetup dbus-user-session
@@ -429,7 +438,7 @@ jobs:
         if: env.run_tests
         uses: actions/setup-go@v2
         with:
-          go-version: 1.24.2
+          go-version: 1.25.3
 
       - name: Fetch deps
         if: env.run_tests
@@ -441,6 +450,8 @@ jobs:
 
       - name: Download, compile, and install dependent packages
         if: env.run_tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -ex
           ./scripts/download-dependencies 
@@ -504,7 +515,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.24.2
+          go-version: 1.25.3
 
       - name: Check pkg/... doesn't depend on buildcfg
         run: |

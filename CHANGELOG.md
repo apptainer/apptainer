@@ -7,7 +7,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.5.x changes
 
-- Update minimum go version to 1.24.2.
+- Update minimum go version to 1.25.3.
 - Record image digest metadata (sha256 from `RepoDigests`), for OCI registry images.
   Also add the image name (ref) of the image from "docker", with registry and tag.
   This is useful for traceability, when using `docker.io` or a tag like `latest`.
@@ -38,9 +38,37 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.4.x changes
 
-Changes since 1.4.3
+Changes since 1.4.5
 
-- Fix 32-bit builds which was accidentally broken by a library upgrade
+## v1.4.5 - \[2025-12-02\]
+
+## Security Related Fixes
+
+- Fix for moderate severity [CVE-2025-65105 /
+  GHSA-j3rw-fx6g-q46j](https://github.com/apptainer/apptainer/security/advisories/GHSA-j3rw-fx6g-q46j):
+  Ineffective application of selinux / apparmor `--security` option.
+- Updates of a few dependent go libraries for related security fixes.
+
+### Other fix
+
+- Run FUSE processes in a separate process group. This detaches them
+  from the main process so they don't receive signals such as interrupts
+  sent to a terminal there.  This was not a problem with interactive
+  shells because they start their own group, but was a problem with some
+  programs with interactive Read/Eval/Print/Loops such as python.  An
+  interrupt there would kill the FUSE processes.
+
+## v1.4.4 - \[2025-10-29\]
+
+- By applying patches to the bundled fuse2fs, allow again the possibility
+  of using a non-writable ext3 image file as an overlay.  Fixes regression
+  introduced in 1.4.3.
+- If an overlay or bound data image is asked to be mounted writable but
+  the user has no write access to the image, show a warning message
+  instead of silently switching to readonly.
+- Avoid a fatal error when starting fakeroot from suid mode while in an
+  NFS directory.
+- Fix 32-bit builds which were accidentally broken by a library upgrade
   that was done for a minor security issue.
 
 ## v1.4.3 - \[2025-09-29\]
@@ -94,7 +122,7 @@ Changes since 1.4.3
   This is the default format (both for Docker and OCI) when using `nerdctl save`.
 - Test if docker-archive is actually an oci-archive (since Docker version 25),
   and if it is oci then use the OCI parser to avoid bugs in the Docker parser.
-  Save the daemon-daemon references to a temporary docker-archive, to benefit
+  Save the docker-daemon references to a temporary docker-archive, to benefit
   from the same improvements also for those references. Parse as oci-archive.
 
 ## v1.4.0 - \[2025-03-18\]

@@ -55,7 +55,7 @@ func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (co
 		getPwUID = customLookup.GetPwUID
 	}
 
-	uid32, err := safecast.ToUint32(uid)
+	uid32, err := safecast.Convert[uint32](uid)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (co
 		if entry.Uid() == uid {
 			userExists = true
 			// If user already exists in container, update their homedir
-			gid32, err := safecast.ToUint32(entry.Gid())
+			gid32, err := safecast.Convert[uint32](entry.Gid())
 			if err != nil {
 				return nil, err
 			}
