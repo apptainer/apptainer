@@ -73,6 +73,8 @@ type launchOptions struct {
 
 	// Env is a map of name=value env vars to set in the container.
 	Env map[string]string
+	// NoEnv is a list of environment variables to not import from host.
+	NoEnv []string
 	// EnvFiles contains filenames to read container env vars from.
 	EnvFiles []string
 	// CleanEnv starts the container with a clean environment, excluding host env vars.
@@ -309,9 +311,14 @@ func OptContainLibs(cl []string) Option {
 // envFiles is a slice of paths to files container environment variables to set
 // env is a map of name=value env vars to set.
 // clean removes host variables from the container environment.
-func OptEnv(env map[string]string, envFiles []string, clean bool) Option {
+func OptEnv(env map[string]string,
+	noEnv []string,
+	envFiles []string,
+	clean bool,
+) Option {
 	return func(lo *launchOptions) error {
 		lo.Env = env
+		lo.NoEnv = noEnv
 		lo.EnvFiles = envFiles
 		lo.CleanEnv = clean
 		return nil

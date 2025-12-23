@@ -1078,7 +1078,11 @@ func (l *Launcher) setEnvVars(ctx context.Context, args []string) error {
 	// Copy and cache environment
 	environment := os.Environ()
 	// Clean environment
-	apptainerEnv := env.SetContainerEnv(l.generator, environment, l.cfg.CleanEnv, l.engineConfig.GetHomeDest())
+	apptainerEnv := env.SetContainerEnv(l.generator,
+		environment,
+		l.cfg.NoEnv,
+		l.cfg.CleanEnv,
+		l.engineConfig.GetHomeDest())
 	l.engineConfig.SetApptainerEnv(apptainerEnv)
 	return nil
 }
