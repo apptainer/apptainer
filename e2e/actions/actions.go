@@ -2964,6 +2964,14 @@ func (c actionTests) actionNoMount(t *testing.T) {
 			testContained: true,
 			exit:          0,
 		},
+		{
+			name:          "/etc/resolv.conf",
+			noMount:       "/etc/resolv.conf",
+			noMatch:       "on /etc/resolv.conf",
+			testDefault:   true,
+			testContained: true,
+			exit:          0,
+		},
 		// bind-paths should disable all of the bind path mounts - including both defaults
 		{
 			name:          "binds-paths-hosts",

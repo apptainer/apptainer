@@ -12,7 +12,6 @@ package apptainer
 import (
 	"context"
 	"fmt"
-	"io"
 	"os"
 	osuser "os/user"
 	"path/filepath"
@@ -2681,20 +2680,64 @@ func (c *container) addResolvConfMount(system *mount.System) error {
 	resolvConf := "/etc/resolv.conf"
 
 	if c.engine.EngineConfig.File.ConfigResolvConf {
+		skipBinds := c.engine.EngineConfig.GetSkipBinds()
+		if slice.ContainsString(skipBinds, resolvConf) || slice.ContainsString(skipBinds, "*") {
+			sylog.Verbosef("Skipping bind of the host's %s", resolvConf)
+			return nil
+		}
+
 		var err error
 		var content []byte
+		dest := resolvConf
+		flags := uintptr(syscall.MS_BIND)
 
 		dns := c.engine.EngineConfig.GetDNS()
 
 		if dns == "" {
-			r, err := os.Open(resolvConf)
+			var fi os.FileInfo
+			fi, err = os.Lstat(resolvConf)
 			if err != nil {
 				return err
 			}
-			content, err = io.ReadAll(r)
-			r.Close()
-			if err != nil {
-				return err
+			done := false
+			if fi.Mode()&os.ModeSymlink != 0 {
+				target, err := os.Readlink(resolvConf)
+				if err != nil {
+					return err
+				}
+				// If the symlink points to a file under /run, for example one made by
+				// systemd-resolved, then copy the symlink and bind in the parent
+				// directory of the file it points to as well.
+				if target[0:5] == "/run/" {
+					dst := filepath.Join(c.session.Layer.Dir(), resolvConf)
+					if err = c.session.AddSymlink(dst, target); err != nil {
+						return fmt.Errorf("failed to create symlink %s", dst)
+					}
+					sylog.Debugf("Adding symlink %s to %s at %s", resolvConf, target, dst)
+
+					dest = filepath.Dir(target)
+					if err = c.session.AddDir(dest); err != nil {
+						return err
+					}
+					sylog.Debugf("Adding %s to mount list\n", dest)
+					err = system.Points.AddBind(mount.FilesTag, dest, dest, flags)
+					if err != nil {
+						return fmt.Errorf("unable to add %s to mount list: %s", dest, err)
+					}
+					c.session.OverrideDir(dest, dest)
+
+					done = true
+				}
+			}
+			if !done {
+				// regular bind mount
+				sylog.Debugf("Adding %s to mount list\n", resolvConf)
+				err = system.Points.AddBind(mount.FilesTag, resolvConf, resolvConf, flags)
+				if err != nil {
+					return fmt.Errorf("unable to add %s to mount list: %s", resolvConf, err)
+				}
+
+				err = system.Points.AddRemount(mount.FilesTag, resolvConf, flags)
 			}
 		} else {
 			dns = strings.ReplaceAll(dns, " ", "")
@@ -2702,16 +2745,16 @@ func (c *container) addResolvConfMount(system *mount.System) error {
 			if err != nil {
 				return err
 			}
-		}
-		if err := c.session.AddFile(resolvConf, content); err != nil {
-			sylog.Warningf("failed to add resolv.conf session file: %s", err)
-		}
-		sessionFile, _ := c.session.GetPath(resolvConf)
+			if err = c.session.AddFile(resolvConf, content); err != nil {
+				sylog.Warningf("failed to add resolv.conf session file: %s", err)
+			}
+			sessionFile, _ := c.session.GetPath(resolvConf)
 
-		sylog.Debugf("Adding %s to mount list\n", resolvConf)
-		err = system.Points.AddBind(mount.FilesTag, sessionFile, resolvConf, syscall.MS_BIND)
+			sylog.Debugf("Adding %s made from %s to mount list\n", resolvConf, dns)
+			err = system.Points.AddBind(mount.FilesTag, sessionFile, resolvConf, flags)
+		}
 		if err != nil {
-			return fmt.Errorf("unable to add %s to mount list: %s", resolvConf, err)
+			return fmt.Errorf("unable to add %s to mount list: %s", dest, err)
 		}
 		sylog.Verbosef("Default mount: /etc/resolv.conf:/etc/resolv.conf")
 	} else {
