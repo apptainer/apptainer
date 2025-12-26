@@ -338,7 +338,11 @@ func (e *EngineOperations) prepareUserCaps(enforced bool) error {
 // based on capability/configuration files and requested capabilities.
 func (e *EngineOperations) prepareRootCaps() error {
 	commonCaps := make([]string, 0)
-	defaultCapabilities := e.EngineConfig.File.RootDefaultCapabilities
+
+	defaultCapabilities := "full"
+	if !namespaces.IsUnprivileged() {
+		defaultCapabilities = e.EngineConfig.File.RootDefaultCapabilities
+	}
 
 	uid := e.EngineConfig.GetTargetUID()
 	gids := e.EngineConfig.GetTargetGID()
