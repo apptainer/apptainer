@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2022-2023, Sylabs Inc. All rights reserved.
+// Copyright (c) 2022-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -158,6 +158,11 @@ type launchOptions struct {
 	ShareNSMode       bool   // whether running in sharens mode
 	ShareNSFd         int    // fd opened in sharens mode
 	RunscriptTimeout  string // runscript timeout
+
+	// Devices lists fully-qualified CDI device names to make available in the container.
+	Devices []string
+	// CdiDirs lists directories in which CDI should look for device definition JSON files.
+	CdiDirs []string
 
 	// IntelHpu enables Intel(R) Gaudi accelerator support.
 	IntelHpu bool
@@ -607,6 +612,22 @@ func OptShareNSFd(fd int) Option {
 func OptRunscriptTimeout(timeout string) Option {
 	return func(lo *launchOptions) error {
 		lo.RunscriptTimeout = timeout
+		return nil
+	}
+}
+
+// OptDevice sets the list of fully-qualified CDI device names.
+func OptDevice(devices []string) Option {
+	return func(lo *launchOptions) error {
+		lo.Devices = devices
+		return nil
+	}
+}
+
+// OptCdiDirs sets the list of directories in which CDI should look for device definition JSON files.
+func OptCdiDirs(dirs []string) Option {
+	return func(lo *launchOptions) error {
+		lo.CdiDirs = dirs
 		return nil
 	}
 }
