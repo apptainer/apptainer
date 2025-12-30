@@ -119,7 +119,7 @@ func GetFakeBinds(fakerootPath string) ([]string, error) {
 	for idx := range environ {
 		if strings.HasPrefix(environ[idx], "LD_LIBRARY_PATH=") {
 			// Remove any incoming LD_LIBRARY_PATH
-			environ[idx] = "LD_LIBRARY_PREFIX="
+			environ[idx] = "LD_LIBRARY_PATH="
 		} else if strings.HasPrefix(environ[idx], "PATH=") &&
 			environ[idx] != "PATH=" {
 			hasPath = true

@@ -12,6 +12,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
   Also add the image name (ref) of the image from "docker", with registry and tag.
   This is useful for traceability, when using `docker.io` or a tag like `latest`.
   Unfortunately the feature does not work with "docker-archive" or "docker-daemon".
+- Whenever libraries are bound in to `/.singularity.d/libs` (such as with
+  GPU options like `--nv`) and `LD_LIBRARY_PATH` is not pre-set by
+  `APPTAINERENV_LD_LIBRARY_PATH`, add the container's default library search
+  directories to `LD_LIBRARY_PATH` ahead of `/.singularity.d/libs`.
+  This makes libraries pre-installed in the container take precedence over
+  libraries bound in from the host.  Works with glibc-based container operating
+  systems and reduces the chances of mismatched glibc versions.
 - Change the default `arm` variant to `v7`, and stop using the GOARM environment
   variable. The variables GOOS, GOARCH and GOARM are only used when building.
 - Add new bootstrap `buildkit:` (and `buildkit:` URL) for building SIF images

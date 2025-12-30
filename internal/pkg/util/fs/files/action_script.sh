@@ -82,6 +82,25 @@ restore_env() {
 clear_env
 shopt -s expand_aliases
 
+# If /.singularity.d/libs isn't empty we want it to be searched last so it
+# doesn't hide libraries in the container.  The trouble is that LD_LIRARY_PATH
+# is always searched before system libraries.  So if LD_LIBRARY_PATH is also
+# empty, fill it with the default system library directories.  Then 99-base.sh
+# will append /.singularity.d/libs to it.
+if [ -z "${LD_LIBRARY_PATH:-}" ] && [ "$(cd /.singularity.d/libs && echo *)" != "*" ]; then
+    # Only glibc's ldconfig lists these directories; musl from alpine, for
+    # example, prints nothing, but this is mostly for GPU libraries and
+    # those require glibc anyway.
+    __dirs__="$( (/sbin/ldconfig -Nv | /bin/sed '/^\t/d;s/:.*//') 2>/dev/null )"
+    if [ -n "$__dirs__" ]; then
+        # change newlines into spaces and spaces into colons
+        # shellcheck disable=SC2116
+        __dirs__="$(echo $__dirs__)"
+        export LD_LIBRARY_PATH="${__dirs__// /:}"
+        sylog debug "Setting LD_LIBRARY_PATH to $LD_LIBRARY_PATH"
+    fi
+fi
+
 if test -d "/.singularity.d/env"; then
     for __script__ in /.singularity.d/env/*.sh; do
         if test -f "${__script__}"; then
@@ -136,7 +155,7 @@ restore_env
 # If we were called through a script and PS1 is empty this
 # gives a confusing silent prompt. Force a PS1 if it's empty.
 if test -z "${PS1:-}"; then
-	export PS1="Apptainer> "
+    export PS1="Apptainer> "
 fi
 
 # See https://github.com/apptainer/singularity/issues/2721,
@@ -176,7 +195,7 @@ run)
     if test -n "${SINGULARITY_APPNAME:-}"; then
         if test -x "/scif/apps/${SINGULARITY_APPNAME:-}/scif/runscript"; then
             exec "/scif/apps/${SINGULARITY_APPNAME:-}/scif/runscript" "$@"
-		elif test -x "/scif/apps/singularity/scif/test"; then
+        elif test -x "/scif/apps/singularity/scif/test"; then
             exec "/scif/apps/singularity/scif/test" "$@"
         fi
         sylog error "no runscript for contained app: ${SINGULARITY_APPNAME:-}"
@@ -196,7 +215,7 @@ test)
     if test -n "${SINGULARITY_APPNAME:-}"; then
         if test -x "/scif/apps/${SINGULARITY_APPNAME:-}/scif/test"; then
             exec "/scif/apps/${SINGULARITY_APPNAME:-}/scif/test" "$@"
-		elif test -x "/scif/apps/singularity/scif/test"; then
+        elif test -x "/scif/apps/singularity/scif/test"; then
             exec "/scif/apps/singularity/scif/test" "$@"
         fi
         sylog error "No tests for contained app: ${SINGULARITY_APPNAME:-}"
@@ -211,7 +230,7 @@ start)
     if test -n "${SINGULARITY_APPNAME:-}"; then
         if test -x "/scif/apps/${SINGULARITY_APPNAME:-}/scif/startscript"; then
             exec "/scif/apps/${SINGULARITY_APPNAME:-}/scif/startscript" "$@"
-		elif test -x "/scif/apps/singularity/scif/test"; then
+        elif test -x "/scif/apps/singularity/scif/test"; then
             exec "/scif/apps/singularity/scif/test" "$@"
         fi
         sylog error "No startscript for contained app: ${SINGULARITY_APPNAME:-}"
