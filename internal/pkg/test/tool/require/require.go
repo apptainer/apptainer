@@ -30,6 +30,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/network"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/apptainer/apptainer/pkg/util/slice"
+	"github.com/google/uuid"
 	"github.com/opencontainers/cgroups"
 )
 
@@ -102,8 +103,9 @@ func Network(t *testing.T) {
 		cniPath := new(network.CNIPath)
 		cniPath.Conf = filepath.Join(buildcfg.SYSCONFDIR, "apptainer", "network")
 		cniPath.Plugin = filepath.Join(buildcfg.LIBEXECDIR, "apptainer", "cni")
+		containerID := "apptainer-e2e-" + uuid.New().String()
 
-		setup, err := network.NewSetup([]string{"bridge"}, "_test_", nsPath, cniPath)
+		setup, err := network.NewSetup([]string{"bridge"}, containerID, nsPath, cniPath)
 		if err != nil {
 			logFn(err)
 			return
