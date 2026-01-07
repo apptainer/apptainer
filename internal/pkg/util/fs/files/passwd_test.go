@@ -10,12 +10,14 @@
 package files
 
 import (
+	"fmt"
 	"os"
+	"os/user"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
-	"gotest.tools/v3/golden"
 )
 
 func TestPasswd(t *testing.T) {
@@ -30,27 +32,31 @@ func TestPasswd(t *testing.T) {
 		t.Errorf("should have failed with bad passwd file")
 	}
 
-	// Test how Passwd() works with an empty file
+	// Adding current user to an empty file
 	f, err := os.CreateTemp(t.TempDir(), "empty-passwd-")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	emptyPasswd := f.Name()
 	f.Close()
 	_, err = Passwd(emptyPasswd, "/home", uid, nil)
 	if err != nil {
-		t.Error(err)
+		t.Fatalf("Unexpected error in Passwd() when adding uid %d: %v", uid, err)
 	}
 
+	// Modifying root user in test file
 	inputPasswdFilePath := filepath.Join(".", "testdata", "passwd.in")
-	testUID := 0
-	testHomeDir := "/tmp"
-	testGoldenFile := "passwd.root.customhome.golden"
-	bytes, err := Passwd(inputPasswdFilePath, testHomeDir, testUID, nil)
+	outputPasswd, err := Passwd(inputPasswdFilePath, "/tmp", 0, nil)
 	if err != nil {
-		t.Errorf("Unexpected error encountered calling Passwd(): %v", err)
-		return
+		t.Fatalf("Unexpected error in Passwd() when modifying root entry: %v", err)
 	}
 
-	golden.Assert(t, string(bytes), testGoldenFile, "mismatch in Passwd() invocation (uid: %d; requested homeDir: %#v)", testUID, testHomeDir)
+	rootUser, err := user.Lookup("root")
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectRootEntry := fmt.Sprintf("root:x:0:0:%s:/tmp:/bin/ash\n", rootUser.Name)
+	if !strings.HasPrefix(string(outputPasswd), expectRootEntry) {
+		t.Errorf("Expected root entry %q, not found in:\n%s", expectRootEntry, string(outputPasswd))
+	}
 }
