@@ -1,5 +1,5 @@
 BootStrap: yum
-OSVersion: 40
+OSVersion: 42
 MirrorURL: http://dfw.mirror.rackspace.com/fedora/releases/%{OSVERSION}/Everything/aarch64/os/
 Include: fedora-release-container dnf
 Setopt: install_weak_deps=False
