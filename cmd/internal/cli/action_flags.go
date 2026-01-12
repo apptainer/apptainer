@@ -567,7 +567,7 @@ var actionNoPrivsFlag = cmdline.Flag{
 	Value:        &noPrivs,
 	DefaultValue: false,
 	Name:         "no-privs",
-	Usage:        "drop all privileges from root user in container)",
+	Usage:        "drop all privileges from root user in container",
 	EnvKeys:      []string{"NO_PRIVS"},
 }
 
