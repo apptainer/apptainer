@@ -330,6 +330,90 @@ func (c ctx) apptainerEnvOption(t *testing.T) {
 	}
 }
 
+func (c ctx) apptainerNoEnvOption(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+	image := e2e.BusyboxSIF(t)
+
+	tests := []struct {
+		name     string
+		noEnvOpt []string
+		hostEnv  []string
+		matchEnv string
+		matchVal string
+	}{
+		{
+			name:     "NormalImport",
+			hostEnv:  []string{"FOO=bar", "BAR=foo"},
+			matchEnv: "FOO",
+			matchVal: "bar",
+		},
+		{
+			name:     "NoEnvAlone",
+			noEnvOpt: []string{"FOO"},
+			hostEnv:  []string{"FOO=bar", "BAR=foo"},
+			matchEnv: "FOO",
+			matchVal: "",
+		},
+		{
+			name:     "NoEnvSecond",
+			noEnvOpt: []string{"BAR", "FOO"},
+			hostEnv:  []string{"FOO=bar", "BAR=foo"},
+			matchEnv: "FOO",
+			matchVal: "",
+		},
+		{
+			name: "NoEnvViaEnv",
+			hostEnv: []string{
+				"FOO=bar",
+				"BAR=foo",
+				"APPTAINER_NOENV=FOO,BAR",
+			},
+			matchEnv: "FOO",
+			matchVal: "",
+		},
+		{
+			name:     "OverridePermitted",
+			noEnvOpt: []string{"BAR", "FOO"},
+			hostEnv: []string{
+				"FOO=bar",
+				"BAR=foo",
+				"APPTAINERENV_FOO=Bar",
+			},
+			matchEnv: "FOO",
+			matchVal: "Bar",
+		},
+		{
+			name:     "OverrideNotPermitted",
+			noEnvOpt: []string{"APPTAINER_APPNAME"},
+			hostEnv: []string{
+				"APPTAINERENV_APPTAINER_APPNAME=foo",
+			},
+			matchEnv: "APPTAINER_APPNAME",
+			matchVal: "",
+		},
+	}
+
+	for _, tt := range tests {
+		args := make([]string, 0)
+		if tt.noEnvOpt != nil {
+			args = append(args, "--no-env", strings.Join(tt.noEnvOpt, ","))
+		}
+		args = append(args, image, "/bin/sh", "-c", "echo \"${"+tt.matchEnv+"}\"")
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(e2e.UserProfile),
+			e2e.WithCommand("exec"),
+			e2e.WithEnv(tt.hostEnv),
+			e2e.WithArgs(args...),
+			e2e.ExpectExit(
+				0,
+				e2e.ExpectOutput(e2e.ExactMatch, tt.matchVal),
+			),
+		)
+	}
+}
+
 func (c ctx) apptainerEnvFile(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
@@ -671,6 +755,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	return testhelper.Tests{
 		"environment manipulation": c.apptainerEnv,
 		"environment option":       c.apptainerEnvOption,
+		"--no-env option":          c.apptainerNoEnvOption,
 		"environment file":         c.apptainerEnvFile,
 		"env eval":                 c.apptainerEnvEval,
 		"issue 5057":               c.issue5057,                  // https://github.com/apptainer/singularity/issues/5057

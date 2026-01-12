@@ -744,7 +744,7 @@ func TestSetContainerEnv(t *testing.T) {
 					sylog.SetWriter(oldWriter)
 					sylog.SetLevel(oldLevel, true)
 				}()
-				senv = SetContainerEnv(generator, tc.env, tc.cleanEnv, tc.homeDest)
+				senv = SetContainerEnv(generator, tc.env, []string{}, tc.cleanEnv, tc.homeDest)
 			}()
 			for _, requiredOutput := range tc.outputNeeded {
 				if !strings.Contains(output.String(), requiredOutput) {

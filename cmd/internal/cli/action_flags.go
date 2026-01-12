@@ -35,6 +35,7 @@ var (
 	containLibsPath   []string
 	fuseMount         []string
 	apptainerEnv      map[string]string
+	apptainerNoEnv    []string
 	apptainerEnvFiles []string
 	noMount           []string
 	dmtcpLaunch       string
@@ -609,6 +610,16 @@ var actionEnvFlag = cmdline.Flag{
 	Usage:        "pass environment variable to contained process",
 }
 
+// --no-env
+var actionNoEnvFlag = cmdline.Flag{
+	ID:           "actionNoEnvFlag",
+	Value:        &apptainerNoEnv,
+	DefaultValue: []string{},
+	Name:         "no-env",
+	Usage:        "list of environment variables to block from import into container from host environment",
+	EnvKeys:      []string{"NOENV"},
+}
+
 // --env-file
 var actionEnvFileFlag = cmdline.Flag{
 	ID:           "actionEnvFileFlag",
@@ -943,6 +954,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&dockerPasswordFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&dockerUsernameFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionEnvFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionNoEnvFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionEnvFileFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionNoUmaskFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionNoEvalFlag, actionsInstanceCmd...)

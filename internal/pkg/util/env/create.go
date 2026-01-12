@@ -125,7 +125,9 @@ func warnDeprecatedEnvUsage(hostEnvs []string) {
 }
 
 // SetContainerEnv cleans environment variables before running the container.
-func SetContainerEnv(g *generate.Generator, hostEnvs []string, cleanEnv bool, homeDest string) map[string]string {
+func SetContainerEnv(g *generate.Generator, hostEnvs []string, noEnv []string,
+	cleanEnv bool, homeDest string,
+) map[string]string {
 	// allow override with APPTAINERENV_LANG
 	if cleanEnv {
 		g.SetProcessEnv("LANG", "C")
@@ -135,6 +137,15 @@ func SetContainerEnv(g *generate.Generator, hostEnvs []string, cleanEnv bool, ho
 	// determines the precedence between various prefixes
 	warnDeprecatedEnvUsage(hostEnvs)
 	envKeys := overridesForContainerEnv(g, hostEnvs)
+
+	// Add the noEnv keys to the list of variables to omit.
+	// Allow them to be overridden if they're newly added.
+	for _, noenv := range noEnv {
+		if _, ok := alwaysOmitKeys[noenv]; !ok {
+			sylog.Debugf("Adding %s to list of variables to skip forwarding", noenv)
+			alwaysOmitKeys[noenv] = true
+		}
+	}
 
 EnvKeys:
 	for _, env := range hostEnvs {
@@ -162,7 +173,7 @@ EnvKeys:
 		}
 
 		// non prefixed environment variables
-		if mustAddToHostEnv(e[0], cleanEnv) {
+		if mustAddToProcessEnv(e[0], cleanEnv) {
 			if value, ok := envKeys[e[0]]; ok {
 				if value != e[1] {
 					sylog.Debugf("Environment variable %s already has value [%s], will not forward new value [%s] from parent process environment", e[0], value, e[1])
@@ -185,9 +196,9 @@ EnvKeys:
 	return envKeys
 }
 
-// mustAddToHostEnv processes given key and returns if the environment
+// mustAddToProcessEnv processes given key and returns if the environment
 // variable should be added to the container or not.
-func mustAddToHostEnv(key string, cleanEnv bool) bool {
+func mustAddToProcessEnv(key string, cleanEnv bool) bool {
 	if _, ok := alwaysPassKeys[key]; ok {
 		return true
 	}
