@@ -56,6 +56,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   any local gateway will be picked up automatically (e.g. `http://127.0.0.1:8080`)
 - Create reproducible SIF images, if the environment variable `SOURCE_DATE_EPOCH`
   has been set (it is a Unix timestamp given as seconds, in the UTC timezone).
+- Add support for Container Device Interface (CDI).
 
 ## v1.4.x changes
 

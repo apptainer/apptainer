@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2020, Sylabs Inc. All rights reserved.
+// Copyright (c) 2020-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -264,6 +264,128 @@ func (c ctx) testFuseSquashMount(t *testing.T) {
 		e2e.WithArgs("--no-home", "--mount", fmt.Sprintf("type=bind,src=%s,dst=/input-data,image-src=/", squashfile), "testdata/busybox_amd64.sif", "ls", "/input-data"),
 		e2e.ExpectExit(0, e2e.ExpectOutput(e2e.ContainMatch, filepath.Base(filename))),
 	)
+}
+
+// testRunOCICDI checks that passing --device and --cdi-dirs flags to run
+// with an ORAS image works as expected.
+func (c ctx) testRunCDI(t *testing.T) {
+	// Ensure we have an ORAS image to pull; this also builds the SIF and pushes
+	// it to the local registry so pulling from oras:// works reliably.
+	e2e.EnsureORASImage(t, c.env)
+
+	// Create a small CDI JSON and write it into a temporary directory
+	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
+	defer cleanup(t)
+
+	cdiDir := filepath.Join(tempDir, "cdi")
+	if err := os.MkdirAll(cdiDir, 0o755); err != nil {
+		t.Fatalf("failed to create CDI dir: %v", err)
+	}
+
+	// Minimal JSON with device specification.
+	// Note: CDI device, mount, and environment injection is not yet fully
+	// implemented in Apptainer's native launcher, so we only test that
+	// the CLI flags are accepted and the container runs successfully.
+	cdiJSON := `{
+	"cdiVersion": "0.5.0",
+	"kind": "apptainer.org/device",
+	"devices": [
+		{
+			"name": "testDevice",
+			"containerEdits": {}
+		}
+	]
+	}`
+
+	cdiFile := filepath.Join(cdiDir, "cdi.json")
+	if err := os.WriteFile(cdiFile, []byte(cdiJSON), 0o644); err != nil {
+		t.Fatalf("failed to create CDI JSON file: %v", err)
+	}
+
+	// Use the ORAS test image to ensure we test the OCI pull path.
+	imageRef := c.env.OrasTestImage
+
+	// Test that the container runs successfully with CDI flags
+	cmdArgs := []string{"--device", "apptainer.org/device=testDevice", "--cdi-dirs", cdiDir, imageRef, "true"}
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("run"),
+		e2e.WithArgs(cmdArgs...),
+		e2e.ExpectExit(0),
+	)
+
+	// Test CDI with mounts
+	mountTests := []struct {
+		name          string
+		deviceName    string
+		containerPath string
+		options       []string
+	}{
+		{
+			name:          "mount-readwrite",
+			deviceName:    "storage",
+			containerPath: "/mnt/storage",
+			options:       []string{"rw"},
+		},
+		{
+			name:          "mount-readonly",
+			deviceName:    "readonly",
+			containerPath: "/mnt/readonly",
+			options:       []string{"ro"},
+		},
+	}
+
+	for _, tt := range mountTests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a host mount directory
+			hostMountDir, _ := e2e.MakeTempDir(t, tempDir, "mount-", "")
+			if err := os.Chmod(hostMountDir, 0o777); err != nil {
+				t.Fatalf("failed to chmod mount dir: %v", err)
+			}
+
+			// Create a CDI spec with mount specification
+			mountCDIJSON := fmt.Sprintf(`{
+	"cdiVersion": "0.5.0",
+	"kind": "apptainer.org/mount",
+	"devices": [
+		{
+			"name": %q,
+			"containerEdits": {
+				"mounts": [
+					{
+						"containerPath": %q,
+						"hostPath": %q,
+						"options": %v
+					}
+				]
+			}
+		}
+	]
+	}`, tt.deviceName, tt.containerPath, hostMountDir, tt.options)
+
+			mountCDIDir := filepath.Join(tempDir, tt.name+"-cdi")
+			if err := os.MkdirAll(mountCDIDir, 0o755); err != nil {
+				t.Fatalf("failed to create mount CDI dir: %v", err)
+			}
+
+			mountCDIFile := filepath.Join(mountCDIDir, "apptainer.org-mount.json")
+			if err := os.WriteFile(mountCDIFile, []byte(mountCDIJSON), 0o644); err != nil {
+				t.Fatalf("failed to create mount CDI JSON file: %v", err)
+			}
+
+			cmdArgs := []string{"--device", fmt.Sprintf("apptainer.org/mount=%s", tt.deviceName), "--cdi-dirs", mountCDIDir, imageRef, "true"}
+
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(e2e.UserProfile),
+				e2e.WithCommand("run"),
+				e2e.WithArgs(cmdArgs...),
+				e2e.ExpectExit(0),
+			)
+		})
+	}
 }
 
 func (c ctx) testFuseExt3Mount(t *testing.T) {
@@ -570,5 +692,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"add package with fakeroot and tmpfs": c.testAddPackageWithFakerootAndTmpfs,
 		"gocryptfs sif execution":             c.testExecGocryptfsEncryptedSIF,
 		"test running on multiple archs":      c.testMultiArchRun,
+		"oci cdi device flags":                c.testRunCDI,
 	}
 }

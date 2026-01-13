@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -37,6 +37,8 @@ type EngineConfig struct {
 	Exec           bool             `json:"exec"`
 	SystemdCgroups bool             `json:"systemdCgroups"`
 	Cgroups        *cgroups.Manager `json:"-"`
+	Devices        []string         `json:"devices"`
+	CdiDirs        []string         `json:"cdiDirs"`
 
 	sync.Mutex `json:"-"`
 	State      ociruntime.State `json:"state"`
@@ -109,4 +111,24 @@ func (e *EngineConfig) SetSystemdCgroups(systemd bool) {
 // SetSystemdCgroups gets whether to manage cgroups with systemd.
 func (e *EngineConfig) GetSystemdCgroups() bool {
 	return e.SystemdCgroups
+}
+
+// SetDevices sets the list of fully-qualified CDI device names.
+func (e *EngineConfig) SetDevices(devices []string) {
+	e.Devices = devices
+}
+
+// GetDevices returns the list of fully-qualified CDI device names.
+func (e *EngineConfig) GetDevices() []string {
+	return e.Devices
+}
+
+// SetCdiDirs sets the list of directories in which CDI should look for device definition JSON files.
+func (e *EngineConfig) SetCdiDirs(dirs []string) {
+	e.CdiDirs = dirs
+}
+
+// GetCdiDirs returns the list of directories in which CDI should look for device definition JSON files.
+func (e *EngineConfig) GetCdiDirs() []string {
+	return e.CdiDirs
 }
