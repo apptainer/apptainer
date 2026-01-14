@@ -19,6 +19,7 @@ import (
 	"github.com/apptainer/apptainer/docs"
 	build_oci "github.com/apptainer/apptainer/internal/pkg/build/oci"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
+	"github.com/apptainer/apptainer/internal/pkg/client/ipfs"
 	"github.com/apptainer/apptainer/internal/pkg/client/library"
 	"github.com/apptainer/apptainer/internal/pkg/client/net"
 	"github.com/apptainer/apptainer/internal/pkg/client/oci"
@@ -44,6 +45,8 @@ const (
 	HTTPSProtocol = "https"
 	// OrasProtocol holds the oras URI.
 	OrasProtocol = "oras"
+	// IPFSProtocol holds the ipfs URI.
+	IPFSProtocol = "ipfs"
 )
 
 var (
@@ -296,6 +299,11 @@ func pullRun(cmd *cobra.Command, args []string) {
 		_, err = oras.PullToFile(ctx, imgCache, pullTo, pullFrom, ociAuth, noHTTPS, reqAuthFile, pullSandbox)
 		if err != nil {
 			sylog.Fatalf("While pulling image from oci registry: %v", err)
+		}
+	case IPFSProtocol:
+		_, err := ipfs.PullToFile(ctx, imgCache, pullTo, pullFrom, pullSandbox)
+		if err != nil {
+			sylog.Fatalf("While pulling from image from ipfs: %v\n", err)
 		}
 	case HTTPProtocol, HTTPSProtocol:
 		_, err := net.PullToFile(ctx, imgCache, pullTo, pullFrom, pullSandbox)
