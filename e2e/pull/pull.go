@@ -665,6 +665,56 @@ func (c ctx) testPullUmask(t *testing.T) {
 	}
 }
 
+// Pulling an ipfs image (ipfs://cid) should contact the http gateway (/ipfs/cid) $IPFS_GATEWAY
+// See <https://docs.ipfs.tech/concepts/ipfs-gateway/> for more details about the IPFS Gateway
+func (c ctx) testPullIpfsGateway(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	// the actual CID does not matter for this test, always return the "test.sif" that we built
+	// See <https://docs.ipfs.tech/concepts/content-addressing/> for more details about CID (v1)
+	cid := "bafybeidumcl352ujzv4lzwtd2oo6d3ubkk7esb543w6ojzyelvsde3dgzm" // alpine_3.15.0.sif cid
+	dir := "bafybeiglo3boaojpkw32hwksi2hatj4winxf2cvwaivn66pjc7up2zrze4" // --wrap-with-directory
+
+	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "ipfs-", "")
+	defer cleanup(t)
+	pullPath := filepath.Join(tmpDir, "test.sif")
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Logf("ipfs gateway request: %s\n", r.URL.String())
+		if r.URL.Path == fmt.Sprintf("/ipfs/%s", cid) ||
+			strings.HasPrefix(r.URL.Path, fmt.Sprintf("/ipfs/%s/", dir)) {
+			http.ServeFile(w, r, c.env.ImagePath)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer srv.Close()
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithEnv(append(os.Environ(), fmt.Sprintf("IPFS_GATEWAY=%s", srv.URL))),
+		e2e.WithArgs(pullPath, fmt.Sprintf("ipfs://%s", cid)),
+		e2e.ExpectExit(0),
+	)
+
+	// pull the same file again, using the file name
+
+	if err := os.Remove(pullPath); err != nil {
+		t.Fatalf("unable to remove sif file: %s", err)
+	}
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithEnv(append(os.Environ(), fmt.Sprintf("IPFS_GATEWAY=%s", srv.URL))),
+		e2e.WithArgs(pullPath, fmt.Sprintf("ipfs://%s/alpine_3.15.0.sif", dir)),
+		e2e.ExpectExit(0),
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -684,6 +734,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 			t.Run("concurrencyConfig", c.testConcurrencyConfig)
 			t.Run("concurrentPulls", c.testConcurrentPulls)
 		},
+		"ipfs":            c.testPullIpfsGateway,
 		"issueSylabs1087": c.issueSylabs1087,
 		// Manipulates umask for the process, so must be run alone to avoid
 		// causing permission issues for other tests.
