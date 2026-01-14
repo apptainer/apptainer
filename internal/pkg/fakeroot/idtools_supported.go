@@ -72,7 +72,7 @@ func readSubid(user *user.User, isUser bool) ([]*Entry, error) {
 		}
 	}
 	if nRanges < 0 {
-		return nil, errors.New("cannot read subids")
+		return nil, fmt.Errorf("subid_get_[ug]id_ranges call failed: %v", nRanges)
 	}
 	defer C.free(unsafe.Pointer(cRanges))
 
