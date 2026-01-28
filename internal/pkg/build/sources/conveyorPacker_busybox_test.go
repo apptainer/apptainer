@@ -10,7 +10,6 @@
 package sources_test
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -56,7 +55,7 @@ func TestBusyBoxConveyor(t *testing.T) {
 
 	c := &sources.BusyBoxConveyor{}
 
-	err = c.Get(context.Background(), b)
+	err = c.Get(t.Context(), b)
 	// clean up tmpfs since assembler isn't called
 	defer c.CleanUp()
 	if err != nil {
@@ -92,14 +91,14 @@ func TestBusyBoxPacker(t *testing.T) {
 
 	cp := &sources.BusyBoxConveyorPacker{}
 
-	err = cp.Get(context.Background(), b)
+	err = cp.Get(t.Context(), b)
 	// clean up tmpfs since assembler isn't called
 	defer cp.CleanUp()
 	if err != nil {
 		t.Fatalf("failed to Get from %s: %v\n", busyBoxDef, err)
 	}
 
-	_, err = cp.Pack(context.Background())
+	_, err = cp.Pack(t.Context())
 	if err != nil {
 		t.Fatalf("failed to Pack from %s: %v\n", busyBoxDef, err)
 	}

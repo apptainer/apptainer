@@ -10,7 +10,6 @@
 package sources_test
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -48,7 +47,7 @@ func TestShubConveyor(t *testing.T) {
 
 	cp := &sources.ShubConveyorPacker{}
 
-	err = cp.Get(context.Background(), b)
+	err = cp.Get(t.Context(), b)
 	// clean up tmpfs since assembler isn't called
 	defer cp.CleanUp()
 	if err != nil {
@@ -75,14 +74,14 @@ func TestShubPacker(t *testing.T) {
 
 	scp := &sources.ShubConveyorPacker{}
 
-	err = scp.Get(context.Background(), b)
+	err = scp.Get(t.Context(), b)
 	// clean up tmpfs since assembler isn't called
 	defer scp.CleanUp()
 	if err != nil {
 		t.Fatalf("failed to Get from %s: %v\n", shubURI, err)
 	}
 
-	_, err = scp.Pack(context.Background())
+	_, err = scp.Pack(t.Context())
 	if err != nil {
 		t.Fatalf("failed to Pack from %s: %v\n", shubURI, err)
 	}

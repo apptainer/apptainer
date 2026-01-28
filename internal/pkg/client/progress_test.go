@@ -11,7 +11,6 @@ package client
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"testing"
 
@@ -20,7 +19,7 @@ import (
 
 func TestProgressCallback(t *testing.T) {
 	const input = "Hello World!"
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// Check the progress bar, or invisible copy-through, works at all sylog
 	// levels

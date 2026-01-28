@@ -11,7 +11,6 @@ package require
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -80,7 +79,7 @@ func Network(t *testing.T) {
 			t.Logf("Could not use network: %s", err)
 		}
 
-		ctx := context.TODO()
+		ctx := t.Context()
 
 		cmd := exec.Command("/bin/cat")
 		cmd.SysProcAttr = &syscall.SysProcAttr{}

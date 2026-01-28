@@ -10,7 +10,6 @@
 package starter
 
 import (
-	"context"
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine"
@@ -57,7 +56,7 @@ func TestCreateContainer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			go createContainer(context.Background(), tt.rpcSocket, tt.containerPid, tt.engine, fatalChan)
+			go createContainer(t.Context(), tt.rpcSocket, tt.containerPid, tt.engine, fatalChan)
 			// createContainer is creating a separate thread and we sync with that
 			// thread through a channel similarly to the createContainer function itself,
 			// as well as the Master function.
@@ -105,7 +104,7 @@ func TestStartContainer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			go startContainer(context.Background(), tt.masterSocket, tt.containerPid, tt.engine, fatalChan)
+			go startContainer(t.Context(), tt.masterSocket, tt.containerPid, tt.engine, fatalChan)
 			fatal = <-fatalChan
 			if tt.shallPass && fatal != nil {
 				t.Fatalf("test %s expected to succeed but failed: %s", tt.name, fatal)

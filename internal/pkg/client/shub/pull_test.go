@@ -10,7 +10,6 @@
 package shub
 
 import (
-	"context"
 	"os"
 	"testing"
 
@@ -45,7 +44,7 @@ func TestDownloadImage(t *testing.T) {
 		t.Fatalf("failed to get manifest from shub: %s", err)
 	}
 
-	err = DownloadImage(context.Background(), manifest, shubImgPath, shubImageURI, false, false)
+	err = DownloadImage(t.Context(), manifest, shubImgPath, shubImageURI, false, false)
 	if err != nil {
 		t.Fatalf("failed to Get from %s: %v\n", shubURI, err)
 	}

@@ -10,7 +10,6 @@
 package sources_test
 
 import (
-	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -87,10 +86,10 @@ func TestLocalPackerSquashfs(t *testing.T) {
 
 	// Create and execute packer
 	lcp := &sources.LocalConveyorPacker{}
-	if err := lcp.Get(context.Background(), b); err != nil {
+	if err := lcp.Get(t.Context(), b); err != nil {
 		t.Fatalf("while getting local packer: %v", err)
 	}
-	if _, err = lcp.Pack(context.Background()); err != nil {
+	if _, err = lcp.Pack(t.Context()); err != nil {
 		t.Fatalf("failed to Pack from %s: %v\n", image, err)
 	}
 	rootfsPath := b.RootfsPath
