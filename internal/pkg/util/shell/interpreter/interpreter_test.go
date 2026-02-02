@@ -197,7 +197,7 @@ func TestInterpreter(t *testing.T) {
 			if tt.openHandler != nil {
 				shell.RegisterOpenHandler(tt.openHandler.path, tt.openHandler.fn(shell))
 			}
-			if err := shell.Run(context.Background()); err != nil {
+			if err := shell.Run(t.Context()); err != nil {
 				if tt.expectExit != 0 && shell.Status() != tt.expectExit {
 					t.Fatalf("unexpected exit status for %s: got %d instead of %d", tt.name, shell.Status(), tt.expectExit)
 				} else if tt.expectExit == 0 {
@@ -313,7 +313,7 @@ func TestEvaluateEnv(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			env, err := EvaluateEnv(context.Background(), []byte(tt.script), tt.argv, tt.env)
+			env, err := EvaluateEnv(t.Context(), []byte(tt.script), tt.argv, tt.env)
 			if !tt.expectErr && err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			} else if tt.expectErr && err == nil {

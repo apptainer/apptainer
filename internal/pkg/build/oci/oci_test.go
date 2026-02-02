@@ -275,7 +275,7 @@ func TestConvertReference(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// nolint: staticcheck
-			_, err := ConvertReference(context.Background(), imgCache, tt.ref, ociimage.TransportOptionsFromSystemContext(tt.ctx))
+			_, err := ConvertReference(t.Context(), imgCache, tt.ref, ociimage.TransportOptionsFromSystemContext(tt.ctx))
 			if tt.shouldPass == true && err != nil {
 				t.Fatalf("test expected to succeeded but failed: %s\n", err)
 			}
@@ -347,7 +347,7 @@ func TestImageNameAndImageSHA(t *testing.T) {
 		testName := "ParseImageName - " + tt.name
 		t.Run(testName, func(t *testing.T) {
 			// nolint:staticcheck
-			_, err := ParseImageName(context.Background(), imgCache, tt.uri, ociimage.TransportOptionsFromSystemContext(tt.ctx))
+			_, err := ParseImageName(t.Context(), imgCache, tt.uri, ociimage.TransportOptionsFromSystemContext(tt.ctx))
 			if tt.shouldPass == true && err != nil {
 				t.Fatalf("test expected to succeeded but failed: %s\n", err)
 			}
@@ -359,7 +359,7 @@ func TestImageNameAndImageSHA(t *testing.T) {
 		testName = "ImageSHA - " + tt.name
 		t.Run(testName, func(t *testing.T) {
 			// nolint: staticcheck
-			_, err := ImageDigest(context.Background(), tt.uri, ociimage.TransportOptionsFromSystemContext(tt.ctx))
+			_, err := ImageDigest(t.Context(), tt.uri, ociimage.TransportOptionsFromSystemContext(tt.ctx))
 			if tt.shouldPass == true && err != nil {
 				t.Fatal("test expected to succeeded but failed")
 			}
@@ -415,7 +415,7 @@ func TestNewImageSource(t *testing.T) {
 	}
 
 	imgRef := createValidImageRef(t, ref)
-	validImgRef, err := ConvertReference(context.Background(), imgCache, imgRef, nil)
+	validImgRef, err := ConvertReference(t.Context(), imgCache, imgRef, nil)
 	if err != nil {
 		t.Fatalf("failed to convert image reference: %s", err)
 	}

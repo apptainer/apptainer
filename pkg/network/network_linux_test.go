@@ -367,7 +367,7 @@ func TestNewSetup(t *testing.T) {
 }
 
 // ping requested IP from host
-func testPingIP(nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdout io.ReadCloser) error {
+func testPingIP(ctx context.Context, nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdout io.ReadCloser) error {
 	testIP := "10.111.111.10"
 
 	setup, err := NewSetup([]string{"test-bridge"}, "test_", nsPath, cniPath)
@@ -375,10 +375,10 @@ func testPingIP(nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdout io
 		return err
 	}
 	setup.SetArgs([]string{"IP=" + testIP})
-	if err := setup.AddNetworks(context.Background()); err != nil {
+	if err := setup.AddNetworks(ctx); err != nil {
 		return err
 	}
-	defer setup.DelNetworks(context.Background())
+	defer setup.DelNetworks(ctx)
 
 	ip, err := setup.GetNetworkIP("test-bridge", "4")
 	if err != nil {
@@ -399,15 +399,15 @@ func testPingIP(nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdout io
 }
 
 // ping random acquired IP from host
-func testPingRandomIP(nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdout io.ReadCloser) error {
+func testPingRandomIP(ctx context.Context, nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdout io.ReadCloser) error {
 	setup, err := NewSetup([]string{"test-bridge"}, "test_", nsPath, cniPath)
 	if err != nil {
 		return err
 	}
-	if err := setup.AddNetworks(context.Background()); err != nil {
+	if err := setup.AddNetworks(ctx); err != nil {
 		return err
 	}
-	defer setup.DelNetworks(context.Background())
+	defer setup.DelNetworks(ctx)
 
 	ip, err := setup.GetNetworkIP("test-bridge", "4")
 	if err != nil {
@@ -425,16 +425,16 @@ func testPingRandomIP(nsPath string, cniPath *CNIPath, stdin io.WriteCloser, std
 }
 
 // ping IP from host within requested IP range
-func testPingIPRange(nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdout io.ReadCloser) error {
+func testPingIPRange(ctx context.Context, nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdout io.ReadCloser) error {
 	setup, err := NewSetup([]string{"test-bridge-iprange"}, "test_", nsPath, cniPath)
 	if err != nil {
 		return err
 	}
 	setup.SetArgs([]string{"ipRange=10.111.112.0/24"})
-	if err := setup.AddNetworks(context.Background()); err != nil {
+	if err := setup.AddNetworks(ctx); err != nil {
 		return err
 	}
-	defer setup.DelNetworks(context.Background())
+	defer setup.DelNetworks(ctx)
 
 	ip, err := setup.GetNetworkIP("test-bridge", "4")
 	if err != nil {
@@ -459,16 +459,16 @@ func testPingIPRange(nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdo
 
 // test port mapping by connecting to port 80 mapped inside container
 // to 31080 on host
-func testHTTPPortmap(nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdout io.ReadCloser) error {
+func testHTTPPortmap(ctx context.Context, nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdout io.ReadCloser) error {
 	setup, err := NewSetup([]string{"test-bridge"}, "test_", nsPath, cniPath)
 	if err != nil {
 		return err
 	}
 	setup.SetArgs([]string{"portmap=31080:80/tcp"})
-	if err := setup.AddNetworks(context.Background()); err != nil {
+	if err := setup.AddNetworks(ctx); err != nil {
 		return err
 	}
-	defer setup.DelNetworks(context.Background())
+	defer setup.DelNetworks(ctx)
 
 	eth, err := setup.GetNetworkInterface("test-bridge-iprange")
 	if err != nil {
@@ -502,15 +502,15 @@ func testHTTPPortmap(nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdo
 }
 
 // try with an non existent plugin
-func testBadBridge(nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdout io.ReadCloser) error {
+func testBadBridge(ctx context.Context, nsPath string, cniPath *CNIPath, stdin io.WriteCloser, stdout io.ReadCloser) error {
 	setup, err := NewSetup([]string{"test-badbridge"}, "", nsPath, cniPath)
 	if err != nil {
 		return err
 	}
-	if err := setup.AddNetworks(context.Background()); err == nil {
+	if err := setup.AddNetworks(ctx); err == nil {
 		return fmt.Errorf("unexpected success while calling non existent plugin")
 	}
-	defer setup.DelNetworks(context.Background())
+	defer setup.DelNetworks(ctx)
 
 	return nil
 }
@@ -527,7 +527,7 @@ func TestAddDelNetworks(t *testing.T) {
 		name    string
 		command string
 		args    []string
-		runFunc func(string, *CNIPath, io.WriteCloser, io.ReadCloser) error
+		runFunc func(context.Context, string, *CNIPath, io.WriteCloser, io.ReadCloser) error
 	}{
 		{
 			name:    "TestPingIP",
@@ -583,7 +583,7 @@ func TestAddDelNetworks(t *testing.T) {
 		}
 
 		nsPath := fmt.Sprintf("/proc/%d/ns/net", cmd.Process.Pid)
-		if err := c.runFunc(nsPath, cniPath, stdinPipe, stdoutPipe); err != nil {
+		if err := c.runFunc(t.Context(), nsPath, cniPath, stdinPipe, stdoutPipe); err != nil {
 			t.Errorf("unexpected failure for %q: %s", c.name, err)
 			if err := cmd.Process.Kill(); err != nil {
 				t.Fatalf("error killing process %q: %s", cmdPath, err)

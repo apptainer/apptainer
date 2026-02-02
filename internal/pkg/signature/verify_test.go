@@ -11,7 +11,6 @@ package signature
 
 import (
 	"bytes"
-	"context"
 	"crypto"
 	"crypto/x509"
 	"encoding/pem"
@@ -346,7 +345,7 @@ func Test_verifier_getOpts(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opts, err := tt.v.getOpts(context.Background(), tt.f)
+			opts, err := tt.v.getOpts(t.Context(), tt.f)
 
 			if got, want := err, tt.wantErr; !errors.Is(got, want) {
 				t.Errorf("got error %v, want %v", got, want)
@@ -586,7 +585,7 @@ func TestVerify(t *testing.T) { //nolint:maintidx
 			}
 			tt.opts = append(tt.opts, OptVerifyCallback(cb))
 
-			err := Verify(context.Background(), tt.path, tt.opts...)
+			err := Verify(t.Context(), tt.path, tt.opts...)
 
 			if got, want := err, tt.wantErr; !errors.Is(got, want) {
 				t.Errorf("got error %v, want %v", got, want)
@@ -772,7 +771,7 @@ func TestVerifyFingerPrint(t *testing.T) {
 				return false
 			}
 			tt.opts = append(tt.opts, OptVerifyCallback(cb))
-			err := VerifyFingerprints(context.Background(), tt.path, tt.fingerprints, tt.opts...)
+			err := VerifyFingerprints(t.Context(), tt.path, tt.fingerprints, tt.opts...)
 			if got, want := err, tt.wantErr; !errors.Is(got, want) {
 				t.Errorf("got error %v, want %v", got, want)
 			}
