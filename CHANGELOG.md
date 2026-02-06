@@ -61,6 +61,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   characters in them.  It now escapes them with single backslashes
   instead of double backslashes so they behave like they do in podman
   and docker.
+- Add support for APPTAINER_TMPDIR, also to the commands
+  `apptainer overlay create` and `apptainer plugin compile`.
 
 ## v1.4.x changes
 
