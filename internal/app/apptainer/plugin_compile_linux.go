@@ -68,10 +68,11 @@ func getApptainerSrcDir() (string, error) {
 // checkGoVersion returns an error if the currently Go toolchain is
 // different from the one used to compile apptainer. Apptainer
 // and plugin must be compiled with the same toolchain.
-func checkGoVersion(goPath string) error {
+func checkGoVersion(goPath string, tmpDir string) error {
 	var out bytes.Buffer
+	var err error
 
-	tmpDir, err := os.MkdirTemp("", "plugin-")
+	tmpDir, err = os.MkdirTemp(tmpDir, "plugin-")
 	if err != nil {
 		return errors.New("temporary directory creation failed")
 	}
@@ -116,7 +117,7 @@ func pluginManifestPath(sourceDir string) string {
 // CompilePlugin compiles a plugin. It takes as input: sourceDir, the path to the
 // plugin's source code directory; and destSif, the path to the intended final
 // location of the plugin SIF file.
-func CompilePlugin(sourceDir, destSif, buildTags string) error {
+func CompilePlugin(sourceDir, destSif, tmpDir string, buildTags string) error {
 	apptainerSrc, err := getApptainerSrcDir()
 	if err != nil {
 		return fmt.Errorf("apptainer source directory not usable: %w", err)
@@ -142,7 +143,7 @@ func CompilePlugin(sourceDir, destSif, buildTags string) error {
 
 	// we need to use the exact same go runtime version used
 	// to compile Apptainer
-	if err := checkGoVersion(goPath); err != nil {
+	if err := checkGoVersion(goPath, tmpDir); err != nil {
 		return fmt.Errorf("while checking go version: %s", err)
 	}
 

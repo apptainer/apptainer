@@ -18,6 +18,7 @@ func init() {
 		cmdManager.RegisterCmd(OverlayCmd)
 		cmdManager.RegisterSubCmd(OverlayCmd, OverlayCreateCmd)
 
+		cmdManager.RegisterFlagForCmd(&commonTmpDirFlag, OverlayCreateCmd)
 		cmdManager.RegisterFlagForCmd(&overlaySizeFlag, OverlayCreateCmd)
 		cmdManager.RegisterFlagForCmd(&overlayCreateDirFlag, OverlayCreateCmd)
 		cmdManager.RegisterFlagForCmd(&overlayFakerootFlag, OverlayCreateCmd)
