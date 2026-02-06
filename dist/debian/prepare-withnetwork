@@ -1,0 +1,14 @@
+#!/bin/bash
+
+cd `dirname $0` || exit 0
+
+# rules, source/include-binaries, ...
+find . -name \*.withnetwork \
+| while read -r file
+do
+    cp -p ${file} `dirname ${file}`/`basename ${file} .withnetwork`
+done
+
+# remove binaries
+rm -f ./*.tar.gz
+

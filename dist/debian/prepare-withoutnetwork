@@ -1,0 +1,16 @@
+#!/bin/bash
+
+cd `dirname $0` || exit 0
+
+# rules, source/include-binaries, ...
+find . -name \*.withoutnetwork \
+| while read -r file
+do
+    cp -p ${file} `dirname ${file}`/`basename ${file} .withoutnetwork`
+done
+
+# hint at binaries
+echo "Don't forget to include:"
+cat source/include-binaries
+
+read -r -p "Confirm... " x
