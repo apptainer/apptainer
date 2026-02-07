@@ -104,7 +104,7 @@ func findConvertCommand(overlaySparse bool) (string, error) {
 // OverlayCreate creates the overlay with an optional size, image path, dirs, fakeroot and sparse option.
 //
 //nolint:maintidx
-func OverlayCreate(size int, imgPath string, overlaySparse bool, isFakeroot bool, overlayDirs ...string) error {
+func OverlayCreate(size int, imgPath string, tmpDir string, overlaySparse bool, isFakeroot bool, overlayDirs ...string) error {
 	if size < 64 {
 		return fmt.Errorf("image size must be equal or greater than 64 MiB")
 	}
@@ -201,7 +201,7 @@ func OverlayCreate(size int, imgPath string, overlaySparse bool, isFakeroot bool
 		return fmt.Errorf("while setting 0600 permission on %s: %s", tmpFile, err)
 	}
 
-	tmpDir, err := os.MkdirTemp("", "overlay-")
+	tmpDir, err = os.MkdirTemp(tmpDir, "overlay-")
 	if err != nil {
 		return fmt.Errorf("while creating temporary overlay directory: %s", err)
 	}

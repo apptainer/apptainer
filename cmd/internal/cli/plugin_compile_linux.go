@@ -35,6 +35,7 @@ var pluginCompileOutFlag = cmdline.Flag{
 
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
+		cmdManager.RegisterFlagForCmd(&commonTmpDirFlag, PluginCompileCmd)
 		cmdManager.RegisterFlagForCmd(&pluginCompileOutFlag, PluginCompileCmd)
 	})
 }
@@ -66,7 +67,7 @@ var PluginCompileCmd = &cobra.Command{
 		buildTags := buildcfg.GO_BUILD_TAGS
 
 		sylog.Debugf("sourceDir: %s; sifPath: %s", sourceDir, destSif)
-		err = apptainer.CompilePlugin(sourceDir, destSif, buildTags)
+		err = apptainer.CompilePlugin(sourceDir, destSif, tmpDir, buildTags)
 		if err != nil {
 			sylog.Fatalf("Plugin compile failed with error: %s", err)
 		}
