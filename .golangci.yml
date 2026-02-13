@@ -67,6 +67,13 @@ linters:
           - revive
         path: "pkg/build/types/.*.go$"
         text: "var-naming: avoid meaningless package names"
+      # We have numerous packages that clash with go stlib package names. They
+      # can't be renamed without breaking pkg/ compatibility, which would need
+      # a major version bump. Some, e.g. 'plugin' don't have an obvious
+      # alternative name.
+      - linters:
+        - revive
+        text: "var-naming: avoid package names that conflict with Go standard library package names"
       - linters:
           - usetesting
         # The usetesting linter shows a lot of lint for env var handling and
