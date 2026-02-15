@@ -296,7 +296,7 @@ func pullRun(cmd *cobra.Command, args []string) {
 
 		// need to pass tmpDir through to oras.PullToFile
 		ctx = context.WithValue(ctx, oras.TmpDirKey, tmpDir)
-		_, err = oras.PullToFile(ctx, imgCache, pullTo, pullFrom, ociAuth, noHTTPS, reqAuthFile, pullSandbox)
+		_, err = oras.PullToFile(ctx, imgCache, pullTo, pullFrom, pullArch, ociAuth, noHTTPS, reqAuthFile, pullSandbox)
 		if err != nil {
 			sylog.Fatalf("While pulling image from oci registry: %v", err)
 		}

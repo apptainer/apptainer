@@ -12,6 +12,7 @@ package sources
 import (
 	"context"
 	"fmt"
+	"runtime"
 
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/pkg/build/types"
@@ -33,7 +34,7 @@ func (cp *OrasConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err err
 	// full uri for name determination and output
 	fullRef := "oras:" + ref
 
-	imagePath, err := oras.Pull(ctx, b.Opts.ImgCache, fullRef, b.Opts.TmpDir, b.Opts.OCIAuthConfig, b.Opts.NoHTTPS, b.Opts.ReqAuthFile)
+	imagePath, err := oras.Pull(ctx, b.Opts.ImgCache, fullRef, runtime.GOARCH, b.Opts.TmpDir, b.Opts.OCIAuthConfig, b.Opts.NoHTTPS, b.Opts.ReqAuthFile)
 	if err != nil {
 		return fmt.Errorf("while fetching library image: %v", err)
 	}
