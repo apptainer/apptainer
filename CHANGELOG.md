@@ -63,6 +63,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
   and docker.
 - Add support for APPTAINER_TMPDIR, also to the commands
   `apptainer overlay create` and `apptainer plugin compile`.
+- The oras transport now supports architectures beyond `amd64`.
 
 ## v1.4.x changes
 

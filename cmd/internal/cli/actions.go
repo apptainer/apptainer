@@ -103,7 +103,7 @@ func handleOras(ctx context.Context, imgCache *cache.Handle, cmd *cobra.Command,
 	if err != nil {
 		return "", fmt.Errorf("while creating docker credentials: %v", err)
 	}
-	return oras.Pull(ctx, imgCache, pullFrom, tmpDir, ociAuth, noHTTPS, reqAuthFile)
+	return oras.Pull(ctx, imgCache, pullFrom, runtime.GOARCH, tmpDir, ociAuth, noHTTPS, reqAuthFile)
 }
 
 func handleIpfs(ctx context.Context, imgCache *cache.Handle, pullFrom string) (string, error) {
