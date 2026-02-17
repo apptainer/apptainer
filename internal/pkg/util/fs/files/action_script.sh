@@ -84,22 +84,35 @@ shopt -s expand_aliases
 
 # If /.singularity.d/libs isn't empty we want it to be searched last so it
 # doesn't hide libraries in the container.  The trouble is that LD_LIRARY_PATH
-# is always searched before system libraries.  So if LD_LIBRARY_PATH is also
-# empty, fill it with the default system library directories.  Then 99-base.sh
-# will append /.singularity.d/libs to it.
-if [ -z "${LD_LIBRARY_PATH:-}" ] && [ "$(cd /.singularity.d/libs && echo *)" != "*" ]; then
+# is always searched before system libraries.  So if LD_LIBRARY_PATH is the
+# default value set by 99-base.sh, prepend default system library directories.
+# Also prepend the default LD_LIBRARY_PATH if PREPEND_LD_LIBRARY_PATH or
+# APPEND_LD_LIBRARY_PATH are set.
+set_default_ld_library_path()
+{
+    # /.singularity.d/libs is the default setting at this point if no
+    # other value was given to LD_LIBRARY_PATH
+    if [ "$LD_LIBRARY_PATH" != "/.singularity.d/libs" ]; then
+        return
+    fi
+    if [ "$(cd /.singularity.d/libs 2>/dev/null && echo *)" = "*" ] &&
+      [ -z "${PREPEND_LD_LIBRARY_PATH:-}" ] && \
+      [ -z "${APPEND_LD_LIBRARY_PATH:-}" ]; then
+      return
+    fi
     # Only glibc's ldconfig lists these directories; musl from alpine, for
     # example, prints nothing, but this is mostly for GPU libraries and
     # those require glibc anyway.
+    typeset __dirs__
     __dirs__="$( (/sbin/ldconfig -Nv | /bin/sed '/^\t/d;s/:.*//') 2>/dev/null )"
     if [ -n "$__dirs__" ]; then
         # change newlines into spaces and spaces into colons
         # shellcheck disable=SC2116
         __dirs__="$(echo $__dirs__)"
-        export LD_LIBRARY_PATH="${__dirs__// /:}"
+        export LD_LIBRARY_PATH="${__dirs__// /:}:$LD_LIBRARY_PATH"
         sylog debug "Setting LD_LIBRARY_PATH to $LD_LIBRARY_PATH"
     fi
-fi
+}
 
 if test -d "/.singularity.d/env"; then
     for __script__ in /.singularity.d/env/*.sh; do
@@ -127,6 +140,9 @@ if test -d "/.singularity.d/env"; then
                 # Singularity 2.3, inject forwarded variables right after
                 source "${__script__}"
                 source "/.inject-apptainer-env.sh"
+                # set default LD_LIBRARY_PATH if it hasn't been set but needs
+                # to be
+                set_default_ld_library_path
                 ;;
             *)
                 source "${__script__}"
@@ -141,10 +157,22 @@ else
         export PATH="$(fixpath)"
     fi
     source "/.inject-apptainer-env.sh"
+    set_default_ld_library_path
 fi
 
 if ! test -f "/.singularity.d/env/99-runtimevars.sh"; then
     source "/.singularity.d/env/99-runtimevars.sh"
+fi
+
+if [ -n "${LD_LIBRARY_PATH:-}" ]; then
+    if [ -n "${PREPEND_LD_LIBRARY_PATH:-}" ]; then
+        sylog debug "Prepending $PREPEND_LD_LIBRARY_PATH to LD_LIBRARY_PATH"
+        LD_LIBRARY_PATH="$PREPEND_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
+    fi
+    if [ -n "${APPEND_LD_LIBRARY_PATH:-}" ]; then
+        sylog debug "Appending $APPEND_LD_LIBRARY_PATH to LD_LIBRARY_PATH"
+        LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$APPEND_LD_LIBRARY_PATH"
+    fi
 fi
 
 shopt -u expand_aliases
