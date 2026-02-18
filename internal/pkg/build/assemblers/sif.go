@@ -45,7 +45,7 @@ type encryptionOptions struct {
 	plaintext []byte
 }
 
-func createSIF(path string, b *types.Bundle, squashfile string, encOpts *encryptionOptions, arch string) (err error) {
+func createSIF(path string, b *types.Bundle, squashfile string, encOpts *encryptionOptions, arch string, data bool) (err error) {
 	var dis []sif.DescriptorInput
 
 	// data we need to create a definition file descriptor
@@ -95,9 +95,14 @@ func createSIF(path string, b *types.Bundle, squashfile string, encOpts *encrypt
 		fs = sif.FsGocryptfsSquashfs
 	}
 
-	// data we need to create a system partition descriptor
+	pt := sif.PartPrimSys
+	if data {
+		pt = sif.PartData
+	}
+
+	// data we need to create a system partition (or data) descriptor
 	parinput, err := sif.NewDescriptorInput(sif.DataPartition, fp,
-		sif.OptPartitionMetadata(fs, sif.PartPrimSys, arch),
+		sif.OptPartitionMetadata(fs, pt, arch),
 	)
 	if err != nil {
 		return err
@@ -214,22 +219,33 @@ func (a *SIFAssembler) Assemble(b *types.Bundle, path string) error {
 
 	flags = append(flags, extraArgs...)
 
-	arch := machine.ArchFromContainer(b.RootfsPath)
-	if arch == "" {
-		sylog.Infof("Architecture not recognized, use native")
-		arch = runtime.GOARCH
-	}
-	if buildarch, ok := oci.ArchMap[b.Opts.Arch]; ok {
-		if arch != buildarch.Arch {
-			// the container arch overrides the build arch (!), for backwards compatibility
-			sylog.Warningf("Architecture %s does not match build arch %s", arch, b.Opts.Arch)
+	data := b.Opts.DataPartition
+
+	arch := runtime.GOARCH
+
+	if !data {
+		arch = machine.ArchFromContainer(b.RootfsPath)
+		if arch == "" {
+			sylog.Infof("Architecture not recognized, use native")
+			arch = runtime.GOARCH
+		}
+		if buildarch, ok := oci.ArchMap[b.Opts.Arch]; ok {
+			if arch != buildarch.Arch {
+				// the container arch overrides the build arch (!), for backwards compatibility
+				sylog.Warningf("Architecture %s does not match build arch %s", arch, b.Opts.Arch)
+			}
 		}
 	}
 
 	sylog.Verbosef("Set SIF container architecture to %s", arch)
 
 	var encOpts *encryptionOptions
-	if b.Opts.Unprivilege {
+	if data {
+		sylog.Debugf("Copying squashfs image")
+
+		fsPath = b.RootfsImage
+
+	} else if b.Opts.Unprivilege {
 		sylog.Debugf("Creating squashfs image and will use gocryptfs")
 		if b.Opts.EncryptionKeyInfo == nil {
 			return fmt.Errorf("no encryption key environment variable or --passphrase provided")
@@ -285,7 +301,7 @@ func (a *SIFAssembler) Assemble(b *types.Bundle, path string) error {
 		}
 	}
 
-	err = createSIF(path, b, fsPath, encOpts, arch)
+	err = createSIF(path, b, fsPath, encOpts, arch, data)
 	if err != nil {
 		return fmt.Errorf("while creating SIF: %v", err)
 	}

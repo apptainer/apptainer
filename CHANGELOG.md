@@ -64,6 +64,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add support for APPTAINER_TMPDIR, also to the commands
   `apptainer overlay create` and `apptainer plugin compile`.
 - The oras transport now supports architectures beyond `amd64`.
+- Add `--data` flag to build, for sif creation with a squashfs data partition.
 
 ## v1.4.x changes
 

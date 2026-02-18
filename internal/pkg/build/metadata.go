@@ -66,7 +66,27 @@ func (s *stage) insertMetadata() error {
 	}
 
 	// insert JSON inspect metadata (must be the last call)
-	if err := insertJSONInspectMetadata(s.b); err != nil {
+	if err := insertJSONInspectMetadata(s.b, []string{"--all"}); err != nil {
+		return fmt.Errorf("while inserting JSON inspect metadata: %v", err)
+	}
+
+	return nil
+}
+
+func (s *stage) insertMetadataForData() error {
+	// insert labels
+	if err := insertLabelsJSON(s.b); err != nil {
+		return fmt.Errorf("while inserting labels json: %v", err)
+	}
+
+	// insert definition
+	if err := insertDefinition(s.b); err != nil {
+		return fmt.Errorf("while inserting definition: %v", err)
+	}
+
+	// insert JSON inspect metadata (must be the last call)
+	opts := []string{"--json", "--labels", "--deffile"}
+	if err := insertJSONInspectMetadata(s.b, opts); err != nil {
 		return fmt.Errorf("while inserting JSON inspect metadata: %v", err)
 	}
 
@@ -264,11 +284,14 @@ func insertLabelsJSON(b *types.Bundle) (err error) {
 	return err
 }
 
-func insertJSONInspectMetadata(b *types.Bundle) error {
+func insertJSONInspectMetadata(b *types.Bundle, inspectOpt []string) error {
 	metadata := new(inspect.Metadata)
 
 	exe := filepath.Join(buildcfg.BINDIR, "apptainer")
-	cmd := exec.Command(exe, "inspect", "--all", b.RootfsPath)
+	opt := []string{"inspect"}
+	opt = append(opt, inspectOpt...)
+	opt = append(opt, b.RootfsPath)
+	cmd := exec.Command(exe, opt...)
 	cmd.Stderr = os.Stderr
 
 	out, err := cmd.Output()
