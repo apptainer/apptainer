@@ -224,6 +224,7 @@ func pullRun(cmd *cobra.Command, args []string) {
 				sylog.Fatalf("No transport type URI supplied")
 			}
 			pullTo = uri.GetName(pullFrom) // TODO: If not library/shub & no name specified, simply put to cache
+			pullTo += ".sif"               // TODO: This should not add the .sif extension, if the image is not a SIF file
 		}
 	}
 

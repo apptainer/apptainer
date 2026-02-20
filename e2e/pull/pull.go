@@ -136,7 +136,7 @@ func getImageNameFromURI(imgURI string) string {
 		imgURI = "oras://" + imgURI
 	}
 
-	return uri.GetName(imgURI)
+	return uri.GetName(imgURI) + ".sif"
 }
 
 func (c *ctx) setup(t *testing.T) {

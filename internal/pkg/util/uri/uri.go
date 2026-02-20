@@ -62,7 +62,7 @@ func IsValid(source string) (valid bool, err error) {
 }
 
 // GetName turns a transport:ref URI into a name containing the top-level identifier
-// of the image. For example, docker://sylabsio/lolcow returns lolcow
+// of the image. For example, docker://sylabsio/lolcow returns lolcow_latest
 //
 // Returns "" when not in transport:ref format
 func GetName(uri string) string {
@@ -92,7 +92,7 @@ func GetName(uri string) string {
 		}
 	}
 
-	return fmt.Sprintf("%s_%s.sif", container, tags[0])
+	return fmt.Sprintf("%s_%s", container, tags[0])
 }
 
 // Split splits a URI into it's components which can be used directly through containers/image
