@@ -23,6 +23,8 @@ Changes since 1.5.x
   when pushing images to a registry using the `push` command.
   The --description flag sets "org.opencontainers.image.description",
   and --annotation flag can be used multiple times with "key=value".
+- Add oras `org.opencontainers.image.created` annotation when pushing images.
+  The `org.opencontainers.image.created` label from the SIF image is used.
 
 ## v1.5.x changes
 

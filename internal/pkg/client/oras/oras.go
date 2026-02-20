@@ -14,16 +14,20 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/ociauth"
 	"github.com/apptainer/apptainer/pkg/image"
+	"github.com/apptainer/apptainer/pkg/inspect"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
+	"github.com/apptainer/sif/v2/pkg/sif"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -274,6 +278,44 @@ func RefDigest(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig,
 		return v1.Hash{}, err
 	}
 	return im.Digest()
+}
+
+// ImageCreated returns the created for a file
+func ImageCreated(filePath string) (time.Time, error) {
+	f, err := sif.LoadContainerFromPath(filePath, sif.OptLoadWithFlag(os.O_RDONLY))
+	if err != nil {
+		return time.Now(), nil
+	}
+	defer f.UnloadContainer()
+
+	d, err := f.GetDescriptors(sif.WithDataType(sif.DataGenericJSON))
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	created := time.Now()
+	for _, desc := range d {
+		if desc.Name() != image.SIFDescInspectMetadataJSON {
+			continue
+		}
+
+		metadata := new(inspect.Metadata)
+		if err := json.NewDecoder(desc.GetReader()).Decode(metadata); err != nil {
+			return time.Time{}, err
+		}
+
+		createdTime := metadata.Attributes.Labels["org.opencontainers.image.created"]
+		if createdTime == "" {
+			return time.Time{}, nil
+		}
+
+		t, err := time.Parse(time.RFC3339, createdTime)
+		if err != nil {
+			return time.Time{}, err
+		}
+		created = t
+	}
+	return created, nil
 }
 
 // ImageDigest returns the digest for a file
