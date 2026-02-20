@@ -141,7 +141,7 @@ func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.Aut
 		return err
 	}
 
-	im, err := NewImageFromSIF(path, SifLayerMediaTypeV1)
+	im, err := NewImageFromSIF(path, SifLayerMediaTypeV1) // nolint:contextcheck
 	if err != nil {
 		return err
 	}
@@ -242,14 +242,18 @@ func RefDigest(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig,
 }
 
 // ImageDigest returns the digest for a file
-func ImageHash(filePath string) (v1.Hash, error) {
+func ImageHash(ctx context.Context, filePath string) (v1.Hash, error) {
+	st, err := os.Stat(filePath)
+	if err != nil {
+		return v1.Hash{}, err
+	}
 	file, err := os.Open(filePath)
 	if err != nil {
 		return v1.Hash{}, err
 	}
 	defer file.Close()
 
-	sha, _, err := sha256sum(file)
+	sha, err := sha256sum(ctx, st.Size(), file)
 	if err != nil {
 		return v1.Hash{}, err
 	}
@@ -264,15 +268,16 @@ func ImageHash(filePath string) (v1.Hash, error) {
 
 // sha256sum computes the sha256sum of the specified reader; caller is
 // responsible for resetting file pointer. 'nBytes' indicates number of
-// bytes read from reader
-func sha256sum(r io.Reader) (result string, nBytes int64, err error) {
+// bytes to read
+func sha256sum(ctx context.Context, nBytes int64, r io.Reader) (result string, err error) {
 	hash := sha256.New()
-	nBytes, err = io.Copy(hash, r)
+	pb := client.ProgressBarCallback(ctx)
+	err = pb(nBytes, r, hash)
 	if err != nil {
-		return "", 0, err
+		return "", err
 	}
 
-	return "sha256:" + hex.EncodeToString(hash.Sum(nil)), nBytes, nil
+	return "sha256:" + hex.EncodeToString(hash.Sum(nil)), nil
 }
 
 // remoteImage returns a v1.Image for the provided remote ref.

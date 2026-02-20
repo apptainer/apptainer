@@ -39,7 +39,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, arch 
 		if err := DownloadImage(ctx, directTo, pullFrom, arch, ociAuth, noHTTPS, reqAuthFile); err != nil {
 			return "", fmt.Errorf("unable to Download Image: %v", err)
 		}
-		if imageHash, err := ImageHash(directTo); err != nil {
+		if imageHash, err := ImageHash(ctx, directTo); err != nil {
 			return "", fmt.Errorf("error getting ImageHash: %v", err)
 		} else if imageHash != hash {
 			return "", fmt.Errorf("image file hash(%s) and expected hash(%s) does not match", imageHash, hash)
@@ -58,7 +58,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, arch 
 			if err := DownloadImage(ctx, cacheEntry.TmpPath, pullFrom, arch, ociAuth, noHTTPS, reqAuthFile); err != nil {
 				return "", fmt.Errorf("unable to Download Image: %v", err)
 			}
-			if cacheFileHash, err := ImageHash(cacheEntry.TmpPath); err != nil {
+			if cacheFileHash, err := ImageHash(ctx, cacheEntry.TmpPath); err != nil {
 				return "", fmt.Errorf("error getting ImageHash: %v", err)
 			} else if cacheFileHash != hash {
 				return "", fmt.Errorf("cached file hash(%s) and expected hash(%s) does not match", cacheFileHash, hash)
