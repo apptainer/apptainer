@@ -462,7 +462,7 @@ func orasPushNoCheck(path, ref, layerMediaType string) error {
 		return err
 	}
 
-	im, err := oras.NewImageFromSIF(path, types.MediaType(layerMediaType))
+	im, err := oras.NewImageFromSIF(path, oras.SifConfigMediaTypeV1, types.MediaType(layerMediaType))
 	if err != nil {
 		return err
 	}
