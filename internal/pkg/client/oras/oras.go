@@ -151,7 +151,7 @@ func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.Aut
 		annotationsMap[key] = value
 	}
 
-	im, err := NewImageFromSIF(path, SifLayerMediaTypeV1, annotationsMap) // nolint:contextcheck
+	im, err := NewImageFromSIF(path, SifConfigMediaTypeV1, SifLayerMediaTypeV1, annotationsMap) // nolint:contextcheck
 	if err != nil {
 		return err
 	}
