@@ -272,7 +272,7 @@ func ImageHash(ctx context.Context, filePath string) (v1.Hash, error) {
 func sha256sum(ctx context.Context, nBytes int64, r io.Reader) (result string, err error) {
 	hash := sha256.New()
 	pb := client.ProgressBarCallback(ctx)
-	err = pb(nBytes, r, hash)
+	err = pb(nBytes, true, r, hash)
 	if err != nil {
 		return "", err
 	}
