@@ -141,7 +141,7 @@ func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.Aut
 		return err
 	}
 
-	im, err := NewImageFromSIF(path, SifLayerMediaTypeV1)
+	im, err := NewImageFromSIF(path, SifConfigMediaTypeV1, SifLayerMediaTypeV1)
 	if err != nil {
 		return err
 	}

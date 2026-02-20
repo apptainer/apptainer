@@ -14,21 +14,10 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/types"
 )
 
-const (
-	// emptyConfig is the OCI empty value (JSON)
-	emptyConfig = "{}"
-	// emptyConfigSize is the size of the empty config
-	emptyConfigSize = 2
-	// emptyConfigDigest is the sha256 digest of the empty value
-	emptyConfigDigest = "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
-
-	// SifConfigMediaTypeV1 is the config descriptor mediaType for a SIF image.
-	SifConfigMediaTypeV1 = "application/vnd.sylabs.sif.config.v1+json"
-)
-
 // SifImage implements a go-containerregistry v1.Image representing an ORAS / OCI artifact of a single SIF image.
 type SifImage struct {
 	manifest v1.Manifest
+	config   *SifConfig
 	layer    *SifLayer
 }
 
@@ -97,8 +86,31 @@ func (si *SifImage) LayerByDiffID(hash v1.Hash) (v1.Layer, error) {
 	return si.LayerByDigest(hash)
 }
 
-func NewImageFromSIF(file string, layerMediaType types.MediaType) (*SifImage, error) {
+func NewImageFromSIF(file string, configMediaType, layerMediaType types.MediaType) (*SifImage, error) {
 	si := SifImage{}
+
+	sc, err := NewConfigFromSIF(file, configMediaType)
+	if err != nil {
+		return nil, err
+	}
+	si.config = sc
+
+	cMediaType, err := si.config.MediaType()
+	if err != nil {
+		return nil, err
+	}
+	cSize, err := si.config.Size()
+	if err != nil {
+		return nil, err
+	}
+	cData, err := si.config.Data()
+	if err != nil {
+		return nil, err
+	}
+	cDigest, err := si.config.Digest()
+	if err != nil {
+		return nil, err
+	}
 
 	sl, err := NewLayerFromSIF(file, layerMediaType)
 	if err != nil {
@@ -119,11 +131,6 @@ func NewImageFromSIF(file string, layerMediaType types.MediaType) (*SifImage, er
 		return nil, err
 	}
 
-	emptyHash, err := v1.NewHash(emptyConfigDigest)
-	if err != nil {
-		return nil, err
-	}
-
 	//
 	// Example manifest - config is always empty JSON '{}'. Single SIF file layer.
 	//
@@ -132,7 +139,8 @@ func NewImageFromSIF(file string, layerMediaType types.MediaType) (*SifImage, er
 	// 	"config": {
 	// 	  "mediaType": "application/vnd.sylabs.sif.config.v1+json",
 	// 	  "digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-	// 	  "size": 2
+	// 	  "size": 2,
+	//        "data": "e30="
 	// 	},
 	// 	"layers": [
 	// 	  {
@@ -149,9 +157,10 @@ func NewImageFromSIF(file string, layerMediaType types.MediaType) (*SifImage, er
 		SchemaVersion: 2,
 		MediaType:     types.OCIManifestSchema1,
 		Config: v1.Descriptor{
-			MediaType: types.MediaType(SifConfigMediaTypeV1),
-			Digest:    emptyHash,
-			Size:      emptyConfigSize,
+			MediaType: cMediaType,
+			Digest:    cDigest,
+			Size:      cSize,
+			Data:      cData,
 		},
 		Layers: []v1.Descriptor{
 			{
