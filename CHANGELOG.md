@@ -7,7 +7,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.5.x changes
 
-- Update minimum go version to 1.25.3.
+- Update minimum go version to 1.25.6.
 - Add `--no-env` action and instance option and corresponding
   `APPTAINER_NOENV` environment variable that can provide a
   comma-separated list of environment variables to skip importing from
