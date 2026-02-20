@@ -14,16 +14,20 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/ociauth"
 	"github.com/apptainer/apptainer/pkg/image"
+	"github.com/apptainer/apptainer/pkg/inspect"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
+	"github.com/apptainer/sif/v2/pkg/sif"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -225,6 +229,75 @@ func RefHash(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, n
 
 	hash := layer.Digest
 	return hash, nil
+}
+
+// ImageCreated returns the created for a file
+func ImageCreated(filePath string) (time.Time, error) {
+	f, err := sif.LoadContainerFromPath(filePath, sif.OptLoadWithFlag(os.O_RDONLY))
+	if err != nil {
+		return time.Time{}, err
+	}
+	defer f.UnloadContainer()
+
+	d, err := f.GetDescriptors(sif.WithDataType(sif.DataGenericJSON))
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	created := time.Now()
+	for _, desc := range d {
+		if desc.Name() != image.SIFDescInspectMetadataJSON {
+			continue
+		}
+
+		metadata := new(inspect.Metadata)
+		if err := json.NewDecoder(desc.GetReader()).Decode(metadata); err != nil {
+			return time.Time{}, err
+		}
+
+		buildDate := metadata.Attributes.Labels["org.label-schema.build-date"]
+		t, err := parseBuildDate(buildDate)
+		if err != nil {
+			return time.Time{}, err
+		}
+		created = t
+	}
+	return created, nil
+}
+
+func parseBuildDate(date string) (time.Time, error) {
+	// time.Parse uses underscores with a special meaning, so replace with space
+	buildTime := strings.ReplaceAll(date, "_", " ")
+	buildFormat := "Monday 2 January 2006 15:04:05 MST"
+	t, err := time.Parse(buildFormat, buildTime)
+	if err != nil {
+		return time.Time{}, err
+	}
+	// Try to convert ambiguous US timezone strings, otherwise parsing as UTC(!)
+	tz, err := time.LoadLocation(usTimezone(t.Zone()))
+	if err == nil {
+		t, err = time.ParseInLocation(buildFormat, buildTime, tz)
+		if err != nil {
+			return time.Time{}, err
+		}
+	}
+	return t, nil
+}
+
+func usTimezone(name string, offset int) string {
+	if offset == 0 {
+		switch name {
+		case "CDT", "CST":
+			return "US/Central"
+		case "EDT", "EST":
+			return "US/Eastern"
+		case "MDT", "MST":
+			return "US/Mountain"
+		case "PDT", "PST":
+			return "US/Pacific"
+		}
+	}
+	return name
 }
 
 // ImageDigest returns the digest for a file

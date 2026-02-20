@@ -64,6 +64,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add support for APPTAINER_TMPDIR, also to the commands
   `apptainer overlay create` and `apptainer plugin compile`.
 - The oras transport now supports architectures beyond `amd64`.
+- Add oras `org.opencontainers.image.created` annotation when pushing images.
+  The `org.label-schema.build-date` label from the SIF image is being used.
 
 ## v1.4.x changes
 
