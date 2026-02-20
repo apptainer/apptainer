@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -24,6 +25,7 @@ import (
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
@@ -38,6 +40,7 @@ type ctx struct {
 type testStruct struct {
 	desc             string // case description
 	srcURI           string // source URI for image
+	fileExtension    string // file extension for image, default: ".sif"
 	library          string // use specific library, XXX(mem): not tested yet
 	arch             string // architecture to force, if any
 	force            bool   // pass --force
@@ -126,7 +129,7 @@ func (c *ctx) imagePull(t *testing.T, tt testStruct) {
 	checkPullResult(t, tt)
 }
 
-func getImageNameFromURI(imgURI string) string {
+func getImageNameFromURI(imgURI string, extension string) string {
 	// XXX(mem): this function should be part of the code, not the test
 	switch transport, ref := uri.Split(imgURI); {
 	case ref == "":
@@ -136,15 +139,31 @@ func getImageNameFromURI(imgURI string) string {
 		imgURI = "oras://" + imgURI
 	}
 
-	return uri.GetName(imgURI) + ".sif"
+	if extension == "" {
+		extension = ".sif"
+	}
+
+	return uri.GetName(imgURI) + extension
 }
 
 func (c *ctx) setup(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
+	require.Command(t, "mksquashfs")
+
+	squashfsImage := filepath.Join(t.TempDir(), "test.squashfs")
+	squashDir, err := os.MkdirTemp(t.TempDir(), "squashfs-root")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	orasInvalidFile, err := e2e.WriteTempFile(c.env.TestDir, "oras_invalid_image-", "Invalid Image Contents")
 	if err != nil {
 		t.Fatalf("unable to create src file for push tests: %v", err)
+	}
+
+	cmd := exec.Command("mksquashfs", squashDir, squashfsImage)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("Error creating squashfs image: %v: %s", err, out)
 	}
 
 	// prep local registry with oras generated artifacts
@@ -164,6 +183,11 @@ func (c *ctx) setup(t *testing.T) {
 			srcPath:        c.env.ImagePath,
 			uri:            fmt.Sprintf("%s/pull_test_sif_mediatypeproto:latest", c.env.TestRegistry),
 			layerMediaType: oras.SifLayerMediaTypeProto,
+		},
+		{
+			srcPath:        squashfsImage,
+			uri:            fmt.Sprintf("%s/pull_test_squashfs:latest", c.env.TestRegistry),
+			layerMediaType: oras.GenericBinaryMediaType,
 		},
 		{
 			srcPath:        orasInvalidFile,
@@ -305,6 +329,17 @@ func (c ctx) testPullCmd(t *testing.T) {
 			expectedExitCode: 0,
 		},
 
+		// pulling of squashfs images with oras
+		{
+			desc:             "oras transport for SquashFS from registry",
+			srcURI:           fmt.Sprintf("oras://%s/pull_test_squashfs:latest", c.env.TestRegistry),
+			force:            true,
+			unauthenticated:  false,
+			expectedExitCode: 0,
+			// TODO: currently everything is .sif
+			// fileExtension:    ".squashfs",
+		},
+
 		// pulling of invalid images with oras
 		{
 			desc:             "oras pull of non SIF file",
@@ -393,7 +428,7 @@ func (c ctx) testPullCmd(t *testing.T) {
 				// No explicit image path specified. Will use temp dir as working directory,
 				// so we pull into a clean location.
 				tt.workDir = tmpdir
-				imageName := getImageNameFromURI(tt.srcURI)
+				imageName := getImageNameFromURI(tt.srcURI, tt.fileExtension)
 				tt.expectedImage = filepath.Join(tmpdir, imageName)
 
 				// if there's a pullDir, that's where we expect to find the image

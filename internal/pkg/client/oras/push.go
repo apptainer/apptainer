@@ -14,18 +14,36 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"runtime"
 
+	"github.com/apptainer/apptainer/pkg/image"
 	"github.com/apptainer/sif/v2/pkg/sif"
 	"github.com/google/go-containerregistry/pkg/authn"
 )
 
 // Push will push an oras image from the specified location
 func Push(ctx context.Context, path, ref string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
-	arch, err := sifArch(path)
+	img, err := image.Init(path, false)
 	if err != nil {
 		return err
 	}
-	return UploadImage(ctx, path, ref, arch, ociAuth, noHTTPS, reqAuthFile)
+	defer img.File.Close()
+
+	var sif bool
+	var arch string
+	switch img.Type {
+	case image.SIF:
+		sif = true
+		arch, err = sifArch(path)
+		if err != nil {
+			return err
+		}
+	default:
+		sif = false
+		arch = runtime.GOARCH
+	}
+
+	return UploadImage(ctx, path, ref, arch, sif, ociAuth, noHTTPS, reqAuthFile)
 }
 
 func sifArch(filename string) (string, error) {

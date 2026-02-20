@@ -13,12 +13,14 @@ package push
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 	"github.com/pkg/errors"
 )
 
@@ -59,6 +61,13 @@ func (c ctx) testInvalidTransport(t *testing.T) {
 
 func (c ctx) testPushCmd(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
+	require.Command(t, "mksquashfs")
+
+	squashfsImage := filepath.Join(t.TempDir(), "test.squashfs")
+	squashDir, err := os.MkdirTemp(t.TempDir(), "squashfs-root")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// setup file and dir to use as invalid sources
 	orasInvalidDir, err := os.MkdirTemp(c.env.TestDir, "oras_push_dir-")
@@ -71,6 +80,11 @@ func (c ctx) testPushCmd(t *testing.T) {
 	if err != nil {
 		err = errors.Wrap(err, "creating oras temporary file")
 		t.Fatalf("unable to create src file for push tests: %+v", err)
+	}
+
+	cmd := exec.Command("mksquashfs", squashDir, squashfsImage)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("Error creating squashfs image: %v: %s", err, out)
 	}
 
 	tests := []struct {
@@ -103,6 +117,12 @@ func (c ctx) testPushCmd(t *testing.T) {
 			desc:             "standard SIF push",
 			imagePath:        c.env.ImagePath,
 			dstURI:           fmt.Sprintf("oras://%s/standard_sif:test", c.env.InsecureRegistry),
+			expectedExitCode: 0,
+		},
+		{
+			desc:             "standard SquashFS push",
+			imagePath:        squashfsImage,
+			dstURI:           fmt.Sprintf("oras://%s/standard_squashfs:test", c.env.InsecureRegistry),
 			expectedExitCode: 0,
 		},
 		{

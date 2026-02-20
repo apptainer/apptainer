@@ -15,6 +15,9 @@ import (
 )
 
 const (
+	// GenericBinaryMediaType is the mediaType for a generic binary file
+	GenericBinaryMediaType = "application/octet-stream"
+
 	// SifLayerMediaTypeV1 is the mediaType for the "layer" which contains the actual SIF file
 	SifLayerMediaTypeV1 = "application/vnd.sylabs.sif.layer.v1.sif"
 

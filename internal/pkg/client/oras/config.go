@@ -11,6 +11,9 @@ import (
 )
 
 const (
+	// UnknownConfigMediaTypeV1 is the mediaType for the "config" that is always empty ({}).
+	UnknownConfigMediaTypeV1 = "application/vnd.unknown.config.v1+json"
+
 	// SifConfigMediaTypeV1 is the config descriptor mediaType for a SIF image.
 	SifConfigMediaTypeV1 = "application/vnd.sylabs.sif.config.v1+json"
 

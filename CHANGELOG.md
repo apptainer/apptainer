@@ -66,6 +66,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - The oras transport now supports architectures beyond `amd64`.
 - Add oras `org.opencontainers.image.created` annotation when pushing images.
   The `org.label-schema.build-date` label from the SIF image is being used.
+- Allow pushing and pulling SquashFS images as artifacts to and from OCI registries,
+  with `oras:`. They have a different ("unknown") config media type than SIF images.
 
 ## v1.4.x changes
 

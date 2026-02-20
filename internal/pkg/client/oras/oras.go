@@ -34,10 +34,11 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/empty"
 	"github.com/google/go-containerregistry/pkg/v1/layout"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/types"
 	"golang.org/x/term"
 )
 
-// DownloadImage downloads a SIF image specified by an oci reference to a file using the included credentials
+// DownloadImage downloads an image specified by an oci reference to a file using the included credentials
 func DownloadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
 	rt := client.NewRoundTripper(ctx, nil)
 	im, err := remoteImage(ctx, ref, arch, ociAuth, noHTTPS, rt, reqAuthFile)
@@ -46,11 +47,11 @@ func DownloadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.A
 		return err
 	}
 
-	// Check manifest to ensure we have a SIF as single layer
+	// Check manifest to ensure we have an image as single layer
 	//
 	// We *don't* check the image config mediaType as prior versions of
 	// Apptainer have not been consistent in setting this, and really all we
-	// care about is that we are pulling a single SIF file.
+	// care about is that we are pulling a single SIF or SquashFS file.
 	//
 	manifest, err := im.Manifest()
 	if err != nil {
@@ -58,11 +59,12 @@ func DownloadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.A
 		return err
 	}
 	if len(manifest.Layers) != 1 {
-		return fmt.Errorf("ORAS SIF image should have a single layer, found %d", len(manifest.Layers))
+		return fmt.Errorf("ORAS image should have a single layer, found %d", len(manifest.Layers))
 	}
 	layer := manifest.Layers[0]
 	if layer.MediaType != SifLayerMediaTypeV1 &&
-		layer.MediaType != SifLayerMediaTypeProto {
+		layer.MediaType != SifLayerMediaTypeProto &&
+		layer.MediaType != GenericBinaryMediaType {
 		rt.ProgressShutdown()
 		return fmt.Errorf("invalid layer mediatype: %s", layer.MediaType)
 	}
@@ -98,7 +100,7 @@ func DownloadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.A
 	rt.ProgressComplete()
 	rt.ProgressWait()
 
-	// Copy SIF blob out from layout to final location
+	// Copy image blob out from layout to final location
 	blob, err := tmpLayout.Blob(layer.Digest)
 	if err != nil {
 		return err
@@ -115,9 +117,9 @@ func DownloadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.A
 		return err
 	}
 
-	// Ensure that we have downloaded a SIF
-	if err := ensureSIF(path); err != nil {
-		// remove whatever we downloaded if it is not a SIF
+	// Ensure that we have downloaded an image (SIF or SquashFS)
+	if err := ensureImage(path); err != nil {
+		// remove whatever we downloaded if it is not an image
 		os.RemoveAll(path)
 		return err
 	}
@@ -126,9 +128,9 @@ func DownloadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.A
 
 // UploadImage uploads the image specified by path and pushes it to the provided oci reference,
 // it will use credentials if supplied
-func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
-	// ensure that are uploading a SIF
-	if err := ensureSIF(path); err != nil {
+func UploadImage(ctx context.Context, path, ref, arch string, sif bool, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
+	// ensure that are uploading an image (SIF or SquashFS)
+	if err := ensureImage(path); err != nil {
 		return err
 	}
 
@@ -145,7 +147,14 @@ func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.Aut
 		return err
 	}
 
-	im, err := NewImageFromSIF(path, SifConfigMediaTypeV1, SifLayerMediaTypeV1)
+	cmt := types.MediaType(UnknownConfigMediaTypeV1)
+	lmt := types.MediaType(GenericBinaryMediaType)
+	if sif {
+		cmt = SifConfigMediaTypeV1
+		lmt = SifLayerMediaTypeV1
+	}
+
+	im, err := NewImageFromSIF(path, cmt, lmt)
 	if err != nil {
 		return err
 	}
@@ -191,39 +200,40 @@ func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.Aut
 	return remote.Write(ir, im, remoteOpts...)
 }
 
-// ensureSIF checks for a SIF image at filepath and returns an error if it is not, or an error is encountered
-func ensureSIF(filepath string) error {
+// ensureImage checks for a SIF image or SquashFS at filepath and returns an error if it is not, or an error is encountered
+func ensureImage(filepath string) error {
 	img, err := image.Init(filepath, false)
 	if err != nil {
 		return fmt.Errorf("could not open image %s for verification: %s", filepath, err)
 	}
 	defer img.File.Close()
 
-	if img.Type != image.SIF {
-		return fmt.Errorf("%q is not a SIF", filepath)
+	if img.Type != image.SIF && img.Type != image.SQUASHFS {
+		return fmt.Errorf("%q is not a SIF or SquashFS", filepath)
 	}
 
 	return nil
 }
 
-// RefHash returns the digest of the SIF layer of the OCI manifest for supplied ref
+// RefHash returns the digest of the image layer of the OCI manifest for supplied ref
 func RefHash(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (v1.Hash, error) {
 	im, err := remoteImage(ctx, ref, arch, ociAuth, noHTTPS, nil, reqAuthFile)
 	if err != nil {
 		return v1.Hash{}, err
 	}
 
-	// Check manifest to ensure we have a SIF as single layer
+	// Check manifest to ensure we have an image as single layer
 	manifest, err := im.Manifest()
 	if err != nil {
 		return v1.Hash{}, err
 	}
 	if len(manifest.Layers) != 1 {
-		return v1.Hash{}, fmt.Errorf("ORAS SIF image should have a single layer, found %d", len(manifest.Layers))
+		return v1.Hash{}, fmt.Errorf("ORAS image should have a single layer, found %d", len(manifest.Layers))
 	}
 	layer := manifest.Layers[0]
 	if layer.MediaType != SifLayerMediaTypeV1 &&
-		layer.MediaType != SifLayerMediaTypeProto {
+		layer.MediaType != SifLayerMediaTypeProto &&
+		layer.MediaType != GenericBinaryMediaType {
 		return v1.Hash{}, fmt.Errorf("invalid layer mediatype: %s", layer.MediaType)
 	}
 
@@ -233,6 +243,15 @@ func RefHash(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, n
 
 // ImageCreated returns the created for a file
 func ImageCreated(filePath string) (time.Time, error) {
+	img, err := image.Init(filepath, false)
+	if err != nil {
+		return fmt.Errorf("could not open image %s for verification: %s", filepath, err)
+	}
+	defer img.File.Close()
+	if img.Type != image.SIF {
+		return time.Now(), nil
+	}
+
 	f, err := sif.LoadContainerFromPath(filePath, sif.OptLoadWithFlag(os.O_RDONLY))
 	if err != nil {
 		return time.Time{}, err

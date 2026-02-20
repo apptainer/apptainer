@@ -141,14 +141,14 @@ func (c ctx) testConcurrentPulls(t *testing.T) {
 				desc:             "",
 				srcURI:           srcURI,
 				expectedExitCode: tt.expectedExitCode,
-				expectedImage:    getImageNameFromURI(srcURI),
+				expectedImage:    getImageNameFromURI(srcURI, ""),
 				envVars:          tt.envVars,
 			}
 
 			// No explicit image path specified. Will use temp dir as working directory,
 			// so we pull into a clean location.
 			ts.workDir = tmpdir
-			imageName := getImageNameFromURI(ts.srcURI)
+			imageName := getImageNameFromURI(ts.srcURI, "")
 			ts.expectedImage = filepath.Join(tmpdir, imageName)
 
 			// if there's a pullDir, that's where we expect to find the image
