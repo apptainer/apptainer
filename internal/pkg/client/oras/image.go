@@ -8,6 +8,7 @@ package oras
 import (
 	"fmt"
 	"path/filepath"
+	"time"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
@@ -126,6 +127,10 @@ func NewImageFromSIF(file string, configMediaType, layerMediaType types.MediaTyp
 	if err != nil {
 		return nil, err
 	}
+	lCreated, err := si.layer.Created()
+	if err != nil {
+		return nil, err
+	}
 	lDigest, err := si.layer.Digest()
 	if err != nil {
 		return nil, err
@@ -151,7 +156,10 @@ func NewImageFromSIF(file string, configMediaType, layerMediaType types.MediaTyp
 	// 		  "org.opencontainers.image.title": "ubuntu_latest.sif"
 	// 		}
 	// 	  }
-	// 	]
+	// 	],
+	//      "annotations": {
+	//        "org.opencontainers.image.created": "2023-12-19T16:02:14Z"
+	//      }
 	//   }
 	si.manifest = v1.Manifest{
 		SchemaVersion: 2,
@@ -171,6 +179,9 @@ func NewImageFromSIF(file string, configMediaType, layerMediaType types.MediaTyp
 					"org.opencontainers.image.title": filepath.Base(file),
 				},
 			},
+		},
+		Annotations: map[string]string{
+			"org.opencontainers.image.created": lCreated.In(time.UTC).Format(time.RFC3339),
 		},
 	}
 
