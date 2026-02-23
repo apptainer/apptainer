@@ -336,8 +336,7 @@ func (c ctx) testPullCmd(t *testing.T) {
 			force:            true,
 			unauthenticated:  false,
 			expectedExitCode: 0,
-			// TODO: currently everything is .sif
-			// fileExtension:    ".squashfs",
+			fileExtension:    ".squashfs",
 		},
 
 		// pulling of invalid images with oras

@@ -216,6 +216,8 @@ func pullRun(cmd *cobra.Command, args []string) {
 		sylog.Fatalf("Bad URI %s", pullFrom)
 	}
 
+	imageName := ""
+
 	pullTo := pullImageName
 	if pullTo == "" {
 		pullTo = args[0]
@@ -223,20 +225,34 @@ func pullRun(cmd *cobra.Command, args []string) {
 			if transport == "" {
 				sylog.Fatalf("No transport type URI supplied")
 			}
-			pullTo = uri.GetName(pullFrom) // TODO: If not library/shub & no name specified, simply put to cache
-			pullTo += ".sif"               // TODO: This should not add the .sif extension, if the image is not a SIF file
+			imageName = uri.GetName(pullFrom) // TODO: If not library/shub & no name specified, simply put to cache
+			if transport == OrasProtocol {
+				imageDir := pullDir
+				if imageDir == "" {
+					imageDir = tmpDir
+				}
+				imageTemp, err := os.CreateTemp(imageDir, imageName)
+				if err != nil {
+					sylog.Fatalf("Failed to create temporary file: %v", err)
+				}
+				pullTo = imageTemp.Name()
+			} else {
+				pullTo = imageName + ".sif"
+			}
 		}
 	}
 
-	if pullDir != "" {
-		pullTo = filepath.Join(pullDir, pullTo)
-	}
+	if transport != OrasProtocol {
+		if pullDir != "" {
+			pullTo = filepath.Join(pullDir, pullTo)
+		}
 
-	_, err := os.Stat(pullTo)
-	if !os.IsNotExist(err) {
-		// image already exists
-		if !forceOverwrite {
-			sylog.Fatalf("Image file already exists: %q - will not overwrite", pullTo)
+		_, err := os.Stat(pullTo)
+		if !os.IsNotExist(err) {
+			// image already exists
+			if !forceOverwrite {
+				sylog.Fatalf("Image file already exists: %q - will not overwrite", pullTo)
+			}
 		}
 	}
 
@@ -300,6 +316,26 @@ func pullRun(cmd *cobra.Command, args []string) {
 		_, err = oras.PullToFile(ctx, imgCache, pullTo, pullFrom, pullArch, ociAuth, noHTTPS, reqAuthFile, pullSandbox)
 		if err != nil {
 			sylog.Fatalf("While pulling image from oci registry: %v", err)
+		}
+
+		if imageName != "" && !pullSandbox {
+			ext, err := oras.ImageExtension(pullTo)
+			if err != nil {
+				sylog.Fatalf("could not get file extension %s: %s", imageName, err)
+			}
+			pullTo = imageName + ext
+			if pullDir != "" {
+				pullTo = filepath.Join(pullDir, pullTo)
+			}
+			_, err = os.Stat(pullTo)
+			if !os.IsNotExist(err) {
+				// image already exists
+				if !forceOverwrite {
+					sylog.Fatalf("Image file already exists: %q - will not overwrite", pullTo)
+				}
+			}
+			sylog.Debugf("Renaming to: %s", pullTo)
+			os.Rename(imageName, pullTo)
 		}
 	case IPFSProtocol:
 		_, err := ipfs.PullToFile(ctx, imgCache, pullTo, pullFrom, pullSandbox)

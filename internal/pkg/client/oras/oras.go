@@ -217,6 +217,24 @@ func ensureImage(filepath string) error {
 	return nil
 }
 
+// ImageExtension returns the extension to use for the image at filepath and returns an error if it is not a known image type
+func ImageExtension(filepath string) (string, error) {
+	img, err := image.Init(filepath, false)
+	if err != nil {
+		sylog.Fatalf("could not open image %s: %s", filepath, err)
+	}
+	defer img.File.Close()
+
+	switch img.Type {
+	case image.SIF:
+		return ".sif", nil
+	case image.SQUASHFS:
+		return ".squashfs", nil
+	default:
+		return "", fmt.Errorf("%q is not a SIF or SquashFS", filepath)
+	}
+}
+
 // RefHash returns the digest of the image layer of the OCI manifest for supplied ref
 func RefHash(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (v1.Hash, error) {
 	im, err := remoteImage(ctx, ref, arch, ociAuth, noHTTPS, nil, reqAuthFile)
