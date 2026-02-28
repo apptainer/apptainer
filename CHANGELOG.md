@@ -5,6 +5,12 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.5.x changes
+
+Changes since v1.5.0-rc.1
+
+- Apptainer now supports the `loong64` architecture.
+
 ## v1.5.0-rc.1 - \[2026-03-12\]
 
 Changes since 1.4.5

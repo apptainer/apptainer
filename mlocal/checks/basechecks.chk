@@ -323,6 +323,9 @@ fi
 if echo | $hstcc -E -dM - | grep -qs -e "__riscv_xlen 64"; then
 	hst_arch=riscv64
 fi
+if echo | $hstcc -E -dM - | grep -qs -e __loongarch64; then
+	hst_arch=loong64
+fi
 if [ "$hst_arch" != "" ]; then
 	echo $hst_arch
 else
@@ -355,6 +358,9 @@ if echo | $tgtcc -E -dM - | grep -qs -e __ARCH_PPC64 -e __PPC64__; then
 fi
 if echo | $tgtcc -E -dM - | grep -qs -e "__riscv_xlen 64"; then
 	tgt_arch=riscv64
+fi
+if echo | $tgtcc -E -dM - | grep -qs -e __loongarch64; then
+	tgt_arch=loong64
 fi
 if [ "$tgt_arch" != "" ]; then
 	echo $tgt_arch
