@@ -233,6 +233,31 @@ func RefHash(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, n
 	return hash, nil
 }
 
+// RefSize returns the size of the SIF layer of the OCI manifest for supplied ref
+func RefSize(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (int64, error) {
+	im, err := remoteImage(ctx, ref, arch, ociAuth, noHTTPS, nil, reqAuthFile)
+	if err != nil {
+		return 0, err
+	}
+
+	// Check manifest to ensure we have a SIF as single layer
+	manifest, err := im.Manifest()
+	if err != nil {
+		return 0, err
+	}
+	if len(manifest.Layers) != 1 {
+		return 0, fmt.Errorf("ORAS SIF image should have a single layer, found %d", len(manifest.Layers))
+	}
+	layer := manifest.Layers[0]
+	if layer.MediaType != SifLayerMediaTypeV1 &&
+		layer.MediaType != SifLayerMediaTypeProto {
+		return 0, fmt.Errorf("invalid layer mediatype: %s", layer.MediaType)
+	}
+
+	size := layer.Size
+	return size, nil
+}
+
 func RefDigest(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (v1.Hash, error) {
 	im, err := remoteImage(ctx, ref, arch, ociAuth, noHTTPS, nil, reqAuthFile)
 	if err != nil {
@@ -264,6 +289,15 @@ func ImageHash(ctx context.Context, filePath string) (v1.Hash, error) {
 	}
 
 	return hash, nil
+}
+
+// ImageSize returns the size for a file
+func ImageSize(filePath string) (int64, error) {
+	st, err := os.Stat(filePath)
+	if err != nil {
+		return 0, err
+	}
+	return st.Size(), nil
 }
 
 // sha256sum computes the sha256sum of the specified reader; caller is
