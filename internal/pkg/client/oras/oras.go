@@ -18,10 +18,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
 	"github.com/apptainer/apptainer/internal/pkg/client"
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/internal/pkg/util/ociauth"
 	"github.com/apptainer/apptainer/pkg/image"
 	"github.com/apptainer/apptainer/pkg/inspect"
@@ -242,16 +244,24 @@ func RefHash(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, n
 }
 
 // ImageCreated returns the created for a file
-func ImageCreated(filePath string) (time.Time, error) {
+func ImageCreated(filepath string) (time.Time, error) {
 	img, err := image.Init(filepath, false)
 	if err != nil {
-		return fmt.Errorf("could not open image %s for verification: %s", filepath, err)
+		return time.Time{}, fmt.Errorf("could not open image %s for verification: %s", filepath, err)
 	}
 	defer img.File.Close()
-	if img.Type != image.SIF {
-		return time.Now(), nil
-	}
 
+	switch img.Type {
+	case image.SIF:
+		return imageCreatedSIF(filepath)
+	case image.SQUASHFS:
+		return imageCreatedSquashfs(filepath)
+	default:
+		return time.Time{}, fmt.Errorf("%q is not a SIF or SquashFS", filepath)
+	}
+}
+
+func imageCreatedSIF(filePath string) (time.Time, error) {
 	f, err := sif.LoadContainerFromPath(filePath, sif.OptLoadWithFlag(os.O_RDONLY))
 	if err != nil {
 		return time.Time{}, err
@@ -317,6 +327,40 @@ func usTimezone(name string, offset int) string {
 		}
 	}
 	return name
+}
+
+func imageCreatedSquashfs(filePath string) (time.Time, error) {
+	unsquashfs, err := bin.FindBin("unsquashfs")
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	out, err := exec.Command(unsquashfs, "-stat", filePath).Output()
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	created := time.Now()
+	for _, line := range strings.Split(string(out), "\n") {
+		if strings.HasPrefix(line, "Creation or last append time ") {
+			t, err := parseCreationTime(line)
+			if err != nil {
+				return time.Time{}, err
+			}
+			created = t
+		}
+	}
+	return created, nil
+}
+
+func parseCreationTime(date string) (time.Time, error) {
+	squashfsTime := strings.Replace(date, "Creation or last append time ", "", 1)
+	squashfsFormat := "Mon Jan 2 15:04:05 2006"
+	t, err := time.ParseInLocation(squashfsFormat, squashfsTime, time.Local)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return t, nil
 }
 
 // ImageDigest returns the digest for a file
