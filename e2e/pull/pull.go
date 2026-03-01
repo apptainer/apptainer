@@ -462,7 +462,8 @@ func orasPushNoCheck(path, ref, layerMediaType string) error {
 		return err
 	}
 
-	im, err := oras.NewImageFromSIF(path, types.MediaType(layerMediaType))
+	annotations := map[string]string{}
+	im, err := oras.NewImageFromSIF(path, types.MediaType(layerMediaType), annotations)
 	if err != nil {
 		return err
 	}
