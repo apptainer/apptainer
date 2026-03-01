@@ -5,6 +5,10 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.6.x changes
+
+- Add possibility to add description and annotations for oras.
+
 ## v1.5.x changes
 
 Changes since v1.5.0-rc.1
