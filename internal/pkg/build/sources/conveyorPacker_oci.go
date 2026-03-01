@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"strings"
 	"text/template"
+	"time"
 
 	build_oci "github.com/apptainer/apptainer/internal/pkg/build/oci"
 	"github.com/apptainer/apptainer/internal/pkg/cache"
@@ -212,6 +213,14 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 		return err
 	}
 	cp.imgConfig = cf.Config
+
+	if b.Opts.Reproducible {
+		sourceDateEpoch := cf.Created.In(time.UTC)
+		sylog.Debugf("Setting SourceDateEpoch to %s", sourceDateEpoch)
+		b.SourceDateEpoch = sourceDateEpoch
+		// Need to set the SOURCE_DATE_EPOCH environment variable, for mksquashfs
+		os.Setenv("SOURCE_DATE_EPOCH", fmt.Sprintf("%d", sourceDateEpoch.Unix()))
+	}
 
 	return nil
 }

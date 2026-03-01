@@ -370,39 +370,39 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 		sylog.Fatalf("%v", err)
 	}
 
-	b, err := build.New(
-		defs,
-		build.Config{
-			Dest:      dst,
-			Format:    buildFormat,
-			NoCleanUp: buildArgs.noCleanUp,
-			Opts: types.Options{
-				ImgCache:          imgCache,
-				TmpDir:            tmpDir,
-				NoCache:           disableCache,
-				Update:            buildArgs.update,
-				Force:             forceOverwrite,
-				Sections:          buildArgs.sections,
-				NoTest:            buildArgs.noTest,
-				NoHTTPS:           noHTTPS,
-				LibraryURL:        buildArgs.libraryURL,
-				LibraryAuthToken:  authToken,
-				FakerootPath:      fakerootPath,
-				KeyServerOpts:     ko,
-				OCIAuthConfig:     authConf,
-				DockerDaemonHost:  dockerHost,
-				EncryptionKeyInfo: keyInfo,
-				FixPerms:          buildArgs.fixPerms,
-				SandboxTarget:     sandboxTarget,
-				DataPartition:     dataPartition,
-				MksquashfsArgs:    buildArgs.mksquashfsArgs,
-				Binds:             buildArgs.bindPaths,
-				Unprivilege:       unprivilege,
-				ReqAuthFile:       reqAuthFile,
-				Arch:              arch,
-				Platform:          *dp,
-			},
-		})
+	config := build.Config{
+		Dest:      dst,
+		Format:    buildFormat,
+		NoCleanUp: buildArgs.noCleanUp,
+		Opts: types.Options{
+			ImgCache:          imgCache,
+			TmpDir:            tmpDir,
+			NoCache:           disableCache,
+			Update:            buildArgs.update,
+			Force:             forceOverwrite,
+			Sections:          buildArgs.sections,
+			NoTest:            buildArgs.noTest,
+			NoHTTPS:           noHTTPS,
+			LibraryURL:        buildArgs.libraryURL,
+			LibraryAuthToken:  authToken,
+			FakerootPath:      fakerootPath,
+			KeyServerOpts:     ko,
+			OCIAuthConfig:     authConf,
+			DockerDaemonHost:  dockerHost,
+			EncryptionKeyInfo: keyInfo,
+			FixPerms:          buildArgs.fixPerms,
+			SandboxTarget:     sandboxTarget,
+			DataPartition:     dataPartition,
+			MksquashfsArgs:    buildArgs.mksquashfsArgs,
+			Binds:             buildArgs.bindPaths,
+			Unprivilege:       unprivilege,
+			ReqAuthFile:       reqAuthFile,
+			Arch:              arch,
+			Platform:          *dp,
+			Reproducible:      buildArgs.reproducible,
+		},
+	}
+	b, err := build.New(defs, config)
 	if err != nil {
 		sylog.Fatalf("Unable to create build: %v", err)
 	}

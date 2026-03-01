@@ -128,6 +128,8 @@ type Options struct {
 	MksquashfsArgs string
 	// Which Platform to use when retrieving images for the build
 	Platform ggcrv1.Platform
+	// Reproducible build
+	Reproducible bool
 }
 
 // NewEncryptedBundle creates an Encrypted Bundle environment.
