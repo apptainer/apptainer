@@ -355,6 +355,10 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 		sandboxTarget = true
 
 	}
+	dataPartition := false
+	if buildArgs.data {
+		dataPartition = true
+	}
 
 	arch, err := oci.ConvertArch(buildArgs.buildArch, buildArgs.buildArchVariant)
 	if err != nil {
@@ -390,6 +394,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 				EncryptionKeyInfo: keyInfo,
 				FixPerms:          buildArgs.fixPerms,
 				SandboxTarget:     sandboxTarget,
+				DataPartition:     dataPartition,
 				MksquashfsArgs:    buildArgs.mksquashfsArgs,
 				Binds:             buildArgs.bindPaths,
 				Unprivilege:       unprivilege,

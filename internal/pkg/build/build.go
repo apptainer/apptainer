@@ -378,8 +378,14 @@ func (b *Build) Full(ctx context.Context) error {
 		}
 
 		sylog.Debugf("Inserting Metadata")
-		if err := stage.insertMetadata(); err != nil {
-			return fmt.Errorf("while inserting metadata to bundle: %v", err)
+		if b.Conf.Opts.DataPartition {
+			if err := stage.insertMetadataForData(); err != nil {
+				return fmt.Errorf("while inserting metadata to bundle: %v", err)
+			}
+		} else {
+			if err := stage.insertMetadata(); err != nil {
+				return fmt.Errorf("while inserting metadata to bundle: %v", err)
+			}
 		}
 
 		if err := stage.runTestScript(sessionResolv, sessionHosts); err != nil {

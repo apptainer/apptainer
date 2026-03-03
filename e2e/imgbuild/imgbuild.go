@@ -1262,6 +1262,21 @@ func (c *imgBuildTests) ensureImageIsGocryptfsEncrypted(t *testing.T, imgPath st
 	)
 }
 
+func (c *imgBuildTests) ensureImageHasDataPartition(t *testing.T, imgPath string) {
+	sifID := "3"
+	cmdArgs := []string{"info", sifID, imgPath}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("sif"),
+		e2e.WithArgs(cmdArgs...),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.RegexMatch, "Partition Type:[ ]+Data"),
+		),
+	)
+}
+
 func (c imgBuildTests) buildEncryptPemFile(t *testing.T) {
 	busyboxSIF := e2e.BusyboxSIF(t)
 
@@ -2408,6 +2423,44 @@ func (c imgBuildTests) reproducibleBuild(t *testing.T) {
 	}
 }
 
+func (c imgBuildTests) buildDataPartition(t *testing.T) {
+	require.Command(t, "mksquashfs")
+
+	tmpdir, cleanup := c.tempDir(t, "build-data-part")
+
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup()
+		}
+	})
+
+	squashfsImage := filepath.Join(tmpdir, "test.squashfs")
+	squashDir, err := os.MkdirTemp(tmpdir, "squashfs-root-")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = exec.Command("mksquashfs", squashDir, squashfsImage).Run()
+	if err != nil {
+		t.Fatalf("unexpected error while running command: %+v", err)
+	}
+
+	img := path.Join(tmpdir, "test.sif")
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--data", img, squashfsImage),
+		e2e.WithEnv(append(os.Environ(), "APPTAINER_VERBOSE=true")),
+		e2e.ExpectExit(
+			0,
+		),
+	)
+
+	c.ensureImageHasDataPartition(t, img)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := imgBuildTests{
@@ -2456,5 +2509,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"auth":                                   np(c.buildWithAuth),                    // build with custom auth file
 		"issue 2607":                             c.issue2607,                            // https://github.com/sylabs/singularity/issues/2607
 		"reproducible build":                     c.reproducibleBuild,                    // build sifs as reproducible
+		"build with data part":                   c.buildDataPartition,                   // build sifs with data part
 	}
 }

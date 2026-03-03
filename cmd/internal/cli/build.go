@@ -47,6 +47,7 @@ var buildArgs struct {
 	noTest              bool
 	sandbox             bool
 	update              bool
+	data                bool
 	nvidia              bool
 	nvccli              bool
 	rocm                bool
@@ -70,6 +71,16 @@ var buildSandboxFlag = cmdline.Flag{
 	ShortHand:    "s",
 	Usage:        "build image as sandbox format (chroot directory structure)",
 	EnvKeys:      []string{"SANDBOX"},
+}
+
+// --data
+var buildDataFlag = cmdline.Flag{
+	ID:           "buildDataFlag",
+	Value:        &buildArgs.data,
+	DefaultValue: false,
+	Name:         "data",
+	Usage:        "build image with data partition instead of system partition",
+	EnvKeys:      []string{"DATA"},
 }
 
 // --section
@@ -366,6 +377,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildNoCleanupFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildNoTestFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildSandboxFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildDataFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildSectionFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildUpdateFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&commonForceFlag, buildCmd)

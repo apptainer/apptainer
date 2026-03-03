@@ -32,6 +32,16 @@ type LocalConveyorPacker struct {
 	localPacker LocalPacker
 }
 
+type CopyPacker struct {
+	srcfile string
+	b       *types.Bundle
+}
+
+func (cp *CopyPacker) Pack(_ context.Context) (*types.Bundle, error) {
+	cp.b.RootfsImage = cp.srcfile
+	return cp.b, nil
+}
+
 // GetLocalPacker ...
 func GetLocalPacker(ctx context.Context, src string, b *types.Bundle) (LocalPacker, error) {
 	imageObject, err := image.Init(src, false)
@@ -81,6 +91,13 @@ func GetLocalPacker(ctx context.Context, src string, b *types.Bundle) (LocalPack
 		}, nil
 	case image.SQUASHFS:
 		sylog.Debugf("Packing from Squashfs")
+
+		if b.Opts.DataPartition {
+			return &CopyPacker{
+				srcfile: src,
+				b:       b,
+			}, nil
+		}
 
 		return &SquashfsPacker{
 			srcfile: src,

@@ -54,8 +54,9 @@ type Bundle struct {
 	Recipe      Definition        `json:"rawDeffile"`
 	Opts        Options           `json:"opts"`
 
-	RootfsPath string `json:"rootfsPath"` // where actual fs to chroot will appear
-	TmpDir     string `json:"tmpPath"`    // where temp files required during build will appear
+	RootfsPath  string `json:"rootfsPath"`            // where actual fs to chroot will appear
+	RootfsImage string `json:"rootfsImage,omitempty"` // external squashfs to be used for data partition
+	TmpDir      string `json:"tmpPath"`               // where temp files required during build will appear
 
 	SourceDateEpoch time.Time // SOURCE_DATE_EPOCH, or Zero (`time.Time{}`) for Now
 
@@ -109,6 +110,8 @@ type Options struct {
 	// To warn when the above is needed, we need to know if the target of this
 	// bundle will be a sandbox
 	SandboxTarget bool
+	// Create a data partition, instead of a system partition
+	DataPartition bool
 	// Binds stores bind mounts used for the post scripts
 	Binds []string
 	// whether using gocryptfs to build and run encrypted containers
