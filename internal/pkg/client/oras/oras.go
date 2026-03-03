@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -282,6 +284,8 @@ func ImageCreated(filePath string) (time.Time, error) {
 func parseBuildDate(date string) (time.Time, error) {
 	// time.Parse uses underscores with a special meaning, so replace with space
 	buildTime := strings.ReplaceAll(date, "_", " ")
+	// unfortunately apptainer used a custom method to construct a time string
+	buildTime = addLeadingZeros(buildTime)
 	buildFormat := "Monday 2 January 2006 15:04:05 MST"
 	t, err := time.Parse(buildFormat, buildTime)
 	if err != nil {
@@ -296,6 +300,18 @@ func parseBuildDate(date string) (time.Time, error) {
 		}
 	}
 	return t, nil
+}
+
+func addLeadingZeros(date string) string {
+	re := regexp.MustCompile(`([0-9]+):([0-9]+):([0-9]+)`)
+	if groups := re.FindStringSubmatch(date); groups != nil {
+		h, _ := strconv.Atoi(groups[1])
+		m, _ := strconv.Atoi(groups[2])
+		s, _ := strconv.Atoi(groups[3])
+		return re.ReplaceAllString(date,
+			fmt.Sprintf("%02d:%02d:%02d", h, m, s))
+	}
+	return date
 }
 
 func usTimezone(name string, offset int) string {
