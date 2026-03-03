@@ -146,6 +146,12 @@ func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.Aut
 		return err
 	}
 
+	digest, err := im.Digest()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Digest: %s\n", digest)
+
 	platform := v1.Platform{
 		Architecture: arch,
 		OS:           "linux",
@@ -225,6 +231,14 @@ func RefHash(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, n
 
 	hash := layer.Digest
 	return hash, nil
+}
+
+func RefDigest(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (v1.Hash, error) {
+	im, err := remoteImage(ctx, ref, arch, ociAuth, noHTTPS, nil, reqAuthFile)
+	if err != nil {
+		return v1.Hash{}, err
+	}
+	return im.Digest()
 }
 
 // ImageDigest returns the digest for a file

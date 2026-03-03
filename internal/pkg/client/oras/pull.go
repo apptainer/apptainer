@@ -70,6 +70,12 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, arch 
 		imagePath = cacheEntry.Path
 	}
 
+	digest, err := RefDigest(ctx, pullFrom, arch, ociAuth, noHTTPS, reqAuthFile)
+	if err != nil {
+		return "", fmt.Errorf("failed to get digest for %s: %s", pullFrom, err)
+	}
+	fmt.Printf("Digest: %s\n", digest)
+
 	return imagePath, nil
 }
 
