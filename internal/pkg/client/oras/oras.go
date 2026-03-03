@@ -251,7 +251,7 @@ func RefDigest(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig,
 func ImageCreated(filePath string) (time.Time, error) {
 	f, err := sif.LoadContainerFromPath(filePath, sif.OptLoadWithFlag(os.O_RDONLY))
 	if err != nil {
-		return time.Time{}, err
+		return time.Now(), nil
 	}
 	defer f.UnloadContainer()
 
