@@ -150,7 +150,7 @@ func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.Aut
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Digest: %s\n", digest)
+	sylog.Infof("Digest: %s\n", digest)
 
 	platform := v1.Platform{
 		Architecture: arch,

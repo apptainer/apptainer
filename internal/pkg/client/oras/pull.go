@@ -74,7 +74,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, arch 
 	if err != nil {
 		return "", fmt.Errorf("failed to get digest for %s: %s", pullFrom, err)
 	}
-	fmt.Printf("Digest: %s\n", digest)
+	sylog.Infof("Digest: %s\n", digest)
 
 	return imagePath, nil
 }
