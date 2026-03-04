@@ -16,13 +16,24 @@ For older changes see the [archived Singularity change log](https://github.com/a
   Also add the image name (ref) of the image from "docker", with registry and tag.
   This is useful for traceability, when using `docker.io` or a tag like `latest`.
   Unfortunately the feature does not work with "docker-archive" or "docker-daemon".
-- Whenever libraries are bound in to `/.singularity.d/libs` (such as with
-  GPU options like `--nv`) and `LD_LIBRARY_PATH` is not pre-set by
-  `APPTAINERENV_LD_LIBRARY_PATH`, add the container's default library search
-  directories to `LD_LIBRARY_PATH` ahead of `/.singularity.d/libs`.
-  This makes libraries pre-installed in the container take precedence over
-  libraries bound in from the host.  Works with glibc-based container operating
-  systems and reduces the chances of mismatched glibc versions.
+- If `PREPEND_LD_LIBRARY_PATH` is set in the container environment (through
+  an `--env` option, an `APPTAINERENV_` prefix from the host, or in the
+  container definition) then prepend that string to `:$LD_LIBRARY_PATH`.
+  Likewise if `APPEND_LD_LIBRARY_PATH` is set in the container environment
+  then append that string to `$LD_LIBRARY_PATH:`.  This is only done when
+  `LD_LIBRARY_PATH` is set, although if the container is based on glibc,
+  when `LD_LIBRARY_PATH` is not set it will first be filled with the
+  default library search path as found through `ldconfig`.
+- If libraries are bound in to `/.singularity.d/libs` (such as with GPU
+  options like `--nv`) and the container is based on glibc and
+  `LD_LIBRARY_PATH` is not already set, it is now set to the default
+  library search path.  Since `/.singularity.d/libs` is appended to
+  `LD_LIBRARY_PATH`, this makes libraries installed in the container
+  take precedence over libraries bound in from the host.  This reduces
+  the chances of mismatched glibc versions.  However, if there are
+  indeed libraries on the host that need to take precedence over
+  libraries in the container, that can be forced with
+  `PREPEND_LD_LIBRARY_PATH=/.singularity.d/libs`.
 - Change the default `arm` variant to `v7`, and stop using the GOARM environment
   variable. The variables GOOS, GOARCH and GOARM are only used when building.
 - Add new bootstrap `buildkit:` (and `buildkit:` URL) for building SIF images

@@ -137,10 +137,20 @@ func (c ctx) apptainerEnvOption(t *testing.T) {
 	customImage := c.env.ImagePath
 	customPath := defaultPath + ":/go/bin:/usr/local/go/bin"
 
+	// Use Debian for LD_LIBRARY_PATH tests because busybox and alpine
+	// don't use glibc and so with those Apptainer can't figure out a
+	// default LD_LIBRARY_PATH
+	e2e.EnsureDebianImage(t, c.env)
+	debianImage := c.env.DebianImagePath
+	// TODO: calculate the default path from the image the same
+	// way that Apptainer does
+	defaultLdLibPath := "/usr/local/lib:/lib/x86_64-linux-gnu:/lib"
+
 	tests := []struct {
 		name     string
 		image    string
 		envOpt   []string
+		execOpt  []string
 		hostEnv  []string
 		matchEnv string
 		matchVal string
@@ -289,20 +299,41 @@ func (c ctx) apptainerEnvOption(t *testing.T) {
 		},
 		{
 			name:     "TestDefaultLdLibraryPath",
-			image:    customImage,
+			image:    debianImage,
 			matchEnv: "LD_LIBRARY_PATH",
 			matchVal: apptainerLibs,
 		},
 		{
+			name:     "TestDefaultLdLibraryPathWithBind",
+			image:    debianImage,
+			execOpt:  []string{"-B", "/etc/os-release:" + apptainerLibs + "/os-release"},
+			matchEnv: "LD_LIBRARY_PATH",
+			matchVal: defaultLdLibPath + ":" + apptainerLibs,
+		},
+		{
+			name:     "TestPrependLdLibraryPath",
+			image:    debianImage,
+			envOpt:   []string{"PREPEND_LD_LIBRARY_PATH=/foo"},
+			matchEnv: "LD_LIBRARY_PATH",
+			matchVal: "/foo:" + defaultLdLibPath + ":" + apptainerLibs,
+		},
+		{
+			name:     "TestAppendLdLibraryPath",
+			image:    debianImage,
+			envOpt:   []string{"APPEND_LD_LIBRARY_PATH=/foo"},
+			matchEnv: "LD_LIBRARY_PATH",
+			matchVal: defaultLdLibPath + ":" + apptainerLibs + ":/foo",
+		},
+		{
 			name:     "TestCustomTrailingCommaPath",
-			image:    customImage,
+			image:    debianImage,
 			envOpt:   []string{"LD_LIBRARY_PATH=/foo,"},
 			matchEnv: "LD_LIBRARY_PATH",
 			matchVal: "/foo,:" + apptainerLibs,
 		},
 		{
 			name:     "TestCustomLdLibraryPath",
-			image:    customImage,
+			image:    debianImage,
 			envOpt:   []string{"LD_LIBRARY_PATH=/foo"},
 			matchEnv: "LD_LIBRARY_PATH",
 			matchVal: "/foo:" + apptainerLibs,
@@ -313,6 +344,9 @@ func (c ctx) apptainerEnvOption(t *testing.T) {
 		args := make([]string, 0)
 		if tt.envOpt != nil {
 			args = append(args, "--env", strings.Join(tt.envOpt, ","))
+		}
+		if tt.execOpt != nil {
+			args = append(args, tt.execOpt...)
 		}
 		args = append(args, tt.image, "/bin/sh", "-c", "echo \"${"+tt.matchEnv+"}\"")
 		c.env.RunApptainer(
