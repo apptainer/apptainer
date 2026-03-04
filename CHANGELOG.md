@@ -78,6 +78,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add `--data` flag to build, for sif creation with a squashfs data partition.
 - Add support for Container Device Interface (CDI) through new
   `--device` and `--cdi-dirs` run/shell/exec options.
+- Update the bundled gocryptfs to version 2.6.1.
+- Update the bundled squashfuse to version 0.6.1.
+- Update the bundled fuse-overlayfs to version 1.16.
+- Update the bundled squashfs-tools to version 4.7.5.
 
 ## v1.4.x changes
 

@@ -29,11 +29,11 @@
 # For example, it has dash instead of tilde for release candidates.
 %global package_version @PACKAGE_VERSION@
 
-%global gocryptfs_version 2.5.1
-%global squashfuse_version 0.6.0
+%global gocryptfs_version 2.6.1
+%global squashfuse_version 0.6.1
 %global e2fsprogs_version 1.47.3
-%global fuse_overlayfs_version 1.15
-%global squashfs_tools_version 4.6.1
+%global fuse_overlayfs_version 1.16
+%global squashfs_tools_version 4.7.5
 
 # The last singularity version number in EPEL/Fedora
 %global last_singularity_version 3.8.7-3
