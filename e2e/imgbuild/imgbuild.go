@@ -2368,113 +2368,94 @@ func (c imgBuildTests) buildWithAuthTester(t *testing.T, withCustomAuthFile bool
 
 func (c imgBuildTests) reproducibleBuild(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
-
-	tmpdir, cleanup := c.tempDir(t, "reproducible-build")
-
-	t.Cleanup(func() {
-		if !t.Failed() {
-			cleanup()
-		}
-	})
-	liDefFile := e2e.PrepareDefFile(e2e.DefFileDetails{
-		Bootstrap: "localimage",
-		From:      c.env.ImagePath,
-	})
-	t.Cleanup(func() {
-		if !t.Failed() {
-			os.Remove(liDefFile)
-		}
-	})
-
 	sde := time.Now()
 
-	img1 := path.Join(tmpdir, "test1.sif")
-	img2 := path.Join(tmpdir, "test2.sif")
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserNamespaceProfile),
-		e2e.WithCommand("build"),
-		e2e.WithArgs(img1, liDefFile),
-		e2e.WithEnv(append(os.Environ(), fmt.Sprintf("SOURCE_DATE_EPOCH=%d", sde.Unix()))),
-		e2e.ExpectExit(0),
-	)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserNamespaceProfile),
-		e2e.WithCommand("build"),
-		e2e.WithArgs(img2, liDefFile),
-		e2e.WithEnv(append(os.Environ(), fmt.Sprintf("SOURCE_DATE_EPOCH=%d", sde.Unix()))),
-		e2e.ExpectExit(0),
-	)
-
-	bin1, err := os.ReadFile(img1)
-	if err != nil {
-		log.Fatal(err)
+	tt := []struct {
+		name      string
+		bootstrap string
+		from      string
+		args      []string
+		env       []string
+	}{
+		{
+			"SourceDateEpoch",
+			"docker",
+			"alpine:latest",
+			[]string{},
+			[]string{fmt.Sprintf("SOURCE_DATE_EPOCH=%d", sde.Unix())},
+		},
+		{
+			"Reproducible (flag)",
+			"docker",
+			"alpine:latest",
+			[]string{"--reproducible"},
+			[]string{},
+		},
+		{
+			"Reproducible (env)",
+			"docker",
+			"alpine:latest",
+			[]string{},
+			[]string{fmt.Sprintf("APPTAINER_REPRODUCIBLE=%t", true)},
+		},
 	}
-	bin2, err := os.ReadFile(img2)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	if !reflect.DeepEqual(bin1, bin2) {
-		t.Errorf("unreproducible sifs")
-	}
-}
+	for _, tc := range tt {
+		tmpdir, cleanup := c.tempDir(t, "reproducible-build")
 
-func (c imgBuildTests) reproducibleBuildOCI(t *testing.T) {
-	tmpdir, cleanup := c.tempDir(t, "reproducible-build-oci")
+		t.Cleanup(func() {
+			if !t.Failed() {
+				cleanup()
+			}
+		})
 
-	t.Cleanup(func() {
-		if !t.Failed() {
-			cleanup()
+		liDefFile := e2e.PrepareDefFile(e2e.DefFileDetails{
+			Bootstrap: tc.bootstrap,
+			From:      tc.from,
+		})
+
+		t.Cleanup(func() {
+			if !t.Failed() {
+				os.Remove(liDefFile)
+			}
+		})
+
+		img1 := path.Join(tmpdir, "test1.sif")
+		img2 := path.Join(tmpdir, "test2.sif")
+
+		args1 := append(tc.args, img1, liDefFile)
+		c.env.RunApptainer(
+			t,
+			e2e.WithProfile(e2e.UserNamespaceProfile),
+			e2e.AsSubtest(tc.name),
+			e2e.WithCommand("build"),
+			e2e.WithArgs(args1...),
+			e2e.WithEnv(append(os.Environ(), tc.env...)),
+			e2e.ExpectExit(0),
+		)
+
+		args2 := append(tc.args, img2, liDefFile)
+		c.env.RunApptainer(
+			t,
+			e2e.WithProfile(e2e.UserNamespaceProfile),
+			e2e.WithCommand("build"),
+			e2e.WithArgs(args2...),
+			e2e.WithEnv(append(os.Environ(), tc.env...)),
+			e2e.ExpectExit(0),
+		)
+
+		bin1, err := os.ReadFile(img1)
+		if err != nil {
+			log.Fatal(err)
 		}
-	})
-	liDefFile := e2e.PrepareDefFile(e2e.DefFileDetails{
-		Bootstrap: "docker",
-		From:      "alpine:latest",
-	})
-	t.Cleanup(func() {
-		if !t.Failed() {
-			os.Remove(liDefFile)
+		bin2, err := os.ReadFile(img2)
+		if err != nil {
+			log.Fatal(err)
 		}
-	})
 
-	reproducible := true
-
-	img1 := path.Join(tmpdir, "test1.sif")
-	img2 := path.Join(tmpdir, "test2.sif")
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserNamespaceProfile),
-		e2e.WithCommand("build"),
-		e2e.WithArgs(img1, liDefFile),
-		e2e.WithEnv(append(os.Environ(), fmt.Sprintf("APPTAINER_REPRODUCIBLE=%t", reproducible))),
-		e2e.ExpectExit(0),
-	)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserNamespaceProfile),
-		e2e.WithCommand("build"),
-		e2e.WithArgs(img2, liDefFile),
-		e2e.WithEnv(append(os.Environ(), fmt.Sprintf("APPTAINER_REPRODUCIBLE=%t", reproducible))),
-		e2e.ExpectExit(0),
-	)
-
-	bin1, err := os.ReadFile(img1)
-	if err != nil {
-		log.Fatal(err)
-	}
-	bin2, err := os.ReadFile(img2)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if !reflect.DeepEqual(bin1, bin2) {
-		t.Errorf("unreproducible sifs")
+		if !reflect.DeepEqual(bin1, bin2) {
+			t.Errorf("unreproducible sifs")
+		}
 	}
 }
 
@@ -2564,7 +2545,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"auth":                                   np(c.buildWithAuth),                    // build with custom auth file
 		"issue 2607":                             c.issue2607,                            // https://github.com/sylabs/singularity/issues/2607
 		"reproducible build":                     c.reproducibleBuild,                    // build sifs as reproducible
-		"reproducible build OCI":                 c.reproducibleBuildOCI,                 // build sifs as reproducible from OCI
 		"build with data part":                   c.buildDataPartition,                   // build sifs with data part
 	}
 }
