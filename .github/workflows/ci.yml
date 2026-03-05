@@ -360,11 +360,29 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libseccomp-dev fakeroot cryptsetup dbus-user-session 
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
 
-      - name: Download, compile, and install dependent packages
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: cache
+          key: ${{ hashFiles('dist/rpm/apptainer.spec.in') }}
+
+      - name: Download dependent packages
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           set -ex
-          ./scripts/download-dependencies 
-          ./scripts/compile-dependencies
+          mkdir -p cache
+          ./scripts/download-dependencies cache
+
+      - uses: actions/cache/save@v4
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: cache
+          key: ${{ hashFiles('dist/rpm/apptainer.spec.in') }}
+
+      - name: Compile and install dependent packages
+        run: |
+          set -ex
+          ./scripts/compile-dependencies cache
           sudo mkdir -p /usr/local/libexec/apptainer/bin
           sudo ./scripts/install-dependencies /usr/local/libexec
 
