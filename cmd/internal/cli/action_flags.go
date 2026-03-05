@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2024, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -40,6 +40,8 @@ var (
 	noMount           []string
 	dmtcpLaunch       string
 	dmtcpRestart      string
+	device            []string
+	cdiDirs           []string
 
 	isBoot          bool
 	isFakeroot      bool
@@ -877,6 +879,24 @@ var actionIntelHpuFlag = cmdline.Flag{
 	EnvKeys:      []string{"INTEL_HPU"},
 }
 
+// --device
+var actionDeviceFlag = cmdline.Flag{
+	ID:           "actionDeviceFlag",
+	Value:        &device,
+	DefaultValue: []string{},
+	Name:         "device",
+	Usage:        "fully-qualified CDI device name(s). A fully-qualified CDI device name consists of a VENDOR, CLASS, and NAME, which are combined as follows: <VENDOR>/<CLASS>=<NAME> (e.g. vendor.com/device=mydevice). Multiple fully-qualified CDI device names can be given as a comma separated list.",
+}
+
+// --cdi-dirs
+var actionCdiDirsFlag = cmdline.Flag{
+	ID:           "actionCdiDirsFlag",
+	Value:        &cdiDirs,
+	DefaultValue: []string{},
+	Name:         "cdi-dirs",
+	Usage:        "comma-separated list of directories in which CDI should look for device definition JSON files. If omitted, default will be: /etc/cdi,/var/run/cdi",
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(ExecCmd)
@@ -978,5 +998,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&commonAuthFileFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionRunscriptTimeoutFlag, actionsRunscriptCmd...)
 		cmdManager.RegisterFlagForCmd(&actionIntelHpuFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionDeviceFlag, actionsCmd...)
+		cmdManager.RegisterFlagForCmd(&actionCdiDirsFlag, actionsCmd...)
 	})
 }

@@ -24,6 +24,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/image/driver"
 	"github.com/apptainer/apptainer/internal/pkg/plugin"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc/client"
+	"github.com/apptainer/apptainer/internal/pkg/util/cdi"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/files"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/layout"
@@ -1737,6 +1738,13 @@ func (c *container) addDevMount(system *mount.System) error {
 			}
 		}
 
+		devs, _ := cdi.GetCdiDevs(&c.engine.EngineConfig.JSON.CdiSpec)
+		for _, dev := range devs {
+			if err := c.addSessionDev(dev, system); err != nil {
+				return err
+			}
+		}
+
 		if err := c.addSessionDev("/dev/fd", system); err != nil {
 			return err
 		}
@@ -2083,7 +2091,15 @@ func (c *container) addUserbindsMount(system *mount.System) error {
 	const devPrefix = "/dev"
 	defaultFlags := uintptr(syscall.MS_BIND | c.suidFlag | syscall.MS_NODEV | syscall.MS_REC)
 
-	for _, b := range c.engine.EngineConfig.GetBindPath() {
+	// Treat CDI mounts exactly the same as --bind options
+	cdiMounts, _ := cdi.GetCdiMounts(&c.engine.EngineConfig.JSON.CdiSpec)
+	bindPaths, err := apptainer.ParseBindPath(cdiMounts)
+	if err != nil {
+		sylog.Warningf("Skipping CDI mounts because: %s", err)
+	}
+	bindPaths = append(bindPaths, c.engine.EngineConfig.GetBindPath()...)
+
+	for _, b := range bindPaths {
 		if strings.HasPrefix(b.Destination, "/.singularity.d/libs") {
 			// Defer to library bind time because otherwise the
 			//  binds here will get hidden under a new directory

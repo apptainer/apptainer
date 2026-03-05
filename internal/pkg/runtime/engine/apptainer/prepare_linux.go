@@ -34,6 +34,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
 	"github.com/apptainer/apptainer/internal/pkg/syecl"
 	"github.com/apptainer/apptainer/internal/pkg/sypgp"
+	"github.com/apptainer/apptainer/internal/pkg/util/cdi"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/overlay"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/squashfs"
@@ -71,6 +72,8 @@ var nsProcName = map[specs.LinuxNamespaceType]string{
 //
 // No additional privileges can be gained as any of them are already
 // dropped by the time PrepareConfig is called.
+//
+//nolint:maintidx
 func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	var err error
 
@@ -170,6 +173,32 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 
 	starterConfig.SetMasterPropagateMount(true)
 	starterConfig.SetNoNewPrivs(e.EngineConfig.OciConfig.Process.NoNewPrivileges)
+
+	if len(e.EngineConfig.JSON.Devices) > 0 {
+		// Initialize the CDI Spec if devices specified
+		devices := e.EngineConfig.JSON.Devices
+		for _, device := range devices {
+			sylog.Debugf("Adding CDI device %s", device)
+		}
+		cdiDirs := e.EngineConfig.JSON.CdiDirs
+		for _, cdiDir := range cdiDirs {
+			sylog.Debugf("Adding CDI dir %s", cdiDir)
+		}
+		if err := cdi.AddCdiDevices(&e.EngineConfig.JSON.CdiSpec, devices, cdiDirs); err != nil {
+			return fmt.Errorf("while setting up CDI devices: %w", err)
+		}
+		// import the environment variables
+		cenv, _ := cdi.GetCdiEnvironment(&e.EngineConfig.JSON.CdiSpec)
+		for _, kv := range cenv {
+			parts := strings.SplitN(kv, "=", 2)
+			if len(parts) != 2 {
+				sylog.Debugf("Skipping CDI environment %s because no equal sign", kv)
+			} else {
+				sylog.Debugf("Adding environment from CDI %s", kv)
+				e.EngineConfig.OciConfig.SetProcessEnv(parts[0], parts[1])
+			}
+		}
+	}
 
 	if e.EngineConfig.OciConfig.Process != nil && e.EngineConfig.OciConfig.Process.Capabilities != nil {
 		starterConfig.SetCapabilities(capabilities.Permitted, e.EngineConfig.OciConfig.Process.Capabilities.Permitted)
