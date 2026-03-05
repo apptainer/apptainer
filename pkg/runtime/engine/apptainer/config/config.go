@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2022, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -17,6 +17,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci"
 	"github.com/apptainer/apptainer/pkg/image"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
+	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 
 // Name is the name of the runtime.
@@ -158,6 +159,9 @@ type JSONConfig struct {
 	ShareNSFd             int               `json:"sharensFd,omitempty"`
 	RunscriptTimeout      string            `json:"runscriptTimeout,omitempty"`
 	IntelHpu              bool              `json:"intelHpu,omitempty"`
+	CdiSpec               specs.Spec        `json:"cdiSpec,omitempty"`
+	Devices               []string          `json:"devices,omitempty"`
+	CdiDirs               []string          `json:"cdiDirs,omitempty"`
 }
 
 // SetImage sets the container image path to be used by EngineConfig.JSON.
@@ -997,4 +1001,24 @@ func (e *EngineConfig) SetIntelHpu(hpu bool) {
 // GetHpu returns if IntelHpu flag is set or not.
 func (e *EngineConfig) GetIntelHpu() bool {
 	return e.JSON.IntelHpu
+}
+
+// SetDevices sets the list of fully-qualified CDI device names.
+func (e *EngineConfig) SetDevices(devices []string) {
+	e.JSON.Devices = devices
+}
+
+// GetDevices returns the list of fully-qualified CDI device names.
+func (e *EngineConfig) GetDevices() []string {
+	return e.JSON.Devices
+}
+
+// SetCdiDirs sets the list of directories in which CDI should look for device definition JSON files.
+func (e *EngineConfig) SetCdiDirs(dirs []string) {
+	e.JSON.CdiDirs = dirs
+}
+
+// GetCdiDirs returns the list of directories in which CDI should look for device definition JSON files.
+func (e *EngineConfig) GetCdiDirs() []string {
+	return e.JSON.CdiDirs
 }

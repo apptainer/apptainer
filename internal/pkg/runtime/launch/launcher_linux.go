@@ -810,7 +810,7 @@ func (l *Launcher) setHome() error {
 	return nil
 }
 
-// SetGPUConfig sets up EngineConfig entries for NV / ROCm usage, if requested.
+// SetGPUConfig sets up EngineConfig entries for GPU usage, if requested.
 func (l *Launcher) SetGPUConfig() error {
 	if l.engineConfig.File.AlwaysUseNv && !l.cfg.NoNvidia {
 		l.cfg.Nvidia = true
@@ -852,6 +852,14 @@ func (l *Launcher) SetGPUConfig() error {
 			return l.setNvCCLIConfig()
 		}
 		return fmt.Errorf("--fakeroot does not support --nvccli in set-uid installations")
+	}
+	if len(l.cfg.Devices) > 0 {
+		sylog.Debugf("Using CDI device(s) %s", strings.Join(l.cfg.Devices, ","))
+		l.engineConfig.SetDevices(l.cfg.Devices)
+	}
+	if len(l.cfg.CdiDirs) > 0 {
+		sylog.Debugf("Using CDI dir(s) %s", strings.Join(l.cfg.CdiDirs, ","))
+		l.engineConfig.SetCdiDirs(l.cfg.CdiDirs)
 	}
 	return nil
 }

@@ -76,6 +76,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `apptainer overlay create` and `apptainer plugin compile`.
 - The oras transport now supports architectures beyond `amd64`.
 - Add `--data` flag to build, for sif creation with a squashfs data partition.
+- Add support for Container Device Interface (CDI) through new
+  `--device` and `--cdi-dirs` run/shell/exec options.
 
 ## v1.4.x changes
 
