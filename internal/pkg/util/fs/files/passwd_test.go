@@ -55,7 +55,8 @@ func TestPasswd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	expectRootEntry := fmt.Sprintf("root:x:0:0:%s:/tmp:/bin/ash\n", rootUser.Name)
+	// Also check that username got rewritten from toor to root
+	expectRootEntry := fmt.Sprintf("%s:x:0:0:%s:/tmp:/bin/ash\n", rootUser.Name, rootUser.Name)
 	if !strings.HasPrefix(string(outputPasswd), expectRootEntry) {
 		t.Errorf("Expected root entry %q, not found in:\n%s", expectRootEntry, string(outputPasswd))
 	}

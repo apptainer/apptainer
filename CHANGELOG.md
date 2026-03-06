@@ -78,6 +78,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add `--data` flag to build, for sif creation with a squashfs data partition.
 - Add support for Container Device Interface (CDI) through new
   `--device` and `--cdi-dirs` run/shell/exec options.
+- The username in `/etc/passwd` inside container now always corresponds to
+  the username of the user on host if an entry with the same UID is found.
 
 ## v1.4.x changes
 
