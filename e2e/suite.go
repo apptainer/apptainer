@@ -3,7 +3,7 @@
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
 // Copyright (c) 2020, Control Command Inc. All rights reserved.
-// Copyright (c) 2019-2022 Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2025 Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -42,6 +42,7 @@ import (
 	"github.com/apptainer/apptainer/e2e/key"
 	"github.com/apptainer/apptainer/e2e/keyserver"
 	"github.com/apptainer/apptainer/e2e/legacy"
+	"github.com/apptainer/apptainer/e2e/nested"
 	"github.com/apptainer/apptainer/e2e/oci"
 	"github.com/apptainer/apptainer/e2e/overlay"
 	"github.com/apptainer/apptainer/e2e/plugin"
@@ -226,6 +227,7 @@ func Run(t *testing.T) {
 	suite.AddGroup("KEY", key.E2ETests)
 	suite.AddGroup("KEYSERVER", keyserver.E2ETests)
 	suite.AddGroup("LEGACY", legacy.E2ETests)
+	suite.AddGroup("NESTED", nested.E2ETests)
 	suite.AddGroup("OCI", oci.E2ETests)
 	suite.AddGroup("OVERLAY", overlay.E2ETests)
 	suite.AddGroup("PLUGIN", plugin.E2ETests)
