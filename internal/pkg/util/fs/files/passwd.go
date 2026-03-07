@@ -83,8 +83,12 @@ func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (co
 		}
 		if entry.Uid() == uid {
 			userExists = true
-			// If user already exists in container, rebuild their passwd info preserving their original shell value
-			lines[i] = makePasswdLine(pwInfo.Name, pwInfo.UID, pwInfo.GID, pwInfo.Gecos, homeDir, entry.Shell())
+			gid32, err := safecast.Convert[uint32](entry.Gid())
+			if err != nil {
+				return nil, err
+			}
+			// If user already exists in container, change their username and home dir to those of the original user
+			lines[i] = makePasswdLine(pwInfo.Name, uid32, gid32, pwInfo.Gecos, homeDir, entry.Shell())
 			break
 		}
 	}
