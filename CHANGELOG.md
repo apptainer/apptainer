@@ -78,6 +78,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add `--data` flag to build, for sif creation with a squashfs data partition.
 - Add support for Container Device Interface (CDI) through new
   `--device` and `--cdi-dirs` run/shell/exec options.
+- Update the bundled gocryptfs to version 2.6.1.
+- Update the bundled squashfuse to version 0.6.1.
+- Update the bundled fuse-overlayfs to version 1.16.
+- Update the bundled squashfs-tools to version 4.7.5.
+- Print resulting digest, when doing push to and pull from oras.
 - The username in `/etc/passwd` inside container now always corresponds to
   the username of the user on host if an entry with the same UID is found.
 

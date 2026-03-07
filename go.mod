@@ -4,7 +4,7 @@ go 1.25.6
 
 require (
 	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2
-	github.com/ProtonMail/go-crypto v1.3.0
+	github.com/ProtonMail/go-crypto v1.4.0
 	github.com/adigunhammedolalekan/registry-auth v0.0.0-20200730122110-8cde180a3a60
 	github.com/apex/log v1.9.0
 	github.com/apptainer/container-key-client v0.8.0
@@ -24,7 +24,7 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/fatih/color v1.18.0
 	github.com/go-log/log v0.2.0
-	github.com/google/go-containerregistry v0.21.1
+	github.com/google/go-containerregistry v0.21.2
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.15.0
 	github.com/moby/go-archive v0.2.0
@@ -58,12 +58,12 @@ require (
 require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/buger/goterm v1.0.4
-	github.com/docker/cli v29.2.1+incompatible
+	github.com/docker/cli v29.3.0+incompatible
 	github.com/docker/distribution v2.8.3+incompatible
 	github.com/moby/sys/sequential v0.6.0
 	github.com/moby/sys/user v0.4.0
 	github.com/moby/sys/userns v0.1.0
-	github.com/samber/lo v1.52.0
+	github.com/samber/lo v1.53.0
 	github.com/sirupsen/logrus v1.9.4
 	tags.cncf.io/container-device-interface v1.1.0
 )
