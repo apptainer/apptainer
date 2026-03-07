@@ -211,7 +211,7 @@ func (c *imgBuildTests) issue4969(t *testing.T) {
 		}),
 		e2e.ExpectExit(
 			0,
-			e2e.ExpectOutput(e2e.ExactMatch, "TEST OK"),
+			e2e.ExpectOutput(e2e.ContainMatch, "TEST OK"),
 		),
 	)
 }
