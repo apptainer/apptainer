@@ -83,6 +83,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Update the bundled fuse-overlayfs to version 1.16.
 - Update the bundled squashfs-tools to version 4.7.5.
 - Print resulting digest, when doing push to and pull from oras.
+- The username in `/etc/passwd` inside container now always corresponds to
+  the username of the user on host if an entry with the same UID is found.
 
 ## v1.4.x changes
 
