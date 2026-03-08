@@ -93,7 +93,7 @@ func (c ctx) pullTestImage(t *testing.T) string {
 
 func (c ctx) assertORASCacheEntryExists(t *testing.T, imgPath, imgName string) {
 	// The cache should exist and have the correct entry
-	shasum, err := oras.ImageHash(imgPath)
+	shasum, err := oras.ImageHash(t.Context(), imgPath)
 	if err != nil {
 		t.Fatalf("Cannot get the shasum for image %s: %s", imgPath, err)
 	}

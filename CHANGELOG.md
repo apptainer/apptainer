@@ -83,6 +83,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Update the bundled fuse-overlayfs to version 1.16.
 - Update the bundled squashfs-tools to version 4.7.5.
 - Print resulting digest, when doing push to and pull from oras.
+- Images downloaded from oras without using the cache are now
+  checksummed. A progress bar is shown during the process.
 
 ## v1.4.x changes
 

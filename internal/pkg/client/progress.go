@@ -50,13 +50,19 @@ var percentageOption = []mpb.BarOption{
 	),
 }
 
-func initProgressBar(totalSize int64) (*mpb.Progress, *mpb.Bar) {
+func initProgressBar(totalSize int64, remove bool) (*mpb.Progress, *mpb.Bar) {
 	p := mpb.New()
 
+	var options []mpb.BarOption
 	if totalSize > 0 {
-		return p, p.AddBar(totalSize, defaultOption...)
+		options = defaultOption
+	} else {
+		options = unknownSizeOption
 	}
-	return p, p.AddBar(totalSize, unknownSizeOption...)
+	if remove {
+		options = append(options, mpb.BarRemoveOnComplete())
+	}
+	return p, p.AddBar(totalSize, options...)
 }
 
 // See: https://ixday.github.io/post/golang-cancel-copy/
@@ -65,20 +71,20 @@ type readerFunc func(p []byte) (n int, err error)
 func (rf readerFunc) Read(p []byte) (n int, err error) { return rf(p) }
 
 // ProgressCallback is a function that provides progress information copying from a Reader to a Writer
-type ProgressCallback func(int64, io.Reader, io.Writer) error
+type ProgressCallback func(int64, bool, io.Reader, io.Writer) error
 
 // ProgressBarCallback returns a progress bar callback unless e.g. --quiet or lower loglevel is set
 func ProgressBarCallback(ctx context.Context) ProgressCallback {
 	if sylog.GetLevel() <= -1 {
 		// If we don't need a bar visible, we just copy data through the callback func
-		return func(_ int64, r io.Reader, w io.Writer) error {
+		return func(_ int64, _ bool, r io.Reader, w io.Writer) error {
 			_, err := CopyWithContext(ctx, w, r)
 			return err
 		}
 	}
 
-	return func(totalSize int64, r io.Reader, w io.Writer) error {
-		p, bar := initProgressBar(totalSize) //nolint:contextcheck
+	return func(totalSize int64, remove bool, r io.Reader, w io.Writer) error {
+		p, bar := initProgressBar(totalSize, remove) //nolint:contextcheck
 
 		// create proxy reader
 		bodyProgress := bar.ProxyReader(r)
@@ -131,7 +137,7 @@ func (dpb *DownloadProgressBar) Init(contentLength int64) {
 		// we don't need a bar visible
 		return
 	}
-	dpb.p, dpb.bar = initProgressBar(contentLength)
+	dpb.p, dpb.bar = initProgressBar(contentLength, false)
 }
 
 func (dpb *DownloadProgressBar) ProxyReader(r io.Reader) io.ReadCloser {
@@ -172,7 +178,7 @@ func (upb *UploadProgressBar) InitUpload(totalSize int64, r io.Reader) {
 		upb.r = r
 		return
 	}
-	upb.progress, upb.bar = initProgressBar(totalSize)
+	upb.progress, upb.bar = initProgressBar(totalSize, false)
 	upb.r = upb.bar.ProxyReader(r)
 }
 
