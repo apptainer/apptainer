@@ -20,12 +20,12 @@ import (
 )
 
 // Push will push an oras image from the specified location
-func Push(ctx context.Context, path, ref string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
+func Push(ctx context.Context, path, ref string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) error {
 	arch, err := sifArch(path)
 	if err != nil {
 		return err
 	}
-	return UploadImage(ctx, path, ref, arch, ociAuth, noHTTPS, reqAuthFile)
+	return UploadImage(ctx, path, ref, arch, ociAuth, noHTTPS, reqAuthFile, annotations)
 }
 
 func sifArch(filename string) (string, error) {

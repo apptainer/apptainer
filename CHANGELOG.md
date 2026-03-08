@@ -83,6 +83,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Update the bundled fuse-overlayfs to version 1.16.
 - Update the bundled squashfs-tools to version 4.7.5.
 - Print resulting digest, when doing push to and pull from oras.
+- Add possibility to add description and annotations for oras.
 
 ## v1.4.x changes
 

@@ -122,7 +122,7 @@ func DownloadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.A
 
 // UploadImage uploads the image specified by path and pushes it to the provided oci reference,
 // it will use credentials if supplied
-func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
+func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) error {
 	// ensure that are uploading a SIF
 	if err := ensureSIF(path); err != nil {
 		return err
@@ -141,7 +141,17 @@ func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.Aut
 		return err
 	}
 
-	im, err := NewImageFromSIF(path, SifLayerMediaTypeV1)
+	annotationsMap := map[string]string{}
+	for _, annotation := range annotations {
+		key, value, found := strings.Cut(annotation, "=")
+		if !found {
+			sylog.Warningf("Value missing for %q, not setting", key)
+			continue
+		}
+		annotationsMap[key] = value
+	}
+
+	im, err := NewImageFromSIF(path, SifLayerMediaTypeV1, annotationsMap)
 	if err != nil {
 		return err
 	}
