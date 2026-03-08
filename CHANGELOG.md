@@ -67,6 +67,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   any local gateway will be picked up automatically (e.g. `http://127.0.0.1:8080`)
 - Create reproducible SIF images, if the environment variable `SOURCE_DATE_EPOCH`
   has been set (it is a Unix timestamp given as seconds, in the UTC timezone).
+  Add `--reproducible` flag to build and pull, from `oras://` sources.
+  This sets SOURCE_DATE_EPOCH automatically from the image "created" time.
 - Fix long-time bug in importing environment variables from oci
   containers (defined with `ENV` in their definition file) with shell
   characters in them.  It now escapes them with single backslashes
