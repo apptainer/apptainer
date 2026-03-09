@@ -100,7 +100,7 @@ func DownloadImage(ctx context.Context, manifest APIResponse, filePath, shubRef 
 
 	// Write the body to file
 	pb := client.ProgressBarCallback(ctx)
-	err = pb(resp.ContentLength, resp.Body, out)
+	err = pb(resp.ContentLength, false, resp.Body, out)
 	if err != nil {
 		// Delete incomplete image file in the event of failure
 		// we get here e.g. if the context is canceled by Ctrl-C

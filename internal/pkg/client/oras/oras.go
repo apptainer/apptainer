@@ -141,7 +141,7 @@ func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.Aut
 		return err
 	}
 
-	im, err := NewImageFromSIF(path, SifLayerMediaTypeV1)
+	im, err := NewImageFromSIF(path, SifLayerMediaTypeV1) // nolint:contextcheck
 	if err != nil {
 		return err
 	}
@@ -233,6 +233,31 @@ func RefHash(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, n
 	return hash, nil
 }
 
+// RefSize returns the size of the SIF layer of the OCI manifest for supplied ref
+func RefSize(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (int64, error) {
+	im, err := remoteImage(ctx, ref, arch, ociAuth, noHTTPS, nil, reqAuthFile)
+	if err != nil {
+		return 0, err
+	}
+
+	// Check manifest to ensure we have a SIF as single layer
+	manifest, err := im.Manifest()
+	if err != nil {
+		return 0, err
+	}
+	if len(manifest.Layers) != 1 {
+		return 0, fmt.Errorf("ORAS SIF image should have a single layer, found %d", len(manifest.Layers))
+	}
+	layer := manifest.Layers[0]
+	if layer.MediaType != SifLayerMediaTypeV1 &&
+		layer.MediaType != SifLayerMediaTypeProto {
+		return 0, fmt.Errorf("invalid layer mediatype: %s", layer.MediaType)
+	}
+
+	size := layer.Size
+	return size, nil
+}
+
 func RefDigest(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (v1.Hash, error) {
 	im, err := remoteImage(ctx, ref, arch, ociAuth, noHTTPS, nil, reqAuthFile)
 	if err != nil {
@@ -242,14 +267,18 @@ func RefDigest(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig,
 }
 
 // ImageDigest returns the digest for a file
-func ImageHash(filePath string) (v1.Hash, error) {
+func ImageHash(ctx context.Context, filePath string) (v1.Hash, error) {
+	st, err := os.Stat(filePath)
+	if err != nil {
+		return v1.Hash{}, err
+	}
 	file, err := os.Open(filePath)
 	if err != nil {
 		return v1.Hash{}, err
 	}
 	defer file.Close()
 
-	sha, _, err := sha256sum(file)
+	sha, err := sha256sum(ctx, st.Size(), file)
 	if err != nil {
 		return v1.Hash{}, err
 	}
@@ -262,17 +291,27 @@ func ImageHash(filePath string) (v1.Hash, error) {
 	return hash, nil
 }
 
+// ImageSize returns the size for a file
+func ImageSize(filePath string) (int64, error) {
+	st, err := os.Stat(filePath)
+	if err != nil {
+		return 0, err
+	}
+	return st.Size(), nil
+}
+
 // sha256sum computes the sha256sum of the specified reader; caller is
 // responsible for resetting file pointer. 'nBytes' indicates number of
-// bytes read from reader
-func sha256sum(r io.Reader) (result string, nBytes int64, err error) {
+// bytes to read
+func sha256sum(ctx context.Context, nBytes int64, r io.Reader) (result string, err error) {
 	hash := sha256.New()
-	nBytes, err = io.Copy(hash, r)
+	pb := client.ProgressBarCallback(ctx)
+	err = pb(nBytes, true, r, hash)
 	if err != nil {
-		return "", 0, err
+		return "", err
 	}
 
-	return "sha256:" + hex.EncodeToString(hash.Sum(nil)), nBytes, nil
+	return "sha256:" + hex.EncodeToString(hash.Sum(nil)), nil
 }
 
 // remoteImage returns a v1.Image for the provided remote ref.

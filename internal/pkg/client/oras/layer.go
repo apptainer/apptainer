@@ -6,6 +6,7 @@
 package oras
 
 import (
+	"context"
 	"io"
 	"os"
 
@@ -73,7 +74,7 @@ func NewLayerFromSIF(file string, mt types.MediaType) (*SifLayer, error) {
 	}
 	sl.size = fi.Size()
 
-	hash, err := ImageHash(file)
+	hash, err := ImageHash(context.TODO(), file)
 	if err != nil {
 		return nil, err
 	}

@@ -93,7 +93,7 @@ func DownloadImage(ctx context.Context, filePath string, netURL string) error {
 
 	pb := client.ProgressBarCallback(ctx)
 
-	err = pb(res.ContentLength, res.Body, out)
+	err = pb(res.ContentLength, false, res.Body, out)
 	if err != nil {
 		// Delete incomplete image file in the event of failure
 		// we get here e.g. if the context is canceled by Ctrl-C

@@ -41,7 +41,7 @@ func TestProgressCallback(t *testing.T) {
 			src := bytes.NewBufferString(input)
 			dst := bytes.Buffer{}
 
-			err := cb(int64(len(input)), src, &dst)
+			err := cb(int64(len(input)), false, src, &dst)
 			if err != nil {
 				t.Errorf("Unexpected error from ProgressCallBack: %v", err)
 			}
