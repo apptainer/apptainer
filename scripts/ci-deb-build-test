@@ -82,7 +82,11 @@ su testuser -c '
     fi
   fi
   go version
-  ./scripts/download-dependencies debian
+  if [ -d cache ]; then
+    cp cache/* debian
+  else
+    ./scripts/download-dependencies debian
+  fi
   export DEB_FULLNAME="'"${DEB_FULLNAME:-CI Test}"'"
   export DEBEMAIL="'${DEBEMAIL:-citest@example.com}'"
   debuild --prepend-path $PATH --build=binary --no-sign --lintian-opts --display-info --show-overrides

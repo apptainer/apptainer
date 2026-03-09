@@ -59,7 +59,11 @@ su testuser -c '
     ./mconfig --only-rpm
   fi
   go version
-  ./scripts/download-dependencies
+  if [ -d cache ]; then
+    cp cache/* .
+  else
+    ./scripts/download-dependencies
+  fi
   if [ "$HIDE_DIST" = true ]; then
     # eliminate the "dist" part in the rpm name, for the release_assets
     echo "%dist %{nil}" >$HOME/.rpmmacros

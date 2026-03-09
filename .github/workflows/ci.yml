@@ -122,6 +122,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: cache
+          key: ${{ hashFiles('dist/rpm/apptainer.spec.in') }}
+
       - name: Build and test deb under docker
         env:
           OS_TYPE: debian
@@ -138,6 +144,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: cache
+          key: ${{ hashFiles('dist/rpm/apptainer.spec.in') }}
 
       - name: Build and test deb under docker
         env:
@@ -156,6 +168,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: cache
+          key: ${{ hashFiles('dist/rpm/apptainer.spec.in') }}
+
       - name: Build and test deb under docker
         env:
           OS_TYPE: ubuntu
@@ -172,6 +190,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: cache
+          key: ${{ hashFiles('dist/rpm/apptainer.spec.in') }}
+
       - name: Build and test deb under docker
         env:
           OS_TYPE: ubuntu
@@ -187,6 +211,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: cache
+          key: ${{ hashFiles('dist/rpm/apptainer.spec.in') }}
 
       - name: Build and test rpm under docker
         env:
@@ -247,6 +277,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: cache
+          key: ${{ hashFiles('dist/rpm/apptainer.spec.in') }}
+
       - name: Build and test rpm under docker
         env:
           OS_TYPE: rockylinux
@@ -277,6 +313,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: cache
+          key: ${{ hashFiles('dist/rpm/apptainer.spec.in') }}
+
       - name: Build and test rpm under docker
         env:
           OS_TYPE: rockylinux/rockylinux
@@ -299,6 +341,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: cache
+          key: ${{ hashFiles('dist/rpm/apptainer.spec.in') }}
 
       - name: Build and test rpm under docker
         env:
@@ -323,6 +371,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: cache
+          key: ${{ hashFiles('dist/rpm/apptainer.spec.in') }}
 
       - name: Build and test rpm under docker
         env:
