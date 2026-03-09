@@ -1,0 +1,38 @@
+name: base
+on:
+  push:
+    branches:
+      - main
+      - release-*
+jobs:
+  dependencies:
+    name: dependencies
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.25.6
+
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: cache
+          key: ${{ hashFiles('dist/rpm/apptainer.spec.in') }}
+
+      - name: Download dependent packages
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          set -ex
+          mkdir -p cache
+          ./scripts/download-dependencies cache
+
+      - uses: actions/cache/save@v4
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: cache
+          key: ${{ hashFiles('dist/rpm/apptainer.spec.in') }}
