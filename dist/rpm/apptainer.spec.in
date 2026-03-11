@@ -173,6 +173,10 @@ Requires: %{name} = %{version}-%{release}
 Obsoletes: singularity <= %{last_singularity_version}
 # FESCo asked to have this form of Provides
 Provides: alternative-for(singularity)
+%if "%{_target_vendor}" != "suse"
+# RHEL versions < 8.6 have a too-old fuse3-libs for pre-mounting
+Requires: fuse3-libs >= 3.3.0
+%endif
 
 %description suid
 Provides the optional setuid-root portion of Apptainer.
