@@ -346,30 +346,31 @@ if [ "$DIST" = el7 ]; then
 elif [ "$DIST" = el8 ]; then
 	# lz4-libs are installed by default on rhel but needed when
 	# these binaries are used on suse
-	OSUTILS="$OSUTILS lzo squashfs-tools lz4-libs libzstd fuse3-libs libsepol bzip2-libs audit-libs libcap-ng libattr libacl pcre2 libxcrypt libselinux libsemanage shadow-utils-subid"
+	OSUTILS="$OSUTILS lzo squashfs-tools lz4-libs libzstd fuse3-libs libsepol bzip2-libs audit-libs libcap-ng libattr libtalloc libacl pcre2 libxcrypt libselinux libsemanage shadow-utils-subid"
 	if $NEEDSFUSE2FS; then
 		OSUTILS="$OSUTILS fuse-libs e2fsprogs-libs e2fsprogs"
 	fi
+        EXTRASUTILS="$EXTRASUTILS protobuf-c"
 elif [[ "$DIST" == suse20* ]] || [ "$DIST" = "opensuse-tumbleweed" ]; then
 	FUSELIBSO=3
 	if [ "$DIST" = "opensuse-tumbleweed" ]; then
 		FUSELIBSO=4
 	fi
-	OSUTILS="$OSUTILS squashfs liblzo2-2 liblz4-1 libzstd1 libfuse3-$FUSELIBSO $EXTRASUTILS $EPELUTILS"
+	OSUTILS="$OSUTILS squashfs libtalloc2 libprotobuf-c1 liblzo2-2 liblz4-1 libzstd1 libfuse3-$FUSELIBSO $EXTRASUTILS $EPELUTILS"
 	if $NEEDSFUSE2FS; then
 		OSUTILS="$OSUTILS fuse2fs"
 	fi
 	EXTRASUTILS=""
 	EPELUTILS=""
 elif [ "$DIST" = "suse15" ] || [ "$DIST" = "opensuse-leap" ]; then
-	OSUTILS="$OSUTILS squashfs liblzo2-2 liblz4-1 libzstd1 libfuse3-3 $EPELUTILS"
+	OSUTILS="$OSUTILS squashfs libtalloc2 libprotobuf-c1 liblzo2-2 liblz4-1 libzstd1 libfuse3-3 $EPELUTILS"
 	if $NEEDSFUSE2FS; then
 		EXTRASUTILS="$EXTRASUTILS libext2fs2 libfuse2 fuse2fs"
 	fi
 	EPELUTILS=""
 else
 	# el9+ & fc*
-	OSUTILS="$OSUTILS lzo squashfs-tools lz4-libs libzstd libsepol bzip2-libs audit-libs libcap-ng libattr libacl pcre2 libxcrypt libselinux libsemanage shadow-utils-subid"
+	OSUTILS="$OSUTILS lzo squashfs-tools lz4-libs libzstd libsepol bzip2-libs audit-libs libcap-ng libattr libtalloc protobuf-c libacl pcre2 libxcrypt libselinux libsemanage shadow-utils-subid"
 	if $NEEDSFUSE2FS; then
 		OSUTILS="$OSUTILS fuse-libs e2fsprogs-libs e2fsprogs"
 	fi

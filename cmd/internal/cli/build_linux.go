@@ -203,6 +203,10 @@ func runBuild(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	if buildArgs.ignoreProot {
+		os.Setenv("APPTAINER_IGNORE_PROOT", "1")
+	}
+
 	if buildArgs.nvidia {
 		os.Setenv("APPTAINER_NV", "1")
 	}

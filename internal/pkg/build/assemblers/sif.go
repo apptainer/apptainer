@@ -186,11 +186,6 @@ func (a *SIFAssembler) Assemble(b *types.Bundle, path string) error {
 	defer os.Remove(fsPath)
 
 	flags := []string{"-noappend"}
-	// build squashfs with all-root flag when building as a user
-	if syscall.Getuid() != 0 {
-		flags = append(flags, "-all-root")
-	}
-
 	if a.MksquashfsMem != "" {
 		flags = append(flags, "-mem", a.MksquashfsMem)
 	}

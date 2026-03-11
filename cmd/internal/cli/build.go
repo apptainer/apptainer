@@ -55,6 +55,7 @@ var buildArgs struct {
 	userns              bool     // Enable user namespaces
 	ignoreSubuid        bool     // Ignore /etc/subuid entries (hidden)
 	ignoreFakerootCmd   bool     // Ignore fakeroot command (hidden)
+	ignoreProot         bool     // Ignore proot command (hidden)
 	ignoreUserns        bool     // Ignore user namespace(hidden)
 	remote              bool     // Remote flag(hidden, only for helpful error message)
 	reproducible        bool     // Reproducible build
@@ -314,6 +315,17 @@ var buildIgnoreFakerootCommand = cmdline.Flag{
 	Hidden:       true,
 }
 
+// --ignore-proot
+var buildIgnoreProot = cmdline.Flag{
+	ID:           "buildIgnoreProotFlag",
+	Value:        &buildArgs.ignoreProot,
+	DefaultValue: false,
+	Name:         "ignore-proot",
+	Usage:        "ignore proot",
+	EnvKeys:      []string{"IGNORE_PROOT"},
+	Hidden:       true,
+}
+
 // --ignore-userns
 var buildIgnoreUsernsFlag = cmdline.Flag{
 	ID:           "buildIgnoreUsernsFlag",
@@ -412,6 +424,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildUsernsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildIgnoreSubuidFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildIgnoreFakerootCommand, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildIgnoreProot, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildIgnoreUsernsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildRemoteFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildReproducibleFlag, buildCmd)

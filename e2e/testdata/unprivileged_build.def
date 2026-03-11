@@ -1,5 +1,5 @@
 Bootstrap: localimage
-From: test-debian.sif
+From: {{ FROMSIF }}
 
 %post
     apt-get update
