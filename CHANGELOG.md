@@ -74,6 +74,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
   characters in them.  It now escapes them with single backslashes
   instead of double backslashes so they behave like they do in podman
   and docker.
+- Add additional `.rpm` packages to the release assets including `el10`
+  in their name.  Those packages are necessary to work with the newer
+  libsubid library in EL10 than on older EL releases.
 - Add support for APPTAINER_TMPDIR, also to the commands
   `apptainer overlay create` and `apptainer plugin compile`.
 - The oras transport now supports architectures beyond `amd64`.

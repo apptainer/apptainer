@@ -47,6 +47,22 @@ jobs:
           cp *.tar.gz *.rpm ..
           cd ..
 
+      - name: Make el10 rpm packages
+        if: env.do_release
+        env:
+          OS_TYPE: rockylinux/rockylinux
+          OS_VERSION: 10
+          GO_ARCH: linux-amd64
+        run: |
+          set -x
+          mkdir rpmdir
+          shopt -s extglob
+          mv .??* !(rpmdir) rpmdir
+          cd rpmdir
+          ./scripts/ci-docker-run
+          cp $(ls *.rpm|grep -v src.rpm) ..
+          cd ..
+
       - name: Make standard deb packages
         if: env.do_release
         env:
