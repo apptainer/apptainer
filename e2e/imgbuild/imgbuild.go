@@ -237,11 +237,11 @@ func (c imgBuildTests) nonRootBuild(t *testing.T) {
 			args:      []string{"--sandbox"},
 		},
 		{
-			name:      "library sif",
+			name:      "oras sif",
 			buildSpec: "oras://ghcr.io/apptainer/busybox:1.31.1",
 		},
 		{
-			name:      "library sif sandbox",
+			name:      "oras sif sandbox",
 			buildSpec: "oras://ghcr.io/apptainer/busybox:1.31.1",
 			args:      []string{"--sandbox"},
 		},
@@ -1991,6 +1991,7 @@ echo 'export LEGACY_TEST_ENV=legacy-value' >> $SINGULARITY_ENVIRONMENT
 	)
 }
 
+// build images under all the different fakeroot modes
 func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 	e2e.EnsureDebianImage(t, c.env)
 
@@ -2003,23 +2004,15 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 
 	// Make the DebianImagePath available for Bootstrap: localimage
 	sif := c.env.DebianImagePath
-	basesif := filepath.Base(sif)
-	err := os.Symlink(sif, basesif)
-	if err != nil {
-		t.Fatalf("while symlinking %s to %s: %v", sif, basesif, err)
-	}
-	t.Cleanup(func() {
-		if !t.Failed() {
-			os.Remove(basesif)
-		}
-	})
+
+	args := []string{"--force", "--build-arg", "FROMSIF=" + sif}
 
 	// running under the mode 1, 1a (--with-suid) (https://apptainer.org/docs/user/main/fakeroot.html)
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", fmt.Sprintf("%s/openssh-mode1a.sif", tmpDir), "testdata/unprivileged_build.def"),
+		e2e.WithArgs(append(args, fmt.Sprintf("%s/openssh-mode1a.sif", tmpDir), "testdata/unprivileged_build.def")...),
 		e2e.ExpectExit(0),
 	)
 
@@ -2028,7 +2021,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--userns", fmt.Sprintf("%s/openssh-mode1b.sif", tmpDir), "testdata/unprivileged_build.def"),
+		e2e.WithArgs(append(args, "--userns", fmt.Sprintf("%s/openssh-mode1b.sif", tmpDir), "testdata/unprivileged_build.def")...),
 		e2e.ExpectExit(0),
 	)
 
@@ -2037,7 +2030,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--userns", "--ignore-subuid", "--ignore-fakeroot-command", fmt.Sprintf("%s/openssh-mode2a.sif", tmpDir), "testdata/unprivileged_build.def"),
+		e2e.WithArgs(append(args, "--userns", "--ignore-subuid", "--ignore-fakeroot-command", fmt.Sprintf("%s/openssh-mode2a.sif", tmpDir), "testdata/unprivileged_build.def")...),
 		e2e.ExpectExit(255), // because chown will fail
 	)
 
@@ -2046,7 +2039,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--userns", "--ignore-subuid", "--ignore-fakeroot-command", fmt.Sprintf("%s/openssh-mode2b.sif", tmpDir), "testdata/unprivileged_build_2.def"),
+		e2e.WithArgs(append(args, "--userns", "--ignore-subuid", "--ignore-fakeroot-command", fmt.Sprintf("%s/openssh-mode2b.sif", tmpDir), "testdata/unprivileged_build_2.def")...),
 		e2e.ExpectExit(0),
 	)
 
@@ -2055,7 +2048,7 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--userns", "--ignore-subuid", fmt.Sprintf("%s/openssh-mode3.sif", tmpDir), "testdata/unprivileged_build.def"),
+		e2e.WithArgs(append(args, "--userns", "--ignore-subuid", fmt.Sprintf("%s/openssh-mode3.sif", tmpDir), "testdata/unprivileged_build.def")...),
 		e2e.ExpectExit(0),
 	)
 
@@ -2064,9 +2057,69 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--ignore-userns", "--ignore-subuid", fmt.Sprintf("%s/openssh-mode4.sif", tmpDir), "testdata/unprivileged_build_4.def"),
+		e2e.WithArgs(append(args, "--ignore-userns", "--ignore-subuid", fmt.Sprintf("%s/openssh-mode4.sif", tmpDir), "testdata/unprivileged_build_4.def")...),
 		e2e.ExpectExit(0),
 	)
+}
+
+// check file ownership after various build types
+func (c imgBuildTests) checkBuildFileOwnership(t *testing.T) {
+	e2e.EnsureDebianImage(t, c.env)
+
+	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "check-build-file-owners-", "")
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup(t)
+		}
+	})
+
+	// Make the DebianImagePath available for Bootstrap: localimage
+	sif := c.env.DebianImagePath
+
+	profiles := []e2e.Profile{
+		e2e.RootProfile,
+		e2e.UserProfile,
+		e2e.UserNamespaceProfile,
+	}
+
+	flags := [][]string{
+		{},
+		{"--ignore-subuid"},
+		{"--ignore-subuid", "--ignore-fakeroot-command"},
+	}
+
+	outsif := filepath.Join(tmpDir, "out.sif")
+	for _, p := range profiles {
+		for _, f := range flags {
+			args := append(f,
+				"--force",
+				"--build-arg",
+				"FROMSIF="+sif,
+				outsif,
+				"testdata/unprivileged_build_2.def")
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(p),
+				e2e.WithCommand("build"),
+				e2e.WithArgs(args...),
+				e2e.ExpectExit(0),
+			)
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(e2e.UserNamespaceProfile),
+				e2e.WithCommand("exec"),
+				e2e.WithArgs("--fakeroot",
+					outsif,
+					"stat",
+					"-c",
+					"%G",
+					"/etc/shadow"),
+				e2e.ExpectExit(0,
+					e2e.ExpectOutput(e2e.ContainMatch, "shadow"),
+				),
+			)
+		}
+	}
 }
 
 func (c *imgBuildTests) testSIFHeaderAndExecute(t *testing.T) {
@@ -2486,7 +2539,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"customShebang":                          c.buildCustomShebang,                   // build image with custom #! in %test and %runscript
 		"test with writable tmpfs":               c.testWritableTmpfs,                    // build image, using writable tmpfs in the test step
 		"test build system environment":          c.testBuildEnvironmentVariables,        // build image with build system environment variables set in definition
-		"test build under fakeroot modes":        c.testContainerBuildUnderFakerootModes, // build image under different fakeroot modes
+		"test build under fakeroot modes":        c.testContainerBuildUnderFakerootModes, // build image under all the different fakeroot modes
+		"check file ownership after build":       c.checkBuildFileOwnership,              // check file ownership after various build types
 		"issue 2347":                             c.issue2347,                            // https://github.com/apptainer/apptainer/issues/2347
 		"issue 3848":                             c.issue3848,                            // https://github.com/apptainer/singularity/issues/3848
 		"issue 4203":                             c.issue4203,                            // https://github.com/apptainer/singularity/issues/4203

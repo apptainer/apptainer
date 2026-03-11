@@ -1,5 +1,5 @@
 Bootstrap: localimage
-From: test-debian.sif
+From: {{ FROMSIF }}
 
 # mode 4 can't handle openssh-client, so install something simple instead
 %post

@@ -85,10 +85,6 @@ func HostGID() (uint32, error) {
 }
 
 func getHostID(typ string, currentID uint32) (uint32, error) {
-	if currentID != 0 {
-		return currentID, nil
-	}
-
 	idMap := fmt.Sprintf("/proc/self/%s_map", typ)
 
 	f, err := os.Open(idMap)
@@ -105,30 +101,29 @@ func getHostID(typ string, currentID uint32) (uint32, error) {
 	for scanner.Scan() {
 		fields := strings.Fields(scanner.Text())
 
-		size, err := strconv.ParseUint(fields[2], 10, 32)
+		parsedID, err := strconv.ParseUint(fields[2], 10, 32)
 		if err != nil {
 			return 0, fmt.Errorf("failed to convert size field %s: %s", fields[2], err)
 		}
+		size := uint32(parsedID)
 		// not in a user namespace, use current ID
-		if uint32(size) == ^uint32(0) {
+		if size == ^uint32(0) {
 			break
 		}
 
 		// we are inside a user namespace
-		parsedID, err := strconv.ParseUint(fields[0], 10, 32)
+		parsedID, err = strconv.ParseUint(fields[0], 10, 32)
 		if err != nil {
 			return 0, fmt.Errorf("failed to convert container %s field %s: %s", typ, fields[0], err)
 		}
 		containerID := uint32(parsedID)
-		// we can safely assume that a user won't have two
-		// consequent ID and we look if current ID match
-		// a 1:1 user mapping
-		if size == 1 && currentID == containerID {
-			id, err := strconv.ParseUint(fields[1], 10, 32)
-			if err != nil {
-				return 0, fmt.Errorf("failed to convert host %v field %s: %s", typ, fields[1], err)
-			}
-			return uint32(id), nil
+		parsedID, err = strconv.ParseUint(fields[1], 10, 32)
+		if err != nil {
+			return 0, fmt.Errorf("failed to convert container %s field %s: %s", typ, fields[1], err)
+		}
+		hostID := uint32(parsedID)
+		if currentID >= containerID && currentID < containerID+size {
+			return hostID + currentID - containerID, nil
 		}
 	}
 
@@ -148,4 +143,22 @@ func IsUnprivileged() bool {
 		return true
 	}
 	return uid != 0
+}
+
+// IsOnlyRootMapped() returns true if running in a root-mapped user
+// namespace, without any other user ids mapped
+func IsOnlyRootMapped() bool {
+	if os.Geteuid() != 0 {
+		return false
+	}
+	// are running as root
+	uid, err := HostUID()
+	if err != nil || uid == 0 {
+		return false
+	}
+	// root is mapped to non-root
+	// but make sure id 1 is not also mapped elsewhere
+	// (as it would be with subuid-based fakeroot)
+	uid, err = getHostID("uid", 1)
+	return err != nil || uid == 1
 }

@@ -47,7 +47,9 @@ func FindBin(name string) (path string, err error) {
 		}
 		return findOnPath("ldconfig", false)
 	// All other executables
-	// We will always search the user's PATH first for these
+	// We will search ${prefix}/libexec/apptainer/bin first for these
+	//  followed by the user's PATH, ahead of the system directories
+	//  by default
 	case "curl",
 		"debootstrap",
 		"dnf",
@@ -61,6 +63,7 @@ func FindBin(name string) (path string, err error) {
 		"newuidmap",
 		"nvidia-container-cli",
 		"pacstrap",
+		"proot",
 		"rpm",
 		"rpmkeys",
 		"squashfuse",

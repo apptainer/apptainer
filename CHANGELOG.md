@@ -12,6 +12,20 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `APPTAINER_NOENV` environment variable that can provide a
   comma-separated list of environment variables to skip importing from
   the host environment into the container.
+- Preserve owner and group information on files in containers downloaded from
+  OCI registries when building SIF files, even for unprivileged users.
+  This takes advantage of the fact that the library (umoci) that downloads
+  containers preserves owner and group information in an extended attribute.
+  Adds bundled tool `proot` which is modified from the upstream tool by the
+  rootless-containers project to make the owner and group appear to be in the
+  ordinary `stat()` information.  That tool is now used when invoking
+  `mksquashfs` to create the filesystem partition in a SIF file.  It can
+  be disabled with the hidden build option `--ignore-proot`.
+- When unsquashing an image while running under a root-mapped user
+  namespace (such as when using fakeroot without subuid mapping), insert
+  another namespace mapping back to the original user so unsquashfs
+  doesn't try (and fail) to change the owner and group information on the
+  unpacked files.
 - Record image digest metadata (sha256 from `RepoDigests`), for OCI registry images.
   Also add the image name (ref) of the image from "docker", with registry and tag.
   This is useful for traceability, when using `docker.io` or a tag like `latest`.
@@ -201,7 +215,7 @@ Changes since 1.3.6
   available and to ensure that all compression types are available.
   This includes the programs `mksquashfs` and `unsquashfs`.
 - Statistics are now normally available for instances that are
-  started by non-root users on cgroups v2 systems.  
+  started by non-root users on cgroups v2 systems.
   The instance will be started in the current cgroup.  Information
   about configuration issues that prevent collection of statistics are
   displayed as INFO messages by default.

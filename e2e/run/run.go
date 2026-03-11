@@ -545,6 +545,15 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not create overlaymode3 folder inside tempdir: %s", tempDir)
 	}
+	singleOwnerSif := filepath.Join(tempDir, "singleowner.sif")
+	// first make a copy of the container that is all one owner
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--ignore-proot", "--force", singleOwnerSif, sif),
+		e2e.ExpectExit(0),
+	)
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.FakerootProfile),
@@ -553,8 +562,8 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 		// gives postinstall errors about a missing 'diff' command when
 		// using it on ubuntu 22.04, so use overlay instead.
 		// See https://github.com/apptainer/apptainer/issues/1124
-		e2e.WithArgs("--userns", "--overlay", overlaydir, "--ignore-subuid", sif, "sh", "-c", "apt-get update && apt-get install -y openssh-client"),
-		// e2e.WithArgs("--userns", "--writable-tmpfs", "--ignore-subuid", sif, "sh", "-c", "apt-get update && apt-get install -y openssh-client"),
+		e2e.WithArgs("--userns", "--overlay", overlaydir, "--ignore-subuid", singleOwnerSif, "sh", "-c", "apt-get update && apt-get install -y openssh-client"),
+		// e2e.WithArgs("--userns", "--writable-tmpfs", "--ignore-subuid", singleOwnerSif, "sh", "-c", "apt-get update && apt-get install -y openssh-client"),
 		e2e.ExpectExit(0),
 	)
 
