@@ -16,6 +16,7 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -155,6 +156,23 @@ func TestInterpreter(t *testing.T) {
 							if env == "FOO=bar" {
 								return nil
 							}
+						}
+						return fmt.Errorf("no FOO environment variable")
+					}
+				},
+			},
+		},
+		// See https://github.com/sylabs/singularity/pull/4026
+		{
+			name:   "export backslash env",
+			script: "\\export FOO=bar && exec /bin/true",
+			shellBuiltin: &testShellBuiltin{
+				builtin: "exec",
+				fn: func(_ *Shell) ShellBuiltin {
+					return func(ctx context.Context, _ []string) error {
+						hc := interp.HandlerCtx(ctx)
+						if slices.Contains(GetEnv(hc), "FOO=bar") {
+							return nil
 						}
 						return fmt.Errorf("no FOO environment variable")
 					}
