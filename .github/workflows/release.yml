@@ -54,11 +54,10 @@ jobs:
           OS_VERSION: 10
           GO_ARCH: linux-amd64
         run: |
+          # Make a new copy of the source files for this build
           set -x
-          mkdir rpmdir
-          shopt -s extglob
-          mv .??* !(rpmdir) rpmdir
-          cd rpmdir
+          tar xf apptainer-*.tar.gz
+          cd `basename apptainer-*.tar.gz .tar.gz`
           ./scripts/ci-docker-run
           cp $(ls *.rpm|grep -v src.rpm) ..
           cd ..
@@ -70,8 +69,9 @@ jobs:
           OS_VERSION: 11
           GO_ARCH: linux-amd64
         run: |
-          # Make a new copy of the source files for this build
+          # Make another new copy of the source files for this build
           set -x
+          sudo rm -rf `basename apptainer-*.tar.gz .tar.gz`
           tar xf apptainer-*.tar.gz
           cd `basename apptainer-*.tar.gz .tar.gz`
           ./scripts/ci-docker-run
