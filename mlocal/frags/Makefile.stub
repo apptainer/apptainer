@@ -87,8 +87,8 @@ test: short-unit-test short-integration-test
 .PHONY: testall
 testall: check short-unit-test integration-test e2e-test
 
-.PHONY: rpm
-rpm: dist
+.PHONY: rebuild-rpm
+rebuild-rpm:
 	@echo " BUILD RPM"
 	$(V)(set -x; cd $(SOURCEDIR) && \
 	  if [ -n "$(RPMPREFIX)" ]; then \
@@ -102,6 +102,9 @@ rpm: dist
 	    rpmbuild $(RPMCLEAN) -ta \
 	      $(SOURCEDIR)/apptainer-$(VERSION).tar.gz; \
 	  fi)
+
+.PHONY: rpm
+rpm: dist rebuild-rpm
 
 .PHONY: cscope
 cscope:
