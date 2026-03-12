@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2020-2025, Sylabs, Inc. All rights reserved.
+// Copyright (c) 2020-2026, Sylabs, Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license.  Please
 // consult LICENSE.md file distributed with the sources of this project regarding
 // your rights to use or distribute this software.
@@ -18,6 +18,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"syscall"
@@ -150,6 +151,7 @@ func New(r io.Reader, name string, args []string, envs []string, runnerOptions .
 		interp.StdIO(os.Stdin, os.Stdout, os.Stderr),
 		interp.ExecHandler(s.internalExecHandler()), //nolint:staticcheck
 		interp.OpenHandler(s.internalOpenHandler()),
+		interp.CallHandler(s.internalCallHandler()),
 		interp.Params("--"),
 		interp.Env(expand.ListEnviron(envs...)),
 		interp.Dir(dir),
@@ -165,6 +167,22 @@ func New(r io.Reader, name string, args []string, envs []string, runnerOptions .
 	return s, err
 }
 
+func (s *Shell) internalCallHandler() interp.CallHandlerFunc {
+	return func(_ context.Context, args []string) ([]string, error) {
+		// If we receive a declaration as a call, this is because it was prefixed
+		// with a backslash and mvdan.cc/sh/v3 doesn't handle it as a keyword after
+		// stripping the backslash. Add the backslash back again, so runtime.Call in
+		// mvdan.cc/sh/v3 >=v3.13.0 doeesn't attempt to execute it as an
+		// (unimplemented) builtin. We'll then deal with it properly in our
+		// internalExecHandler - see additional comments below.
+		declarations := []string{"export", "local", "declare", "nameref", "readonly", "typeset"}
+		if slices.Contains(declarations, args[0]) {
+			args[0] = "\\" + args[0]
+		}
+		return args, nil
+	}
+}
+
 // internalExecHandler returns an ExecHandlerFunc used by default.
 func (s *Shell) internalExecHandler() interp.ExecHandlerFunc {
 	return func(ctx context.Context, args []string) error {
@@ -176,13 +194,37 @@ func (s *Shell) internalExecHandler() interp.ExecHandlerFunc {
 		} else if builtin, ok := s.shellBuiltins[args[0]]; ok {
 			return builtin(ctx, args[1:])
 		} else {
-			// declaration clause are normally handled by the interpreter
-			// but when a builtin prefixed with a backslash is encountered
-			// by example, the parser consider it as a call expression and
-			// we get there, so basically what we do is to create a new parser
-			// and evaluate it in the current shell interpreter
+			// Declarations (export, local, etc.) are handled as keywords that
+			// manipulate variables in the interpreter state. However, if they
+			// are prefixed with a backslash (as in the miniconda activation
+			// scripts) then the mvdan.cc/sh/v3 code treats them as a call,
+			// after stripping the backslash.
+			//
+			// Ref: https://github.com/mvdan/sh/issues/743
+			//
+			// Additionally, from mvdan/sh/v3 v3.13.0 onward, declarations are
+			// listed as builtins and the Runner.call() function will attempt to
+			// execute any that fell through into Runner.call() as builtins.
+			// This fails, as they are really keywords, and not builtins - they
+			// have no implementation in runner.builtin().
+			//
+			// Refs:
+			// https://github.com/mvdan/sh/commit/26d6d05333c07628069ce73480e8e4e53e03e438
+			// https://github.com/mvdan/sh/blob/2df2e3b60aa514e007a164a0173d65f8ab0afce2/interp/runner.go#L1035
+			//
+			// To work around all of this, for any declaration that was prefixed
+			// and is treated as a call, we:
+			//  1. Rewrite the declaration arg[0] to add back the backslash
+			//     prefix in a CallHandler, so that the declaration isn't
+			//     executed as a builtin in Runner.call(), and falls through to
+			//     the ExecHandler.
+			//  2. Handle it here, by stripping the backslash, parsing the
+			//     declaration again, and running the result.
+			//
 			switch args[0] {
-			case "export", "local", "declare", "nameref", "readonly", "typeset":
+			case "\\export", "\\local", "\\declare", "\\nameref", "\\readonly", "\\typeset":
+				args[0] = strings.TrimPrefix(args[0], "\\")
+
 				var b bytes.Buffer
 
 				b.WriteString(strings.Join(args, " "))
