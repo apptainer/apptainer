@@ -52,6 +52,7 @@ jobs:
         env:
           OS_TYPE: rockylinux/rockylinux
           OS_VERSION: 10
+          BUILD_TYPE: rebuild-rpm
           GO_ARCH: linux-amd64
         run: |
           # Make a new copy of the source files for this build
