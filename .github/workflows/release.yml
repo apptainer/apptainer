@@ -59,6 +59,7 @@ jobs:
           set -x
           tar xf apptainer-*.tar.gz
           cd `basename apptainer-*.tar.gz .tar.gz`
+          cp ../apptainer-*.tar.gz .
           ./scripts/ci-docker-run
           cp $(ls *.rpm|grep -v src.rpm) ..
           cd ..
