@@ -33,11 +33,25 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, arch 
 	if err != nil {
 		return "", fmt.Errorf("failed to get checksum for %s: %s", pullFrom, err)
 	}
+	size, err := RefSize(ctx, pullFrom, arch, ociAuth, noHTTPS, reqAuthFile)
+	if err != nil {
+		return "", fmt.Errorf("failed to get size for %s: %s", pullFrom, err)
+	}
 
 	if directTo != "" {
 		sylog.Infof("Downloading oras image")
 		if err := DownloadImage(ctx, directTo, pullFrom, arch, ociAuth, noHTTPS, reqAuthFile); err != nil {
 			return "", fmt.Errorf("unable to Download Image: %v", err)
+		}
+		if imageSize, err := ImageSize(directTo); err != nil {
+			return "", fmt.Errorf("error getting ImageSize: %v", err)
+		} else if imageSize != size {
+			return "", fmt.Errorf("image file size(%d) and expected size(%d) does not match", imageSize, size)
+		}
+		if imageHash, err := ImageHash(ctx, directTo); err != nil {
+			return "", fmt.Errorf("error getting ImageHash: %v", err)
+		} else if imageHash != hash {
+			return "", fmt.Errorf("image file hash(%s) and expected hash(%s) does not match", imageHash, hash)
 		}
 		imagePath = directTo
 
@@ -53,7 +67,12 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, arch 
 			if err := DownloadImage(ctx, cacheEntry.TmpPath, pullFrom, arch, ociAuth, noHTTPS, reqAuthFile); err != nil {
 				return "", fmt.Errorf("unable to Download Image: %v", err)
 			}
-			if cacheFileHash, err := ImageHash(cacheEntry.TmpPath); err != nil {
+			if cacheFileSize, err := ImageSize(cacheEntry.TmpPath); err != nil {
+				return "", fmt.Errorf("error getting ImageSize: %v", err)
+			} else if cacheFileSize != size {
+				return "", fmt.Errorf("cached file size(%d) and expected size(%d) does not match", cacheFileSize, size)
+			}
+			if cacheFileHash, err := ImageHash(ctx, cacheEntry.TmpPath); err != nil {
 				return "", fmt.Errorf("error getting ImageHash: %v", err)
 			} else if cacheFileHash != hash {
 				return "", fmt.Errorf("cached file hash(%s) and expected hash(%s) does not match", cacheFileHash, hash)

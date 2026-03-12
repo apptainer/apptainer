@@ -16,6 +16,9 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get install -y \
     build-essential \
     libseccomp-dev \
+    libtalloc-dev \
+    libattr1-dev \
+    libprotobuf-c-dev \
     uidmap \
     fakeroot \
     cryptsetup \

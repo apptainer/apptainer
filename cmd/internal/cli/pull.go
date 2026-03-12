@@ -63,6 +63,8 @@ var (
 	pullArch string
 	// pullArchVariant is the architecture variant, e.g., arm32v5, arm32v6, arm32v7, v5,v6,v7 are variants
 	pullArchVariant string
+	// pullReproducible indicates if wanting a reproducible build for image.
+	pullReproducible bool
 	// pullSandbox indicates whether pulling images as sandbox format
 	pullSandbox bool
 )
@@ -152,6 +154,16 @@ var pullAllowUnauthenticatedFlag = cmdline.Flag{
 	Hidden:       true,
 }
 
+// --reproducible
+var pullReproducibleFlag = cmdline.Flag{
+	ID:           "pullReproducibleFlag",
+	Value:        &pullReproducible,
+	DefaultValue: false,
+	Name:         "reproducible",
+	Usage:        "creates a reproducible build by using the creation date of the source image",
+	EnvKeys:      []string{"REPRODUCIBLE"},
+}
+
 // -s|--sandbox
 var pullSandboxFlag = cmdline.Flag{
 	ID:           "pullSandboxFlag",
@@ -187,6 +199,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&pullArchVariantFlag, PullCmd)
 		cmdManager.RegisterFlagForCmd(&commonAuthFileFlag, PullCmd)
 
+		cmdManager.RegisterFlagForCmd(&pullReproducibleFlag, PullCmd)
 		cmdManager.RegisterFlagForCmd(&pullSandboxFlag, PullCmd)
 	})
 }
@@ -327,14 +340,15 @@ func pullRun(cmd *cobra.Command, args []string) {
 			return
 		}
 		pullOpts := oci.PullOptions{
-			TmpDir:      tmpDir,
-			OciAuth:     ociAuth,
-			DockerHost:  dockerHost,
-			NoHTTPS:     noHTTPS,
-			NoCleanUp:   buildArgs.noCleanUp,
-			Pullarch:    arch,
-			ReqAuthFile: reqAuthFile,
-			Platform:    *platform,
+			TmpDir:       tmpDir,
+			OciAuth:      ociAuth,
+			DockerHost:   dockerHost,
+			NoHTTPS:      noHTTPS,
+			NoCleanUp:    buildArgs.noCleanUp,
+			Pullarch:     arch,
+			ReqAuthFile:  reqAuthFile,
+			Platform:     *platform,
+			Reproducible: pullReproducible,
 		}
 
 		_, err = oci.PullToFile(ctx, imgCache, pullTo, pullFrom, pullSandbox, pullOpts)

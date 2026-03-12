@@ -357,7 +357,7 @@ jobs:
         run: |
           set -e
           sudo apt-get -q update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libseccomp-dev fakeroot cryptsetup dbus-user-session 
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libseccomp-dev libtalloc-dev libattr1-dev libprotobuf-c-dev fakeroot cryptsetup dbus-user-session 
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
 
       - name: Download, compile, and install dependent packages
@@ -396,7 +396,7 @@ jobs:
           go-version: 1.25.6
 
       - name: Fetch deps
-        run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libseccomp-dev cryptsetup dbus-user-session
+        run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libseccomp-dev libtalloc-dev libattr1-dev libprotobuf-c-dev cryptsetup dbus-user-session
 
       - name: Build and install Apptainer
         run: |
@@ -445,7 +445,7 @@ jobs:
         run: |
           set -e
           sudo apt-get -q update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libseccomp-dev uidmap fakeroot cryptsetup dbus-user-session
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libseccomp-dev libtalloc-dev libattr1-dev libprotobuf-c-dev uidmap fakeroot cryptsetup dbus-user-session
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
 
       - name: Download, compile, and install dependent packages

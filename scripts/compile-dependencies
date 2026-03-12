@@ -18,7 +18,7 @@ if [ -n "$1" ]; then
 fi
 
 set -ex
-for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs; do
+for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs PRoot; do
     TGZ="$(echo $SRC/${PKG}-*.tar.gz)"
     if [ ! -f "$TGZ" ]; then
 	echo "$PKG-*.tar.gz not found in $SRC" >&2
@@ -65,6 +65,9 @@ for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs; do
 		-mod=vendor -tags without_openssl \
 		-buildvcs=false -ldflags="-X main.GitVersion=v$VER \
 		-B 0x`head -c20 /dev/urandom|od -An -tx1|tr -d ' \n'`"
+	    ;;
+	PRoot)
+	    make -C src proot
 	    ;;
 	*)
 	    echo "unrecognized package $PKG" >&2

@@ -34,6 +34,7 @@
 %global e2fsprogs_version 1.47.3
 %global fuse_overlayfs_version 1.16
 %global squashfs_tools_version 4.7.5
+%global PRoot_version 5.4.0-rootless.2
 
 # The last singularity version number in EPEL/Fedora
 %global last_singularity_version 3.8.7-3
@@ -71,9 +72,14 @@ Patch122: e2fsprogs-250.patch
 # URL: https://github.com/tytso/e2fsprogs/pull/251.patch
 Patch123: e2fsprogs-251.patch
 %endif
+%if "%{?fuse_overlayfs_version}" != ""
 Source13: https://github.com/containers/fuse-overlayfs/archive/v%{fuse_overlayfs_version}/fuse-overlayfs-%{fuse_overlayfs_version}.tar.gz
+%endif
 %if "%{?squashfs_tools_version}" != ""
 Source14: https://github.com/plougher/squashfs-tools/archive/%{squashfs_tools_version}/squashfs-tools-%{squashfs_tools_version}.tar.gz
+%endif
+%if "%{?PRoot_version}" != ""
+Source15: https://github.com/rootless-containers/PRoot/archive/v%{PRoot_version}/PRoot-%{PRoot_version}.tar.gz
 %endif
 
 # This Conflicts is in case someone tries to install the main apptainer
@@ -97,12 +103,25 @@ Obsoletes: singularity-runtime < 3.0
 Provides: sif-runtime
 Conflicts: sif-runtime
 
+%if "%{?gocryptfs_version}" != ""
 Provides: bundled(gocryptfs) = %{gocryptfs_version}
+%endif
+%if "%{?squashfuse_version}" != ""
 Provides: bundled(squashfuse) = %{squashfuse_version}
+%endif
+%if "%{?e2fsprogs_version}" != ""
 Provides: bundled(e2fsprogs) = %{e2fsprogs_version}
 Provides: bundled(fuse2fs) = %{e2fsprogs_version}
+%endif
+%if "%{?fuse_overlayfs_version}" != ""
 Provides: bundled(fuse-overlayfs) = %{fuse_overlayfs_version}
+%endif
+%if "%{?squashfs_tools_version}" != ""
 Provides: bundled(squashfs-tools) = %{squashfs_tools_version}
+%endif
+%if "%{?PRoot_version}" != ""
+Provides: bundled(PRoot) = %{PRoot_version}
+%endif
 @BUNDLED_PROVIDES@
 
 %if "%{_target_vendor}" == "suse"
@@ -120,6 +139,9 @@ BuildRequires: git
 BuildRequires: gcc
 BuildRequires: make
 BuildRequires: libseccomp-devel
+BuildRequires: libtalloc-devel
+BuildRequires: libattr-devel
+BuildRequires: protobuf-c
 BuildRequires: cryptsetup
 BuildRequires: fuse3-devel
 %if ("%{?squashfuse_version}" != "") || ("%{e2fsprogs_version}" != "") || ("%{fuse_overlayfs_version}" != "") || ("%{?squashfs_tools_version}" != "")
@@ -151,6 +173,10 @@ Requires: %{name} = %{version}-%{release}
 Obsoletes: singularity <= %{last_singularity_version}
 # FESCo asked to have this form of Provides
 Provides: alternative-for(singularity)
+%if "%{_target_vendor}" != "suse"
+# RHEL versions < 8.6 have a too-old fuse3-libs for pre-mounting
+Requires: fuse3-libs >= 3.3.0
+%endif
 
 %description suid
 Provides the optional setuid-root portion of Apptainer.
@@ -224,6 +250,10 @@ install -m 755 squashfs-tools-%{squashfs_tools_version}/squashfs-tools/mksquashf
 install -m 755 squashfs-tools-%{squashfs_tools_version}/squashfs-tools/unsquashfs %{buildroot}%{_libexecdir}/%{name}/bin/unsquashfs
 %endif
 
+%if "%{?PRoot_version}" != ""
+install -m 755 PRoot-%{PRoot_version}/src/proot %{buildroot}%{_libexecdir}/%{name}/bin/proot
+%endif
+
 %post
 # $1 in %%posttrans cannot distinguish between fresh installs and upgrades,
 # so check it here and create a file to pass the knowledge to that step
@@ -294,6 +324,9 @@ fi
 %if "%{?squashfs_tools_version}" != ""
 %{_libexecdir}/%{name}/bin/mksquashfs
 %{_libexecdir}/%{name}/bin/unsquashfs
+%endif
+%if "%{?PRoot_version}" != ""
+%{_libexecdir}/%{name}/bin/proot
 %endif
 %{_libexecdir}/%{name}/cni
 %{_libexecdir}/%{name}/lib

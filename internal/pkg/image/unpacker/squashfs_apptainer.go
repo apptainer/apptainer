@@ -22,9 +22,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/namespaces"
 )
 
 func init() {
@@ -281,6 +283,12 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 		"-B", fmt.Sprintf("%s:%s", tmpdir, rootfsImageDir),
 	}
 
+	isOnlyRootMapped := namespaces.IsOnlyRootMapped()
+	if isOnlyRootMapped {
+		// suid mode doesn't work in a root-mapped user namespace
+		args = append(args, "--userns")
+	}
+
 	if filename != stdinFile {
 		filename = filepath.Join(rootfsImageDir, filepath.Base(filename))
 	}
@@ -368,6 +376,39 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 		fmt.Sprintf("APPTAINER_QUIET=%s", os.Getenv("APPTAINER_QUIET")),
 		fmt.Sprintf("APPTAINER_SILENT=%s", os.Getenv("APPTAINER_SILENT")),
 		fmt.Sprintf("APPTAINER_MESSAGELEVEL=%s", os.Getenv("APPTAINER_MESSAGELEVEL")),
+	}
+
+	// If running in a root-mapped user namespace, switch to unprivileged
+	// because otherwise unsquashfs thinks it is running as root and
+	// tries to chown files that are not owned and grouped by root
+	if isOnlyRootMapped {
+		uid, err := namespaces.HostUID()
+		gid, err2 := namespaces.HostGID()
+		if err != nil || err2 != nil {
+			if err == nil {
+				err = err2
+			}
+			sylog.Debugf("Skipping adding namespace because %v", err)
+		} else {
+			sylog.Debugf("Using namespace with uid %d, gid %d", uid, gid)
+			cmd.SysProcAttr = &syscall.SysProcAttr{
+				Cloneflags: syscall.CLONE_NEWUSER,
+				UidMappings: []syscall.SysProcIDMap{
+					{
+						HostID:      0,
+						ContainerID: int(uid),
+						Size:        1,
+					},
+				},
+				GidMappings: []syscall.SysProcIDMap{
+					{
+						HostID:      0,
+						ContainerID: int(gid),
+						Size:        1,
+					},
+				},
+			}
+		}
 	}
 
 	return cmd, nil

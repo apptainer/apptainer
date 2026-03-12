@@ -20,6 +20,9 @@ sudo apt-get update
 sudo apt-get install -y \
     build-essential \
     libseccomp-dev \
+    libtalloc-dev \
+    libattr1-dev \
+    libprotobuf-c-dev \
     uidmap \
     fakeroot \
     cryptsetup \
@@ -39,11 +42,16 @@ On RHEL or its derivatives or Fedora:
 ```sh
 # Install basic tools for compiling
 sudo dnf groupinstall -y 'Development Tools'
-# Ensure EPEL repository is available
+# Ensure EPEL repository is available (skip on Fedora)
 sudo dnf install -y epel-release
+# Enable the CodeReady Builder repository (skip on Fedora)
+sudo crb enable
 # Install RPM packages for dependencies
 sudo dnf install -y \
     libseccomp-devel \
+    libtalloc-devel \
+    libattr-devel \
+    protobuf-c-devel \
     fakeroot \
     cryptsetup \
     wget git
@@ -62,6 +70,9 @@ On SLE/openSUSE
 # Install RPM packages for dependencies
 sudo zypper install -y \
   libseccomp-devel \
+  libtalloc-devel \
+  libattr-devel \
+  libprotobuf-c-devel \
   libuuid-devel \
   openssl-devel \
   fakeroot \

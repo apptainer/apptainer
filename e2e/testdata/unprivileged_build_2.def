@@ -1,5 +1,5 @@
 Bootstrap: localimage
-From: test-debian.sif
+From: {{ FROMSIF }}
 
 # In mode 2 there's no fakeroot command so cannot install any 
 # packages on Debian, since apt-get always does privileged operations

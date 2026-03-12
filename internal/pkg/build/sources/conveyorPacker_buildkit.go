@@ -277,7 +277,15 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context, tmpDir string)
 	if err != nil {
 		return err
 	}
+	err = os.MkdirAll(filepath.Join(home, ".docker", "cli-plugins"), 0o755)
+	if err != nil {
+		return err
+	}
 	err = os.Symlink(filepath.Join(home, ".docker", "cli-plugins"), filepath.Join(cfgdir, "cli-plugins"))
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(filepath.Join(home, ".docker", "buildx"), 0o755)
 	if err != nil {
 		return err
 	}

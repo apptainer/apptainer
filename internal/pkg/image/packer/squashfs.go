@@ -19,6 +19,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	"github.com/blang/semver/v4"
 )
 
@@ -71,10 +72,27 @@ func (s Squashfs) create(files []string, dest string, opts []string) error {
 		args = append(args, "-quiet", "-percentage")
 	}
 
+	prog := s.MksquashfsPath
+	if namespaces.IsUnprivileged() {
+		// building as unprivileged user, make the files appear as root
+		ignoreProot := os.Getenv("APPTAINER_IGNORE_PROOT")
+		proot, err := bin.FindBin("proot")
+		if ignoreProot == "" && err == nil {
+			// Insert proot around mksquashfs to take advantage of
+			// file owner and group information stored by umoci in
+			// a "rootlesscontainers" extended attribute.
+			// https://github.com/apptainer/apptainer/issues/2830
+			args = append([]string{"-S", "/", prog}, args...)
+			prog = proot
+		} else {
+			args = append(args, "-all-root")
+		}
+	}
+
 	// mksquashfs -reproducible automatically clamps everything to SOURCE_DATE_EPOCH
 	// (note: -reproducible is the default, there is also a -not-reproducible option)
-	sylog.Verbosef("Executing %s %s", s.MksquashfsPath, strings.Join(args, " "))
-	cmd := exec.Command(s.MksquashfsPath, args...)
+	sylog.Verbosef("Executing %s %s", prog, strings.Join(args, " "))
+	cmd := exec.Command(prog, args...)
 	if sylog.GetLevel() >= int(sylog.VerboseLevel) {
 		cmd.Stdout = os.Stdout
 	} else if hasPercentage {

@@ -5,6 +5,7 @@ apptainer-*.tar.gz
 e2fsprogs-*
 fuse-overlayfs-*
 gocryptfs-*
+PRoot-*
 squashfuse-*
 squashfs-tools-*
 *.m4
