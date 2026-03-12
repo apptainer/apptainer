@@ -5,13 +5,63 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## v1.5.x changes
+## v1.5.0-rc.1 - \[2026-03-12\]
 
-- Update minimum go version to 1.25.6.
+Changes since 1.4.5
+
+### New Features & Functionality
+
+- Add support for a subset of the Container Device Interface (CDI) standard
+  through new `--device` and `--cdi-dirs` run/shell/exec options.  Honors
+  environment variable settings, bind mounts, and device files listed in
+  CDI specification files.
+- Add support for selective mounting of Intel(R) Gaudi accelerators.
+  This feature is only for use in combination with a minimal `/dev` directory,
+  selected either with the `--contain` flag or by configuring `mount dev`
+  with the `minimal` option; otherwise all the devices are available anyway.
+  This feature is enabled via the `--intel-hpu` option and by specifying the
+  `HABANA_VISIBLE_DEVICES` environment variable, which should contain
+  a comma-separated list of device IDs (e.g., `"1,2,3"`) or "all" to
+  import all of them.  The default if `HABANA_VISIBLE_DEVICES` is not
+  set is "all".
+- Add new bootstrap `buildkit:` (and `buildkit:` URL) for building SIF
+  images directly from Dockerfile, without having to use Docker/Podman.
+  Requires BuildKit to be installed.  The full buildkit log file is
+  included in the image, for traceability.  It is also shown on the
+  console, as a progress update while building.
+- Add support for downloading SIF images from an IPFS peer-to-peer
+  cluster using an HTTP gateway (similar to the existing support for IPFS
+  in the `curl` tool).  The address of the gateway can be set in the
+  `IPFS_GATEWAY` environment variable or read from `~/.ipfs/gateway`
+  or `/etc/ipfs/gateway`.
 - Add `--no-env` action and instance option and corresponding
   `APPTAINER_NOENV` environment variable that can provide a
   comma-separated list of environment variables to skip importing from
   the host environment into the container.
+- Add `--data` build option which creates a SIF file with a squashfs
+  data partition instead of a code partition, given an existing squashfs
+  file as the source.
+- If `PREPEND_LD_LIBRARY_PATH` is set in the container environment (through
+  an `--env` option, an `APPTAINERENV_` prefix from the host, or in the
+  container definition) then prepend that string to `:$LD_LIBRARY_PATH`.
+  Likewise if `APPEND_LD_LIBRARY_PATH` is set in the container environment
+  then append that string to `$LD_LIBRARY_PATH:`.  This is only done when
+  `LD_LIBRARY_PATH` is set, although if the container is based on glibc,
+  when `LD_LIBRARY_PATH` is not set it will first be filled with the
+  default library search path as found through `ldconfig`.
+- Create reproducible SIF images, if the environment variable
+  `SOURCE_DATE_EPOCH` has been set (as a Unix timestamp given as seconds
+  since the beginning of 1970, in the UTC timezone).  Also add
+  `--reproducible` flag to build and pull from `oras://` sources.  This
+  sets SOURCE_DATE_EPOCH automatically from the image "created" time.
+- Support hosts that have `/etc/resolv.conf` pointing to a symlink under
+  `/run`, such as those hosts that are running `systemd-resolved`.  In
+  this case, the symlink is copied into the container and the parent
+  directory of the target of the symlink is bind-mounted from the host.
+  The result is that even if the target of the symlink is replaced with
+  a new file, the container sees the update in `/etc/resolv.conf`.
+- Add `/etc/resolv.conf` to the list of host paths that can be prevented
+  from automatic import into the container with the `--no-mount` option.
 - Preserve owner and group information on files in containers downloaded from
   OCI registries when building SIF files, even for unprivileged users.
   This takes advantage of the fact that the library (umoci) that downloads
@@ -26,18 +76,20 @@ For older changes see the [archived Singularity change log](https://github.com/a
   another namespace mapping back to the original user so unsquashfs
   doesn't try (and fail) to change the owner and group information on the
   unpacked files.
-- Record image digest metadata (sha256 from `RepoDigests`), for OCI registry images.
-  Also add the image name (ref) of the image from "docker", with registry and tag.
-  This is useful for traceability, when using `docker.io` or a tag like `latest`.
-  Unfortunately the feature does not work with "docker-archive" or "docker-daemon".
-- If `PREPEND_LD_LIBRARY_PATH` is set in the container environment (through
-  an `--env` option, an `APPTAINERENV_` prefix from the host, or in the
-  container definition) then prepend that string to `:$LD_LIBRARY_PATH`.
-  Likewise if `APPEND_LD_LIBRARY_PATH` is set in the container environment
-  then append that string to `$LD_LIBRARY_PATH:`.  This is only done when
-  `LD_LIBRARY_PATH` is set, although if the container is based on glibc,
-  when `LD_LIBRARY_PATH` is not set it will first be filled with the
-  default library search path as found through `ldconfig`.
+- Record image digest metadata (sha256 from `RepoDigests`), for OCI
+  registry images.  Also add the image name (ref) of the image from
+  "docker", with registry and tag.  This is useful for traceability,
+  when using `docker.io` or a tag like `latest`.  Unfortunately the
+  feature does not work with "docker-archive" or "docker-daemon".
+- Print resulting digest when doing push to and pull from oras.
+- debugsource rpms are now generated in addition to debuginfo rpms on
+  RHEL-derived and Fedora operating systems.
+- Add additional `.rpm` packages to the release assets that include
+  `el10` in their names.  Those packages are necessary to work on EL10
+  which has a newer libsubid library than older EL releases.
+
+### Changed defaults / behaviours
+
 - If libraries are bound in to `/.singularity.d/libs` (such as with GPU
   options like `--nv`) and the container is based on glibc and
   `LD_LIBRARY_PATH` is not already set, it is now set to the default
@@ -50,62 +102,29 @@ For older changes see the [archived Singularity change log](https://github.com/a
   `PREPEND_LD_LIBRARY_PATH=/.singularity.d/libs`.
 - Change the default `arm` variant to `v7`, and stop using the GOARM environment
   variable. The variables GOOS, GOARCH and GOARM are only used when building.
-- Add new bootstrap `buildkit:` (and `buildkit:` URL) for building SIF images
-  directly from Dockerfile, without having to use Docker/Podman but only BuildKit.
-  The full buildkit log file is included in the image, for traceability.
-  It is also showed on the console, as a progress update while building.
-- Support hosts that have `/etc/resolv.conf` pointing to a symlink under
-  `/run`, such as those hosts that are running `systemd-resolved`.  In
-  this case, the symlink is copied into the container and the parent
-  directory of the target of the symlink is bind-mounted from the host.
-  The result is that even if the target of the symlink is replaced with
-  a new file, the container sees the update in `/etc/resolv.conf`.
-- Add `/etc/resolv.conf` to the list of host paths that can be prevented
-  from automatic import into the container with the `--no-mount` option.
-- Add support for selective mounting of Intel(R) Gaudi accelerators.
-  This feature is only for use in combination with a minimal `/dev` directory,
-  selected either with the `--contain` flag or by configuring `mount dev`
-  with the `minimal` option; otherwise all the devices are available.
-  This feature is enabled via the `--intel-hpu` option and by specifying the
-  `HABANA_VISIBLE_DEVICES` environment variable, which should contain
-  a comma-separated list of device IDs (e.g., `"1,2,3"`) or "all" to
-  import all of them.  The default if `HABANA_VISIBLE_DEVICES` is not
-  set is "all".
-- Make the `root default capabilities` configuration option apply only
-  to the real root user as documented and not to a fakeroot user.
-- debugsource rpms are now generated in addition to debuginfo rpms on
-  RHEL-derived and Fedora operating systems.
-- Add support for downloading SIF images from an IPFS peer-to-peer cluster using
-  a HTTP gateway (similar to the existing support for IPFS in the `curl` tool).
-  The location of the address can set in the `IPFS_GATEWAY` environment variable,
-  any local gateway will be picked up automatically (e.g. `http://127.0.0.1:8080`)
-- Create reproducible SIF images, if the environment variable `SOURCE_DATE_EPOCH`
-  has been set (it is a Unix timestamp given as seconds, in the UTC timezone).
-  Add `--reproducible` flag to build and pull, from `oras://` sources.
-  This sets SOURCE_DATE_EPOCH automatically from the image "created" time.
-- Fix long-time bug in importing environment variables from oci
-  containers (defined with `ENV` in their definition file) with shell
-  characters in them.  It now escapes them with single backslashes
-  instead of double backslashes so they behave like they do in podman
-  and docker.
-- Add additional `.rpm` packages to the release assets including `el10`
-  in their name.  Those packages are necessary to work with the newer
-  libsubid library in EL10 than on older EL releases.
-- Add support for APPTAINER_TMPDIR, also to the commands
-  `apptainer overlay create` and `apptainer plugin compile`.
 - The oras transport now supports architectures beyond `amd64`.
-- Add `--data` flag to build, for sif creation with a squashfs data partition.
-- Add support for Container Device Interface (CDI) through new
-  `--device` and `--cdi-dirs` run/shell/exec options.
+- Images downloaded from oras without using the cache are now checksummed.
+  A progress bar is shown during the process.
+- Add support for APPTAINER_TMPDIR to the commands
+  `apptainer overlay create` and `apptainer plugin compile`.
+- Update minimum go version to 1.25.6.
 - Update the bundled gocryptfs to version 2.6.1.
 - Update the bundled squashfuse to version 0.6.1.
 - Update the bundled fuse-overlayfs to version 1.16.
 - Update the bundled squashfs-tools to version 4.7.5.
-- Print resulting digest, when doing push to and pull from oras.
-- The username in `/etc/passwd` inside container now always corresponds to
-  the username of the user on host if an entry with the same UID is found.
-- Images downloaded from oras without using the cache are now
-  checksummed. A progress bar is shown during the process.
+
+### Bug fixes
+
+- Make the `root default capabilities` configuration option apply only
+  to the real root user as documented and not to a fakeroot user.
+- Fix long-time bug in importing environment variables from oci
+  containers (defined by `ENV` in their definition file) with shell
+  characters in them.  It now escapes them with single backslashes
+  instead of double backslashes so they behave like they do in podman
+  and docker.
+- The username in `/etc/passwd` inside a container now always corresponds
+  to the username of the user on the host even if an entry with the same
+  UID is found in the container.
 
 ## v1.4.x changes
 
