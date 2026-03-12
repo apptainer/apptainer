@@ -70,6 +70,7 @@
 - Maciej Sieczka <msieczka@sieczka.org>
 - Marcelo Magallon <marcelo@sylabs.io>
 - Marco Rubin <marco.rubin@protonmail.com>
+- Martin Pecka <peckama2@fel.cvut.cz>
 - Mark Egan-Fuller <markeganfuller@googlemail.com>
 - Matt Ezell <ezellma@ornl.gov>
 - Matthias Gerstner <matthias.gerstner@suse.com>
