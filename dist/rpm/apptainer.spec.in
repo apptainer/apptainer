@@ -141,7 +141,7 @@ BuildRequires: make
 BuildRequires: libseccomp-devel
 BuildRequires: libtalloc-devel
 BuildRequires: libattr-devel
-BuildRequires: protobuf-c
+BuildRequires: protobuf-c-devel
 BuildRequires: cryptsetup
 BuildRequires: fuse3-devel
 %if ("%{?squashfuse_version}" != "") || ("%{e2fsprogs_version}" != "") || ("%{fuse_overlayfs_version}" != "") || ("%{?squashfs_tools_version}" != "")
