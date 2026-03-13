@@ -242,7 +242,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 	sylog.Infof("Build complete: %s", dest)
 }
 
-func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fakerootPath string) {
+func getEncryptionInfo(cmd *cobra.Command) (*cryptkey.KeyInfo, bool) {
 	var keyInfo *cryptkey.KeyInfo
 	unprivilege := false
 	if buildArgs.encrypt {
@@ -256,10 +256,6 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 		}
 		keyInfo = k
 
-		if keyInfo == nil && unprivilege {
-			sylog.Errorf("Missing encryption info, please add `--passphrase` or `--pem-path` or corresponding environment variable")
-			return
-		}
 	} else {
 		_, passphraseEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PASSPHRASE")
 		_, pemPathEnvOK := os.LookupEnv("APPTAINER_ENCRYPTION_PEM_PATH")
@@ -267,6 +263,15 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 		if passphraseEnvOK || pemPathEnvOK || pemDataEnvOK {
 			sylog.Warningf("Encryption related env vars found, but --encrypt was not specified. NOT encrypting container.")
 		}
+	}
+	return keyInfo, unprivilege
+}
+
+func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fakerootPath string) {
+	keyInfo, unprivilege := getEncryptionInfo(cmd)
+	if keyInfo == nil && unprivilege {
+		sylog.Errorf("Missing encryption info, please add `--passphrase` or `--pem-path` or corresponding environment variable")
+		return
 	}
 
 	imgCache := getCacheHandle(cache.Config{Disable: disableCache})
