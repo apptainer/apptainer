@@ -201,7 +201,9 @@ func buildkitBuild(ctx context.Context, tmpDir string, env []string, platform, o
 	}
 
 	cmd = exec.CommandContext(ctx, "buildctl", "debug", "logs", string(buildref))
+	cmd.Env = env
 	cmd.Stdout = buildlog
+	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
 		return err
@@ -312,11 +314,16 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context, tmpDir string)
 	}
 
 	if db == "" {
-		if _, ok := os.LookupEnv("BUILDKIT_HOST"); !ok {
-			sock := "/run/buildkit/buildkitd.sock"
-			if _, err := os.Stat(sock); err != nil && errors.Is(err, os.ErrNotExist) {
-				// make the error message from `buildctl` look more like the traditional error message from `docker`
-				return fmt.Errorf("cannot connect to the BuildKit daemon at unix://%s. Is the buildkit daemon running?", sock)
+		if cp.b.Opts.BuildKitDaemonHost != "" {
+			sylog.Debugf("Setting BUILDKIT_HOST=%q", cp.b.Opts.BuildKitDaemonHost)
+			env = append(env, fmt.Sprintf("BUILDKIT_HOST=%s", cp.b.Opts.BuildKitDaemonHost))
+		} else {
+			if _, ok := os.LookupEnv("BUILDKIT_HOST"); !ok {
+				sock := "/run/buildkit/buildkitd.sock"
+				if _, err := os.Stat(sock); err != nil && errors.Is(err, os.ErrNotExist) {
+					// make the error message from `buildctl` look more like the traditional error message from `docker`
+					return fmt.Errorf("cannot connect to the BuildKit daemon at unix://%s. Is the buildkit daemon running?", sock)
+				}
 			}
 		}
 		err = os.MkdirAll(filepath.Join(cp.b.RootfsPath, ".singularity.d"), 0o755)

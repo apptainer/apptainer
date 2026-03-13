@@ -410,6 +410,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&dockerUsernameFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&dockerPasswordFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&dockerLoginFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildkitHostFlag, buildCmd)
 
 		cmdManager.RegisterFlagForCmd(&commonPromptForPassphraseFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&commonPEMFlag, buildCmd)

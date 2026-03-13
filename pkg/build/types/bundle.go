@@ -84,6 +84,8 @@ type Options struct {
 	DockerAuthConfig *ocitypes.DockerAuthConfig
 	// Custom docker Daemon host
 	DockerDaemonHost string
+	// Custom BuildKit Daemon host
+	BuildKitDaemonHost string
 	// EncryptionKeyInfo specifies the key used for filesystem
 	// encryption if applicable.
 	// A nil value indicates encryption should not occur.
