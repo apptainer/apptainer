@@ -5,6 +5,13 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.6.x changes
+
+- Add oras `org.opencontainers.image.created` annotation when pushing images.
+  The `org.label-schema.build-date` label from the SIF image is being used.
+
+## v1.5.x changes
+
 ## v1.5.0-rc.1 - \[2026-03-12\]
 
 Changes since 1.4.5
