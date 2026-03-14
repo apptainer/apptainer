@@ -10,6 +10,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 Changes since v1.5.0-rc.1
 
 - Apptainer now supports the `loong64` architecture.
+- Add `APPTAINER_BUILDKIT_HOST` environment variable for selecting
+  or overriding what backend to use for the BuildKit bootstrap.
 
 ## v1.5.0-rc.1 - \[2026-03-12\]
 
