@@ -262,6 +262,8 @@ func fakerootSeccompProfile() *specs.LinuxSeccomp {
 		lseccomp.Architectures = []specs.Arch{specs.ArchS390X, specs.ArchS390}
 	case "riscv64":
 		lseccomp.Architectures = []specs.Arch{specs.ArchRISCV64}
+	case "loong64":
+		lseccomp.Architectures = []specs.Arch{specs.ArchLOONGARCH64}
 	}
 
 	return lseccomp

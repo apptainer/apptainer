@@ -17,6 +17,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/build/sources"
 	"github.com/apptainer/apptainer/internal/pkg/ociplatform"
 	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 	"github.com/apptainer/apptainer/pkg/build/types"
 )
 
@@ -67,6 +68,9 @@ func TestLibraryConveyor(t *testing.T) {
 
 // TestLibraryPacker checks if we can create a Bundle from the pulled image
 func TestLibraryPacker(t *testing.T) {
+	// Alpine image in the sycloud library only support 3 architectures
+	require.ArchIn(t, []string{"amd64", "arm64", "ppc64le"})
+
 	test.EnsurePrivilege(t)
 
 	b, err := types.NewBundle(filepath.Join(os.TempDir(), "sbuild-library"), os.TempDir())

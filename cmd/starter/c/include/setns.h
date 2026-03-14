@@ -37,7 +37,7 @@
 #    define __NR_setns 350
 #  elif defined(__s390__) || defined(__s390x__)
 #    define __NR_setns 339
-#  elif defined(__riscv)
+#  elif defined(__riscv) || defined(__loongarch64)
 #    define __NR_setns 268
 #  elif defined(__mips__)
 #    if _MIPS_SIM == _ABIO32

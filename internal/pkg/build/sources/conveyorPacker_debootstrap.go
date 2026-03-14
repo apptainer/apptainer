@@ -41,6 +41,7 @@ var debootstrapArchs = map[string]string{
 	"mips64le": "mips64el",
 	"s390x":    "s390x",
 	"riscv64":  "riscv64",
+	"loong64":  "loong64",
 }
 
 // DebootstrapConveyorPacker holds stuff that needs to be packed into the bundle
