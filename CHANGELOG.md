@@ -29,6 +29,8 @@ Changes since 1.4.5
   Requires BuildKit to be installed.  The full buildkit log file is
   included in the image, for traceability.  It is also shown on the
   console, as a progress update while building.
+- Add `APPTAINER_BUILDKIT_HOST` environment variable for selecting
+  or overriding what backend to use for the BuildKit bootstrap.
 - Add support for downloading SIF images from an IPFS peer-to-peer
   cluster using an HTTP gateway (similar to the existing support for IPFS
   in the `curl` tool).  The address of the gateway can be set in the

@@ -58,9 +58,10 @@ var CurrentUser = getCurrentUser()
 var currentRemoteEndpoint *endpoint.Config
 
 var (
-	authConfig  authn.AuthConfig
-	dockerLogin bool
-	dockerHost  string
+	authConfig   authn.AuthConfig
+	dockerLogin  bool
+	dockerHost   string
+	buildkitHost string
 
 	encryptionPEMPath   string
 	promptForPassphrase bool
@@ -182,6 +183,17 @@ var dockerHostFlag = cmdline.Flag{
 	Name:          "docker-host",
 	Usage:         "specify a custom Docker daemon host",
 	EnvKeys:       []string{"DOCKER_HOST"},
+	WithoutPrefix: true,
+}
+
+// --buildkit-host
+var buildkitHostFlag = cmdline.Flag{
+	ID:            "buildkitHostFlag",
+	Value:         &buildkitHost,
+	DefaultValue:  "",
+	Name:          "buildkit-host",
+	Usage:         "specify a custom BuildKit daemon host",
+	EnvKeys:       []string{"BUILDKIT_HOST"},
 	WithoutPrefix: true,
 }
 
