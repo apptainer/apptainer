@@ -131,4 +131,5 @@
 - Filip Gorczyca <filip.gorczyca141@gmail.com>
 - Nicholas Yue <yue.nicholas@gmail.com>
 - Benedikt Riedel <benedikt.riedel@gmail.com>
+- Linsen Zhou <i@lin.moe>
 ```
