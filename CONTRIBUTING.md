@@ -22,14 +22,23 @@ members here.
 
 ### Technical Steering Committee
 
-(in alphabetical sort order of surname)
+These are the members of the Technical Steering Committee
+(in alphabetical sort order of surname):
 
 ```text
+- Anders F Björklund <anders.f.bjorklund@gmail.com>
 - Cedric Clerget <cedric@ctrliq.com>, <cedric.clerget@univ-fcomte.fr>
 - Dave Dykstra <dwd@fnal.gov>
-- Ian Kaneshiro <ian@ctrliq.com>, <iankane@umich.edu>
 - Gregory M. Kurtzer <gmkurtzer@gmail.com>
 - Krishna Muriki <kmuriki@gmail.com>
+```
+
+The TSC members are also all of the Committers for the project.
+
+Former TSC members:
+
+```text
+- Ian Kaneshiro <iankane@umich.edu>
 ```
 
 ## Getting Started
