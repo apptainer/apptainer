@@ -15,16 +15,22 @@
 - Aron Öfjörð Jóhannesson <aron1991@gmail.com>
 - Avikam Rozenfeld (avikam.roze@gmail.com)
 - Bart Oldeman <bart.oldeman@calculquebec.ca>
+- Benedikt Riedel <benedikt.riedel@gmail.com>
 - Bernard Li <bernardli@lbl.gov>
 - Brian Bockelman <bbockelm@cse.unl.edu>
 - Brian Clemens <brian@resf.org>, <brian@tiuxo.com>
 - Carl Madison <carl@sylabs.io>
+- Carmelo Piccione <carmelo.piccione@gmail.com>
+- Cedric Clerget <cedric@ctrliq.com>, <cedric.clerget@univ-fcomte.fr>
+- Charles Vejnar <charles.vejnar@gmail.com>
+- Chen Yiyang <cyyzero@qq.com>
 - Chris Burr <christopher.burr@cern.ch>
-- Christian Goll <cgoll@suse.com>
 - Chris Hollowell <hollowec@bnl.gov>
+- Christian Goll <cgoll@suse.com>
 - Christian Neyers <foss@neyers.org>
 - Daniel Dadap <ddadap@nvidia.com>
 - Daniele Tamino <daniele.tamino@gmail.com>
+- Dave Dykstra <dwd@fnal.gov>
 - Dave Godlove <d@sylabs.io>, <davidgodlove@gmail.com>
 - Dave Love <d.love@liverpool.ac.uk>
 - David Rohr <drohr@jwdt.org>
@@ -41,13 +47,16 @@
 - Eng Zer Jun <engzerjun@gmail.com>
 - Eric Müller <mueller@kip.uni-heidelberg.de>
 - Felix Abecassis <fabecassis@nvidia.com>
+- Filip Gorczyca <filip.gorczyca141@gmail.com>
 - Fotis Nikolaidis <nikolaidis.fotis@gmail.com>
 - Geoffroy Vallee <geoffroy@sylabs.io>, <geoffroy.vallee@gmail.com>
 - George Hartzell <hartzell@alerce.com>
 - Gert Hulselmans <gert.hulselmans@kuleuven.vib.be>
 - Götz Waschk <goetz.waschk@desy.de>
+- Gregory M. Kurtzer <gmkurtzer@gmail.com>
 - Hakon Enger <hakonenger@github.com>
 - Hugo Meiland <hugo.meiland@microsoft.com>
+- Ian Kaneshiro <iankane@umich.edu>
 - Jack Morrison <morrisonjc@ornl.gov>, <jack@rescale.com>
 - Jacob Chappell <chappellind@gmail.com>, <jacob.chappell@uky.edu>
 - Jarrett Dixon <jarrett@sylabs.io>
@@ -64,17 +73,18 @@
 - Justin Riley <justin_riley@harvard.edu>
 - Kir Kolyshkin <kolyshkin@gmail.com>
 - Kirill Priadko <kirill.priadko@intel.com>
-- Krishna Muriki <kmuriki@lbl.gov>
+- Krishna Muriki <kmuriki@gmail.com>
 - Kumar Sukhani <kumarsukhani@gmail.com>
 - Kundan Kumar <iamkundankumar28@gmail.com>
+- Linsen Zhou <i@lin.moe>
 - Maciej Sieczka <msieczka@sieczka.org>
 - Marcelo Magallon <marcelo@sylabs.io>
 - Marco Rubin <marco.rubin@protonmail.com>
-- Martin Pecka <peckama2@fel.cvut.cz>
 - Mark Egan-Fuller <markeganfuller@googlemail.com>
+- Martin Pecka <peckama2@fel.cvut.cz>
 - Matt Ezell <ezellma@ornl.gov>
-- Matthias Gerstner <matthias.gerstner@suse.com>
 - Matt Wiens <mwiens91@gmail.com>
+- Matthias Gerstner <matthias.gerstner@suse.com>
 - Max Schwarz <max.schwarz@online.de>
 - Michael Bauer <m@sylabs.io>, <bauerm@umich.edu>
 - Michael Herzberg <michael@mherzberg.de>
@@ -85,26 +95,31 @@
 - Mike Gray <mike@sylabs.io>
 - Nathan Chou <nathan.chou@sylabs.io>, <choun@berkeley.edu>
 - Nathan Lin <nathan.lin@yale.edu>
+- Nicholas Yue <yue.nicholas@gmail.com>
 - Nilesh Patra <nilesh@nileshpatra.info>
 - Oleksandr Moskalenko <om@rc.ufl.edu>
 - Oliver Breitwieser <obreitwi@kip.uni-heidelberg.de>, <oliver@breitwieser.eu>
 - Oliver Freyermuth <freyermuth@physik.uni-bonn.de>
 - Olivier Sallou <olivier.sallou@irisa.fr>
 - Omer Preminger <omer@sylabs.io>
-- Paul Charlton <techguru@byiq.com>
+- Onur Yılmaz <csonuryilmaz@gmail.com>
+- Pablo Caderno <kaderno@gmail.com>
 - Patrick LoPresti <lopresti@gmail.com>
+- Paul Charlton <techguru@byiq.com>
+- Pedro Alves Batista <pedro.pesquisapb@gmail.com>
 - Peter Steinbach <steinbach@scionics.de>
 - Petr Votava <votava.petr@gene.com>
+- Pranathi Locula <locula@deshaw.com>
 - Rafal Gumienny <rafal.gumienny@gmail.com>
 - Ralph Castain <rhc@open-mpi.org>
-- Rémy Dernat <remy.dernat@umontpellier.fr>
 - Richard Hattersley <richard.hattersley@metoffice.gov.uk>
 - Richard Neuboeck <hawk@tbi.univie.ac.at>
+- Rémy Dernat <remy.dernat@umontpellier.fr>
 - Sasha Yakovtseva <sasha@sylabs.io>, <sashayakovtseva@gmail.com>
 - Satish Chebrolu  <satish@sylabs.io>
 - Shane Loretz <sloretz@openrobotics.org>, <shane.loretz@gmail.com>
-- Simon Leary <simon.leary42@gmail.com>
 - Shengjing Zhu <i@zhsj.me>
+- Simon Leary <simon.leary42@gmail.com>
 - Subil Abraham <abrahams@ornl.gov>
 - Tarcisio Fedrizzi <tarcisio.fedrizzi@gmail.com>
 - Thomas Hamel <hmlth@t-hamel.fr>
@@ -116,20 +131,9 @@
 - Vaiva Zokaite <vaiva.zokaite@cern.ch>
 - Vanessa Sochat <vsoch@users.noreply.github.com>
 - Westley Kurtzer <westley@sylabs.io>, <westleyk@nym.hush.com>
+- Xu Yang <jasonyangshadow@gmail.com>
 - Yannick Cote <y@sylabs.io>, <yhcote@gmail.com>
 - Yaroslav Halchenko <debian@onerussian.com>
 - Yinuo Chen <ynchen2829@utexas.edu>
 - Yoshiaki Senda <yoshiaki@live.it>
-- Onur Yılmaz <csonuryilmaz@gmail.com>
-- Pranathi Locula <locula@deshaw.com>
-- Pedro Alves Batista <pedro.pesquisapb@gmail.com>
-- Chen Yiyang <cyyzero@qq.com>
-- Pablo Caderno <kaderno@gmail.com>
-- Xu Yang <jasonyangshadow@gmail.com>
-- Charles Vejnar <charles.vejnar@gmail.com>
-- Carmelo Piccione <carmelo.piccione@gmail.com>
-- Filip Gorczyca <filip.gorczyca141@gmail.com>
-- Nicholas Yue <yue.nicholas@gmail.com>
-- Benedikt Riedel <benedikt.riedel@gmail.com>
-- Linsen Zhou <i@lin.moe>
 ```
