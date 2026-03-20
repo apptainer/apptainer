@@ -36,8 +36,6 @@ import (
 	"time"
 
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/docker/docker/pkg/pools"
-	"github.com/docker/docker/pkg/system"
 	"github.com/moby/go-archive"
 	"github.com/moby/sys/sequential"
 	"github.com/moby/sys/user"
@@ -50,8 +48,8 @@ import (
 // unmodified upstream code, which requires that they are under dest.
 func UnpackWithRoot(decompressedArchive io.Reader, dest, destRoot string, options *archive.TarOptions) error {
 	tr := tar.NewReader(decompressedArchive)
-	trBuf := pools.BufioReader32KPool.Get(nil)
-	defer pools.BufioReader32KPool.Put(trBuf)
+	trBuf := BufioReader32KPool.Get(nil)
+	defer BufioReader32KPool.Put(trBuf)
 
 	var dirs []*tar.Header
 
@@ -152,7 +150,7 @@ loop:
 		// #nosec G305 -- The header was checked for path traversal before it was appended to the dirs slice.
 		path := filepath.Join(dest, hdr.Name)
 
-		if err := system.Chtimes(path, hdr.AccessTime, hdr.ModTime); err != nil {
+		if err := Chtimes(path, hdr.AccessTime, hdr.ModTime); err != nil {
 			return err
 		}
 	}
@@ -301,7 +299,7 @@ func createTarFile(path, extractDir, extractRoot string, hdr *tar.Header, reader
 		if !ok {
 			continue
 		}
-		if err := system.Lsetxattr(path, xattr, []byte(value), 0); err != nil {
+		if err := Lsetxattr(path, xattr, []byte(value), 0); err != nil {
 			if bestEffortXattrs && errors.Is(err, syscall.ENOTSUP) || errors.Is(err, syscall.EPERM) {
 				// EPERM occurs if modifying xattrs is not allowed. This can
 				// happen when running in userns with restrictions (ChromeOS).
@@ -328,20 +326,20 @@ func createTarFile(path, extractDir, extractRoot string, hdr *tar.Header, reader
 		aTime = hdr.ModTime
 	}
 
-	// system.Chtimes doesn't support a NOFOLLOW flag atm
+	// Chtimes doesn't support a NOFOLLOW flag atm
 	if hdr.Typeflag == tar.TypeLink {
 		if fi, err := os.Lstat(hdr.Linkname); err == nil && (fi.Mode()&os.ModeSymlink == 0) {
-			if err := system.Chtimes(path, aTime, hdr.ModTime); err != nil {
+			if err := Chtimes(path, aTime, hdr.ModTime); err != nil {
 				return err
 			}
 		}
 	} else if hdr.Typeflag != tar.TypeSymlink {
-		if err := system.Chtimes(path, aTime, hdr.ModTime); err != nil {
+		if err := Chtimes(path, aTime, hdr.ModTime); err != nil {
 			return err
 		}
 	} else {
 		ts := []syscall.Timespec{timeToTimespec(aTime), timeToTimespec(hdr.ModTime)}
-		if err := system.LUtimesNano(path, ts); err != nil && err != system.ErrNotSupportedPlatform {
+		if err := LUtimesNano(path, ts); err != nil {
 			return err
 		}
 	}
