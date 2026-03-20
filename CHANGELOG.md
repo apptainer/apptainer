@@ -12,6 +12,7 @@ Changes since v1.5.0-rc.1
 - Apptainer now supports the `loong64` architecture.
 - Add `APPTAINER_BUILDKIT_HOST` environment variable for selecting
   or overriding what backend to use for the BuildKit bootstrap.
+- Update minimum go version to 1.25.7.
 
 ## v1.5.0-rc.1 - \[2026-03-12\]
 
