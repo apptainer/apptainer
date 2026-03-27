@@ -21,7 +21,7 @@ require (
 	github.com/creack/pty v1.1.24
 	github.com/cyphar/filepath-securejoin v0.6.1
 	github.com/docker/go-units v0.5.0
-	github.com/fatih/color v1.18.0
+	github.com/fatih/color v1.19.0
 	github.com/go-log/log v0.2.0
 	github.com/google/go-containerregistry v0.21.3
 	github.com/google/uuid v1.6.0
