@@ -110,7 +110,7 @@ func TestWriteToReadFrom(t *testing.T) {
 
 			yaml, err := yaml.Marshal(test.data)
 			if err != nil {
-				t.Fatalf("cannot mashal YAML: %s\n", err)
+				t.Fatalf("cannot marshal YAML: %s\n", err)
 			}
 
 			_, err = r.Write(yaml)

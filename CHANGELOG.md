@@ -202,7 +202,7 @@ Changes since 1.4.5
 
 - Fix the use of libsubid which had been broken by the revision applied in
   1.4.0-rc.2.
-- Fix a bug introduced in 1.4.0 that caused arm64 to be mis-converted to arm64v8
+- Fix a bug introduced in 1.4.0 that caused arm64 to be misconverted to arm64v8
   and resulted in a failure when pulling OCI containers.
 - Fix user database lookup in master process preventing instance from starting
   correctly on systems using winbind.

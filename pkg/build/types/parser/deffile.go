@@ -194,7 +194,7 @@ func parseTokenSection(tok string, sections map[string]*types.Script, files *[]t
 		}
 
 		key = strings.Join(sectionSplit[0:2], " ")
-		// create app script pbject to populate
+		// create app script object to populate
 		if _, ok := sections[key]; !ok {
 			sections[key] = &types.Script{}
 		}

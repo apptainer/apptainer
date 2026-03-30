@@ -83,7 +83,7 @@ clear_env
 shopt -s expand_aliases
 
 # If /.singularity.d/libs isn't empty we want it to be searched last so it
-# doesn't hide libraries in the container.  The trouble is that LD_LIRARY_PATH
+# doesn't hide libraries in the container.  The trouble is that LD_LIBRARY_PATH
 # is always searched before system libraries.  So if LD_LIBRARY_PATH is the
 # default value set by 99-base.sh, prepend default system library directories.
 # Also prepend the default LD_LIBRARY_PATH if PREPEND_LD_LIBRARY_PATH or

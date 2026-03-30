@@ -247,7 +247,7 @@ func (cp *DebootstrapConveyorPacker) Pack(context.Context) (*types.Bundle, error
 func (cp *DebootstrapConveyorPacker) getRecipeHeaderInfo() (err error) {
 	var ok bool
 
-	// get mirrorURL, OSVerison, and Includes components to definition
+	// get mirrorURL, OSVersion, and Includes components to definition
 	cp.mirrorurl, ok = cp.b.Recipe.Header["mirrorurl"]
 	if !ok {
 		return fmt.Errorf("invalid debootstrap header, no mirrorurl specified")

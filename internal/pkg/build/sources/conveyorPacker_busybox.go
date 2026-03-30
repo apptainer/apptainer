@@ -37,7 +37,7 @@ type BusyBoxConveyorPacker struct {
 func (c *BusyBoxConveyor) Get(ctx context.Context, b *types.Bundle) (err error) {
 	c.b = b
 
-	// get mirrorURL, OSVerison, and Includes components to definition
+	// get mirrorURL, OSVersion, and Includes components to definition
 	mirrorurl, ok := b.Recipe.Header["mirrorurl"]
 	if !ok {
 		return fmt.Errorf("invalid busybox header, no mirrur url specified")

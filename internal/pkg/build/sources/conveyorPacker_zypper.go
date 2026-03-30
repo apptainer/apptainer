@@ -94,7 +94,7 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) error 
 	include = `aaa_base ` + include
 
 	suseVars := getSusevars()
-	// get mirrorURL, OSVerison, and Includes components to definition
+	// get mirrorURL, OSVersion, and Includes components to definition
 	osversion, osversionOk := cp.b.Recipe.Header["osversion"]
 	if !osversionOk {
 		osversion = suseVars.Version
