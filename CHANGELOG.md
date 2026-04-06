@@ -13,6 +13,7 @@ Changes since v1.5.0-rc.1
 - Add `APPTAINER_BUILDKIT_HOST` environment variable for selecting
   or overriding what backend to use for the BuildKit bootstrap.
 - Update minimum go version to 1.25.7.
+- Rename function `SetRunscriptTimout` to `SetRunscriptTimeout`.
 
 ## v1.5.0-rc.1 - \[2026-03-12\]
 
