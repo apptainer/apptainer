@@ -125,7 +125,7 @@ func TestOCIConveyorDockerArchive(t *testing.T) {
 	}
 }
 
-// TestOCIConveyerDockerDaemon tests if we can use an oci laytout dir
+// TestOCIConveyorDockerDaemon tests if we can use an oci laytout dir
 // as a source
 func TestOCIConveyorDockerDaemon(t *testing.T) {
 	if testing.Short() {
@@ -207,7 +207,7 @@ func TestOCIConveyorOCIArchive(t *testing.T) {
 	}
 }
 
-// TestOCIConveyerOCILayout tests if we can use an oci layout dir
+// TestOCIConveyorOCILayout tests if we can use an oci layout dir
 // as a source
 func TestOCIConveyorOCILayout(t *testing.T) {
 	archive, err := getTestTar(ociArchiveURI)

@@ -984,7 +984,7 @@ func serializePrivateEntity(e *openpgp.Entity, blockType string) (string, error)
 }
 
 // RecryptKey Will decrypt a entity, then recrypt it with the same password.
-// This function seems pritty usless, but its not!
+// This function seems pretty useless, but its not!
 func RecryptKey(k *openpgp.Entity, passphrase []byte) error {
 	if !k.PrivateKey.Encrypted {
 		return errNotEncrypted

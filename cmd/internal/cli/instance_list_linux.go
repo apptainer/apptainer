@@ -64,7 +64,7 @@ var instanceListLogsFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "logs",
 	ShortHand:    "l",
-	Usage:        "display location of stdout and sterr log files for instances",
+	Usage:        "display location of stdout and stderr log files for instances",
 	EnvKeys:      []string{"LOGS"},
 }
 

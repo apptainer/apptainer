@@ -404,7 +404,7 @@ func Test_getMemoryLimits(t *testing.T) {
 			},
 		},
 		{
-			name:           "OomKillDsiable",
+			name:           "OomKillDisable",
 			oomKillDisable: true,
 			wantMem:        true,
 			wantError:      false,

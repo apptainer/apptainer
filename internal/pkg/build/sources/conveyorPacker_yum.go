@@ -172,7 +172,7 @@ func (c *YumConveyor) getBootstrapOptions() (err error) {
 	// look for http_proxy and gpg environment vars
 	c.gpg = os.Getenv("GPG")
 
-	// get mirrorURL, updateURL, OSVerison, and Includes components to definition
+	// get mirrorURL, updateURL, OSVersion, and Includes components to definition
 	c.mirrorurl, ok = c.b.Recipe.Header["mirrorurl"]
 	if !ok {
 		return fmt.Errorf("invalid yum header, no mirrorurl specified")

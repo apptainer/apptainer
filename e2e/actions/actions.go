@@ -831,7 +831,7 @@ func (c actionTests) PersistentOverlay(t *testing.T) {
 	profiles := []e2e.Profile{e2e.UserProfile, e2e.UserNamespaceProfile, e2e.RootProfile}
 
 	// create the test dir
-	testdir, err := os.MkdirTemp(c.env.TestDir, "persitent-overlay-")
+	testdir, err := os.MkdirTemp(c.env.TestDir, "persistent-overlay-")
 	if err != nil {
 		t.Fatal(err)
 	}

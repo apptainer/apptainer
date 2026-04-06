@@ -134,7 +134,7 @@ func TestPlaintextKey(t *testing.T) {
 	test.DropPrivilege(t)
 	defer test.ResetPrivilege(t)
 
-	// TestPlaintestKey reads a key from an image. Creating an image does not
+	// TestPlaintextKey reads a key from an image. Creating an image does not
 	// fit with unit tests testing so we only test error cases here.
 	const (
 		noimage = ""

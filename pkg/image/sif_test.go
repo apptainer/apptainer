@@ -115,7 +115,7 @@ func TestSIFInitializer(t *testing.T) {
 			expectedSections:   0,
 		},
 		{
-			name:               "UnkownPartitionSIF",
+			name:               "UnknownPartitionSIF",
 			path:               createSIF(t, false, onePart),
 			writable:           false,
 			expectedSuccess:    true,

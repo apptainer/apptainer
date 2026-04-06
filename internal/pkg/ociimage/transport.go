@@ -154,7 +154,7 @@ func TransportOptionsFromSystemContext(sc *types.SystemContext) *TransportOption
 }
 
 // SystemContextFromTransportOptions returns a containers/image SystemContext
-// initialized from a TransportOptions struct. If the TrasnportOptions is nil,
+// initialized from a TransportOptions struct. If the TransportOptions is nil,
 // then nil is returned.
 //
 // Deprecated: for containers/image compatibility only. To be removed in future
