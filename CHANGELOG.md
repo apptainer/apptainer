@@ -14,6 +14,7 @@ Changes since v1.5.0-rc.1
   or overriding what backend to use for the BuildKit bootstrap.
 - Update minimum go version to 1.25.7.
 - Rename function `SetRunscriptTimout` to `SetRunscriptTimeout`.
+- Rename function `IsReadOnlyFilesytem` to `IsReadOnlyFilesystem`.
 
 ## v1.5.0-rc.1 - \[2026-03-12\]
 

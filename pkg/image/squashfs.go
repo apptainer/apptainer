@@ -141,7 +141,7 @@ func (f *squashfsFormat) initializer(img *Image, fileinfo os.FileInfo) error {
 	if img.Writable {
 		// we set Writable to appropriate value to match the
 		// image open mode as some code may want to ignore this
-		// error by using IsReadOnlyFilesytem check
+		// error by using IsReadOnlyFilesystem check
 		img.Writable = false
 
 		return &readOnlyFilesystemError{

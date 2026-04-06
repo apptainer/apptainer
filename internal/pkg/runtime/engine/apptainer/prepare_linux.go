@@ -1427,7 +1427,7 @@ func (e *EngineOperations) loadOverlayImages(starterConfig *starter.Config, writ
 		}
 
 		img, err := e.loadImage(splitted[0], writableOverlay, userNS, elevated)
-		if err != nil && !image.IsReadOnlyFilesytem(err) {
+		if err != nil && !image.IsReadOnlyFilesystem(err) {
 			return nil, fmt.Errorf("failed to open overlay image %s: %s", splitted[0], err)
 		}
 		if err != nil || (writableOverlay && !img.Writable) {
@@ -1485,7 +1485,7 @@ func (e *EngineOperations) loadBindImages(starterConfig *starter.Config, userNS 
 
 		writable := !binds[i].Readonly()
 		img, err := e.loadImage(imagePath, writable, userNS, elevated)
-		if err != nil && !image.IsReadOnlyFilesytem(err) {
+		if err != nil && !image.IsReadOnlyFilesystem(err) {
 			return nil, fmt.Errorf("failed to load data image %s: %s", imagePath, err)
 		}
 		if err != nil || (writable && !img.Writable) {
