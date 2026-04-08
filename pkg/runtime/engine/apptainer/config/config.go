@@ -983,8 +983,8 @@ func (e *EngineConfig) GetShareNSFd() int {
 	return e.JSON.ShareNSFd
 }
 
-// SetRunscriptTimout sets the runscript timeout
-func (e *EngineConfig) SetRunscriptTimout(timeout string) {
+// SetRunscriptTimeout sets the runscript timeout
+func (e *EngineConfig) SetRunscriptTimeout(timeout string) {
 	e.JSON.RunscriptTimeout = timeout
 }
 

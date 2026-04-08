@@ -87,9 +87,9 @@ func (e *readOnlyFilesystemError) Error() string {
 	return e.s
 }
 
-// IsReadOnlyFilesytem returns if the corresponding error
+// IsReadOnlyFilesystem returns if the corresponding error
 // is a read-only filesystem error or not.
-func IsReadOnlyFilesytem(err error) bool {
+func IsReadOnlyFilesystem(err error) bool {
 	if err == nil {
 		return false
 	}
@@ -429,7 +429,7 @@ func Init(path string, writable bool) (*Image, error) {
 			sylog.Debugf("%s format initializer returned: %v", rf.name, initErr)
 			_ = img.File.Close()
 			continue
-		} else if initErr != nil && !IsReadOnlyFilesytem(initErr) {
+		} else if initErr != nil && !IsReadOnlyFilesystem(initErr) {
 			_ = img.File.Close()
 			return nil, initErr
 		}

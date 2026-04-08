@@ -389,7 +389,7 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	}
 
 	// Set runscript timeout
-	l.engineConfig.SetRunscriptTimout(l.cfg.RunscriptTimeout)
+	l.engineConfig.SetRunscriptTimeout(l.cfg.RunscriptTimeout)
 
 	// Set the required namespaces in the engine config.
 	l.setNamespaces()
