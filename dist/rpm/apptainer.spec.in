@@ -34,7 +34,9 @@
 %global e2fsprogs_version 1.47.3
 %global fuse_overlayfs_version 1.16
 %global squashfs_tools_version 4.7.5
+%ifnarch ppc64le s390x
 %global PRoot_version 5.4.0-rootless.2
+%endif
 
 # The last singularity version number in EPEL/Fedora
 %global last_singularity_version 3.8.7-3
@@ -183,6 +185,10 @@ Provides the optional setuid-root portion of Apptainer.
 %setup -n %{name}-%{package_version}
 # don't need to setup dependent source packages and patches because
 # that is done by the compile-dependencies script
+%if "%{?PRoot_version}" == ""
+# hide the source file from compile-dependencies on the archs where it fails
+rm -f $(dirname %{SOURCE10})/PRoot-*.tar.gz
+%endif
 
 %build
 %if "%{?SOURCE1}" != ""
