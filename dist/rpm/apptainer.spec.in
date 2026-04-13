@@ -52,11 +52,8 @@ URL: https://apptainer.org
 Source: https://github.com/%{name}/%{name}/releases/download/v%{package_version}/%{name}-%{package_version}.tar.gz
 @PACKAGE_GOLANG_SOURCE@
 %if "%{?gocryptfs_version}" != ""
-# In order to build offline, this source tarball needs to have the "vendor"
-# directory added, which can be done by unpacking it, doing the command
-#   go mod vendor
-# and then recreating the tarball.  Use scripts/download-dependencies.
-Source10: https://github.com/rfjakob/gocryptfs/archive/v%{gocryptfs_version}/gocryptfs-%{gocryptfs_version}.tar.gz
+# use the release asset that includes vendor directory
+Source10: https://github.com/rfjakob/gocryptfs/releases/download/v%{gocryptfs_version}/gocryptfs_v%{gocryptfs_version}_src-deps.tar.gz
 %endif
 %if "%{?squashfuse_version}" != ""
 Source11: https://github.com/vasi/squashfuse/archive/%{squashfuse_version}/squashfuse-%{squashfuse_version}.tar.gz
@@ -231,7 +228,7 @@ export PATH=$PWD/go/bin:$PATH
 %make_install -C builddir V=
 
 %if "%{?gocryptfs_version}" != ""
-install -m 755 gocryptfs-%{gocryptfs_version}/gocryptfs %{buildroot}%{_libexecdir}/%{name}/bin/gocryptfs
+install -m 755 gocryptfs_v%{gocryptfs_version}_src-deps/gocryptfs %{buildroot}%{_libexecdir}/%{name}/bin/gocryptfs
 %endif
 
 %if "%{?squashfuse_version}" != ""
