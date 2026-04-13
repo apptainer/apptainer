@@ -21,8 +21,8 @@ set -ex
 for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs PRoot; do
     TGZ="$(echo $SRC/${PKG}[_-]*.tar.gz)"
     if [ ! -f "$TGZ" ]; then
-	echo "\$PKG[_-]*.tar.gz not found in $SRC" >&2
-	exit 1
+	echo "\$PKG[_-]*.tar.gz not found in $SRC, skipping" >&2
+	continue
     fi
     DIR=${TGZ%.tar.gz}
     DIR=${DIR/*\//}
