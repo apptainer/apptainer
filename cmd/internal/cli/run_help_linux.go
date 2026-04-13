@@ -59,7 +59,12 @@ var RunHelpCmd = &cobra.Command{
 
 		execCmd := exec.Command(filepath.Join(buildcfg.BINDIR, "apptainer"), cmdArgs...)
 		execCmd.Stderr = os.Stderr
-		execCmd.Env = []string{}
+		execCmd.Env = []string{
+			// Needed for running under install-unprivileged.sh
+			// when the installed binaries are from a different
+			// OS than the host's OS
+			"LD_LIBRARY_PATH=" + os.Getenv("LD_LIBRARY_PATH"),
+		}
 
 		out, err := execCmd.Output()
 		if err != nil {
