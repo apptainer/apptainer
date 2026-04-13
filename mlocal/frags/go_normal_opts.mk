@@ -4,4 +4,4 @@
 # "-B gobuildid" is a simplification of the macro, to tell go's link
 # command to add a GNU Build Id itself.
 GO_TAGS += rpm_crashtraceback
-GO_LDFLAGS += -ldflags="-linkmode=external -compressdwarf=false -B gobuildid -extldflags '$(LDFLAGS)'"
+GO_LDFLAGS += -ldflags="-linkmode=external -compressdwarf=false -B gobuildid -extldflags '$(GO_EXTLDFLAGS)'"
