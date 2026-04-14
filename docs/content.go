@@ -368,11 +368,22 @@ Enterprise Performance Computing (EPC)`
 	// delete
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	DeleteUse   string = `delete [delete options...] <imageRef>`
-	DeleteShort string = `Deletes requested image from the library`
+	DeleteShort string = `Deletes requested image from a URI`
 	DeleteLong  string = `
-  The 'delete' command allows you to delete an image from a remote library.`
+  The 'delete' command allows you to delete an image from a given URI.
+  Supported URIs include:
+
+  library: Delete an image from the currently configured library
+      library://user/collection/container[:tag]
+
+  oras: Delete a SIF image from an OCI registry that supports ORAS.
+      oras://registry/namespace/image:tag`
 	DeleteExample string = `
-  $ apptainer delete --arch=amd64 library://username/project/image:1.0`
+  From a library
+  $ apptainer delete --arch=amd64 library://username/project/image:1.0
+
+  From a registry
+  $ apptainer delete --arch=amd64 oras://registry/project/image:1.0`
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// capability

@@ -19,6 +19,7 @@ import (
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/app/apptainer"
 	"github.com/apptainer/apptainer/internal/pkg/client/library"
+	"github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
 	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/pkg/cmdline"
@@ -33,6 +34,10 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&deleteImageArchFlag, deleteImageCmd)
 		cmdManager.RegisterFlagForCmd(&deleteImageTimeoutFlag, deleteImageCmd)
 		cmdManager.RegisterFlagForCmd(&deleteLibraryURIFlag, deleteImageCmd)
+		cmdManager.RegisterFlagForCmd(&dockerHostFlag, deleteImageCmd)
+		cmdManager.RegisterFlagForCmd(&dockerUsernameFlag, deleteImageCmd)
+		cmdManager.RegisterFlagForCmd(&dockerPasswordFlag, deleteImageCmd)
+		cmdManager.RegisterFlagForCmd(&dockerLoginFlag, deleteImageCmd)
 		cmdManager.RegisterFlagForCmd(&commonNoHTTPSFlag, deleteImageCmd)
 	})
 }
@@ -97,61 +102,93 @@ var deleteImageCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		image := args[0]
-		proto, ref := uri.Split(image)
+		transport, ref := uri.Split(image)
 		if ref == "" {
 			sylog.Fatalf("Bad URI %s", image)
 		}
-		if proto != "" && proto != LibraryProtocol {
-			sylog.Fatalf("unsupported protocol scheme \"%s\" for delete", proto)
-		}
-
-		imageRef, err := library.NormalizeLibraryRef(image)
-		if err != nil {
-			sylog.Fatalf("Error parsing library ref: %v", err)
-		}
-
-		if deleteLibraryURI != "" && imageRef.Host != "" {
-			sylog.Fatalf("Conflicting arguments; do not use --library with a library URI containing host name")
-		}
-
-		var libraryURI string
-		if deleteLibraryURI != "" {
-			libraryURI = deleteLibraryURI
-		} else if imageRef.Host != "" {
-			// override libraryURI if ref contains host name
-			if noHTTPS {
-				libraryURI = "http://" + imageRef.Host
-			} else {
-				libraryURI = "https://" + imageRef.Host
-			}
-		}
-
-		sylog.Debugf("Using library service URI: %s", libraryURI)
-
-		r := fmt.Sprintf("%s:%s", imageRef.Path, imageRef.Tags[0])
-
-		if !deleteForce {
-			y, err := interactive.AskYNQuestion("n", "Are you sure you want to delete %s (%s) [y/N] ", r, deleteImageArch)
+		switch transport {
+		case LibraryProtocol:
+			imageRef, err := library.NormalizeLibraryRef(image)
 			if err != nil {
-				sylog.Fatalf("%v", err.Error())
+				sylog.Fatalf("Error parsing library ref: %v", err)
 			}
-			if y == "n" {
-				return
+
+			if deleteLibraryURI != "" && imageRef.Host != "" {
+				sylog.Fatalf("Conflicting arguments; do not use --library with a library URI containing host name")
 			}
+
+			var libraryURI string
+			if deleteLibraryURI != "" {
+				libraryURI = deleteLibraryURI
+			} else if imageRef.Host != "" {
+				// override libraryURI if ref contains host name
+				if noHTTPS {
+					libraryURI = "http://" + imageRef.Host
+				} else {
+					libraryURI = "https://" + imageRef.Host
+				}
+			}
+
+			sylog.Debugf("Using library service URI: %s", libraryURI)
+
+			r := fmt.Sprintf("%s:%s", imageRef.Path, imageRef.Tags[0])
+
+			if !deleteForce {
+				y, err := interactive.AskYNQuestion("n", "Are you sure you want to delete %s (%s) [y/N] ", r, deleteImageArch)
+				if err != nil {
+					sylog.Fatalf("%v", err.Error())
+				}
+				if y == "n" {
+					return
+				}
+			}
+
+			libraryConfig, err := getLibraryClientConfig(libraryURI)
+			if err != nil {
+				sylog.Fatalf("Error while getting library client config: %v", err)
+			}
+
+			ctx, cancel := context.WithTimeout(cmd.Context(), time.Duration(deleteImageTimeout)*time.Second)
+			defer cancel()
+
+			if err := apptainer.DeleteImage(ctx, libraryConfig, r, deleteImageArch); err != nil {
+				sylog.Fatalf("Unable to delete image from library: %s\n", err)
+			}
+
+			sylog.Infof("Image %s (%s) deleted.", r, deleteImageArch)
+		case OrasProtocol:
+			r, err := oras.NormalizeRef(ref)
+			if err != nil {
+				sylog.Fatalf("Error parsing image ref: %v", err)
+			}
+
+			if !deleteForce {
+				y, err := interactive.AskYNQuestion("n", "Are you sure you want to delete %s (%s) [y/N] ", r, deleteImageArch)
+				if err != nil {
+					sylog.Fatalf("%v", err.Error())
+				}
+				if y == "n" {
+					return
+				}
+			}
+
+			ociAuth, err := makeOCICredentials(cmd)
+			if err != nil {
+				sylog.Fatalf("Unable to make docker oci credentials: %s", err)
+			}
+
+			ctx, cancel := context.WithTimeout(cmd.Context(), time.Duration(deleteImageTimeout)*time.Second)
+			defer cancel()
+
+			if err := oras.DeleteImage(ctx, r, deleteImageArch, ociAuth, noHTTPS, reqAuthFile); err != nil {
+				sylog.Fatalf("Unable to delete image from oci registry: %v", err)
+			}
+
+			sylog.Infof("Image %s (%s) deleted.", r, deleteImageArch)
+		case "":
+			sylog.Fatalf("No transport type URI supplied")
+		default:
+			sylog.Fatalf("Unsupported transport type: %s", transport)
 		}
-
-		libraryConfig, err := getLibraryClientConfig(libraryURI)
-		if err != nil {
-			sylog.Fatalf("Error while getting library client config: %v", err)
-		}
-
-		ctx, cancel := context.WithTimeout(cmd.Context(), time.Duration(deleteImageTimeout)*time.Second)
-		defer cancel()
-
-		if err := apptainer.DeleteImage(ctx, libraryConfig, r, deleteImageArch); err != nil {
-			sylog.Fatalf("Unable to delete image from library: %s\n", err)
-		}
-
-		sylog.Infof("Image %s (%s) deleted.", r, deleteImageArch)
 	},
 }
