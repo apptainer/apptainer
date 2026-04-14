@@ -33,10 +33,10 @@ if [ ! -w "$DIR" ]; then
 fi
 
 set -ex
-for CMD in squashfs-tools-*/squashfs-tools/{mksquashfs,unsquashfs} squashfuse-*/squashfuse_ll e2fsprogs-*/fuse2fs fuse-overlayfs-*/fuse-overlayfs gocryptfs-*/gocryptfs PRoot-*/src/proot; do
+for CMD in squashfs-tools-*/squashfs-tools/{mksquashfs,unsquashfs} squashfuse-*/squashfuse_ll e2fsprogs-*/fuse2fs fuse-overlayfs-*/fuse-overlayfs gocryptfs[_-]*/gocryptfs PRoot-*/src/proot; do
     if [ ! -f "$CMD" ]; then
-	echo "$CMD not found" >&2
-	exit 1
+	echo "$CMD not found, skipping" >&2
+	continue
     fi
     cp -f $CMD $DIR
 done
