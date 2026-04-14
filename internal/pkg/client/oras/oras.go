@@ -363,3 +363,32 @@ func NormalizeRef(ref string) (string, error) {
 	}
 	return ir.Name(), nil
 }
+
+func DeleteImage(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
+	ref = strings.TrimPrefix(ref, "oras://")
+	ref = strings.TrimPrefix(ref, "//")
+
+	// Get reference to image in the remote
+	opts := []name.Option{name.WithDefaultTag(name.DefaultTag), name.WithDefaultRegistry(name.DefaultRegistry)}
+	if noHTTPS {
+		opts = append(opts, name.Insecure)
+	}
+	ir, err := name.ParseReference(ref, opts...)
+	if err != nil {
+		return fmt.Errorf("invalid reference %q: %w", ref, err)
+	}
+	platform := v1.Platform{
+		Architecture: arch,
+		OS:           "linux",
+	}
+	remoteOpts := []remote.Option{
+		ociauth.AuthOptn(ociAuth, reqAuthFile),
+		remote.WithContext(ctx),
+		remote.WithPlatform(platform),
+	}
+	err = remote.Delete(ir, remoteOpts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
