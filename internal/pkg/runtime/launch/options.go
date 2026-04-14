@@ -31,7 +31,7 @@ import (
 type launchOptions struct {
 	// Writable marks the container image itself as writable.
 	Writable bool
-	// WriteableTmpfs applies an ephemeral writable overlay to the container.
+	// WritableTmpfs applies an ephemeral writable overlay to the container.
 	WritableTmpfs bool
 	// OverlayPaths holds paths to image or directory overlays to be applied.
 	OverlayPaths []string

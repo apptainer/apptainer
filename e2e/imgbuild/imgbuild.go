@@ -1884,7 +1884,7 @@ func (c imgBuildTests) buildLibraryHost(t *testing.T) {
 	)
 }
 
-// testWritableTmpfs checks that we can run the build using a writeable tmpfs in the %test step
+// testWritableTmpfs checks that we can run the build using a writable tmpfs in the %test step
 func (c imgBuildTests) testWritableTmpfs(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
