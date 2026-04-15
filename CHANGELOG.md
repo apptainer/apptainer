@@ -7,6 +7,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.5.x changes
 
+Changes since v1.5.0-rc.2
+
+## v1.5.0-rc.2 - \[2026-04-14\]
+
 Changes since v1.5.0-rc.1
 
 - Apptainer now supports the `loong64` architecture.
