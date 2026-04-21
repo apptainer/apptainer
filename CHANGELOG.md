@@ -15,6 +15,10 @@ Changes since 1.5.x
   Previously it was silently being ignored on the non-ARM architectures.
 - Change from arm32v7 to "arm", just like arm64v8 is now just "arm64".
 - Remove support for the old obsolete arm32v3 and arm32v4 architectures.
+- Add new the OCI labels: "org.opencontainers.image.created" and
+  "org.opencontainers.image.architecture" (optional ".variant").
+  The old deprecated labels: "org.label-schema.build-date" and
+  "org.label-schema.build-arch" are still set, for compatibility.
 
 ## v1.5.x changes
 
