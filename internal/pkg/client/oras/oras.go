@@ -33,6 +33,11 @@ import (
 	"golang.org/x/term"
 )
 
+const (
+	defaultRegistry = name.DefaultRegistry
+	defaultTag      = name.DefaultTag
+)
+
 // DownloadImage downloads a SIF image specified by an oci reference to a file using the included credentials
 func DownloadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
 	rt := client.NewRoundTripper(ctx, nil)
@@ -345,4 +350,45 @@ func remoteImage(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfi
 		return nil, err
 	}
 	return im, nil
+}
+
+func NormalizeRef(ref string) (string, error) {
+	ref = strings.TrimPrefix(ref, "oras://")
+	ref = strings.TrimPrefix(ref, "//")
+
+	opts := []name.Option{name.WithDefaultTag(name.DefaultTag), name.WithDefaultRegistry(name.DefaultRegistry)}
+	ir, err := name.ParseReference(ref, opts...)
+	if err != nil {
+		return "", fmt.Errorf("invalid reference %q: %w", ref, err)
+	}
+	return ir.Name(), nil
+}
+
+func DeleteImage(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
+	ref = strings.TrimPrefix(ref, "oras://")
+	ref = strings.TrimPrefix(ref, "//")
+
+	// Get reference to image in the remote
+	opts := []name.Option{name.WithDefaultTag(name.DefaultTag), name.WithDefaultRegistry(name.DefaultRegistry)}
+	if noHTTPS {
+		opts = append(opts, name.Insecure)
+	}
+	ir, err := name.ParseReference(ref, opts...)
+	if err != nil {
+		return fmt.Errorf("invalid reference %q: %w", ref, err)
+	}
+	platform := v1.Platform{
+		Architecture: arch,
+		OS:           "linux",
+	}
+	remoteOpts := []remote.Option{
+		ociauth.AuthOptn(ociAuth, reqAuthFile),
+		remote.WithContext(ctx),
+		remote.WithPlatform(platform),
+	}
+	err = remote.Delete(ir, remoteOpts...)
+	if err != nil {
+		return err
+	}
+	return nil
 }
