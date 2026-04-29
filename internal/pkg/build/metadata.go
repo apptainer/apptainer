@@ -344,6 +344,7 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 		// create reproducible timestamp
 		currentTime = b.SourceDateEpoch
 	}
+	labels["org.opencontainers.image.created"] = currentTime.Format(time.RFC3339)
 	year, month, day := currentTime.Date()
 	date := strconv.Itoa(day) + `_` + month.String() + `_` + strconv.Itoa(year)
 	hours, minutes, secs := currentTime.Clock()
@@ -376,6 +377,10 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 
 	// Architecture of build
 	buildarch := oci.ArchMap[b.Opts.Arch]
+	labels["org.opencontainers.image.architecture"] = buildarch.Arch
+	if buildarch.Var != "" {
+		labels["org.opencontainers.image.variant"] = buildarch.Var
+	}
 	labels["org.label-schema.build-arch"] = buildarch.Arch
 
 	return nil
