@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -397,4 +398,70 @@ func remoteImage(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfi
 		return nil, err
 	}
 	return im, nil
+}
+
+// SearchRegistry searches the registry and outputs results to stdout
+func SearchRegistry(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, reqAuthFile string) error {
+	ref = strings.TrimPrefix(ref, "oras://")
+	ref = strings.TrimPrefix(ref, "//")
+
+	platform := v1.Platform{
+		Architecture: arch,
+		OS:           "linux",
+	}
+	remoteOpts := []remote.Option{
+		ociauth.AuthOptn(ociAuth, reqAuthFile),
+		remote.WithContext(ctx),
+		remote.WithPlatform(platform),
+	}
+
+	value := ref
+	results := []string{}
+	if !strings.Contains(value, "/") {
+		registry, err := name.NewRegistry(ref)
+		if err != nil {
+			return fmt.Errorf("invalid registry %q: %w", ref, err)
+		}
+		list, err := remote.Catalog(ctx, registry, remoteOpts...)
+		if err != nil {
+			return err
+		}
+		for _, repo := range list {
+			results = append(results, registry.String()+"/"+repo)
+		}
+	} else {
+		results = append(results, value)
+	}
+
+	if len(results) > 0 {
+		imageList := []string{}
+		for _, repo := range results {
+			repository, err := name.NewRepository(repo)
+			if err != nil {
+				return err
+			}
+
+			list, err := remote.List(repository, remoteOpts...)
+			if err != nil {
+				return err
+			}
+			for _, tag := range list {
+				image, err := name.NewTag(repository.String() + ":" + tag)
+				if err != nil {
+					return err
+				}
+				imageItem := fmt.Sprintf("\toras://%s", image.String())
+				imageList = append(imageList, imageItem)
+			}
+		}
+		sort.Strings(imageList)
+		numImages := len(imageList)
+		fmt.Printf("Found %d container images for %s matching %q:\n\n", numImages, arch, value)
+		fmt.Println(strings.Join(imageList, "\n\n"))
+		fmt.Printf("\n")
+	} else {
+		fmt.Printf("No container images found for %s matching %q.\n\n", arch, value)
+	}
+
+	return nil
 }

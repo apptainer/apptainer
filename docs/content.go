@@ -730,15 +730,19 @@ Enterprise Performance Computing (EPC)`
 	// search
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	SearchUse   string = `search [search options...] <search_query>`
-	SearchShort string = `Search a Container Library for images`
+	SearchShort string = `Search a Container Library or Registry for images`
 	SearchLong  string = `
-  Search a Container Library for container images matching the search query.
+  Search a Container Library or Registry for container images matching the search
+  query, or the registry or restricted to a repository within the registry.
   You can specify an alternate architecture, and/or limit
-  the results to only signed images.`
+  the results to only signed images (Container Library only).`
 	SearchExample string = `
   $ apptainer search lolcow
   $ apptainer search --arch arm64 alpine
-  $ apptainer search --signed tensorflow`
+  $ apptainer search --signed tensorflow
+
+  In supported OCI registry
+  $ apptainer search --arch arm64 oras://registry/alpine`
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// run
