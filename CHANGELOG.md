@@ -5,26 +5,17 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.6.x changes
+
+Changes since 1.5.x
+
 ## v1.5.x changes
 
-Changes since v1.5.0-rc.2
+Changes since v1.5.0
 
-## v1.5.0-rc.2 - \[2026-04-14\]
+## v1.5.0 - \[2026-05-06\]
 
-Changes since v1.5.0-rc.1
-
-- Apptainer now supports the `loong64` architecture.
-- Add `APPTAINER_BUILDKIT_HOST` environment variable for selecting
-  or overriding what backend to use for the BuildKit bootstrap.
-- When apptainer reinvokes itself on behalf of the `run-help` command,
-  pass through LD_LIBRARY_PATH.  This makes it work correctly when it
-  was installed with install-unprivileged.sh on a host operating system
-  that's different than the one the installed binaries were built on.
-- Update minimum go version to 1.25.7.
-
-## v1.5.0-rc.1 - \[2026-03-12\]
-
-Changes since 1.4.5
+Changes since v1.4.5
 
 ### New Features & Functionality
 
@@ -46,6 +37,8 @@ Changes since 1.4.5
   Requires BuildKit to be installed.  The full buildkit log file is
   included in the image, for traceability.  It is also shown on the
   console, as a progress update while building.
+  If an `APPTAINER_BUILDKIT_HOST` environment variable is set it will
+  select or override what backend to use for the BuildKit bootstrap.
 - Add support for downloading SIF images from an IPFS peer-to-peer
   cluster using an HTTP gateway (similar to the existing support for IPFS
   in the `curl` tool).  The address of the gateway can be set in the
@@ -104,6 +97,7 @@ Changes since 1.4.5
 - Add additional `.rpm` packages to the release assets that include
   `el10` in their names.  Those packages are necessary to work on EL10
   which has a newer libsubid library than older EL releases.
+- Apptainer now supports the `loong64` architecture.
 
 ### Changed defaults / behaviours
 
@@ -124,7 +118,7 @@ Changes since 1.4.5
   A progress bar is shown during the process.
 - Add support for APPTAINER_TMPDIR to the commands
   `apptainer overlay create` and `apptainer plugin compile`.
-- Update minimum go version to 1.25.6.
+- Update minimum go version to 1.25.7.
 - Update the bundled gocryptfs to version 2.6.1.
 - Update the bundled squashfuse to version 0.6.1.
 - Update the bundled fuse-overlayfs to version 1.16.
@@ -142,6 +136,10 @@ Changes since 1.4.5
 - The username in `/etc/passwd` inside a container now always corresponds
   to the username of the user on the host even if an entry with the same
   UID is found in the container.
+- When apptainer reinvokes itself on behalf of the `run-help` command,
+  it passes through LD_LIBRARY_PATH.  This makes it work correctly when it
+  was installed with install-unprivileged.sh on a host operating system
+  that's different than the one the installed binaries were built on.
 
 ## v1.4.x changes
 
