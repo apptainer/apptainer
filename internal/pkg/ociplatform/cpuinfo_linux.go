@@ -100,10 +100,6 @@ func getCPUVariantFromArch(arch string) (string, error) {
 			variant = "6"
 		case "v5":
 			variant = "5"
-		case "v4":
-			variant = "4"
-		case "v3":
-			variant = "3"
 		default:
 			variant = "unknown"
 		}
@@ -155,10 +151,6 @@ func getCPUVariant() (string, error) {
 		variant = "v6"
 	case "5", "5t", "5te", "5tej":
 		variant = "v5"
-	case "4", "4t":
-		variant = "v4"
-	case "3":
-		variant = "v3"
 	default:
 		variant = "unknown"
 	}
