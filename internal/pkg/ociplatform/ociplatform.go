@@ -68,12 +68,12 @@ func PlatformFromString(p string) (*ggcrv1.Platform, error) {
 	return plat, nil
 }
 
-func PlatformFromArch(a string) (*ggcrv1.Platform, error) {
+func PlatformFromArch(a string, v string) (*ggcrv1.Platform, error) {
 	if runtime.GOOS != "linux" {
 		return nil, fmt.Errorf("%q is not a valid platform OS for apptainer", runtime.GOOS)
 	}
 
-	arch, variant := normalizeArch(a, "")
+	arch, variant := normalizeArch(a, v)
 
 	return &ggcrv1.Platform{
 		OS:           runtime.GOOS,

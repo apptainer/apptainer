@@ -41,6 +41,10 @@ type GoArch struct {
 }
 
 var archMap = map[string]GoArch{
+	"arm": {
+		Arch: "arm",
+		Var:  "",
+	},
 	"arm64": {
 		Arch: "arm64",
 		Var:  "",
@@ -88,14 +92,20 @@ var archMap = map[string]GoArch{
 }
 
 // LookupArch looks up an architecture
-func LookupArch(a string) (GoArch, bool) {
+func LookupArch(a string, v string) (GoArch, bool) {
 	arch, ok := archMap[a]
+	if ok && v != "" {
+		arch.Var = v
+	}
 	return arch, ok
 }
 
 // SupportedArch returns architectures
-func SupportedArch() []reflect.Value {
-	keys := reflect.ValueOf(archMap).MapKeys()
+func SupportedArch() []string {
+	keys := []string{}
+	for _, value := range reflect.ValueOf(archMap).MapKeys() {
+		keys = append(keys, value.String())
+	}
 	return keys
 }
 
@@ -297,28 +307,13 @@ func getArchFromURI(uri string) (arch *GoArch) {
 	return
 }
 
-// Convert CLI options GOARCH and arch variant to recognized docker arch
-func ConvertArch(arch, archVariant string) (string, error) {
+// Convert CLI options GOARCH and arch variant (GOARM, GOARM64, GOAMD64, etc) to recognized docker arch
+func ConvertArch(arch, archVariant string) (string, string, error) {
 	supportedArchs := []string{"arm", "arm64", "amd64", "386", "ppc64le", "s390x", "riscv64", "loong64"}
 	switch arch {
-	case "arm64":
-		if archVariant == "" {
-			return "arm64", nil
-		}
-		tmpArch := ""
-		if strings.HasPrefix(archVariant, "v") {
-			tmpArch = fmt.Sprintf("%s%s", arch, archVariant)
-		} else {
-			tmpArch = fmt.Sprintf("%sv%s", arch, archVariant)
-		}
-		// verification
-		if _, ok := ArchMap[tmpArch]; !ok {
-			return "", fmt.Errorf("arch: %s is not valid, supported archs are: %v, supported variants are [8], please remove --arch-variant option", tmpArch, supportedArchs)
-		}
-		return tmpArch, nil
 	case "arm":
 		if archVariant == "" {
-			return "arm32v7", nil
+			return "arm", "", nil
 		}
 		tmpArch := ""
 		if strings.HasPrefix(archVariant, "v") {
@@ -328,14 +323,14 @@ func ConvertArch(arch, archVariant string) (string, error) {
 		}
 		// verification
 		if _, ok := archMap[tmpArch]; !ok {
-			return "", fmt.Errorf("arch: %s is not valid, supported archs are: %v, supported variants are [5, 6, 7], please remove --arch-variant option", tmpArch, supportedArchs)
+			return "", "", fmt.Errorf("arch: %s is not valid, supported archs are: %v, supported variants are [5, 6, 7], please remove --arch-variant option", tmpArch, supportedArchs)
 		}
-		return tmpArch, nil
+		return tmpArch, "", nil
 	default:
 		if _, ok := archMap[arch]; !ok {
-			return "", fmt.Errorf("arch: %s is not valid, supported archs are: %v", arch, supportedArchs)
+			return "", "", fmt.Errorf("arch: %s is not valid, supported archs are: %v", arch, supportedArchs)
 		}
 
-		return arch, nil
+		return arch, archVariant, nil
 	}
 }

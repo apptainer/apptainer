@@ -329,12 +329,12 @@ func pullRun(cmd *cobra.Command, args []string) {
 			sylog.Fatalf("While creating Docker credentials: %v", err)
 		}
 
-		arch, err := build_oci.ConvertArch(pullArch, pullArchVariant)
+		arch, variant, err := build_oci.ConvertArch(pullArch, pullArchVariant)
 		if err != nil {
 			sylog.Fatalf("While processing the arch and arch variant: %v", err)
 			return
 		}
-		platform, err := ociplatform.PlatformFromArch(arch)
+		platform, err := ociplatform.PlatformFromArch(arch, variant)
 		if err != nil {
 			sylog.Fatalf("While processing arch and platform: %v", err)
 			return
@@ -346,6 +346,7 @@ func pullRun(cmd *cobra.Command, args []string) {
 			NoHTTPS:      noHTTPS,
 			NoCleanUp:    buildArgs.noCleanUp,
 			Pullarch:     arch,
+			Pullvar:      variant,
 			ReqAuthFile:  reqAuthFile,
 			Platform:     *platform,
 			Reproducible: pullReproducible,

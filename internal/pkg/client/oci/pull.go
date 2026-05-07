@@ -37,6 +37,7 @@ type PullOptions struct {
 	NoHTTPS      bool
 	NoCleanUp    bool
 	Pullarch     string
+	Pullvar      string
 	ReqAuthFile  string
 	Platform     v1.Platform
 	Reproducible bool
@@ -64,7 +65,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 	// https://github.com/apptainer/singularity/issues/5172
 	to := transportOptions(opts)
 	if opts.Pullarch != "" {
-		if arch, ok := oci.LookupArch(opts.Pullarch); ok {
+		if arch, ok := oci.LookupArch(opts.Pullarch, opts.Pullvar); ok {
 			to.Platform = v1.Platform{
 				Architecture: arch.Arch,
 				Variant:      arch.Var,
@@ -134,6 +135,7 @@ func convertOciToSIF(ctx context.Context, imgCache *cache.Handle, image, cachedI
 				DockerDaemonHost: opts.DockerHost,
 				ImgCache:         imgCache,
 				Arch:             opts.Pullarch,
+				Var:              opts.Pullvar,
 				ReqAuthFile:      opts.ReqAuthFile,
 				Platform:         opts.Platform,
 				Reproducible:     opts.Reproducible,

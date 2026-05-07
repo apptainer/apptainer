@@ -323,8 +323,8 @@ func (c cacheTests) testMultipleArch(t *testing.T) {
 		e2e.AsSubtest("pull image failure because of wrong --arch-variant"),
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("pull"),
-		e2e.WithArgs([]string{"--force", "--arch", "arm64", "--arch-variant", "v9", sifname, "docker://alpine:3.6"}...),
-		e2e.ExpectExit(255, e2e.ExpectError(e2e.ContainMatch, "arch: arm64v9 is not valid")),
+		e2e.WithArgs([]string{"--force", "--arch", "arm", "--arch-variant", "9", sifname, "docker://alpine:3.6"}...),
+		e2e.ExpectExit(255, e2e.ExpectError(e2e.ContainMatch, "arch: arm32v9 is not valid")),
 	)
 
 	// ok cases

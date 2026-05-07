@@ -57,12 +57,6 @@ func TestGetCPUVariantFromArch(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			name:        "Test aarch64",
-			input:       "aarch64",
-			output:      "8",
-			expectedErr: nil,
-		},
-		{
 			name:        "Test Armv8 with capital",
 			input:       "Armv8",
 			output:      "8",

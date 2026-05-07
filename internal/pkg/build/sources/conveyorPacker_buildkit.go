@@ -72,7 +72,7 @@ func (cp *BuildKitConveyorPacker) Get(_ context.Context, b *types.Bundle) (err e
 	cp.topts.Platform = *dp
 
 	if cp.b.Opts.Arch != "" {
-		if arch, ok := build_oci.LookupArch(cp.b.Opts.Arch); ok {
+		if arch, ok := build_oci.LookupArch(cp.b.Opts.Arch, cp.b.Opts.Var); ok {
 			cp.topts.Platform = v1.Platform{
 				OS:           dp.OS,
 				Architecture: arch.Arch,
