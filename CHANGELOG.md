@@ -7,6 +7,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.6.x changes
 
+Changes since 1.5.x
 
 ## v1.5.x changes
 
