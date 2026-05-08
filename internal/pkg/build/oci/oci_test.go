@@ -230,6 +230,30 @@ func createInvalidImageRef(t *testing.T, invalidRef string) types.ImageReference
 	return srcRef
 }
 
+func TestLookupArch(t *testing.T) {
+	test.DropPrivilege(t)
+	defer test.ResetPrivilege(t)
+
+	arch, ok := LookupArch("arm64v8")
+	if !ok {
+		t.Fatalf("cannot lookup arch")
+	}
+	if arch.Arch != "arm64" || arch.Var != "v8" {
+		t.Fatalf("wrong arch returned")
+	}
+}
+
+func TestSupportedArch(t *testing.T) {
+	test.DropPrivilege(t)
+	defer test.ResetPrivilege(t)
+
+	keys := SupportedArch()
+	t.Log(keys)
+	if len(keys) == 0 {
+		t.Fatalf("cannot get all arch")
+	}
+}
+
 func TestConvertReference(t *testing.T) {
 	test.DropPrivilege(t)
 	defer test.ResetPrivilege(t)

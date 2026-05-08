@@ -14,7 +14,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"reflect"
 	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/build"
@@ -65,13 +64,13 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 	// https://github.com/apptainer/singularity/issues/5172
 	to := transportOptions(opts)
 	if opts.Pullarch != "" {
-		if arch, ok := oci.ArchMap[opts.Pullarch]; ok {
+		if arch, ok := oci.LookupArch(opts.Pullarch); ok {
 			to.Platform = v1.Platform{
 				Architecture: arch.Arch,
 				Variant:      arch.Var,
 			}
 		} else {
-			keys := reflect.ValueOf(oci.ArchMap).MapKeys()
+			keys := oci.SupportedArch()
 			return "", fmt.Errorf("failed to parse the arch value: %s, should be one of %v", opts.Pullarch, keys)
 		}
 	}

@@ -224,7 +224,7 @@ func (a *SIFAssembler) Assemble(b *types.Bundle, path string) error {
 			sylog.Infof("Architecture not recognized, use native")
 			arch = runtime.GOARCH
 		}
-		if buildarch, ok := oci.ArchMap[b.Opts.Arch]; ok {
+		if buildarch, ok := oci.LookupArch(b.Opts.Arch); ok {
 			if arch != buildarch.Arch {
 				// the container arch overrides the build arch (!), for backwards compatibility
 				sylog.Warningf("Architecture %s does not match build arch %s", arch, b.Opts.Arch)

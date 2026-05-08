@@ -15,6 +15,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"reflect"
 	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/cache"
@@ -39,7 +40,7 @@ type GoArch struct {
 	Var  string
 }
 
-var ArchMap = map[string]GoArch{
+var archMap = map[string]GoArch{
 	"arm64": {
 		Arch: "arm64",
 		Var:  "",
@@ -84,6 +85,18 @@ var ArchMap = map[string]GoArch{
 		Arch: "loong64",
 		Var:  "",
 	},
+}
+
+// LookupArch looks up an architecture
+func LookupArch(a string) (GoArch, bool) {
+	arch, ok := archMap[a]
+	return arch, ok
+}
+
+// SupportedArch returns architectures
+func SupportedArch() []reflect.Value {
+	keys := reflect.ValueOf(archMap).MapKeys()
+	return keys
 }
 
 // ConvertReference converts a source reference into a cache.ImageReference to cache its blobs
@@ -276,7 +289,7 @@ func getArchFromURI(uri string) (arch *GoArch) {
 		archURI = uriComponents[1]
 	}
 
-	val, ok := ArchMap[archURI]
+	val, ok := archMap[archURI]
 	if ok {
 		arch = &val
 	}
@@ -314,12 +327,12 @@ func ConvertArch(arch, archVariant string) (string, error) {
 			tmpArch = fmt.Sprintf("arm32v%s", archVariant)
 		}
 		// verification
-		if _, ok := ArchMap[tmpArch]; !ok {
+		if _, ok := archMap[tmpArch]; !ok {
 			return "", fmt.Errorf("arch: %s is not valid, supported archs are: %v, supported variants are [5, 6, 7], please remove --arch-variant option", tmpArch, supportedArchs)
 		}
 		return tmpArch, nil
 	default:
-		if _, ok := ArchMap[arch]; !ok {
+		if _, ok := archMap[arch]; !ok {
 			return "", fmt.Errorf("arch: %s is not valid, supported archs are: %v", arch, supportedArchs)
 		}
 

@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
 	"regexp"
 	"strings"
 	"text/template"
@@ -162,14 +161,14 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 	cp.topts.Platform = *dp
 
 	if cp.b.Opts.Arch != "" {
-		if arch, ok := build_oci.ArchMap[cp.b.Opts.Arch]; ok {
+		if arch, ok := build_oci.LookupArch(cp.b.Opts.Arch); ok {
 			cp.topts.Platform = v1.Platform{
 				OS:           dp.OS,
 				Architecture: arch.Arch,
 				Variant:      arch.Var,
 			}
 		} else {
-			keys := reflect.ValueOf(build_oci.ArchMap).MapKeys()
+			keys := build_oci.SupportedArch()
 			return fmt.Errorf("failed to parse the arch value: %s, should be one of %v", cp.b.Opts.Arch, keys)
 		}
 	}
