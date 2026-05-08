@@ -68,9 +68,9 @@ jobs:
           EOF
           )
 
-          sed -i "69,95d" "apptainer-$APPTAINER_VERSION/scripts/ci-deb-build-test"
+          sed -i '/^su testuser/,$d' "apptainer-$APPTAINER_VERSION/scripts/ci-deb-build-test"
           echo "$new_content" >> "apptainer-$APPTAINER_VERSION/scripts/ci-deb-build-test"
-          sed -i '49c mv .??* !(src|*.orig.tar.gz) src' "apptainer-$APPTAINER_VERSION/scripts/ci-deb-build-test"
+          sed -i '/^mv \.\?\?/c mv .??* !(src|*.orig.tar.gz) src' "apptainer-$APPTAINER_VERSION/scripts/ci-deb-build-test"
 
           # copy the latest scripts/ubuntu-ppa into the orig.tar.gz
           cp scripts/ubuntu-ppa "apptainer-$APPTAINER_VERSION/scripts/ubuntu-ppa"
