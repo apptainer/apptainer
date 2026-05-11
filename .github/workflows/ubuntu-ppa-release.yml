@@ -91,8 +91,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-            - version: '25.04'
-              name: plucky
+            - version: '26.04'
+              name: resolute
             - version: '24.04'
               name: noble
             - version: '22.04'
