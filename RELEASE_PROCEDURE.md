@@ -141,7 +141,7 @@ release of a new major or minor version. Each new RC follows step 5 and above.
      `version` in conf.py.
    * If a new branch was created, add it to the list in the
      [web page](https://github.com/apptainer/apptainer.org/blob/master/src/pages/documentation.astro).
-     The `latest` symlinks in `static/docs/user` and `static/docs/admin`
+     The `latest` symlinks in `public/docs/user` and `public/docs/admin`
      should get automatically updated.
    * Make a web announcement of the new release at `src/content/news`.
 
