@@ -101,6 +101,19 @@ acknowledging that you agree to the [Developer Certificate of Origin](DCO.md).
    `LICENSE_DEPENDENCIES.md`, by running
    `scripts/update-license-dependencies.sh`
 
+## AI Assistance Policy
+
+All pull requests made with AI assistance must first of all follow
+the above instructions as usual.  The "Signed-off-by" tag must not be
+signed by the coding assistant; only humans can legally certify the DCO.
+The human using the assistant must fully review the AI-generated code
+and take full responsibility for the contribution, including ensuring
+that modifications adhere to the existing licenses in modified files.
+
+In addition, all commits in the pull request must have an "Assisted-by"
+tag as defined in the [Linux kernel AI Coding Assistants
+policy](https://docs.kernel.org/process/coding-assistants.html#attribution).
+
 ## Documentation
 
 There are a few places where documentation for the Apptainer project lives.
