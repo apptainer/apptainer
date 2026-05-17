@@ -379,6 +379,30 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 		sylog.Fatalf("%v", err)
 	}
 
+	mksquashfsArgs := buildArgs.mksquashfsArgs
+	if buildArgs.none {
+		// mksquashfsArgs += " -no-compression"
+		mksquashfsArgs += " -noI -noD -noF -noX"
+	} else if buildArgs.legacy {
+		if buildArgs.fast {
+			// default gzip compression level in mksquashfs is: 9
+			mksquashfsArgs += " -comp gzip -Xcompression-level 1"
+		} else if buildArgs.best {
+			mksquashfsArgs += " -comp xz"
+		} else {
+			mksquashfsArgs += " -comp gzip"
+		}
+	} else {
+		if buildArgs.fast {
+			mksquashfsArgs += " -comp lz4"
+		} else if buildArgs.best {
+			mksquashfsArgs += " -comp zstd"
+		} else {
+			// default zstd compression level in mksquashfs is: 15
+			mksquashfsArgs += " -comp zstd -Xcompression-level 9"
+		}
+	}
+
 	opts := types.Options{
 		ImgCache:           imgCache,
 		TmpDir:             tmpDir,
@@ -399,7 +423,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 		FixPerms:           buildArgs.fixPerms,
 		SandboxTarget:      sandboxTarget,
 		DataPartition:      dataPartition,
-		MksquashfsArgs:     buildArgs.mksquashfsArgs,
+		MksquashfsArgs:     mksquashfsArgs,
 		Binds:              buildArgs.bindPaths,
 		Unprivilege:        unprivilege,
 		ReqAuthFile:        reqAuthFile,

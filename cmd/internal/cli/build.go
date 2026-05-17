@@ -38,6 +38,10 @@ var buildArgs struct {
 	keyServerURL        string
 	webURL              string
 	mksquashfsArgs      string
+	none                bool
+	fast                bool
+	best                bool
+	legacy              bool
 	encrypt             bool
 	fakeroot            bool
 	fakefakeroot        bool
@@ -219,6 +223,38 @@ var buildMksquashfsArgsFlag = cmdline.Flag{
 	EnvKeys:      []string{"MKSQUASHFS_ARGS"},
 }
 
+// --none
+var buildCompressionNoneFlag = cmdline.Flag{
+	ID:           "buildCompressionNoneFlag",
+	Value:        &buildArgs.none,
+	DefaultValue: false,
+	Name:         "none",
+}
+
+// --fast
+var buildCompressionFastFlag = cmdline.Flag{
+	ID:           "buildCompressionFastFlag",
+	Value:        &buildArgs.fast,
+	DefaultValue: false,
+	Name:         "fast",
+}
+
+// --best
+var buildCompressionBestFlag = cmdline.Flag{
+	ID:           "buildCompressionBestFlag",
+	Value:        &buildArgs.best,
+	DefaultValue: false,
+	Name:         "best",
+}
+
+// --legacy
+var buildCompressionLegacyFlag = cmdline.Flag{
+	ID:           "buildCompressionLegacyFlag",
+	Value:        &buildArgs.legacy,
+	DefaultValue: false,
+	Name:         "legacy",
+}
+
 // --nv
 var buildNvFlag = cmdline.Flag{
 	ID:           "nvFlag",
@@ -392,6 +428,10 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildFakerootFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildFixPermsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildMksquashfsArgsFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildCompressionNoneFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildCompressionFastFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildCompressionBestFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildCompressionLegacyFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildJSONFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildArchFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildArchVariantFlag, buildCmd)
