@@ -267,6 +267,32 @@ func getEncryptionInfo(cmd *cobra.Command) (*cryptkey.KeyInfo, bool) {
 	return keyInfo, unprivilege
 }
 
+func getCompressionFlags(mksquashfsArgs string) string {
+	if buildArgs.none {
+		// mksquashfsArgs += " -no-compression"
+		mksquashfsArgs += " -noI -noD -noF -noX"
+	} else if buildArgs.legacy {
+		if buildArgs.fast {
+			// default gzip compression level in mksquashfs is: 9
+			mksquashfsArgs += " -comp gzip -Xcompression-level 1"
+		} else if buildArgs.best {
+			mksquashfsArgs += " -comp xz"
+		} else {
+			mksquashfsArgs += " -comp gzip"
+		}
+	} else {
+		if buildArgs.fast {
+			mksquashfsArgs += " -comp lz4"
+		} else if buildArgs.best {
+			mksquashfsArgs += " -comp zstd"
+		} else {
+			// default zstd compression level in mksquashfs is: 15
+			mksquashfsArgs += " -comp zstd -Xcompression-level 9"
+		}
+	}
+	return mksquashfsArgs
+}
+
 func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fakerootPath string) {
 	keyInfo, unprivilege := getEncryptionInfo(cmd)
 	if keyInfo == nil && unprivilege {
@@ -379,29 +405,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 		sylog.Fatalf("%v", err)
 	}
 
-	mksquashfsArgs := buildArgs.mksquashfsArgs
-	if buildArgs.none {
-		// mksquashfsArgs += " -no-compression"
-		mksquashfsArgs += " -noI -noD -noF -noX"
-	} else if buildArgs.legacy {
-		if buildArgs.fast {
-			// default gzip compression level in mksquashfs is: 9
-			mksquashfsArgs += " -comp gzip -Xcompression-level 1"
-		} else if buildArgs.best {
-			mksquashfsArgs += " -comp xz"
-		} else {
-			mksquashfsArgs += " -comp gzip"
-		}
-	} else {
-		if buildArgs.fast {
-			mksquashfsArgs += " -comp lz4"
-		} else if buildArgs.best {
-			mksquashfsArgs += " -comp zstd"
-		} else {
-			// default zstd compression level in mksquashfs is: 15
-			mksquashfsArgs += " -comp zstd -Xcompression-level 9"
-		}
-	}
+	mksquashfsArgs := getCompressionFlags(buildArgs.mksquashfsArgs)
 
 	opts := types.Options{
 		ImgCache:           imgCache,
