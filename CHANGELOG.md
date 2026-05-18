@@ -9,6 +9,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Add support for variant to more architectures, but without verification.
+  The previous arm32v5, arm32v6 and arm32v7 (= "arm") are still verified.
+- Any architecture variant, if used, is also included in the platform.
+  Previously it was silently being ignored on the non-ARM architectures.
+- Change from arm32v7 to "arm", just like arm64v8 is now just "arm64".
+- Remove support for the old obsolete arm32v3 and arm32v4 architectures.
+
 ## v1.5.x changes
 
 Changes since v1.5.0
