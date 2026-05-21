@@ -31,7 +31,7 @@ func TestCPUVariant(t *testing.T) {
 		t.Skip("only relevant on linux/arm")
 	}
 
-	variants := []string{"v8", "v7", "v6", "v5", "v4", "v3"}
+	variants := []string{"v8", "v7", "v6", "v5"}
 
 	p, err := getCPUVariant()
 	if err != nil {
@@ -57,12 +57,6 @@ func TestGetCPUVariantFromArch(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			name:        "Test aarch64",
-			input:       "aarch64",
-			output:      "8",
-			expectedErr: nil,
-		},
-		{
 			name:        "Test Armv8 with capital",
 			input:       "Armv8",
 			output:      "8",
@@ -84,18 +78,6 @@ func TestGetCPUVariantFromArch(t *testing.T) {
 			name:        "Test armv5",
 			input:       "armv5",
 			output:      "5",
-			expectedErr: nil,
-		},
-		{
-			name:        "Test armv4",
-			input:       "armv4",
-			output:      "4",
-			expectedErr: nil,
-		},
-		{
-			name:        "Test armv3",
-			input:       "armv3",
-			output:      "3",
 			expectedErr: nil,
 		},
 		{

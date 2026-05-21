@@ -122,8 +122,10 @@ type Options struct {
 	Tag string
 	// Digest info (from RepoDigests)
 	Digest string
-	// Arch info
+	// Arch info (architecture)
 	Arch string
+	// Var info (variant)
+	Var string
 	// Authentication file for registry credentials
 	ReqAuthFile string
 	// Extra arguments for mksquashfs

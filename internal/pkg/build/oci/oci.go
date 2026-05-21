@@ -15,6 +15,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"reflect"
 	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/cache"
@@ -39,7 +40,11 @@ type GoArch struct {
 	Var  string
 }
 
-var ArchMap = map[string]GoArch{
+var archMap = map[string]GoArch{
+	"arm": {
+		Arch: "arm",
+		Var:  "",
+	},
 	"arm64": {
 		Arch: "arm64",
 		Var:  "",
@@ -84,6 +89,24 @@ var ArchMap = map[string]GoArch{
 		Arch: "loong64",
 		Var:  "",
 	},
+}
+
+// LookupArch looks up an architecture
+func LookupArch(a string, v string) (GoArch, bool) {
+	arch, ok := archMap[a]
+	if ok && v != "" {
+		arch.Var = v
+	}
+	return arch, ok
+}
+
+// SupportedArch returns architectures
+func SupportedArch() []string {
+	keys := []string{}
+	for _, value := range reflect.ValueOf(archMap).MapKeys() {
+		keys = append(keys, value.String())
+	}
+	return keys
 }
 
 // ConvertReference converts a source reference into a cache.ImageReference to cache its blobs
@@ -276,7 +299,7 @@ func getArchFromURI(uri string) (arch *GoArch) {
 		archURI = uriComponents[1]
 	}
 
-	val, ok := ArchMap[archURI]
+	val, ok := archMap[archURI]
 	if ok {
 		arch = &val
 	}
@@ -284,28 +307,13 @@ func getArchFromURI(uri string) (arch *GoArch) {
 	return
 }
 
-// Convert CLI options GOARCH and arch variant to recognized docker arch
-func ConvertArch(arch, archVariant string) (string, error) {
+// Convert CLI options GOARCH and arch variant (GOARM, GOARM64, GOAMD64, etc) to recognized docker arch
+func ConvertArch(arch, archVariant string) (string, string, error) {
 	supportedArchs := []string{"arm", "arm64", "amd64", "386", "ppc64le", "s390x", "riscv64", "loong64"}
 	switch arch {
-	case "arm64":
-		if archVariant == "" {
-			return "arm64", nil
-		}
-		tmpArch := ""
-		if strings.HasPrefix(archVariant, "v") {
-			tmpArch = fmt.Sprintf("%s%s", arch, archVariant)
-		} else {
-			tmpArch = fmt.Sprintf("%sv%s", arch, archVariant)
-		}
-		// verification
-		if _, ok := ArchMap[tmpArch]; !ok {
-			return "", fmt.Errorf("arch: %s is not valid, supported archs are: %v, supported variants are [8], please remove --arch-variant option", tmpArch, supportedArchs)
-		}
-		return tmpArch, nil
 	case "arm":
 		if archVariant == "" {
-			return "arm32v7", nil
+			return "arm", "", nil
 		}
 		tmpArch := ""
 		if strings.HasPrefix(archVariant, "v") {
@@ -314,15 +322,15 @@ func ConvertArch(arch, archVariant string) (string, error) {
 			tmpArch = fmt.Sprintf("arm32v%s", archVariant)
 		}
 		// verification
-		if _, ok := ArchMap[tmpArch]; !ok {
-			return "", fmt.Errorf("arch: %s is not valid, supported archs are: %v, supported variants are [5, 6, 7], please remove --arch-variant option", tmpArch, supportedArchs)
+		if _, ok := archMap[tmpArch]; !ok {
+			return "", "", fmt.Errorf("arch: %s is not valid, supported archs are: %v, supported variants are [5, 6, 7], please remove --arch-variant option", tmpArch, supportedArchs)
 		}
-		return tmpArch, nil
+		return tmpArch, "", nil
 	default:
-		if _, ok := ArchMap[arch]; !ok {
-			return "", fmt.Errorf("arch: %s is not valid, supported archs are: %v", arch, supportedArchs)
+		if _, ok := archMap[arch]; !ok {
+			return "", "", fmt.Errorf("arch: %s is not valid, supported archs are: %v", arch, supportedArchs)
 		}
 
-		return arch, nil
+		return arch, archVariant, nil
 	}
 }

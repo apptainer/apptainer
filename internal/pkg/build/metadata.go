@@ -375,7 +375,7 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 	}
 
 	// Architecture of build
-	buildarch := oci.ArchMap[b.Opts.Arch]
+	buildarch, _ := oci.LookupArch(b.Opts.Arch, b.Opts.Var)
 	labels["org.label-schema.build-arch"] = buildarch.Arch
 
 	return nil

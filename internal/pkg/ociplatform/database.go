@@ -28,11 +28,7 @@ import (
 //
 // The arch value should be normalized before being passed to this function.
 func isArmArch(arch string) bool {
-	switch arch {
-	case "arm", "arm64":
-		return true
-	}
-	return false
+	return arch == "arm"
 }
 
 // normalizeArch normalizes the architecture.
@@ -41,16 +37,10 @@ func normalizeArch(arch, variant string) (string, string) {
 	switch arch {
 	case "i386":
 		arch = "386"
-		variant = ""
 	case "x86_64", "x86-64":
 		arch = "amd64"
-		variant = ""
 	case "aarch64", "arm64":
 		arch = "arm64"
-		switch variant {
-		case "8", "v8":
-			variant = ""
-		}
 	case "armhf":
 		arch = "arm"
 		variant = "v7"
@@ -59,9 +49,7 @@ func normalizeArch(arch, variant string) (string, string) {
 		variant = "v6"
 	case "arm":
 		switch variant {
-		case "", "7":
-			variant = "v7"
-		case "5", "6", "8":
+		case "5", "6", "7", "8":
 			variant = "v" + variant
 		}
 	}

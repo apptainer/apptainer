@@ -36,21 +36,39 @@ func TestPlatformFromString(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:    "GoodAMD64",
+			name:    "NormalizeAMD64",
 			plat:    "linux/amd64",
 			want:    &ggcrv1.Platform{OS: "linux", Architecture: "amd64", Variant: ""},
 			wantErr: false,
 		},
 		{
+			name:    "NormalizeAMD64/v2",
+			plat:    "linux/amd64/v2",
+			want:    &ggcrv1.Platform{OS: "linux", Architecture: "amd64", Variant: "v2"},
+			wantErr: false,
+		},
+		{
 			name:    "NormalizeARM",
 			plat:    "linux/arm",
-			want:    &ggcrv1.Platform{OS: "linux", Architecture: "arm", Variant: "v7"},
+			want:    &ggcrv1.Platform{OS: "linux", Architecture: "arm", Variant: ""},
+			wantErr: false,
+		},
+		{
+			name:    "NormalizeARM/v6",
+			plat:    "linux/arm/v6",
+			want:    &ggcrv1.Platform{OS: "linux", Architecture: "arm", Variant: "v6"},
+			wantErr: false,
+		},
+		{
+			name:    "NormalizeARM64",
+			plat:    "linux/arm64",
+			want:    &ggcrv1.Platform{OS: "linux", Architecture: "arm64", Variant: ""},
 			wantErr: false,
 		},
 		{
 			name:    "NormalizeARM64/v8",
 			plat:    "linux/arm64/v8",
-			want:    &ggcrv1.Platform{OS: "linux", Architecture: "arm64", Variant: ""},
+			want:    &ggcrv1.Platform{OS: "linux", Architecture: "arm64", Variant: "v8"},
 			wantErr: false,
 		},
 		{

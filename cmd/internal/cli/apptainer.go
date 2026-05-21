@@ -73,6 +73,7 @@ var (
 	reqAuthFile string
 	// Platform for retrieving images
 	arch     string
+	variant  string
 	platform string
 )
 
@@ -923,7 +924,7 @@ func getOCIPlatform() ggcrv1.Platform {
 		p, err = ociplatform.DefaultPlatform()
 	}
 	if arch != "" {
-		p, err = ociplatform.PlatformFromArch(arch)
+		p, err = ociplatform.PlatformFromArch(arch, variant)
 	}
 	if platform != "" {
 		p, err = ociplatform.PlatformFromString(platform)

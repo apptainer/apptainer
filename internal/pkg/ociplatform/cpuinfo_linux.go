@@ -87,9 +87,7 @@ func getCPUVariantFromArch(arch string) (string, error) {
 
 	arch = strings.ToLower(arch)
 
-	if arch == "aarch64" {
-		variant = "8"
-	} else if arch[0:4] == "armv" && len(arch) >= 5 {
+	if arch[0:4] == "armv" && len(arch) >= 5 {
 		// Valid arch format is in form of armvXx
 		switch arch[3:5] {
 		case "v8":
@@ -100,10 +98,6 @@ func getCPUVariantFromArch(arch string) (string, error) {
 			variant = "6"
 		case "v5":
 			variant = "5"
-		case "v4":
-			variant = "4"
-		case "v3":
-			variant = "3"
 		default:
 			variant = "unknown"
 		}
@@ -147,7 +141,7 @@ func getCPUVariant() (string, error) {
 	}
 
 	switch strings.ToLower(variant) {
-	case "8", "aarch64":
+	case "8":
 		variant = "v8"
 	case "7", "7m", "?(12)", "?(13)", "?(14)", "?(15)", "?(16)", "?(17)":
 		variant = "v7"
@@ -155,10 +149,6 @@ func getCPUVariant() (string, error) {
 		variant = "v6"
 	case "5", "5t", "5te", "5tej":
 		variant = "v5"
-	case "4", "4t":
-		variant = "v4"
-	case "3":
-		variant = "v3"
 	default:
 		variant = "unknown"
 	}

@@ -230,6 +230,97 @@ func createInvalidImageRef(t *testing.T, invalidRef string) types.ImageReference
 	return srcRef
 }
 
+func TestLookupArch(t *testing.T) {
+	test.DropPrivilege(t)
+	defer test.ResetPrivilege(t)
+
+	tests := []struct {
+		name         string
+		architecture string
+		variant      string
+		arch         GoArch
+		shouldPass   bool
+	}{
+		{
+			name:         "foo",
+			architecture: "foo",
+			variant:      "",
+			arch:         GoArch{},
+			shouldPass:   false,
+		},
+		{
+			name:         "arm",
+			architecture: "arm",
+			variant:      "",
+			arch:         GoArch{Arch: "arm", Var: ""},
+			shouldPass:   true,
+		},
+		{
+			name:         "arm32v7",
+			architecture: "arm32v7",
+			variant:      "",
+			arch:         GoArch{Arch: "arm", Var: "v7"},
+			shouldPass:   true,
+		},
+		{
+			name:         "arm64",
+			architecture: "arm64",
+			variant:      "",
+			arch:         GoArch{Arch: "arm64", Var: ""},
+			shouldPass:   true,
+		},
+		{
+			name:         "arm64v8",
+			architecture: "arm64v8",
+			variant:      "",
+			arch:         GoArch{Arch: "arm64", Var: "v8"},
+			shouldPass:   true,
+		},
+		{
+			name:         "amd64",
+			architecture: "amd64",
+			variant:      "",
+			arch:         GoArch{Arch: "amd64", Var: ""},
+			shouldPass:   true,
+		},
+		{
+			name:         "amd64/v3",
+			architecture: "amd64",
+			variant:      "v3",
+			arch:         GoArch{Arch: "amd64", Var: "v3"},
+			shouldPass:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			arch, ok := LookupArch(tt.architecture, tt.variant)
+			if tt.shouldPass == true && !ok {
+				t.Fatalf("test expected to succeeded but failed")
+				return
+			}
+			if tt.shouldPass == false && ok {
+				t.Fatal("test expected to fail but succeeded")
+				return
+			}
+			if arch.Arch != tt.arch.Arch || arch.Var != tt.arch.Var {
+				t.Fatalf("wrong arch returned")
+			}
+		})
+	}
+}
+
+func TestSupportedArch(t *testing.T) {
+	test.DropPrivilege(t)
+	defer test.ResetPrivilege(t)
+
+	keys := SupportedArch()
+	t.Log(keys)
+	if len(keys) == 0 {
+		t.Fatalf("cannot get all arch")
+	}
+}
+
 func TestConvertReference(t *testing.T) {
 	test.DropPrivilege(t)
 	defer test.ResetPrivilege(t)
