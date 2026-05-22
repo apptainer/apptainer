@@ -35,7 +35,7 @@
 %global fuse_overlayfs_version 1.16
 %global squashfs_tools_version 4.7.5
 %ifnarch ppc64le s390x
-%global PRoot_version 5.4.0-rootless.2
+%global PRoot_version 5.4.0-rootless.3
 %endif
 
 # The last singularity version number in EPEL/Fedora
