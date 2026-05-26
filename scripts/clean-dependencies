@@ -9,5 +9,5 @@
 
 set -ex
 for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs PRoot; do
-    rm -rf $PKG-*
+    rm -rf $PKG[_-]*
 done
