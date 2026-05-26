@@ -67,6 +67,9 @@ sudo dnf --enablerepo=devel install -y shadow-utils-subid-devel
 On SLE/openSUSE
 
 ```sh
+# Install basic tools for compiling
+# --replacefiles is needed to avoid pam conflict on Tumbleweed
+sudo zypper install -y --replacefiles --allow-downgrade -t pattern devel_basis
 # Install RPM packages for dependencies
 sudo zypper install -y \
   libseccomp-devel \
@@ -78,9 +81,6 @@ sudo zypper install -y \
   fakeroot \
   cryptsetup sysuser-tools \
   diffutils wget which git
-# Install basic tools for compiling
-# --replacefiles is needed to avoid pam conflict on Tumbleweed
-sudo zypper install -y --replacefiles --allow-downgrade -t pattern devel_basis
 ```
 
 For libsubid support (requires openSUSE Tumbleweed):
