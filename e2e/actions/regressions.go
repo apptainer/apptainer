@@ -638,6 +638,22 @@ func (c actionTests) issue3501(t *testing.T) {
 	)
 }
 
+// Check that fakeroot doesn't overwrite root's username in /etc/passwd
+// with the host user's name.
+func (c actionTests) issue3502(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.FakerootProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs(c.env.ImagePath, "whoami"),
+		e2e.ExpectExit(0,
+			e2e.ExpectOutput(e2e.ExactMatch, "root"),
+		),
+	)
+}
+
 // If an invalid remote is set, we should not pull a container from the default
 // library.
 // Github Security Advisories:
