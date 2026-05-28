@@ -35,6 +35,9 @@ var (
 
 	// pushDescription holds a description to be set against a library container
 	pushDescription string
+
+	// pushAnnotations holds the annotations to be set against an oras image
+	pushAnnotations []string
 )
 
 // --library
@@ -65,7 +68,16 @@ var pushDescriptionFlag = cmdline.Flag{
 	DefaultValue: "",
 	Name:         "description",
 	ShortHand:    "D",
-	Usage:        "description for container image (library:// only)",
+	Usage:        "description for container image (library:// and oras:// only)",
+}
+
+// --annotation
+var pushAnnotationFlag = cmdline.Flag{
+	ID:           "pushAnnotationFlag",
+	Value:        &pushAnnotations,
+	DefaultValue: cmdline.StringArray{},
+	Name:         "annotation",
+	Usage:        "annotation for container image (oras:// only, key=val format)",
 }
 
 func init() {
@@ -75,6 +87,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&pushLibraryURIFlag, PushCmd)
 		cmdManager.RegisterFlagForCmd(&pushAllowUnsignedFlag, PushCmd)
 		cmdManager.RegisterFlagForCmd(&pushDescriptionFlag, PushCmd)
+		cmdManager.RegisterFlagForCmd(&pushAnnotationFlag, PushCmd)
 		cmdManager.RegisterFlagForCmd(&commonNoHTTPSFlag, PushCmd)
 
 		cmdManager.RegisterFlagForCmd(&dockerHostFlag, PushCmd)
@@ -161,14 +174,15 @@ var PushCmd = &cobra.Command{
 
 		case OrasProtocol:
 			if cmd.Flag(pushDescriptionFlag.Name).Changed {
-				sylog.Warningf("Description is not supported for push to oras. Ignoring it.")
+				description := fmt.Sprintf("%s=%s", "org.opencontainers.image.description", pushDescription)
+				pushAnnotations = append(pushAnnotations, description)
 			}
 			ociAuth, err := makeOCICredentials(cmd)
 			if err != nil {
 				sylog.Fatalf("Unable to make docker oci credentials: %s", err)
 			}
 
-			if err := oras.Push(cmd.Context(), file, ref, ociAuth, noHTTPS, reqAuthFile); err != nil {
+			if err := oras.Push(cmd.Context(), file, ref, ociAuth, noHTTPS, reqAuthFile, pushAnnotations); err != nil {
 				sylog.Fatalf("Unable to push image to oci registry: %v", err)
 			}
 			sylog.Infof("Upload complete")

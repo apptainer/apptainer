@@ -19,6 +19,10 @@ Changes since 1.5.x
   "org.opencontainers.image.architecture" (optional ".variant").
   The old deprecated labels: "org.label-schema.build-date" and
   "org.label-schema.build-arch" are still set, for compatibility.
+- Add possibility to add description and annotations for oras,
+  when pushing images to a registry using the `push` command.
+  The --description flag sets "org.opencontainers.image.description",
+  and --annotation flag can be used multiple times with "key=value".
 
 ## v1.5.x changes
 

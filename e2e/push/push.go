@@ -19,6 +19,8 @@ import (
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
+	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/pkg/errors"
 )
 
@@ -74,11 +76,14 @@ func (c ctx) testPushCmd(t *testing.T) {
 	}
 
 	tests := []struct {
-		desc             string // case description
-		dstURI           string // destination URI for image
-		imagePath        string // src image path
-		expectedExitCode int    // expected exit code for the test
-		noHTTPS          bool   // --no-https/--nohttps flag
+		desc             string   // case description
+		dstURI           string   // destination URI for image
+		imagePath        string   // src image path
+		expectedExitCode int      // expected exit code for the test
+		noHTTPS          bool     // --no-https/--nohttps flag
+		description      string   // --description
+		annotations      []string // --annotation
+		expectedManifest string   // expected partial manifest content
 	}{
 		{
 			desc:             "non existent image",
@@ -112,6 +117,22 @@ func (c ctx) testPushCmd(t *testing.T) {
 			noHTTPS:          true,
 			expectedExitCode: 0,
 		},
+		{
+			desc:             "standard SIF push with --description",
+			imagePath:        c.env.ImagePath,
+			dstURI:           fmt.Sprintf("oras://%s/standard_sif:test_description", c.env.InsecureRegistry),
+			description:      "description",
+			expectedExitCode: 0,
+			expectedManifest: `"org.opencontainers.image.description"`,
+		},
+		{
+			desc:             "standard SIF push with --annotation",
+			imagePath:        c.env.ImagePath,
+			dstURI:           fmt.Sprintf("oras://%s/standard_sif:test_annotation", c.env.InsecureRegistry),
+			annotations:      []string{"foo=x", "bar=y"},
+			expectedExitCode: 0,
+			expectedManifest: `"bar":"y","foo":"x"`, // alphabetical order
+		},
 	}
 
 	for _, tt := range tests {
@@ -134,6 +155,13 @@ func (c ctx) testPushCmd(t *testing.T) {
 			args = "--no-https" + " " + args
 		}
 
+		if tt.description != "" {
+			args = "--description=" + tt.description + " " + args
+		}
+		for _, annotation := range tt.annotations {
+			args = "--annotation=" + annotation + " " + args
+		}
+
 		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.desc),
@@ -142,6 +170,25 @@ func (c ctx) testPushCmd(t *testing.T) {
 			e2e.WithArgs(strings.Split(args, " ")...),
 			e2e.ExpectExit(tt.expectedExitCode),
 		)
+
+		if tt.expectedManifest != "" {
+			ref := strings.TrimPrefix(tt.dstURI, "oras://")
+			ir, err := name.ParseReference(ref)
+			if err != nil {
+				t.Fatalf("error parsing image: %+v", err)
+			}
+			image, err := remote.Image(ir)
+			if err != nil {
+				t.Fatalf("error getting image: %+v", err)
+			}
+			manifest, err := image.RawManifest()
+			if err != nil {
+				t.Fatalf("error getting manifest: %+v", err)
+			}
+			if !strings.Contains(string(manifest), tt.expectedManifest) {
+				t.Errorf("did not find %s", tt.expectedManifest)
+			}
+		}
 	}
 }
 

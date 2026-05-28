@@ -97,7 +97,7 @@ func (si *SifImage) LayerByDiffID(hash v1.Hash) (v1.Layer, error) {
 	return si.LayerByDigest(hash)
 }
 
-func NewImageFromSIF(file string, layerMediaType types.MediaType) (*SifImage, error) {
+func NewImageFromSIF(file string, layerMediaType types.MediaType, annotations map[string]string) (*SifImage, error) {
 	si := SifImage{}
 
 	sl, err := NewLayerFromSIF(file, layerMediaType)
@@ -163,6 +163,7 @@ func NewImageFromSIF(file string, layerMediaType types.MediaType) (*SifImage, er
 				},
 			},
 		},
+		Annotations: annotations,
 	}
 
 	return &si, nil
