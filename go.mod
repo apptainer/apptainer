@@ -13,7 +13,6 @@ require (
 	github.com/astromechza/etcpwdparse v0.0.0-20170319193008-f0e5f0779716
 	github.com/blang/semver/v4 v4.0.0
 	github.com/buger/jsonparser v1.2.0
-	github.com/ccoveille/go-safecast v1.8.2
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/containernetworking/cni v1.3.0
 	github.com/containernetworking/plugins v1.9.1
@@ -58,6 +57,7 @@ require (
 require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/buger/goterm v1.0.4
+	github.com/ccoveille/go-safecast/v2 v2.0.1
 	github.com/docker/cli v29.5.2+incompatible
 	github.com/docker/distribution v2.8.3+incompatible
 	github.com/docker/docker v28.5.2+incompatible

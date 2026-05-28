@@ -31,7 +31,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/copy"
 	"github.com/apptainer/apptainer/pkg/util/rlimit"
 	"github.com/apptainer/apptainer/pkg/util/unix"
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 	"github.com/creack/pty"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )

@@ -24,7 +24,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	progressClient "github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 	"github.com/docker/docker/client"
 	ggcrv1 "github.com/google/go-containerregistry/pkg/v1"
 )

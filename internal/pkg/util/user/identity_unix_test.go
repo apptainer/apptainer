@@ -14,7 +14,7 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 )
 
 func TestGetPwUID(t *testing.T) {

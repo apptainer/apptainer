@@ -23,7 +23,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/image"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/sif/v2/pkg/sif"
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 	"golang.org/x/sys/unix"
 )
 

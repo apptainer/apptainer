@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 )
 
 // IsInsideUserNamespace checks if a process is already running in a

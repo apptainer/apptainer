@@ -19,7 +19,7 @@ import (
 	"syscall"
 
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 	"golang.org/x/sys/unix"
 )
 

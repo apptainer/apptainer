@@ -26,7 +26,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/ociruntime"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/unix"
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"golang.org/x/term"
 )

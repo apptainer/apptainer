@@ -16,7 +16,7 @@ import (
 	"strings"
 
 	pwd "github.com/astromechza/etcpwdparse"
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"

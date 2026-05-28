@@ -14,7 +14,7 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 )
 
 // CurrentUser returns the current user account information. Use of user.Current is
