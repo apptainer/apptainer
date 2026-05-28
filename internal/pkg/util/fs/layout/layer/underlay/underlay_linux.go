@@ -20,7 +20,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/layout"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/mount"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 )
 
 const underlayDir = "/underlay"

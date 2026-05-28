@@ -17,7 +17,7 @@ import (
 	"time"
 
 	"github.com/apptainer/apptainer/internal/pkg/cgroups"
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 	"github.com/docker/go-units"
 	"github.com/shopspring/decimal"
 	"golang.org/x/sys/unix"

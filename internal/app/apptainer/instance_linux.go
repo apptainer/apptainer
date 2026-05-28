@@ -29,7 +29,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/buger/goterm"
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 	units "github.com/docker/go-units"
 	libcgroups "github.com/opencontainers/cgroups"
 )

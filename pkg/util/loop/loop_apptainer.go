@@ -14,7 +14,7 @@ package loop
 import (
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 )
 
 func GetMaxLoopDevices() (int, error) {

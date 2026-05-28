@@ -17,7 +17,7 @@ import (
 	"os"
 	"unsafe"
 
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 )
 
 const (
