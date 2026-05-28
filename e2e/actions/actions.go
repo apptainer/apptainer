@@ -3320,6 +3320,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"issue 6165":                   c.issue6165,             // https://github.com/apptainer/singularity/issues/6165
 		"issue 619":                    c.issue619,              // https://github.com/apptainer/apptainer/issues/619
 		"issue 3501":                   c.issue3501,             // https://github.com/apptainer/apptainer/issues/3501
+		"issue 3502":                   c.issue3502,             // https://github.com/apptainer/apptainer/issues/3502
 		"issue 1097":                   c.issue1097,             // https://github.com/apptainer/apptainer/issues/1097
 		"issue 1848":                   c.issue1848,             // https://github.com/apptainer/apptainer/issues/1848
 		"network":                      c.actionNetwork,         // test basic networking
