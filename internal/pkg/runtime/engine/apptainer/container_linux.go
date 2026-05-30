@@ -2629,8 +2629,11 @@ func (c *container) addIdentityMount(system *mount.System) error {
 		uid = 0
 	}
 
-	if uid == 0 {
-		sylog.Verbosef("skipping bind-mount of /etc/passwd and /etc/group (running as root)")
+	if (uid == 0) &&
+		(c.engine.EngineConfig.GetWritableImage() ||
+			c.engine.EngineConfig.GetWritableTmpfs() ||
+			c.engine.EngineConfig.GetWritableOverlay()) {
+		sylog.Verbosef("skipping bind-mount of /etc/passwd and /etc/group (container is writable running as root)")
 		return nil
 	}
 
