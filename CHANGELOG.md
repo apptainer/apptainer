@@ -9,6 +9,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Add `nonested` flag for `--mount` specifications to prevent individual
+  bind mounts from being passed to nested containers via `APPTAINER_BIND`.
+  Example: `--mount type=bind,source=/data,destination=/mnt,nonested`.
+- Remove stale comment about `--mount` binds not being exported for nested
+  containers.
 - Add support for variant to more architectures, but without verification.
   The previous arm32v5, arm32v6 and arm32v7 (= "arm") are still verified.
 - Any architecture variant, if used, is also included in the platform.

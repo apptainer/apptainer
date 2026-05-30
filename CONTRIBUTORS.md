@@ -71,6 +71,7 @@
 - Josef Hrabal <josef.hrabal@vsb.cz>
 - Justin Cook <justin@sylabs.io>
 - Justin Riley <justin_riley@harvard.edu>
+- Karen Hambardzumyan <mahnerak@gmail.com>
 - Kir Kolyshkin <kolyshkin@gmail.com>
 - Kirill Priadko <kirill.priadko@intel.com>
 - Krishna Muriki <kmuriki@gmail.com>
