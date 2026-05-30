@@ -676,7 +676,6 @@ func (l *Launcher) setBinds(fakerootPath string) error {
 		return fmt.Errorf("while parsing bind path: %w", err)
 	}
 	// Now add binds from one or more --mount and env var.
-	// Note that these do not get exported for nested containers
 	for _, m := range l.cfg.Mounts {
 		bps, err := apptainerConfig.ParseMountString(m)
 		if err != nil {
@@ -701,10 +700,13 @@ func (l *Launcher) setBinds(fakerootPath string) error {
 
 	l.engineConfig.SetBindPath(binds)
 
-	// Pass only the destinations to nested binds
-	bindPaths := make([]string, len(binds))
-	for i, bind := range binds {
-		bindPaths[i] = bind.Destination
+	// Pass bind destinations to nested containers, skipping those marked nonested
+	var bindPaths []string
+	for _, bind := range binds {
+		if bind.Options != nil && bind.Options["nonested"] != nil {
+			continue
+		}
+		bindPaths = append(bindPaths, bind.Destination)
 	}
 	l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "BIND", strings.Join(bindPaths, ","))
 	return nil

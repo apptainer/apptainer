@@ -213,6 +213,18 @@ func TestParseMountString(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:        "noPropagate",
+			mountString: "type=bind,source=/opt,destination=/hostopt,nonested",
+			want: []BindPath{
+				{
+					Source:      "/opt",
+					Destination: "/hostopt",
+					Options:     map[string]*BindOption{"nonested": {}},
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name:        "multiple",
 			mountString: "type=bind,source=/opt,destination=/opt\ntype=bind,source=/srv,destination=/srv",
 			want: []BindPath{
