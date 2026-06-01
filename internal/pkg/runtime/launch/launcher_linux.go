@@ -701,7 +701,7 @@ func (l *Launcher) setBinds(fakerootPath string) error {
 	l.engineConfig.SetBindPath(binds)
 
 	// Pass bind destinations to nested containers, skipping those marked nonested
-	var bindPaths []string
+	bindPaths := make([]string, 0, len(binds))
 	for _, bind := range binds {
 		if bind.Options != nil && bind.Options["nonested"] != nil {
 			continue
