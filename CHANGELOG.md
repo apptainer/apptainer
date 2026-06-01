@@ -10,8 +10,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
 - Add `nonested` flag for `--mount` specifications to prevent individual
   bind mounts from being passed to nested containers via `APPTAINER_BIND`.
   Example: `--mount type=bind,source=/data,destination=/mnt,nonested`.
-- Remove stale comment about `--mount` binds not being exported for nested
-  containers.
 - Update bundled PRoot to version 5.4.0-rootless.3 in order to fix a
   problem where SIF files could be corrupted when mksquashfs died with
   a signal.  The proot command was not passing back an error exit code.
