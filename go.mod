@@ -5,7 +5,6 @@ go 1.25.7
 require (
 	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2
 	github.com/ProtonMail/go-crypto v1.4.1
-	github.com/adigunhammedolalekan/registry-auth v0.0.0-20200730122110-8cde180a3a60
 	github.com/apex/log v1.9.0
 	github.com/apptainer/container-key-client v0.8.0
 	github.com/apptainer/container-library-client v1.4.14
@@ -25,6 +24,7 @@ require (
 	github.com/go-log/log v0.2.0
 	github.com/google/go-containerregistry v0.21.6
 	github.com/google/uuid v1.6.0
+	github.com/gorilla/mux v1.8.1
 	github.com/gosimple/slug v1.15.0
 	github.com/moby/go-archive v0.2.0
 	github.com/moby/moby/client v0.4.1
@@ -57,6 +57,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.6.0
+	github.com/adigunhammedolalekan/registry-auth v0.0.0-20200730122110-8cde180a3a60
 	github.com/buger/goterm v1.0.4
 	github.com/docker/cli v29.4.3+incompatible
 	github.com/docker/distribution v2.8.3+incompatible
@@ -105,8 +106,7 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/gorilla/handlers v1.5.1 // indirect
-	github.com/gorilla/mux v1.8.1 // indirect
+	github.com/gorilla/handlers v1.5.2 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect

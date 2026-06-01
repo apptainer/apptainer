@@ -26,6 +26,7 @@ import (
 	"github.com/docker/distribution/configuration"
 	dcontext "github.com/docker/distribution/context"
 	"github.com/docker/distribution/registry/handlers"
+	"github.com/gorilla/mux"
 
 	// necessary imports for registry drivers
 	_ "github.com/docker/distribution/registry/storage/driver/filesystem"
@@ -68,9 +69,9 @@ func StartRegistry(t *testing.T, env TestEnv) string {
 
 	ctx := context.Background()
 
-	authListener, err := net.Listen("tcp", "127.0.0.1:0")
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		t.Fatalf("could not setup listener for docker auth server: %s", err)
+		t.Fatalf("could not setup listener for docker registry: %s", err)
 	}
 
 	certsDir := filepath.Join(env.TestDir, "certs")
@@ -102,12 +103,10 @@ func StartRegistry(t *testing.T, env TestEnv) string {
 		t.Fatalf("openssl command failed: %s: error output:\n%s", res.Error, res.Stderr())
 	}
 
-	go func() {
-		// for simplicity let this be brutally stopped once test finished
-		if err := startAuthServer(authListener, certFile, keyFile); err != nil && err != http.ErrServerClosed {
-			panic(fmt.Errorf("failed to start docker auth server: %s", err))
-		}
-	}()
+	authHandler, err := newAuthHandler(certFile, keyFile)
+	if err != nil {
+		t.Fatalf("failed to create docker auth handler: %s", err)
+	}
 
 	regDir := filepath.Join(env.TestDir, "local-registry")
 	if err := os.Mkdir(regDir, 0o755); err != nil {
@@ -124,7 +123,7 @@ func StartRegistry(t *testing.T, env TestEnv) string {
 		RootCertBundle string
 	}{
 		RootDir:        regDir,
-		Realm:          fmt.Sprintf("http://%s/auth", authListener.Addr().String()),
+		Realm:          fmt.Sprintf("http://%s/auth", listener.Addr().String()),
 		RootCertBundle: certFile,
 	}
 
@@ -141,47 +140,39 @@ func StartRegistry(t *testing.T, env TestEnv) string {
 	ctx = dcontext.WithLogger(ctx, dcontext.GetLogger(ctx))
 
 	app := handlers.NewApp(ctx, config)
+
+	router := mux.NewRouter()
+	// The auth server shares the registry's host:port, distinguished by the
+	// /auth path. This matches the Realm advertised in the registry config.
+	router.Handle("/auth", authHandler)
+	router.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
+		w.WriteHeader(http.StatusOK)
+	}).Methods(http.MethodGet)
+	router.PathPrefix("/").Handler(app)
+
 	server := &http.Server{
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path == "/" {
-				w.Header().Set("Cache-Control", "no-cache")
-				w.WriteHeader(http.StatusOK)
-				return
-			}
-			app.ServeHTTP(w, r)
-		}),
+		Handler:           router,
 		ReadHeaderTimeout: httpTimeout,
 	}
 
-	registryListener, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatalf("could not setup listener for docker registry: %s", err)
-	}
-
 	go func() {
-		if err := server.Serve(registryListener); err != nil && err != http.ErrServerClosed {
+		if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
 			panic(fmt.Errorf("failed to start docker local registry: %s", err))
 		}
 	}()
 
-	_, port, err := net.SplitHostPort(registryListener.Addr().String())
-	if err != nil {
-		t.Fatalf("failed to retrieve local registry port: %s", err)
-	}
-
-	addr := net.JoinHostPort("localhost", port)
-
 	for i := 0; i < 30; i++ {
-		resp, err := http.Get(fmt.Sprintf("http://%s/", addr))
+		resp, err := http.Get(fmt.Sprintf("http://%s/", listener.Addr().String()))
 		resp.Body.Close()
 		if err != nil || resp.StatusCode != 200 {
 			time.Sleep(time.Second)
 			continue
 		}
-		return addr
+		return listener.Addr().String()
 	}
 
 	t.Fatalf("local registry not reachable")
 
-	return addr
+	return listener.Addr().String()
 }
