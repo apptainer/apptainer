@@ -109,6 +109,7 @@ func (c ctx) testPushCmd(t *testing.T) {
 			imagePath:        c.env.ImagePath,
 			dstURI:           fmt.Sprintf("oras://%s/standard_sif:test", c.env.InsecureRegistry),
 			expectedExitCode: 0,
+			expectedManifest: `"org.opencontainers.image.created"`,
 		},
 		{
 			desc:             "standard SIF push with --no-https/--nohttps",

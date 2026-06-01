@@ -9,6 +9,7 @@ import (
 	"context"
 	"io"
 	"os"
+	"time"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/types"
@@ -28,6 +29,7 @@ const (
 // ORAS / OCI artifact usage.
 type SifLayer struct {
 	size      int64
+	created   time.Time
 	rc        io.ReadCloser
 	hash      v1.Hash
 	mediaType types.MediaType
@@ -55,6 +57,10 @@ func (sl *SifLayer) Size() (int64, error) {
 	return sl.size, nil
 }
 
+func (sl *SifLayer) Created() (time.Time, error) {
+	return sl.created, nil
+}
+
 func (sl *SifLayer) MediaType() (types.MediaType, error) {
 	return sl.mediaType, nil
 }
@@ -73,6 +79,12 @@ func NewLayerFromSIF(file string, mt types.MediaType) (*SifLayer, error) {
 		return nil, err
 	}
 	sl.size = fi.Size()
+
+	created, err := ImageCreated(file)
+	if err != nil {
+		return nil, err
+	}
+	sl.created = created
 
 	hash, err := ImageHash(context.TODO(), file)
 	if err != nil {
