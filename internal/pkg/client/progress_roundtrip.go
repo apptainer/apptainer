@@ -21,11 +21,15 @@ import (
 
 const contentSizeThreshold = 64 * 1024
 
+type barSize struct {
+	bar  *mpb.Bar
+	size int64
+}
+
 type RoundTripper struct {
-	inner http.RoundTripper
-	p     *mpb.Progress
-	bars  []*mpb.Bar
-	sizes []int64
+	inner    http.RoundTripper
+	p        *mpb.Progress
+	barSizes []barSize
 }
 
 // NewRoundTripper wraps inner (or http.DefaultTransport if inner is nil) with
@@ -61,8 +65,7 @@ func (t *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	resp, err := t.inner.RoundTrip(req)
 	if resp != nil && resp.Body != nil && resp.ContentLength >= contentSizeThreshold {
 		bar := t.p.AddBar(resp.ContentLength, defaultOption...)
-		t.bars = append(t.bars, bar)
-		t.sizes = append(t.sizes, resp.ContentLength)
+		t.barSizes = append(t.barSizes, barSize{bar, resp.ContentLength})
 		resp.Body = bar.ProxyReader(resp.Body)
 	}
 	return resp, err
@@ -71,8 +74,8 @@ func (t *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 // ProgressComplete overrides all progress bars, setting them to 100% complete.
 func (t *RoundTripper) ProgressComplete() {
 	if t.p != nil {
-		for i, bar := range t.bars {
-			bar.SetCurrent(t.sizes[i])
+		for _, barSize := range t.barSizes {
+			barSize.bar.SetCurrent(barSize.size)
 		}
 	}
 }
