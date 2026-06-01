@@ -18,6 +18,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
+	"github.com/ccoveille/go-safecast"
 )
 
 func TestPasswd(t *testing.T) {
@@ -58,7 +59,11 @@ func TestPasswd(t *testing.T) {
 	}
 
 	// For non-root users, username should be overwritten with host user's name
-	pwInfo, err := user.GetPwUID(uint32(uid))
+	uid32, err := safecast.Convert[uint32](uid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pwInfo, err := user.GetPwUID(uid32)
 	if err != nil {
 		t.Fatal(err)
 	}
