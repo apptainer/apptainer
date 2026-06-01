@@ -87,6 +87,10 @@ func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (co
 			if err != nil {
 				return nil, err
 			}
+			// If user already exists in container, change their username, gecos
+			// and home dir to those of the original user. Except for uid 0,
+			// where the original user is the unprivileged host user (e.g.
+			// fakeroot) and not root, so keep the container's existing values.
 			name := pwInfo.Name
 			gecos := pwInfo.Gecos
 			if uid == 0 {
