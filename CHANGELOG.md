@@ -35,6 +35,7 @@ Changes since 1.5.x
   trying to compile and run proot. As a result original owners and groups
   of files will not be preserved in SIF images built by unprivileged
   users, as was the case for all architectures prior to 1.5.0.
+- Fix panic encountered during progress bar update while pulling image
 
 ## v1.5.0 - \[2026-05-06\]
 
