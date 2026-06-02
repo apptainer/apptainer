@@ -283,7 +283,7 @@ func (c configTests) configGlobal(t *testing.T) {
 		},
 		{
 			name:           "ConfigResolvConfNo",
-			argv:           []string{c.env.ImagePath, "grep", "/etc/resolv.conf.*- tmpfs", "/proc/self/mountinfo"},
+			argv:           []string{c.env.ImagePath, "grep", "resolv.*- tmpfs", "/proc/self/mountinfo"},
 			profile:        e2e.UserProfile,
 			directive:      "config resolv_conf",
 			directiveValue: "no",
@@ -291,7 +291,7 @@ func (c configTests) configGlobal(t *testing.T) {
 		},
 		{
 			name:           "ConfigResolvConfYes",
-			argv:           []string{c.env.ImagePath, "grep", "/etc/resolv.conf.*- tmpfs", "/proc/self/mountinfo"},
+			argv:           []string{c.env.ImagePath, "grep", "resolv.*- tmpfs", "/proc/self/mountinfo"},
 			profile:        e2e.UserProfile,
 			directive:      "config resolv_conf",
 			directiveValue: "yes",
