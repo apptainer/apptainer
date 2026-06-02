@@ -12,12 +12,13 @@ package files
 import (
 	"fmt"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/util/user"
+	"github.com/ccoveille/go-safecast/v2"
 )
 
 func TestPasswd(t *testing.T) {
@@ -51,13 +52,32 @@ func TestPasswd(t *testing.T) {
 		t.Fatalf("Unexpected error in Passwd() when modifying root entry: %v", err)
 	}
 
-	rootUser, err := user.Lookup("root")
+	// Username and gecos should be preserved for uid 0 (fakeroot safety)
+	expectRootEntry := "root:x:0:0:root:/tmp:/bin/ash\n"
+	if !strings.HasPrefix(string(outputPasswd), expectRootEntry) {
+		t.Errorf("Expected root entry %q, not found in:\n%s", expectRootEntry, string(outputPasswd))
+	}
+
+	// For non-root users, username should be overwritten with host user's name
+	uid32, err := safecast.Convert[uint32](uid)
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Also check that username got rewritten from toor to root
-	expectRootEntry := fmt.Sprintf("%s:x:0:0:%s:/tmp:/bin/ash\n", rootUser.Name, rootUser.Name)
-	if !strings.HasPrefix(string(outputPasswd), expectRootEntry) {
-		t.Errorf("Expected root entry %q, not found in:\n%s", expectRootEntry, string(outputPasswd))
+	pwInfo, err := user.GetPwUID(uid32)
+	if err != nil {
+		t.Fatal(err)
+	}
+	passwdWithUser := filepath.Join(t.TempDir(), "passwd")
+	wrongName := fmt.Sprintf("wrongname:x:%d:%d:wrong gecos:/old/home:/bin/sh\n", uid, pwInfo.GID)
+	if err := os.WriteFile(passwdWithUser, []byte(wrongName), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	outputPasswd, err = Passwd(passwdWithUser, "/new/home", uid, nil)
+	if err != nil {
+		t.Fatalf("Unexpected error in Passwd() when modifying non-root entry: %v", err)
+	}
+	expectEntry := fmt.Sprintf("%s:x:%d:%d:%s:/new/home:/bin/sh\n", pwInfo.Name, uid, pwInfo.GID, pwInfo.Gecos)
+	if !strings.HasPrefix(string(outputPasswd), expectEntry) {
+		t.Errorf("Expected entry %q, not found in:\n%s", expectEntry, string(outputPasswd))
 	}
 }
