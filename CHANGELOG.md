@@ -42,6 +42,8 @@ Changes since 1.5.x
   a signal.  The proot command was not passing back an error exit code.
 - Updated bundled squashfuse_ll to version 0.6.2 in order to fix a
   crash sometimes seen with apptainer in unprivileged docker.
+- Update bundled fuse2fs to version 1.47.4 instead of patching the bugs
+  in 1.47.3.
 - Change the `download-dependencies` script to skip downloading the PRoot
   source code on architectures that it is known to not support (that is:
   ppc*, s390*, and riscv*).  In those situations Apptainer will skip
