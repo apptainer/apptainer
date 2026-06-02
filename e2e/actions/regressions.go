@@ -603,6 +603,41 @@ func (c actionTests) issue5690(t *testing.T) {
 	)
 }
 
+// Check that --mount with nonested prevents bind from being passed
+// to nested containers via APPTAINER_BIND, while normal mounts still propagate.
+func (c actionTests) issue3501(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "issue-3501-", "")
+	defer e2e.Privileged(cleanup)(t)
+
+	// nonested mount should not appear in APPTAINER_BIND
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("nonested"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--mount", "type=bind,source="+tmpDir+",destination=/hidden,nonested", c.env.ImagePath, "/usr/bin/env"),
+		e2e.ExpectExit(0,
+			e2e.ExpectOutput(e2e.UnwantedContainMatch, "APPTAINER_BIND=/hidden"),
+		),
+	)
+
+	// normal --bind and nonested --mount combined:
+	// only --bind destination should appear in APPTAINER_BIND
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("mixed"),
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--bind", tmpDir+":/visible", "--mount", "type=bind,source="+tmpDir+",destination=/hidden,nonested", c.env.ImagePath, "/usr/bin/env"),
+		e2e.ExpectExit(0,
+			e2e.ExpectOutput(e2e.ContainMatch, "APPTAINER_BIND=/visible"),
+			e2e.ExpectOutput(e2e.UnwantedContainMatch, "/hidden"),
+		),
+	)
+}
+
 // If an invalid remote is set, we should not pull a container from the default
 // library.
 // Github Security Advisories:

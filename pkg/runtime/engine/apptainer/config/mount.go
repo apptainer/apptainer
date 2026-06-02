@@ -80,6 +80,8 @@ func ParseMountString(mount string) (bindPaths []BindPath, err error) {
 					return []BindPath{}, fmt.Errorf("id cannot be empty")
 				}
 				bp.Options["id"] = &BindOption{Value: val}
+			case "nonested":
+				bp.Options["nonested"] = &BindOption{}
 			case "bind-propagation":
 				return []BindPath{}, fmt.Errorf("bind-propagation not supported for individual mounts, check apptainer.conf for global setting")
 			default:
