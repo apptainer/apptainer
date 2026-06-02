@@ -73,6 +73,7 @@ func (s Squashfs) create(files []string, dest string, opts []string) error {
 	}
 
 	prog := s.MksquashfsPath
+	extraEnv := []string{}
 	if namespaces.IsUnprivileged() {
 		// building as unprivileged user, make the files appear as root
 		ignoreProot := os.Getenv("APPTAINER_IGNORE_PROOT")
@@ -84,6 +85,13 @@ func (s Squashfs) create(files []string, dest string, opts []string) error {
 			// https://github.com/apptainer/apptainer/issues/2830
 			args = append([]string{"-S", "/", prog}, args...)
 			prog = proot
+			// Add the MALLOC settings to workaround segfaults seen
+			// in mksquashfs on Ubuntu 22.04
+			// https://github.com/apptainer/apptainer/issues/3486
+			extraEnv = append(extraEnv,
+				"MALLOC_MMAP_MAX_=0",
+				"MALLOC_ARENA_MAX=32",
+			)
 		} else {
 			args = append(args, "-all-root")
 		}
@@ -93,6 +101,7 @@ func (s Squashfs) create(files []string, dest string, opts []string) error {
 	// (note: -reproducible is the default, there is also a -not-reproducible option)
 	sylog.Verbosef("Executing %s %s", prog, strings.Join(args, " "))
 	cmd := exec.Command(prog, args...)
+	cmd.Env = append(os.Environ(), extraEnv...)
 	if sylog.GetLevel() >= int(sylog.VerboseLevel) {
 		cmd.Stdout = os.Stdout
 	} else if hasPercentage {
