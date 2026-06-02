@@ -34,6 +34,8 @@ Changes since 1.5.x
 - Update bundled PRoot to version 5.4.0-rootless.3 in order to fix a
   problem where SIF files could be corrupted when mksquashfs died with
   a signal.  The proot command was not passing back an error exit code.
+- Updated bundled squashfuse_ll to version 0.6.2 in order to fix a
+  crash sometimes seen with apptainer in unprivileged docker.
 - Change the `download-dependencies` script to skip downloading the PRoot
   source code on architectures that it is known to not support (that is:
   ppc*, s390*, and riscv*).  In those situations Apptainer will skip
