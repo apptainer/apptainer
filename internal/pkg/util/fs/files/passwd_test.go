@@ -18,7 +18,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 )
 
 func TestPasswd(t *testing.T) {
