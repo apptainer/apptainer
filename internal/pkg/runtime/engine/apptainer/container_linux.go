@@ -2724,8 +2724,12 @@ func (c *container) addResolvConfMount(system *mount.System) error {
 				// If the symlink points to a file under /run, for example one made by
 				// systemd-resolved, then copy the symlink and bind in the parent
 				// directory of the file it points to as well.
-				if target[0:5] == "/run/" {
+				if strings.Contains(target, "/run/") && c.session.Layer != nil {
 					dst := filepath.Join(c.session.Layer.Dir(), resolvConf)
+					if target[0] != '/' {
+						// turn the relative path into an absolute path
+						target = filepath.Clean(filepath.Join(filepath.Dir(resolvConf), target))
+					}
 					if err = c.session.AddSymlink(dst, target); err != nil {
 						return fmt.Errorf("failed to create symlink %s", dst)
 					}
