@@ -30,6 +30,8 @@ Changes since 1.5.x
   and --annotation flag can be used multiple times with "key=value".
 - Add oras `org.opencontainers.image.created` annotation when pushing images.
   The `org.opencontainers.image.created` label from the SIF image is used.
+- Allow searching images from oras registries, in addition to library.
+  Only the images and tags are listed, descriptions are not searched.
 
 ## v1.5.x changes
 
