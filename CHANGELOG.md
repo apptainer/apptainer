@@ -31,6 +31,8 @@ Changes since 1.5.x
 
 ## v1.5.x changes
 
+- Work around segmentation fault sometimes seen while mksquashfs under
+  proot is creating a SIF file.
 - Update bundled PRoot to version 5.4.0-rootless.3 in order to fix a
   problem where SIF files could be corrupted when mksquashfs died with
   a signal.  The proot command was not passing back an error exit code.
