@@ -131,7 +131,7 @@ var actionMountFlag = cmdline.Flag{
 	Value:        &mounts,
 	DefaultValue: cmdline.StringArray{},
 	Name:         "mount",
-	Usage:        "a mount specification e.g. 'type=bind,source=/opt,destination=/hostopt'.",
+	Usage:        "a mount specification e.g. 'type=bind,source=/opt,destination=/hostopt'.  The 'nonested' flag prevents the mount from being passed to nested containers via APPTAINER_BIND.",
 	EnvKeys:      []string{"MOUNT"},
 	Tag:          "<spec>",
 	EnvHandler:   cmdline.EnvAppendValue,

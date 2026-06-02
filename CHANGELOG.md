@@ -7,6 +7,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.5.x changes
 
+- Add `nonested` flag for `--mount` specifications to prevent individual
+  bind mounts from being passed to nested containers via `APPTAINER_BIND`.
+  Example: `--mount type=bind,source=/data,destination=/mnt,nonested`.
 - Work around segmentation fault sometimes seen while mksquashfs under
   proot is creating a SIF file.
 - Update bundled PRoot to version 5.4.0-rootless.3 in order to fix a
