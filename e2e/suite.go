@@ -53,6 +53,7 @@ import (
 	"github.com/apptainer/apptainer/e2e/runhelp"
 	"github.com/apptainer/apptainer/e2e/security"
 	"github.com/apptainer/apptainer/e2e/sign"
+	"github.com/apptainer/apptainer/e2e/tag"
 	"github.com/apptainer/apptainer/e2e/verify"
 	"github.com/apptainer/apptainer/e2e/version"
 
@@ -236,6 +237,7 @@ func Run(t *testing.T) {
 	suite.AddGroup("RUNHELP", runhelp.E2ETests)
 	suite.AddGroup("SECURITY", security.E2ETests)
 	suite.AddGroup("SIGN", sign.E2ETests)
+	suite.AddGroup("TAG", tag.E2ETests)
 	suite.AddGroup("VERIFY", verify.E2ETests)
 	suite.AddGroup("VERSION", version.E2ETests)
 	suite.Run()
