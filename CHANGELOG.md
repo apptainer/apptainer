@@ -19,6 +19,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
   crash sometimes seen with apptainer in unprivileged docker.
 - Update bundled fuse2fs to version 1.47.4 instead of patching the bugs
   in 1.47.3.
+- Fix a crash that happened when `/etc/resolv.conf` was a symlink while
+  building from a definition file using the localimage bootstrap.
+- Support hosts that have an `/etc/resolv.conf` symlink pointing to `../run`
+  in addition to `/run".
 - Change the `download-dependencies` script to skip downloading the PRoot
   source code on architectures that it is known to not support (that is:
   ppc*, s390*, and riscv*).  In those situations Apptainer will skip
