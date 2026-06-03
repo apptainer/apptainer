@@ -5,13 +5,8 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## v1.5.x changes
+## v1.5.1 - \[2026-06-04\]
 
-- Fix fakeroot overwriting root's username in `/etc/passwd` with the host
-  user's name, a regression introduced in v1.5.0.
-- Add `nonested` flag for `--mount` specifications to prevent individual
-  bind mounts from being passed to nested containers via `APPTAINER_BIND`.
-  Example: `--mount type=bind,source=/data,destination=/mnt,nonested`.
 - Work around segmentation fault sometimes seen while mksquashfs under
   proot is creating a SIF file.
 - Update bundled PRoot to version 5.4.0-rootless.3 in order to fix a
@@ -31,7 +26,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
   trying to compile and run proot. As a result original owners and groups
   of files will not be preserved in SIF images built by unprivileged
   users, as was the case for all architectures prior to 1.5.0.
-- Fix panic encountered during progress bar update while pulling image
+- Fix panic encountered during progress bar update while pulling image.
+- Fix fakeroot overwriting root's username in `/etc/passwd` with the host
+  user's name, a regression introduced in v1.5.0.
+- Add `nonested` flag for `--mount` specifications to prevent individual
+  bind mounts from being passed to nested containers via `APPTAINER_BIND`.
+  Example: `--mount type=bind,source=/data,destination=/mnt,nonested`.
 
 ## v1.5.0 - \[2026-05-06\]
 
