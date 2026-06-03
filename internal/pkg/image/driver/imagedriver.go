@@ -652,6 +652,7 @@ func (i *fuseappsInstance) filterMsg() string {
 		"There may be file system corruption",
 		"the file system is not gracefully unmounted.",
 		"Mounting read-only.",
+		"mounted read-only.",
 		// from squashfuse_ll
 		"failed to clone device fd",
 		"continue without -o clone_fd",
