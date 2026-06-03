@@ -32,6 +32,8 @@ Changes since 1.5.x
   The `org.opencontainers.image.created` label from the SIF image is used.
 - Allow searching images from oras registries, in addition to library.
   Only the images and tags are listed, descriptions are not searched.
+- Allow deleting images from oras registries, in addition to library.
+  Not all registries support deleting images and manifests, though.
 
 ## v1.5.x changes
 
