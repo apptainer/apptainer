@@ -7,6 +7,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.5.x changes
 
+- Fix fakeroot overwriting root's username in `/etc/passwd` with the host
+  user's name, a regression introduced in v1.5.0.
 - Add `nonested` flag for `--mount` specifications to prevent individual
   bind mounts from being passed to nested containers via `APPTAINER_BIND`.
   Example: `--mount type=bind,source=/data,destination=/mnt,nonested`.
