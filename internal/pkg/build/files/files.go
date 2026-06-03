@@ -10,53 +10,36 @@
 package files
 
 import (
-	"bytes"
-	"context"
-	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
 	securejoin "github.com/cyphar/filepath-securejoin"
-	"mvdan.cc/sh/v3/interp"
+	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/syntax"
 )
 
-const filenameExpansionScript = `
-for n in %[1]s ; do
-	echo -n "$n\0"
-done
-`
-
 func expandPath(path string) ([]string, error) {
-	var output, stderr bytes.Buffer
-
 	path = strings.ReplaceAll(path, " ", "\\ ")
-	cmdline := fmt.Sprintf(filenameExpansionScript, path)
-	parser, err := syntax.NewParser().Parse(strings.NewReader(cmdline), "")
+	parsedPath, err := syntax.NewParser().Document(strings.NewReader(path))
 	if err != nil {
 		return nil, err
 	}
 
-	runner, err := interp.New(
-		interp.StdIO(nil, &output, &stderr),
-	)
-	if err != nil {
-		return nil, err
+	expandConfig := expand.Config{
+		ExtGlob:  true,
+		GlobStar: true,
+		ReadDir2: os.ReadDir,
 	}
 
-	err = runner.Run(context.TODO(), parser)
-	if err != nil {
-		return nil, err
-	}
+	expandedPaths := expand.FieldsSeq(&expandConfig, parsedPath)
 
-	// parse expanded output and ignore empty strings from consecutive null bytes
-	paths := make([]string, 0, len(strings.Split(output.String(), "\\0")))
-
-	for _, s := range strings.Split(output.String(), "\\0") {
-		if s == "" {
-			continue
+	paths := make([]string, 0, 5)
+	for p, err := range expandedPaths {
+		if err != nil {
+			return nil, err
 		}
-		paths = append(paths, s)
+		paths = append(paths, p)
 	}
 
 	return paths, nil

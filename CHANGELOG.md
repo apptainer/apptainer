@@ -31,6 +31,7 @@ Changes since 1.5.x
   Not all registries support deleting images and manifests, though.
 - Add new `tag` command for tagging existing images in oras registries,
   without having to push extra copies (it also works for image indexes).
+- Add support for extended globbing patterns in the %files section
 
 ## v1.5.x changes
 
