@@ -9,11 +9,6 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
-- Fix fakeroot overwriting root's username in `/etc/passwd` with the host
-  user's name, a regression introduced in v1.5.0.
-- Add `nonested` flag for `--mount` specifications to prevent individual
-  bind mounts from being passed to nested containers via `APPTAINER_BIND`.
-  Example: `--mount type=bind,source=/data,destination=/mnt,nonested`.
 - Add support for variant to more architectures, but without verification.
   The previous arm32v5, arm32v6 and arm32v7 (= "arm") are still verified.
 - Any architecture variant, if used, is also included in the platform.
@@ -37,6 +32,22 @@ Changes since 1.5.x
 
 ## v1.5.x changes
 
+## v1.5.1 - \[2026-06-04\]
+
+### Security fix
+
+- Fix for [CVE-2026-48785 /
+  GHSA-cr2j-534f-mf3g](https://github.com/apptainer/apptainer/security/advisories/GHSA-cr2j-534f-mf3g)
+  Incorrect path matching for `limit container paths` directive.
+  This is only applicable to suid installations that have paths listed
+  in `limit container paths` that are string prefixes of other paths
+  which are not desired to be included in the list. For example, if
+  `/scratch` is in the list but `/scratch2` also exists and contains
+  container images, previously the latter would match but now only
+  images under the exactly matching `/scratch` are included.
+
+## Other changes
+
 - Work around segmentation fault sometimes seen while mksquashfs under
   proot is creating a SIF file.
 - Update bundled PRoot to version 5.4.0-rootless.3 in order to fix a
@@ -56,7 +67,12 @@ Changes since 1.5.x
   trying to compile and run proot. As a result original owners and groups
   of files will not be preserved in SIF images built by unprivileged
   users, as was the case for all architectures prior to 1.5.0.
-- Fix panic encountered during progress bar update while pulling image
+- Fix panic encountered during progress bar update while pulling image.
+- Fix fakeroot overwriting root's username in `/etc/passwd` with the host
+  user's name, a regression introduced in v1.5.0.
+- Add `nonested` flag for `--mount` specifications to prevent individual
+  bind mounts from being passed to nested containers via `APPTAINER_BIND`.
+  Example: `--mount type=bind,source=/data,destination=/mnt,nonested`.
 
 ## v1.5.0 - \[2026-05-06\]
 
@@ -192,7 +208,7 @@ Changes since 1.4.5
 
 ## v1.4.5 - \[2025-12-02\]
 
-## Security Related Fixes
+### Security related fixes
 
 - Fix for moderate severity [CVE-2025-65105 /
   GHSA-j3rw-fx6g-q46j](https://github.com/apptainer/apptainer/security/advisories/GHSA-j3rw-fx6g-q46j):
