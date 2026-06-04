@@ -14,7 +14,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
@@ -152,22 +151,27 @@ func (i *Image) ReInit() {
 	}
 }
 
-// AuthorizedPath checks if image is in a path supplied in paths
+// AuthorizedPath checks if the image is in a directory tree rooted at any of
+// the supplied paths. Paths must be absolute. Symlinks are resolved.
 func (i *Image) AuthorizedPath(paths []string) (bool, error) {
-	authorized := false
-	dirname := i.Path
-
 	for _, path := range paths {
-		match, err := filepath.EvalSymlinks(filepath.Clean(path))
+		abs, err := filepath.Abs(filepath.Clean(path))
 		if err != nil {
-			return authorized, fmt.Errorf("failed to resolve path %s: %s", path, err)
+			return false, fmt.Errorf("failed to resolve path %s: %w", path, err)
 		}
-		if strings.HasPrefix(dirname, match) {
-			authorized = true
-			break
+		match, err := filepath.EvalSymlinks(abs)
+		if err != nil {
+			return false, fmt.Errorf("failed to resolve path %s: %w", path, err)
+		}
+		rel, err := filepath.Rel(match, i.Path)
+		if err != nil {
+			return false, fmt.Errorf("failed to compare path %s against %s: %w", i.Path, match, err)
+		}
+		if rel == "." || filepath.IsLocal(rel) {
+			return true, nil
 		}
 	}
-	return authorized, nil
+	return false, nil
 }
 
 // AuthorizedOwner checks whether the image is owned by any user from the supplied users list.
