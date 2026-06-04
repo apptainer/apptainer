@@ -379,6 +379,8 @@ sessiondir max size = {{ .SessiondirMaxSize }}
 # Only allow containers to be used that are located within an allowed path
 # prefix. If this configuration is undefined (commented or set to NULL),
 # containers will be allowed to run from anywhere on the file system.
+# Does not match string prefixes; for example, if "/scratch" is listed,
+# it will not match "/scratch2".
 #
 # Only effective in setuid mode, with unprivileged user namespace creation
 # disabled.  Ignored for the root user.

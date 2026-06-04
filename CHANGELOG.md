@@ -11,7 +11,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Fix for [CVE-2026-48785 /
   [GHSA-cr2j-534f-mf3g](https://github.com/apptainer/apptainer/security/advisories/GHSA-cr2j-534f-mf3g)
-  Incorrect path matching for 'limit container paths' directive.
+  Incorrect path matching for `limit container paths` directive.
+  This is only applicable to suid installations that have paths listed
+  in `limit container paths` that are string prefixes of other paths
+  which are not desired to be included in the list. For example, if
+  `/scratch` is in the list but `/scratch2` also exists and contains
+  container images, previously the latter would match but now only
+  images under the exactly matching `/scratch` are included.
 
 ## Other changes
 
