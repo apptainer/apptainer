@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2019-2025, Sylabs Inc. All rights reserved.
+// Copyright (c) 2019-2026, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -178,6 +178,34 @@ func TestAuthorizedPath(t *testing.T) {
 	test.DropPrivilege(t)
 	defer test.ResetPrivilege(t)
 
+	// Test image is in xxx/foobar/test.sif
+	testDir := t.TempDir()
+	imageDir := filepath.Join(testDir, "foobar")
+	if err := os.Mkdir(imageDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	// Test image is not in xxx/foo ... which is a string prefix of xxx/foobar
+	stringPrefixPath := filepath.Join(testDir, "foo")
+	if err := os.Mkdir(stringPrefixPath, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	// Symlink xxx/link -> xxx/foobar, so the limit path resolves into the
+	// image directory via the symlink.
+	symlinkToImageDir := filepath.Join(testDir, "link")
+	if err := os.Symlink(imageDir, symlinkToImageDir); err != nil {
+		t.Fatal(err)
+	}
+
+	// XXX(mem): This is what makes this test slow
+	path := filepath.Join(imageDir, "test.sif")
+	if err := fs.CopyFileAtomic(busyboxSIF, path, 0o755); err != nil {
+		t.Fatalf("Could not copy test image: %v", err)
+	}
+	img, err := Init(path, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	tests := []struct {
 		name       string
 		path       []string
@@ -198,11 +226,34 @@ func TestAuthorizedPath(t *testing.T) {
 			path:       []string{"/"},
 			shouldPass: true,
 		},
+		{
+			name:       "parent path",
+			path:       []string{imageDir},
+			shouldPass: true,
+		},
+		{
+			name:       "parent path trailing slash",
+			path:       []string{imageDir + string(os.PathSeparator)},
+			shouldPass: true,
+		},
+		{
+			name:       "image file as limit path",
+			path:       []string{path},
+			shouldPass: true,
+		},
+		{
+			name:       "symlink to image dir",
+			path:       []string{symlinkToImageDir},
+			shouldPass: true,
+		},
+		// See GHSA-wqcr-7rf3-f64m
+		// Image in xxx/foobar must not be authorized for xxx/foo.
+		{
+			name:       "string prefix",
+			path:       []string{stringPrefixPath},
+			shouldPass: false,
+		},
 	}
-
-	// XXX(mem): This is what makes this test slow
-	img, path := createImage(t)
-	defer os.Remove(path)
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
