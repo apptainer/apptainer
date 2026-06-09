@@ -756,6 +756,21 @@ Enterprise Performance Computing (EPC)`
   $ apptainer search --arch arm64 oras://registry/alpine`
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// tag
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	TagUse   string = `tag [tag options...] <URI> <tag>`
+	TagShort string = `Tag image in the provided URI`
+	TagLong  string = `
+  The 'tag' command allows you to tag an existing SIF container in a given
+  URI with a new tag name.  Supported URIs include:
+
+  oras:
+      oras://registry/namespace/image:tag`
+	TagExample string = `
+  In supported OCI registry
+  $ apptainer tag oras://registry/namespace/image:tag newtag`
+
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// run
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	RunUse   string = `run [run options...] <container> [args...]`

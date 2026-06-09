@@ -511,3 +511,32 @@ func DeleteImage(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfi
 	}
 	return nil
 }
+
+func TagImage(ctx context.Context, ref, tag string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
+	ref = strings.TrimPrefix(ref, "oras://")
+	ref = strings.TrimPrefix(ref, "//")
+
+	// Get reference to image in the remote
+	opts := []name.Option{name.WithDefaultTag(name.DefaultTag), name.WithDefaultRegistry(name.DefaultRegistry)}
+	if noHTTPS {
+		opts = append(opts, name.Insecure)
+	}
+	ir, err := name.ParseReference(ref, opts...)
+	if err != nil {
+		return fmt.Errorf("invalid reference %q: %w", ref, err)
+	}
+	remoteOpts := []remote.Option{
+		ociauth.AuthOptn(ociAuth, reqAuthFile),
+		remote.WithContext(ctx),
+	}
+	id, err := remote.Get(ir, remoteOpts...)
+	if err != nil {
+		return err
+	}
+	it := ir.Context().Tag(tag)
+	err = remote.Tag(it, id, remoteOpts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}

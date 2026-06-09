@@ -29,6 +29,8 @@ Changes since 1.5.x
   Only the images and tags are listed, descriptions are not searched.
 - Allow deleting images from oras registries, in addition to library.
   Not all registries support deleting images and manifests, though.
+- Add new `tag` command for tagging existing images in oras registries,
+  without having to push extra copies (it also works for image indexes).
 
 ## v1.5.x changes
 
