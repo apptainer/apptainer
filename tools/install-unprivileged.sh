@@ -143,7 +143,7 @@ case "$DIST" in
 			DIST=el9
 		fi
 	;;
-	suse15|opensuse-leap)
+	suse15|suse16|opensuse-leap)
 		if $NOOPENSUSE; then
 			DIST=el8
 		fi
@@ -194,10 +194,16 @@ case $1 in
 	    EXTRASREPOURL=$OSREPOURL
 	    OSSPLIT=false
 	    ;;
-	suse15|opensuse-leap)
+	suse16|opensuse-leap)
+	    OSREPOURL="https://download.opensuse.org/distribution/leap/16.0/repo/oss/$ARCH"
+	    EPELREPOURL="https://download.opensuse.org/repositories/network:/cluster/16.0/$ARCH"
+	    EXTRASREPOURL="https://download.opensuse.org/repositories/filesystems/16.0/$ARCH"
+	    OSSPLIT=false
+	    ;;
+	suse15)
 	    OSREPOURL="https://download.opensuse.org/distribution/leap/15.6/repo/oss/$ARCH"
 	    EPELREPOURL="https://download.opensuse.org/repositories/network:/cluster/15.6/$ARCH"
-	    EXTRASREPOURL="https://download.opensuse.org/repositories/filesystems/15.6/$ARCH"
+	    EXTRASREPOURL="https://download.opensuse.org/repositories/filesystems/15.7/$ARCH"
 	    OSSPLIT=false
 	    ;;
 	*) fatal "$1 distribution not supported";;
