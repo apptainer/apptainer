@@ -12,9 +12,9 @@
 # Works with apptainer versions 1.1.4 and higher.
 
 REQUIREDCMDS="curl rpm2cpio cpio"
-
-# assumes at least a 1 Mbit connection
-CURLOPTS="--connect-timeout 5 -Y 125000 -y 10 -Ls"
+MAXRETRIES=5
+# assumes at least a 0.5 Mbit connection
+CURLOPTS="--connect-timeout 10 -Y 50000 -y 10 -Ls"
 
 usage()
 {
@@ -246,7 +246,7 @@ latesturl()
 		URL="${URL/\/Packages\///os/Packages/}"
 		latesturl "$URL" "$2" false false
 		return $?
-	elif [ $RETRY -lt 3 ]; then
+	elif [ $RETRY -lt $MAXRETRIES ]; then
 		RETRY=$((RETRY+1))
 		if $SHOWERRORS; then
 			echo "Retrying..." >&2
@@ -276,7 +276,7 @@ else
 	APPTAINERURL="$KOJIURL/$REL/$ARCH/apptainer-$VERSION-$REL.$ARCH.rpm"
 fi
 
-# Retry url to 3 times if download fails
+# Retry url up to $MAXTRIES times if download fails
 extracturl()
 {
 	typeset URL="$1"
@@ -288,7 +288,7 @@ extracturl()
 			break
 		fi
 		RETRY=$((RETRY+1))
-		if [ "$RETRY" -ge 3 ]; then
+		if [ "$RETRY" -ge $MAXRETRIES ]; then
 			fatal "Failure extracting $URL"
 		fi
 		if $SHOWERRORS; then
