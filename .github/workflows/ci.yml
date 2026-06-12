@@ -312,7 +312,7 @@ jobs:
         env:
           OS_TYPE: registry.opensuse.org/opensuse/leap
           OS_VERSION: latest
-          INS_OPTS: -o -d suse15
+          INS_OPTS: -o -d opensuse-leap
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
