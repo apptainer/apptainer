@@ -227,14 +227,14 @@ jobs:
 
       - name: Install and test unprivileged for openSUSE leap
         env:
-          OS_TYPE: opensuse/leap
+          OS_TYPE: registry.opensuse.org/opensuse/leap
           OS_VERSION: latest
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
       - name: Install and test unprivileged for openSUSE tumbleweed
         env:
-          OS_TYPE: opensuse/tumbleweed
+          OS_TYPE: registry.opensuse.org/opensuse/tumbleweed
           OS_VERSION: latest
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
@@ -302,7 +302,7 @@ jobs:
 
       - name: Build and test rpm under docker
         env:
-          OS_TYPE: opensuse/leap
+          OS_TYPE: registry.opensuse.org/opensuse/leap
           OS_VERSION: latest
           GO_ARCH: linux-amd64
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -310,9 +310,9 @@ jobs:
 
       - name: Install and test unprivileged for openSUSE leap
         env:
-          OS_TYPE: opensuse/leap
+          OS_TYPE: registry.opensuse.org/opensuse/leap
           OS_VERSION: latest
-          INS_OPTS: -o -d suse15
+          INS_OPTS: -o -d opensuse-leap
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
@@ -326,7 +326,7 @@ jobs:
 
       - name: Build and test rpm under docker
         env:
-          OS_TYPE: opensuse/tumbleweed
+          OS_TYPE: registry.opensuse.org/opensuse/tumbleweed
           OS_VERSION: latest
           GO_ARCH: linux-amd64
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -334,7 +334,7 @@ jobs:
 
       - name: Install and test unprivileged for openSUSE tumbleweed
         env:
-          OS_TYPE: opensuse/tumbleweed
+          OS_TYPE: registry.opensuse.org/opensuse/tumbleweed
           OS_VERSION: latest
           INS_OPTS: -o -d opensuse-tumbleweed
           TEST_TYPE: unpriv
