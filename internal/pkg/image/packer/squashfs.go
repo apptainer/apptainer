@@ -88,9 +88,10 @@ func (s Squashfs) create(files []string, dest string, opts []string) error {
 			// Add the MALLOC settings to workaround segfaults seen
 			// in mksquashfs on Ubuntu 22.04
 			// https://github.com/apptainer/apptainer/issues/3486
+			// https://github.com/apptainer/apptainer/issues/3560
 			extraEnv = append(extraEnv,
 				"MALLOC_MMAP_MAX_=0",
-				"MALLOC_ARENA_MAX=32",
+				"MALLOC_ARENA_MAX=1000000",
 			)
 		} else {
 			args = append(args, "-all-root")

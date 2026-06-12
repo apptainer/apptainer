@@ -5,6 +5,11 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.5.x changes
+
+- Extended the mksquashfs segmentation fault workaround for cases where
+  mksquashfs uses many processor cores.
+
 ## v1.5.1 - \[2026-06-04\]
 
 ### Security fix
