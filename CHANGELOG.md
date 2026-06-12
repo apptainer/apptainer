@@ -34,6 +34,9 @@ Changes since 1.5.x
 
 ## v1.5.x changes
 
+- Extended the mksquashfs segmentation fault workaround for cases where
+  mksquashfs uses many processor cores.
+
 ## v1.5.1 - \[2026-06-04\]
 
 ### Security fix
