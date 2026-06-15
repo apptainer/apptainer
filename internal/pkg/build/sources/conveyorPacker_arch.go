@@ -237,14 +237,14 @@ func (cp *ArchConveyorPacker) getPacConf(pacmanConfURL string) (pacConf string, 
 }
 
 func (cp *ArchConveyorPacker) insertBaseEnv() (err error) {
-	if err = makeBaseEnv(cp.b.RootfsPath, true); err != nil {
+	if err = makeBaseEnv(cp.b, true); err != nil {
 		return
 	}
 	return nil
 }
 
 func (cp *ArchConveyorPacker) insertRunScript() (err error) {
-	err = os.WriteFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/runscript"), []byte("#!/bin/sh\n"), 0o755)
+	err = cp.b.Rootfs.WriteFile(".singularity.d/runscript", []byte("#!/bin/sh\n"), 0o755)
 	if err != nil {
 		return
 	}

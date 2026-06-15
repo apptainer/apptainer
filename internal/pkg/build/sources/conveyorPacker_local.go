@@ -140,10 +140,17 @@ func (cp *LocalConveyorPacker) Pack(ctx context.Context) (*types.Bundle, error) 
 		return nil, fmt.Errorf("while unpacking local image: %v", err)
 	}
 
+	// Extraction of a local image may remove and recreate the rootfs directory,
+	// invalidating the bundle's os.Root handle. Re-open it before we make any
+	// rooted modifications below.
+	if err := b.ReopenRootfs(); err != nil {
+		return nil, fmt.Errorf("while reopening rootfs: %v", err)
+	}
+
 	// Insert base metadata after unpacking fs to avoid unsquashfs failure on
 	// existing files/symlink. Call makeBaseEnv with overwrite=false so we don't
 	// overwrite runscripts etc. that were extracted from the image.
-	if err = makeBaseEnv(b.RootfsPath, false); err != nil {
+	if err = makeBaseEnv(b, false); err != nil {
 		return nil, fmt.Errorf("while inserting base environment: %v", err)
 	}
 

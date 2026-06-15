@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	zypperConf    = "/etc/zypp/zypp.conf"
+	zypperConf    = "etc/zypp/zypp.conf"
 	osreleaseFile = "/etc/os-release"
 	// #nosec G101
 	ssccredentialsFile = "/etc/zypp/credentials.d/SCCcredentials"
@@ -262,24 +262,24 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) error 
 		}
 	}
 	if pgpfile != "" {
-		rpmbase := "/usr/lib/sysimage"
-		rpmsys := "/var/lib"
+		rpmbase := "usr/lib/sysimage"
+		rpmsys := "var/lib"
 		rpmrel := "../.."
 		if iosmajor == 12 {
 			rpmbase = "/var/lib"
 			rpmsys = "/usr/lib/sysimage"
 			rpmrel = "../../.."
 		}
-		if err = os.MkdirAll(cp.b.RootfsPath+rpmbase+`/rpm`, 0o755); err != nil {
+		if err = cp.b.Rootfs.MkdirAll(rpmbase+`/rpm`, 0o755); err != nil {
 			return fmt.Errorf("cannot recreate rpm directories: %v", err)
 		}
-		if err = os.MkdirAll(cp.b.RootfsPath+rpmsys, 0o755); err != nil {
+		if err = cp.b.Rootfs.MkdirAll(rpmsys, 0o755); err != nil {
 			return fmt.Errorf("cannot recreate rpm directories: %v", err)
 		}
-		if err = os.RemoveAll(cp.b.RootfsPath + rpmsys + `/rpm`); err != nil {
+		if err = cp.b.Rootfs.RemoveAll(rpmsys + `/rpm`); err != nil {
 			return fmt.Errorf("cannot remove rpm directory")
 		}
-		if err = os.Symlink(rpmrel+rpmbase+`/rpm`, cp.b.RootfsPath+rpmsys+`/rpm`); err != nil {
+		if err = cp.b.Rootfs.Symlink(rpmrel+rpmbase+`/rpm`, rpmsys+`/rpm`); err != nil {
 			return fmt.Errorf("cannot create rpm symlink")
 		}
 		cmd := exec.CommandContext(ctx, "rpmkeys", `--root`, cp.b.RootfsPath, `--import`, pgpfile)
@@ -393,14 +393,14 @@ func (cp *ZypperConveyorPacker) Pack(context.Context) (b *types.Bundle, err erro
 }
 
 func (cp *ZypperConveyorPacker) insertBaseEnv() (err error) {
-	if err = makeBaseEnv(cp.b.RootfsPath, true); err != nil {
+	if err = makeBaseEnv(cp.b, true); err != nil {
 		return
 	}
 	return nil
 }
 
 func (cp *ZypperConveyorPacker) insertRunScript() (err error) {
-	f, err := os.Create(cp.b.RootfsPath + "/.singularity.d/runscript")
+	f, err := cp.b.Rootfs.Create(filepath.Join(".singularity.d", "runscript"))
 	if err != nil {
 		return
 	}
@@ -414,7 +414,7 @@ func (cp *ZypperConveyorPacker) insertRunScript() (err error) {
 
 	f.Sync()
 
-	err = os.Chmod(cp.b.RootfsPath+"/.singularity.d/runscript", 0o755)
+	err = f.Chmod(0o755)
 	if err != nil {
 		return
 	}
@@ -423,12 +423,12 @@ func (cp *ZypperConveyorPacker) insertRunScript() (err error) {
 }
 
 func (cp *ZypperConveyorPacker) genZypperConfig() (err error) {
-	err = os.MkdirAll(filepath.Join(cp.b.RootfsPath, "/etc/zypp"), 0o775)
+	err = cp.b.Rootfs.MkdirAll(filepath.Join("etc", "zypp"), 0o775)
 	if err != nil {
 		return fmt.Errorf("while creating %v: %v", filepath.Join(cp.b.RootfsPath, "/etc/zypp"), err)
 	}
 
-	err = os.WriteFile(filepath.Join(cp.b.RootfsPath, zypperConf), []byte("[main]\ncachedir=/var/cache/zypp-bootstrap\n\n"), 0o664)
+	err = cp.b.Rootfs.WriteFile(zypperConf, []byte("[main]\ncachedir=/var/cache/zypp-bootstrap\n\n"), 0o664)
 	if err != nil {
 		return
 	}

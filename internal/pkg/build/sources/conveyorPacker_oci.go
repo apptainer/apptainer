@@ -296,14 +296,14 @@ func (cp *OCIConveyorPacker) unpackRootfs(ctx context.Context) error {
 }
 
 func (cp *OCIConveyorPacker) insertBaseEnv() (err error) {
-	if err = makeBaseEnv(cp.b.RootfsPath, true); err != nil {
+	if err = makeBaseEnv(cp.b, true); err != nil {
 		sylog.Errorf("%v", err)
 	}
 	return
 }
 
 func (cp *OCIConveyorPacker) insertRunScript() error {
-	f, err := os.Create(cp.b.RootfsPath + "/.singularity.d/runscript")
+	f, err := cp.b.Rootfs.Create(filepath.Join(".singularity.d", "runscript"))
 	if err != nil {
 		return err
 	}
@@ -377,7 +377,7 @@ func (cp *OCIConveyorPacker) insertRunScript() error {
 
 	f.Sync()
 
-	err = os.Chmod(cp.b.RootfsPath+"/.singularity.d/runscript", 0o755)
+	err = f.Chmod(0o755)
 	if err != nil {
 		return err
 	}
@@ -386,7 +386,7 @@ func (cp *OCIConveyorPacker) insertRunScript() error {
 }
 
 func (cp *OCIConveyorPacker) insertEnv() error {
-	f, err := os.Create(cp.b.RootfsPath + "/.singularity.d/env/10-docker2singularity.sh")
+	f, err := cp.b.Rootfs.Create(filepath.Join(".singularity.d", "env", "10-docker2singularity.sh"))
 	if err != nil {
 		return err
 	}
@@ -423,7 +423,7 @@ func (cp *OCIConveyorPacker) insertEnv() error {
 
 	f.Sync()
 
-	err = os.Chmod(cp.b.RootfsPath+"/.singularity.d/env/10-docker2singularity.sh", 0o755)
+	err = f.Chmod(0o755)
 	if err != nil {
 		return err
 	}
@@ -441,7 +441,7 @@ func (cp *OCIConveyorPacker) insertOCILabels() (err error) {
 		return err
 	}
 
-	err = os.WriteFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/labels.json"), []byte(text), 0o644)
+	err = cp.b.Rootfs.WriteFile(".singularity.d/labels.json", []byte(text), 0o644)
 	return err
 }
 

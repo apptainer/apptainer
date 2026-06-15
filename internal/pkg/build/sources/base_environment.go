@@ -15,7 +15,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
@@ -79,80 +79,80 @@ var runscriptFileContent string
 //go:embed startscript.sh
 var startscriptFileContent string
 
-func makeDirs(rootPath string) error {
-	if err := os.MkdirAll(filepath.Join(rootPath, ".singularity.d", "libs"), 0o755); err != nil {
-		return err
+// mkdirAllInRootfs creates dir, and any missing parents, within the bundle
+// rootfs. If the final path already exists it is left untouched. This tolerates
+// images that provide one of these paths as a symlink (e.g. var/tmp -> /tmp);
+// os.Root.MkdirAll returns an error for an existing symlink leaf, whereas the
+// plain os.MkdirAll this replaced resolved and accepted it.
+func mkdirAllInRootfs(b *types.Bundle, dir string) error {
+	if _, err := b.Rootfs.Lstat(dir); err == nil {
+		return nil
 	}
-	if err := os.MkdirAll(filepath.Join(rootPath, ".singularity.d", "actions"), 0o755); err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Join(rootPath, ".singularity.d", "env"), 0o755); err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Join(rootPath, "dev"), 0o755); err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Join(rootPath, "proc"), 0o755); err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Join(rootPath, "root"), 0o755); err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Join(rootPath, "var", "tmp"), 0o755); err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Join(rootPath, "tmp"), 0o755); err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Join(rootPath, "etc"), 0o755); err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Join(rootPath, "sys"), 0o755); err != nil {
-		return err
-	}
-	return os.MkdirAll(filepath.Join(rootPath, "home"), 0o755)
+	return b.Rootfs.MkdirAll(dir, 0o755)
 }
 
-func makeSymlinks(rootPath string) error {
-	if _, err := os.Stat(filepath.Join(rootPath, "singularity")); err != nil {
-		if err = os.Symlink(".singularity.d/runscript", filepath.Join(rootPath, "singularity")); err != nil {
-			return err
-		}
+func makeDirs(b *types.Bundle) error {
+	dirs := []string{
+		filepath.Join(".singularity.d", "libs"),
+		filepath.Join(".singularity.d", "actions"),
+		filepath.Join(".singularity.d", "env"),
+		"dev",
+		"proc",
+		"root",
+		filepath.Join("var", "tmp"),
+		"tmp",
+		"etc",
+		"sys",
+		"home",
 	}
-	if _, err := os.Stat(filepath.Join(rootPath, ".run")); err != nil {
-		if err = os.Symlink(".singularity.d/actions/run", filepath.Join(rootPath, ".run")); err != nil {
-			return err
-		}
-	}
-	if _, err := os.Stat(filepath.Join(rootPath, ".exec")); err != nil {
-		if err = os.Symlink(".singularity.d/actions/exec", filepath.Join(rootPath, ".exec")); err != nil {
-			return err
-		}
-	}
-	if _, err := os.Stat(filepath.Join(rootPath, ".test")); err != nil {
-		if err = os.Symlink(".singularity.d/actions/test", filepath.Join(rootPath, ".test")); err != nil {
-			return err
-		}
-	}
-	if _, err := os.Stat(filepath.Join(rootPath, ".shell")); err != nil {
-		if err = os.Symlink(".singularity.d/actions/shell", filepath.Join(rootPath, ".shell")); err != nil {
-			return err
-		}
-	}
-	if _, err := os.Stat(filepath.Join(rootPath, "environment")); err != nil {
-		if err = os.Symlink(".singularity.d/env/90-environment.sh", filepath.Join(rootPath, "environment")); err != nil {
+	for _, dir := range dirs {
+		if err := mkdirAllInRootfs(b, dir); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func makeFile(name string, perm os.FileMode, s string, overwrite bool) (err error) {
+func makeSymlinks(b *types.Bundle) error {
+	if _, err := b.Rootfs.Stat("singularity"); err != nil {
+		if err = b.Rootfs.Symlink("/.singularity.d/runscript", "singularity"); err != nil {
+			return err
+		}
+	}
+	if _, err := b.Rootfs.Stat(".run"); err != nil {
+		if err = b.Rootfs.Symlink("/.singularity.d/actions/run", ".run"); err != nil {
+			return err
+		}
+	}
+	if _, err := b.Rootfs.Stat(".exec"); err != nil {
+		if err = b.Rootfs.Symlink("/.singularity.d/actions/exec", ".exec"); err != nil {
+			return err
+		}
+	}
+	if _, err := b.Rootfs.Stat(".test"); err != nil {
+		if err = b.Rootfs.Symlink("/.singularity.d/actions/test", ".test"); err != nil {
+			return err
+		}
+	}
+	if _, err := b.Rootfs.Stat(".shell"); err != nil {
+		if err = b.Rootfs.Symlink("/.singularity.d/actions/shell", ".shell"); err != nil {
+			return err
+		}
+	}
+	if _, err := b.Rootfs.Stat("environment"); err != nil {
+		if err = b.Rootfs.Symlink("/.singularity.d/env/90-environment.sh", "environment"); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func makeFile(b *types.Bundle, name string, perm os.FileMode, s string, overwrite bool) (err error) {
 	// #4532 - If the file already exists ensure it has requested permissions
 	// as OpenFile won't set on an existing file and some docker
 	// containers have hosts or resolv.conf without write perm.
-	if fs.IsFile(name) {
-		if err = os.Chmod(name, perm); err != nil {
+	if info, statErr := b.Rootfs.Stat(name); statErr == nil && info.Mode().IsRegular() {
+		if err = b.Rootfs.Chmod(name, perm); err != nil {
 			return
 		}
 		if !overwrite {
@@ -162,7 +162,7 @@ func makeFile(name string, perm os.FileMode, s string, overwrite bool) (err erro
 	}
 	// Create the file if it's not in the container, or truncate and write s
 	// into it otherwise.
-	f, err := os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
+	f, err := b.Rootfs.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
 	if err != nil {
 		return
 	}
@@ -172,47 +172,47 @@ func makeFile(name string, perm os.FileMode, s string, overwrite bool) (err erro
 	return
 }
 
-func makeFiles(rootPath string, overwrite bool) error {
-	if err := makeFile(filepath.Join(rootPath, "etc", "hosts"), 0o644, "", overwrite); err != nil {
+func makeFiles(b *types.Bundle, overwrite bool) error {
+	if err := makeFile(b, filepath.Join("etc", "hosts"), 0o644, "", overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, "etc", "resolv.conf"), 0o644, "", overwrite); err != nil {
+	if err := makeFile(b, filepath.Join("etc", "resolv.conf"), 0o644, "", overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "exec"), 0o755, execFileContent, overwrite); err != nil {
+	if err := makeFile(b, filepath.Join(".singularity.d", "actions", "exec"), 0o755, execFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "run"), 0o755, runFileContent, overwrite); err != nil {
+	if err := makeFile(b, filepath.Join(".singularity.d", "actions", "run"), 0o755, runFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "shell"), 0o755, shellFileContent, overwrite); err != nil {
+	if err := makeFile(b, filepath.Join(".singularity.d", "actions", "shell"), 0o755, shellFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "start"), 0o755, startFileContent, overwrite); err != nil {
+	if err := makeFile(b, filepath.Join(".singularity.d", "actions", "start"), 0o755, startFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "actions", "test"), 0o755, testFileContent, overwrite); err != nil {
+	if err := makeFile(b, filepath.Join(".singularity.d", "actions", "test"), 0o755, testFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "01-base.sh"), 0o755, baseShFileContent, overwrite); err != nil {
+	if err := makeFile(b, filepath.Join(".singularity.d", "env", "01-base.sh"), 0o755, baseShFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "90-environment.sh"), 0o755, environmentShFileContent, overwrite); err != nil {
+	if err := makeFile(b, filepath.Join(".singularity.d", "env", "90-environment.sh"), 0o755, environmentShFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "95-apps.sh"), 0o755, appsShFileContent, overwrite); err != nil {
+	if err := makeFile(b, filepath.Join(".singularity.d", "env", "95-apps.sh"), 0o755, appsShFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "99-base.sh"), 0o755, base99ShFileContent, overwrite); err != nil {
+	if err := makeFile(b, filepath.Join(".singularity.d", "env", "99-base.sh"), 0o755, base99ShFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "env", "99-runtimevars.sh"), 0o755, base99runtimevarsShFileContent, overwrite); err != nil {
+	if err := makeFile(b, filepath.Join(".singularity.d", "env", "99-runtimevars.sh"), 0o755, base99runtimevarsShFileContent, overwrite); err != nil {
 		return err
 	}
-	if err := makeFile(filepath.Join(rootPath, ".singularity.d", "runscript"), 0o755, runscriptFileContent, overwrite); err != nil {
+	if err := makeFile(b, filepath.Join(".singularity.d", "runscript"), 0o755, runscriptFileContent, overwrite); err != nil {
 		return err
 	}
-	return makeFile(filepath.Join(rootPath, ".singularity.d", "startscript"), 0o755, startscriptFileContent, overwrite)
+	return makeFile(b, filepath.Join(".singularity.d", "startscript"), 0o755, startscriptFileContent, overwrite)
 }
 
 // makeBaseEnv inserts Apptainer specific directories, symlinks, and files
@@ -220,31 +220,31 @@ func makeFiles(rootPath string, overwrite bool) error {
 // will be overwritten with new content. If overwrite is false, existing files
 // (e.g. where the rootfs has been extracted from an existing image) will not be
 // modified.
-func makeBaseEnv(rootPath string, overwrite bool) (err error) {
+func makeBaseEnv(b *types.Bundle, overwrite bool) (err error) {
 	var info os.FileInfo
 
 	// Ensure we can write into the root of rootPath
-	if info, err = os.Stat(rootPath); err != nil {
+	if info, err = b.Rootfs.Stat("."); err != nil {
 		err = fmt.Errorf("build: failed to stat rootPath: %v", err)
 		return err
 	}
 	if info.Mode()&0o200 == 0 {
-		sylog.Infof("Adding owner write permission to build path: %s\n", rootPath)
-		if err = os.Chmod(rootPath, info.Mode()|0o200); err != nil {
+		sylog.Infof("Adding owner write permission to build path: %s\n", b.RootfsPath)
+		if err = b.Rootfs.Chmod(".", info.Mode()|0o200); err != nil {
 			err = fmt.Errorf("build: failed to make rootPath writable: %v", err)
 			return err
 		}
 	}
 
-	if err = makeDirs(rootPath); err != nil {
+	if err = makeDirs(b); err != nil {
 		err = fmt.Errorf("build: failed to make environment dirs: %v", err)
 		return err
 	}
-	if err = makeSymlinks(rootPath); err != nil {
+	if err = makeSymlinks(b); err != nil {
 		err = fmt.Errorf("build: failed to make environment symlinks: %v", err)
 		return err
 	}
-	if err = makeFiles(rootPath, overwrite); err != nil {
+	if err = makeFiles(b, overwrite); err != nil {
 		err = fmt.Errorf("build: failed to make environment files: %v", err)
 		return err
 	}
