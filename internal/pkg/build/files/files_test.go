@@ -203,6 +203,11 @@ func TestExpandPath(t *testing.T) {
 			correct: []string{"dir\ttab", "dir\nnewline", "dir space", "dirL1", "file"},
 		},
 		{
+			name:    "extGlob",
+			path:    "?(dirL1|dir space)",
+			correct: []string{"dirL1", "dir space"},
+		},
+		{
 			name: "PathAndFilenameWhitespace",
 			path: "*/*",
 			correct: []string{
