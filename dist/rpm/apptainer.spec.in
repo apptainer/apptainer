@@ -184,6 +184,13 @@ rm -f $(dirname %{SOURCE10})/PRoot-*.tar.gz
 %endif
 
 %build
+if go version | grep -q "Red Hat"; then
+    # With Red Hat's golang this changes crashes when running non-FIPS
+    # compliant containers on FIPS-enabled machines into helpful error
+    # messages.
+    export GOEXPERIMENT=strictfipsruntime
+fi
+
 %if "%{?SOURCE1}" != ""
 GOVERSION="$(echo %SOURCE1|sed 's,.*/,,;s/go//;s/\.src.*//')"
 if ! ./mlocal/scripts/check-min-go-version go $GOVERSION; then
