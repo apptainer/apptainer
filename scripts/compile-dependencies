@@ -21,8 +21,8 @@ set -ex
 for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs PRoot; do
     TGZ="$(echo $SRC/${PKG}[_-]*.tar.gz)"
     if [ ! -f "$TGZ" ]; then
-	echo "\$PKG[_-]*.tar.gz not found in $SRC, skipping" >&2
-	continue
+        echo "\$PKG[_-]*.tar.gz not found in $SRC, skipping" >&2
+        continue
     fi
     DIR=${TGZ%.tar.gz}
     DIR=${DIR/*\//}
@@ -30,49 +30,49 @@ for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs PRoot; d
     tar -xf $TGZ
     cd $DIR
     for PATCH in $(echo $SRC/$PKG-*.patch); do
-	if [ -f "$PATCH" ]; then
-	    patch -p1 <$PATCH
-	fi
+        if [ -f "$PATCH" ]; then
+            patch -p1 <$PATCH
+        fi
     done
     case "$PKG" in
-	squashfs-tools)
-	    make -C squashfs-tools mksquashfs unsquashfs GZIP_SUPPORT=1 \
-	    LZO_SUPPORT=1 LZ4_SUPPORT=1 XZ_SUPPORT=1 ZSTD_SUPPORT=1
-	    ;;
-	squashfuse)
-	    ./autogen.sh
-	    FLAGS=-std=c99 ./configure --enable-multithreading
-	    make squashfuse_ll
-	    ;;
-	e2fsprogs)
-	    ./configure
-	    make libs && make -C misc fuse2fs
-	    mv misc/fuse2fs .
-	    ;;
-	fuse-overlayfs)
-	    ./autogen.sh
-	    ./configure
-	    make
-	    ;;
-	gocryptfs)
-	    VER=${DIR/*-/}
-	    echo "v$VER" >VERSION
-	    # Don't hardcode the amd64 microarchitecture
-	    sed -e '/GOAMD64.*v2/d' -i.orig build.bash
-	    # GOPROXY=off makes sure we fail instead of making network requests
-	    # the -B ldflags prevent rpm complaints about "No build ID note found"
-	    CGO_ENABLED=0 GOPROXY=off ./build.bash \
-		-mod=vendor -tags without_openssl \
-		-buildvcs=false -ldflags="-X main.GitVersion=v$VER \
-		-B 0x`head -c20 /dev/urandom|od -An -tx1|tr -d ' \n'`"
-	    ;;
-	PRoot)
-	    make -C src proot
-	    ;;
-	*)
-	    echo "unrecognized package $PKG" >&2
-	    exit 1
-	    ;;
+        squashfs-tools)
+            make -C squashfs-tools mksquashfs unsquashfs GZIP_SUPPORT=1 \
+            LZO_SUPPORT=1 LZ4_SUPPORT=1 XZ_SUPPORT=1 ZSTD_SUPPORT=1
+            ;;
+        squashfuse)
+            ./autogen.sh
+            FLAGS=-std=c99 ./configure --enable-multithreading
+            make squashfuse_ll
+            ;;
+        e2fsprogs)
+            ./configure
+            make libs && make -C misc fuse2fs
+            mv misc/fuse2fs .
+            ;;
+        fuse-overlayfs)
+            ./autogen.sh
+            ./configure
+            make
+            ;;
+        gocryptfs)
+            VER=${DIR/*-/}
+            echo "v$VER" >VERSION
+            # Don't hardcode the amd64 microarchitecture
+            sed -e '/GOAMD64.*v2/d' -i.orig build.bash
+            # GOPROXY=off makes sure we fail instead of making network requests
+            # the -B ldflags prevent rpm complaints about "No build ID note found"
+            CGO_ENABLED=0 GOPROXY=off ./build.bash \
+                -mod=vendor -tags without_openssl \
+                -buildvcs=false -ldflags="-X main.GitVersion=v$VER \
+                -B 0x`head -c20 /dev/urandom|od -An -tx1|tr -d ' \n'`"
+            ;;
+        PRoot)
+            make -C src proot
+            ;;
+        *)
+            echo "unrecognized package $PKG" >&2
+            exit 1
+            ;;
     esac
     cd ..
 done
