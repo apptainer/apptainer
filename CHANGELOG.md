@@ -9,6 +9,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Extended the mksquashfs segmentation fault workaround for cases where
   mksquashfs uses many processor cores.
+- Whe building an rpm using a Red Hat version of golang, set
+  GOEXPERIMENT=strictfipsruntime.  That makes attempting to run non-FIPS
+  compliant containers on a FIPS-enabled system exit with a helpful
+  error message instead of a crash.
 
 ## v1.5.1 - \[2026-06-04\]
 
