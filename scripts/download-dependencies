@@ -32,13 +32,13 @@ sed -n -e '/^# URL:/{s/^# //;s/%%/%/g;p}' -e 's/^Source[1-9][0-9]*: //p' -e 's/^
           done
           echo "$LINE"))
     if [[ "$LINE" = *http* ]]; then
-	URL="${LINE/*http/http}"
-	if [[ "$LINE" = "URL:"*http* ]]; then
-	    # the file name is on the next line
-	    continue
-	fi
-	# take the file name from the base of the URL
-	LINE="${LINE/*\//}"
+        URL="${LINE/*http/http}"
+        if [[ "$LINE" = "URL:"*http* ]]; then
+            # the file name is on the next line
+            continue
+        fi
+        # take the file name from the base of the URL
+        LINE="${LINE/*\//}"
     fi
     if [[ "$LINE" = *PRoot* ]]; then
         # skip architectures known to not be supported by PRoot
@@ -47,15 +47,15 @@ sed -n -e '/^# URL:/{s/^# //;s/%%/%/g;p}' -e 's/^Source[1-9][0-9]*: //p' -e 's/^
         esac
     fi
     if [ -n "$GITHUB_TOKEN" ] && [[ "$URL" = *github.com/*.patch ]]; then
-	# use github API instead because the public URL downloads 
-	# sometimes hit server busy (429) when run in github actions
-	URL="$(echo "$URL"|sed -e 's,github.com/,api.github.com/repos/,' \
-			       -e 's,/pull/,/pulls/,' -e 's,\.patch,,')"
-	curl -f -L -sS -o $DIR/$LINE \
-	    -H "Accept: application/vnd.github.diff" \
-	    -H "Authorization: Bearer $GITHUB_TOKEN" $URL
+        # use github API instead because the public URL downloads
+        # sometimes hit server busy (429) when run in github actions
+        URL="$(echo "$URL"|sed -e 's,github.com/,api.github.com/repos/,' \
+                               -e 's,/pull/,/pulls/,' -e 's,\.patch,,')"
+        curl -f -L -sS -o $DIR/$LINE \
+            -H "Accept: application/vnd.github.diff" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" $URL
     else
-	curl -f -L -sS -o $DIR/$LINE $URL
+        curl -f -L -sS -o $DIR/$LINE $URL
     fi
 done
 
