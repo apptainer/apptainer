@@ -44,6 +44,16 @@ sed -n -e '/^# URL:/{s/^# //;s/%%/%/g;p}' -e 's/^Source[1-9][0-9]*: //p' -e 's/^
         # skip architectures known to not be supported by PRoot
         case $(arch) in
             ppc*|s390*|riscv*) continue;;
+            x86*) if [ -f /etc/os-release ]; then
+                    . /etc/os-release
+                    if [ "$ID" = fedora ] && [ "$VERSION_ID" -ge 45 ]; then
+                        # On fedora45 x86_64 building PRoot dies with
+                        # "relocation truncated to fit: R_X86_64_PC32 against `.rodata'"
+                        # See https://github.com/proot-me/proot/issues/414
+                        continue
+                    fi
+                fi
+                ;;
         esac
     fi
     if [ -n "$GITHUB_TOKEN" ] && [[ "$URL" = *github.com/*.patch ]]; then
