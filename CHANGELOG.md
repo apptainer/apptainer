@@ -13,6 +13,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
   GOEXPERIMENT=strictfipsruntime.  That makes attempting to run non-FIPS
   compliant containers on a FIPS-enabled system exit with a helpful
   error message instead of a crash.
+- Skip building PRoot on x86_64 Fedora 45 because of difficult to fix
+  compilation problems.
 
 ## v1.5.1 - \[2026-06-04\]
 

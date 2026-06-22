@@ -35,7 +35,12 @@
 %global fuse_overlayfs_version 1.16
 %global squashfs_tools_version 4.7.5
 %ifnarch ppc64le s390x
+%if 0%{?fedora} < 45 || "%{_arch}" != "x86_64"
+# On fedora45 x86_64 building PRoot dies with
+# "relocation truncated to fit: R_X86_64_PC32 against `.rodata'"
+# See https://github.com/proot-me/proot/issues/414
 %global PRoot_version 5.4.0-rootless.3
+%endif
 %endif
 
 # The last singularity version number in EPEL/Fedora
