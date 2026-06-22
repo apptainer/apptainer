@@ -17,7 +17,7 @@ require (
 	github.com/containernetworking/plugins v1.9.1
 	github.com/containers/image/v5 v5.36.2
 	github.com/creack/pty v1.1.24
-	github.com/cyphar/filepath-securejoin v0.6.1
+	github.com/cyphar/filepath-securejoin v0.7.0
 	github.com/docker/go-units v0.5.0
 	github.com/fatih/color v1.19.0
 	github.com/go-log/log v0.2.0
@@ -27,10 +27,10 @@ require (
 	github.com/gosimple/slug v1.15.0
 	github.com/moby/go-archive v0.2.0
 	github.com/moby/moby/client v0.5.0
-	github.com/opencontainers/cgroups v0.0.6
+	github.com/opencontainers/cgroups v0.0.7
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1
-	github.com/opencontainers/runc v1.4.2
+	github.com/opencontainers/runc v1.5.0
 	github.com/opencontainers/runtime-spec v1.3.0
 	github.com/opencontainers/runtime-tools v0.9.1-0.20251114084447-edf4cb3d2116
 	github.com/opencontainers/selinux v1.15.1
@@ -71,7 +71,7 @@ require (
 )
 
 require (
-	cyphar.com/go-pathrs v0.2.4 // indirect
+	cyphar.com/go-pathrs v0.2.5 // indirect
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
@@ -103,7 +103,7 @@ require (
 	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/godbus/dbus/v5 v5.1.0 // indirect
+	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/gorilla/handlers v1.5.2 // indirect
