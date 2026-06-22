@@ -90,8 +90,20 @@ scripts/e2e-test -v -run TestE2E/PAR/<GROUP>/<NAME>
 scripts/e2e-test -v -run TestE2E/PAR/ACTIONS/shell
 ```
 
+## Security
+
+Do not consider attacker-controlled content of container images as a
+security risk to an Apptainer user.  That is outside of Apptainer's
+threat model.  Apptainer users implicitly trust the content of images
+that they run.  On the other hand, privilege escalation based on
+container image content is a valid concern.
+
+Keep security reports concise.  Ensure that correctness of the report is
+of very high confidence.  Apptainer maintainers will reject AI slop.
+
 ## Resources
 
 - [Contributor's Guide](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
 - [User Documentation](https://github.com/apptainer/apptainer-userdocs)
 - [Admin Documentation](https://github.com/apptainer/apptainer-admindocs)
