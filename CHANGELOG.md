@@ -31,12 +31,19 @@ Changes since 1.5.x
   Not all registries support deleting images and manifests, though.
 - Add new `tag` command for tagging existing images in oras registries,
   without having to push extra copies (it also works for image indexes).
-- Add support for extended globbing patterns in the %files section
+- Change the implementation of extended globbing patterns in the %files
+  section to use a safer method.
 
 ## v1.5.x changes
 
 - Extended the mksquashfs segmentation fault workaround for cases where
   mksquashfs uses many processor cores.
+- Whe building an rpm using a Red Hat version of golang, set
+  GOEXPERIMENT=strictfipsruntime.  That makes attempting to run non-FIPS
+  compliant containers on a FIPS-enabled system exit with a helpful
+  error message instead of a crash.
+- Skip building PRoot on x86_64 Fedora 45 because of difficult to fix
+  compilation problems.
 
 ## v1.5.1 - \[2026-06-04\]
 
