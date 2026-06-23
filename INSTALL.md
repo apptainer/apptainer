@@ -37,15 +37,27 @@ Including for libsubid support (requires at least Ubuntu Noble or Debian Bookwor
 sudo apt-get install -y libsubid-dev
 ```
 
-On RHEL or its derivatives or Fedora:
+On RHEL or its derivatives start with:
 
 ```sh
 # Install basic tools for compiling
 sudo dnf groupinstall -y 'Development Tools'
-# Ensure EPEL repository is available (skip on Fedora)
+# Ensure EPEL repository is available
 sudo dnf install -y epel-release
-# Enable the CodeReady Builder repository (skip on Fedora)
+# Enable the CodeReady Builder repository
 sudo crb enable
+```
+
+Or on Fedora start with:
+
+```sh
+# Install basic tools for compiling
+sudo dnf group install -y development-tools
+```
+
+Then on either Fedora or RHEL or its derivatives:
+
+```sh
 # Install RPM packages for dependencies
 sudo dnf install -y \
     libseccomp-devel \
@@ -57,8 +69,8 @@ sudo dnf install -y \
     wget git
 ```
 
-For including libsubid support, use --enablerepo=devel for el8 and el9 but not
-for el10 or fedora:
+For including libsubid support, use --enablerepo=devel for EL8 and EL9 but not
+for EL10 or Fedora:
 
 ```sh
 sudo dnf --enablerepo=devel install -y shadow-utils-subid-devel
@@ -211,7 +223,7 @@ sudo apt-get install -y autoconf automake libtool pkg-config libfuse3-dev \
     zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
 ```
 
-On RHEL or derivatives:
+On Fedora or RHEL or derivatives:
 
 ```sh
 sudo dnf install -y fuse3-devel lzo-devel lz4-devel
