@@ -118,6 +118,7 @@
 - Richard Neuboeck <hawk@tbi.univie.ac.at>
 - Rémy Dernat <remy.dernat@umontpellier.fr>
 - Robert Clarke <robert.clarke@bristol.ac.uk>
+- Rushil Patel <rushil.patel@gsacapital.com>
 - Sasha Yakovtseva <sasha@sylabs.io>, <sashayakovtseva@gmail.com>
 - Satish Chebrolu  <satish@sylabs.io>
 - Shane Loretz <sloretz@openrobotics.org>, <shane.loretz@gmail.com>

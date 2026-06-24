@@ -844,8 +844,29 @@ func (c configTests) configGlobal(t *testing.T) {
 }
 
 // Tests that require combinations of directives to be set
+//
+//nolint:maintidx
 func (c configTests) configGlobalCombination(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
+	require.Filesystem(t, "overlay")
+
+	tmpDir, cleanup := e2e.MakeTempDir(t, "", "config-combination-", "CONFIG")
+	defer cleanup(t)
+
+	ext3OverlayImage := filepath.Join(tmpDir, "ext3-overlay.img")
+	createExt3Overlay := func(t *testing.T) {
+		if err := os.Remove(ext3OverlayImage); err != nil && !os.IsNotExist(err) {
+			t.Fatalf("Error removing existing ext3 overlay image: %v", err)
+		}
+
+		c.env.RunApptainer(
+			t,
+			e2e.WithProfile(e2e.UserProfile),
+			e2e.WithCommand("overlay"),
+			e2e.WithArgs("create", "--size", "64", "--create-dir", "/sync-test", ext3OverlayImage),
+			e2e.ExpectExit(0),
+		)
+	}
 
 	setDirectives := func(t *testing.T, directives map[string]string) {
 		for k, v := range directives {
@@ -870,10 +891,43 @@ func (c configTests) configGlobalCombination(t *testing.T) {
 		profile           e2e.Profile
 		addRequirementsFn func(*testing.T)
 		cwd               string
+		recreateOverlay   bool
 		directives        map[string]string
 		exit              int
 		resultOp          e2e.ApptainerCmdResultOp
 	}{
+		{
+			name:            "SyncWritableExtfsNoSetuidExtfs",
+			argv:            []string{"--overlay", ext3OverlayImage, c.env.ImagePath, "true"},
+			profile:         e2e.UserProfile,
+			recreateOverlay: true,
+			directives: map[string]string{
+				"allow setuid-mount extfs": "yes",
+				"sync writable extfs":      "no",
+			},
+			exit: 0,
+		},
+		{
+			name:            "SyncWritableExtfsYesSetuidExtfs",
+			argv:            []string{"--overlay", ext3OverlayImage, c.env.ImagePath, "true"},
+			profile:         e2e.UserProfile,
+			recreateOverlay: true,
+			directives: map[string]string{
+				"allow setuid-mount extfs": "yes",
+				"sync writable extfs":      "yes",
+			},
+			exit: 0,
+		},
+		{
+			name:            "SyncWritableExtfsYesUserns",
+			argv:            []string{"--overlay", ext3OverlayImage, c.env.ImagePath, "true"},
+			profile:         e2e.UserNamespaceProfile,
+			recreateOverlay: true,
+			directives: map[string]string{
+				"sync writable extfs": "yes",
+			},
+			exit: 0,
+		},
 		{
 			name:    "AllowNetUsersNobody",
 			argv:    []string{"--net", c.env.ImagePath, "true"},
@@ -1060,6 +1114,9 @@ func (c configTests) configGlobalCombination(t *testing.T) {
 			e2e.PreRun(func(t *testing.T) {
 				if tt.addRequirementsFn != nil {
 					tt.addRequirementsFn(t)
+				}
+				if tt.recreateOverlay {
+					createExt3Overlay(t)
 				}
 				setDirectives(t, tt.directives)
 			}),

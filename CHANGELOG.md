@@ -33,6 +33,8 @@ Changes since 1.5.x
   without having to push extra copies (it also works for image indexes).
 - Change the implementation of extended globbing patterns in the %files
   section to use a safer method.
+- Add a `sync writable extfs` directive to apptainer.conf. When enabled,
+  writable extfs image mounts use the `sync` mount option.
 
 ## v1.5.x changes
 

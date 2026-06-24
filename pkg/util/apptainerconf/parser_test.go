@@ -124,6 +124,7 @@ func TestGetConfig(t *testing.T) {
 	directives["download concurrency"] = []string{"42"}
 	directives["download part size"] = []string{"1234"}
 	directives["download buffer size"] = []string{"4567"}
+	directives["sync writable extfs"] = []string{"yes"}
 
 	config, err := GetConfig(directives)
 	if err != nil {
@@ -150,6 +151,9 @@ func TestGetConfig(t *testing.T) {
 	if config.DownloadBufferSize != 4567 {
 		t.Errorf("bad value for DownloadBufferSize: %v", config.DownloadPartSize)
 	}
+	if config.SyncWritableExtfs != true {
+		t.Errorf("bad value for SyncWritableExtfs: %v", config.SyncWritableExtfs)
+	}
 }
 
 func TestHasDirective(t *testing.T) {
@@ -158,6 +162,9 @@ func TestHasDirective(t *testing.T) {
 	}
 	if !HasDirective("bind path") {
 		t.Errorf("'bind path' should be present")
+	}
+	if !HasDirective("sync writable extfs") {
+		t.Errorf("'sync writable extfs' should be present")
 	}
 	if HasDirective("fake directive") {
 		t.Errorf("'fake directive' should not be present")

@@ -102,6 +102,7 @@ type File struct {
 	AllowSetuidMountEncrypted bool     `default:"yes" authorized:"yes,no" directive:"allow setuid-mount encrypted"`
 	AllowSetuidMountSquashfs  string   `default:"iflimited" authorized:"yes,no,iflimited" directive:"allow setuid-mount squashfs"`
 	AllowSetuidMountExtfs     bool     `default:"no" authorized:"yes,no" directive:"allow setuid-mount extfs"`
+	SyncWritableExtfs         bool     `default:"no" authorized:"yes,no" directive:"sync writable extfs"`
 	AlwaysUseNv               bool     `default:"no" authorized:"yes,no" directive:"always use nv"`
 	UseNvCCLI                 bool     `default:"no" authorized:"yes,no" directive:"use nvidia-container-cli"`
 	AlwaysUseRocm             bool     `default:"no" authorized:"yes,no" directive:"always use rocm"`
@@ -455,6 +456,16 @@ allow container dir = {{ if eq .AllowContainerDir true }}yes{{ else }}no{{ end }
 # this option is enabled in setuid mode. That is why this option defaults to
 # "no".  Change it at your own risk.
 {{ if eq .AllowSetuidMountExtfs false}}# {{ end }}allow setuid-mount extfs = {{ if eq .AllowSetuidMountExtfs true}}yes{{ else }}no{{ end }}
+
+# SYNC WRITABLE EXTFS: [BOOL]
+# DEFAULT: no
+# Mount writable extfs image mounts with the sync option. This keeps sparse
+# extfs images on the kernel loop/extfs path, but forces writes through close
+# to the caller so quota/ENOSPC is observed before a large dirty/writeback
+# backlog can build up. This can avoid pathological D-state writeback storms
+# under heavy writable-overlay fanout, at the cost of slower metadata-heavy
+# writes.
+{{ if eq .SyncWritableExtfs false}}# {{ end }}sync writable extfs = {{ if eq .SyncWritableExtfs true}}yes{{ else }}no{{ end }}
 
 # ALLOW NET USERS: [STRING]
 # DEFAULT: NULL
