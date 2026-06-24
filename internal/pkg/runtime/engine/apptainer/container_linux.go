@@ -940,6 +940,10 @@ func (c *container) mountImage(mnt *mount.Point, system *mount.System) error {
 	}
 
 	mountType := mnt.Type
+	if mountType == "ext3" && flags&syscall.MS_RDONLY != 1 && c.engine.EngineConfig.File.SyncWritableExtfs {
+		opts = append(opts, "sync")
+		optsString = strings.Join(opts, ",")
+	}
 
 	if mountType == "encryptfs" || mountType == "gocryptfs" {
 		key, err = mount.GetKey(mnt.InternalOptions)
