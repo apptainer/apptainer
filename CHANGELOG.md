@@ -38,6 +38,8 @@ Changes since 1.5.x
 
 ## v1.5.x changes
 
+## v1.5.2 - \[2026-06-23\]
+
 - Extended the mksquashfs segmentation fault workaround for cases where
   mksquashfs uses many processor cores.
 - Whe building an rpm using a Red Hat version of golang, set
