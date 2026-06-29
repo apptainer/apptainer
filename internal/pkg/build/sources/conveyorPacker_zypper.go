@@ -342,10 +342,10 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) error 
 		args = append(args, `--installroot`, cp.b.RootfsPath)
 		include += " zypper"
 		if suseVars.HasScc {
-			if err = os.MkdirAll(filepath.Join(cp.b.RootfsPath, "/etc/zypp/credentials.d/"), 0o755); err != nil {
+			if err = cp.b.Rootfs.MkdirAll(filepath.Join("etc", "zypp", "credentials.d"), 0o755); err != nil {
 				return fmt.Errorf("cannot recreate /etc/zypp/credentials.d/ directories: %v", err)
 			}
-			sccF, err := os.Create(filepath.Join(cp.b.RootfsPath, "/etc/zypp/credentials.d/SCCcredentials"))
+			sccF, err := cp.b.Rootfs.Create(filepath.Join("etc", "zypp", "credentials.d", "SCCcredentials"))
 			if err != nil {
 				return fmt.Errorf("couldn't create SCCcredentials file: %v", err)
 			}
