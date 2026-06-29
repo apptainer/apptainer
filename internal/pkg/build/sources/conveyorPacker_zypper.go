@@ -266,20 +266,21 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) error 
 		rpmsys := "var/lib"
 		rpmrel := "../.."
 		if iosmajor == 12 {
-			rpmbase = "/var/lib"
-			rpmsys = "/usr/lib/sysimage"
+			rpmbase = "var/lib"
+			rpmsys = "usr/lib/sysimage"
 			rpmrel = "../../.."
 		}
-		if err = cp.b.Rootfs.MkdirAll(rpmbase+`/rpm`, 0o755); err != nil {
+
+		if err = cp.b.Rootfs.MkdirAll(filepath.Join(rpmbase, "rpm"), 0o755); err != nil {
 			return fmt.Errorf("cannot recreate rpm directories: %v", err)
 		}
 		if err = cp.b.Rootfs.MkdirAll(rpmsys, 0o755); err != nil {
 			return fmt.Errorf("cannot recreate rpm directories: %v", err)
 		}
-		if err = cp.b.Rootfs.RemoveAll(rpmsys + `/rpm`); err != nil {
+		if err = cp.b.Rootfs.RemoveAll(filepath.Join(rpmsys, "rpm")); err != nil {
 			return fmt.Errorf("cannot remove rpm directory")
 		}
-		if err = cp.b.Rootfs.Symlink(rpmrel+rpmbase+`/rpm`, rpmsys+`/rpm`); err != nil {
+		if err = cp.b.Rootfs.Symlink(filepath.Join(rpmrel, rpmbase, "rpm"), filepath.Join(rpmsys, "rpm")); err != nil {
 			return fmt.Errorf("cannot create rpm symlink")
 		}
 		cmd := exec.CommandContext(ctx, "rpmkeys", `--root`, cp.b.RootfsPath, `--import`, pgpfile)

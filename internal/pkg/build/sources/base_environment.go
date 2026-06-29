@@ -115,32 +115,32 @@ func makeDirs(b *types.Bundle) error {
 
 func makeSymlinks(b *types.Bundle) error {
 	if _, err := b.Rootfs.Stat("singularity"); err != nil {
-		if err = b.Rootfs.Symlink("/.singularity.d/runscript", "singularity"); err != nil {
+		if err = b.Rootfs.Symlink(".singularity.d/runscript", "singularity"); err != nil {
 			return err
 		}
 	}
 	if _, err := b.Rootfs.Stat(".run"); err != nil {
-		if err = b.Rootfs.Symlink("/.singularity.d/actions/run", ".run"); err != nil {
+		if err = b.Rootfs.Symlink(".singularity.d/actions/run", ".run"); err != nil {
 			return err
 		}
 	}
 	if _, err := b.Rootfs.Stat(".exec"); err != nil {
-		if err = b.Rootfs.Symlink("/.singularity.d/actions/exec", ".exec"); err != nil {
+		if err = b.Rootfs.Symlink(".singularity.d/actions/exec", ".exec"); err != nil {
 			return err
 		}
 	}
 	if _, err := b.Rootfs.Stat(".test"); err != nil {
-		if err = b.Rootfs.Symlink("/.singularity.d/actions/test", ".test"); err != nil {
+		if err = b.Rootfs.Symlink(".singularity.d/actions/test", ".test"); err != nil {
 			return err
 		}
 	}
 	if _, err := b.Rootfs.Stat(".shell"); err != nil {
-		if err = b.Rootfs.Symlink("/.singularity.d/actions/shell", ".shell"); err != nil {
+		if err = b.Rootfs.Symlink(".singularity.d/actions/shell", ".shell"); err != nil {
 			return err
 		}
 	}
 	if _, err := b.Rootfs.Stat("environment"); err != nil {
-		if err = b.Rootfs.Symlink("/.singularity.d/env/90-environment.sh", "environment"); err != nil {
+		if err = b.Rootfs.Symlink(".singularity.d/env/90-environment.sh", "environment"); err != nil {
 			return err
 		}
 	}

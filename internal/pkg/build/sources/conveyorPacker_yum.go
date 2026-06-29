@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	yumConf = "/etc/bootstrap-yum.conf"
+	yumConf = "etc/bootstrap-yum.conf"
 )
 
 // YumConveyor holds stuff that needs to be packed into the bundle
