@@ -38,6 +38,10 @@ Changes since 1.5.x
 
 ## v1.5.x changes
 
+- If the `ptrace()` system call does not work while building an image as
+  an unprivileged user, skip using PRoot to preserve file ownership and
+  print an INFO message.
+
 ## v1.5.2 - \[2026-06-23\]
 
 - Extended the mksquashfs segmentation fault workaround for cases where
