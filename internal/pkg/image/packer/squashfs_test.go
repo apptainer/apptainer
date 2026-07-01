@@ -107,6 +107,14 @@ func testHappyPath(t *testing.T) {
 	checkArchive(t, imageName, []string{"squashfs.go", "squashfs_test.go"})
 }
 
+func TestHasWorkingPtrace(t *testing.T) {
+	// ptrace is expected to work in the environment running the unit
+	// tests (no seccomp filter or similar restriction in place).
+	if !hasWorkingPtrace() {
+		t.Error("expected ptrace to work in the test environment")
+	}
+}
+
 func TestSquashfs(t *testing.T) {
 	if s := NewSquashfs(); !s.HasMksquashfs() {
 		t.Skip("mksquashfs not found, skipping")

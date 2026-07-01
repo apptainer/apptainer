@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
@@ -22,6 +23,25 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	"github.com/blang/semver/v4"
 )
+
+// hasWorkingPtrace returns true if the ptrace() system call is usable.
+// proot relies on ptrace, which can be unavailable because of a seccomp
+// filter, an AppArmor/Yama restriction, or because Apptainer itself is
+// running inside another container without the CAP_SYS_PTRACE capability.
+func hasWorkingPtrace() bool {
+	// Use the currently running executable as the traced child: since
+	// PTRACE_TRACEME causes the child to stop with SIGTRAP right after
+	// the exec call and before running any of its own code, it doesn't
+	// matter which binary is exec'd as long as it exists and is runnable.
+	cmd := exec.Command("/proc/self/exe")
+	cmd.SysProcAttr = &syscall.SysProcAttr{Ptrace: true}
+	err := cmd.Start()
+	if err == nil {
+		_ = cmd.Process.Kill()
+		_, _ = cmd.Process.Wait()
+	}
+	return err == nil
+}
 
 // Squashfs represents a squashfs packer
 type Squashfs struct {
@@ -79,21 +99,26 @@ func (s Squashfs) create(files []string, dest string, opts []string) error {
 		ignoreProot := os.Getenv("APPTAINER_IGNORE_PROOT")
 		proot, err := bin.FindBin("proot")
 		if ignoreProot == "" && err == nil {
-			// Insert proot around mksquashfs to take advantage of
-			// file owner and group information stored by umoci in
-			// a "rootlesscontainers" extended attribute.
-			// https://github.com/apptainer/apptainer/issues/2830
-			args = append([]string{"-S", "/", prog}, args...)
-			prog = proot
-			// Add the MALLOC settings to workaround segfaults seen
-			// in mksquashfs on Ubuntu 22.04
-			// https://github.com/apptainer/apptainer/issues/3486
-			// https://github.com/apptainer/apptainer/issues/3560
-			extraEnv = append(extraEnv,
-				"MALLOC_MMAP_MAX_=0",
-				"MALLOC_ARENA_MAX=1000000",
-			)
-		} else {
+			if hasWorkingPtrace() {
+				// Insert proot around mksquashfs to take advantage of
+				// file owner and group information stored by umoci in
+				// a "rootlesscontainers" extended attribute.
+				// https://github.com/apptainer/apptainer/issues/2830
+				args = append([]string{"-S", "/", prog}, args...)
+				prog = proot
+				// Add the MALLOC settings to workaround segfaults seen
+				// in mksquashfs on Ubuntu 22.04
+				// https://github.com/apptainer/apptainer/issues/3486
+				// https://github.com/apptainer/apptainer/issues/3560
+				extraEnv = append(extraEnv,
+					"MALLOC_MMAP_MAX_=0",
+					"MALLOC_ARENA_MAX=1000000",
+				)
+			} else {
+				sylog.Infof("Skipping preservation of file ownership because ptrace() does not work")
+			}
+		}
+		if prog != proot {
 			args = append(args, "-all-root")
 		}
 	}
