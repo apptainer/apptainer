@@ -16,7 +16,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -26,6 +25,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	securejoin "github.com/cyphar/filepath-securejoin"
 )
 
 const name = "apptainer_apps"
@@ -261,41 +261,41 @@ func (pl *BuildApp) createAllApps(b *types.Bundle) error {
 		globalEnv94 += globalAppEnv(b, app)
 	}
 
-	return os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/env/94-appsbase.sh"), []byte(globalEnv94), 0o755)
+	return b.Rootfs.WriteFile(filepath.Join(".singularity.d", "env", "94-appsbase.sh"), []byte(globalEnv94), 0o755)
 }
 
 func createAppRoot(b *types.Bundle, a *App) error {
-	if err := os.MkdirAll(appBase(b, a), 0o755); err != nil {
+	if err := b.Rootfs.MkdirAll(appBase(a), 0o755); err != nil {
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Join(appBase(b, a), "/scif/"), 0o755); err != nil {
+	if err := b.Rootfs.MkdirAll(filepath.Join(appBase(a), "scif"), 0o755); err != nil {
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Join(appBase(b, a), "/bin/"), 0o755); err != nil {
+	if err := b.Rootfs.MkdirAll(filepath.Join(appBase(a), "bin"), 0o755); err != nil {
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Join(appBase(b, a), "/lib/"), 0o755); err != nil {
+	if err := b.Rootfs.MkdirAll(filepath.Join(appBase(a), "lib"), 0o755); err != nil {
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Join(appBase(b, a), "/scif/env/"), 0o755); err != nil {
+	if err := b.Rootfs.MkdirAll(filepath.Join(appBase(a), "scif", "env"), 0o755); err != nil {
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Join(appData(b, a), "/input/"), 0o755); err != nil {
+	if err := b.Rootfs.MkdirAll(filepath.Join(appData(a), "input"), 0o755); err != nil {
 		return err
 	}
 
-	return os.MkdirAll(filepath.Join(appData(b, a), "/output/"), 0o755)
+	return b.Rootfs.MkdirAll(filepath.Join(appData(a), "output"), 0o755)
 }
 
 // %appenv and 01-base.sh
 func writeEnvFile(b *types.Bundle, a *App) error {
 	content := fmt.Sprintf(scifEnv01Base, a.Name)
-	if err := os.WriteFile(filepath.Join(appMeta(b, a), "/env/01-base.sh"), []byte(content), 0o755); err != nil {
+	if err := b.Rootfs.WriteFile(filepath.Join(appMeta(a), "env", "01-base.sh"), []byte(content), 0o755); err != nil {
 		return err
 	}
 
@@ -303,7 +303,7 @@ func writeEnvFile(b *types.Bundle, a *App) error {
 		return nil
 	}
 
-	return os.WriteFile(filepath.Join(appMeta(b, a), "/env/90-environment.sh"), []byte(a.Env), 0o755)
+	return b.Rootfs.WriteFile(filepath.Join(appMeta(a), "env", "90-environment.sh"), []byte(a.Env), 0o755)
 }
 
 func globalAppEnv(b *types.Bundle, a *App) string {
@@ -311,19 +311,19 @@ func globalAppEnv(b *types.Bundle, a *App) string {
 
 	content := fmt.Sprintf(globalEnv94Base, name)
 
-	if _, err := os.Stat(filepath.Join(appMeta(b, a), "/env/90-environment.sh")); err == nil {
+	if _, err := b.Rootfs.Stat(filepath.Join(appMeta(a), "env", "90-environment.sh")); err == nil {
 		content += fmt.Sprintf(globalEnv94AppEnv, name)
 	}
 
-	if _, err := os.Stat(filepath.Join(appMeta(b, a), "/labels.json")); err == nil {
+	if _, err := b.Rootfs.Stat(filepath.Join(appMeta(a), "labels.json")); err == nil {
 		content += fmt.Sprintf(globalEnv94AppLabels, name)
 	}
 
-	if _, err := os.Stat(filepath.Join(appMeta(b, a), "/runscript")); err == nil {
+	if _, err := b.Rootfs.Stat(filepath.Join(appMeta(a), "runscript")); err == nil {
 		content += fmt.Sprintf(globalEnv94AppRun, name)
 	}
 
-	if _, err := os.Stat(filepath.Join(appMeta(b, a), "/startscript")); err == nil {
+	if _, err := b.Rootfs.Stat(filepath.Join(appMeta(a), "startscript")); err == nil {
 		content += fmt.Sprintf(globalEnv94AppStart, name)
 	}
 
@@ -337,7 +337,7 @@ func writeRunscriptFile(b *types.Bundle, a *App) error {
 	}
 
 	content := fmt.Sprintf(scifRunscriptBase, a.Run)
-	return os.WriteFile(filepath.Join(appMeta(b, a), "/runscript"), []byte(content), 0o755)
+	return b.Rootfs.WriteFile(filepath.Join(appMeta(a), "runscript"), []byte(content), 0o755)
 }
 
 // %appstart
@@ -347,7 +347,7 @@ func writeStartscriptFile(b *types.Bundle, a *App) error {
 	}
 
 	content := fmt.Sprintf(scifStartscriptBase, a.Start)
-	return os.WriteFile(filepath.Join(appMeta(b, a), "/startscript"), []byte(content), 0o755)
+	return b.Rootfs.WriteFile(filepath.Join(appMeta(a), "startscript"), []byte(content), 0o755)
 }
 
 // %apptest
@@ -357,7 +357,7 @@ func writeTestFile(b *types.Bundle, a *App) error {
 	}
 
 	content := fmt.Sprintf(scifTestBase, a.Test)
-	return os.WriteFile(filepath.Join(appMeta(b, a), "/test"), []byte(content), 0o755)
+	return b.Rootfs.WriteFile(filepath.Join(appMeta(a), "test"), []byte(content), 0o755)
 }
 
 // %apphelp
@@ -366,7 +366,7 @@ func writeHelpFile(b *types.Bundle, a *App) error {
 		return nil
 	}
 
-	return os.WriteFile(filepath.Join(appMeta(b, a), "/runscript.help"), []byte(a.Help), 0o644)
+	return b.Rootfs.WriteFile(filepath.Join(appMeta(a), "runscript.help"), []byte(a.Help), 0o644)
 }
 
 // %appfile
@@ -375,9 +375,7 @@ func copyFiles(b *types.Bundle, a *App) error {
 		return nil
 	}
 
-	appBase := filepath.Join(b.RootfsPath, "/scif/apps/", a.Name)
-	for _, line := range strings.Split(a.Files, "\n") {
-
+	for line := range strings.SplitSeq(a.Files, "\n") {
 		// skip empty or comment lines
 		if line = strings.TrimSpace(line); line == "" || strings.Index(line, "#") == 0 {
 			continue
@@ -397,7 +395,13 @@ func copyFiles(b *types.Bundle, a *App) error {
 			dst = splitLine[1]
 		}
 
-		if err := copyWithfLr(src, filepath.Join(appBase, dst)); err != nil {
+		dstRel := filepath.Join(appBase(a), dst)
+		dst, err := securejoin.SecureJoin(b.RootfsPath, dstRel)
+		if err != nil {
+			return err
+		}
+
+		if err := copyWithfLr(src, dst); err != nil {
 			return err
 		}
 	}
@@ -438,23 +442,22 @@ func writeLabels(b *types.Bundle, a *App) error {
 		return err
 	}
 
-	appBase := filepath.Join(b.RootfsPath, "/scif/apps/", a.Name)
-	err = os.WriteFile(filepath.Join(appBase, "scif/labels.json"), text, 0o644)
+	err = b.Rootfs.WriteFile(filepath.Join(appMeta(a), "labels.json"), text, 0o644)
 	return err
 }
 
 // util funcs
 
-func appBase(b *types.Bundle, a *App) string {
-	return filepath.Join(b.RootfsPath, "/scif/apps/", a.Name)
+func appBase(a *App) string {
+	return filepath.Join("scif", "apps", a.Name)
 }
 
-func appMeta(b *types.Bundle, a *App) string {
-	return filepath.Join(appBase(b, a), "/scif/")
+func appMeta(a *App) string {
+	return filepath.Join(appBase(a), "scif")
 }
 
-func appData(b *types.Bundle, a *App) string {
-	return filepath.Join(b.RootfsPath, "/scif/data/", a.Name)
+func appData(a *App) string {
+	return filepath.Join("scif", "data", a.Name)
 }
 
 func copyWithfLr(src, dst string) error {

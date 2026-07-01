@@ -54,9 +54,10 @@ type Bundle struct {
 	Recipe      Definition        `json:"rawDeffile"`
 	Opts        Options           `json:"opts"`
 
-	RootfsPath  string `json:"rootfsPath"`            // where actual fs to chroot will appear
-	RootfsImage string `json:"rootfsImage,omitempty"` // external squashfs to be used for data partition
-	TmpDir      string `json:"tmpPath"`               // where temp files required during build will appear
+	RootfsPath  string   `json:"rootfsPath"`            // where actual fs to chroot will appear
+	RootfsImage string   `json:"rootfsImage,omitempty"` // external squashfs to be used for data partition
+	Rootfs      *os.Root `json:"-"`                     // rooted handle to RootfsPath for confined build modifications
+	TmpDir      string   `json:"tmpPath"`               // where temp files required during build will appear
 
 	SourceDateEpoch time.Time // SOURCE_DATE_EPOCH, or Zero (`time.Time{}`) for Now
 
@@ -161,8 +162,35 @@ func (b *Bundle) RunSection(s string) bool {
 	return false
 }
 
+// ReopenRootfs re-opens the os.Root handle to RootfsPath. It must be called
+// after any operation that removes and recreates the rootfs directory (e.g.
+// extraction of a local image), as the previous handle then refers to the old,
+// now-unlinked directory inode.
+func (b *Bundle) ReopenRootfs() error {
+	if b.Rootfs != nil {
+		if err := b.Rootfs.Close(); err != nil {
+			sylog.Errorf("Could not close rootfs %q: %v", b.RootfsPath, err)
+		}
+		b.Rootfs = nil
+	}
+
+	rootfsRoot, err := os.OpenRoot(b.RootfsPath)
+	if err != nil {
+		return fmt.Errorf("could not open rootfs %q: %v", b.RootfsPath, err)
+	}
+	b.Rootfs = rootfsRoot
+	return nil
+}
+
 // Remove cleans up any bundle files.
 func (b *Bundle) Remove() error {
+	if b.Rootfs != nil {
+		if err := b.Rootfs.Close(); err != nil {
+			sylog.Errorf("Could not close rootfs %q: %v", b.RootfsPath, err)
+		}
+		b.Rootfs = nil
+	}
+
 	var errors []string
 	for _, dir := range []string{b.TmpDir, b.parentPath} {
 		if err := fs.ForceRemoveAll(dir); err != nil {
@@ -292,11 +320,20 @@ func newBundle(parentPath, tempDir string, keyInfo *cryptkey.KeyInfo) (*Bundle, 
 		}
 	}
 
+	rootfsRoot, err := os.OpenRoot(rootfsPath)
+	if err != nil {
+		cleanupDir(tmpPath)
+		cleanupDir(rootfsPath)
+		cleanupDir(parentPath)
+		return nil, fmt.Errorf("could not open rootfs %q: %v", rootfsPath, err)
+	}
+
 	sylog.Debugf("Created directory %q for the bundle", rootfsPath)
 
 	return &Bundle{
 		parentPath:      parentPath,
 		RootfsPath:      rootfsPath,
+		Rootfs:          rootfsRoot,
 		SourceDateEpoch: sourceDateEpoch,
 		TmpDir:          tmpPath,
 		JSONObjects:     make(map[string][]byte),

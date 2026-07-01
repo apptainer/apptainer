@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	iofs "io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -96,16 +97,16 @@ func (s *stage) insertMetadataForData() error {
 func insertEnvScript(b *types.Bundle) error {
 	if b.RunSection("environment") && b.Recipe.Environment.Script != "" {
 		sylog.Infof("Adding environment to container")
-		envScriptPath := filepath.Join(b.RootfsPath, "/.singularity.d/env/90-environment.sh")
-		_, err := os.Stat(envScriptPath)
+		envScriptPath := filepath.Join(".singularity.d", "env", "90-environment.sh")
+		_, err := b.Rootfs.Stat(envScriptPath)
 		if os.IsNotExist(err) {
-			err := os.WriteFile(envScriptPath, []byte("#!/bin/sh\n\n"+b.Recipe.Environment.Script+"\n"), 0o755)
+			err := b.Rootfs.WriteFile(envScriptPath, []byte("#!/bin/sh\n\n"+b.Recipe.Environment.Script+"\n"), 0o755)
 			if err != nil {
 				return err
 			}
 		} else {
 			// append to script if it already exists
-			f, err := os.OpenFile(envScriptPath, os.O_APPEND|os.O_WRONLY, 0o755)
+			f, err := b.Rootfs.OpenFile(envScriptPath, os.O_APPEND|os.O_WRONLY, 0o755)
 			if err != nil {
 				return err
 			}
@@ -146,7 +147,7 @@ func insertRunScript(b *types.Bundle) error {
 	if b.RunSection("runscript") && b.Recipe.Runscript.Script != "" {
 		sylog.Infof("Adding runscript")
 		shebang, script := handleShebangScript(b.Recipe.Runscript)
-		err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/runscript"), []byte(shebang+"\n\n"+script+"\n"), 0o755)
+		err := b.Rootfs.WriteFile(filepath.Join(".singularity.d", "runscript"), []byte(shebang+"\n\n"+script+"\n"), 0o755)
 		if err != nil {
 			return err
 		}
@@ -158,7 +159,7 @@ func insertStartScript(b *types.Bundle) error {
 	if b.RunSection("startscript") && b.Recipe.Startscript.Script != "" {
 		sylog.Infof("Adding startscript")
 		shebang, script := handleShebangScript(b.Recipe.Startscript)
-		err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/startscript"), []byte(shebang+"\n\n"+script+"\n"), 0o755)
+		err := b.Rootfs.WriteFile(filepath.Join(".singularity.d", "startscript"), []byte(shebang+"\n\n"+script+"\n"), 0o755)
 		if err != nil {
 			return err
 		}
@@ -170,7 +171,7 @@ func insertTestScript(b *types.Bundle) error {
 	if b.RunSection("test") && b.Recipe.Test.Script != "" {
 		sylog.Infof("Adding testscript")
 		shebang, script := handleShebangScript(b.Recipe.Test)
-		err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/test"), []byte(shebang+"\n\n"+script+"\n"), 0o755)
+		err := b.Rootfs.WriteFile(filepath.Join(".singularity.d", "test"), []byte(shebang+"\n\n"+script+"\n"), 0o755)
 		if err != nil {
 			return err
 		}
@@ -180,10 +181,10 @@ func insertTestScript(b *types.Bundle) error {
 
 func insertHelpScript(b *types.Bundle) error {
 	if b.RunSection("help") && b.Recipe.Help.Script != "" {
-		_, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/runscript.help"))
+		_, err := b.Rootfs.Stat(filepath.Join(".singularity.d", "runscript.help"))
 		if err != nil || b.Opts.Force {
 			sylog.Infof("Adding help info")
-			err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/runscript.help"), []byte(b.Recipe.Help.Script+"\n"), 0o644)
+			err := b.Rootfs.WriteFile(filepath.Join(".singularity.d", "runscript.help"), []byte(b.Recipe.Help.Script+"\n"), 0o644)
 			if err != nil {
 				return err
 			}
@@ -196,17 +197,19 @@ func insertHelpScript(b *types.Bundle) error {
 
 func insertDefinition(b *types.Bundle) error {
 	// Check for existing definition and move it to bootstrap history
-	if _, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity")); err == nil {
+	defPath := filepath.Join(".singularity.d", "Singularity")
+	historyPath := filepath.Join(".singularity.d", "bootstrap_history")
+	if _, err := b.Rootfs.Stat(defPath); err == nil {
 		// make bootstrap_history directory if it doesn't exist
-		if _, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history")); err != nil {
-			err = os.Mkdir(filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history"), 0o755)
+		if _, err := b.Rootfs.Stat(historyPath); err != nil {
+			err = b.Rootfs.Mkdir(historyPath, 0o755)
 			if err != nil {
 				return err
 			}
 		}
 
 		// look at number of files in bootstrap_history to give correct file name
-		files, err := os.ReadDir(filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history"))
+		files, err := iofs.ReadDir(b.Rootfs.FS(), historyPath)
 		if err != nil {
 			return err
 		}
@@ -214,13 +217,13 @@ func insertDefinition(b *types.Bundle) error {
 		// name is "Apptainer" concatenated with an index based on number of other files in bootstrap_history
 		histName := "Apptainer" + strconv.Itoa(len(files))
 		// move old definition into bootstrap_history
-		err = os.Rename(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity"), filepath.Join(b.RootfsPath, "/.singularity.d/bootstrap_history", histName))
+		err = b.Rootfs.Rename(defPath, filepath.Join(historyPath, histName))
 		if err != nil {
 			return err
 		}
 	}
 
-	err := os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/Singularity"), b.Recipe.FullRaw, 0o644)
+	err := b.Rootfs.WriteFile(defPath, b.Recipe.FullRaw, 0o644)
 	if err != nil {
 		return err
 	}
@@ -237,17 +240,17 @@ func insertLabelsJSON(b *types.Bundle) (err error) {
 	}
 
 	// get labels added through APPTAINER_LABELS environment variables
-	buildLabels := filepath.Join(b.RootfsPath, sLabelsPath)
-	content, err := os.ReadFile(buildLabels)
+	sLabelsRel := strings.TrimPrefix(sLabelsPath, "/")
+	content, err := b.Rootfs.ReadFile(sLabelsRel)
 	if err == nil {
-		if err := os.Remove(filepath.Join(b.RootfsPath, sLabelsPath)); err != nil {
+		if err := b.Rootfs.Remove(sLabelsRel); err != nil {
 			return err
 		}
 		for k, v := range parser.GetLabels(string(content)) {
 			labels[k] = v
 		}
 	} else if !os.IsNotExist(err) {
-		return fmt.Errorf("while reading %s: %s", buildLabels, err)
+		return fmt.Errorf("while reading %s: %s", sLabelsRel, err)
 	}
 
 	if err = addBuildLabels(labels, b); err != nil {
@@ -280,7 +283,7 @@ func insertLabelsJSON(b *types.Bundle) (err error) {
 		return err
 	}
 
-	err = os.WriteFile(filepath.Join(b.RootfsPath, "/.singularity.d/labels.json"), []byte(text), 0o644)
+	err = b.Rootfs.WriteFile(filepath.Join(".singularity.d", "labels.json"), []byte(text), 0o644)
 	return err
 }
 
@@ -314,8 +317,8 @@ func insertJSONInspectMetadata(b *types.Bundle, inspectOpt []string) error {
 
 func getExistingLabels(labels map[string]string, b *types.Bundle) error {
 	// check for existing labels in bundle
-	if _, err := os.Stat(filepath.Join(b.RootfsPath, "/.singularity.d/labels.json")); err == nil {
-		jsonFile, err := os.Open(filepath.Join(b.RootfsPath, "/.singularity.d/labels.json"))
+	if _, err := b.Rootfs.Stat(filepath.Join(".singularity.d", "labels.json")); err == nil {
+		jsonFile, err := b.Rootfs.Open(filepath.Join(".singularity.d", "labels.json"))
 		if err != nil {
 			return err
 		}

@@ -12,8 +12,6 @@ package sources
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"github.com/apptainer/apptainer/pkg/build/types"
 )
@@ -51,14 +49,14 @@ func (cp *ScratchConveyorPacker) Pack(context.Context) (b *types.Bundle, err err
 }
 
 func (c *ScratchConveyor) insertBaseEnv() (err error) {
-	if err = makeBaseEnv(c.b.RootfsPath, true); err != nil {
+	if err = makeBaseEnv(c.b, true); err != nil {
 		return
 	}
 	return nil
 }
 
 func (cp *ScratchConveyorPacker) insertRunScript() (err error) {
-	err = os.WriteFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/runscript"), []byte("#!/bin/sh\n"), 0o755)
+	err = cp.b.Rootfs.WriteFile(".singularity.d/runscript", []byte("#!/bin/sh\n"), 0o755)
 	if err != nil {
 		return
 	}

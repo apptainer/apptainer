@@ -172,16 +172,19 @@ func buildkitBuild(ctx context.Context, tmpDir string, env []string, platform, o
 		"--opt", fmt.Sprintf("platform=%s", platform),
 	}
 	if opts.target != "" {
-		args = append(args,
+		args = append(
+			args,
 			"--opt", fmt.Sprintf("target=%s", opts.target),
 		)
 	}
 	for key, val := range opts.buildargs {
-		args = append(args,
+		args = append(
+			args,
 			"--opt", fmt.Sprintf("build-arg:%s=%s", key, val),
 		)
 	}
-	args = append(args,
+	args = append(
+		args,
 		"--output", fmt.Sprintf("type=oci,dest=%s", output),
 		"--ref-file", reffile.Name(),
 	)
@@ -220,12 +223,14 @@ func dockerBuild(ctx context.Context, env []string, platform, output string, opt
 		opts.context,
 	}
 	if opts.target != "" {
-		args = append(args,
+		args = append(
+			args,
 			"--target", opts.target,
 		)
 	}
 	for key, val := range opts.buildargs {
-		args = append(args,
+		args = append(
+			args,
 			"--build-arg", fmt.Sprintf("%s=%s", key, val),
 		)
 	}
@@ -325,11 +330,11 @@ func (cp *BuildKitConveyorPacker) buildImage(ctx context.Context, tmpDir string)
 				}
 			}
 		}
-		err = os.MkdirAll(filepath.Join(cp.b.RootfsPath, ".singularity.d"), 0o755)
+		err = cp.b.Rootfs.MkdirAll(".singularity.d", 0o755)
 		if err != nil {
 			return err
 		}
-		buildlog, err := os.OpenFile(filepath.Join(cp.b.RootfsPath, "/.singularity.d/buildkit_build.log"), os.O_CREATE|os.O_WRONLY, 0o644)
+		buildlog, err := cp.b.Rootfs.OpenFile(filepath.Join(".singularity.d", "buildkit_build.log"), os.O_CREATE|os.O_WRONLY, 0o644)
 		if err != nil {
 			return err
 		}
