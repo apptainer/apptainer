@@ -1,3 +1,7 @@
+// Copyright (c) Contributors to the Apptainer project, established as
+//   Apptainer a Series of LF Projects LLC.
+//   For website terms of use, trademark policy, privacy policy and other
+//   project policies see https://lfprojects.org/policies
 // Copyright (c) 2025, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
@@ -108,7 +112,6 @@ func (c ctx) podman(t *testing.T) {
 func podmanBuild(t *testing.T, dockerFile, dockerRef, contextPath, homeDir string) {
 	t.Run("build/"+dockerRef, func(t *testing.T) {
 		cmd := exec.Command("podman", "build",
-			"--runtime=runc", // ubuntu22.04 crun is buggy
 			"--build-arg", "GOVERSION="+runtime.Version(),
 			"--build-arg", "GOOS="+runtime.GOOS,
 			"--build-arg", "GOARCH="+runtime.GOARCH,

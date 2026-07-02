@@ -146,9 +146,11 @@ func EnsureDebianImage(t *testing.T, env TestEnv) {
 			err)
 	}
 
-	imageSource := "docker://ubuntu:20.04"
-	if lddversion >= 35 {
-		imageSource = "docker://ubuntu:22.04"
+	imageSource := "ubuntu:20.04"
+	if lddversion >= 39 {
+		imageSource = "ubuntu:24.04"
+	} else if lddversion >= 35 {
+		imageSource = "ubuntu:22.04"
 	}
 
 	env.RunApptainer(
@@ -158,7 +160,7 @@ func EnsureDebianImage(t *testing.T, env TestEnv) {
 		// becomes too restricted.
 		WithProfile(UserProfile),
 		WithCommand("build"),
-		WithArgs("--force", env.DebianImagePath, imageSource),
+		WithArgs("--force", env.DebianImagePath, "docker://"+imageSource),
 		ExpectExit(0),
 	)
 }
