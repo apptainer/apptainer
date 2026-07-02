@@ -11,6 +11,7 @@ package sources
 
 import (
 	_ "embed"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -114,37 +115,58 @@ func makeDirs(b *types.Bundle) error {
 }
 
 func makeSymlinks(b *types.Bundle) error {
-	if _, err := b.Rootfs.Stat("singularity"); err != nil {
-		if err = b.Rootfs.Symlink(".singularity.d/runscript", "singularity"); err != nil {
-			return err
-		}
+	symlinks := []struct {
+		oldname string
+		newname string
+	}{
+		{".singularity.d/runscript", "singularity"},
+		{".singularity.d/actions/run", ".run"},
+		{".singularity.d/actions/exec", ".exec"},
+		{".singularity.d/actions/test", ".test"},
+		{".singularity.d/actions/shell", ".shell"},
+		{".singularity.d/env/90-environment.sh", "environment"},
 	}
-	if _, err := b.Rootfs.Stat(".run"); err != nil {
-		if err = b.Rootfs.Symlink(".singularity.d/actions/run", ".run"); err != nil {
-			return err
-		}
-	}
-	if _, err := b.Rootfs.Stat(".exec"); err != nil {
-		if err = b.Rootfs.Symlink(".singularity.d/actions/exec", ".exec"); err != nil {
-			return err
-		}
-	}
-	if _, err := b.Rootfs.Stat(".test"); err != nil {
-		if err = b.Rootfs.Symlink(".singularity.d/actions/test", ".test"); err != nil {
-			return err
-		}
-	}
-	if _, err := b.Rootfs.Stat(".shell"); err != nil {
-		if err = b.Rootfs.Symlink(".singularity.d/actions/shell", ".shell"); err != nil {
-			return err
-		}
-	}
-	if _, err := b.Rootfs.Stat("environment"); err != nil {
-		if err = b.Rootfs.Symlink(".singularity.d/env/90-environment.sh", "environment"); err != nil {
+	for _, link := range symlinks {
+		if err := makeSymlink(b.Rootfs, link.oldname, link.newname); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// makeSymlink creates newname as a symbolic link to oldname idempotently.
+//
+// If newname already exists as a symlink that does not point to oldname, it is
+// recreated. If newname exists but is not a symlink, it is left untouched.
+func makeSymlink(root *os.Root, oldname, newname string) error {
+	// If it does not exist, create it.
+	fi, err := root.Lstat(newname)
+	if errors.Is(err, os.ErrNotExist) {
+		return root.Symlink(oldname, newname)
+	}
+	if err != nil {
+		return err
+	}
+
+	// If it's not a symlink, don't touch it.
+	if fi.Mode()&os.ModeSymlink == 0 {
+		return nil
+	}
+
+	// If it already points to oldname, there's nothing to do.
+	target, err := root.Readlink(newname)
+	if err != nil {
+		return err
+	}
+	if target == oldname {
+		return nil
+	}
+
+	// If it points to anything else, recreate it.
+	if err := root.Remove(newname); err != nil {
+		return err
+	}
+	return root.Symlink(oldname, newname)
 }
 
 func makeFile(b *types.Bundle, name string, perm os.FileMode, s string, overwrite bool) (err error) {
