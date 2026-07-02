@@ -5,6 +5,12 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.5.x changes
+
+- If the `ptrace()` system call does not work while building an image as
+  an unprivileged user, skip using PRoot to preserve file ownership and
+  print an INFO message.
+
 ## v1.5.2 - \[2026-06-23\]
 
 - Extended the mksquashfs segmentation fault workaround for cases where
