@@ -168,6 +168,8 @@ func Run(t *testing.T) {
 	testenv.SingularityImagePath = path.Join(name, "test-singularity.sif")
 	defer os.Remove(testenv.SingularityImagePath)
 
+	testenv.DebianImageSource = e2e.GetDebianImageSource(t)
+
 	testenv.DebianImagePath = path.Join(name, "test-debian.sif")
 	defer os.Remove(testenv.DebianImagePath)
 

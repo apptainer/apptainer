@@ -10,8 +10,8 @@
 package nested
 
 import (
+	"os"
 	"os/exec"
-	"runtime"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -25,130 +25,80 @@ type ctx struct {
 
 //nolint:dupl
 func (c ctx) docker(t *testing.T) {
-	require.Command(t, "docker")
+	// Execution using privileged Docker. Root in outer Docker container.
+	c.nestedContainerTest(t, "docker", "apptainer-e2e-docker-nested")
+}
+
+func (c ctx) nestedContainerTest(t *testing.T, prog, ref string) {
+	require.Command(t, prog)
 	e2e.EnsureORASImage(t, c.env)
 
-	// Temporary homedir for docker commands, so invoking docker doesn't create
+	// Temporary homedir for docker/podman commands, so they don't create
 	// a ~/.docker that may interfere elsewhere.
-	tmpHome, cleanupHome := e2e.MakeTempDir(t, c.env.TestDir, "nested-docker-", "")
+	tmpHome, cleanupHome := e2e.MakeTempDir(t, c.env.TestDir, "nested-"+prog+"-", "")
 	t.Cleanup(func() { e2e.Privileged(cleanupHome)(t) })
 
 	dockerFile := "testdata/Dockerfile.nested"
-	dockerRef := "apptainer-e2e-docker-nested"
-	dockerBuild(t, dockerFile, dockerRef, "../", tmpHome)
-	defer dockerRMI(t, dockerRef, tmpHome)
 
-	// Execution using privileged Docker. Root in outer Docker container.
-	dockerRunPrivileged(t, "version", dockerRef, tmpHome)
-	dockerRunPrivileged(t, "exec", dockerRef, tmpHome, "exec", c.env.OrasTestImage, "/bin/true")
-	dockerRunPrivileged(t, "execUserNS", dockerRef, tmpHome, "exec", "-u", c.env.OrasTestImage, "/bin/true")
-	dockerRunPrivileged(t, "buildSIF", dockerRef, tmpHome, "build", "test.sif", "apptainer/examples/library/Apptainer")
+	containerBuild(t, prog, dockerFile, ref, "../", c.env.DebianImageSource, tmpHome)
+	defer containerRMI(t, prog, ref, tmpHome)
+
+	containerRun(t, prog, "version", ref, tmpHome)
+	containerRun(t, prog, "exec", ref, tmpHome, "exec", c.env.OrasTestImage, "/bin/true")
+	containerRun(t, prog, "execUserNS", ref, tmpHome, "exec", "-u", c.env.OrasTestImage, "/bin/true")
+	containerRun(t, prog, "buildSIF", ref, tmpHome, "build", "test.sif", "/e2e/testdata/Apptainer")
 }
 
-func dockerBuild(t *testing.T, dockerFile, dockerRef, contextPath, homeDir string) {
-	t.Run("build/"+dockerRef, e2e.Privileged(func(t *testing.T) {
-		cmd := exec.Command("docker", "build",
-			"--build-arg", "GOVERSION="+runtime.Version(),
-			"--build-arg", "GOOS="+runtime.GOOS,
-			"--build-arg", "GOARCH="+runtime.GOARCH,
-			"-t", dockerRef, "-f", dockerFile, contextPath)
+func containerBuild(t *testing.T, prog, dockerFile, ref, contextPath, baseImage, homeDir string) {
+	t.Run("build/"+ref, e2e.Privileged(func(t *testing.T) {
+		cmd := exec.Command(prog, "build", "--network=host",
+			"--build-arg", "BASEIMAGE="+baseImage,
+			"-t", ref, "-f", dockerFile, contextPath)
 		cmd.Env = append(cmd.Env, "HOME="+homeDir)
 		out, err := cmd.CombinedOutput()
 		t.Log(cmd.Args)
 		if err != nil {
-			t.Fatalf("Failed building docker container.\n%s: %s", err, string(out))
+			t.Fatalf("Failed building %s container.\n%s: %s", prog, err, string(out))
 		}
 	}))
 }
 
-func dockerRMI(t *testing.T, dockerRef, homeDir string) {
-	t.Run("rmi/"+dockerRef, e2e.Privileged(func(t *testing.T) {
-		cmd := exec.Command("docker", "rmi", dockerRef)
+func containerRMI(t *testing.T, prog, ref, homeDir string) {
+	t.Run("rmi/"+ref, e2e.Privileged(func(t *testing.T) {
+		cmd := exec.Command(prog, "rmi", ref)
 		cmd.Env = append(cmd.Env, "HOME="+homeDir)
 		out, err := cmd.CombinedOutput()
 		t.Log(cmd.Args)
 		if err != nil {
-			t.Fatalf("Failed removing docker container.\n%s: %s", err, string(out))
+			t.Fatalf("Failed removing %s container.\n%s: %s", prog, err, string(out))
 		}
 	}))
 }
 
-func dockerRunPrivileged(t *testing.T, name, dockerRef, homeDir string, args ...string) { //nolint:unparam
+func containerRun(t *testing.T, prog, name, ref, homeDir string, args ...string) { //nolint:unparam
 	t.Run(name, e2e.Privileged(func(t *testing.T) {
-		cmdArgs := []string{"run", "-i", "--rm", "--privileged", "--network=host", dockerRef}
+		cwd, _ := os.Getwd()
+		cmdArgs := []string{
+			"run", "-i", "--rm", "--privileged", "--network=host",
+			"-v", "/usr/local:/usr/local",
+			"-v", cwd + ":/e2e",
+			ref,
+		}
 		cmdArgs = append(cmdArgs, args...)
-		cmd := exec.Command("docker", cmdArgs...)
+		cmd := exec.Command(prog, cmdArgs...)
 		cmd.Env = append(cmd.Env, "HOME="+homeDir)
 		out, err := cmd.CombinedOutput()
 		t.Log(cmd.Args)
 		if err != nil {
-			t.Fatalf("Failed running docker container.\n%s: %s", err, string(out))
+			t.Fatalf("Failed running %s container.\n%s: %s", prog, err, string(out))
 		}
 	}))
 }
 
 //nolint:dupl
 func (c ctx) podman(t *testing.T) {
-	require.Command(t, "podman")
-	e2e.EnsureORASImage(t, c.env)
-
-	// Temporary homedir for docker commands, so invoking docker doesn't create
-	// a ~/.docker that may interfere elsewhere.
-	tmpHome, cleanupHome := e2e.MakeTempDir(t, c.env.TestDir, "nested-docker-", "")
-	t.Cleanup(func() { e2e.Privileged(cleanupHome)(t) })
-
-	dockerFile := "testdata/Dockerfile.nested"
-	dockerRef := "localhost/apptainer-e2e-podman-nested"
-	podmanBuild(t, dockerFile, dockerRef, "../", tmpHome)
-	defer podmanRMI(t, dockerRef, tmpHome)
-
 	// Rootless podman - fake userns root in outer podman container.
-	podmanRun(t, "version", dockerRef, tmpHome)
-	podmanRun(t, "exec", dockerRef, tmpHome, "exec", c.env.OrasTestImage, "/bin/true")
-	podmanRun(t, "execUserNS", dockerRef, tmpHome, "exec", "-u", c.env.OrasTestImage, "/bin/true")
-	podmanRun(t, "buildSIF", dockerRef, tmpHome, "build", "test.sif", "apptainer/examples/library/Apptainer")
-}
-
-func podmanBuild(t *testing.T, dockerFile, dockerRef, contextPath, homeDir string) {
-	t.Run("build/"+dockerRef, func(t *testing.T) {
-		cmd := exec.Command("podman", "build",
-			"--build-arg", "GOVERSION="+runtime.Version(),
-			"--build-arg", "GOOS="+runtime.GOOS,
-			"--build-arg", "GOARCH="+runtime.GOARCH,
-			"-t", dockerRef, "-f", dockerFile, contextPath)
-		cmd.Env = append(cmd.Env, "HOME="+homeDir)
-		out, err := cmd.CombinedOutput()
-		t.Log(cmd.Args)
-		if err != nil {
-			t.Fatalf("Failed building podman container.\n%s: %s", err, string(out))
-		}
-	})
-}
-
-func podmanRMI(t *testing.T, dockerRef, homeDir string) {
-	t.Run("rmi/"+dockerRef, func(t *testing.T) {
-		cmd := exec.Command("podman", "rmi", dockerRef)
-		cmd.Env = append(cmd.Env, "HOME="+homeDir)
-		out, err := cmd.CombinedOutput()
-		t.Log(cmd.Args)
-		if err != nil {
-			t.Fatalf("Failed removing podman container.\n%s: %s", err, string(out))
-		}
-	})
-}
-
-func podmanRun(t *testing.T, name, dockerRef, homeDir string, args ...string) { //nolint:unparam
-	t.Run(name, func(t *testing.T) {
-		cmdArgs := []string{"run", "-i", "--rm", "--privileged", "--network=host", dockerRef}
-		cmdArgs = append(cmdArgs, args...)
-		cmd := exec.Command("podman", cmdArgs...)
-		cmd.Env = append(cmd.Env, "HOME="+homeDir)
-		out, err := cmd.CombinedOutput()
-		t.Log(cmd.Args)
-		if err != nil {
-			t.Fatalf("Failed running podman container.\n%s: %s", err, string(out))
-		}
-	})
+	c.nestedContainerTest(t, "podman", "localhost/apptainer-e2e-podman-nested")
 }
 
 // E2ETests is the main func to trigger the test suite

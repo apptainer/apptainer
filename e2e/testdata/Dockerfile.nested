@@ -1,43 +1,21 @@
-FROM ubuntu:24.04
+ARG BASEIMAGE="ubuntu:latest"
+FROM ${BASEIMAGE}
 
-ARG GOVERSION="go1.25.6"
-ARG GOOS="linux"
-ARG GOARCH="amd64"
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system packages
+# Install libraries needed by bundled Apptainer dependencies
+# and essential Apptainer operation
 RUN apt-get update && \
     apt-get install -y \
-        build-essential \
-	libsubid-dev \
-	libseccomp-dev \
-	libtalloc-dev \
-	libattr1-dev \
-	libprotobuf-c-dev \
-	uidmap \
-	fakeroot \
-	cryptsetup \
+	ca-certificates \
 	tzdata \
-	dh-apparmor \
-	curl wget git && \
-    apt-get install -y \
-	autoconf automake libtool pkg-config libfuse3-dev \
-	zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
-
-# Install GO
-RUN wget -O /tmp/go${GOLANG_VERSION}.linux-${ARCH}.tar.gz https://go.dev/dl/${GOVERSION}.${GOOS}-${GOARCH}.tar.gz && tar -C /usr/local -xzf /tmp/go${GOLANG_VERSION}.linux-${ARCH}.tar.gz
-
-# Install Apptainer
-ADD . apptainer
-RUN cd apptainer && \
-    git clean -fdx && \
-    ./mconfig --with-suid && \
-    make -C builddir && \
-    make -C builddir install && \
-    ./scripts/download-dependencies && \
-    ./scripts/compile-dependencies && \
-    ./scripts/install-dependencies
+	libfuse3-dev \
+	liblzma-dev \
+	liblzo2-dev \
+	liblz4-dev \
+	libzstd-dev \
+	zlib1g-dev
 
 ENTRYPOINT ["/usr/local/bin/apptainer"]
 CMD ["version"]
