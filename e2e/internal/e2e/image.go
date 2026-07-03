@@ -91,9 +91,47 @@ func EnsureSingularityImage(t *testing.T, env TestEnv) {
 	)
 }
 
-// EnsureDebianImage checks if the e2e test Debian-based image, with a libc
-// that is compatible with the host libc, is already built or builds it
-// otherwise.
+// Return dockerhub name of a Debian image that is compatible with the host libc
+func GetDebianImageSource(t *testing.T) string {
+	out, err := exec.Command("ldd", "--version").Output()
+	if err != nil {
+		t.Fatalf("Error running ldd --version while getting Debian image source: %+v\n",
+			err)
+	}
+	outstr := string(out)
+	end := strings.Index(outstr, "\n")
+	if end == -1 {
+		t.Fatalf("No newline in ldd output while getting Debian image source: %+v\n",
+			err)
+	}
+	dot := strings.LastIndex(outstr[0:end], ".")
+	if dot == -1 {
+		t.Fatalf("No dot in ldd first line while getting Debian image source: %+v\n",
+			err)
+	}
+	lddversion, err := strconv.Atoi(outstr[dot+1 : end])
+	if err != nil {
+		t.Fatalf("Could not convert lddversion (%s) to integer while getting Debian image source: %+v\n",
+			outstr[dot+1:end],
+			err)
+	}
+	if lddversion < 17 {
+		t.Fatalf("ldd version (%d) not 17 or newer while getting Debian image source: %+v\n",
+			lddversion,
+			err)
+	}
+
+	imageSource := "ubuntu:20.04"
+	if lddversion >= 39 {
+		imageSource = "ubuntu:24.04"
+	} else if lddversion >= 35 {
+		imageSource = "ubuntu:22.04"
+	}
+	return imageSource
+}
+
+// EnsureDebianImage checks if the e2e test Debian-based image is already
+// built or builds it otherwise.
 func EnsureDebianImage(t *testing.T, env TestEnv) {
 	ensureMutex.Lock()
 	defer ensureMutex.Unlock()
@@ -113,44 +151,6 @@ func EnsureDebianImage(t *testing.T, env TestEnv) {
 			err)
 	}
 
-	out, err := exec.Command("ldd", "--version").Output()
-	if err != nil {
-		t.Fatalf("Error running ldd --version while getting image %q: %+v\n",
-			env.DebianImagePath,
-			err)
-	}
-	outstr := string(out)
-	end := strings.Index(outstr, "\n")
-	if end == -1 {
-		t.Fatalf("No newline in ldd output while getting image %q: %+v\n",
-			env.DebianImagePath,
-			err)
-	}
-	dot := strings.LastIndex(outstr[0:end], ".")
-	if dot == -1 {
-		t.Fatalf("No dot in ldd first line while getting image %q: %+v\n",
-			env.DebianImagePath,
-			err)
-	}
-	lddversion, err := strconv.Atoi(outstr[dot+1 : end])
-	if err != nil {
-		t.Fatalf("Could not convert lddversion (%s) to integer while getting image %q: %+v\n",
-			outstr[dot+1:end],
-			env.DebianImagePath,
-			err)
-	}
-	if lddversion < 17 {
-		t.Fatalf("ldd version (%d) not 17 or older while getting image %q: %+v\n",
-			lddversion,
-			env.DebianImagePath,
-			err)
-	}
-
-	imageSource := "docker://ubuntu:20.04"
-	if lddversion >= 35 {
-		imageSource = "docker://ubuntu:22.04"
-	}
-
 	env.RunApptainer(
 		t,
 		// If this is built with the RootProfile, it does not get
@@ -158,7 +158,7 @@ func EnsureDebianImage(t *testing.T, env TestEnv) {
 		// becomes too restricted.
 		WithProfile(UserProfile),
 		WithCommand("build"),
-		WithArgs("--force", env.DebianImagePath, imageSource),
+		WithArgs("--force", env.DebianImagePath, "docker://"+env.DebianImageSource),
 		ExpectExit(0),
 	)
 }

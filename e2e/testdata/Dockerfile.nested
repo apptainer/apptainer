@@ -1,0 +1,21 @@
+ARG BASEIMAGE="ubuntu:latest"
+FROM ${BASEIMAGE}
+
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install libraries needed by bundled Apptainer dependencies
+# and essential Apptainer operation
+RUN apt-get update && \
+    apt-get install -y \
+	ca-certificates \
+	tzdata \
+	libfuse3-dev \
+	liblzma-dev \
+	liblzo2-dev \
+	liblz4-dev \
+	libzstd-dev \
+	zlib1g-dev
+
+ENTRYPOINT ["/usr/local/bin/apptainer"]
+CMD ["version"]
