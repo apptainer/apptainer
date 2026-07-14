@@ -318,7 +318,7 @@ if ! rmdir usr; then
 	fatal "error removing usr"
 fi
 
-OSUTILS=""
+OSUTILS="util-linux"
 NEEDSFUSE2FS=true
 LIBEXEC=libexec
 if [ "$DIST" == suse15 ] || [ "$DIST" == opensuse-leap ]; then
@@ -456,7 +456,7 @@ mv tmp/usr/lib*/* utils/lib
 mv tmp/lib*/* utils/lib 2>/dev/null || true # optional
 mv tmp/usr/*bin/*squashfs utils/libexec
 mv tmp/usr/*bin/fuse* utils/libexec 2>/dev/null || true # optional
-mv tmp/usr/bin/fake*sysv utils/bin
+mv tmp/usr/bin/fake*sysv tmp/usr/bin/getopt utils/bin
 cat >utils/bin/.wrapper <<'!EOF!'
 #!/bin/bash
 BASEME=${0##*/}

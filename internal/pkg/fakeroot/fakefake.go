@@ -97,6 +97,34 @@ func GetFakeArgs() []string {
 	}
 }
 
+// Given an existing environment, modify it as needed to successfully
+// execute the fakeroot command.  If cleanLdLibraryPath is true, also
+// remove any existing $LD_LIBRARY_PATH variable.
+func GetFakeEnviron(environ []string, cleanLdLibraryPath bool) []string {
+	hasPath := false
+	for idx := range environ {
+		if cleanLdLibraryPath && strings.HasPrefix(environ[idx], "LD_LIBRARY_PATH=") {
+			// Remove any incoming LD_LIBRARY_PATH
+			environ[idx] = "LD_LIBRARY_PATH="
+		} else if strings.HasPrefix(environ[idx], "PATH=") && environ[idx] != "PATH=" {
+			hasPath = true
+			// Append /:singularity.d/libs to the PATH for getopt
+			environ[idx] = environ[idx] + ":/.singularity.d/libs"
+		}
+	}
+	if !hasPath {
+		environ = append(environ, "PATH="+env.DefaultPath+":/.singularity.d/libs")
+	}
+
+	// Without this workaround fakeroot does not work
+	//  properly in a user namespace. It is especially
+	//  noticeable with debian containers.  Learned from
+	//  https://salsa.debian.org/clint/fakeroot/-/merge_requests/4
+	environ = append(environ, "FAKEROOTDONTTRYCHOWN=1")
+
+	return environ
+}
+
 // Get the binds needed to map the fakeroot command into the container
 // The incoming parameter is the path to fakeroot
 func GetFakeBinds(fakerootPath string) ([]string, error) {
@@ -109,29 +137,19 @@ func GetFakeBinds(fakerootPath string) ([]string, error) {
 
 	if fakerootPath == args[0] {
 		// The binding has already been done, this is for nesting
+		// Include getopt if it was included previously
+		if _, err := os.Stat("/.singularity.d/libs/getopt"); err == nil {
+			binds = append(binds, "/.singularity.d/libs/getopt")
+		}
 		return binds, nil
 	}
 
 	// Start by examining the environment fakeroot creates
 	cmd := osExec.Command(fakerootPath, "env")
-	environ := os.Environ()
-	hasPath := false
-	for idx := range environ {
-		if strings.HasPrefix(environ[idx], "LD_LIBRARY_PATH=") {
-			// Remove any incoming LD_LIBRARY_PATH
-			environ[idx] = "LD_LIBRARY_PATH="
-		} else if strings.HasPrefix(environ[idx], "PATH=") &&
-			environ[idx] != "PATH=" {
-			hasPath = true
-		}
-	}
-	if !hasPath {
-		environ = append(environ, "PATH="+env.DefaultPath)
-	}
-	cmd.Env = environ
+	cmd.Env = GetFakeEnviron(os.Environ(), true)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return binds, fmt.Errorf("error make fakeroot stdout pipe: %v", err)
+		return binds, fmt.Errorf("error making fakeroot stdout pipe: %v", err)
 	}
 
 	err = cmd.Start()
@@ -189,6 +207,12 @@ func GetFakeBinds(fakerootPath string) ([]string, error) {
 			binds[2] = src + ":" + point
 			break
 		}
+	}
+	// Check if getopt exists and add it to binds if it does
+	if getoptPath, err := bin.FindBin("getopt"); err == nil {
+		binds = append(binds, getoptPath+":/.singularity.d/libs/getopt")
+	} else {
+		sylog.Infof("getopt not found; could interfere with fakeroot command")
 	}
 	return binds, nil
 }
