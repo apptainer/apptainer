@@ -79,7 +79,7 @@ func (cp *LibraryConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err 
 	}
 
 	// insert base metadata before unpacking fs
-	if err = makeBaseEnv(cp.b.RootfsPath, true); err != nil {
+	if err = makeBaseEnv(cp.b, true); err != nil {
 		return fmt.Errorf("while inserting base environment: %v", err)
 	}
 
