@@ -57,6 +57,7 @@ func FindBin(name string) (path string, err error) {
 		"fakeroot-sysv",
 		"fuse-overlayfs",
 		"fuse2fs",
+		"getopt",
 		"go",
 		"mksquashfs",
 		"newgidmap",

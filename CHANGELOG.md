@@ -41,6 +41,9 @@ Changes since 1.5.x
 - If the `ptrace()` system call does not work while building an image as
   an unprivileged user, skip using PRoot to preserve file ownership and
   print an INFO message.
+- Bind `getopt` from the host when using fakeroot command mode, to make
+  the fakeroot command work with EL10 and Fedora base containers which
+  no longer contain getopt by default.
 
 ## v1.5.2 - \[2026-06-23\]
 

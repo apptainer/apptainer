@@ -2052,6 +2052,15 @@ func (c *imgBuildTests) testContainerBuildUnderFakerootModes(t *testing.T) {
 		e2e.ExpectExit(0),
 	)
 
+	// also test recent redhat in mode 3 to make sure getopt is bound in
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--force", "--build-arg", "FROMIMAGE=fedora:latest", "--userns", "--ignore-subuid", fmt.Sprintf("%s/openssh-mode3b.sif", tmpDir), "testdata/redhat_build.def"),
+		e2e.ExpectExit(0),
+	)
+
 	// running under the mode 4(https://apptainer.org/docs/user/main/fakeroot.html)
 	c.env.RunApptainer(
 		t,
