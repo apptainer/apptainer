@@ -33,8 +33,8 @@ github.com/aphistic/golf v0.0.0-20180712155816-02c07f170c5a/go.mod h1:3NqKYiepwy
 github.com/aphistic/sweet v0.2.0/go.mod h1:fWDlIh/isSE9n6EPsRmC0det+whmX6dJid3stzu0Xys=
 github.com/apptainer/container-key-client v0.8.0 h1:K181Zrejb53mR2YQZwCathSj8YReCen+Wi2YuBxGH60=
 github.com/apptainer/container-key-client v0.8.0/go.mod h1:wMeJdiMXlPRiwJfUyae2WRHsZlHG9Af6iPQ9TZcBnS8=
-github.com/apptainer/container-library-client v1.4.15 h1:0qcVPIihOaM6otC/jhcr1yrZkpdloN1jik4Br/1qcUg=
-github.com/apptainer/container-library-client v1.4.15/go.mod h1:MzAgEytePhP6La2ATIHmvwK73I7Yx2pzSkoXIp9l/G8=
+github.com/apptainer/container-library-client v1.4.16 h1:/m7GtzENLeNPJ1TkRjSpvUM/RIJ0VowqtUNYkCyBrys=
+github.com/apptainer/container-library-client v1.4.16/go.mod h1:yDS5hDC64TPAfBC3ghXYdV3bb+PXAlyPyTnZ+nCPw3I=
 github.com/apptainer/sif/v2 v2.24.1 h1:5nleuo0v+W2OONIWJeUxg4FFSBcUi/nAWFGuoFc6Ims=
 github.com/apptainer/sif/v2 v2.24.1/go.mod h1:MKn5693YXNQTOL0+zEzuZB7RUIuoak5wX1/XhvYJk0E=
 github.com/astromechza/etcpwdparse v0.0.0-20170319193008-f0e5f0779716 h1:MWNxJj2HIBx5Skyz30rxjHkXwGCr05O2bAz0VrwgADM=

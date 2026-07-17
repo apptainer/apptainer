@@ -7,7 +7,7 @@ require (
 	github.com/ProtonMail/go-crypto v1.4.1
 	github.com/apex/log v1.9.0
 	github.com/apptainer/container-key-client v0.8.0
-	github.com/apptainer/container-library-client v1.4.15
+	github.com/apptainer/container-library-client v1.4.16
 	github.com/apptainer/sif/v2 v2.24.1
 	github.com/astromechza/etcpwdparse v0.0.0-20170319193008-f0e5f0779716
 	github.com/blang/semver/v4 v4.0.0
