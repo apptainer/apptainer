@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2018-2020, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2026, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -10,7 +10,7 @@
 package cli
 
 import (
-	"os"
+	"fmt"
 
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/app/apptainer"
@@ -57,7 +57,7 @@ var CacheListCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Run: func(_ *cobra.Command, _ []string) {
 		if err := cacheListCmd(); err != nil {
-			os.Exit(2)
+			sylog.Fatalf("%v", err)
 		}
 	},
 
@@ -71,13 +71,12 @@ func cacheListCmd() error {
 	// A get a handle for the current image cache
 	imgCache := getCacheHandle(cache.Config{})
 	if imgCache == nil {
-		sylog.Fatalf("failed to create image cache handle")
+		return fmt.Errorf("failed to create image cache handle")
 	}
 
 	err := apptainer.ListApptainerCache(imgCache, cacheListTypes, cacheListVerbose)
 	if err != nil {
-		sylog.Fatalf("An error occurred while listing cache: %v", err)
-		return err
+		return fmt.Errorf("an error occurred while listing cache: %v", err)
 	}
 	return nil
 }

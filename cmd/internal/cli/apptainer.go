@@ -824,7 +824,8 @@ func apptainerExec(image string, args []string) (string, error) {
 
 	// reuse apptainer exec to grab image file content,
 	// we reduce binds to the bare minimum with options below
-	cmdArgs := []string{"exec", "--contain", "--no-home", "--no-nv", "--no-rocm", abspath}
+	cmdArgs := make([]string, 0, 6+len(args))
+	cmdArgs = append(cmdArgs, "exec", "--contain", "--no-home", "--no-nv", "--no-rocm", abspath)
 	cmdArgs = append(cmdArgs, args...)
 
 	apptainerCmd := filepath.Join(buildcfg.BINDIR, "apptainer")

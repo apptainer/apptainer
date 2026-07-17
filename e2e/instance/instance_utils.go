@@ -58,7 +58,8 @@ func (c *ctx) stopInstance(t *testing.T, instance string, stopArgs ...string) (s
 }
 
 func (c *ctx) execInstance(t *testing.T, instance string, execArgs ...string) (stdout string, stderr string, success bool) {
-	args := []string{"instance://" + instance}
+	args := make([]string, 0, 1+len(execArgs))
+	args = append(args, "instance://"+instance)
 	args = append(args, execArgs...)
 
 	c.env.RunApptainer(
