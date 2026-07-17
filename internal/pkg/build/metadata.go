@@ -291,7 +291,8 @@ func insertJSONInspectMetadata(b *types.Bundle, inspectOpt []string) error {
 	metadata := new(inspect.Metadata)
 
 	exe := filepath.Join(buildcfg.BINDIR, "apptainer")
-	opt := []string{"inspect"}
+	opt := make([]string, 0, 1+len(inspectOpt)+1)
+	opt = append(opt, "inspect")
 	opt = append(opt, inspectOpt...)
 	opt = append(opt, b.RootfsPath)
 	cmd := exec.Command(exe, opt...)

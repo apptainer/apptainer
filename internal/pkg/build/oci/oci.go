@@ -102,8 +102,9 @@ func LookupArch(a string, v string) (GoArch, bool) {
 
 // SupportedArch returns architectures
 func SupportedArch() []string {
-	keys := []string{}
-	for _, value := range reflect.ValueOf(archMap).MapKeys() {
+	mapKeys := reflect.ValueOf(archMap).MapKeys()
+	keys := make([]string, 0, len(mapKeys))
+	for _, value := range mapKeys {
 		keys = append(keys, value.String())
 	}
 	return keys
