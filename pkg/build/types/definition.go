@@ -138,7 +138,7 @@ func NewDefinitionFromJSON(r io.Reader) (d Definition, err error) {
 }
 
 func UpdateDefinitionRaw(defs *[]Definition) {
-	var buf []byte
+	var buf []byte //nolint:prealloc
 	for i, def := range *defs {
 		var tmp bytes.Buffer
 		populateRaw(&(*defs)[i], &tmp)
