@@ -78,12 +78,12 @@ func containerRMI(t *testing.T, prog, ref, homeDir string) {
 func containerRun(t *testing.T, prog, name, ref, homeDir string, args ...string) { //nolint:unparam
 	t.Run(name, e2e.Privileged(func(t *testing.T) {
 		cwd, _ := os.Getwd()
-		cmdArgs := []string{
+		cmdArgs := make([]string, 0, 10+len(args))
+		cmdArgs = append(cmdArgs,
 			"run", "-i", "--rm", "--privileged", "--network=host",
 			"-v", "/usr/local:/usr/local",
-			"-v", cwd + ":/e2e",
-			ref,
-		}
+			"-v", cwd+":/e2e",
+			ref)
 		cmdArgs = append(cmdArgs, args...)
 		cmd := exec.Command(prog, cmdArgs...)
 		cmd.Env = append(cmd.Env, "HOME="+homeDir)

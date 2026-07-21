@@ -466,7 +466,6 @@ func Normalize(capabilities []string) ([]string, []string) {
 
 	capabilities = normalize(capabilities)
 
-	// nolint:prealloc
 	var included []string
 	var excluded []string
 	for _, capb := range capabilities {

@@ -6,7 +6,7 @@ jobs:
   check_go_mod:
     name: check_go_mod
     runs-on: ubuntu-22.04
-    container: golang:1.25.7
+    container: golang:1.26.5
     steps:
       - uses: actions/checkout@v4
 
@@ -18,7 +18,7 @@ jobs:
   lint_markdown:
     name: lint_markdown
     runs-on: ubuntu-22.04
-    container: node:20-slim
+    container: node:24-slim
     steps:
       - uses: actions/checkout@v4
 
@@ -31,7 +31,7 @@ jobs:
   check_source:
     name: check_source
     runs-on: ubuntu-22.04
-    container: golangci/golangci-lint:v2.6
+    container: golangci/golangci-lint:v2.9
     steps:
       - uses: actions/checkout@v4
 
@@ -54,7 +54,7 @@ jobs:
   alpine:
     name: alpine
     runs-on: ubuntu-22.04
-    container: golang:1.25.7-alpine
+    container: golang:1.26.5-alpine
     steps:
       - name: Fetch deps
         run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
@@ -67,27 +67,28 @@ jobs:
           ./mconfig -v -p /usr/local --with-suid
           make -C ./builddir all
 
-  oldgo:
-    name: oldgo
-    runs-on: ubuntu-22.04
-    # match the minimum version required by mconfig
-    container: golang:1.25.7-alpine
-    steps:
-      - name: Fetch deps
-        run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
-
-      - uses: actions/checkout@v4
-
-      - name: Build Apptainer
-        run: |
-          git config --global --add safe.directory $(pwd)
-          ./mconfig -v -p /usr/local --with-suid
-          make -C ./builddir all
+#  oldgo:
+#    name: oldgo
+#    runs-on: ubuntu-22.04
+#    # match the minimum version required by mconfig
+#    # comment this out if it is the same version as that for alpine above
+#    container: golang:1.26.5-alpine
+#    steps:
+#      - name: Fetch deps
+#        run: apk add -q --no-cache git bash alpine-sdk automake libtool linux-headers libarchive-dev util-linux-dev libuuid openssl-dev gawk sed cryptsetup
+#
+#      - uses: actions/checkout@v4
+#
+#      - name: Build Apptainer
+#        run: |
+#          git config --global --add safe.directory $(pwd)
+#          ./mconfig -v -p /usr/local --with-suid
+#          make -C ./builddir all
 
   check_test_corpus:
     name: check_test_corpus
     runs-on: ubuntu-22.04
-    container: golang:1.25.7
+    container: golang:1.26.5
     steps:
       - uses: actions/checkout@v4
 
@@ -97,12 +98,15 @@ jobs:
           cd test/certs/ && go run ./gen_certs.go && cd ../..
 
       - name: Check Test Corpus Tidiness
-        run: git diff --exit-code --
+        run: |
+         # Starting with go1.26 as defined in go.mod, leaf.pem no
+         # longer stays consistent between runs, so skip checking it
+         git diff --exit-code -- root.pem intermediate.pem
 
   check_license_dependencies:
     name: check_license_dependencies
     runs-on: ubuntu-22.04
-    container: golang:1.25.7
+    container: golang:1.26.5
     steps:
       - uses: actions/checkout@v4
 
@@ -351,7 +355,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.25.7
+          go-version: 1.26.5
 
       - name: Fetch deps
         run: |
@@ -393,7 +397,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.25.7
+          go-version: 1.26.5
 
       - name: Fetch deps
         run: sudo apt-get -q update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libseccomp-dev libtalloc-dev libattr1-dev libprotobuf-c-dev cryptsetup dbus-user-session
@@ -443,7 +447,7 @@ jobs:
         if: env.run_tests
         uses: actions/setup-go@v2
         with:
-          go-version: 1.25.7
+          go-version: 1.26.5
 
       - name: Fetch deps
         if: env.run_tests
@@ -520,7 +524,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.25.7
+          go-version: 1.26.5
 
       - name: Check pkg/... doesn't depend on buildcfg
         run: |

@@ -122,7 +122,8 @@ func NVCLIConfigure(nvidiaEnv []string, rootfs string, userNS bool) error {
 	}
 	flags = append(flags, "--ldconfig=@"+ldConfig)
 
-	nccArgs := []string{"configure"}
+	nccArgs := make([]string, 0, 1+len(flags)+1)
+	nccArgs = append(nccArgs, "configure")
 	// If we are running in a user namespace specify --user as a global flag,
 	// or nvidia-container-cli will fail.
 	if userNS {

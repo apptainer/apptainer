@@ -9,6 +9,7 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Update minimum go version to 1.26.5.
 - Add support for variant to more architectures, but without verification.
   The previous arm32v5, arm32v6 and arm32v7 (= "arm") are still verified.
 - Any architecture variant, if used, is also included in the platform.

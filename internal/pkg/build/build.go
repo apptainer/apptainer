@@ -220,7 +220,7 @@ func newBuild(defs []types.Definition, conf Config) (*Build, error) {
 // cleanUp removes remnants of build from file system unless NoCleanUp is specified.
 func (b Build) cleanUp() {
 	if b.Conf.NoCleanUp {
-		var bundlePaths []string
+		bundlePaths := make([]string, 0, 2*len(b.stages))
 		for _, s := range b.stages {
 			bundlePaths = append(bundlePaths, s.b.RootfsPath, s.b.TmpDir)
 		}

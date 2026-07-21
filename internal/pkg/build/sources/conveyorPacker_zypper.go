@@ -525,8 +525,10 @@ func getSusevars() (ret struct {
 		ret.Product = ret.Name + "/" + ret.VersionID + "/" + runtime.GOARCH
 	}
 	ret.GpgKeyOk = false
-	args := []string{"-q", "--qf", "'%{PUBKEYS:armor}'"}
-	args = append(args, strings.Split(gpgKeyid, " ")...)
+	keyids := strings.Split(gpgKeyid, " ")
+	args := make([]string, 0, 3+len(keyids))
+	args = append(args, "-q", "--qf", "'%{PUBKEYS:armor}'")
+	args = append(args, keyids...)
 	out, err := exec.Command("rpm", args...).Output()
 	if err == nil {
 		ret.GpgKeyOk = true
