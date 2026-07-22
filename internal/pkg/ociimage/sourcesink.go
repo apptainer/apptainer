@@ -18,9 +18,6 @@ import (
 	progressClient "github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/ociauth"
 	"github.com/apptainer/apptainer/pkg/sylog"
-	"github.com/containers/image/v5/docker/reference"
-	"github.com/containers/image/v5/pkg/sysregistriesv2"
-	"github.com/containers/image/v5/types"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/daemon"
@@ -29,6 +26,9 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	"github.com/moby/moby/client"
+	"go.podman.io/image/v5/docker/reference"
+	"go.podman.io/image/v5/pkg/sysregistriesv2"
+	"go.podman.io/image/v5/types"
 )
 
 type SourceSink int

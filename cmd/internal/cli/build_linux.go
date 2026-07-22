@@ -88,7 +88,7 @@ func fakerootExec(isDeffile, unprivEncrypt bool) {
 	// Append the user's real UID to the environment as _CONTAINERS_ROOTLESS_UID.
 	// This is required in fakeroot builds that may use containers/image 5.7 and above.
 	// https://github.com/containers/image/issues/1066
-	// https://github.com/containers/image/blob/master/internal/rootless/rootless.go
+	// https://github.com/podman-container-tools/container-libs/blob/main/image/internal/rootless/rootless.go
 	os.Setenv("_CONTAINERS_ROOTLESS_UID", strconv.FormatUint(uint64(uid), 10))
 
 	if uid != 0 {
