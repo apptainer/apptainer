@@ -15,7 +15,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/containernetworking/cni v1.3.0
 	github.com/containernetworking/plugins v1.9.1
-	github.com/containers/image/v5 v5.36.2
+	github.com/containers/image/v5 v5.36.2-0.20250825172340-9b99818eb1db
 	github.com/creack/pty v1.1.24
 	github.com/cyphar/filepath-securejoin v0.7.0
 	github.com/docker/go-units v0.5.0
@@ -87,7 +87,7 @@ require (
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containers/libtrust v0.0.0-20230121012942-c1716e8a8d01 // indirect
 	github.com/containers/ocicrypt v1.2.1 // indirect
-	github.com/containers/storage v1.59.1 // indirect
+	github.com/containers/storage v1.59.2-0.20250820181736-3f7c116059ca // indirect
 	github.com/coreos/go-iptables v0.8.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.7.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
@@ -106,6 +106,7 @@ require (
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/google/go-intervals v0.0.2 // indirect
 	github.com/gorilla/handlers v1.5.2 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
@@ -120,10 +121,11 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
 	github.com/mattn/go-shellwords v1.0.12 // indirect
-	github.com/mattn/go-sqlite3 v1.14.28 // indirect
+	github.com/mattn/go-sqlite3 v1.14.32 // indirect
 	github.com/mdlayher/packet v1.1.2 // indirect
 	github.com/mdlayher/socket v0.5.1 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
+	github.com/mistifyio/go-zfs/v3 v3.0.1 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/moby/api v1.55.0 // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
@@ -135,7 +137,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/networkplumbing/go-nft v0.4.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
-	github.com/proglottis/gpgme v0.1.4 // indirect
+	github.com/proglottis/gpgme v0.1.5 // indirect
 	github.com/prometheus/client_golang v1.23.2 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.67.5 // indirect
@@ -149,6 +151,7 @@ require (
 	github.com/sigstore/protobuf-specs v0.5.1 // indirect
 	github.com/smallstep/pkcs7 v0.1.1 // indirect
 	github.com/stefanberger/go-pkcs11uri v0.0.0-20230803200340-78284954bff6 // indirect
+	github.com/tchap/go-patricia/v2 v2.3.3 // indirect
 	github.com/u-root/uio v0.0.0-20240224005618-d2acac8f3701 // indirect
 	github.com/ulikunitz/xz v0.5.15 // indirect
 	github.com/vbatts/go-mtree v0.6.1-0.20250911112631-8307d76bc1b9 // indirect
