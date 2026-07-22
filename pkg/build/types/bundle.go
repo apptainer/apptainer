@@ -40,9 +40,9 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
 	keyClient "github.com/apptainer/container-key-client/client"
-	ocitypes "github.com/containers/image/v5/types"
 	"github.com/google/go-containerregistry/pkg/authn"
 	ggcrv1 "github.com/google/go-containerregistry/pkg/v1"
+	ocitypes "go.podman.io/image/v5/types"
 	"golang.org/x/sys/unix"
 )
 

@@ -23,8 +23,8 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/ociimage"
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	buildTypes "github.com/apptainer/apptainer/pkg/build/types"
-	"github.com/containers/image/v5/oci/layout"
-	"github.com/containers/image/v5/types"
+	"go.podman.io/image/v5/oci/layout"
+	"go.podman.io/image/v5/types"
 )
 
 const (

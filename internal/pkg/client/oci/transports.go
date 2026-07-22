@@ -10,7 +10,7 @@
 package oci
 
 import (
-	"github.com/containers/image/v5/transports"
+	"go.podman.io/image/v5/transports"
 )
 
 // IsSupported returns whether or not the transport given is supported. To fit within a switch/case

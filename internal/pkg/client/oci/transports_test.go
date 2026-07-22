@@ -12,7 +12,7 @@ package oci
 import (
 	"testing"
 
-	"github.com/containers/image/v5/transports"
+	"go.podman.io/image/v5/transports"
 )
 
 func TestIsSupported(t *testing.T) {

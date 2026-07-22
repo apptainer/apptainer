@@ -16,15 +16,15 @@ import (
 	"strings"
 
 	"github.com/apptainer/apptainer/pkg/util/slice"
-	"github.com/containers/image/v5/docker"
-	dockerarchive "github.com/containers/image/v5/docker/archive"
-	dockerdaemon "github.com/containers/image/v5/docker/daemon"
-	ociarchive "github.com/containers/image/v5/oci/archive"
-	ocilayout "github.com/containers/image/v5/oci/layout"
-	"github.com/containers/image/v5/signature"
-	"github.com/containers/image/v5/types"
 	"github.com/google/go-containerregistry/pkg/authn"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"go.podman.io/image/v5/docker"
+	dockerarchive "go.podman.io/image/v5/docker/archive"
+	dockerdaemon "go.podman.io/image/v5/docker/daemon"
+	ociarchive "go.podman.io/image/v5/oci/archive"
+	ocilayout "go.podman.io/image/v5/oci/layout"
+	"go.podman.io/image/v5/signature"
+	"go.podman.io/image/v5/types"
 	"golang.org/x/sys/cpu"
 )
 
