@@ -39,6 +39,8 @@ Changes since 1.5.x
 
 ## v1.5.x changes
 
+## v1.5.3 - \[2026-07-21\]
+
 - If the `ptrace()` system call does not work while building an image as
   an unprivileged user, skip using PRoot to preserve file ownership and
   print an INFO message.
