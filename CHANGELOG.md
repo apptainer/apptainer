@@ -36,6 +36,7 @@ Changes since 1.5.x
   section to use a safer method.
 - Add a `sync writable extfs` directive to apptainer.conf. When enabled,
   writable extfs image mounts use the `sync` mount option.
+- Added support for NVIDIA Tegra to `nvliblist.conf`
 
 ## v1.5.x changes
 
