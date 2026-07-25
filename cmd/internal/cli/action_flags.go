@@ -10,8 +10,6 @@
 package cli
 
 import (
-	"os"
-
 	"github.com/apptainer/apptainer/pkg/cmdline"
 )
 
@@ -317,7 +315,7 @@ var actionFuseMountFlag = cmdline.Flag{
 var actionTmpDirFlag = cmdline.Flag{
 	ID:           "actionTmpDirFlag",
 	Value:        &tmpDir,
-	DefaultValue: os.TempDir(),
+	DefaultValue: tempDir(),
 	Name:         "tmpdir",
 	Usage:        "specify a temporary directory to use for build",
 	Hidden:       true,
