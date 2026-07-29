@@ -251,7 +251,7 @@ var commonOldNoHTTPSFlag = cmdline.Flag{
 var commonTmpDirFlag = cmdline.Flag{
 	ID:           "commonTmpDirFlag",
 	Value:        &tmpDir,
-	DefaultValue: os.TempDir(),
+	DefaultValue: tempDir(),
 	Hidden:       true,
 	Name:         "tmpdir",
 	Usage:        "specify a temporary directory to use for build",

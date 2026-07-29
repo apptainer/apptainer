@@ -37,6 +37,7 @@ Changes since 1.5.x
 - Add a `sync writable extfs` directive to apptainer.conf. When enabled,
   writable extfs image mounts use the `sync` mount option.
 - Added support for NVIDIA Tegra to `nvliblist.conf`
+- The `APPTAINER_TMPDIR` now defaults to /var/tmp, if /tmp is on tmpfs.
 
 ## v1.5.x changes
 
