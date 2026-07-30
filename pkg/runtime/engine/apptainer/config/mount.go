@@ -32,6 +32,7 @@ import (
 func ParseMountString(mount string) (bindPaths []BindPath, err error) {
 	r := strings.NewReader(mount)
 	c := csv.NewReader(r)
+	c.FieldsPerRecord = -1
 	records, err := c.ReadAll()
 	if err != nil {
 		return []BindPath{}, fmt.Errorf("error parsing mount: %v", err)
