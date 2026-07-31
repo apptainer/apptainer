@@ -11,7 +11,7 @@ require (
 	github.com/apptainer/sif/v2 v2.24.1
 	github.com/astromechza/etcpwdparse v0.0.0-20170319193008-f0e5f0779716
 	github.com/blang/semver/v4 v4.0.0
-	github.com/buger/jsonparser v1.2.0
+	github.com/buger/jsonparser v1.3.1
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/containernetworking/cni v1.3.0
 	github.com/containernetworking/plugins v1.9.1
