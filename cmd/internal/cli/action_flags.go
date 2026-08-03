@@ -85,6 +85,7 @@ var (
 	memorySwap        string // bytes
 	oomKillDisable    bool
 	pidsLimit         int
+	writableTmpfsSize uint32
 	unsquash          bool
 
 	ignoreSubuid      bool
@@ -435,6 +436,17 @@ var actionWritableTmpfsFlag = cmdline.Flag{
 	Name:         "writable-tmpfs",
 	Usage:        "makes the file system accessible as read-write with non persistent data (with overlay support only)",
 	EnvKeys:      []string{"WRITABLE_TMPFS"},
+}
+
+// --writable-tmpfs-size
+var actionWritableTmpfsSizeFlag = cmdline.Flag{
+	ID:           "actionWritableTmpfsSizeFlag",
+	Value:        &writableTmpfsSize,
+	DefaultValue: uint32(0),
+	Name:         "writable-tmpfs-size",
+	Usage:        "size in MiB of the tmpfs used by --writable-tmpfs, overriding the 'sessiondir max size' directive.  Zero uses the configured size.  Ignored when running setuid.",
+	EnvKeys:      []string{"WRITABLE_TMPFS_SIZE"},
+	Tag:          "<MiB>",
 }
 
 // --no-home
@@ -965,6 +977,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&actionWorkdirFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionWritableFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionWritableTmpfsFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionWritableTmpfsSizeFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&commonNoHTTPSFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&commonOldNoHTTPSFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&dockerLoginFlag, actionsInstanceCmd...)

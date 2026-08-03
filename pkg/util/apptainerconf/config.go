@@ -331,7 +331,9 @@ mount slave = {{ if eq .MountSlave true }}yes{{ else }}no{{ end }}
 # This specifies how large the default sessiondir should be (in MB). It will
 # affect users who use the "--contain" options and don't also specify a
 # location to do default read/writes to (e.g. "--workdir" or "--home") and
-# it will also affect users of "--writable-tmpfs".
+# it will also affect users of "--writable-tmpfs". Unprivileged users can
+# override it with the "--writable-tmpfs-size" option, which has no effect
+# when running setuid.
 sessiondir max size = {{ .SessiondirMaxSize }}
 
 # *****************************************************************************

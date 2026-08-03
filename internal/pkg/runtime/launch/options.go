@@ -33,6 +33,9 @@ type launchOptions struct {
 	Writable bool
 	// WritableTmpfs applies an ephemeral writable overlay to the container.
 	WritableTmpfs bool
+	// WritableTmpfsSize overrides the 'sessiondir max size' directive, in MiB,
+	// for the tmpfs backing WritableTmpfs. Zero means use the configured value.
+	WritableTmpfsSize uint32
 	// OverlayPaths holds paths to image or directory overlays to be applied.
 	OverlayPaths []string
 	// Scratchdir lists paths into the container to be mounted from a temporary location on the host.
@@ -204,6 +207,15 @@ func OptWritable(b bool) Option {
 func OptWritableTmpfs(b bool) Option {
 	return func(lo *launchOptions) error {
 		lo.WritableTmpfs = b
+		return nil
+	}
+}
+
+// OptWritableTmpfsSize sets the size, in MiB, of the tmpfs backing an
+// ephemeral writable overlay. Zero leaves the configured size in place.
+func OptWritableTmpfsSize(s uint32) Option {
+	return func(lo *launchOptions) error {
+		lo.WritableTmpfsSize = s
 		return nil
 	}
 }
