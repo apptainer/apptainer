@@ -50,11 +50,12 @@ Summary: Application and environment virtualization formerly known as Singularit
 Name: apptainer
 Version: @PACKAGE_RPM_VERSION@
 Release: @PACKAGE_RELEASE@%{?dist}
-# See LICENSE.md for first party code (BSD-3-Clause and LBNL BSD)
-# See LICENSE_THIRD_PARTY.md for incorporated code (ASL 2.0)
+# See LICENSE.md for first party code (BSD-3-Clause and BSD-3-Clause-LBNL)
+# See LICENSE_THIRD_PARTY.md for incorporated code (Apache-2.0)
 # See LICENSE_DEPENDENCIES.md for dependencies
-# License identifiers taken from: https://fedoraproject.org/wiki/Licensing
-License: LicenseRef-Callaway-BSD AND BSD-3-Clause-LBNL AND Apache-2.0
+# This list was generated using "go_vendor_license report"
+# plus BSD-3-Clause-LBNL was added because it missed that from LICENSE.md
+License: Apache-2.0 AND BSD-2-Clause AND BSD-3-Clause AND BSD-3-Clause-LBNL AND ISC AND MIT AND MPL-2.0 AND Unlicense
 URL: https://apptainer.org
 Source: https://github.com/%{name}/%{name}/releases/download/v%{package_version}/%{name}-%{package_version}.tar.gz
 @PACKAGE_GOLANG_SOURCE@
