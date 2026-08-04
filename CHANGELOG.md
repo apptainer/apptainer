@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 - Fixed a bug that prevented multiple mount entries in the `APPTAINER_MOUNT`
   env var from having different numbers of options.
+- Fix the help text for the `--mount` option not wrapping at 80 columns,
+  by using the shorter `src` and `dst` aliases in the example.
 
 ## v1.5.3 - \[2026-07-21\]
 
