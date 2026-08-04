@@ -41,6 +41,9 @@ Changes since 1.5.x
 
 ## v1.5.x changes
 
+- Fix the help text for the `--mount` option not wrapping at 80 columns,
+  by using the shorter `src` and `dst` aliases in the example.
+
 ## v1.5.3 - \[2026-07-21\]
 
 - If the `ptrace()` system call does not work while building an image as
