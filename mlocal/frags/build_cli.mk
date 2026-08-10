@@ -100,12 +100,28 @@ $(remote_config_INSTALL): $(remote_config)
 
 INSTALLFILES += $(remote_config_INSTALL)
 
+# rst2html is a part of "docutils"
+RST2HTML ?= rst2html
+# name of local copy of stylesheet
+STYLESHEET = docutils.css
+
+RST2HTML_FLAGS ?= --link-stylesheet --stylesheet=$(STYLESHEET) --report=none
+
 rst_docs := $(BUILDDIR_ABSPATH)$(DOCDIR)/cli
 $(rst_docs): $(apptainer)
 	@echo " DOC" $@
 	mkdir -p $@
 	$(V)cd $(SOURCEDIR) && $(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" \
 		cmd/docs/docs.go rst --dir $@
+	# make a local copy of the stylesheet, instead of a relative link
+	$(V)CSS=$$($(RST2HTML) --link-stylesheet </dev/null | grep link	\
+		| sed -e 's/.*href="//;s/" type=.*//');			\
+		cp $$CSS $@/$(STYLESHEET)
+	$(V)cd $@;							\
+		for R in *.rst; do					\
+			H="`echo $$R|sed 's/.rst/.html/'`";		\
+			$(RST2HTML) $(RST2HTML_FLAGS) $$R $$H;		\
+		done
 
 man_pages := $(BUILDDIR_ABSPATH)$(MANDIR)/man1
 $(man_pages): $(apptainer)
