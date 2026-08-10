@@ -56,13 +56,17 @@ Enterprise Performance Computing (EPC)`
   be used to create an Apptainer container. Several different local target
   formats exist:
 
-      def file:   This is a recipe for building a container (examples below)
+      def file:       This is a recipe for building a container (examples below)
 
-      buildkit:   A build context directory, containing a Dockerfile to build
+      docker-daemon:  A container image name, to pull from the Docker daemon host
 
-      directory:  A directory structure containing a (ch)root file system
+      oci-archive:    A container image archive, containing a Docker image to load
 
-      image:      A local image on your machine (will convert to sif format)
+      buildkit:       A build context directory, containing a Dockerfile to build
+
+      directory:      A directory structure containing a (ch)root file system
+
+      image:          A local image on your machine (will convert to sif format)
 
   Targets can also be remote and defined by a URI of the following formats:
 
