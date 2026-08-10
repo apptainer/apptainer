@@ -62,8 +62,7 @@ Enterprise Performance Computing (EPC)`
 
       directory:  A directory structure containing a (ch)root file system
 
-      image:      A local image on your machine (will convert to sif if
-                  it is legacy format)
+      image:      A local image on your machine (will convert to sif format)
 
   Targets can also be remote and defined by a URI of the following formats:
 
