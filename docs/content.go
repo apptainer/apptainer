@@ -43,6 +43,7 @@ Enterprise Performance Computing (EPC)`
   When Apptainer builds the container, output can be one of a few formats:
 
       default:    The compressed Apptainer read only image format (default)
+
       sandbox:    This is a read-write container within a directory structure
 
   note: It is a common workflow to use the "sandbox" mode for development of the
@@ -56,17 +57,24 @@ Enterprise Performance Computing (EPC)`
   formats exist:
 
       def file  : This is a recipe for building a container (examples below)
+
       buildkit:   A build context directory, containing a Dockerfile to build
+
       directory:  A directory structure containing a (ch)root file system
+
       image:      A local image on your machine (will convert to sif if
                   it is legacy format)
 
   Targets can also be remote and defined by a URI of the following formats:
 
       library://  an image library (no default)
+
       docker://   a Docker/OCI registry (default Docker Hub)
+
       shub://     an Apptainer registry (default Singularity Hub)
+
       oras://     an OCI registry that holds SIF files using ORAS
+
       ipfs://     an IPFS cluster, using a HTTP gateway
 
   Temporary files:
