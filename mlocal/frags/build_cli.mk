@@ -100,8 +100,15 @@ $(remote_config_INSTALL): $(remote_config)
 
 INSTALLFILES += $(remote_config_INSTALL)
 
+rst_docs := $(BUILDDIR_ABSPATH)$(DOCDIR)/cli
+$(rst_docs): $(apptainer)
+	@echo " DOC" $@
+	mkdir -p $@
+	$(V)cd $(SOURCEDIR) && $(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" \
+		cmd/docs/docs.go rst --dir $@
+
 man_pages := $(BUILDDIR_ABSPATH)$(MANDIR)/man1
-$(man_pages): apptainer
+$(man_pages): $(apptainer)
 	@echo " MAN" $@
 	mkdir -p $@
 	$(V)cd $(SOURCEDIR) && $(GO) run $(GO_MODFLAGS) -tags "$(GO_TAGS)" \
