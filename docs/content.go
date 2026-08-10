@@ -489,30 +489,37 @@ Enterprise Performance Computing (EPC)`
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	formats string = `
 
-  *.sif               Singularity Image Format (SIF). Native to Singularity
-                      (3.0+) and Apptainer (v1.0.0+)
+  .sif - Singularity Image Format (SIF)
+    Native to Singularity 3.0+ and all Apptainer versions.
   
-  *.sqsh              SquashFS format.  Native to Singularity 2.4+
+  .sqsh - SquashFS format
+    Native to Singularity 2.4+ and < 3.0.
 
-  *.img               ext3 format. Native to Singularity versions < 2.4.
+  .img - ext3 format
+    Native to Singularity versions < 2.4.
 
-  directory/          sandbox format. Directory containing a valid root file 
-                      system and optionally Apptainer meta-data.
+  directory/ - sandbox format
+    Directory containing a valid root file system and optionally Apptainer
+    meta-data.
 
-  instance://*        A local running instance of a container. (See the instance
-                      command group.)
+  instance://
+    A local running instance of a container.  See the instance command group.
 
-  library://*         A SIF container hosted on a Library (no default)
+  library://
+    A SIF container hosted on a Library (no library enabled by default).
 
-  docker://*          A Docker/OCI container hosted on Docker Hub or another
-                      OCI registry.
+  docker://
+    A Docker/OCI container hosted on Docker Hub or another OCI registry.
 
-  shub://*            A container hosted on Singularity Hub.
+  shub://
+    A container hosted on Singularity Hub.
 
-  oras://*            A SIF container hosted on an OCI registry that supports
-                      the OCI Registry As Storage (ORAS) specification.
+  oras://
+    A SIF container hosted on an OCI registry that supports the OCI Registry
+    As Storage (ORAS) specification.
 
-  ipfs://*            A SIF image from an IPFS cluster, using a HTTP gateway.`
+  ipfs://
+    A SIF image from an IPFS cluster, using a HTTP gateway.`
 	ExecUse   string = `exec [exec options...] <container> <command>`
 	ExecShort string = `Run a command within a container`
 	ExecLong  string = `
