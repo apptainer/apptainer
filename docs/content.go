@@ -56,7 +56,7 @@ Enterprise Performance Computing (EPC)`
   be used to create an Apptainer container. Several different local target
   formats exist:
 
-      def file  : This is a recipe for building a container (examples below)
+      def file:   This is a recipe for building a container (examples below)
 
       buildkit:   A build context directory, containing a Dockerfile to build
 
