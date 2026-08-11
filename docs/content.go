@@ -19,8 +19,8 @@ const (
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	ApptainerUse   string = `apptainer [global options...]`
 	ApptainerShort string = `
-Linux container platform optimized for High Performance Computing (HPC) and
-Enterprise Performance Computing (EPC)`
+  Linux container platform optimized for High Performance Computing (HPC) and
+  Enterprise Performance Computing (EPC)`
 	ApptainerLong string = `
   Apptainer containers provide an application virtualization layer enabling
   mobility of compute via both application and environment portability. With
