@@ -123,6 +123,7 @@
 - Rushil Patel <rushil.patel@gsacapital.com>
 - Sasha Yakovtseva <sasha@sylabs.io>, <sashayakovtseva@gmail.com>
 - Satish Chebrolu  <satish@sylabs.io>
+- Seungmin Kim <ehf@yonsei.ac.kr>
 - Shane Loretz <sloretz@openrobotics.org>, <shane.loretz@gmail.com>
 - Shengjing Zhu <i@zhsj.me>
 - Simon Leary <simon.leary42@gmail.com>

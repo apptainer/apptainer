@@ -33,6 +33,13 @@ func RocmPaths(configFilePath string) ([]string, []string, error) {
 	return libs, bins, err
 }
 
+// RocmCompat32Paths returns a list of 32-bit ROCm libraries that should be
+// mounted into the container's 32-bit compatibility library directory, in
+// order for 32-bit programs to use AMD GPUs.
+func RocmCompat32Paths(configFilePath string) ([]string, error) {
+	return compat32Paths(configFilePath)
+}
+
 // RocmDevices returns a list of /dev entries required for ROCm functionality.
 func RocmDevices() ([]string, error) {
 	// Use same paths as ROCm Docker container documentation.

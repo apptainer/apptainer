@@ -67,6 +67,8 @@ type launchOptions struct {
 	Rocm bool
 	// NoRocm disable Rocm GPU support when set default in apptainer.conf.
 	NoRocm bool
+	// Compat32 additionally provisions the 32-bit GPU driver libraries.
+	Compat32 bool
 
 	// ContainLibs lists paths of libraries to bind mount into the container .singularity.d/libs dir.
 	ContainLibs []string
@@ -275,6 +277,16 @@ func OptNvidia(nv bool, nvccli bool) Option {
 	return func(lo *launchOptions) error {
 		lo.Nvidia = nv || nvccli
 		lo.NvCCLI = nvccli
+		return nil
+	}
+}
+
+// OptCompat32 additionally provisions the 32-bit GPU driver libraries, so that
+// 32-bit programs in the container can use the GPU. It applies to the GPU
+// platform(s) enabled by OptNvidia and/or OptRocm.
+func OptCompat32(b bool) Option {
+	return func(lo *launchOptions) error {
+		lo.Compat32 = b
 		return nil
 	}
 }

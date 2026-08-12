@@ -216,6 +216,9 @@ func runBuild(cmd *cobra.Command, args []string) {
 	if buildArgs.rocm {
 		os.Setenv("APPTAINER_ROCM", "1")
 	}
+	if buildArgs.compat32 {
+		os.Setenv("APPTAINER_COMPAT32", "1")
+	}
 	if len(buildArgs.bindPaths) > 0 {
 		os.Setenv("APPTAINER_BINDPATH", strings.Join(buildArgs.bindPaths, ","))
 	}

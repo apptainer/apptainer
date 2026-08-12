@@ -17,11 +17,35 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
+
+const (
+	// ContainerLibsDir is the directory in a container into which host
+	// libraries are bound.
+	ContainerLibsDir = "/.singularity.d/libs"
+
+	// ContainerCompat32LibsDir is the directory in a container into which
+	// 32-bit compatibility host libraries are bound. It is kept separate
+	// from ContainerLibsDir because the 32-bit and 64-bit builds of a
+	// library have the same name, and both are needed at once.
+	ContainerCompat32LibsDir = "/.singularity.d/libs32"
+)
+
+// errNoCompat32 is returned when the host architecture has no 32-bit
+// counterpart that we know how to provision libraries for.
+var errNoCompat32 = errors.New("32-bit compatibility libraries are not supported on this architecture")
+
+// compat32Machine maps the ELF machine of a host to the ELF machine of the
+// libraries that 32-bit programs running on that host need. Only x86 is
+// listed, as that is where GPU vendors ship 32-bit driver libraries.
+var compat32Machine = map[elf.Machine]elf.Machine{
+	elf.EM_X86_64: elf.EM_386,
+}
 
 // soLinks returns a list of versioned symlinks resolving to a specified library file
 func soLinks(libPath string) (paths []string, err error) {
@@ -62,7 +86,7 @@ func soLinks(libPath string) (paths []string, err error) {
 // Resolve takes a list of library/binary files (absolute paths, or bare filenames) and processes them into lists of
 // resolved library and binary paths to be bound into the container.
 func Resolve(fileList []string) ([]string, []string, []string, error) {
-	machine, err := elfMachine()
+	machine, class, err := elfMachine()
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("could not retrieve ELF machine ID: %v", err)
 	}
@@ -71,71 +95,21 @@ func Resolve(fileList []string) ([]string, []string, []string, error) {
 		return nil, nil, nil, fmt.Errorf("could not retrieve ld cache: %v", err)
 	}
 
-	// Track processed binaries/libraries to eliminate duplicates
+	// Track processed binaries to eliminate duplicates
 	bins := make(map[string]struct{})
-	libs := make(map[string]struct{})
 	filesMap := make(map[string]struct{})
 
-	var libraries []string
 	var binaries []string
 	var files []string
 
-	boundLibsDir := "/.singularity.d/libs"
-	boundLibs, err := os.ReadDir(boundLibsDir)
-	if err == nil {
-		// Inherit all libraries from a parent
-		for _, boundLib := range boundLibs {
-			libName := boundLib.Name()
-			libs[libName] = struct{}{}
-			libraries = append(libraries, filepath.Join(boundLibsDir, libName))
-		}
-	}
+	libraries := resolveLibs(fileList, machine, class, ldCache, ContainerLibsDir)
 
 	for _, file := range fileList {
 		if strings.Contains(file, ".so") {
-			// If we have an absolute path, add it 'as-is', plus any symlinks that resolve to it
-			if filepath.IsAbs(file) {
-				elib, err := elf.Open(file)
-				if err != nil {
-					sylog.Debugf("ignoring library %s: %s", file, err)
-					continue
-				}
-
-				if elib.Machine == machine {
-					libraries = append(libraries, file)
-					links, err := soLinks(file)
-					if err != nil {
-						sylog.Warningf("ignoring symlinks to %s: %v", file, err)
-					} else {
-						libraries = append(libraries, links...)
-					}
-				}
-				if err := elib.Close(); err != nil {
-					sylog.Warningf("Could not close ELIB: %v", err)
-				}
-			} else {
-				for libName, libPath := range ldCache {
-					if !strings.HasPrefix(libName, file) {
-						continue
-					}
-					if _, ok := libs[libName]; !ok {
-						elib, err := elf.Open(libPath)
-						if err != nil {
-							sylog.Debugf("ignoring library %s: %s", libName, err)
-							continue
-						}
-
-						if elib.Machine == machine {
-							libs[libName] = struct{}{}
-							libraries = append(libraries, libPath)
-						}
-						if err := elib.Close(); err != nil {
-							sylog.Warningf("Could not close ELIB: %v", err)
-						}
-					}
-				}
-			}
-		} else if filepath.IsAbs(file) {
+			// libraries are handled by resolveLibs above
+			continue
+		}
+		if filepath.IsAbs(file) {
 			// if the file is absolute path
 			if _, err := os.Stat(file); err != nil && errors.Is(err, os.ErrNotExist) {
 				continue
@@ -160,12 +134,116 @@ func Resolve(fileList []string) ([]string, []string, []string, error) {
 	return libraries, binaries, files, nil
 }
 
-// ldcache retrieves a map of <library>.so[.version] to its absolute path using
-// the system ld cache via `ldconfig -p`. We only take the first instance of
-// each <library>.so[.version] from `ldconfig -p` output. I.E. if `ldconfig -p`
-// lists three variants of libEGL.so.1 that are in different locations, we only
-// report the first, highest priority, variant.
-func ldCache() (map[string]string, error) {
+// ResolveCompat32 takes a list of library/binary files (absolute paths, or
+// bare filenames) and resolves the libraries in that list to the 32-bit
+// variants present on the host, which are to be bound into the container's
+// 32-bit compatibility library directory. Binaries and non-library files in
+// the list are ignored, as only libraries have a useful 32-bit counterpart.
+func ResolveCompat32(fileList []string) ([]string, error) {
+	machine, _, err := elfMachine()
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve ELF machine ID: %v", err)
+	}
+	machine32, ok := compat32Machine[machine]
+	if !ok {
+		return nil, errNoCompat32
+	}
+	ldCache, err := ldCache()
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve ld cache: %v", err)
+	}
+
+	return resolveLibs(fileList, machine32, elf.ELFCLASS32, ldCache, ContainerCompat32LibsDir), nil
+}
+
+// resolveLibs resolves the library entries of fileList to absolute paths on
+// the host, considering only libraries built for the given ELF machine and
+// class. Non-library entries are ignored. Libraries already present in
+// boundLibsDir, i.e. inherited from a parent container, are carried over and
+// take precedence over anything found on the host.
+func resolveLibs(fileList []string, machine elf.Machine, class elf.Class, ldCache map[string][]string, boundLibsDir string) []string {
+	// Track processed libraries to eliminate duplicates
+	libs := make(map[string]struct{})
+
+	var libraries []string
+
+	if boundLibs, err := os.ReadDir(boundLibsDir); err == nil {
+		// Inherit all libraries from a parent
+		for _, boundLib := range boundLibs {
+			if boundLib.IsDir() {
+				continue
+			}
+			libName := boundLib.Name()
+			libs[libName] = struct{}{}
+			libraries = append(libraries, filepath.Join(boundLibsDir, libName))
+		}
+	}
+
+	for _, file := range fileList {
+		if !strings.Contains(file, ".so") {
+			continue
+		}
+
+		// If we have an absolute path, add it 'as-is', plus any symlinks that resolve to it
+		if filepath.IsAbs(file) {
+			if !matchingLib(file, machine, class) {
+				continue
+			}
+			libraries = append(libraries, file)
+			links, err := soLinks(file)
+			if err != nil {
+				sylog.Warningf("ignoring symlinks to %s: %v", file, err)
+				continue
+			}
+			libraries = append(libraries, links...)
+			continue
+		}
+
+		for libName, libPaths := range ldCache {
+			if !strings.HasPrefix(libName, file) {
+				continue
+			}
+			if _, ok := libs[libName]; ok {
+				continue
+			}
+			// The ld cache may hold several variants of a library, e.g. a
+			// 64-bit and a 32-bit build on a multiarch host. Take the
+			// first one built for the machine and class we want.
+			for _, libPath := range libPaths {
+				if !matchingLib(libPath, machine, class) {
+					continue
+				}
+				libs[libName] = struct{}{}
+				libraries = append(libraries, libPath)
+				break
+			}
+		}
+	}
+
+	return libraries
+}
+
+// matchingLib returns true if the file at libPath is an ELF library built for
+// the given machine and class.
+func matchingLib(libPath string, machine elf.Machine, class elf.Class) bool {
+	elib, err := elf.Open(libPath)
+	if err != nil {
+		sylog.Debugf("ignoring library %s: %s", libPath, err)
+		return false
+	}
+	match := elib.Machine == machine && elib.Class == class
+	if err := elib.Close(); err != nil {
+		sylog.Warningf("Could not close ELIB: %v", err)
+	}
+	return match
+}
+
+// ldCache retrieves a map of <library>.so[.version] to the absolute paths at
+// which it can be found, using the system ld cache via `ldconfig -p`. All of
+// the paths listed for a given <library>.so[.version] are kept, in `ldconfig
+// -p` priority order, so that callers can pick the variant built for the
+// architecture they are resolving for.
+func ldCache() (map[string][]string, error) {
 	// walk through the ldconfig output and add entries which contain the filenames
 	// returned by nvidia-container-cli OR the nvliblist.conf file contents
 	ldconfig, err := bin.FindBin("ldconfig")
@@ -184,8 +262,8 @@ func ldCache() (map[string]string, error) {
 		return nil, fmt.Errorf("could not compile ldconfig regexp: %v", err)
 	}
 
-	// store library name with associated path
-	ldCache := make(map[string]string)
+	// store library name with associated paths
+	ldCache := make(map[string][]string)
 	for _, match := range r.FindAllSubmatch(out, -1) {
 		if match != nil {
 			// libName is the "libnvidia-ml.so.1" (from the above example)
@@ -193,25 +271,25 @@ func ldCache() (map[string]string, error) {
 			libName := strings.TrimSpace(string(match[1]))
 			libPath := strings.TrimSpace(string(match[2]))
 
-			// Only take the first entry for a given <library>.so[.version] in the ldconfig output
-			if _, ok := ldCache[libName]; !ok {
-				ldCache[libName] = libPath
+			if !slices.Contains(ldCache[libName], libPath) {
+				ldCache[libName] = append(ldCache[libName], libPath)
 			}
-
 		}
 	}
 	return ldCache, nil
 }
 
-// elfMachine returns the ELF Machine ID for this system, w.r.t the currently running process
-func elfMachine() (machine elf.Machine, err error) {
+// elfMachine returns the ELF Machine ID and class for this system, w.r.t the
+// currently running process
+func elfMachine() (machine elf.Machine, class elf.Class, err error) {
 	// get elf machine to match correct libraries during ldconfig lookup
 	self, err := elf.Open("/proc/self/exe")
 	if err != nil {
-		return 0, fmt.Errorf("could not open /proc/self/exe: %v", err)
+		return 0, 0, fmt.Errorf("could not open /proc/self/exe: %v", err)
 	}
+	machine, class = self.Machine, self.Class
 	if err := self.Close(); err != nil {
 		sylog.Warningf("Could not close ELF: %v", err)
 	}
-	return self.Machine, nil
+	return machine, class, nil
 }

@@ -25,6 +25,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/security/apparmor"
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
 	"github.com/apptainer/apptainer/internal/pkg/security/selinux"
+	"github.com/apptainer/apptainer/internal/pkg/util/gpu"
 	"github.com/apptainer/apptainer/internal/pkg/util/rpm"
 	"github.com/apptainer/apptainer/pkg/network"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
@@ -223,6 +224,22 @@ func Nvidia(t *testing.T) {
 	cmd := exec.Command(nvsmi)
 	if err := cmd.Run(); err != nil {
 		t.Skipf("nvidia-smi failed to run: %v", err)
+	}
+}
+
+// NvidiaCompat32 checks that the 32-bit NVIDIA driver libraries, which --compat32
+// provisions, are available. They are packaged separately from the 64-bit driver,
+// e.g. as libnvidia-gl-<version>:i386 on Ubuntu, and are not always installed.
+// This resolves them exactly as --compat32 does, so that the test is skipped in
+// the same cases where there would be nothing to provision, including on
+// architectures that have no 32-bit counterpart.
+func NvidiaCompat32(t *testing.T) {
+	libs, err := gpu.NvidiaCompat32Paths(buildcfg.NVIDIALIBS_FILE)
+	if err != nil {
+		t.Skipf("could not search for 32-bit NVIDIA libraries: %v", err)
+	}
+	if len(libs) == 0 {
+		t.Skip("no 32-bit NVIDIA libraries found on this host")
 	}
 }
 

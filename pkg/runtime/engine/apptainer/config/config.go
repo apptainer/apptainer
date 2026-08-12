@@ -88,6 +88,7 @@ type JSONConfig struct {
 	Security              []string          `json:"security,omitempty"`
 	FilesPath             []string          `json:"filesPath,omitempty"`
 	LibrariesPath         []string          `json:"librariesPath,omitempty"`
+	Compat32LibrariesPath []string          `json:"compat32LibrariesPath,omitempty"`
 	FuseMount             []FuseMount       `json:"fuseMount,omitempty"`
 	ImageList             []image.Image     `json:"imageList,omitempty"`
 	BindPath              []BindPath        `json:"bindpath,omitempty"`
@@ -712,6 +713,24 @@ func (e *EngineConfig) AppendLibrariesPath(libraries ...string) {
 // /.singularity.d/libs directory.
 func (e *EngineConfig) GetLibrariesPath() []string {
 	return e.JSON.LibrariesPath
+}
+
+// SetCompat32LibrariesPath sets 32-bit compatibility libraries to bind in
+// container /.singularity.d/libs32 directory.
+func (e *EngineConfig) SetCompat32LibrariesPath(libraries []string) {
+	e.JSON.Compat32LibrariesPath = libraries
+}
+
+// AppendCompat32LibrariesPath adds 32-bit compatibility libraries to bind in
+// container /.singularity.d/libs32 directory.
+func (e *EngineConfig) AppendCompat32LibrariesPath(libraries ...string) {
+	e.JSON.Compat32LibrariesPath = ConcatenateSliceDeduplicate(e.JSON.Compat32LibrariesPath, libraries)
+}
+
+// GetCompat32LibrariesPath returns 32-bit compatibility libraries to bind in
+// container /.singularity.d/libs32 directory.
+func (e *EngineConfig) GetCompat32LibrariesPath() []string {
+	return e.JSON.Compat32LibrariesPath
 }
 
 // SetFilesPath sets files to bind in container (eg: --nv).

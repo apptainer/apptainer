@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 	"syscall"
 
@@ -48,6 +49,13 @@ var nVDriverCapabilities = []string{
 var nVDriverDefaultCapabilities = []string{
 	"compute",
 	"utility",
+}
+
+// NVDriverDefaultCapabilities returns the default set of
+// nvidia-container-cli driver capabilities, which applies when
+// NVIDIA_DRIVER_CAPABILITIES is not set.
+func NVDriverDefaultCapabilities() []string {
+	return slices.Clone(nVDriverDefaultCapabilities)
 }
 
 // nVCLIAmbientCaps is the ambient capability set required by nvidia-container-cli.

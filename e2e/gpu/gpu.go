@@ -107,6 +107,61 @@ func (c ctx) testNvidiaLegacy(t *testing.T) {
 	}
 }
 
+func (c ctx) testNvidiaCompat32(t *testing.T) {
+	require.Nvidia(t)
+	require.NvidiaCompat32(t)
+	// Use a Debian-based image, as we can't use our test image which is
+	// alpine based and we need a compatible glibc.
+	e2e.EnsureDebianImage(t, c.env)
+	imagePath := c.env.DebianImagePath
+
+	// The 32-bit libraries are only provisioned on request, and are bound
+	// into a directory of their own so that they do not shadow the 64-bit
+	// libraries of the same name.
+	tests := []struct {
+		name        string
+		args        []string
+		expectMatch e2e.ApptainerCmdResultOp
+	}{
+		{
+			// Without --compat32 the 32-bit library directory is absent.
+			name: "NoCompat32",
+			args: []string{"--nv", imagePath, "test", "!", "-d", "/.singularity.d/libs32"},
+		},
+		{
+			name:        "Compat32",
+			args:        []string{"--nv", "--compat32", imagePath, "sh", "-c", "ls /.singularity.d/libs32"},
+			expectMatch: e2e.ExpectOutput(e2e.ContainMatch, ".so"),
+		},
+		{
+			name:        "Compat32LdLibraryPath",
+			args:        []string{"--nv", "--compat32", imagePath, "sh", "-c", "echo $LD_LIBRARY_PATH"},
+			expectMatch: e2e.ExpectOutput(e2e.ContainMatch, "/.singularity.d/libs32"),
+		},
+		{
+			// The 64-bit libraries must still be provisioned as usual.
+			name: "Compat32KeepsNv",
+			args: []string{"--nv", "--compat32", imagePath, "nvidia-smi"},
+		},
+		{
+			name:        "Compat32RequiresGPUFlag",
+			args:        []string{"--compat32", imagePath, "true"},
+			expectMatch: e2e.ExpectError(e2e.ContainMatch, "Ignoring --compat32"),
+		},
+	}
+
+	for _, tt := range tests {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(e2e.UserProfile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(tt.args...),
+			e2e.ExpectExit(0, tt.expectMatch),
+		)
+	}
+}
+
 func (c ctx) testNvCCLI(t *testing.T) {
 	require.Nvidia(t)
 	require.NvCCLI(t)
@@ -632,12 +687,13 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"nvidia":       c.testNvidiaLegacy,
-		"nvccli":       c.testNvCCLI,
-		"rocm":         c.testRocm,
-		"intel-hpu":    c.testIntelHpu,
-		"build nvidia": c.testBuildNvidiaLegacy,
-		"build nvccli": c.testBuildNvCCLI,
-		"build rocm":   c.testBuildRocm,
+		"nvidia":          c.testNvidiaLegacy,
+		"nvidia compat32": c.testNvidiaCompat32,
+		"nvccli":          c.testNvCCLI,
+		"rocm":            c.testRocm,
+		"intel-hpu":       c.testIntelHpu,
+		"build nvidia":    c.testBuildNvidiaLegacy,
+		"build nvccli":    c.testBuildNvCCLI,
+		"build rocm":      c.testBuildRocm,
 	}
 }
