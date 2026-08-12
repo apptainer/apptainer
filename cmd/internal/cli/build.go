@@ -267,7 +267,7 @@ var buildMountFlag = cmdline.Flag{
 	Value:        &buildArgs.mounts,
 	DefaultValue: cmdline.StringArray{}, // to allow commas in bind path
 	Name:         "mount",
-	Usage:        "a mount specification e.g. 'type=bind,source=/opt,destination=/hostopt'.",
+	Usage:        "a mount specification e.g. 'type=bind,src=/opt,dst=/hostopt'.",
 	EnvKeys:      []string{"MOUNT"},
 	Tag:          "<spec>",
 	EnvHandler:   cmdline.EnvAppendValue,
