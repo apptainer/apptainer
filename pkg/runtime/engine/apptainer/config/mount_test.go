@@ -241,6 +241,25 @@ func TestParseMountString(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:        "multipleDifferentLength",
+			mountString: "type=bind,source=/opt,destination=/opt\ntype=bind,source=/srv,destination=/srv,ro",
+			want: []BindPath{
+				{
+					Source:      "/opt",
+					Destination: "/opt",
+					Options:     map[string]*BindOption{},
+				},
+				{
+					Source:      "/srv",
+					Destination: "/srv",
+					Options: map[string]*BindOption{
+						"ro": {},
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

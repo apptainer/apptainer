@@ -102,6 +102,7 @@
 - Richard Hattersley <richard.hattersley@metoffice.gov.uk>
 - Richard Neuboeck <hawk@tbi.univie.ac.at>
 - Robert Clarke <robert.clarke@bristol.ac.uk>
+- Robin Heinemann <robin.ole.heinemann@gmail.com>
 - Sasha Yakovtseva <sasha@sylabs.io>, <sashayakovtseva@gmail.com>
 - Satish Chebrolu  <satish@sylabs.io>
 - Shane Loretz <sloretz@openrobotics.org>, <shane.loretz@gmail.com>

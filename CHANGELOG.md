@@ -5,6 +5,11 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.5.x changes
+
+- Fixed a bug that prevented multiple mount entries in the `APPTAINER_MOUNT`
+  env var from having different numbers of options.
+
 ## v1.5.3 - \[2026-07-21\]
 
 - If the `ptrace()` system call does not work while building an image as
