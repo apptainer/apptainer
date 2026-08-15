@@ -9,6 +9,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Add a `--writable-tmpfs-size` option, and a corresponding
+  `APPTAINER_WRITABLE_TMPFS_SIZE` environment variable, to override the
+  `sessiondir max size` directive that limits `--writable-tmpfs`. It is
+  ignored when running setuid, where the session directory size is set by
+  the administrator.
 - Update minimum go version to 1.26.5.
 - Add support for variant to more architectures, but without verification.
   The previous arm32v5, arm32v6 and arm32v7 (= "arm") are still verified.

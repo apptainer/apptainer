@@ -3331,6 +3331,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"fuse mount":                   c.fuseMount,             // test fusemount option
 		"bind image":                   c.bindImage,             // test bind image with --bind and --mount
 		"unsquash":                     c.actionUnsquash,        // test --unsquash
+		"writable-tmpfs-size":          c.actionTmpfsSize,       // test --writable-tmpfs-size
 		"no-mount":                     c.actionNoMount,         // test --no-mount
 		"compat":                       np(c.actionCompat),      // test --compat
 		"umask":                        np(c.actionUmask),       // test umask propagation
@@ -3339,5 +3340,54 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"relWorkdirScratch":            np(c.relWorkdirScratch), // test relative --workdir with --scratch
 		"issue 1868":                   c.issue1868,             // https://github.com/apptainer/apptainer/issues/1868
 		"auth":                         np(c.actionAuth),        // tests action cmds w/authenticated pulls from OCI registries
+	}
+}
+
+// actionTmpfsSize checks that --writable-tmpfs-size raises the limit
+// that 'sessiondir max size' otherwise places on a --writable-tmpfs overlay.
+// The directive is only consulted when the session tmpfs is mounted
+// unprivileged, so these run in a user namespace.
+// https://github.com/apptainer/apptainer/issues/1313
+func (c actionTests) actionTmpfsSize(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	require.Filesystem(t, "overlay")
+
+	tests := []struct {
+		name     string
+		args     []string
+		exitCode int
+	}{
+		{
+			// The default 'sessiondir max size' is 64 MiB, so 100 MiB
+			// must not fit.
+			name:     "default too small",
+			args:     []string{"--writable-tmpfs"},
+			exitCode: 1,
+		},
+		{
+			name:     "size raised",
+			args:     []string{"--writable-tmpfs", "--writable-tmpfs-size", "256"},
+			exitCode: 0,
+		},
+		{
+			// Without --writable-tmpfs there is no overlay to size, so the
+			// container is read-only and the write fails whatever the size.
+			name:     "ignored without writable tmpfs",
+			args:     []string{"--writable-tmpfs-size", "256"},
+			exitCode: 1,
+		},
+	}
+
+	for _, tt := range tests {
+		args := append(tt.args, c.env.ImagePath, "dd", "if=/dev/zero", "of=/test", "bs=1M", "count=100")
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(e2e.UserNamespaceProfile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(args...),
+			e2e.ExpectExit(tt.exitCode),
+		)
 	}
 }

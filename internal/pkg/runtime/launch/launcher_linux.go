@@ -263,6 +263,8 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 		l.engineConfig.SetWritableTmpfs(l.cfg.WritableTmpfs)
 	}
 
+	l.setWritableTmpfsSize()
+
 	// Additional user requested library binds into /.singularity.d/libs.
 	l.engineConfig.AppendLibrariesPath(l.cfg.ContainLibs...)
 
@@ -1350,6 +1352,38 @@ func hidepidProc() bool {
 		}
 	}
 	return false
+}
+
+// setWritableTmpfsSize applies a --writable-tmpfs-size request by overriding
+// the 'sessiondir max size' directive, which sizes the tmpfs holding the
+// session directory and hence the --writable-tmpfs overlay.
+//
+// It must be called after the value of --writable-tmpfs has settled, because
+// --compat and --nvccli can turn it on, and --writable turns it back off.
+func (l *Launcher) setWritableTmpfsSize() {
+	if l.cfg.WritableTmpfsSize == 0 {
+		return
+	}
+
+	// The overlay is what the size is being asked about, so leave the
+	// administrator's value alone if there is not going to be one. The session
+	// directory is used for other things, and resizing it here would be a
+	// surprising thing for this option to do.
+	if !l.engineConfig.GetWritableTmpfs() {
+		sylog.Warningf("Ignoring --writable-tmpfs-size, it only applies together with --writable-tmpfs")
+		return
+	}
+
+	// The engine only consults the directive when the session tmpfs is mounted
+	// unprivileged. Under the setuid workflow it is mounted by root and left
+	// unlimited, so there is nothing to raise.
+	if buildcfg.APPTAINER_SUID_INSTALL == 1 && l.engineConfig.File.AllowSetuid && !l.cfg.Namespaces.User {
+		sylog.Warningf("Ignoring --writable-tmpfs-size, the session directory size is set by the administrator when running setuid")
+		return
+	}
+
+	sylog.Debugf("Setting session directory size to %d MiB", l.cfg.WritableTmpfsSize)
+	l.engineConfig.File.SessiondirMaxSize = uint(l.cfg.WritableTmpfsSize)
 }
 
 // convertImage extracts the image found at filename to directory dir within a temporary directory
