@@ -328,6 +328,7 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 		launch.OptMounts(bindPaths, mounts, fuseMount),
 		launch.OptNoMount(noMount),
 		launch.OptNvidia(nvidia, nvCCLI),
+		launch.OptCompat32(compat32),
 		launch.OptNoNvidia(noNvidia),
 		launch.OptRocm(rocm),
 		launch.OptNoRocm(noRocm),

@@ -13,7 +13,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
+
+	"github.com/apptainer/apptainer/internal/pkg/util/paths"
 )
 
 // gpuliblist returns libraries/binaries listed in a gpu lib list config file, typically
@@ -34,4 +37,19 @@ func gpuliblist(configFilePath string) ([]string, error) {
 		}
 	}
 	return libs, nil
+}
+
+// compat32Paths returns the 32-bit variants of the libraries listed in a gpu
+// lib list config file, to be mounted into the container's 32-bit
+// compatibility library directory.
+func compat32Paths(configFilePath string) ([]string, error) {
+	gpuFiles, err := gpuliblist(configFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("could not read %s: %v", filepath.Base(configFilePath), err)
+	}
+	if len(gpuFiles) == 0 {
+		return nil, nil
+	}
+
+	return paths.ResolveCompat32(gpuFiles)
 }

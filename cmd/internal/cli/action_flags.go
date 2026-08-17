@@ -51,6 +51,7 @@ var (
 	isWritableTmpfs bool
 	nvidia          bool
 	nvCCLI          bool
+	compat32        bool
 	rocm            bool
 	noEval          bool
 	noHome          bool
@@ -404,6 +405,16 @@ var actionNvCCLIFlag = cmdline.Flag{
 	Name:         "nvccli",
 	Usage:        "use nvidia-container-cli for GPU setup (experimental)",
 	EnvKeys:      []string{"NVCCLI"},
+}
+
+// --compat32
+var actionCompat32Flag = cmdline.Flag{
+	ID:           "actionCompat32Flag",
+	Value:        &compat32,
+	DefaultValue: false,
+	Name:         "compat32",
+	Usage:        "additionally bind the 32-bit GPU libraries into /.singularity.d/libs32, for 32-bit programs in the container (requires --nv or --rocm)",
+	EnvKeys:      []string{"COMPAT32"},
 }
 
 // --rocm flag to automatically bind
@@ -948,6 +959,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&actionNoPrivsFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionNvidiaFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionNvCCLIFlag, actionsInstanceCmd...)
+		cmdManager.RegisterFlagForCmd(&actionCompat32Flag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionRocmFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&actionOverlayFlag, actionsInstanceCmd...)
 		cmdManager.RegisterFlagForCmd(&commonPromptForPassphraseFlag, actionsInstanceCmd...)

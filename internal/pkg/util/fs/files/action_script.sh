@@ -164,6 +164,16 @@ if ! test -f "/.singularity.d/env/99-runtimevars.sh"; then
     source "/.singularity.d/env/99-runtimevars.sh"
 fi
 
+# 32-bit compatibility libraries, from --compat32, are bound into
+# /.singularity.d/libs32 rather than /.singularity.d/libs, because they have
+# the same names as their 64-bit counterparts and both are needed at once.
+# The dynamic loader ignores libraries built for the wrong architecture, so it
+# is safe for 64-bit programs to search this directory too.
+if [ -d /.singularity.d/libs32 ] && [ "$(cd /.singularity.d/libs32 && echo *)" != "*" ]; then
+    sylog debug "Adding /.singularity.d/libs32 to LD_LIBRARY_PATH"
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}/.singularity.d/libs32"
+fi
+
 if [ -n "${LD_LIBRARY_PATH:-}" ]; then
     if [ -n "${PREPEND_LD_LIBRARY_PATH:-}" ]; then
         sylog debug "Prepending $PREPEND_LD_LIBRARY_PATH to LD_LIBRARY_PATH"

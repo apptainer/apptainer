@@ -50,6 +50,7 @@ var buildArgs struct {
 	data                bool
 	nvidia              bool
 	nvccli              bool
+	compat32            bool
 	rocm                bool
 	writableTmpfs       bool     // For test section only
 	userns              bool     // Enable user namespaces
@@ -226,6 +227,15 @@ var buildNvFlag = cmdline.Flag{
 	DefaultValue: false,
 	Name:         "nv",
 	Usage:        "inject host Nvidia libraries during build for post and test sections",
+}
+
+// --compat32
+var buildCompat32Flag = cmdline.Flag{
+	ID:           "compat32Flag",
+	Value:        &buildArgs.compat32,
+	DefaultValue: false,
+	Name:         "compat32",
+	Usage:        "additionally inject the host 32-bit GPU libraries during build for post and test sections (requires --nv or --rocm)",
 }
 
 // --nvccli
@@ -417,6 +427,7 @@ func init() {
 
 		cmdManager.RegisterFlagForCmd(&buildNvFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildNvCCLIFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildCompat32Flag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildRocmFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildBindFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildMountFlag, buildCmd)

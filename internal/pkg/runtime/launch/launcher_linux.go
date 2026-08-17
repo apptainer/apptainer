@@ -53,6 +53,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	"github.com/apptainer/apptainer/pkg/util/rlimit"
+	"github.com/apptainer/apptainer/pkg/util/slice"
 	"github.com/ccoveille/go-safecast/v2"
 	"github.com/opencontainers/runtime-spec/specs-go"
 	"golang.org/x/sys/unix"
@@ -828,6 +829,18 @@ func (l *Launcher) SetGPUConfig() error {
 		l.cfg.Nvidia = true
 	}
 
+	// The compat32 driver capability of nvidia-container-cli requests the
+	// same thing as --compat32, so honor it in both GPU setup flows.
+	if !l.cfg.Compat32 && slice.ContainsString(strings.Split(os.Getenv("NVIDIA_DRIVER_CAPABILITIES"), ","), "compat32") {
+		sylog.Debugf("implying --compat32 from NVIDIA_DRIVER_CAPABILITIES")
+		l.cfg.Compat32 = true
+	}
+
+	if l.cfg.Compat32 && !l.cfg.Nvidia && !l.cfg.Rocm {
+		sylog.Warningf("Ignoring --compat32, it requires a GPU option such as --nv or --rocm")
+		l.cfg.Compat32 = false
+	}
+
 	if l.cfg.Rocm {
 		err := l.setRocmConfig()
 		// This is currently unnecessary, but useful for not missing future errors
@@ -885,6 +898,23 @@ func (l *Launcher) setNvCCLIConfig() (err error) {
 		}
 	}
 
+	// --compat32 is expressed to nvidia-container-cli through its compat32
+	// driver capability.
+	if l.cfg.Compat32 {
+		caps := os.Getenv("NVIDIA_DRIVER_CAPABILITIES")
+		if caps == "" {
+			// NVCLIEnvToFlags applies its default capabilities only when
+			// NVIDIA_DRIVER_CAPABILITIES is unset, so they must be
+			// carried over explicitly here.
+			caps = strings.Join(gpu.NVDriverDefaultCapabilities(), ",")
+		}
+		if !slice.ContainsString(strings.Split(caps, ","), "compat32") {
+			caps += ",compat32"
+		}
+		sylog.Debugf("Setting 'NVIDIA_DRIVER_CAPABILITIES=%s' for --compat32", caps)
+		os.Setenv("NVIDIA_DRIVER_CAPABILITIES", caps)
+	}
+
 	// Pass NVIDIA_ env vars that will be converted to nvidia-container-cli options
 	nvCCLIEnv := []string{}
 	for _, e := range os.Environ() {
@@ -926,6 +956,16 @@ func (l *Launcher) setNVLegacyConfig() error {
 		sylog.Warningf("While finding nv bind points: %v", err)
 	}
 	l.addGPUBinds(libs, bins, ipcs, files, "nv")
+
+	if l.cfg.Compat32 {
+		compat32Libs, err := gpu.NvidiaCompat32Paths(gpuConfFile)
+		if err != nil {
+			sylog.Warningf("While finding 32-bit nv bind points: %v", err)
+		} else {
+			l.addCompat32Binds(compat32Libs, "nv")
+		}
+	}
+
 	return nil
 }
 
@@ -939,7 +979,31 @@ func (l *Launcher) setRocmConfig() error {
 		sylog.Warningf("While finding ROCm bind points: %v", err)
 	}
 	l.addGPUBinds(libs, bins, []string{}, []string{}, "rocm")
+
+	if l.cfg.Compat32 {
+		compat32Libs, err := gpu.RocmCompat32Paths(gpuConfFile)
+		if err != nil {
+			sylog.Warningf("While finding 32-bit ROCm bind points: %v", err)
+		} else {
+			l.addCompat32Binds(compat32Libs, "rocm")
+		}
+	}
+
 	return nil
+}
+
+// addCompat32Binds adds EngineConfig entries to bind the provided list of
+// 32-bit libraries into the container's 32-bit compatibility library
+// directory.
+func (l *Launcher) addCompat32Binds(libs []string, gpuPlatform string) {
+	if len(libs) == 0 {
+		sylog.Warningf("Could not find any 32-bit %s libraries on this host!", gpuPlatform)
+		return
+	}
+	if l.cfg.Writable {
+		sylog.Warningf("32-bit %s libraries may not be bound with --writable", gpuPlatform)
+	}
+	l.engineConfig.AppendCompat32LibrariesPath(libs...)
 }
 
 // addGPUBinds adds EngineConfig entries to bind the provided list of libs, bins, ipc files.

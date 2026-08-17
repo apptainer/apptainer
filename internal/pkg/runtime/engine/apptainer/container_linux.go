@@ -34,6 +34,7 @@ import (
 	fsoverlay "github.com/apptainer/apptainer/internal/pkg/util/fs/overlay"
 	"github.com/apptainer/apptainer/internal/pkg/util/gpu"
 	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
+	"github.com/apptainer/apptainer/internal/pkg/util/paths"
 	"github.com/apptainer/apptainer/internal/pkg/util/priv"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/image"
@@ -2526,11 +2527,12 @@ func (c *container) createCwdDir(system *mount.System) error {
 
 func (c *container) addLibsMount(system *mount.System) error {
 	libraries := c.engine.EngineConfig.GetLibrariesPath()
+	compat32Libraries := c.engine.EngineConfig.GetCompat32LibrariesPath()
 
 	sylog.Debugf("Checking for 'user bind control' in configuration file")
 	if !c.engine.EngineConfig.File.UserBindControl {
 		msg := "Ignoring libraries bind request: user bind control disabled by system administrator"
-		if len(libraries) > 0 {
+		if len(libraries)+len(compat32Libraries) > 0 {
 			sylog.Warningf("%s", msg)
 		} else {
 			sylog.Verbosef("%s", msg)
@@ -2540,8 +2542,22 @@ func (c *container) addLibsMount(system *mount.System) error {
 
 	flags := uintptr(syscall.MS_BIND | syscall.MS_NOSUID | syscall.MS_NODEV | syscall.MS_RDONLY | syscall.MS_REC)
 
-	containerDir := "/.singularity.d/libs"
-	sessionDir := "/libs"
+	// The 32-bit compatibility libraries are bound into a directory of their
+	// own, as they have the same names as their 64-bit counterparts, and
+	// both are needed at once.
+	if err := c.addLibsDirMount(system, libraries, "/libs", paths.ContainerLibsDir, flags); err != nil {
+		return err
+	}
+
+	return c.addLibsDirMount(system, compat32Libraries, "/libs32", paths.ContainerCompat32LibsDir, flags)
+}
+
+// addLibsDirMount binds each library in libraries onto a placeholder file of
+// the same base name in sessionDir, then binds sessionDir onto containerDir.
+func (c *container) addLibsDirMount(system *mount.System, libraries []string, sessionDir, containerDir string, flags uintptr) error {
+	if len(libraries) == 0 {
+		return nil
+	}
 
 	if err := c.session.AddDir(sessionDir); err != nil {
 		return err
@@ -2576,17 +2592,13 @@ func (c *container) addLibsMount(system *mount.System) error {
 		system.Points.AddRemount(mount.FilesTag, sessionFilePath, flags)
 	}
 
-	if len(libraries) > 0 {
-		sessionDirPath, _ := c.session.GetPath(sessionDir)
+	sessionDirPath, _ := c.session.GetPath(sessionDir)
 
-		err := system.Points.AddBind(mount.FilesTag, sessionDirPath, containerDir, flags)
-		if err != nil {
-			return fmt.Errorf("unable to add %s to mount list: %s", sessionDirPath, err)
-		}
-		return system.Points.AddRemount(mount.FilesTag, containerDir, flags)
+	if err := system.Points.AddBind(mount.FilesTag, sessionDirPath, containerDir, flags); err != nil {
+		return fmt.Errorf("unable to add %s to mount list: %s", sessionDirPath, err)
 	}
 
-	return nil
+	return system.Points.AddRemount(mount.FilesTag, containerDir, flags)
 }
 
 func (c *container) addFilesMount(system *mount.System) error {

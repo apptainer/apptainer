@@ -29,6 +29,14 @@ func NvidiaPaths(configFilePath string) ([]string, []string, []string, error) {
 	return paths.Resolve(nvidiaFiles)
 }
 
+// NvidiaCompat32Paths returns a list of 32-bit Nvidia libraries that should be
+// mounted into the container's 32-bit compatibility library directory, in
+// order for 32-bit programs, e.g. Windows programs running under Wine, to use
+// Nvidia GPUs.
+func NvidiaCompat32Paths(configFilePath string) ([]string, error) {
+	return compat32Paths(configFilePath)
+}
+
 // NvidiaIpcsPath returns a list of nvidia driver ipcs.
 // Currently this is only the persistenced socket (if found).
 func NvidiaIpcsPath() ([]string, error) {

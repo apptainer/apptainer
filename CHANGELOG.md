@@ -9,6 +9,19 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Add a new `--compat32` flag (action and build) which, alongside `--nv` or
+  `--rocm`, additionally binds the 32-bit GPU driver libraries of the
+  host into `/.singularity.d/libs32` in the container, and adds that
+  directory to `LD_LIBRARY_PATH`. They are kept separate from the 64-bit
+  libraries in `/.singularity.d/libs` because both have the same names
+  and graphical applications, such as Windows programs running under
+  Wine, need both at once. With `--nvccli`, the flag adds the `compat32`
+  driver capability. `--compat32` is also implied by
+  `NVIDIA_DRIVER_CAPABILITIES=compat32`.
+- Fix the selection of GPU libraries on multiarch hosts, where `ldconfig -p`
+  lists several architectures of a library under the same name. Previously
+  only the first listed variant was considered, so a library could be
+  silently skipped if the wrong architecture happened to be listed first.
 - Update minimum go version to 1.26.5.
 - Add support for variant to more architectures, but without verification.
   The previous arm32v5, arm32v6 and arm32v7 (= "arm") are still verified.
