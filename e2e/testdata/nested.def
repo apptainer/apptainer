@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: ubuntu:24.10
+From: ubuntu:24.04
 
 %files
     ./   /apptainer-src/
@@ -12,10 +12,9 @@ From: ubuntu:24.10
         crun \
         cryptsetup \
         fuse2fs \
-        fuse \
         fuse-overlayfs \
         git \
-        libfuse-dev \
+        libfuse3-dev \
         libglib2.0-dev \
         libseccomp-dev \
         libsubid-dev \
