@@ -146,7 +146,7 @@ func (c ctx) apptainer(t *testing.T) {
 		},
 		{
 			name:         "root/build",
-			outerProfile: e2e.FakerootProfile,
+			outerProfile: e2e.RootProfile,
 			outerArgs:    []string{},
 			innerCommand: "build",
 			innerArgs:    []string{"--force", tmpBuildSIF, "examples/library/Apptainer"},
@@ -184,7 +184,7 @@ func (c ctx) apptainer(t *testing.T) {
 			t,
 			e2e.AsSubtest(tt.name),
 			e2e.WithDir(buildcfg.SOURCEDIR),
-			e2e.WithProfile(e2e.RootProfile),
+			e2e.WithProfile(tt.outerProfile),
 			e2e.WithCommand("run"),
 			e2e.WithArgs(cmdArgs...),
 			e2e.ExpectExit(0),
