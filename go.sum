@@ -464,8 +464,8 @@ go.opentelemetry.io/otel/trace v1.45.0 h1:l/mP6Uv7oNO7/TblbhpbgMidxhq1uO/rPsikOy
 go.opentelemetry.io/otel/trace v1.45.0/go.mod h1:qoJJA2xNMnxRrdISU/kLtfUH2wNeQbiv+jhs/CxI8bc=
 go.opentelemetry.io/proto/otlp v1.11.0 h1:5rrYs0Ykyj50sdU/JU0x8etU+LubXWb+gED6TbEdMIk=
 go.opentelemetry.io/proto/otlp v1.11.0/go.mod h1:SmVizdCOAm3XBtG1g1NnOdhW6jtddT72hLMhv8VwA8E=
-go.podman.io/image/v5 v5.41.0 h1:xOan4jlwbT4R5qhe3ruDAGJLnOC2z0eR61WhZjHbe4E=
-go.podman.io/image/v5 v5.41.0/go.mod h1:wfgAlfczPK4ZZw/wn/Av2iJfb3z9Vv+RKWgjHNShzZk=
+go.podman.io/image/v5 v5.41.1 h1:iPrhIt7/aNfRBMuzoxbMUVpQmR7Q75ahnrzkIC4JWLQ=
+go.podman.io/image/v5 v5.41.1/go.mod h1:wfgAlfczPK4ZZw/wn/Av2iJfb3z9Vv+RKWgjHNShzZk=
 go.podman.io/storage v1.64.0 h1:ryHCZO+Zl0ZG7OTHF+Qc4C0zLNuoe9W35zgE7mh2pYw=
 go.podman.io/storage v1.64.0/go.mod h1:ft0DzCRMZs1yn0rszmLYXEEwgd7IIc66JRwSRPUDwwc=
 go.uber.org/automaxprocs v1.6.0 h1:O3y2/QNTOdbF+e/dpXNNW7Rx2hZ4sTIPyybbxyNqTUs=
