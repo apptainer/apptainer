@@ -66,7 +66,7 @@ require (
 	github.com/moby/sys/user v0.4.1
 	github.com/moby/sys/userns v0.2.0
 	github.com/samber/lo v1.53.0
-	github.com/sirupsen/logrus v1.9.4
+	github.com/sirupsen/logrus v1.10.1
 	tags.cncf.io/container-device-interface v1.1.0
 )
 
