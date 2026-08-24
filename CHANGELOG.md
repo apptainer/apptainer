@@ -9,6 +9,15 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Add a new `gpu library path` option to `apptainer.conf`, giving a list of
+  directories to search for the GPU driver libraries named in
+  `nvliblist.conf` and `rocmliblist.conf` when binding them with `--nv` or
+  `--rocm`. The directories are searched ahead of the ld.so cache, and make
+  `ldconfig` optional: when it cannot be found or run, the configured
+  directories are used on their own. This allows the host GPU libraries to be
+  found on systems that keep them outside the ld.so cache, or that do not
+  ship `ldconfig` at all, such as NixOS and Guix, where previously no host
+  GPU libraries would be found at all.
 - Add a new `--compat32` flag (action and build) which, alongside `--nv` or
   `--rocm`, additionally binds the 32-bit GPU driver libraries of the
   host into `/.singularity.d/libs32` in the container, and adds that

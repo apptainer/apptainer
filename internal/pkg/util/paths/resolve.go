@@ -22,6 +22,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
 
 const (
@@ -90,9 +91,9 @@ func Resolve(fileList []string) ([]string, []string, []string, error) {
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("could not retrieve ELF machine ID: %v", err)
 	}
-	ldCache, err := ldCache()
+	ldCache, err := libraryCache()
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("could not retrieve ld cache: %v", err)
+		return nil, nil, nil, fmt.Errorf("could not retrieve library cache: %v", err)
 	}
 
 	// Track processed binaries to eliminate duplicates
@@ -148,9 +149,9 @@ func ResolveCompat32(fileList []string) ([]string, error) {
 	if !ok {
 		return nil, errNoCompat32
 	}
-	ldCache, err := ldCache()
+	ldCache, err := libraryCache()
 	if err != nil {
-		return nil, fmt.Errorf("could not retrieve ld cache: %v", err)
+		return nil, fmt.Errorf("could not retrieve library cache: %v", err)
 	}
 
 	return resolveLibs(fileList, machine32, elf.ELFCLASS32, ldCache, ContainerCompat32LibsDir), nil
@@ -236,6 +237,104 @@ func matchingLib(libPath string, machine elf.Machine, class elf.Class) bool {
 		sylog.Warningf("Could not close ELIB: %v", err)
 	}
 	return match
+}
+
+// libraryCache retrieves a map of <library>.so[.version] to the absolute paths
+// at which it can be found.
+//
+// The directories configured as 'gpu library path' in apptainer.conf are
+// searched first, in order, and the paths from the system ld cache follow. The
+// ld cache is only an optional source: it is skipped, with a warning, when
+// ldconfig is not available or fails to run. This allows Apptainer to find the
+// GPU driver libraries on systems that do not populate an ld.so cache, or that
+// do not ship ldconfig at all, such as NixOS and Guix.
+//
+// As with ldCache, all of the paths found for a given <library>.so[.version]
+// are kept, in search order, so that callers can pick the variant built for
+// the architecture they are resolving for.
+func libraryCache() (map[string][]string, error) {
+	libCache := make(map[string][]string)
+
+	searchPaths := gpuLibraryPath()
+	if len(searchPaths) > 0 {
+		sylog.Debugf("Searching for GPU libraries in configured 'gpu library path': %s", strings.Join(searchPaths, ", "))
+	}
+	for _, dir := range searchPaths {
+		addDirToCache(libCache, dir)
+	}
+
+	ldCache, err := ldCache()
+	if err != nil {
+		// ldconfig is not essential when the libraries can be found via
+		// the configured search paths.
+		if len(libCache) == 0 {
+			sylog.Warningf("Could not read the ld cache, and no 'gpu library path' is configured in apptainer.conf: %v", err)
+		} else {
+			sylog.Debugf("Not using the ld cache: %v", err)
+		}
+		return libCache, nil
+	}
+	for libName, libPaths := range ldCache {
+		for _, libPath := range libPaths {
+			if !slices.Contains(libCache[libName], libPath) {
+				libCache[libName] = append(libCache[libName], libPath)
+			}
+		}
+	}
+
+	return libCache, nil
+}
+
+// gpuLibraryPath returns the directories configured as 'gpu library path' in
+// apptainer.conf, to be searched for GPU driver libraries.
+func gpuLibraryPath() []string {
+	config := apptainerconf.GetCurrentConfig()
+	if config == nil {
+		// The configuration has not been loaded, e.g. in a unit test.
+		return nil
+	}
+
+	dirs := make([]string, 0, len(config.GpuLibraryPath))
+	for _, dir := range config.GpuLibraryPath {
+		dir = strings.TrimSpace(dir)
+		if dir != "" {
+			dirs = append(dirs, dir)
+		}
+	}
+	return dirs
+}
+
+// addDirToCache adds the libraries directly contained in dir to libCache,
+// after the paths already present from a higher priority source.
+func addDirToCache(libCache map[string][]string, dir string) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		sylog.Debugf("Skipping GPU library path %s: %v", dir, err)
+		return
+	}
+	for _, entry := range entries {
+		libName := entry.Name()
+		if !strings.Contains(libName, ".so") {
+			continue
+		}
+		libPath := filepath.Join(dir, libName)
+		// Versioned libraries are usually symlinks, so resolve the entry
+		// rather than requiring a regular file here. Skipping entries
+		// that do not resolve, e.g. dangling symlinks, keeps them from
+		// being offered ahead of a working library of the same name
+		// found later.
+		fi, err := os.Stat(libPath)
+		if err != nil {
+			sylog.Debugf("Skipping GPU library %s: %v", libPath, err)
+			continue
+		}
+		if !fi.Mode().IsRegular() {
+			continue
+		}
+		if !slices.Contains(libCache[libName], libPath) {
+			libCache[libName] = append(libCache[libName], libPath)
+		}
+	}
 }
 
 // ldCache retrieves a map of <library>.so[.version] to the absolute paths at

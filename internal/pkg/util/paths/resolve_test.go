@@ -21,6 +21,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
 
 var testLibList = []string{"libc.so", "echo"}
@@ -252,5 +254,103 @@ func TestResolveCompat32(t *testing.T) {
 		if !matchingLib(lib, compat32Machine[machine], elf.ELFCLASS32) {
 			t.Errorf("ResolveCompat32() returned %s, which is not a 32-bit library", lib)
 		}
+	}
+}
+
+// setGpuLibraryPath sets the 'gpu library path' configuration directive for
+// the duration of a test.
+func setGpuLibraryPath(t *testing.T, dirs ...string) {
+	t.Helper()
+
+	old := apptainerconf.GetCurrentConfig()
+	t.Cleanup(func() { apptainerconf.SetCurrentConfig(old) })
+
+	config := &apptainerconf.File{}
+	if old != nil {
+		copied := *old
+		config = &copied
+	}
+	config.GpuLibraryPath = dirs
+	apptainerconf.SetCurrentConfig(config)
+}
+
+// TestLibraryCacheSearchPaths checks that the directories configured as 'gpu
+// library path' are searched, in order, ahead of the ld cache.
+func TestLibraryCacheSearchPaths(t *testing.T) {
+	firstDir := filepath.Join(t.TempDir(), "first")
+	secondDir := filepath.Join(t.TempDir(), "second")
+	for _, dir := range []string{firstDir, secondDir} {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatalf("Could not create dir: %v", err)
+		}
+	}
+
+	// libboth.so.1 is in both directories, and the one in the directory
+	// configured first must be listed first. libsecond.so.1 is only in the
+	// second.
+	firstBoth := filepath.Join(firstDir, "libboth.so.1")
+	secondBoth := filepath.Join(secondDir, "libboth.so.1")
+	for _, lib := range []string{firstBoth, secondBoth, filepath.Join(secondDir, "libsecond.so.1")} {
+		if err := os.WriteFile(lib, nil, 0o644); err != nil {
+			t.Fatalf("Could not create file: %v", err)
+		}
+	}
+	// A non-library file must be ignored.
+	if err := os.WriteFile(filepath.Join(firstDir, "notalib.txt"), nil, 0o644); err != nil {
+		t.Fatalf("Could not create file: %v", err)
+	}
+	// A dangling symlink must not be listed ahead of the working library of
+	// the same name in the second directory.
+	shadowed := filepath.Join(secondDir, "libshadowed.so.1")
+	if err := os.WriteFile(shadowed, nil, 0o644); err != nil {
+		t.Fatalf("Could not create file: %v", err)
+	}
+	if err := os.Symlink(filepath.Join(firstDir, "nonexistent.so"), filepath.Join(firstDir, "libshadowed.so.1")); err != nil {
+		t.Fatalf("Could not symlink: %v", err)
+	}
+
+	setGpuLibraryPath(t, firstDir, secondDir, filepath.Join(firstDir, "nonexistent"))
+
+	gotCache, err := libraryCache()
+	if err != nil {
+		t.Fatalf("libraryCache() error = %v", err)
+	}
+	if want := []string{firstBoth, secondBoth}; !reflect.DeepEqual(gotCache["libboth.so.1"], want) {
+		t.Errorf("libraryCache() gave libboth.so.1 = %q, expected %q", gotCache["libboth.so.1"], want)
+	}
+	if _, ok := gotCache["libsecond.so.1"]; !ok {
+		t.Error("libraryCache() did not include libsecond.so.1 from the second search path")
+	}
+	if _, ok := gotCache["notalib.txt"]; ok {
+		t.Error("libraryCache() included a non-library file")
+	}
+	if want := []string{shadowed}; !reflect.DeepEqual(gotCache["libshadowed.so.1"], want) {
+		t.Errorf("libraryCache() gave libshadowed.so.1 = %q, expected the dangling symlink to be skipped in favor of %q", gotCache["libshadowed.so.1"], want)
+	}
+}
+
+// TestLibraryCacheWithoutLdconfig checks that a configured 'gpu library path'
+// is sufficient on its own, i.e. that resolution does not fail when the ld
+// cache is unavailable. bin.FindBin("ldconfig") fails in the unit test
+// environment because the installed apptainer.conf is not present, which is
+// the same code path taken on a host without ldconfig.
+func TestLibraryCacheWithoutLdconfig(t *testing.T) {
+	if _, err := ldCache(); err == nil {
+		t.Skip("ldconfig is available in this environment")
+	}
+
+	dir := t.TempDir()
+	lib := filepath.Join(dir, "libtest.so.1")
+	if err := os.WriteFile(lib, nil, 0o644); err != nil {
+		t.Fatalf("Could not create file: %v", err)
+	}
+	setGpuLibraryPath(t, dir)
+
+	gotCache, err := libraryCache()
+	if err != nil {
+		t.Fatalf("libraryCache() error = %v, expected the missing ld cache to be tolerated", err)
+	}
+	if want := []string{lib}; !reflect.DeepEqual(gotCache["libtest.so.1"], want) {
+		t.Errorf("libraryCache() gave libtest.so.1 = %q, expected %q", gotCache["libtest.so.1"], want)
 	}
 }

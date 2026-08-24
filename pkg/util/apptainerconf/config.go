@@ -106,6 +106,7 @@ type File struct {
 	AlwaysUseNv               bool     `default:"no" authorized:"yes,no" directive:"always use nv"`
 	UseNvCCLI                 bool     `default:"no" authorized:"yes,no" directive:"use nvidia-container-cli"`
 	AlwaysUseRocm             bool     `default:"no" authorized:"yes,no" directive:"always use rocm"`
+	GpuLibraryPath            []string `directive:"gpu library path"`
 	SharedLoopDevices         bool     `default:"no" authorized:"yes,no" directive:"shared loop devices"`
 	MaxLoopDevices            uint     `default:"256" directive:"max loop devices"`
 	SessiondirMaxSize         uint     `default:"64" directive:"sessiondir max size"`
@@ -536,6 +537,23 @@ use nvidia-container-cli = {{ if eq .UseNvCCLI true }}yes{{ else }}no{{ end }}
 # should be executed implicitly with the --rocm option (useful for GPU only
 # environments).
 always use rocm = {{ if eq .AlwaysUseRocm true }}yes{{ else }}no{{ end }}
+
+# GPU LIBRARY PATH: [STRING]
+# DEFAULT: undefined
+# A comma separated list of directories to search for the GPU driver libraries
+# named in nvliblist.conf and rocmliblist.conf, when binding them into a
+# container with --nv or --rocm.  These directories are searched ahead of, and
+# without needing, the ld.so cache reported by "ldconfig -p".
+# Set this on systems where the driver libraries are not in the ld.so cache, or
+# where ldconfig is not available at all, such as NixOS or Guix.  If it is not
+# set, and ldconfig cannot be run, then no host GPU libraries will be found.
+# The directories holding the 32-bit libraries used by --compat32 are listed
+# alongside the 64-bit ones; libraries are picked by architecture, not by the
+# directory they are found in.
+#gpu library path = /run/opengl-driver/lib, /run/opengl-driver-32/lib
+{{ range $index, $path := .GpuLibraryPath }}
+{{- if eq $index 0 }}gpu library path = {{ else }}, {{ end }}{{$path}}
+{{- end }}
 
 # ROOT DEFAULT CAPABILITIES: [full/file/no]
 # DEFAULT: full
