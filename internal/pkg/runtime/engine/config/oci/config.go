@@ -17,7 +17,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
 	"github.com/opencontainers/cgroups"
 	"github.com/opencontainers/runtime-spec/specs-go"
-	cseccomp "github.com/seccomp/containers-golang"
+	cseccomp "go.podman.io/common/pkg/seccomp"
 )
 
 // Config is the OCI runtime configuration.
