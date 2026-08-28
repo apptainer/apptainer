@@ -17,7 +17,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
 	"github.com/opencontainers/cgroups"
 	"github.com/opencontainers/runtime-spec/specs-go"
-	cseccomp "github.com/seccomp/containers-golang"
+	cseccomp "go.podman.io/common/pkg/seccomp"
 )
 
 // Config is the OCI runtime configuration.
@@ -239,6 +239,8 @@ func DefaultConfigV1() (*generate.Generator, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to get seccomp default profile: %s", err)
 		}
+		// The old seccomp library left the default errno unspecified.
+		config.Linux.Seccomp.DefaultErrnoRet = nil
 	}
 
 	return &generate.Generator{Config: &config}, nil
