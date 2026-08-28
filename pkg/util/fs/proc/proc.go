@@ -39,6 +39,24 @@ func HasFilesystem(fs string) (bool, error) {
 	return false, nil
 }
 
+// HasBindMountsUnderProc returns whether there are any bind mounts under /proc.
+// This is useful to check if /proc can be remounted, as existing sub bindmounts
+// would prevent a new /proc mount from being created.
+func HasBindMountsUnderProc() (bool, error) {
+	entries, err := GetMountInfoEntry("/proc/self/mountinfo")
+	if err != nil {
+		return false, fmt.Errorf("can't parse /proc/self/mountinfo: %s", err)
+	}
+
+	for _, entry := range entries {
+		// bind mounts have a "Root" that is not "/"
+		if strings.HasPrefix(entry.Point, "/proc/") && entry.Root != "/" {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // GetMountPointMap parses mountinfo pointing to path and returns
 // a map of parent mount points with associated child mount points.
 func GetMountPointMap(path string) (map[string][]string, error) {
