@@ -14,7 +14,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"syscall"
@@ -27,7 +26,6 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/starter"
 	fakerootConfig "github.com/apptainer/apptainer/internal/pkg/runtime/engine/fakeroot/config"
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
-	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	fakerootcallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/fakeroot"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
@@ -43,19 +41,6 @@ import (
 type EngineOperations struct {
 	CommonConfig *config.Common               `json:"-"`
 	EngineConfig *fakerootConfig.EngineConfig `json:"engineConfig"`
-}
-
-func canMountSlashProc() bool {
-	mountPath, err := bin.FindBin("mount")
-	if err != nil {
-		sylog.Debugf("no mount command found, assuming /proc can be mounted")
-		return true
-	}
-	cmd := exec.Command(mountPath, "-t", "proc", "proc", "/proc")
-	cmd.SysProcAttr = &syscall.SysProcAttr{}
-	cmd.SysProcAttr.Cloneflags = syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWUSER
-
-	return cmd.Run() == nil
 }
 
 // InitConfig stores the parsed config.Common inside the engine.
@@ -120,12 +105,18 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	g.AddOrReplaceLinuxNamespace(specs.UserNamespace, "")
 	g.AddOrReplaceLinuxNamespace(specs.MountNamespace, "")
 
-	if canMountSlashProc() {
-		g.AddOrReplaceLinuxNamespace(specs.PIDNamespace, "")
-		e.EngineConfig.HasPIDNamespace = true
-	} else {
+	// Check if there are bind mounts under /proc that would prevent
+	// a new /proc mount from being created in a PID namespace
+	hasMounts, err := proc.HasBindMountsUnderProc()
+	if err == nil && hasMounts {
 		sylog.Infof("Cannot mount /proc, proceeding without PID namespace")
 		e.EngineConfig.HasPIDNamespace = false
+	} else {
+		if err != nil {
+			sylog.Debugf("error checking /proc mounts, proceeding: %s", err)
+		}
+		g.AddOrReplaceLinuxNamespace(specs.PIDNamespace, "")
+		e.EngineConfig.HasPIDNamespace = true
 	}
 
 	uid, err := safecast.Convert[uint32](os.Getuid())
