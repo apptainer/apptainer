@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"syscall"
@@ -26,6 +27,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/starter"
 	fakerootConfig "github.com/apptainer/apptainer/internal/pkg/runtime/engine/fakeroot/config"
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
+	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	fakerootcallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/fakeroot"
 	"github.com/apptainer/apptainer/pkg/runtime/engine/config"
@@ -41,6 +43,19 @@ import (
 type EngineOperations struct {
 	CommonConfig *config.Common               `json:"-"`
 	EngineConfig *fakerootConfig.EngineConfig `json:"engineConfig"`
+}
+
+func canMountSlashProc() bool {
+	mountPath, err := bin.FindBin("mount")
+	if err != nil {
+		sylog.Debugf("no mount command found, assuming /proc can be mounted")
+		return true
+	}
+	cmd := exec.Command(mountPath, "-t", "proc", "proc", "/proc")
+	cmd.SysProcAttr = &syscall.SysProcAttr{}
+	cmd.SysProcAttr.Cloneflags = syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWUSER
+
+	return cmd.Run() == nil
 }
 
 // InitConfig stores the parsed config.Common inside the engine.
@@ -104,7 +119,14 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 
 	g.AddOrReplaceLinuxNamespace(specs.UserNamespace, "")
 	g.AddOrReplaceLinuxNamespace(specs.MountNamespace, "")
-	g.AddOrReplaceLinuxNamespace(specs.PIDNamespace, "")
+
+	if canMountSlashProc() {
+		g.AddOrReplaceLinuxNamespace(specs.PIDNamespace, "")
+		e.EngineConfig.HasPIDNamespace = true
+	} else {
+		sylog.Infof("Cannot mount /proc, proceeding without PID namespace")
+		e.EngineConfig.HasPIDNamespace = false
+	}
 
 	uid, err := safecast.Convert[uint32](os.Getuid())
 	if err != nil {
@@ -307,25 +329,28 @@ func (e *EngineOperations) StartProcess(_ int) error {
 	if err != nil {
 		return fmt.Errorf("failed to mount %s to /root: %s", e.EngineConfig.Home, err)
 	}
-	tmpdir, err := os.MkdirTemp("", "bind-mount-*")
-	if err != nil {
-		return fmt.Errorf("failed to create temporary directory: %s", err)
-	}
-	err = syscall.Mount("proc", tmpdir, "proc", syscall.MS_NOSUID|syscall.MS_NOEXEC|syscall.MS_NODEV, "")
-	if err != nil {
-		return fmt.Errorf("failed to mount proc filesystem: %s", err)
-	}
-	err = syscall.Mount(binfmtMisc, filepath.Join(tmpdir, "sys", "fs", "binfmt_misc"), "", syscall.MS_BIND, "")
-	if err != nil {
-		return fmt.Errorf("failed to mount binfmt_misc filesystem: %s", err)
-	}
-	err = syscall.Mount(tmpdir, "/proc", "", syscall.MS_MOVE, "")
-	if err != nil {
-		return fmt.Errorf("failed to mount proc filesystem: %s", err)
-	}
-	err = os.Remove(tmpdir)
-	if err != nil {
-		return fmt.Errorf("failed to remove temporary directory: %s", err)
+
+	if e.EngineConfig.HasPIDNamespace {
+		tmpdir, err := os.MkdirTemp("", "bind-mount-*")
+		if err != nil {
+			return fmt.Errorf("failed to create temporary directory: %s", err)
+		}
+		err = syscall.Mount("proc", tmpdir, "proc", syscall.MS_NOSUID|syscall.MS_NOEXEC|syscall.MS_NODEV, "")
+		if err != nil {
+			return fmt.Errorf("failed to mount proc filesystem: %s", err)
+		}
+		err = syscall.Mount(binfmtMisc, filepath.Join(tmpdir, "sys", "fs", "binfmt_misc"), "", syscall.MS_BIND, "")
+		if err != nil {
+			return fmt.Errorf("failed to mount binfmt_misc filesystem: %s", err)
+		}
+		err = syscall.Mount(tmpdir, "/proc", "", syscall.MS_MOVE, "")
+		if err != nil {
+			return fmt.Errorf("failed to mount proc filesystem: %s", err)
+		}
+		err = os.Remove(tmpdir)
+		if err != nil {
+			return fmt.Errorf("failed to remove temporary directory: %s", err)
+		}
 	}
 
 	// fix potential issue with SELinux (https://github.com/apptainer/singularity/issues/4038)
