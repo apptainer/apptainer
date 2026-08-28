@@ -2,7 +2,12 @@
 
 package oci
 
-import "testing"
+import (
+	"syscall"
+	"testing"
+
+	"github.com/opencontainers/runtime-spec/specs-go"
+)
 
 func TestDefaultConfigSeccompDefaultErrno(t *testing.T) {
 	gen, err := DefaultConfigV1()
@@ -14,5 +19,11 @@ func TestDefaultConfigSeccompDefaultErrno(t *testing.T) {
 	}
 	if gen.Config.Linux.Seccomp.DefaultErrnoRet != nil {
 		t.Fatal("default seccomp errno must remain unspecified")
+	}
+	for _, call := range gen.Config.Linux.Seccomp.Syscalls {
+		if call.Action == specs.ActErrno && call.ErrnoRet != nil &&
+			*call.ErrnoRet == uint(syscall.EPERM) {
+			t.Fatal("default seccomp profile must not contain explicit EPERM rules")
+		}
 	}
 }

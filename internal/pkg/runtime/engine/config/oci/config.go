@@ -12,6 +12,7 @@ package oci
 import (
 	"encoding/json"
 	"fmt"
+	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
 	"github.com/apptainer/apptainer/internal/pkg/security/seccomp"
@@ -241,6 +242,15 @@ func DefaultConfigV1() (*generate.Generator, error) {
 		}
 		// The old seccomp library left the default errno unspecified.
 		config.Linux.Seccomp.DefaultErrnoRet = nil
+		syscalls := config.Linux.Seccomp.Syscalls[:0]
+		for _, call := range config.Linux.Seccomp.Syscalls {
+			if call.Action == specs.ActErrno && call.ErrnoRet != nil &&
+				*call.ErrnoRet == uint(syscall.EPERM) {
+				continue
+			}
+			syscalls = append(syscalls, call)
+		}
+		config.Linux.Seccomp.Syscalls = syscalls
 	}
 
 	return &generate.Generator{Config: &config}, nil
