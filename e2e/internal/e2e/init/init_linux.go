@@ -46,8 +46,12 @@ __attribute__((constructor)) static void init(void) {
 	uid = atoi(getenv("E2E_ORIG_UID"));
 
 	if ( mount(NULL, "/", NULL, MS_PRIVATE|MS_REC, NULL) < 0 ) {
-		fprintf(stderr, "failed to set private mount propagation: %s\n", strerror(errno));
-		exit(1);
+
+		char *no_isolation = getenv("E2E_NO_ISOLATION");
+		if ( ( no_isolation == NULL ) || ( no_isolation[0] != '\0' ) ) {
+			fprintf(stderr, "failed to set private mount propagation: %s\n", strerror(errno));
+			exit(1);
+		}
 	}
 
 	// set original user identity and retain privileges for

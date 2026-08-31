@@ -48,4 +48,4 @@ e2e-nvidia:
     - |
       set -ex
       nvidia-smi
-      su ubuntu -c "./scripts/e2e-test -v -run TestE2E/PAR/GPU"
+      su ubuntu -c "E2E_NO_ISOLATION=1 ./scripts/e2e-test -v -run TestE2E/PAR/GPU"
