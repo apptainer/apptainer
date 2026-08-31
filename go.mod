@@ -42,7 +42,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/sylabs/json-resp v0.9.5
-	github.com/vbauerster/mpb/v8 v8.15.2
+	github.com/vbauerster/mpb/v8 v8.16.0
 	go.podman.io/common v0.66.1
 	go.podman.io/image/v5 v5.41.1
 	go.yaml.in/yaml/v4 v4.0.0-rc.6
@@ -116,7 +116,7 @@ require (
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-runewidth v0.0.27 // indirect
+	github.com/mattn/go-runewidth v0.0.28 // indirect
 	github.com/mattn/go-shellwords v1.0.14 // indirect
 	github.com/mattn/go-sqlite3 v1.14.48 // indirect
 	github.com/mdlayher/packet v1.1.2 // indirect
