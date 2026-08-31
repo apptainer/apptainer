@@ -21,7 +21,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/opencontainers/runtime-spec/specs-go"
-	cseccomp "github.com/seccomp/containers-golang"
+	cseccomp "go.podman.io/common/pkg/seccomp"
 	lseccomp "github.com/seccomp/libseccomp-golang"
 )
 
