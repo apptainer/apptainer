@@ -44,7 +44,7 @@ require (
 	github.com/sylabs/json-resp v0.9.5
 	github.com/vbauerster/mpb/v8 v8.16.0
 	go.podman.io/common v0.66.1
-	go.podman.io/image/v5 v5.41.1
+	go.podman.io/image/v5 v5.41.2-0.20260831183924-a1be96d12a12
 	go.yaml.in/yaml/v4 v4.0.0-rc.6
 	golang.org/x/crypto v0.55.0
 	golang.org/x/sys v0.47.0
@@ -66,7 +66,7 @@ require (
 	github.com/moby/sys/user v0.4.1
 	github.com/moby/sys/userns v0.2.0
 	github.com/samber/lo v1.53.0
-	github.com/sirupsen/logrus v1.10.1
+	github.com/sirupsen/logrus v1.10.2
 	tags.cncf.io/container-device-interface v1.1.0
 )
 
@@ -92,7 +92,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20241213102144-19d51d7fe467 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/docker/docker-credential-helpers v0.9.8 // indirect
+	github.com/docker/docker-credential-helpers v0.9.9 // indirect
 	github.com/docker/go-connections v0.8.1 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
@@ -118,7 +118,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.28 // indirect
 	github.com/mattn/go-shellwords v1.0.14 // indirect
-	github.com/mattn/go-sqlite3 v1.14.48 // indirect
+	github.com/mattn/go-sqlite3 v1.14.50 // indirect
 	github.com/mdlayher/packet v1.1.2 // indirect
 	github.com/mdlayher/socket v0.5.1 // indirect
 	github.com/miekg/pkcs11 v1.1.2 // indirect
@@ -142,7 +142,7 @@ require (
 	github.com/rootless-containers/proto/go-proto v0.0.0-20230421021042-4cd87ebadd67 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/safchain/ethtool v0.6.2 // indirect
-	github.com/secure-systems-lab/go-securesystemslib v0.11.0 // indirect
+	github.com/secure-systems-lab/go-securesystemslib v0.11.1 // indirect
 	github.com/sigstore/fulcio v1.8.7 // indirect
 	github.com/sigstore/protobuf-specs v0.5.1 // indirect
 	github.com/smallstep/pkcs7 v0.2.1 // indirect
