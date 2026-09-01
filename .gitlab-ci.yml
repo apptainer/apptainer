@@ -1,0 +1,51 @@
+# Based on https://gitlab.spack.io/warpx/warpx/-/blob/development/.gitlab/ci.yaml
+# Syncing is set up in https://gitlab.spac.io/apptainer/apptainer-ci-sync
+
+.common-setup:
+  before_script:
+    - |
+      set -ex
+      : check that user namespaces work
+      uname -a
+      unshare -rm id
+      : check for /dev/fuse
+      ls -l /dev/fuse
+      : install dependencies
+      apt-get update
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get install -y curl git sudo
+      : show apptainer version before getting the rest of the dependencies
+      scripts/get-version
+      apt-get install -y build-essential libseccomp-dev libtalloc-dev libattr1-dev libprotobuf-c-dev uidmap fakeroot cryptsetup dbus-user-session
+      apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
+      : install go
+      GOVERSION=$(scripts/get-min-go-version)
+      curl -Ls https://go.dev/dl/go${GOVERSION}.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+      export PATH=$PATH:/usr/local/go/bin
+      go version
+      : download, compile, and install dependencies
+      ./scripts/download-dependencies 
+      ./scripts/compile-dependencies
+      mkdir -p /usr/local/libexec/apptainer/bin
+      ./scripts/install-dependencies /usr/local/libexec
+      : build and install apptainer
+      ./mconfig -v -p /usr/local --with-suid
+      make -C ./builddir all && make -C ./builddir install
+      apptainer version
+      : set up sudo for unprivileged ubuntu user
+      echo "Defaults:ubuntu verifypw=any" >/etc/sudoers.d/ubuntu
+      echo "ubuntu ALL=(ALL) NOPASSWD: ALL" >>/etc/sudoers.d/ubuntu
+      : set up /etc/subuid for root user
+      apptainer config fakeroot --add root
+
+e2e-nvidia:
+  rules:
+    - if: $CI_SERVER_HOST == "gitlab.spack.io"
+  extends: .common-setup
+  tags: [userns-nvidia-gpu]
+  image: nvcr.io/nvidia/cuda:13.3.1-base-ubuntu24.04
+  script:
+    - |
+      set -ex
+      nvidia-smi
+      su ubuntu -c "E2E_NO_ISOLATION=1 ./scripts/e2e-test -v -run TestE2E/PAR/GPU"

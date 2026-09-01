@@ -13,7 +13,6 @@ import (
 	"context"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -224,8 +223,7 @@ func CopyImage(t *testing.T, source, dest string, insecureSource, insecureDest b
 	// Use the auth config written out in dockerhub_auth.go - only if
 	// source/dest are not insecure, or are the localhost. We don't want to
 	// inadvertently send out credentials over http (!)
-	u := CurrentUser(t)
-	configPath := filepath.Join(u.Dir, ".apptainer", syfs.DockerConfFile)
+	configPath := syfs.SearchDockerConf()
 
 	srcType, srcRef, err := ociimage.URItoSourceSinkRef(source)
 	if err != nil {

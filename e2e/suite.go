@@ -126,23 +126,26 @@ func Run(t *testing.T) {
 	testenv.UnprivCacheDir = unprivCacheDir
 	defer cleanUnprivCache(t)
 
-	// e2e tests need to run in a somehow agnostic environment, so we
-	// don't use environment of user executing tests in order to not
-	// wrongly interfering with cache stuff, sylabs library tokens,
-	// PGP keys
 	e2e.SetupHomeDirectories(t, testenv.TestRegistry)
 
-	// generate apptainer.conf with default values
-	e2e.SetupDefaultConfig(t, filepath.Join(testenv.TestDir, "apptainer.conf"))
+	if os.Getenv("E2E_NO_ISOLATION") == "" {
+		// e2e tests need to run in a somehow agnostic environment, so we
+		// don't use environment of user executing tests in order to not
+		// wrongly interfering with cache stuff, sylabs library tokens,
+		// PGP keys
 
-	// create an empty plugin directory
-	e2e.SetupPluginDir(t, testenv.TestDir)
+		// generate apptainer.conf with default values
+		e2e.SetupDefaultConfig(t, filepath.Join(testenv.TestDir, "apptainer.conf"))
 
-	// duplicate system remote.yaml and create a temporary one on top of original
-	e2e.SetupSystemRemoteFile(t, testenv.TestDir)
+		// create an empty plugin directory
+		e2e.SetupPluginDir(t, testenv.TestDir)
 
-	// create an empty ECL configuration and empty global keyring
-	e2e.SetupSystemECLAndGlobalKeyRing(t, testenv.TestDir)
+		// duplicate system remote.yaml and create a temporary one on top of original
+		e2e.SetupSystemRemoteFile(t, testenv.TestDir)
+
+		// create an empty ECL configuration and empty global keyring
+		e2e.SetupSystemECLAndGlobalKeyRing(t, testenv.TestDir)
+	}
 
 	// Creates '$HOME/.apptainer/docker-config.json' with credentials
 	e2e.SetupDockerHubCredentials(t)

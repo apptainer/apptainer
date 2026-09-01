@@ -37,7 +37,7 @@ func TestE2E(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	if os.Getenv("E2E_NO_REAPER") != "" {
+	if os.Getenv("E2E_NO_REAPER") != "" || os.Getenv("E2E_NO_ISOLATION") != "" {
 		ret := m.Run()
 		os.Exit(ret)
 	}
