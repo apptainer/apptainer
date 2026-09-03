@@ -354,3 +354,131 @@ func TestLibraryCacheWithoutLdconfig(t *testing.T) {
 		t.Errorf("libraryCache() gave libtest.so.1 = %q, expected %q", gotCache["libtest.so.1"], want)
 	}
 }
+
+// TestResolveFile checks that a configuration file is found at its own path,
+// else under the prefix above a 'gpu library path' directory, with the entry
+// kept as the destination.
+func TestResolveFile(t *testing.T) {
+	prefix := t.TempDir()
+	found := filepath.Join(prefix, "share", "glvnd", "egl_vendor.d", "10_testgpu.json")
+	etcFound := filepath.Join(prefix, "etc", "OpenCL", "vendors", "testgpu.icd")
+	for _, file := range []string{found, etcFound} {
+		if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+			t.Fatalf("Could not create dir: %v", err)
+		}
+		if err := os.WriteFile(file, nil, 0o644); err != nil {
+			t.Fatalf("Could not create file: %v", err)
+		}
+	}
+	prefixes := []string{prefix}
+
+	for entry, want := range map[string]string{
+		"/usr/share/glvnd/egl_vendor.d/10_testgpu.json": found,
+		"/etc/OpenCL/vendors/testgpu.icd":               etcFound,
+		found:                                           found,
+	} {
+		got, ok := resolveFile(entry, prefixes)
+		if !ok || got != want {
+			t.Errorf("resolveFile(%q) = %q, %v, expected %q", entry, got, ok, want)
+		}
+	}
+	if got, ok := resolveFile("/usr/share/glvnd/egl_vendor.d/absent.json", prefixes); ok {
+		t.Errorf("resolveFile() found an absent file at %q", got)
+	}
+}
+
+// TestFilePrefixes checks that the prefixes are the parents of the configured
+// directories, without duplicates and without the root.
+func TestFilePrefixes(t *testing.T) {
+	setGpuLibraryPath(t, "/run/opengl-driver/lib", "/run/opengl-driver/lib32", "/lib")
+	got := filePrefixes()
+	if want := []string{"/run/opengl-driver"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("filePrefixes() = %q, expected %q", got, want)
+	}
+}
+
+// TestResolveModules checks that a module entry, a path relative to a library
+// directory, is found in that directory next to a configured library
+// directory or next to its parent, passing over a build for another class, is
+// placed at the same relative path under the libraries directory, and is
+// bound at its host path by ModuleHostBinds.
+func TestResolveModules(t *testing.T) {
+	machine, class, err := elfMachine()
+	if err != nil {
+		t.Fatalf("elfMachine() error = %v", err)
+	}
+	otherClass := elf.ELFCLASS32
+	if class == elf.ELFCLASS32 {
+		otherClass = elf.ELFCLASS64
+	}
+	root := t.TempDir()
+	libDir := filepath.Join(root, "lib", "x86_64-linux-gnu")
+	otherLibDir := filepath.Join(root, "lib", "i386-linux-gnu")
+	// The GBM backend next to the library directory, and the X server
+	// modules next to its parent, as Debian lays them out.
+	backend := filepath.Join(libDir, "gbm", "testgpu-drm_gbm.so")
+	driver := filepath.Join(root, "lib", "xorg", "modules", "drivers", "testgpu_drv.so")
+	glx := filepath.Join(root, "lib", "xorg", "modules", "extensions", "libglxserver_testgpu.so.1")
+	for _, module := range []string{backend, driver, glx} {
+		writeELF(t, module, machine, class)
+	}
+	writeELF(t, filepath.Join(otherLibDir, "gbm", "testgpu-drm_gbm.so"), machine, otherClass)
+	setGpuLibraryPath(t, otherLibDir, libDir)
+
+	libs, _, _, err := Resolve([]string{
+		"gbm/testgpu-drm_gbm.so",
+		"xorg/modules/drivers/testgpu_drv.so",
+		"xorg/modules/extensions/libglxserver_testgpu.so",
+		"gbm/absent_gbm.so",
+	})
+	if err != nil {
+		t.Fatalf("Resolve() error = %v", err)
+	}
+	var modules []string
+	for _, lib := range libs {
+		if strings.Contains(lib, ":") {
+			modules = append(modules, lib)
+		}
+	}
+	want := []string{
+		backend + ":" + ContainerLibsDir + "/gbm/testgpu-drm_gbm.so",
+		driver + ":" + ContainerLibsDir + "/xorg/modules/drivers/testgpu_drv.so",
+		glx + ":" + ContainerLibsDir + "/xorg/modules/extensions/libglxserver_testgpu.so.1",
+	}
+	if !reflect.DeepEqual(modules, want) {
+		t.Errorf("Resolve() modules = %q, expected %q", modules, want)
+	}
+	wantBinds := []string{backend + ":" + backend, driver + ":" + driver, glx + ":" + glx}
+	if got := ModuleHostBinds(libs); !reflect.DeepEqual(got, wantBinds) {
+		t.Errorf("ModuleHostBinds() = %q, expected %q", got, wantBinds)
+	}
+}
+
+// TestWithoutFiles checks that the libraries that are one of the given files
+// are dropped, symlinks followed, and that a module is kept whichever file it
+// links to.
+func TestWithoutFiles(t *testing.T) {
+	dir := t.TempDir()
+	staged := filepath.Join(dir, "libtestgpu.so.1.2.3")
+	link := filepath.Join(dir, "libtestgpu.so.1")
+	other := filepath.Join(dir, "libtestgpu-egl.so.1")
+	module := filepath.Join(dir, "gbm", "testgpu-drm_gbm.so")
+	for _, file := range []string{staged, other} {
+		if err := os.WriteFile(file, nil, 0o644); err != nil {
+			t.Fatalf("Could not create file: %v", err)
+		}
+	}
+	if err := os.Symlink("libtestgpu.so.1.2.3", link); err != nil {
+		t.Fatalf("Could not symlink: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(module), 0o755); err != nil {
+		t.Fatalf("Could not create dir: %v", err)
+	}
+	if err := os.Symlink("../libtestgpu.so.1.2.3", module); err != nil {
+		t.Fatalf("Could not symlink: %v", err)
+	}
+	libs := []string{link, other, module + ":" + ContainerLibsDir + "/gbm/testgpu-drm_gbm.so"}
+	if got, want := WithoutFiles(libs, []string{staged}), libs[1:]; !reflect.DeepEqual(got, want) {
+		t.Errorf("WithoutFiles() = %q, expected %q", got, want)
+	}
+}

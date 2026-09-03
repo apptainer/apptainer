@@ -95,6 +95,28 @@ func (c ctx) testNvidiaLegacy(t *testing.T) {
 			e2e.ExpectExit(0),
 		)
 	}
+
+	// The driver's GBM backend, which the ld cache does not list, is bound
+	// in the gbm directory of the libraries directory, which is named in
+	// GBM_BACKENDS_PATH ahead of the container's own backend directory.
+	if hostHasGBMBackend() {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest("GBMBackend"),
+			e2e.WithProfile(e2e.UserProfile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs("--nv", imagePath, "sh", "-c", "ls /.singularity.d/libs/gbm/nvidia-drm_gbm.so && echo $GBM_BACKENDS_PATH"),
+			e2e.ExpectExit(0, e2e.ExpectOutput(e2e.RegexMatch, `(?m)^/\.singularity\.d/libs/gbm(:|$)`)),
+		)
+	}
+}
+
+// hostHasGBMBackend reports whether the host has the driver's GBM backend in
+// the gbm directory next to a library directory.
+func hostHasGBMBackend() bool {
+	backends, _ := filepath.Glob("/usr/lib*/gbm/nvidia-drm_gbm.so")
+	multiarch, _ := filepath.Glob("/usr/lib/*/gbm/nvidia-drm_gbm.so")
+	return len(backends)+len(multiarch) > 0
 }
 
 func (c ctx) testNvidiaCompat32(t *testing.T) {
@@ -250,6 +272,20 @@ func (c ctx) testNvCCLI(t *testing.T) {
 			e2e.WithArgs(tt.args...),
 			e2e.WithEnv(tt.env),
 			e2e.ExpectExit(tt.expectExit, tt.expectMatch),
+		)
+	}
+
+	// The libraries nvidia-container-cli stages are left to it, while the
+	// GBM backend, a module it does not stage, is bound.
+	if hostHasGBMBackend() {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest("UserContainUnstagedOnly"),
+			e2e.WithProfile(e2e.RootProfile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs("--contain", "--nvccli", imagePath, "sh", "-c", "ls /.singularity.d/libs/gbm/nvidia-drm_gbm.so && ! ls /.singularity.d/libs/libcuda.so.1"),
+			e2e.WithEnv([]string{"NVIDIA_VISIBLE_DEVICES=all", "NVIDIA_DRIVER_CAPABILITIES=all"}),
+			e2e.ExpectExit(0),
 		)
 	}
 }

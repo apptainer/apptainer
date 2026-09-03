@@ -10,6 +10,8 @@
 package gpu
 
 import (
+	"os"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"testing"
@@ -84,7 +86,7 @@ func TestNVCLIEnvToFlags(t *testing.T) {
 		{
 			name: "all-caps",
 			env: []string{
-				"NVIDIA_DRIVER_CAPABILITIES=compute,compat32,graphics,utility,video,display",
+				"NVIDIA_DRIVER_CAPABILITIES=compute,compat32,graphics,utility,video,display,ngx",
 			},
 			wantFlags: []string{
 				"--no-cgroups",
@@ -94,6 +96,24 @@ func TestNVCLIEnvToFlags(t *testing.T) {
 				"--utility",
 				"--video",
 				"--display",
+				"--ngx",
+			},
+			wantErr: false,
+		},
+		{
+			name: "every-cap",
+			env: []string{
+				"NVIDIA_DRIVER_CAPABILITIES=all",
+			},
+			wantFlags: []string{
+				"--no-cgroups",
+				"--compute",
+				"--compat32",
+				"--graphics",
+				"--utility",
+				"--video",
+				"--display",
+				"--ngx",
 			},
 			wantErr: false,
 		},
@@ -161,5 +181,41 @@ func TestNVCLIEnvToFlags(t *testing.T) {
 				t.Errorf("NVCLIEnvToFlags() = %v, want %v", gotFlags, tt.wantFlags)
 			}
 		})
+	}
+}
+
+// TestNVCLILibraries checks that the libraries are those the list command of
+// nvidia-container-cli prints, one per line, and that the command is run in
+// user mode unless root.
+func TestNVCLILibraries(t *testing.T) {
+	dir := t.TempDir()
+	argsFile := filepath.Join(dir, "args")
+	cli := filepath.Join(dir, "nvidia-container-cli")
+	script := "#!/bin/sh\necho \"$*\" > " + argsFile + "\necho /usr/lib/libtestgpu.so.1.2.3\necho /usr/lib/libtestgpu-ml.so.1.2.3\n"
+	if err := os.WriteFile(cli, []byte(script), 0o755); err != nil {
+		t.Fatalf("Could not create file: %v", err)
+	}
+
+	got, err := nvcliLibraries(cli)
+	if err != nil {
+		t.Fatalf("nvcliLibraries() error = %v", err)
+	}
+	want := []string{"/usr/lib/libtestgpu.so.1.2.3", "/usr/lib/libtestgpu-ml.so.1.2.3"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("nvcliLibraries() = %q, expected %q", got, want)
+	}
+	args, err := os.ReadFile(argsFile)
+	if err != nil {
+		t.Fatalf("The command was not run: %v", err)
+	}
+	wantArgs := "list --libraries\n"
+	if os.Geteuid() != 0 {
+		wantArgs = "--user list --libraries\n"
+	}
+	if string(args) != wantArgs {
+		t.Errorf("nvidia-container-cli was run with %q, expected %q", args, wantArgs)
+	}
+	if _, err := nvcliLibraries(filepath.Join(dir, "absent")); err == nil {
+		t.Error("nvcliLibraries() did not fail for an absent command")
 	}
 }
