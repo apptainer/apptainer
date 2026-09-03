@@ -67,7 +67,7 @@ for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs PRoot; d
                 -B 0x`head -c20 /dev/urandom|od -An -tx1|tr -d ' \n'`"
             ;;
         PRoot)
-            make -C src proot
+            make -C src proot HAS_SWIG= HAS_PYTHON_CONFIG=
             ;;
         *)
             echo "unrecognized package $PKG" >&2
