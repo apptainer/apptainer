@@ -109,6 +109,22 @@ func (c ctx) testNvidiaLegacy(t *testing.T) {
 			e2e.ExpectExit(0),
 		)
 	}
+
+	// The driver's GBM backend, which the ld cache does not list, is bound
+	// with the libraries and named in GBM_BACKENDS_PATH ahead of the
+	// container's own backend directory.
+	backends, _ := filepath.Glob("/usr/lib*/gbm/nvidia-drm_gbm.so")
+	multiarch, _ := filepath.Glob("/usr/lib/*/gbm/nvidia-drm_gbm.so")
+	if len(backends)+len(multiarch) > 0 {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest("GBMBackend"),
+			e2e.WithProfile(e2e.UserProfile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs("--nv", imagePath, "sh", "-c", "ls /.singularity.d/libs/nvidia-drm_gbm.so && echo $GBM_BACKENDS_PATH"),
+			e2e.ExpectExit(0, e2e.ExpectOutput(e2e.RegexMatch, `(?m)^/\.singularity\.d/libs(:|$)`)),
+		)
+	}
 }
 
 func (c ctx) testNvidiaCompat32(t *testing.T) {

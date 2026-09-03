@@ -84,7 +84,7 @@ func TestNVCLIEnvToFlags(t *testing.T) {
 		{
 			name: "all-caps",
 			env: []string{
-				"NVIDIA_DRIVER_CAPABILITIES=compute,compat32,graphics,utility,video,display",
+				"NVIDIA_DRIVER_CAPABILITIES=compute,compat32,graphics,utility,video,display,ngx",
 			},
 			wantFlags: []string{
 				"--no-cgroups",
@@ -94,6 +94,24 @@ func TestNVCLIEnvToFlags(t *testing.T) {
 				"--utility",
 				"--video",
 				"--display",
+				"--ngx",
+			},
+			wantErr: false,
+		},
+		{
+			name: "every-cap",
+			env: []string{
+				"NVIDIA_DRIVER_CAPABILITIES=all",
+			},
+			wantFlags: []string{
+				"--no-cgroups",
+				"--compute",
+				"--compat32",
+				"--graphics",
+				"--utility",
+				"--video",
+				"--display",
+				"--ngx",
 			},
 			wantErr: false,
 		},

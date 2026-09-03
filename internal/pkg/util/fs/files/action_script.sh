@@ -174,6 +174,25 @@ if [ -d /.singularity.d/libs32 ] && [ "$(cd /.singularity.d/libs32 && echo *)" !
     export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}/.singularity.d/libs32"
 fi
 
+# A GBM backend bound with --nv, the driver's nvidia-drm_gbm.so, is loaded by
+# Mesa's libgbm from the directories in GBM_BACKENDS_PATH, which replaces the
+# container's own backend directory once set: that directory stays listed so
+# the dri backend is still found. The bound directory goes first, ahead of any
+# path the image set, since the backend has to match the host's driver.
+for __backend__ in /.singularity.d/libs/*_gbm.so; do
+    if [ -e "$__backend__" ]; then
+        __gbm_dirs__="/.singularity.d/libs"
+        for __dir__ in $( (/sbin/ldconfig -Nv | /bin/sed '/^\t/d;s/:.*//') 2>/dev/null ); do
+            if [ -d "$__dir__/gbm" ]; then
+                __gbm_dirs__="$__gbm_dirs__:$__dir__/gbm"
+            fi
+        done
+        export GBM_BACKENDS_PATH="$__gbm_dirs__${GBM_BACKENDS_PATH:+:$GBM_BACKENDS_PATH}"
+        sylog debug "Setting GBM_BACKENDS_PATH to $GBM_BACKENDS_PATH"
+    fi
+    break
+done
+
 if [ -n "${LD_LIBRARY_PATH:-}" ]; then
     if [ -n "${PREPEND_LD_LIBRARY_PATH:-}" ]; then
         sylog debug "Prepending $PREPEND_LD_LIBRARY_PATH to LD_LIBRARY_PATH"

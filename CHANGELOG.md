@@ -9,6 +9,28 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Bind the NVIDIA driver's GBM backend and X server modules with `--nv`, so
+  that a Wayland compositor renders on the GPU through Mesa's libgbm and an
+  X server runs on the `nvidia` driver without nvidia-container-cli:
+  `nvliblist.conf` names them, the module directories next to the library
+  directories are searched for them, each is bound at its host path as well
+  as among the libraries, and `GBM_BACKENDS_PATH` is set in the container
+  when a backend was bound. The driver's `xorg.conf.d` snippet is bound too,
+  which carries the module path where the modules live outside the X
+  server's tree. A configuration file the list names is looked for under the
+  `gpu library path` prefixes and the alternate directories a distribution
+  uses when it is not at its standard path, and is bound at the standard
+  path, which is where the container's loaders read it. The list also gains
+  the driver's newer libraries, the EGL X11 platform configuration files,
+  the OpenCL ICD file and the Vulkan configuration under `/etc`, and drops
+  `libglx.so`, the GLX module name of drivers older than 390 that would now
+  match the X server's own module. With `--contain`, `--nv` now binds
+  `/dev/dri` beside the driver's own device nodes, which is what GBM, the
+  EGL device platform and an X server open on the GPU, and so does `--nvccli`,
+  which nvidia-container-cli leaves out while staging the driver's own nodes.
+- `--nvccli` accepts `NVIDIA_DRIVER_CAPABILITIES=all`, which asks for every
+  capability and which the container CLI has no flag for, and the `ngx`
+  capability that it does.
 - Add a new `gpu library path` option to `apptainer.conf`, giving a list of
   directories to search for the GPU driver libraries named in
   `nvliblist.conf` and `rocmliblist.conf` when binding them with `--nv` or
