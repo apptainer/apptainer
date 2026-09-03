@@ -38,6 +38,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/squashfs"
 	"github.com/apptainer/apptainer/internal/pkg/util/gpu"
+	"github.com/apptainer/apptainer/internal/pkg/util/paths"
 	"github.com/apptainer/apptainer/internal/pkg/util/starter"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/build/types"
@@ -952,6 +953,31 @@ func (l *Launcher) setNvCCLIConfig() (err error) {
 
 	l.setWritableTmpfsFor("nvidia-container-cli")
 
+	// nvidia-container-cli stages the driver's own libraries, and the
+	// container's libraries directory precedes the directories it stages
+	// them into, so those are left to it, CUDA compatibility included. The
+	// rest of what nvliblist.conf names is bound as with --nv: the modules a
+	// program opens by path, the configuration files, and the libraries the
+	// CLI does not stage, such as the EGL platform libraries.
+	gpuConfFile := filepath.Join(buildcfg.APPTAINER_CONFDIR, "nvliblist.conf")
+	libs, _, files, err := gpu.NvidiaPaths(gpuConfFile)
+	if err != nil {
+		sylog.Warningf("While finding nv bind points: %v", err)
+		return nil
+	}
+	files = append(files, paths.ModuleHostBinds(libs)...)
+	if len(files) > 0 {
+		l.engineConfig.AppendFilesPath(files...)
+	}
+	staged, err := gpu.NVCLILibraries()
+	if err != nil {
+		sylog.Warningf("Not binding the libraries nvliblist.conf names: %v", err)
+		return nil
+	}
+	if libs = paths.WithoutFiles(libs, staged); len(libs) > 0 {
+		l.engineConfig.AppendLibrariesPath(libs...)
+	}
+
 	return nil
 }
 
@@ -985,6 +1011,7 @@ func (l *Launcher) setNVLegacyConfig() error {
 	if err != nil {
 		sylog.Warningf("While finding nv bind points: %v", err)
 	}
+	files = append(files, paths.ModuleHostBinds(libs)...)
 	l.addGPUBinds(libs, bins, ipcs, files, "nv")
 
 	if l.cfg.Compat32 {

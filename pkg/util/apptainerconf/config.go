@@ -550,6 +550,10 @@ always use rocm = {{ if eq .AlwaysUseRocm true }}yes{{ else }}no{{ end }}
 # The directories holding the 32-bit libraries used by --compat32 are listed
 # alongside the 64-bit ones; libraries are picked by architecture, not by the
 # directory they are found in.
+# The modules and the non-library files named in nvliblist.conf are looked for
+# relative to these directories as well: a module next to each of them, and a
+# file under the prefix above them, so that /usr/share/x is found as
+# <prefix>/share/x and /etc/x as <prefix>/etc/x, for a driver installed there.
 #gpu library path = /run/opengl-driver/lib, /run/opengl-driver-32/lib
 {{ range $index, $path := .GpuLibraryPath }}
 {{- if eq $index 0 }}gpu library path = {{ else }}, {{ end }}{{$path}}
