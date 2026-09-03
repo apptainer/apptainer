@@ -41,7 +41,12 @@ var nVDriverCapabilities = []string{
 	"utility",
 	"video",
 	"display",
+	"ngx",
 }
+
+// nVDriverAllCapabilities is the value that asks for every capability. The
+// container CLI has no flag for it, so it is expanded here.
+const nVDriverAllCapabilities = "all"
 
 // nVDriverDefaultCapabilities is the default set of nvidia-container-cli driver capabilities.
 // It is used if NVIDIA_DRIVER_CAPABILITIES is not set.
@@ -200,6 +205,9 @@ func NVCLIEnvToFlags(nvidiaEnv []string) (flags []string, err error) {
 		if pair[0] == "NVIDIA_DRIVER_CAPABILITIES" && pair[1] != "" {
 			defaultDriverCaps = false
 			caps := strings.Split(pair[1], ",")
+			if slice.ContainsString(caps, nVDriverAllCapabilities) {
+				caps = nVDriverCapabilities
+			}
 
 			for _, capability := range caps {
 				if slice.ContainsString(nVDriverCapabilities, capability) {

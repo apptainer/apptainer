@@ -12,6 +12,22 @@ Changes since 1.5.x
 - List the Fedora build dependencies explicitly instead of installing a
   development tools group.
 - Allow building RPM packages with Fedora 45's renamed protobuf-c library.
+- Make `--nv` work for graphics as well as compute. The driver files that a
+  program opens by path rather than by name, the GBM backend and the X
+  server's `nvidia` modules, are now bound into the container, and
+  `GBM_BACKENDS_PATH` is set so the backend is found. With `--contain`,
+  `/dev/dri` is bound as well, since that is what a compositor or an X
+  server opens on the GPU. A Wayland compositor or an X server in the
+  container now runs on the GPU, where before it fell back to software
+  rendering.
+- Update `nvliblist.conf` to the driver's current file set: the GBM backend,
+  the X server modules, the newer libraries and the EGL, OpenCL and Vulkan
+  configuration files. A configuration file the list names is bound at the
+  path the container's loaders read, wherever the host keeps it. The
+  obsolete `libglx.so` entry is dropped, as that name now matches the X
+  server's own module.
+- `--nvccli` accepts `NVIDIA_DRIVER_CAPABILITIES=all`, which asks for every
+  capability and previously failed to start the container.
 - Add a new `gpu library path` option to `apptainer.conf`, giving a list of
   directories to search for the GPU driver libraries named in
   `nvliblist.conf` and `rocmliblist.conf` when binding them with `--nv` or

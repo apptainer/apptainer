@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -329,6 +330,54 @@ func TestLibraryCacheSearchPaths(t *testing.T) {
 	}
 }
 
+// TestLibraryCacheModuleDirs checks that the module directories next to a
+// library directory, and next to its parent, are searched for the modules the
+// ld cache never lists.
+func TestLibraryCacheModuleDirs(t *testing.T) {
+	libDir := filepath.Join(t.TempDir(), "lib", "x86_64-linux-gnu")
+	if err := os.MkdirAll(filepath.Join(libDir, "gbm"), 0o755); err != nil {
+		t.Fatalf("Could not create dir: %v", err)
+	}
+	allocator := filepath.Join(libDir, "libtestgpu-allocator.so.1")
+	if err := os.WriteFile(allocator, nil, 0o644); err != nil {
+		t.Fatalf("Could not create file: %v", err)
+	}
+	// The driver installs its GBM backend as a symlink to the allocator
+	// library.
+	backend := filepath.Join(libDir, "gbm", "testgpu-drm_gbm.so")
+	if err := os.Symlink("../libtestgpu-allocator.so.1", backend); err != nil {
+		t.Fatalf("Could not symlink: %v", err)
+	}
+	modules := filepath.Join(filepath.Dir(libDir), "xorg", "modules")
+	driver := filepath.Join(modules, "drivers", "testgpu_drv.so")
+	glx := filepath.Join(modules, "extensions", "libglxserver_testgpu.so.1")
+	for _, module := range []string{driver, glx} {
+		if err := os.MkdirAll(filepath.Dir(module), 0o755); err != nil {
+			t.Fatalf("Could not create dir: %v", err)
+		}
+		if err := os.WriteFile(module, nil, 0o644); err != nil {
+			t.Fatalf("Could not create file: %v", err)
+		}
+	}
+
+	setGpuLibraryPath(t, libDir)
+
+	gotCache, err := libraryCache()
+	if err != nil {
+		t.Fatalf("libraryCache() error = %v", err)
+	}
+	for name, want := range map[string]string{
+		"libtestgpu-allocator.so.1": allocator,
+		"testgpu-drm_gbm.so":        backend,
+		"testgpu_drv.so":            driver,
+		"libglxserver_testgpu.so.1": glx,
+	} {
+		if got := gotCache[name]; !reflect.DeepEqual(got, []string{want}) {
+			t.Errorf("libraryCache() gave %s = %q, expected %q", name, got, want)
+		}
+	}
+}
+
 // TestLibraryCacheWithoutLdconfig checks that a configured 'gpu library path'
 // is sufficient on its own, i.e. that resolution does not fail when the ld
 // cache is unavailable. bin.FindBin("ldconfig") fails in the unit test
@@ -353,4 +402,136 @@ func TestLibraryCacheWithoutLdconfig(t *testing.T) {
 	if want := []string{lib}; !reflect.DeepEqual(gotCache["libtest.so.1"], want) {
 		t.Errorf("libraryCache() gave libtest.so.1 = %q, expected %q", gotCache["libtest.so.1"], want)
 	}
+}
+
+// TestIsModulePath checks that only the module directories, where a loader
+// opens a file by path, count as module paths.
+func TestIsModulePath(t *testing.T) {
+	for path, want := range map[string]bool{
+		"/usr/lib/x86_64-linux-gnu/gbm/nvidia-drm_gbm.so":           true,
+		"/usr/lib/xorg/modules/drivers/nvidia_drv.so":               true,
+		"/usr/lib/xorg/modules/extensions/libglxserver_nvidia.so.1": true,
+		"/usr/lib/x86_64-linux-gnu/nvidia/xorg/nvidia_drv.so":       true,
+		"/usr/lib/x86_64-linux-gnu/libcuda.so.1":                    false,
+		"/usr/lib/x86_64-linux-gnu/libnvidia-allocator.so.1":        false,
+		"/.singularity.d/libs/nvidia-drm_gbm.so":                    false,
+	} {
+		if got := isModulePath(path); got != want {
+			t.Errorf("isModulePath(%q) = %v, expected %v", path, got, want)
+		}
+	}
+}
+
+// TestResolveFile checks that a configuration file is found at its own path,
+// else under the prefix above a 'gpu library path' directory, with the entry
+// kept as the destination.
+func TestResolveFile(t *testing.T) {
+	prefix := t.TempDir()
+	found := filepath.Join(prefix, "share", "glvnd", "egl_vendor.d", "10_testgpu.json")
+	if err := os.MkdirAll(filepath.Dir(found), 0o755); err != nil {
+		t.Fatalf("Could not create dir: %v", err)
+	}
+	if err := os.WriteFile(found, nil, 0o644); err != nil {
+		t.Fatalf("Could not create file: %v", err)
+	}
+	etcFound := filepath.Join(prefix, "etc", "OpenCL", "vendors", "testgpu.icd")
+	if err := os.MkdirAll(filepath.Dir(etcFound), 0o755); err != nil {
+		t.Fatalf("Could not create dir: %v", err)
+	}
+	if err := os.WriteFile(etcFound, nil, 0o644); err != nil {
+		t.Fatalf("Could not create file: %v", err)
+	}
+	prefixes := []string{prefix}
+
+	for entry, want := range map[string]string{
+		"/usr/share/glvnd/egl_vendor.d/10_testgpu.json": found,
+		"/etc/OpenCL/vendors/testgpu.icd":               etcFound,
+		found:                                           found,
+	} {
+		got, ok := resolveFile(entry, prefixes)
+		if !ok || got != want {
+			t.Errorf("resolveFile(%q) = %q, %v, expected %q", entry, got, ok, want)
+		}
+	}
+	if got, ok := resolveFile("/usr/share/glvnd/egl_vendor.d/absent.json", prefixes); ok {
+		t.Errorf("resolveFile() found an absent file at %q", got)
+	}
+}
+
+// TestFilePrefixes checks that the prefixes are the parents of the configured
+// directories, without duplicates and without the root.
+func TestFilePrefixes(t *testing.T) {
+	setGpuLibraryPath(t, "/run/opengl-driver/lib", "/run/opengl-driver/lib32", "/lib")
+	got := filePrefixes()
+	if want := []string{"/run/opengl-driver"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("filePrefixes() = %q, expected %q", got, want)
+	}
+}
+
+// TestResolveModulesAtHostPaths checks that a module found through a
+// configured directory is bound at its host path as a file, next to its
+// place among the libraries, and that a configuration file found under the
+// prefix is bound at the standard path.
+func TestResolveModulesAtHostPaths(t *testing.T) {
+	machine, class, err := elfMachine()
+	if err != nil {
+		t.Fatalf("elfMachine() error = %v", err)
+	}
+	libDir := filepath.Join(t.TempDir(), "lib")
+	if err := os.MkdirAll(filepath.Join(libDir, "gbm"), 0o755); err != nil {
+		t.Fatalf("Could not create dir: %v", err)
+	}
+	// An ELF library of the host's own machine and class, copied from the
+	// one every test host has.
+	lib, err := os.ReadFile(hostLibc(t))
+	if err != nil {
+		t.Fatalf("Could not read a host library: %v", err)
+	}
+	backend := filepath.Join(libDir, "gbm", "testgpu-drm_gbm.so")
+	if err := os.WriteFile(backend, lib, 0o644); err != nil {
+		t.Fatalf("Could not create file: %v", err)
+	}
+	if !matchingLib(backend, machine, class) {
+		t.Skip("the copied host library does not match this machine")
+	}
+	config := filepath.Join(filepath.Dir(libDir), "share", "egl", "egl_external_platform.d", "15_testgpu_gbm.json")
+	if err := os.MkdirAll(filepath.Dir(config), 0o755); err != nil {
+		t.Fatalf("Could not create dir: %v", err)
+	}
+	if err := os.WriteFile(config, nil, 0o644); err != nil {
+		t.Fatalf("Could not create file: %v", err)
+	}
+	setGpuLibraryPath(t, libDir)
+
+	libs, _, files, err := Resolve([]string{"testgpu-drm_gbm.so", "/usr/share/egl/egl_external_platform.d/15_testgpu_gbm.json"})
+	if err != nil {
+		t.Fatalf("Resolve() error = %v", err)
+	}
+	if !slices.Contains(libs, backend) {
+		t.Errorf("Resolve() libraries %q lack the backend %q", libs, backend)
+	}
+	for _, want := range []string{
+		backend + ":" + backend,
+		config + ":/usr/share/egl/egl_external_platform.d/15_testgpu_gbm.json",
+	} {
+		if !slices.Contains(files, want) {
+			t.Errorf("Resolve() files %q lack %q", files, want)
+		}
+	}
+}
+
+// hostLibc returns the path of the C library the test binary itself links,
+// an ELF library of the host's machine and class.
+func hostLibc(t *testing.T) string {
+	t.Helper()
+	for _, candidate := range []string{
+		"/lib/x86_64-linux-gnu/libc.so.6", "/lib64/libc.so.6", "/lib/aarch64-linux-gnu/libc.so.6",
+		"/usr/lib/libc.so.6", "/lib/libc.so.6",
+	} {
+		if _, err := os.Stat(candidate); err == nil {
+			return candidate
+		}
+	}
+	t.Skip("no C library found to copy")
+	return ""
 }

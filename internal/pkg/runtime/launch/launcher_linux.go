@@ -938,6 +938,31 @@ func (l *Launcher) setNvCCLIConfig() (err error) {
 		l.cfg.WritableTmpfs = true
 	}
 
+	// nvidia-container-cli stages the driver's libraries, but none of the modules
+	// a loader opens by path and none of the EGL platform libraries its own
+	// configuration files name, so those are bound here as for the legacy flow.
+	// Only that subset: the container libraries directory precedes the cache, so
+	// binding the rest would shadow what the CLI staged, CUDA compatibility
+	// included.
+	gpuConfFile := filepath.Join(buildcfg.APPTAINER_CONFDIR, "nvliblist.conf")
+	libs, _, files, err := gpu.NvidiaPaths(gpuConfFile)
+	if err != nil {
+		sylog.Warningf("While finding nv bind points: %v", err)
+	} else {
+		if len(files) > 0 {
+			l.engineConfig.AppendFilesPath(files...)
+		}
+		eglLibs := []string{}
+		for _, lib := range libs {
+			if strings.HasPrefix(filepath.Base(lib), "libnvidia-egl-") {
+				eglLibs = append(eglLibs, lib)
+			}
+		}
+		if len(eglLibs) > 0 {
+			l.engineConfig.AppendLibrariesPath(eglLibs...)
+		}
+	}
+
 	return nil
 }
 

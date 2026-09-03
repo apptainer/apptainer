@@ -1714,6 +1714,15 @@ func (c *container) addDevMount(system *mount.System) error {
 			}
 		}
 
+		// nvidia-container-cli stages the driver's own device nodes but no DRM node.
+		if c.engine.EngineConfig.GetNvCCLI() {
+			for _, dev := range gpu.NvidiaDrmDevices() {
+				if err := c.addSessionDev(dev, system); err != nil {
+					return err
+				}
+			}
+		}
+
 		if c.engine.EngineConfig.GetRocm() {
 			devs, err := gpu.RocmDevices()
 			if err != nil {
