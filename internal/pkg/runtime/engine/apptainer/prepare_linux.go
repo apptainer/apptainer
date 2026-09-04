@@ -187,6 +187,13 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		if err := cdi.AddCdiDevices(&e.EngineConfig.JSON.CdiSpec, devices, cdiDirs); err != nil {
 			return fmt.Errorf("while setting up CDI devices: %w", err)
 		}
+		// The setuid starter's RPC server is host root, so the hooks
+		// would run as root, which is why nvidia-container-cli is refused
+		// there; the device's mounts, nodes and environment still apply.
+		if starterConfig.GetIsSUID() && e.EngineConfig.JSON.CdiSpec.Hooks != nil {
+			sylog.Warningf("Skipping the CDI device hooks in setuid mode")
+			e.EngineConfig.JSON.CdiSpec.Hooks = nil
+		}
 		// import the environment variables
 		cenv, _ := cdi.GetCdiEnvironment(&e.EngineConfig.JSON.CdiSpec)
 		for _, kv := range cenv {
