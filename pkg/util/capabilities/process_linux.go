@@ -61,6 +61,48 @@ func GetProcessInheritable() (uint64, error) {
 	return uint64(data[0].Inheritable) | uint64(data[1].Inheritable)<<32, nil
 }
 
+// GetProcessBounding returns the bounding capability set of
+// the current process.
+func GetProcessBounding() (uint64, error) {
+	var caps uint64
+	for _, c := range Map {
+		ret, err := unix.PrctlRetInt(unix.PR_CAPBSET_READ, uintptr(c.Value), 0, 0, 0)
+		if err == unix.EINVAL {
+			// the running kernel predates this capability
+			continue
+		} else if err != nil {
+			return 0, fmt.Errorf("while reading bounding set for %s: %s", c.Name, err)
+		}
+		if ret == 1 {
+			caps |= uint64(1) << c.Value
+		}
+	}
+	return caps, nil
+}
+
+// GetProcessAmbient returns the capabilities of the current process that a
+// child can be handed in its ambient set across an exec: those held in both
+// the permitted and the bounding set, which is what the kernel requires to
+// raise a capability into the ambient set. They are returned as capability
+// numbers, the form the AmbientCaps field of syscall.SysProcAttr takes.
+func GetProcessAmbient() ([]uintptr, error) {
+	permitted, err := GetProcessPermitted()
+	if err != nil {
+		return nil, err
+	}
+	bounding, err := GetProcessBounding()
+	if err != nil {
+		return nil, err
+	}
+	caps := make([]uintptr, 0, len(Map))
+	for _, c := range Map {
+		if permitted&bounding&(uint64(1)<<c.Value) != 0 {
+			caps = append(caps, uintptr(c.Value))
+		}
+	}
+	return caps, nil
+}
+
 // SetProcessEffective set effective capabilities for the
 // current process and returns previous effective set.
 func SetProcessEffective(caps uint64) (uint64, error) {

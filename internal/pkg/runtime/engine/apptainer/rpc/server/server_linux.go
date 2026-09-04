@@ -10,6 +10,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"runtime"
@@ -19,6 +20,7 @@ import (
 
 	args "github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc"
 	"github.com/apptainer/apptainer/internal/pkg/util/crypt"
+	"github.com/apptainer/apptainer/internal/pkg/util/exec"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/gpu"
 	"github.com/apptainer/apptainer/internal/pkg/util/mainthread"
@@ -469,4 +471,16 @@ func (t *Methods) NvCCLI(arguments *args.NvCCLIArgs, _ *int) (err error) {
 	}()
 
 	return gpu.NVCLIConfigure(arguments.Flags, arguments.RootFsPath, arguments.UserNS)
+}
+
+// OciHook runs one OCI hook from this process, which is in the container's
+// mount namespace with the container root mounted, handing it the OCI state
+// on its standard input the way an OCI runtime does. The state names this
+// process, the one whose namespaces a hook may enter.
+func (t *Methods) OciHook(arguments *args.OciHookArgs, _ *int) error {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
+	arguments.State.Pid = os.Getpid()
+	return exec.Hook(context.Background(), &arguments.Hook, &arguments.State)
 }
