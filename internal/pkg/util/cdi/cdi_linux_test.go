@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"github.com/opencontainers/runtime-spec/specs-go"
@@ -752,5 +753,27 @@ func TestAddCdiDevicesWithMountAndDeviceNodes(t *testing.T) {
 	// Verify that mounts were added
 	if len(spec.Mounts) == 0 {
 		t.Errorf("expected mounts to be added to spec, but got none")
+	}
+}
+
+func TestGetCdiHooks(t *testing.T) {
+	timeout := 10
+	hook := specs.Hook{Path: "/usr/bin/nvidia-cdi-hook", Args: []string{"nvidia-cdi-hook", "update-ldcache"}, Timeout: &timeout}
+	tests := []struct {
+		name string
+		spec *specs.Spec
+		want *specs.Hooks
+	}{
+		{name: "nil spec", spec: nil, want: nil},
+		{name: "no hooks", spec: &specs.Spec{}, want: nil},
+		{name: "empty hooks", spec: &specs.Spec{Hooks: &specs.Hooks{}}, want: nil},
+		{name: "createContainer hook", spec: &specs.Spec{Hooks: &specs.Hooks{CreateContainer: []specs.Hook{hook}}}, want: &specs.Hooks{CreateContainer: []specs.Hook{hook}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetCdiHooks(tt.spec); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetCdiHooks() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

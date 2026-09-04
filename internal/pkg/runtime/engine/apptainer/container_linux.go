@@ -11,6 +11,7 @@ package apptainer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	osuser "os/user"
@@ -360,6 +361,10 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 		}
 	}
 
+	if err := c.runCdiHooks(); err != nil {
+		return err
+	}
+
 	// chroot from RPC server current working directory since
 	// it's already in final directory after chdirFinal call
 	sylog.Debugf("Chroot into %s\n", c.session.FinalPath())
@@ -616,6 +621,58 @@ func (c *container) setPropagationMount(_ *mount.System) error {
 	}
 
 	return c.rpcOps.Mount("", "/", "", pflags, "")
+}
+
+// runCdiHooks executes the createRuntime and createContainer hooks of the
+// CDI devices once every mount is in place and before the chroot, against
+// the container root: they are handed an OCI state whose bundle holds a
+// config.json naming that root, which is where a hook reads it from. The
+// other hook kinds have no counterpart in this engine and are skipped.
+func (c *container) runCdiHooks() error {
+	hooks := cdi.GetCdiHooks(&c.engine.EngineConfig.JSON.CdiSpec)
+	if hooks == nil {
+		return nil
+	}
+	pending := append(append([]specs.Hook{}, hooks.CreateRuntime...), hooks.CreateContainer...)
+	if len(pending) == 0 {
+		return nil
+	}
+	skipped := len(hooks.Prestart) + len(hooks.StartContainer) + len(hooks.Poststart) + len(hooks.Poststop) //nolint:staticcheck // prestart hooks still appear in specifications
+	if skipped > 0 {
+		sylog.Debugf("Skipping %d CDI hook(s) of kinds this engine does not run", skipped)
+	}
+
+	bundle := filepath.Join(c.session.Path(), "cdi-bundle")
+	if err := c.rpcOps.Mkdir(bundle, 0o700); err != nil {
+		return fmt.Errorf("while creating the CDI hook bundle: %w", err)
+	}
+	config, err := json.Marshal(specs.Spec{
+		Version: specs.Version,
+		Root:    &specs.Root{Path: c.session.FinalPath()},
+	})
+	if err != nil {
+		return fmt.Errorf("while describing the container root for CDI hooks: %w", err)
+	}
+	if err := c.rpcOps.WriteFile(filepath.Join(bundle, "config.json"), config, 0o600); err != nil {
+		return fmt.Errorf("while writing the CDI hook bundle: %w", err)
+	}
+	id := c.engine.CommonConfig.ContainerID
+	if id == "" {
+		id = fmt.Sprintf("apptainer-%d", os.Getpid())
+	}
+	state := specs.State{
+		Version: specs.Version,
+		ID:      id,
+		Status:  specs.StateCreating,
+		Bundle:  bundle,
+	}
+	for _, hook := range pending {
+		sylog.Debugf("Running CDI hook %s %s", hook.Path, strings.Join(hook.Args, " "))
+		if err := c.rpcOps.OciHook(hook, state); err != nil {
+			return fmt.Errorf("CDI hook %s failed: %w", hook.Path, err)
+		}
+	}
+	return nil
 }
 
 // addMountinfo handles the case where hidepid is set on /proc mount
@@ -1745,6 +1802,11 @@ func (c *container) addDevMount(system *mount.System) error {
 
 		devs, _ := cdi.GetCdiDevs(&c.engine.EngineConfig.JSON.CdiSpec)
 		for _, dev := range devs {
+			// --nv or --rocm may have staged the same node
+			if _, err := c.session.GetPath(dev); err == nil {
+				sylog.Debugf("CDI device %s is already staged", dev)
+				continue
+			}
 			if err := c.addSessionDev(dev, system); err != nil {
 				return err
 			}

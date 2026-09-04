@@ -16,6 +16,8 @@ import (
 
 	args "github.com/apptainer/apptainer/internal/pkg/runtime/engine/apptainer/rpc"
 	"golang.org/x/sys/unix"
+
+	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 // RPC holds the state necessary for remote procedure calls.
@@ -281,4 +283,14 @@ func (t *RPC) NvCCLI(flags []string, rootFsPath string, userNS bool) error {
 		UserNS:     userNS,
 	}
 	return t.Client.Call(t.Name+".NvCCLI", arguments, nil)
+}
+
+// OciHook runs an OCI hook in the RPC server's context, the container's
+// mount namespace, with state on its standard input.
+func (t *RPC) OciHook(hook specs.Hook, state specs.State) error {
+	arguments := &args.OciHookArgs{
+		Hook:  hook,
+		State: state,
+	}
+	return t.Client.Call(t.Name+".OciHook", arguments, nil)
 }

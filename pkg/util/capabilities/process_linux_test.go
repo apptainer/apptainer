@@ -10,7 +10,10 @@
 package capabilities
 
 import (
+	"os"
 	"runtime"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
@@ -89,5 +92,40 @@ func TestSetProcessEffective(t *testing.T) {
 		} else if old != tt.oldEffective {
 			t.Fatalf("unexpected old effective set for %s", tt.name)
 		}
+	}
+}
+
+func TestGetProcessBounding(t *testing.T) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
+	status, err := os.ReadFile("/proc/thread-self/status")
+	if err != nil {
+		t.Fatalf("unexpected error while reading the thread status: %s", err)
+	}
+	var expected uint64
+	found := false
+	for _, line := range strings.Split(string(status), "\n") {
+		if !strings.HasPrefix(line, "CapBnd:") {
+			continue
+		}
+		value := strings.TrimSpace(strings.TrimPrefix(line, "CapBnd:"))
+		expected, err = strconv.ParseUint(value, 16, 64)
+		if err != nil {
+			t.Fatalf("unexpected bounding set %q in the thread status: %s", value, err)
+		}
+		found = true
+		break
+	}
+	if !found {
+		t.Fatal("no CapBnd line in the thread status")
+	}
+
+	caps, err := GetProcessBounding()
+	if err != nil {
+		t.Fatalf("unexpected error while getting process bounding capabilities: %s", err)
+	}
+	if caps != expected {
+		t.Fatalf("bounding set 0x%x differs from 0x%x in the thread status", caps, expected)
 	}
 }

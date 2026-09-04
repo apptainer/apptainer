@@ -33,6 +33,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
 	"github.com/apptainer/apptainer/internal/pkg/security"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/internal/pkg/util/cdi"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/squashfs"
@@ -188,6 +189,7 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 
 	// Will we use the suid starter? If not we need to force the user namespace.
 	useSuid := l.useSuid(insideUserNs)
+	l.suid = useSuid
 	// IgnoreUserns is a hidden control flag
 	l.cfg.Namespaces.User = l.cfg.Namespaces.User && !l.cfg.IgnoreUserns
 
@@ -857,26 +859,50 @@ func (l *Launcher) SetGPUConfig() error {
 	if l.cfg.Nvidia {
 		// If nvccli was not enabled by flag or config, drop down to legacy binds immediately
 		if !l.engineConfig.File.UseNvCCLI && !l.cfg.NvCCLI {
-			return l.setNVLegacyConfig()
+			if err := l.setNVLegacyConfig(); err != nil {
+				return err
+			}
+		} else {
+			// TODO: In privileged fakeroot mode we don't have the correct namespace context to run nvidia-container-cli
+			// from  starter, so fall back to legacy NV handling until that workflow is refactored heavily.
+			fakeRootPriv := l.cfg.Fakeroot && l.engineConfig.File.AllowSetuid && buildcfg.APPTAINER_SUID_INSTALL == 1
+			if fakeRootPriv {
+				return fmt.Errorf("--fakeroot does not support --nvccli in set-uid installations")
+			}
+			if err := l.setNvCCLIConfig(); err != nil {
+				return err
+			}
 		}
-
-		// TODO: In privileged fakeroot mode we don't have the correct namespace context to run nvidia-container-cli
-		// from  starter, so fall back to legacy NV handling until that workflow is refactored heavily.
-		fakeRootPriv := l.cfg.Fakeroot && l.engineConfig.File.AllowSetuid && buildcfg.APPTAINER_SUID_INSTALL == 1
-		if !fakeRootPriv {
-			return l.setNvCCLIConfig()
-		}
-		return fmt.Errorf("--fakeroot does not support --nvccli in set-uid installations")
 	}
 	if len(l.cfg.Devices) > 0 {
 		sylog.Debugf("Using CDI device(s) %s", strings.Join(l.cfg.Devices, ","))
 		l.engineConfig.SetDevices(l.cfg.Devices)
+		// A device's hooks write into the container root (the NVIDIA ones
+		// create symlinks and refresh the ld.so cache), which a read-only
+		// image refuses: the same tmpfs nvidia-container-cli is given. The
+		// setuid flow does not run them.
+		if !l.suid && l.cdiDevicesHaveHooks() {
+			l.setWritableTmpfsFor("CDI device hooks")
+		}
 	}
 	if len(l.cfg.CdiDirs) > 0 {
 		sylog.Debugf("Using CDI dir(s) %s", strings.Join(l.cfg.CdiDirs, ","))
 		l.engineConfig.SetCdiDirs(l.cfg.CdiDirs)
 	}
 	return nil
+}
+
+// cdiDevicesHaveHooks reports whether the requested CDI devices declare
+// hooks to run, resolving the specification the engine will resolve again;
+// a device that cannot be resolved here is left for the engine to report.
+func (l *Launcher) cdiDevicesHaveHooks() bool {
+	var spec specs.Spec
+	if err := cdi.AddCdiDevices(&spec, l.cfg.Devices, l.cfg.CdiDirs); err != nil {
+		sylog.Debugf("CDI device resolution deferred to the engine: %s", err)
+		return false
+	}
+	hooks := cdi.GetCdiHooks(&spec)
+	return hooks != nil && (len(hooks.CreateRuntime) > 0 || len(hooks.CreateContainer) > 0)
 }
 
 // setNvCCLIConfig sets up EngineConfig entries for NVIDIA GPU configuration via nvidia-container-cli.
@@ -924,21 +950,25 @@ func (l *Launcher) setNvCCLIConfig() (err error) {
 	}
 	l.engineConfig.SetNvCCLIEnv(nvCCLIEnv)
 
-	overlayExist := false
-	for _, path := range l.cfg.OverlayPaths {
-		if !strings.HasSuffix(path, ":ro") {
-			overlayExist = true
-			sylog.Verbosef("Detected writable overlay images, skipping setting --writable-tmpfs (otherwise required by --nvccli)")
-			break
-		}
-	}
-
-	if !l.cfg.Writable && !l.cfg.WritableTmpfs && !overlayExist {
-		sylog.Infof("Setting --writable-tmpfs (required by nvidia-container-cli)")
-		l.cfg.WritableTmpfs = true
-	}
+	l.setWritableTmpfsFor("nvidia-container-cli")
 
 	return nil
+}
+
+// setWritableTmpfsFor turns on --writable-tmpfs, saying which GPU setup
+// needs a writable container root, unless the root is already writable
+// through --writable or a writable overlay image.
+func (l *Launcher) setWritableTmpfsFor(reason string) {
+	for _, path := range l.cfg.OverlayPaths {
+		if !strings.HasSuffix(path, ":ro") {
+			sylog.Verbosef("Detected writable overlay images, skipping setting --writable-tmpfs (otherwise required by %s)", reason)
+			return
+		}
+	}
+	if !l.cfg.Writable && !l.cfg.WritableTmpfs {
+		sylog.Infof("Setting --writable-tmpfs (required by %s)", reason)
+		l.cfg.WritableTmpfs = true
+	}
 }
 
 // setNvLegacyConfig sets up EngineConfig entries for NVIDIA GPU configuration via direct binds of configured bins/libs.

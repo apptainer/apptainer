@@ -178,6 +178,7 @@ type Launcher struct {
 	cfg          launchOptions
 	engineConfig *apptainerConfig.EngineConfig
 	generator    *generate.Generator
+	suid         bool
 }
 
 // Namespaces holds flags for the optional (non-mount) namespaces that can be
