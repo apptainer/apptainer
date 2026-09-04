@@ -31,7 +31,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/opencontainers/runc v1.5.1
 	github.com/opencontainers/runtime-spec v1.3.0
-	github.com/opencontainers/runtime-tools v0.9.1-0.20251114084447-edf4cb3d2116
+	github.com/opencontainers/runtime-tools v0.9.1-0.20260316125833-8a4db579f5c8
 	github.com/opencontainers/selinux v1.15.1
 	github.com/opencontainers/umoci v0.6.0
 	github.com/pelletier/go-toml/v2 v2.4.3
@@ -43,7 +43,7 @@ require (
 	github.com/spf13/pflag v1.0.10
 	github.com/sylabs/json-resp v0.9.5
 	github.com/vbauerster/mpb/v8 v8.15.2
-	go.podman.io/common v0.66.1
+	go.podman.io/common v0.69.1
 	go.podman.io/image/v5 v5.41.1
 	go.yaml.in/yaml/v4 v4.0.0-rc.6
 	golang.org/x/crypto v0.55.0
