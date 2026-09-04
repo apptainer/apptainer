@@ -14,7 +14,7 @@ require (
 	github.com/buger/jsonparser v1.2.0
 	github.com/ccoveille/go-safecast v1.8.2
 	github.com/cenkalti/backoff/v4 v4.3.0
-	github.com/containernetworking/cni v1.3.0
+	github.com/containernetworking/cni v1.3.1
 	github.com/containernetworking/plugins v1.9.1
 	github.com/containers/image/v5 v5.36.2
 	github.com/creack/pty v1.1.24
