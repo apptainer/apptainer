@@ -68,16 +68,10 @@ func NvidiaDevices(withGPU bool) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not list nvidia devices: %v", err)
 	}
-	return append(devs, NvidiaDrmDevices()...), nil
-}
-
-// NvidiaDrmDevices returns the DRM device directory, if there is one. It is what
-// GBM, the EGL device platform and an X server open on the GPU, and neither the
-// driver's own device nodes nor nvidia-container-cli provide it, so a contained
-// session without it renders in software.
-func NvidiaDrmDevices() []string {
-	if _, err := os.Stat("/dev/dri"); err != nil {
-		return nil
+	// The DRM nodes too: what GBM, the EGL device platform and an X server
+	// open on the GPU.
+	if _, err := os.Stat("/dev/dri"); err == nil {
+		devs = append(devs, "/dev/dri")
 	}
-	return []string{"/dev/dri"}
+	return devs, nil
 }

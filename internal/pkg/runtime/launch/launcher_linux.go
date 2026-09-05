@@ -858,6 +858,7 @@ func (l *Launcher) SetGPUConfig() error {
 	}
 
 	if l.cfg.Nvidia {
+		gpu.NvidiaCreateDevices()
 		// If nvccli was not enabled by flag or config, drop down to legacy binds immediately
 		if !l.engineConfig.File.UseNvCCLI && !l.cfg.NvCCLI {
 			if err := l.setNVLegacyConfig(); err != nil {
@@ -965,7 +966,9 @@ func (l *Launcher) setNvCCLIConfig() (err error) {
 		sylog.Warningf("While finding nv bind points: %v", err)
 		return nil
 	}
-	files = append(files, paths.ModuleHostBinds(libs)...)
+	if !l.driverStagedByDevices(libs) {
+		files = append(files, paths.ModuleHostBinds(libs)...)
+	}
 	if len(files) > 0 {
 		l.engineConfig.AppendFilesPath(files...)
 	}
@@ -1011,7 +1014,9 @@ func (l *Launcher) setNVLegacyConfig() error {
 	if err != nil {
 		sylog.Warningf("While finding nv bind points: %v", err)
 	}
-	files = append(files, paths.ModuleHostBinds(libs)...)
+	if !l.driverStagedByDevices(libs) {
+		files = append(files, paths.ModuleHostBinds(libs)...)
+	}
 	l.addGPUBinds(libs, bins, ipcs, files, "nv")
 
 	if l.cfg.Compat32 {
@@ -1024,6 +1029,38 @@ func (l *Launcher) setNVLegacyConfig() error {
 	}
 
 	return nil
+}
+
+// driverStagedByDevices reports whether a requested CDI device mounts one of
+// the driver libraries --nv resolved. Such a specification lays the driver
+// out at its host paths itself and links its modules from its hooks, which a
+// mount in a link's place would block, so the modules are left to it.
+func (l *Launcher) driverStagedByDevices(libs []string) bool {
+	if len(l.cfg.Devices) == 0 {
+		return false
+	}
+	var spec specs.Spec
+	if err := cdi.AddCdiDevices(&spec, l.cfg.Devices, l.cfg.CdiDirs); err != nil {
+		sylog.Debugf("CDI device resolution deferred to the engine: %s", err)
+		return false
+	}
+	mounts, _ := cdi.GetCdiMounts(&spec)
+	staged := make(map[string]struct{}, len(mounts))
+	for _, mount := range mounts {
+		source, _, _ := strings.Cut(mount, ":")
+		if source, err := filepath.EvalSymlinks(source); err == nil {
+			staged[source] = struct{}{}
+		}
+	}
+	for _, lib := range libs {
+		lib, _, _ = strings.Cut(lib, ":")
+		if lib, err := filepath.EvalSymlinks(lib); err == nil {
+			if _, ok := staged[lib]; ok {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // setRocmConfig sets up EngineConfig entries for ROCm GPU configuration via direct binds of configured bins/libs.
