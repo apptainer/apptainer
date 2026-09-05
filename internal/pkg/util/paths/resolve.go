@@ -121,6 +121,9 @@ func Resolve(fileList []string) ([]string, []string, []string, error) {
 	}
 
 	prefixes := filePrefixes()
+	// A host file bound once: two entries can name the same file under
+	// different configuration roots, and a loader would take it twice.
+	sources := make(map[string]struct{})
 	for _, file := range fileList {
 		if strings.Contains(file, ".so") {
 			// libraries are handled by resolveLibs above
@@ -131,6 +134,10 @@ func Resolve(fileList []string) ([]string, []string, []string, error) {
 			if !ok {
 				continue
 			}
+			if _, ok := sources[src]; ok {
+				continue
+			}
+			sources[src] = struct{}{}
 			bind := file
 			if src != file {
 				bind = src + ":" + file
@@ -361,11 +368,22 @@ func isModulePath(libPath string) bool {
 	return false
 }
 
-// alternateDirs lists, for a directory a container's loaders read, the
-// directories a distribution may install the same files in instead.
-var alternateDirs = map[string][]string{
-	"/usr/share/X11/xorg.conf.d":    {"/etc/X11/xorg.conf.d"},
-	"/usr/share/glvnd/egl_vendor.d": {"/etc/glvnd/egl_vendor.d"},
+// configRoots are the roots a distribution keeps the same configuration
+// trees under; a file named under one is looked for under the others.
+var configRoots = []string{"/etc", "/usr/share", "/usr/local/share"}
+
+// WithoutModuleBinds returns the file binds without those that place a
+// module at its host path.
+func WithoutModuleBinds(binds []string) []string {
+	kept := make([]string, 0, len(binds))
+	for _, bind := range binds {
+		src, dst, _ := strings.Cut(bind, ":")
+		if dst == src && isModulePath(src) {
+			continue
+		}
+		kept = append(kept, bind)
+	}
+	return kept
 }
 
 // filePrefixes returns the installation prefixes above the configured 'gpu
@@ -384,9 +402,10 @@ func filePrefixes() []string {
 
 // resolveFile finds the host file for a configuration entry, which names the
 // path a container's loaders read: the same path on the host first, then the
-// alternate directories, then the file under each prefix (its /usr part
-// dropped, so that /usr/share/x becomes <prefix>/share/x and /etc/x becomes
-// <prefix>/etc/x). The entry stays the destination in the container.
+// same tree under the other configuration roots, then the file under each
+// prefix (its /usr part dropped, so that /usr/share/x becomes <prefix>/share/x
+// and /etc/x becomes <prefix>/etc/x). The entry stays the destination in the
+// container.
 func resolveFile(entry string, prefixes []string) (string, bool) {
 	exists := func(path string) bool {
 		_, err := os.Stat(path)
@@ -395,11 +414,17 @@ func resolveFile(entry string, prefixes []string) (string, bool) {
 	if exists(entry) {
 		return entry, true
 	}
-	dir, name := filepath.Split(entry)
-	for _, alt := range alternateDirs[filepath.Clean(dir)] {
-		if candidate := filepath.Join(alt, name); exists(candidate) {
-			return candidate, true
+	for _, root := range configRoots {
+		rel, ok := strings.CutPrefix(entry, root+"/")
+		if !ok {
+			continue
 		}
+		for _, alt := range configRoots {
+			if candidate := filepath.Join(alt, rel); alt != root && exists(candidate) {
+				return candidate, true
+			}
+		}
+		break
 	}
 	for _, prefix := range prefixes {
 		if candidate := filepath.Join(prefix, strings.TrimPrefix(entry, "/usr")); exists(candidate) {

@@ -423,30 +423,31 @@ func TestIsModulePath(t *testing.T) {
 }
 
 // TestResolveFile checks that a configuration file is found at its own path,
-// else under the prefix above a 'gpu library path' directory, with the entry
-// kept as the destination.
+// else under another configuration root, else under the prefix above a 'gpu
+// library path' directory, with the entry kept as the destination.
 func TestResolveFile(t *testing.T) {
 	prefix := t.TempDir()
 	found := filepath.Join(prefix, "share", "glvnd", "egl_vendor.d", "10_testgpu.json")
-	if err := os.MkdirAll(filepath.Dir(found), 0o755); err != nil {
-		t.Fatalf("Could not create dir: %v", err)
-	}
-	if err := os.WriteFile(found, nil, 0o644); err != nil {
-		t.Fatalf("Could not create file: %v", err)
-	}
 	etcFound := filepath.Join(prefix, "etc", "OpenCL", "vendors", "testgpu.icd")
-	if err := os.MkdirAll(filepath.Dir(etcFound), 0o755); err != nil {
-		t.Fatalf("Could not create dir: %v", err)
-	}
-	if err := os.WriteFile(etcFound, nil, 0o644); err != nil {
-		t.Fatalf("Could not create file: %v", err)
+	roots := t.TempDir()
+	altFound := filepath.Join(roots, "etc", "X11", "xorg.conf.d", "10-testgpu.conf")
+	for _, file := range []string{found, etcFound, altFound} {
+		if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+			t.Fatalf("Could not create dir: %v", err)
+		}
+		if err := os.WriteFile(file, nil, 0o644); err != nil {
+			t.Fatalf("Could not create file: %v", err)
+		}
 	}
 	prefixes := []string{prefix}
+	defer func(saved []string) { configRoots = saved }(configRoots)
+	configRoots = []string{filepath.Join(roots, "etc"), filepath.Join(roots, "usr", "share")}
 
 	for entry, want := range map[string]string{
-		"/usr/share/glvnd/egl_vendor.d/10_testgpu.json": found,
-		"/etc/OpenCL/vendors/testgpu.icd":               etcFound,
-		found:                                           found,
+		"/usr/share/glvnd/egl_vendor.d/10_testgpu.json":                   found,
+		"/etc/OpenCL/vendors/testgpu.icd":                                 etcFound,
+		filepath.Join(roots, "usr/share/X11/xorg.conf.d/10-testgpu.conf"): altFound,
+		found: found,
 	} {
 		got, ok := resolveFile(entry, prefixes)
 		if !ok || got != want {
@@ -455,6 +456,45 @@ func TestResolveFile(t *testing.T) {
 	}
 	if got, ok := resolveFile("/usr/share/glvnd/egl_vendor.d/absent.json", prefixes); ok {
 		t.Errorf("resolveFile() found an absent file at %q", got)
+	}
+}
+
+// TestResolveSameFileOnce checks that two entries naming the same host file
+// under different configuration roots bind it once, at the first entry.
+func TestResolveSameFileOnce(t *testing.T) {
+	roots := t.TempDir()
+	icd := filepath.Join(roots, "etc", "vulkan", "icd.d", "testgpu_icd.json")
+	if err := os.MkdirAll(filepath.Dir(icd), 0o755); err != nil {
+		t.Fatalf("Could not create dir: %v", err)
+	}
+	if err := os.WriteFile(icd, nil, 0o644); err != nil {
+		t.Fatalf("Could not create file: %v", err)
+	}
+	defer func(saved []string) { configRoots = saved }(configRoots)
+	configRoots = []string{filepath.Join(roots, "etc"), filepath.Join(roots, "usr", "share")}
+	setGpuLibraryPath(t, t.TempDir())
+
+	shareEntry := filepath.Join(roots, "usr/share/vulkan/icd.d/testgpu_icd.json")
+	_, _, files, err := Resolve([]string{shareEntry, icd})
+	if err != nil {
+		t.Fatalf("Resolve() error = %v", err)
+	}
+	if want := []string{icd + ":" + shareEntry}; !reflect.DeepEqual(files, want) {
+		t.Errorf("Resolve() files = %q, expected %q", files, want)
+	}
+}
+
+// TestWithoutModuleBinds checks that only the binds placing a module at its
+// host path are dropped.
+func TestWithoutModuleBinds(t *testing.T) {
+	binds := []string{
+		"/usr/lib/xorg/modules/drivers/testgpu_drv.so:/usr/lib/xorg/modules/drivers/testgpu_drv.so",
+		"/usr/lib/x86_64-linux-gnu/gbm/testgpu-drm_gbm.so:/usr/lib/x86_64-linux-gnu/gbm/testgpu-drm_gbm.so",
+		"/etc/X11/xorg.conf.d/10-testgpu.conf:/usr/share/X11/xorg.conf.d/10-testgpu.conf",
+		"/usr/share/glvnd/egl_vendor.d/10_testgpu.json",
+	}
+	if got, want := WithoutModuleBinds(binds), binds[2:]; !reflect.DeepEqual(got, want) {
+		t.Errorf("WithoutModuleBinds() = %q, expected %q", got, want)
 	}
 }
 

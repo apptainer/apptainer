@@ -17,17 +17,32 @@ Changes since 1.5.x
   as among the libraries, and `GBM_BACKENDS_PATH` is set in the container
   when a backend was bound. The driver's `xorg.conf.d` snippet is bound too,
   which carries the module path where the modules live outside the X
-  server's tree. A configuration file the list names is looked for under the
-  `gpu library path` prefixes and the alternate directories a distribution
-  uses when it is not at its standard path, and is bound at the standard
-  path, which is where the container's loaders read it. The list also gains
-  the driver's newer libraries, the EGL X11 platform configuration files,
-  the OpenCL ICD file and the Vulkan configuration under `/etc`, and drops
-  `libglx.so`, the GLX module name of drivers older than 390 that would now
-  match the X server's own module. With `--contain`, `--nv` now binds
-  `/dev/dri` beside the driver's own device nodes, which is what GBM, the
-  EGL device platform and an X server open on the GPU, and so does `--nvccli`,
-  which nvidia-container-cli leaves out while staging the driver's own nodes.
+  server's tree. A configuration file the list names that is not at its
+  standard path is looked for under the other configuration roots, `/etc`,
+  `/usr/share` and `/usr/local/share` holding the same trees, and under the
+  `gpu library path` prefixes, and is bound at the standard path, which is
+  where the container's loaders read it; a host file two entries name is
+  bound once. The list also gains the driver's newer libraries, the EGL X11
+  platform configuration files, the OpenCL ICD file and the Vulkan
+  configuration under `/etc`, and drops `libglx.so`, the name the driver's
+  GLX module had before `libglxserver_nvidia.so`, which would now match the
+  X server's own module.
+  With `--contain`, `--nv` now binds `/dev/dri` beside the driver's own
+  device nodes, which is what GBM, the EGL device platform and an X server
+  open on the GPU, and `--nvccli` binds the DRM nodes of the GPUs
+  `NVIDIA_VISIBLE_DEVICES` names, which nvidia-container-cli leaves out
+  while staging the driver's own nodes. `--nvccli` binds the same modules
+  and configuration files, and the EGL platform libraries and the GBM
+  backend that nvidia-container-cli does not stage while its own
+  configuration files name them.
+- Create the NVIDIA driver's device nodes the host lacks before `--nv` or
+  `--nvccli` binds them, through the driver's `nvidia-modprobe` helper, the
+  way the driver's own libraries do: the control node, one per GPU, the
+  unified memory pair and the modeset node, without which a container's
+  Vulkan cannot present.
+- Leave the driver's modules to a CDI device given with `--nv` or `--nvccli`
+  that mounts the same driver: its hooks link them, and a mount in a link's
+  place would block the hook.
 - `--nvccli` accepts `NVIDIA_DRIVER_CAPABILITIES=all`, which asks for every
   capability and which the container CLI has no flag for, and the `ngx`
   capability that it does.
