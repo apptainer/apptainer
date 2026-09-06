@@ -732,8 +732,8 @@ const (
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// push
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	PushUse   string = `push [push options...] <image> <URI>`
-	PushShort string = `Upload image to the provided URI`
+	PushUse   string = `push [push options...] <image> ... <URI>`
+	PushShort string = `Upload image(s) to the provided URI`
 	PushLong  string = `
   The 'push' command allows you to upload a SIF container to a given
   URI.  Supported URIs include:
