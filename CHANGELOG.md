@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Allow pushing multiple images with different architectures (multi-arch)
+  to an oras URI, creating an image index with all the pushed arch images.
 - Add support for building data partitions from tar files using
   `apptainer build --data image.sif input.tar*`. Supports uncompressed (.tar) and
   compressed (.tar.gz, .tar.xz, .tar.zst, .tar.lzo) archives, with decompression
