@@ -75,6 +75,12 @@ func ParseMountString(mount string) (bindPaths []BindPath, err error) {
 					return []BindPath{}, fmt.Errorf("img-src cannot be empty")
 				}
 				bp.Options["image-src"] = &BindOption{Value: val}
+			// Apptainer only - directory inside an archive file source to mount from
+			case "archive-src":
+				if val == "" {
+					return []BindPath{}, fmt.Errorf("archive-src cannot be empty")
+				}
+				bp.Options["archive-src"] = &BindOption{Value: val}
 			// Apptainer only - id of the descriptor in a SIF image source to mount from
 			case "id":
 				if val == "" {
