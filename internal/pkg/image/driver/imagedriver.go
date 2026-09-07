@@ -59,6 +59,7 @@ type fuseappsDriver struct {
 	ext3Feature    fuseappsFeature
 	overlayFeature fuseappsFeature
 	gocryptFeature fuseappsFeature
+	archiveFeature fuseappsFeature
 	features       image.DriverFeature
 	cmdPrefix      []string
 	squashSetUID   bool
@@ -104,6 +105,7 @@ func InitImageDrivers(register, unprivileged bool, fileconf *apptainerconf.File,
 	var ext3Feature fuseappsFeature
 	var overlayFeature fuseappsFeature
 	var gocryptFeature fuseappsFeature
+	var archiveFeature fuseappsFeature
 	var features image.DriverFeature
 	// Always initialize the SquashFeature because it is needed by
 	// the GocryptFeature which can be used even in privileged mode.
@@ -130,6 +132,11 @@ func InitImageDrivers(register, unprivileged bool, fileconf *apptainerconf.File,
 	// gocryptfs is always available
 	if gocryptFeature.init("gocryptfs", "use gocryptfs", desiredFeatures&image.GocryptFeature) {
 		features |= image.GocryptFeature
+	}
+
+	// Support ratarmount, fuse-archive, and archivemount for mounting archives
+	if archiveFeature.init("ratarmount|fuse-archive|archivemount", "mount archive files", desiredFeatures&image.ArchiveFeature) {
+		features |= image.ArchiveFeature
 	}
 
 	// squashfuse generally supports the -o uid and -o gid options, except
@@ -163,7 +170,7 @@ func InitImageDrivers(register, unprivileged bool, fileconf *apptainerconf.File,
 		_ = cmd.Wait()
 	}
 
-	if squashFeature.cmdPath != "" || ext3Feature.cmdPath != "" || overlayFeature.cmdPath != "" || gocryptFeature.cmdPath != "" {
+	if squashFeature.cmdPath != "" || ext3Feature.cmdPath != "" || overlayFeature.cmdPath != "" || gocryptFeature.cmdPath != "" || archiveFeature.cmdPath != "" {
 		sylog.Debugf("Setting ImageDriver to %v", DriverName)
 		fileconf.ImageDriver = DriverName
 		if register {
@@ -172,6 +179,7 @@ func InitImageDrivers(register, unprivileged bool, fileconf *apptainerconf.File,
 				ext3Feature:    ext3Feature,
 				overlayFeature: overlayFeature,
 				gocryptFeature: gocryptFeature,
+				archiveFeature: archiveFeature,
 				features:       features,
 				cmdPrefix:      []string{},
 				squashSetUID:   squashSetUID,
@@ -287,6 +295,11 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, _ image.MountFunc) err
 				sylog.Debugf("Setting env %s", e)
 			}
 		}
+
+	case "archive":
+		f = &d.archiveFeature
+		cmdArgs = append(cmdArgs, f.cmdPath, "-f", params.Source, params.Target)
+		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
 
 	case "encryptfs":
 		return fmt.Errorf("reading a root-encrypted SIF requires root or a suid installation")

@@ -9,6 +9,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Add support for mounting archive files (tar, tar.gz, etc.) using
+  `--bind` or `--mount` with `archive-src=` option, similar to mounting
+  images with `image-src=`. Archive mounts require a FUSE-based archiver
+  such as `ratarmount`, `fuse-archive`, or `archivemount` to be installed.
 - Allow pushing multiple images with different architectures (multi-arch)
   to an oras URI, creating an image index with all the pushed arch images.
 - Add support for building data partitions from tar files using
