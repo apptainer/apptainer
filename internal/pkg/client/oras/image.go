@@ -37,7 +37,7 @@ func (si *SifImage) MediaType() (types.MediaType, error) {
 
 // Size returns the size of the manifest.
 func (si *SifImage) Size() (int64, error) {
-	return 0, nil
+	return partial.Size(si)
 }
 
 // ConfigName returns the hash of the image's config file, also known as
