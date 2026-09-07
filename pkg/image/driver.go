@@ -29,6 +29,8 @@ const (
 	OverlayFeature
 	// FuseFeature means the driver uses FUSE as its base.
 	FuseFeature
+	// ArchiveFeature means the driver handles archive mounts.
+	ArchiveFeature
 )
 
 // ImageFeature means the driver handles any of the image mount types

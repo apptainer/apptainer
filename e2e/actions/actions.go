@@ -3283,6 +3283,151 @@ func (c actionTests) actionAuthTester(t *testing.T, withCustomAuthFile bool, pro
 	}
 }
 
+// bindArchive runs bind archive mount tests
+func (c actionTests) bindArchive(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	require.Command(t, "tar")
+
+	testDir, err := os.MkdirTemp(c.env.TestDir, "archive-")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cleanup := func(t *testing.T) {
+		if t.Failed() {
+			t.Logf("Not removing directory %s for test %s", testDir, t.Name())
+			return
+		}
+		err := os.RemoveAll(testDir)
+		if err != nil {
+			t.Logf("Error while removing directory %s for test %s: %#v", testDir, t.Name(), err)
+		}
+	}
+	defer cleanup(t)
+
+	// Create archive directory structure
+	tarDir, err := os.MkdirTemp(testDir, "archive-tmp-")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tarMarker := "tar_marker"
+	tarFile := filepath.Join(testDir, "test.tar")
+
+	err = os.MkdirAll(filepath.Join(tarDir, "subdir"), 0o755)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = fs.Touch(filepath.Join(tarDir, tarMarker))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = fs.Touch(filepath.Join(tarDir, "subdir", tarMarker+"2"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create tar archive
+	tarCmd := exec.Command("tar", "-cvf", tarFile, "-C", tarDir, ".")
+	if res := tarCmd.Run(t); res.Error != nil {
+		t.Fatalf("Failed to create tar archive: %v", res)
+	}
+
+	tests := []struct {
+		name    string
+		profile e2e.Profile
+		args    []string
+		exit    int
+	}{
+		{
+			name:    "ArchiveRelativePath",
+			profile: e2e.UserProfile,
+			args: []string{
+				"--bind", tarFile + ":/mnt:archive-src=/",
+				c.env.ImagePath,
+				"test", "-f", filepath.Join("/mnt", tarMarker),
+			},
+			exit: 0,
+		},
+		{
+			name:    "ArchiveAbsolutePath",
+			profile: e2e.UserProfile,
+			args: []string{
+				"--bind", tarFile + ":/mnt:archive-src=/",
+				c.env.ImagePath,
+				"test", "-f", filepath.Join("/mnt", tarMarker),
+			},
+			exit: 0,
+		},
+		{
+			name:    "ArchiveSubdir",
+			profile: e2e.UserProfile,
+			args: []string{
+				"--bind", tarFile + ":/mnt:archive-src=/subdir",
+				c.env.ImagePath,
+				"test", "-f", filepath.Join("/mnt", tarMarker+"2"),
+			},
+			exit: 0,
+		},
+		{
+			name:    "ArchiveDouble",
+			profile: e2e.UserProfile,
+			args: []string{
+				"--bind", tarFile + ":/mnt1:archive-src=/",
+				"--bind", tarFile + ":/mnt2:archive-src=/",
+				c.env.ImagePath,
+				"test", "-f", filepath.Join("/mnt1", tarMarker), "-a", "-f", filepath.Join("/mnt2", tarMarker),
+			},
+			exit: 0,
+		},
+		{
+			name:    "ArchiveMissing",
+			profile: e2e.UserProfile,
+			args: []string{
+				"--bind", filepath.Join(testDir, "nonexistent.tar") + ":/mnt:archive-src=/",
+				c.env.ImagePath,
+				"true",
+			},
+			exit: 255,
+		},
+		{
+			name:    "ArchiveMixedBind",
+			profile: e2e.UserProfile,
+			args: []string{
+				"--bind", tarFile + ":/archive:archive-src=/",
+				"--bind", testDir + ":/bind",
+				c.env.ImagePath,
+				"test", "-f", filepath.Join("/archive", tarMarker), "-a", "-d", "/bind",
+			},
+			exit: 0,
+		},
+		{
+			name:    "ArchiveMountSyntax",
+			profile: e2e.UserProfile,
+			args: []string{
+				"--mount", "type=bind,source=" + tarFile + ",destination=/mnt,archive-src=/",
+				c.env.ImagePath,
+				"test", "-f", filepath.Join("/mnt", tarMarker),
+			},
+			exit: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(tt.profile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(tt.args...),
+			e2e.ExpectExit(tt.exit),
+		)
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := actionTests{
@@ -3330,6 +3475,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"exit and signals":             c.exitSignals,           // test exit and signals propagation
 		"fuse mount":                   c.fuseMount,             // test fusemount option
 		"bind image":                   c.bindImage,             // test bind image with --bind and --mount
+		"bind archive":                 c.bindArchive,           // test bind archive with --bind and --mount
 		"unsquash":                     c.actionUnsquash,        // test --unsquash
 		"no-mount":                     c.actionNoMount,         // test --no-mount
 		"compat":                       np(c.actionCompat),      // test --compat
