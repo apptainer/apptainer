@@ -30,6 +30,11 @@ func (si *SifImage) Layers() ([]v1.Layer, error) {
 	return []v1.Layer{si.layer}, nil
 }
 
+// ArtifactType of this image's manifest.
+func (si *SifImage) ArtifactType() (string, error) {
+	return "", nil
+}
+
 // MediaType of this image's manifest.
 func (si *SifImage) MediaType() (types.MediaType, error) {
 	return si.manifest.MediaType, nil
