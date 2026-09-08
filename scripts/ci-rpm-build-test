@@ -13,16 +13,17 @@ if [[ $OS_TYPE == *suse* ]]; then
     libseccomp-devel libtalloc-devel libattr-devel libuuid-devel openssl-devel \
     libprotobuf-c-devel fakeroot cryptsetup sysuser-tools \
     diffutils wget which git
+  zypper install -y gcc-c++
   if [[ $OS_TYPE == *tumbleweed* ]]; then
     zypper install -y --allow-downgrade libsubid-devel
   fi
-  zypper install -y --allow-downgrade gzip fuse3-devel \
+  zypper install -y --allow-downgrade gzip fuse3-devel libarchive-devel \
     lzo-devel liblz4-devel xz-devel libzstd-devel
   zypper install -y rpm-build go
   zypper install -y sudo
 else
   if [[ $OS_TYPE == *fedora* ]]; then
-    dnf install -y gcc make pkgconf-pkg-config
+    dnf install -y gcc gcc-c++ make pkgconf-pkg-config
     dnf install -y shadow-utils-subid-devel
     # The bootc images have no timezone configured. Apptainer binds this file.
     if [ ! -e /etc/localtime ]; then
@@ -37,7 +38,7 @@ else
   dnf install -y libseccomp-devel libtalloc-devel libattr-devel \
     'pkgconfig(libprotobuf-c)' fakeroot cryptsetup wget git
   dnf install -y rpm-build golang
-  dnf install -y autoconf automake libtool fuse3-devel \
+  dnf install -y autoconf automake libtool fuse3-devel libarchive-devel \
     zlib-devel lzo-devel lz4-devel xz-devel libzstd-devel
   dnf install -y sudo
 fi
