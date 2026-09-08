@@ -1,20 +1,7 @@
-Bootstrap: docker
-From: {{ BASEIMAGE }}
-
-%post
-    export DEBIAN_FRONTEND=noninteractive
-
-    apt-get -q update && apt-get -q install -y \
-      ca-certificates \
-      tzdata \
-      libfuse3-dev \
-      liblzma-dev \
-      liblzo2-dev \
-      liblz4-dev \
-      libzstd-dev \
-      libtalloc-dev \
-      libprotobuf-c-dev \
-      zlib1g-dev
-
-%runscript
-    /usr/local/bin/apptainer "$@"
+# Builds the container used by the nested apptainer tests from
+# Dockerfile.nested, which is shared with the nested docker / podman tests.
+# Paths are relative to the e2e directory, the cwd of the e2e test suite.
+Bootstrap: buildkit
+From: testdata
+filename: Dockerfile.nested
+buildargs: BASEIMAGE={{ BASEIMAGE }}

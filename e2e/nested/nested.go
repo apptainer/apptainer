@@ -41,7 +41,7 @@ func (c ctx) nestedContainerTest(t *testing.T, prog, ref string) {
 
 	dockerFile := "testdata/Dockerfile.nested"
 
-	containerBuild(t, prog, dockerFile, ref, "../", c.env.DebianImageSource, tmpHome)
+	containerBuild(t, prog, dockerFile, ref, "testdata", c.env.DebianImageSource, tmpHome)
 	defer containerRMI(t, prog, ref, tmpHome)
 
 	containerRun(t, prog, "version", ref, tmpHome)
@@ -103,6 +103,11 @@ func (c ctx) podman(t *testing.T) {
 }
 
 func (c ctx) apptainer(t *testing.T) {
+	// The buildkit bootstrap used to build the nested container from
+	// Dockerfile.nested needs buildctl, or falls back to docker.
+	if _, err := exec.LookPath("buildctl"); err != nil {
+		require.Command(t, "docker")
+	}
 	e2e.EnsureORASImage(t, c.env)
 
 	tmpDir, cleanupTmpDir := e2e.MakeTempDir(t, c.env.TestDir, "nested-apptainer-", "")
