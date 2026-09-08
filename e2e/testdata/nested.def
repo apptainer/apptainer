@@ -1,41 +1,20 @@
 Bootstrap: docker
-From: ubuntu:24.04
-
-%files
-    ./   /apptainer-src/
+From: {{ BASEIMAGE }}
 
 %post
     export DEBIAN_FRONTEND=noninteractive
 
-    apt-get -q update && apt-get -q install -y autoconf \
-        automake \
-        crun \
-        cryptsetup \
-        fuse2fs \
-        fuse-overlayfs \
-        git \
-        libfuse3-dev \
-        libglib2.0-dev \
-        libseccomp-dev \
-        libsubid-dev \
-        libtool \
-        make \
-        pkg-config \
-        squashfs-tools \
-        squashfs-tools-ng \
-        tzdata \
-        uidmap \
-        wget
-
-    wget -O /tmp/go.tar.gz https://go.dev/dl/{{ GOVERSION }}.{{ GOOS }}-{{ GOARCH }}.tar.gz && tar -C /usr/local -xzf /tmp/go.tar.gz
-    export PATH="/usr/local/go/bin:$PATH"
-
-    cd /apptainer-src
-    git clean -fdx || true
-    ./mconfig
-    make -C builddir && make -C builddir install
-    cd ../
-    rm -rf /apptainer-src
+    apt-get -q update && apt-get -q install -y \
+      ca-certificates \
+      tzdata \
+      libfuse3-dev \
+      liblzma-dev \
+      liblzo2-dev \
+      liblz4-dev \
+      libzstd-dev \
+      libtalloc-dev \
+      libprotobuf-c-dev \
+      zlib1g-dev
 
 %runscript
     /usr/local/bin/apptainer "$@"

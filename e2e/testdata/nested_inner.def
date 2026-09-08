@@ -1,0 +1,5 @@
+Bootstrap: oras
+From: ghcr.io/apptainer/alpine:3.15.0
+
+%post
+    echo "NESTED INNER BUILD"

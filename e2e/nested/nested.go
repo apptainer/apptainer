@@ -13,12 +13,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
-	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 )
 
@@ -49,7 +47,7 @@ func (c ctx) nestedContainerTest(t *testing.T, prog, ref string) {
 	containerRun(t, prog, "version", ref, tmpHome)
 	containerRun(t, prog, "exec", ref, tmpHome, "exec", c.env.OrasTestImage, "/bin/true")
 	containerRun(t, prog, "execUserNS", ref, tmpHome, "exec", "-u", c.env.OrasTestImage, "/bin/true")
-	containerRun(t, prog, "buildSIF", ref, tmpHome, "build", "test.sif", "/e2e/testdata/Apptainer")
+	containerRun(t, prog, "buildSIF", ref, tmpHome, "build", "test.sif", "/e2e/testdata/nested_inner.def")
 }
 
 func containerBuild(t *testing.T, prog, dockerFile, ref, contextPath, baseImage, homeDir string) {
@@ -109,20 +107,16 @@ func (c ctx) apptainer(t *testing.T) {
 
 	tmpDir, cleanupTmpDir := e2e.MakeTempDir(t, c.env.TestDir, "nested-apptainer-", "")
 	t.Cleanup(func() { e2e.Privileged(cleanupTmpDir)(t) })
-	nestedDef := "e2e/testdata/nested.def"
 	nestedSIF := filepath.Join(tmpDir, "nested.sif")
 
 	c.env.RunApptainer(
 		t,
 		e2e.AsSubtest("build"),
-		e2e.WithDir(buildcfg.SOURCEDIR),
 		e2e.WithProfile(e2e.RootProfile),
 		e2e.WithCommand("build"),
 		e2e.WithArgs(
-			"--build-arg", "GOVERSION="+runtime.Version(),
-			"--build-arg", "GOOS="+runtime.GOOS,
-			"--build-arg", "GOARCH="+runtime.GOARCH,
-			nestedSIF, nestedDef,
+			"--build-arg", "BASEIMAGE="+c.env.DebianImageSource,
+			nestedSIF, "testdata/nested.def",
 		),
 		e2e.ExpectExit(0),
 	)
@@ -149,7 +143,7 @@ func (c ctx) apptainer(t *testing.T) {
 			outerProfile: e2e.RootProfile,
 			outerArgs:    []string{},
 			innerCommand: "build",
-			innerArgs:    []string{"--force", tmpBuildSIF, "examples/library/Apptainer"},
+			innerArgs:    []string{"--force", tmpBuildSIF, "/e2e/testdata/nested_inner.def"},
 		},
 		// User host -> fakeroot outer -> fakeroot inner
 		{
@@ -164,7 +158,7 @@ func (c ctx) apptainer(t *testing.T) {
 			outerProfile: e2e.FakerootProfile,
 			outerArgs:    []string{},
 			innerCommand: "build",
-			innerArgs:    []string{"--force", tmpBuildSIF, "examples/library/Apptainer"},
+			innerArgs:    []string{"--force", tmpBuildSIF, "/e2e/testdata/nested_inner.def"},
 		},
 		// User outside -> user (userns) outer -> user (userns) inner
 		{
@@ -175,15 +169,20 @@ func (c ctx) apptainer(t *testing.T) {
 			innerArgs:    []string{"-u", c.env.OrasTestImage, "/bin/true"},
 		},
 	}
+
+	cwd, _ := os.Getwd()
 	for _, tt := range tests {
-		cmdArgs := tt.outerArgs
+		cmdArgs := []string{ //nolint:prealloc
+			"--mount", "type=bind,source=/usr/local,destination=/usr/local,nonested",
+			"--mount", "type=bind,source=" + cwd + ",destination=/e2e,nonested",
+		}
+		cmdArgs = append(cmdArgs, tt.outerArgs...)
 		cmdArgs = append(cmdArgs, nestedSIF)
 		cmdArgs = append(cmdArgs, tt.innerCommand)
 		cmdArgs = append(cmdArgs, tt.innerArgs...)
 		c.env.RunApptainer(
 			t,
 			e2e.AsSubtest(tt.name),
-			e2e.WithDir(buildcfg.SOURCEDIR),
 			e2e.WithProfile(tt.outerProfile),
 			e2e.WithCommand("run"),
 			e2e.WithArgs(cmdArgs...),
