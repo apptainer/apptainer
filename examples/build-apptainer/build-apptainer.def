@@ -19,7 +19,7 @@ From: rockylinux:9
     dnf --enablerepo=devel install -y shadow-utils-subid-devel
 
     # Compiling dependent FUSE-based packages
-    dnf install -y fuse3-devel lzo-devel lz4-devel
+    dnf install -y fuse3-devel libarchive-devel lzo-devel lz4-devel
 
     # Building & Installing from RPM
     dnf install -y rpm-build golang

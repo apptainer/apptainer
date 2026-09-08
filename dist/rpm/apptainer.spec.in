@@ -34,6 +34,7 @@
 %global e2fsprogs_version 1.47.4
 %global fuse_overlayfs_version 1.16
 %global squashfs_tools_version 4.7.5
+%global archivemount_version 1b
 %ifnarch ppc64le s390x riscv64
 %if !(0%{?fedora} >= 45 || 0%{?rhel} >= 11) || "%{_arch}" != "x86_64"
 # On fedora45 & epel11 x86_64 building PRoot dies with
@@ -65,6 +66,11 @@ Source10: https://github.com/rfjakob/gocryptfs/releases/download/v%{gocryptfs_ve
 %endif
 %if "%{?squashfuse_version}" != ""
 Source11: https://github.com/vasi/squashfuse/archive/%{squashfuse_version}/squashfuse-%{squashfuse_version}.tar.gz
+%endif
+%if "%{?archivemount_version}" != ""
+# The git upstream is https://git.sr.ht/~nabijaczleweli/archivemount-ng/archive/%%{archivemount_version}.tar.gz
+# URL: http://deb.debian.org/debian/pool/main/a/archivemount/archivemount_%%{archivemount_version}.orig.tar.gz
+Source16: archivemount-ng-%{archivemount_version}.tar.gz
 %endif
 %if "%{?e2fsprogs_version}" != ""
 # URL: https://github.com/tytso/e2fsprogs/archive/refs/tags/v%%{e2fsprogs_version}.tar.gz
@@ -107,6 +113,9 @@ Provides: bundled(gocryptfs) = %{gocryptfs_version}
 %if "%{?squashfuse_version}" != ""
 Provides: bundled(squashfuse) = %{squashfuse_version}
 %endif
+%if "%{?archivemount_version}" != ""
+Provides: bundled(archivemount) = %{archivemount_version}
+%endif
 %if "%{?e2fsprogs_version}" != ""
 Provides: bundled(e2fsprogs) = %{e2fsprogs_version}
 Provides: bundled(fuse2fs) = %{e2fsprogs_version}
@@ -143,7 +152,7 @@ BuildRequires: libtalloc-devel
 BuildRequires: libattr-devel
 BuildRequires: cryptsetup
 BuildRequires: fuse3-devel
-%if ("%{?squashfuse_version}" != "") || ("%{e2fsprogs_version}" != "") || ("%{fuse_overlayfs_version}" != "") || ("%{?squashfs_tools_version}" != "")
+%if ("%{?squashfuse_version}" != "") || ("%{e2fsprogs_version}" != "") || ("%{fuse_overlayfs_version}" != "") || ("%{?squashfs_tools_version}" != "") || ("%{?archivemount_version}" != "")
 BuildRequires: autoconf
 BuildRequires: automake
 BuildRequires: libtool
@@ -152,6 +161,9 @@ BuildRequires: zlib-devel
 BuildRequires: lzo-devel
 BuildRequires: xz-devel
 BuildRequires: libzstd-devel
+%endif
+%if "%{?archivemount_version}" != ""
+BuildRequires: libarchive-devel
 %endif
 %if "%{_target_vendor}" == "suse"
 Recommends: fakeroot
@@ -263,6 +275,9 @@ install -m 755 squashfs-tools-%{squashfs_tools_version}/squashfs-tools/unsquashf
 %if "%{?PRoot_version}" != ""
 install -m 755 PRoot-%{PRoot_version}/src/proot %{buildroot}%{_libexecdir}/%{name}/bin/proot
 %endif
+%if "%{?archivemount_version}" != ""
+install -m 755 archivemount-ng-%{archivemount_version}/archivemount %{buildroot}%{_libexecdir}/%{name}/bin/archivemount
+%endif
 
 %post
 # $1 in %%posttrans cannot distinguish between fresh installs and upgrades,
@@ -337,6 +352,9 @@ fi
 %endif
 %if "%{?PRoot_version}" != ""
 %{_libexecdir}/%{name}/bin/proot
+%endif
+%if "%{?archivemount_version}" != ""
+%{_libexecdir}/%{name}/bin/archivemount
 %endif
 %{_libexecdir}/%{name}/cni
 %{_libexecdir}/%{name}/lib

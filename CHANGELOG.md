@@ -13,6 +13,9 @@ Changes since 1.5.x
   `--bind` or `--mount` with `archive-src=` option, similar to mounting
   images with `image-src=`. Archive mounts require a FUSE-based archiver
   such as `ratarmount`, `fuse-archive`, or `archivemount` to be installed.
+- Now `archivemount` is bundled with Apptainer, but you might want to
+  install `ratarmount` because it has better performance. It is not bundled
+  because it is a python program and so requires many dependencies.
 - Add a new `gpu library path` option to `apptainer.conf`, giving a list of
   directories to search for the GPU driver libraries named in
   `nvliblist.conf` and `rocmliblist.conf` when binding them with `--nv` or
