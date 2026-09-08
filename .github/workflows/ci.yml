@@ -118,23 +118,6 @@ jobs:
       - name: Check License Changes
         run: git diff --exit-code -- LICENSE_DEPENDENCIES.md
 
-  debbuild-debian11:
-    name: debbuild-debian11
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Build and test deb under docker
-        env:
-          OS_TYPE: debian
-          OS_VERSION: 11
-          # setting GO_ARCH speeds things by using go binaries instead of source
-          GO_ARCH: linux-amd64
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./scripts/ci-docker-run
-
   debbuild-debian12:
     name: debbuild-debian12
     runs-on: ubuntu-22.04
@@ -147,6 +130,23 @@ jobs:
         env:
           OS_TYPE: debian
           OS_VERSION: 12
+          # setting GO_ARCH speeds things by using go binaries instead of source
+          GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./scripts/ci-docker-run
+
+  debbuild-debian13:
+    name: debbuild-debian13
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build and test deb under docker
+        env:
+          OS_TYPE: debian
+          OS_VERSION: 13
           # setting GO_ARCH speeds things by using go binaries instead of source
           GO_ARCH: linux-amd64
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -180,6 +180,22 @@ jobs:
         env:
           OS_TYPE: ubuntu
           OS_VERSION: 24.04
+          GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./scripts/ci-docker-run
+
+  debbuild-ubuntu26:
+    name: debbuild-ubuntu26
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build and test deb under docker
+        env:
+          OS_TYPE: ubuntu
+          OS_VERSION: 26.04
           GO_ARCH: linux-amd64
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/ci-docker-run
@@ -222,10 +238,10 @@ jobs:
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
-      - name: Install and test unprivileged for debian 11
+      - name: Install and test unprivileged for debian 12
         env:
           OS_TYPE: debian
-          OS_VERSION: 11
+          OS_VERSION: 12
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
