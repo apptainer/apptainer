@@ -17,7 +17,7 @@
       : show apptainer version before getting the rest of the dependencies
       scripts/get-version
       apt-get install -y build-essential libseccomp-dev libtalloc-dev libattr1-dev libprotobuf-c-dev uidmap fakeroot cryptsetup dbus-user-session
-      apt-get install -y autoconf automake libtool pkg-config libfuse3-dev zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
+      apt-get install -y autoconf automake libtool pkg-config libfuse3-dev libarchive-dev zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
       : install go
       GOVERSION=$(scripts/get-min-go-version)
       curl -Ls https://go.dev/dl/go${GOVERSION}.linux-amd64.tar.gz | tar -C /usr/local -xzf -

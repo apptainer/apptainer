@@ -13,6 +13,9 @@ Changes since 1.5.x
   `--bind` or `--mount` with `archive-src=` option, similar to mounting
   images with `image-src=`. Archive mounts require a FUSE-based archiver
   such as `ratarmount`, `fuse-archive`, or `archivemount` to be installed.
+  Now "archivemount-ng" is bundled with Apptainer, but you might want to
+  install "ratarmount" because it has better performance. It is not bundled
+  because it is a python program and so requires many dependencies.
 - Allow pushing multiple images with different architectures (multi-arch)
   to an oras URI, creating an image index with all the pushed arch images.
 - Add support for building data partitions from tar files using
