@@ -350,8 +350,8 @@ github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 h1:KRzFb2m7YtdldCEkzs6KqmJw4nqEV
 github.com/santhosh-tekuri/jsonschema/v6 v6.0.2/go.mod h1:JXeL+ps8p7/KNMjDQk3TCwPpBy0wYklyWTfbkIzdIFU=
 github.com/sebdah/goldie/v2 v2.8.0 h1:dZb9wR8q5++oplmEiJT+U/5KyotVD+HNGCAc5gNr8rc=
 github.com/sebdah/goldie/v2 v2.8.0/go.mod h1:oZ9fp0+se1eapSRjfYbsV/0Hqhbuu3bJVvKI/NNtssI=
-github.com/seccomp/libseccomp-golang v0.11.1 h1:wuk4ZjSx6kyQII4rj6G6fvVzRHQaSiPvccJazDagu4g=
-github.com/seccomp/libseccomp-golang v0.11.1/go.mod h1:5m1Lk8E9OwgZTTVz4bBOer7JuazaBa+xTkM895tDiWc=
+github.com/seccomp/libseccomp-golang v0.12.0 h1:IYaotOCgdBokfN0ry0COtn2Q6Co+tYd/rnrUx0NalZQ=
+github.com/seccomp/libseccomp-golang v0.12.0/go.mod h1:5m1Lk8E9OwgZTTVz4bBOer7JuazaBa+xTkM895tDiWc=
 github.com/secure-systems-lab/go-securesystemslib v0.11.0 h1:iuCR9kcMFD4QurdKrGvPLoKZLv9YvwPYVr0473BdtFs=
 github.com/secure-systems-lab/go-securesystemslib v0.11.0/go.mod h1:+PMOTjUGwHj2vcZ+TFKlb1tXRbrdWE1LYDT5i9JC80Q=
 github.com/sergi/go-diff v1.0.0/go.mod h1:0CfEIISq7TuYL3j771MWULgwwjU+GofnZX9QAmXWZgo=
