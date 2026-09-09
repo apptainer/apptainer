@@ -68,7 +68,7 @@ jobs:
         if: env.do_release
         env:
           OS_TYPE: debian
-          OS_VERSION: 11
+          OS_VERSION: 12
           GO_ARCH: linux-amd64
         run: |
           # Make another new copy of the source files for this build
@@ -84,8 +84,7 @@ jobs:
         if: env.do_release
         env:
           OS_TYPE: debian
-          # once released, this version should change to 13
-          OS_VERSION: trixie
+          OS_VERSION: 13
           GO_ARCH: linux-amd64
         run: |
           # Make another new copy of the source files for this build
