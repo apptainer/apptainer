@@ -65,6 +65,13 @@ Changes since 1.5.x
   writable extfs image mounts use the `sync` mount option.
 - Added support for NVIDIA Tegra to `nvliblist.conf`
 - The `APPTAINER_TMPDIR` now defaults to /var/tmp, if /tmp is on tmpfs.
+- Build the bundled PRoot without its optional Python extension. The
+  extension was enabled automatically whenever `swig` and `python3-config`
+  happened to be installed on the build host, which made the resulting
+  proot binary depend on `libpython`. Apptainer does not use the PRoot
+  Python extension, and explicitly disabling it improves the build
+  reproducibility by ensuring a `libpython` dependency does not get
+  introduced based on the build host's environment.
 
 ## v1.5.x changes
 
