@@ -9,6 +9,22 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Run the `createRuntime` and `createContainer` hooks a CDI device
+  declares, after the container's mounts are in place and before the chroot,
+  the way an OCI runtime does. The NVIDIA specification relies on them to
+  create the driver's library symlinks and refresh the ld.so cache inside the
+  container root, so without them `--device nvidia.com/gpu=all` mounted the
+  driver's files but left applications unable to resolve them. A device that
+  declares hooks gets `--writable-tmpfs` the way `--nvccli` does, since the
+  hooks write into the container root. The setuid flow does not run them,
+  as it does not run nvidia-container-cli, and warns instead.
+- Report what an OCI hook wrote to stderr when it fails, and run it with the
+  capabilities the runtime process can hand over, so that a hook started from
+  an unprivileged user namespace keeps them across the exec.
+- Keep `--device` in effect when `--nv` or `--nvccli` is also given: the
+  GPU setup returned before the CDI devices were recorded, so they were
+  silently dropped. A device node that `--nv` or `--rocm` already staged is
+  not staged again.
 - Add a new `gpu library path` option to `apptainer.conf`, giving a list of
   directories to search for the GPU driver libraries named in
   `nvliblist.conf` and `rocmliblist.conf` when binding them with `--nv` or

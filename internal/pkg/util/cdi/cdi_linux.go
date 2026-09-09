@@ -81,6 +81,24 @@ func GetCdiMounts(spec *specs.Spec) ([]string, error) {
 	return binds, nil
 }
 
+// GetCdiHooks returns the OCI hooks the CDI devices declared, or nil when
+// they declared none. The NVIDIA specification uses createContainer hooks to
+// create the driver's library symlinks and refresh the ld.so cache inside
+// the container root, without which the injected libraries cannot be
+// resolved by their sonames.
+func GetCdiHooks(spec *specs.Spec) *specs.Hooks {
+	if spec == nil || spec.Hooks == nil {
+		return nil
+	}
+	h := spec.Hooks
+	declared := len(h.CreateRuntime) + len(h.CreateContainer) + len(h.StartContainer) + len(h.Poststart) + len(h.Poststop)
+	declared += len(h.Prestart) //nolint:staticcheck // prestart hooks still appear in specifications
+	if declared == 0 {
+		return nil
+	}
+	return h
+}
+
 // Returns CDI-specified environment variables in list of KEY=VALUE strings
 func GetCdiEnvironment(spec *specs.Spec) ([]string, error) {
 	if spec != nil && spec.Process != nil {
