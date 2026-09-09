@@ -36,7 +36,7 @@ require (
 	github.com/opencontainers/umoci v0.6.0
 	github.com/pelletier/go-toml/v2 v2.4.3
 	github.com/pkg/errors v0.9.1
-	github.com/seccomp/libseccomp-golang v0.11.1
+	github.com/seccomp/libseccomp-golang v0.12.0
 	github.com/shopspring/decimal v1.4.0
 	github.com/sigstore/sigstore v1.10.9
 	github.com/spf13/cobra v1.10.2
