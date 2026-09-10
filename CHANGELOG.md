@@ -79,6 +79,8 @@ Changes since 1.5.x
   by using the shorter `src` and `dst` aliases in the example.
 - Fixed a bug that prevented multiple mount entries in the `APPTAINER_MOUNT`
   env var from having different numbers of options.
+- Skip attempting to build PRoot in rpm packages on riscv64 architecture
+  like had already been done for ppc64le and s390x.
 
 ## v1.5.3 - \[2026-07-21\]
 
