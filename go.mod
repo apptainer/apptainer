@@ -47,7 +47,7 @@ require (
 	go.podman.io/image/v5 v5.41.1
 	go.yaml.in/yaml/v4 v4.0.0-rc.6
 	golang.org/x/crypto v0.56.0
-	golang.org/x/sys v0.47.0
+	golang.org/x/sys v0.48.0
 	golang.org/x/term v0.45.0
 	golang.org/x/text v0.41.0
 	gotest.tools/v3 v3.5.2
