@@ -33,10 +33,12 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
 	"github.com/apptainer/apptainer/internal/pkg/security"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
+	"github.com/apptainer/apptainer/internal/pkg/util/cdi"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs/squashfs"
 	"github.com/apptainer/apptainer/internal/pkg/util/gpu"
+	"github.com/apptainer/apptainer/internal/pkg/util/paths"
 	"github.com/apptainer/apptainer/internal/pkg/util/starter"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/build/types"
@@ -855,6 +857,7 @@ func (l *Launcher) SetGPUConfig() error {
 	}
 
 	if l.cfg.Nvidia {
+		gpu.NvidiaCreateDevices()
 		// If nvccli was not enabled by flag or config, drop down to legacy binds immediately
 		if !l.engineConfig.File.UseNvCCLI && !l.cfg.NvCCLI {
 			return l.setNVLegacyConfig()
@@ -938,6 +941,37 @@ func (l *Launcher) setNvCCLIConfig() (err error) {
 		l.cfg.WritableTmpfs = true
 	}
 
+	// nvidia-container-cli stages the driver's libraries, but none of the modules
+	// a loader opens by path and none of the EGL platform libraries its own
+	// configuration files name, so those are bound here as for the legacy flow:
+	// the modules at their host paths, the platform libraries and the GBM
+	// backend in the libraries directory, from where GBM_BACKENDS_PATH names
+	// the backend. Only that subset: the container libraries directory precedes
+	// the cache, so binding the rest would shadow what the CLI staged, CUDA
+	// compatibility included.
+	gpuConfFile := filepath.Join(buildcfg.APPTAINER_CONFDIR, "nvliblist.conf")
+	libs, _, files, err := gpu.NvidiaPaths(gpuConfFile)
+	if err != nil {
+		sylog.Warningf("While finding nv bind points: %v", err)
+	} else {
+		if l.driverStagedByDevices(libs) {
+			files = paths.WithoutModuleBinds(files)
+		}
+		if len(files) > 0 {
+			l.engineConfig.AppendFilesPath(files...)
+		}
+		platformLibs := []string{}
+		for _, lib := range libs {
+			base := filepath.Base(lib)
+			if strings.HasPrefix(base, "libnvidia-egl-") || strings.HasSuffix(base, "_gbm.so") {
+				platformLibs = append(platformLibs, lib)
+			}
+		}
+		if len(platformLibs) > 0 {
+			l.engineConfig.AppendLibrariesPath(platformLibs...)
+		}
+	}
+
 	return nil
 }
 
@@ -955,6 +989,9 @@ func (l *Launcher) setNVLegacyConfig() error {
 	if err != nil {
 		sylog.Warningf("While finding nv bind points: %v", err)
 	}
+	if l.driverStagedByDevices(libs) {
+		files = paths.WithoutModuleBinds(files)
+	}
 	l.addGPUBinds(libs, bins, ipcs, files, "nv")
 
 	if l.cfg.Compat32 {
@@ -967,6 +1004,37 @@ func (l *Launcher) setNVLegacyConfig() error {
 	}
 
 	return nil
+}
+
+// driverStagedByDevices reports whether a requested CDI device mounts one of
+// the driver libraries --nv resolved. Such a specification lays the driver
+// out at its host paths itself and links its modules from its hooks, which a
+// mount in a link's place would block, so the modules are left to it.
+func (l *Launcher) driverStagedByDevices(libs []string) bool {
+	if len(l.cfg.Devices) == 0 {
+		return false
+	}
+	var spec specs.Spec
+	if err := cdi.AddCdiDevices(&spec, l.cfg.Devices, l.cfg.CdiDirs); err != nil {
+		sylog.Debugf("CDI device resolution deferred to the engine: %s", err)
+		return false
+	}
+	mounts, _ := cdi.GetCdiMounts(&spec)
+	staged := make(map[string]struct{}, len(mounts))
+	for _, mount := range mounts {
+		source, _, _ := strings.Cut(mount, ":")
+		if source, err := filepath.EvalSymlinks(source); err == nil {
+			staged[source] = struct{}{}
+		}
+	}
+	for _, lib := range libs {
+		if lib, err := filepath.EvalSymlinks(lib); err == nil {
+			if _, ok := staged[lib]; ok {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // setRocmConfig sets up EngineConfig entries for ROCm GPU configuration via direct binds of configured bins/libs.

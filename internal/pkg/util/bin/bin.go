@@ -63,6 +63,7 @@ func FindBin(name string) (path string, err error) {
 		"newgidmap",
 		"newuidmap",
 		"nvidia-container-cli",
+		"nvidia-modprobe",
 		"pacstrap",
 		"proot",
 		"rpm",
