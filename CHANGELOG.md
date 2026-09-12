@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Allow pushing multiple images with different architectures (multi-arch)
+  to an oras URI, creating an image index with all the pushed arch images.
 - Add a new `gpu library path` option to `apptainer.conf`, giving a list of
   directories to search for the GPU driver libraries named in
   `nvliblist.conf` and `rocmliblist.conf` when binding them with `--nv` or
