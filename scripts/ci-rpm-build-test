@@ -13,10 +13,11 @@ if [[ $OS_TYPE == *suse* ]]; then
     libseccomp-devel libtalloc-devel libattr-devel libuuid-devel openssl-devel \
     libprotobuf-c-devel fakeroot cryptsetup sysuser-tools \
     diffutils wget which git
+  zypper install -y gcc-c++
   if [[ $OS_TYPE == *tumbleweed* ]]; then
     zypper install -y --allow-downgrade libsubid-devel
   fi
-  zypper install -y --allow-downgrade gzip fuse3-devel \
+  zypper install -y --allow-downgrade gzip fuse3-devel libarchive-devel \
     lzo-devel liblz4-devel xz-devel libzstd-devel
   zypper install -y rpm-build go
   zypper install -y sudo
@@ -30,7 +31,7 @@ else
     protobuf-c-devel fakeroot cryptsetup wget git
   dnf --enablerepo=devel install -y shadow-utils-subid-devel
   dnf install -y golang
-  dnf install -y fuse3-devel lzo-devel lz4-devel
+  dnf install -y fuse3-devel libarchive-devel lzo-devel lz4-devel
   dnf install -y sudo
 fi
 

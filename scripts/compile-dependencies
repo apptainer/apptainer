@@ -18,7 +18,7 @@ if [ -n "$1" ]; then
 fi
 
 set -ex
-for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs PRoot; do
+for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs PRoot archivemount-ng; do
     TGZ="$(echo $SRC/${PKG}[_-]*.tar.gz)"
     if [ ! -f "$TGZ" ]; then
         echo "\$PKG[_-]*.tar.gz not found in $SRC, skipping" >&2
@@ -70,6 +70,13 @@ for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs PRoot; d
             # Disable the PRoot Python extension support by explicitly setting HAS_SWIG
             # and HAS_PYTHON_CONFIG to avoid a libpython dependency on the built binary
             make -C src proot HAS_SWIG= HAS_PYTHON_CONFIG=
+            ;;
+        archivemount-ng)
+            VER=${DIR/*-/}
+            # Change from C++23 to C++20, in order to compile for Enterprise Linux 8
+            sed -e 's/std=c++2b/std=c++2a/' -i Makefile
+            # Substitute git operations with commands that work also from a tarball
+            make VERSION="$VER" SOURCE_DATE_EPOCH=$(date +%s -r "archivemount.1.in")
             ;;
         *)
             echo "unrecognized package $PKG" >&2

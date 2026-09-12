@@ -156,6 +156,7 @@ var authorizedImage = map[string]fsContext{
 	"ext3":      {true},
 	"squashfs":  {true},
 	"gocryptfs": {true},
+	"archive":   {true},
 }
 
 var authorizedFS = map[string]fsContext{
@@ -658,7 +659,8 @@ func (p *Points) AddImage(tag AuthorizedTag, source string, dest string, fstype 
 	if _, ok := authorizedImage[fstype]; !ok {
 		return fmt.Errorf("mount %s image is not authorized", fstype)
 	}
-	if sizelimit == 0 {
+	// Archives don't need a size limit
+	if sizelimit == 0 && fstype != "archive" {
 		return fmt.Errorf("invalid image size, zero length")
 	}
 	keyB64 := base64.StdEncoding.EncodeToString(key)
