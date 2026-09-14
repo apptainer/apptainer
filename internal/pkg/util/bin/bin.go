@@ -51,10 +51,12 @@ func FindBin(name string) (path string, err error) {
 	//  followed by the user's PATH, ahead of the system directories
 	//  by default
 	case "curl",
+		"archivemount",
 		"debootstrap",
 		"dnf",
 		"fakeroot",
 		"fakeroot-sysv",
+		"fuse-archive",
 		"fuse-overlayfs",
 		"fuse2fs",
 		"getopt",
@@ -65,6 +67,7 @@ func FindBin(name string) (path string, err error) {
 		"nvidia-container-cli",
 		"pacstrap",
 		"proot",
+		"ratarmount",
 		"rpm",
 		"rpmkeys",
 		"squashfuse",

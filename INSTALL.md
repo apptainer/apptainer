@@ -220,20 +220,20 @@ First, make sure that additional required packages are installed.  On Debian:
 
 ```sh
 sudo apt-get install -y autoconf automake libtool pkg-config libfuse3-dev \
-    zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
+    libarchive-dev zlib1g-dev liblzo2-dev liblz4-dev liblzma-dev libzstd-dev
 ```
 
 On Fedora or RHEL or derivatives:
 
 ```sh
-sudo dnf install -y fuse3-devel lzo-devel lz4-devel
+sudo dnf install -y fuse3-devel libarchive-devel lzo-devel lz4-devel
 ```
 
 On SLE/openSUSE:
 
 ```sh
 sudo zypper install -y --allow-downgrade gzip fuse3-devel \
-    lzo-devel liblz4-devel xz-devel libzstd-devel
+    libarchive-devel lzo-devel liblz4-devel xz-devel libzstd-devel
 ```
 
 To download the source code from the top level of the Apptainer source

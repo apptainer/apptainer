@@ -169,7 +169,7 @@ func create(ctx context.Context, engine *EngineOperations, rpcOps *client.RPC, p
 	driver.InitImageDrivers(true, c.userNS, c.engine.EngineConfig.File, 0)
 
 	// load image driver plugins
-	callbackType := (apptainercallback.RegisterImageDriver)(nil)
+	callbackType := apptainercallback.RegisterImageDriver(nil)
 	callbacks, err := plugin.LoadCallbacks(callbackType)
 	if err != nil {
 		return fmt.Errorf("while loading plugins callbacks '%T': %s", callbackType, err)
@@ -979,6 +979,10 @@ func (c *container) mountImage(mnt *mount.Point, system *mount.System) error {
 			if features&image.Ext3Feature != 0 {
 				return c.mountImageDriver(params, system, c.rpcOps.Mount)
 			}
+		case "archive":
+			if features&image.ArchiveFeature != 0 {
+				return c.mountImageDriver(params, system, c.rpcOps.Mount)
+			}
 		}
 	}
 
@@ -1317,16 +1321,76 @@ func (c *container) addOverlayMount(system *mount.System) error {
 	return system.Points.AddPropagation(mount.SharedTag, c.session.FinalPath(), syscall.MS_UNBINDABLE)
 }
 
+func (c *container) addArchiveBindMount(system *mount.System, archivePath string, destination string, archiveSrc string, index int) error {
+	sessionDest := fmt.Sprintf("/archive-images/%d", index)
+	if err := c.session.AddDir(sessionDest); err != nil {
+		return fmt.Errorf("failed to create session directory for archive: %s", err)
+	}
+	imgDest, _ := c.session.GetPath(sessionDest)
+	umountPoints = append(umountPoints, umountPoint{imgDest, false})
+
+	absArchivePath, err := filepath.Abs(archivePath)
+	if err != nil {
+		return fmt.Errorf("while resolving archive path %s: %s", archivePath, err)
+	}
+
+	if _, err := os.Stat(absArchivePath); os.IsNotExist(err) {
+		return fmt.Errorf("archive %s does not exist", absArchivePath)
+	}
+
+	err = system.Points.AddImage(
+		mount.ImageBindTag,
+		absArchivePath,
+		imgDest,
+		"archive",
+		0,
+		0,
+		0,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("while adding archive mount %s: %s", absArchivePath, err)
+	}
+
+	// archive-src paths don't have a filesystem root; trim leading / if present for path construction
+	archiveSrcPath := strings.TrimPrefix(archiveSrc, "/")
+	src := filepath.Join(imgDest, archiveSrcPath)
+
+	// The archive mount is at ImageBindTag (priority 2), so we run validation
+	// after ImageBindTag but before UserbindsTag (priority 14) where the bind mount is added
+	system.RunAfterTag(mount.ImageBindTag, func(*mount.System) error {
+		if err := unix.Access(src, unix.R_OK); os.IsNotExist(err) {
+			return fmt.Errorf("%s doesn't exist in archive %s", archiveSrc, archivePath)
+		}
+		return nil
+	})
+
+	if err := system.Points.AddBind(mount.UserbindsTag, src, destination, syscall.MS_BIND); err != nil {
+		return fmt.Errorf("while adding archive bind %s -> %s: %s", src, destination, err)
+	}
+
+	return nil
+}
+
 func (c *container) addImageBindMount(system *mount.System) error {
 	nb := 0
+	archiveIndex := 0
 	imageList := c.engine.EngineConfig.GetImageList()
 
 	for _, bind := range c.engine.EngineConfig.GetBindPath() {
-		if bind.ImageSrc() == "" && bind.ID() == "" {
+		if bind.ImageSrc() == "" && bind.ID() == "" && bind.ArchiveSrc() == "" {
 			continue
 		} else if !c.engine.EngineConfig.File.UserBindControl {
 			sylog.Warningf("Ignoring image bind mount request: user bind control disabled by system administrator")
 			return nil
+		}
+
+		if bind.ArchiveSrc() != "" {
+			if err := c.addArchiveBindMount(system, bind.Source, bind.Destination, bind.ArchiveSrc(), archiveIndex); err != nil {
+				return err
+			}
+			archiveIndex++
+			continue
 		}
 
 		imagePath := bind.Source
@@ -1334,8 +1398,9 @@ func (c *container) addImageBindMount(system *mount.System) error {
 		partID := uint32(0)
 		imageSource := "/"
 
-		if src := bind.ImageSrc(); src != "" {
-			imageSource = src
+		if imageSourceRaw := bind.ImageSrc(); imageSourceRaw != "" {
+			// image-src paths don't have a filesystem root; trim leading / if present for path construction
+			imageSource = strings.TrimPrefix(imageSourceRaw, "/")
 		}
 
 		if idStr := bind.ID(); idStr != "" {
@@ -2118,7 +2183,7 @@ func (c *container) addUserbindsMount(system *mount.System) error {
 			continue
 		}
 		// data image bind
-		if b.ID() != "" || b.ImageSrc() != "" {
+		if b.ID() != "" || b.ImageSrc() != "" || b.ArchiveSrc() != "" {
 			continue
 		}
 
