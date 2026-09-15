@@ -269,7 +269,7 @@ sudo tee /etc/apparmor.d/apptainer << 'EOF'
 # Permit unprivileged user namespace creation for apptainer starter
 abi <abi/4.0>,
 include <tunables/global>
-profile apptainer /usr/local/libexec/apptainer/bin/starter{,-suid} 
+profile apptainer /usr/local/{bin/apptainer,libexec/apptainer/bin/starter{,-suid}}
     flags=(unconfined) {
   userns,
   # Site-specific additions and overrides. See local/README for details.
