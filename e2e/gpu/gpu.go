@@ -45,24 +45,10 @@ type ctx struct {
 
 func (c ctx) testNvidiaLegacy(t *testing.T) {
 	require.Nvidia(t)
-	// Use Ubuntu 20.04 as this is a recent distro officially supported by Nvidia CUDA.
-	// We can't use our test image as it's alpine based and we need a compatible glibc.
-	imageURL := "docker://ubuntu:20.04"
-	imageFile, err := fs.MakeTmpFile("", "test-nvidia-legacy-", 0o755)
-	if err != nil {
-		t.Fatalf("Could not create test file: %v", err)
-	}
-	imageFile.Close()
-	imagePath := imageFile.Name()
-	defer os.Remove(imagePath)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithCommand("pull"),
-		e2e.WithArgs("--force", imagePath, imageURL),
-		e2e.ExpectExit(0),
-	)
+	// Use a Debian-based image, as we can't use our test image which is
+	// alpine based and we need a compatible glibc.
+	e2e.EnsureDebianImage(t, c.env)
+	imagePath := c.env.DebianImagePath
 
 	// Basic test that we can run the bound in `nvidia-smi` which *should* be on the PATH
 	tests := []struct {
@@ -169,24 +155,10 @@ func (c ctx) testNvidiaCompat32(t *testing.T) {
 func (c ctx) testNvCCLI(t *testing.T) {
 	require.Nvidia(t)
 	require.NvCCLI(t)
-	// Use Ubuntu 20.04 as this is a recent distro officially supported by Nvidia CUDA.
-	// We can't use our test image as it's alpine based and we need a compatible glibc.
-	imageURL := "docker://ubuntu:20.04"
-	imageFile, err := fs.MakeTmpFile("", "test-nvccli-", 0o755)
-	if err != nil {
-		t.Fatalf("Could not create test file: %v", err)
-	}
-	imageFile.Close()
-	imagePath := imageFile.Name()
-	defer os.Remove(imagePath)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithCommand("pull"),
-		e2e.WithArgs("--force", imagePath, imageURL),
-		e2e.ExpectExit(0),
-	)
+	// Use a Debian-based image, as we can't use our test image which is
+	// alpine based and we need a compatible glibc.
+	e2e.EnsureDebianImage(t, c.env)
+	imagePath := c.env.DebianImagePath
 
 	// Basic test that we can run the bound in `nvidia-smi` which *should* be on the PATH
 	tests := []struct {
@@ -292,24 +264,10 @@ func (c ctx) testRocm(t *testing.T) {
 		t.Fatalf("while finding lsmod: %v", err)
 	}
 
-	// Use Ubuntu 22.04 as this is the most recent distro officially supported by ROCm.
-	// We can't use our test image as it's alpine based and we need a compatible glibc.
-	imageURL := "docker://ubuntu:22.04"
-	imageFile, err := fs.MakeTmpFile("", "test-rocm-", 0o755)
-	if err != nil {
-		t.Fatalf("Could not create test file: %v", err)
-	}
-	imageFile.Close()
-	imagePath := imageFile.Name()
-	defer os.Remove(imagePath)
-
-	c.env.RunApptainer(
-		t,
-		e2e.WithProfile(e2e.UserProfile),
-		e2e.WithCommand("pull"),
-		e2e.WithArgs("--force", imagePath, imageURL),
-		e2e.ExpectExit(0),
-	)
+	// Use a Debian-based image, as we can't use our test image which is
+	// alpine based and we need a compatible glibc.
+	e2e.EnsureDebianImage(t, c.env)
+	imagePath := c.env.DebianImagePath
 
 	// Basic test that we can run the bound in `rocminfo` which *should* be on the PATH
 	tests := []struct {
@@ -438,9 +396,10 @@ func (c ctx) testBuildNvidiaLegacy(t *testing.T) {
 	// ignore the error as it's already done in the require call above
 	nvsmi, _ := exec.LookPath("nvidia-smi")
 
-	// Use Ubuntu 20.04 as this is the most recent distro officially supported by Nvidia CUDA.
-	// We can't use our test image as it's alpine based and we need a compatible glibc.
-	imageURL := "docker://ubuntu:20.04"
+	// Use a Debian-based image, as we can't use our test image which is
+	// alpine based and we need a compatible glibc.
+	e2e.EnsureDebianImage(t, c.env)
+	imagePath := c.env.DebianImagePath
 
 	tmpdir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "build-nvidia-legacy", "build with nvidia")
 	defer cleanup(t)
@@ -451,11 +410,10 @@ func (c ctx) testBuildNvidiaLegacy(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--sandbox", sourceImage, imageURL),
+		e2e.WithArgs("--force", "--sandbox", sourceImage, imagePath),
 		e2e.ExpectExit(0),
 	)
 
-	// Basic test that we can run the bound in `rocminfo` which *should* be on the PATH
 	tests := []struct {
 		name      string
 		profile   e2e.Profile
@@ -524,9 +482,10 @@ func (c ctx) testBuildNvCCLI(t *testing.T) {
 	// ignore the error as it's already done in the require call above
 	nvsmi, _ := exec.LookPath("nvidia-smi")
 
-	// Use Ubuntu 20.04 as this is the most recent distro officially supported by Nvidia CUDA.
-	// We can't use our test image as it's alpine based and we need a compatible glibc.
-	imageURL := "docker://ubuntu:20.04"
+	// Use a Debian-based image, as we can't use our test image which is
+	// alpine based and we need a compatible glibc.
+	e2e.EnsureDebianImage(t, c.env)
+	imagePath := c.env.DebianImagePath
 
 	tmpdir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "build-nvccli", "build with nvccli")
 	defer cleanup(t)
@@ -537,11 +496,10 @@ func (c ctx) testBuildNvCCLI(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--sandbox", sourceImage, imageURL),
+		e2e.WithArgs("--force", "--sandbox", sourceImage, imagePath),
 		e2e.ExpectExit(0),
 	)
 
-	// Basic test that we can run the bound in `rocminfo` which *should* be on the PATH
 	tests := []struct {
 		name      string
 		profile   e2e.Profile
@@ -605,9 +563,10 @@ func (c ctx) testBuildRocm(t *testing.T) {
 	// ignore the error as it's already done in the require call above
 	rocmInfo, _ := exec.LookPath("rocminfo")
 
-	// Use Ubuntu 22.04 as this is the most recent distro officially supported by ROCm.
-	// We can't use our test image as it's alpine based and we need a compatible glibc.
-	imageURL := "docker://ubuntu:22.04"
+	// Use a Debian-based image, as we can't use our test image which is
+	// alpine based and we need a compatible glibc.
+	e2e.EnsureDebianImage(t, c.env)
+	imagePath := c.env.DebianImagePath
 
 	tmpdir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "build-rocm-image", "build with rocm")
 	defer cleanup(t)
@@ -618,7 +577,7 @@ func (c ctx) testBuildRocm(t *testing.T) {
 		t,
 		e2e.WithProfile(e2e.UserProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--sandbox", sourceImage, imageURL),
+		e2e.WithArgs("--force", "--sandbox", sourceImage, imagePath),
 		e2e.ExpectExit(0),
 	)
 
