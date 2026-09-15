@@ -34,6 +34,8 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
 	"github.com/google/go-containerregistry/pkg/v1/layout"
+	"github.com/google/go-containerregistry/pkg/v1/mutate"
+	"github.com/google/go-containerregistry/pkg/v1/partial"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"golang.org/x/term"
 )
@@ -211,6 +213,142 @@ func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.Aut
 		remoteOpts = append(remoteOpts, remote.WithProgress(progChan))
 	}
 	return remote.Write(ir, im, remoteOpts...)
+}
+
+// UploadImages uploads the images specified by paths and pushes them along with an index to the provided oci reference,
+// it will use credentials if supplied
+func UploadImages(ctx context.Context, paths []string, ref string, archs []string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) error {
+	var base v1.ImageIndex = empty.Index
+	var adds []mutate.IndexAddendum
+
+	ref = strings.TrimPrefix(ref, "oras://")
+	ref = strings.TrimPrefix(ref, "//")
+
+	// Get reference to image index in the remote
+	opts := []name.Option{name.WithDefaultTag(name.DefaultTag), name.WithDefaultRegistry(name.DefaultRegistry)}
+	if noHTTPS {
+		opts = append(opts, name.Insecure)
+	}
+	ir, err := name.ParseReference(ref, opts...)
+	if err != nil {
+		return err
+	}
+
+	annotationsMap := map[string]string{}
+	for _, annotation := range annotations {
+		key, value, found := strings.Cut(annotation, "=")
+		if !found {
+			sylog.Warningf("Value missing for %q, not setting", key)
+			continue
+		}
+		annotationsMap[key] = value
+	}
+
+	archSeen := map[string]bool{}
+
+	for i, path := range paths {
+		arch := archs[i]
+
+		// ensure that are uploading a SIF
+		if err := ensureSIF(path); err != nil {
+			return err
+		}
+
+		// We don't want to overwrite same arch
+		if archSeen[arch] {
+			return fmt.Errorf("have already added arch %q to %s", arch, ref)
+		}
+		archSeen[arch] = true
+
+		// Get reference to image in the remote
+		ia, err := name.ParseReference(ir.Name()+"_"+arch, opts...)
+		if err != nil {
+			return err
+		}
+
+		im, err := NewImageFromSIF(path, SifConfigMediaTypeV1, SifLayerMediaTypeV1, annotationsMap) // nolint:contextcheck
+		if err != nil {
+			return err
+		}
+
+		digest, err := im.Digest()
+		if err != nil {
+			return err
+		}
+		sylog.Infof("Digest: %s (%s)\n", digest, arch)
+
+		platform := v1.Platform{
+			Architecture: arch,
+			OS:           "linux",
+		}
+		remoteOpts := []remote.Option{
+			ociauth.AuthOptn(ociAuth, reqAuthFile),
+			remote.WithUserAgent(useragent.Value()),
+			remote.WithContext(ctx),
+			remote.WithPlatform(platform),
+		}
+
+		if term.IsTerminal(2) {
+			pb := &client.DownloadProgressBar{}
+			progChan := make(chan v1.Update, 1)
+			go func() {
+				var total int64
+				soFar := int64(0)
+				for {
+					// The following is concurrency-safe because this is the only
+					// goroutine that's going to be reading progChan updates.
+					update := <-progChan
+					if update.Error != nil {
+						pb.Abort(false)
+						return
+					}
+					if update.Total != total {
+						pb.Init(update.Total)
+						total = update.Total
+					}
+					pb.IncrBy(int(update.Complete - soFar))
+					soFar = update.Complete
+					if soFar >= total {
+						pb.Wait()
+						return
+					}
+				}
+			}()
+			remoteOpts = append(remoteOpts, remote.WithProgress(progChan))
+		}
+
+		err = remote.Write(ia, im, remoteOpts...)
+		if err != nil {
+			return err
+		}
+
+		desc, err := partial.Descriptor(partial.Describable(im))
+		if err != nil {
+			return err
+		}
+		desc.Platform = &platform
+
+		adds = append(adds, mutate.IndexAddendum{
+			Add:        im,
+			Descriptor: *desc,
+		})
+	}
+
+	idx := mutate.AppendManifests(base, adds...)
+
+	digest, err := idx.Digest()
+	if err != nil {
+		return err
+	}
+	sylog.Infof("Digest: %s\n", digest)
+
+	remoteOpts := []remote.Option{
+		ociauth.AuthOptn(ociAuth, reqAuthFile),
+		remote.WithUserAgent(useragent.Value()),
+		remote.WithContext(ctx),
+	}
+
+	return remote.WriteIndex(ir, idx, remoteOpts...)
 }
 
 // ensureSIF checks for a SIF image at filepath and returns an error if it is not, or an error is encountered
