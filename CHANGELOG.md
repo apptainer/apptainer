@@ -13,6 +13,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
   by using the shorter `src` and `dst` aliases in the example.
 - Skip attempting to build PRoot in rpm packages on riscv64 architecture
   like had already been done for ppc64le and s390x.
+- Fix rootless image builds on Ubuntu 24.04 and later (where apparmor by
+  default disables user namespaces) by changing the apparmor profile to
+  include the apptainer binary, not just the starter.  This reenables the
+  the first step in rootless fakeroot where a root-mapped user namespace
+  is created.
 
 ## v1.5.3 - \[2026-07-21\]
 
