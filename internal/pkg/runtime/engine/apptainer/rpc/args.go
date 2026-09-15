@@ -17,6 +17,8 @@ import (
 	"time"
 
 	"golang.org/x/sys/unix"
+
+	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 // MkdirArgs defines the arguments to mkdir.
@@ -157,6 +159,13 @@ type NvCCLIArgs struct {
 	Flags      []string
 	RootFsPath string
 	UserNS     bool
+}
+
+// OciHookArgs defines the arguments to OciHook: the hook to run and the OCI
+// state it is given on its standard input.
+type OciHookArgs struct {
+	Hook  specs.Hook
+	State specs.State
 }
 
 // FileInfo returns FileInfo interface to be passed as RPC argument.
