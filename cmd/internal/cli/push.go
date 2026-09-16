@@ -100,9 +100,9 @@ func init() {
 // PushCmd apptainer push
 var PushCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
-	Args:                  cobra.ExactArgs(2),
+	Args:                  cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		file, dest := args[0], args[1]
+		dest := args[len(args)-1]
 
 		transport, ref := uri.Split(dest)
 		if transport == "" {
@@ -111,6 +111,11 @@ var PushCmd = &cobra.Command{
 
 		switch transport {
 		case LibraryProtocol: // Handle pushing to a library
+			if len(args) > 2 {
+				sylog.Fatalf("Unable to push multi-arch to library")
+			}
+			file := args[0]
+
 			destRef, err := library.NormalizeLibraryRef(dest)
 			if err != nil {
 				sylog.Fatalf("Malformed library reference: %v", err)
@@ -173,6 +178,8 @@ var PushCmd = &cobra.Command{
 			}
 
 		case OrasProtocol:
+			files := args[0 : len(args)-1]
+
 			if cmd.Flag(pushDescriptionFlag.Name).Changed {
 				description := fmt.Sprintf("%s=%s", "org.opencontainers.image.description", pushDescription)
 				pushAnnotations = append(pushAnnotations, description)
@@ -182,7 +189,7 @@ var PushCmd = &cobra.Command{
 				sylog.Fatalf("Unable to make docker oci credentials: %s", err)
 			}
 
-			if err := oras.Push(cmd.Context(), file, ref, ociAuth, noHTTPS, reqAuthFile, pushAnnotations); err != nil {
+			if err := oras.Push(cmd.Context(), files, ref, ociAuth, noHTTPS, reqAuthFile, pushAnnotations); err != nil {
 				sylog.Fatalf("Unable to push image to oci registry: %v", err)
 			}
 			sylog.Infof("Upload complete")
