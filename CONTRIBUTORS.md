@@ -112,6 +112,7 @@
 - Pedro Alves Batista <pedro.pesquisapb@gmail.com>
 - Peter Steinbach <steinbach@scionics.de>
 - Petr Votava <votava.petr@gene.com>
+- Pooyan Azad <pooyan.azadparvar@gmail.com>
 - Pranathi Locula <locula@deshaw.com>
 - Rafal Gumienny <rafal.gumienny@gmail.com>
 - Ralph Castain <rhc@open-mpi.org>

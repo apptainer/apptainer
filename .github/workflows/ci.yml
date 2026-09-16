@@ -312,6 +312,38 @@ jobs:
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
+  rpmbuild-fedora44:
+    name: rpmbuild-fedora44
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build and test rpm under docker
+        env:
+          OS_TYPE: quay.io/fedora/fedora-bootc
+          OS_VERSION: 44
+          GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./scripts/ci-docker-run
+
+  rpmbuild-fedora45:
+    name: rpmbuild-fedora45
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build and test rpm under docker
+        env:
+          OS_TYPE: quay.io/fedora/fedora-bootc
+          OS_VERSION: 45
+          GO_ARCH: linux-amd64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./scripts/ci-docker-run
+
   rpmbuild-opensuse-leap:
     name: rpmbuild-opensuse-leap
     runs-on: ubuntu-22.04

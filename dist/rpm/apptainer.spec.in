@@ -133,7 +133,7 @@ BuildRequires: libsubid-devel
 BuildRequires: shadow-utils-subid-devel
 BuildRequires: golang
 BuildRequires: lz4-devel
-BuildRequires: protobuf-c-devel
+BuildRequires: pkgconfig(libprotobuf-c)
 %endif
 BuildRequires: git
 BuildRequires: gcc
