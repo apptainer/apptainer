@@ -112,6 +112,17 @@ func GetLocalPacker(ctx context.Context, src string, b *types.Bundle) (LocalPack
 			b:       b,
 			img:     imageObject,
 		}, nil
+	case image.TAR:
+		sylog.Debugf("Packing from Tar")
+
+		if b.Opts.DataPartition {
+			return &TarPacker{
+				srcfile: src,
+				b:       b,
+			}, nil
+		}
+
+		return nil, fmt.Errorf("tar format only supported for data partition builds")
 	case image.SANDBOX:
 		sylog.Debugf("Packing from Sandbox")
 

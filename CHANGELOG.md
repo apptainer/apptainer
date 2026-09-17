@@ -9,6 +9,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Add support for building data partitions from .tar files using
+  `apptainer build --data image.sif input.tar`. The tar file is converted
+  to squashfs using `mksquashfs -` with the -tar flag to read from stdin.
 - List the Fedora build dependencies explicitly instead of installing a
   development tools group.
 - Allow building RPM packages with Fedora 45's renamed protobuf-c library.
