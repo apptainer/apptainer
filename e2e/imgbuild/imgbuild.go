@@ -2603,6 +2603,50 @@ func (c imgBuildTests) buildDataPartitionFromTar(t *testing.T) {
 	c.ensureImageHasDataPartition(t, img)
 }
 
+func (c imgBuildTests) buildDataPartitionFromTargz(t *testing.T) {
+	require.Command(t, "mksquashfs")
+	require.Command(t, "tar")
+
+	tmpdir, cleanup := c.tempDir(t, "build-data-targz")
+
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup()
+		}
+	})
+
+	tarDir, err := os.MkdirTemp(tmpdir, "tar-root-")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testFile := filepath.Join(tarDir, "testfile")
+	if err := os.WriteFile(testFile, []byte("test content"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	tarImage := filepath.Join(tmpdir, "test.tar.gz")
+	err = exec.Command("tar", "-czf", tarImage, "-C", tarDir, "testfile").Run()
+	if err != nil {
+		t.Fatalf("unexpected error while running command: %+v", err)
+	}
+
+	img := path.Join(tmpdir, "test.sif")
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--data", img, tarImage),
+		e2e.WithEnv(append(os.Environ(), "APPTAINER_VERBOSE=true")),
+		e2e.ExpectExit(
+			0,
+		),
+	)
+
+	c.ensureImageHasDataPartition(t, img)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := imgBuildTests{
@@ -2654,5 +2698,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"reproducible build":                     c.reproducibleBuild,                    // build sifs as reproducible
 		"build with data part":                   c.buildDataPartition,                   // build sifs with data part
 		"build with data part from tar":          c.buildDataPartitionFromTar,            // build sifs with data part from tar
+		"build with data part from tar.gz":       c.buildDataPartitionFromTargz,          // build sifs with data part from tar.gz
 	}
 }

@@ -170,3 +170,92 @@ func TestTarInitializerDirectory(t *testing.T) {
 		t.Fatal("tar initializer succeeded with a directory while expected to fail")
 	}
 }
+
+func TestTarInitializerWithCompression(t *testing.T) {
+	cases := []struct {
+		name string
+		ext  string
+	}{
+		{name: "gzip", ext: ".tar.gz"},
+		{name: "xz", ext: ".tar.xz"},
+		{name: "zst", ext: ".tar.zst"},
+		{name: "lz4", ext: ".tar.lz4"},
+		{name: "lzo", ext: ".tar.lzo"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := t.TempDir()
+			tarFilePath := filepath.Join(dir, "test"+tc.ext)
+
+			// Create a simple tar file first
+			simpleTar := filepath.Join(dir, "test.tar")
+			testDir := t.TempDir()
+			testFile := filepath.Join(testDir, "testfile")
+			if err := os.WriteFile(testFile, []byte("test content"), 0o644); err != nil {
+				t.Fatalf("cannot create test file: %s", err)
+			}
+
+			cmd := exec.Command("tar", "-cf", simpleTar, "-C", testDir, "testfile")
+			if err := cmd.Run(); err != nil {
+				t.Fatalf("cannot create tar file: %s", err)
+			}
+
+			// Compress it
+			var compressCmd string
+			switch tc.ext {
+			case ".tar.gz":
+				compressCmd = "gzip"
+			case ".tar.xz":
+				compressCmd = "xz"
+			case ".tar.zst":
+				compressCmd = "zstd"
+			case ".tar.lz4":
+				compressCmd = "lz4"
+			case ".tar.lzo":
+				compressCmd = "lzop"
+			}
+
+			if _, err := exec.LookPath(compressCmd); err != nil {
+				t.Skipf("skipping %s: %s not found", tc.ext, compressCmd)
+			}
+
+			cmd = exec.Command(compressCmd, "-c", simpleTar)
+			outputFile, err := os.Create(tarFilePath)
+			if err != nil {
+				t.Fatalf("cannot create output file: %s", err)
+			}
+			defer outputFile.Close()
+			cmd.Stdout = outputFile
+			if err := cmd.Run(); err != nil {
+				t.Fatalf("compression failed for %s: %s", tc.name, err)
+			}
+
+			// Test with the initializer
+			var tarfmt tarFormat
+			img := &Image{
+				Path: tarFilePath,
+				Name: "test",
+			}
+			img.Writable = false
+			img.File, err = os.OpenFile(tarFilePath, os.O_RDONLY, 0)
+			if err != nil {
+				t.Fatalf("cannot open compressed tar file: %s\n", err)
+			}
+			defer img.File.Close()
+			fileinfo, err := img.File.Stat()
+			if err != nil {
+				t.Fatalf("cannot stat the image file: %s\n", err)
+			}
+
+			err = tarfmt.initializer(img, fileinfo)
+			if err != nil {
+				t.Fatalf("unexpected error for compressed tar initializer: %s\n", err)
+			}
+
+			if img.Type != TAR {
+				t.Fatalf("expected type TAR, got %d", img.Type)
+			}
+		})
+	}
+}

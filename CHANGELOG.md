@@ -9,6 +9,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Add support for building data partitions from compressed tar files (.tar.gz,
+  .tar.xz, .tar.zst, .tar.lzo) using `apptainer build --data image.sif input.tar.gz`.
+  Uses native compression tools (gzip, xz, zstd, lzop) directly.
 - Add support for building data partitions from .tar files using
   `apptainer build --data image.sif input.tar`. The tar file is converted
   to squashfs using `mksquashfs -` with the -tar flag to read from stdin.
