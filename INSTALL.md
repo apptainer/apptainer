@@ -52,7 +52,7 @@ Or on Fedora start with:
 
 ```sh
 # Install basic tools for compiling
-sudo dnf group install -y development-tools
+sudo dnf install -y gcc make pkgconf-pkg-config
 ```
 
 Then on either Fedora or RHEL or its derivatives:
@@ -63,7 +63,7 @@ sudo dnf install -y \
     libseccomp-devel \
     libtalloc-devel \
     libattr-devel \
-    protobuf-c-devel \
+    'pkgconfig(libprotobuf-c)' \
     fakeroot \
     cryptsetup \
     wget git
@@ -73,7 +73,7 @@ For including libsubid support, use --enablerepo=devel for EL8 and EL9 but not
 for EL10 or Fedora:
 
 ```sh
-sudo dnf --enablerepo=devel install -y shadow-utils-subid-devel
+sudo dnf install -y shadow-utils-subid-devel
 ```
 
 On SLE/openSUSE
@@ -226,7 +226,8 @@ sudo apt-get install -y autoconf automake libtool pkg-config libfuse3-dev \
 On Fedora or RHEL or derivatives:
 
 ```sh
-sudo dnf install -y fuse3-devel lzo-devel lz4-devel
+sudo dnf install -y autoconf automake libtool fuse3-devel \
+    zlib-devel lzo-devel lz4-devel xz-devel libzstd-devel
 ```
 
 On SLE/openSUSE:

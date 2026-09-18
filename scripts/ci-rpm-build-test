@@ -21,16 +21,24 @@ if [[ $OS_TYPE == *suse* ]]; then
   zypper install -y rpm-build go
   zypper install -y sudo
 else
-  dnf groupinstall -y 'Development Tools'
-  if [ $OS_TYPE != fedora ]; then
+  if [[ $OS_TYPE == *fedora* ]]; then
+    dnf install -y gcc make pkgconf-pkg-config
+    dnf install -y shadow-utils-subid-devel
+    # The bootc images have no timezone configured. Apptainer binds this file.
+    if [ ! -e /etc/localtime ]; then
+      ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+    fi
+  else
+    dnf groupinstall -y 'Development Tools'
     dnf install -y epel-release
     crb enable
+    dnf --enablerepo=devel install -y shadow-utils-subid-devel
   fi
   dnf install -y libseccomp-devel libtalloc-devel libattr-devel \
-    protobuf-c-devel fakeroot cryptsetup wget git
-  dnf --enablerepo=devel install -y shadow-utils-subid-devel
-  dnf install -y golang
-  dnf install -y fuse3-devel lzo-devel lz4-devel
+    'pkgconfig(libprotobuf-c)' fakeroot cryptsetup wget git
+  dnf install -y rpm-build golang
+  dnf install -y autoconf automake libtool fuse3-devel \
+    zlib-devel lzo-devel lz4-devel xz-devel libzstd-devel
   dnf install -y sudo
 fi
 
