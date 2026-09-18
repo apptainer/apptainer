@@ -26,6 +26,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/buildcfg"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 )
 
@@ -277,10 +278,19 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 		"--no-home",
 		"--no-nv",
 		"--no-rocm",
-		"-C",
+		"--contain",
+		"-i",
+		"-e",
 		"--no-init",
 		"--writable",
 		"-B", fmt.Sprintf("%s:%s", tmpdir, rootfsImageDir),
+	}
+
+	// if there are not bind mounts under /proc (which happens under
+	// unprivileged docker), also make a new pid namespace
+	hasMounts, err := proc.HasBindMountsUnderProc()
+	if err == nil && !hasMounts {
+		args = append(args, "-p")
 	}
 
 	isOnlyRootMapped := namespaces.IsOnlyRootMapped()
