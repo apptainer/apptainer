@@ -406,11 +406,13 @@ func (c ctx) testBuildNvidiaLegacy(t *testing.T) {
 
 	sourceImage := filepath.Join(tmpdir, "source")
 
+	// --fakeroot with --userns works best under unprivileged docker with
+	// the unsquashfs invoked by this command.
 	c.env.RunApptainer(
 		t,
-		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--sandbox", sourceImage, imagePath),
+		e2e.WithArgs("--userns", "--force", "--sandbox", sourceImage, imagePath),
 		e2e.ExpectExit(0),
 	)
 
@@ -494,9 +496,9 @@ func (c ctx) testBuildNvCCLI(t *testing.T) {
 
 	c.env.RunApptainer(
 		t,
-		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--sandbox", sourceImage, imagePath),
+		e2e.WithArgs("--userns", "--force", "--sandbox", sourceImage, imagePath),
 		e2e.ExpectExit(0),
 	)
 
@@ -575,9 +577,9 @@ func (c ctx) testBuildRocm(t *testing.T) {
 
 	c.env.RunApptainer(
 		t,
-		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithProfile(e2e.FakerootProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--force", "--sandbox", sourceImage, imagePath),
+		e2e.WithArgs("--userns", "--force", "--sandbox", sourceImage, imagePath),
 		e2e.ExpectExit(0),
 	)
 

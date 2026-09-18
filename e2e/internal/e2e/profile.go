@@ -101,7 +101,7 @@ var Profiles = map[string]Profile{
 		defaultCwd:        "",
 		requirementsFn:    require.UserNamespace,
 		apptainerOption:   "--userns",
-		optionForCommands: []string{"shell", "exec", "run", "test", "instance start"},
+		optionForCommands: []string{"shell", "exec", "run", "test", "instance start", "build"},
 	},
 	rootUserNamespaceProfile: {
 		name:              "RootUserNamespace",
@@ -111,7 +111,7 @@ var Profiles = map[string]Profile{
 		defaultCwd:        "/root", // need to run in a directory owned by root
 		requirementsFn:    require.UserNamespace,
 		apptainerOption:   "--userns",
-		optionForCommands: []string{"shell", "exec", "run", "test", "instance start"},
+		optionForCommands: []string{"shell", "exec", "run", "test", "instance start", "build"},
 	},
 }
 
