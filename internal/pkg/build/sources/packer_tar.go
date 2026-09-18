@@ -70,7 +70,8 @@ func (tp *TarPacker) Pack(ctx context.Context) (*types.Bundle, error) {
 	fsPath := f.Name()
 	f.Close()
 
-	mksquashfsArgs := []string{"-noappend", "-all-root"}
+	// -ignore-zeros: allows mksquashfs to read past EOF markers in concatenated tar archives
+	mksquashfsArgs := []string{"-noappend", "-all-root", "-ignore-zeros"}
 
 	if tp.b.Opts.MksquashfsArgs != "" {
 		extraArgs := append(mksquashfsArgs, strings.Fields(tp.b.Opts.MksquashfsArgs)...)
@@ -90,7 +91,8 @@ func (tp *TarPacker) Pack(ctx context.Context) (*types.Bundle, error) {
 	// - -progress shows file-by-file progress which is confusing for piped input
 	// We track bytes read from the source file (tar or compressed archive)
 	// and show "X / Y MB" where Y is the source file size.
-	if sylog.GetLevel() < int(sylog.VerboseLevel) && sylog.GetLevel() > -1 {
+	// For stdin (srcfile == "-"), we cannot show progress as we don't know the total size.
+	if sylog.GetLevel() < int(sylog.VerboseLevel) && sylog.GetLevel() > -1 && tp.srcfile != "-" {
 		fileInfo, err := os.Stat(tp.srcfile)
 		if err == nil && fileInfo.Size() > 0 {
 			progressBar = &client.DownloadProgressBar{}
@@ -141,11 +143,17 @@ func (tp *TarPacker) Pack(ctx context.Context) (*types.Bundle, error) {
 			progressBar.Wait()
 		}
 	} else {
-		tarFile, err := os.Open(tp.srcfile)
-		if err != nil {
-			return nil, fmt.Errorf("could not open tar file %s: %v", tp.srcfile, err)
+		var tarFile *os.File
+		var err error
+		if tp.srcfile == "-" {
+			tarFile = os.Stdin
+		} else {
+			tarFile, err = os.Open(tp.srcfile)
+			if err != nil {
+				return nil, fmt.Errorf("could not open tar file %s: %v", tp.srcfile, err)
+			}
+			defer tarFile.Close()
 		}
-		defer tarFile.Close()
 
 		mksquashfsArgs = append([]string{"-", fsPath, "-tar"}, mksquashfsArgs...)
 		cmd := exec.CommandContext(ctx, mksquashfsPath, mksquashfsArgs...)

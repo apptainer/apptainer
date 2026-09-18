@@ -44,6 +44,11 @@ func (cp *CopyPacker) Pack(_ context.Context) (*types.Bundle, error) {
 
 // GetLocalPacker ...
 func GetLocalPacker(ctx context.Context, src string, b *types.Bundle) (LocalPacker, error) {
+	// Special case: stdin for data partition builds (src == "-")
+	if src == "-" && b.Opts.DataPartition {
+		return &TarPacker{srcfile: src, b: b}, nil
+	}
+
 	imageObject, err := image.Init(src, false)
 	if err != nil {
 		return nil, err

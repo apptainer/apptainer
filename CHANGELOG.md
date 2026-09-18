@@ -9,6 +9,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Allow concatenating multiple uncompressed archives on stdin when using
+  `apptainer build --data image.sif -`. Can use `cat`, `zcat`, `xzcat`,
+  `zstdcat`, or `lzop -dc` to concatenate multiple archives before piping.
 - Add support for building data partitions from compressed tar files (.tar.gz,
   .tar.xz, .tar.zst, .tar.lzo) using `apptainer build --data image.sif input.tar.gz`.
   Uses native compression tools (gzip, xz, zstd, lzop) directly.

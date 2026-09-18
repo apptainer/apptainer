@@ -82,7 +82,7 @@ var buildDataFlag = cmdline.Flag{
 	Value:        &buildArgs.data,
 	DefaultValue: false,
 	Name:         "data",
-	Usage:        "build image with data partition from a .squashfs, .ext3, or .tar file",
+	Usage:        "build image with data partition from a .squashfs, .ext3, or .tar file (use '-' for uncompressed stdin)",
 	EnvKeys:      []string{"DATA"},
 }
 
