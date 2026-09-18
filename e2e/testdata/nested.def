@@ -1,0 +1,7 @@
+# Builds the container used by the nested apptainer tests from
+# Dockerfile.nested, which is shared with the nested docker / podman tests.
+# Paths are relative to the e2e directory, the cwd of the e2e test suite.
+Bootstrap: buildkit
+From: testdata
+filename: Dockerfile.nested
+buildargs: BASEIMAGE={{ BASEIMAGE }}

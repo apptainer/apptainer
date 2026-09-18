@@ -90,7 +90,7 @@ func EnsureSingularityImage(t *testing.T, env TestEnv) {
 	)
 }
 
-// Return dockerhub name of a Debian image that is compatible with the host libc
+// GetDebianImageSource returns dockerhub name of a Debian image that is compatible with the host libc.
 func GetDebianImageSource(t *testing.T) string {
 	out, err := exec.Command("ldd", "--version").Output()
 	if err != nil {
@@ -100,13 +100,11 @@ func GetDebianImageSource(t *testing.T) string {
 	outstr := string(out)
 	end := strings.Index(outstr, "\n")
 	if end == -1 {
-		t.Fatalf("No newline in ldd output while getting Debian image source: %+v\n",
-			err)
+		t.Fatal("No newline in ldd output while getting Debian image source")
 	}
 	dot := strings.LastIndex(outstr[0:end], ".")
 	if dot == -1 {
-		t.Fatalf("No dot in ldd first line while getting Debian image source: %+v\n",
-			err)
+		t.Fatal("No dot in ldd first line while getting Debian image source")
 	}
 	lddversion, err := strconv.Atoi(outstr[dot+1 : end])
 	if err != nil {
@@ -115,18 +113,31 @@ func GetDebianImageSource(t *testing.T) string {
 			err)
 	}
 	if lddversion < 17 {
-		t.Fatalf("ldd version (%d) not 17 or newer while getting Debian image source: %+v\n",
-			lddversion,
-			err)
+		t.Fatalf("ldd version (%d) not 17 or newer while getting Debian image source",
+			lddversion)
 	}
 
-	imageSource := "ubuntu:20.04"
-	if lddversion >= 39 {
-		imageSource = "ubuntu:24.04"
-	} else if lddversion >= 35 {
-		imageSource = "ubuntu:22.04"
+	// Ubuntu images and their respective glibc minor version, oldest first.
+	ubuntuImages := []struct {
+		glibcMinor int
+		image      string
+	}{
+		{31, "ubuntu:20.04"},
+		{35, "ubuntu:22.04"},
+		{39, "ubuntu:24.04"},
 	}
-	return imageSource
+
+	// Find the image with a libc that is at least as recent as the host's.
+	for _, u := range ubuntuImages {
+		if lddversion <= u.glibcMinor {
+			return u.image
+		}
+	}
+
+	// If no suitable image was found, fallback to the latest.
+	latestImage := ubuntuImages[len(ubuntuImages)-1].image
+	t.Logf("No image with libc 2.%d or newer; using %s. Tests that bind-mount host binaries may fail.", lddversion, latestImage)
+	return latestImage
 }
 
 // EnsureDebianImage checks if the e2e test Debian-based image is already
