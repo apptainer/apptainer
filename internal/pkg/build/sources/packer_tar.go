@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -81,13 +82,45 @@ func (tp *TarPacker) Pack(ctx context.Context) (*types.Bundle, error) {
 		return nil, fmt.Errorf("could not create squashfs, mksquashfs not found: %v", err)
 	}
 
+	var progressBar *client.DownloadProgressBar
+	// When creating a data SIF from a tar file, we use our own progress bar
+	// instead of mksquashfs's -percentage/-progress flags because:
+	// - mksquashfs reads from stdin and doesn't know the total size upfront
+	// - -percentage shows continuously increasing total: "1/100, 1/200, 1/300..."
+	// - -progress shows file-by-file progress which is confusing for piped input
+	// We track bytes read from the source file (tar or compressed archive)
+	// and show "X / Y MB" where Y is the source file size.
+	if sylog.GetLevel() < int(sylog.VerboseLevel) && sylog.GetLevel() > -1 {
+		fileInfo, err := os.Stat(tp.srcfile)
+		if err == nil && fileInfo.Size() > 0 {
+			progressBar = &client.DownloadProgressBar{}
+			progressBar.Init(fileInfo.Size())
+			defer progressBar.Abort(true)
+		}
+	}
+
 	if decompressCmd != "cat" {
 		decompressCmdPath, err := exec.LookPath(decompressCmd)
 		if err != nil {
 			return nil, fmt.Errorf("could not find decompression command: %v", err)
 		}
-		decompressCmdArgs := append(decompressArgs, tp.srcfile)
-		decompressCmdObj := exec.CommandContext(ctx, decompressCmdPath, decompressCmdArgs...)
+
+		decompressCmdObj := exec.CommandContext(ctx, decompressCmdPath, decompressArgs...)
+
+		srcFile, err := os.Open(tp.srcfile)
+		if err != nil {
+			return nil, fmt.Errorf("could not open source file: %v", err)
+		}
+		defer srcFile.Close()
+
+		if progressBar != nil {
+			wrappedFile := progressBar.ProxyReader(srcFile)
+			defer wrappedFile.Close()
+			decompressCmdObj.Stdin = wrappedFile
+		} else {
+			decompressCmdObj.Stdin = srcFile
+		}
+
 		decompressPipe, err := decompressCmdObj.StdoutPipe()
 		if err != nil {
 			return nil, fmt.Errorf("could not create pipe for decompress: %v", err)
@@ -104,6 +137,9 @@ func (tp *TarPacker) Pack(ctx context.Context) (*types.Bundle, error) {
 			return nil, fmt.Errorf("mksquashfs command failed: %v: %s", err, output)
 		}
 		decompressCmdObj.Wait()
+		if progressBar != nil {
+			progressBar.Wait()
+		}
 	} else {
 		tarFile, err := os.Open(tp.srcfile)
 		if err != nil {
@@ -113,11 +149,21 @@ func (tp *TarPacker) Pack(ctx context.Context) (*types.Bundle, error) {
 
 		mksquashfsArgs = append([]string{"-", fsPath, "-tar"}, mksquashfsArgs...)
 		cmd := exec.CommandContext(ctx, mksquashfsPath, mksquashfsArgs...)
-		cmd.Stdin = tarFile
+
+		if progressBar != nil {
+			tarReader := progressBar.ProxyReader(tarFile)
+			defer tarReader.Close()
+			cmd.Stdin = tarReader
+		} else {
+			cmd.Stdin = tarFile
+		}
 
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			return nil, fmt.Errorf("mksquashfs command failed: %v: %s", err, output)
+		}
+		if progressBar != nil {
+			progressBar.Wait()
 		}
 	}
 
