@@ -10,7 +10,10 @@
 package capabilities
 
 import (
+	"os"
 	"runtime"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
@@ -89,5 +92,71 @@ func TestSetProcessEffective(t *testing.T) {
 		} else if old != tt.oldEffective {
 			t.Fatalf("unexpected old effective set for %s", tt.name)
 		}
+	}
+}
+
+// statusCapSet returns the named capability set of the calling thread, as
+// /proc reports it, so that a getter can be compared with the kernel's own
+// view of the same set.
+func statusCapSet(t *testing.T, field string) uint64 {
+	t.Helper()
+
+	status, err := os.ReadFile("/proc/thread-self/status")
+	if err != nil {
+		t.Fatalf("unexpected error while reading the thread status: %s", err)
+	}
+	prefix := field + ":"
+	for _, line := range strings.Split(string(status), "\n") {
+		if !strings.HasPrefix(line, prefix) {
+			continue
+		}
+		value := strings.TrimSpace(strings.TrimPrefix(line, prefix))
+		caps, err := strconv.ParseUint(value, 16, 64)
+		if err != nil {
+			t.Fatalf("unexpected %s set %q in the thread status: %s", field, value, err)
+		}
+		return caps
+	}
+	t.Fatalf("no %s line in the thread status", field)
+	return 0
+}
+
+func TestGetProcessBounding(t *testing.T) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
+	expected := statusCapSet(t, "CapBnd")
+
+	caps, err := GetProcessBounding()
+	if err != nil {
+		t.Fatalf("unexpected error while getting process bounding capabilities: %s", err)
+	}
+	if caps != expected {
+		t.Fatalf("bounding set 0x%x differs from 0x%x in the thread status", caps, expected)
+	}
+}
+
+func TestGetProcessAmbient(t *testing.T) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
+	// Only the capabilities this kernel knows about can be reported, so the
+	// comparison is made over the same map the getter walks.
+	var known uint64
+	for _, c := range Map {
+		known |= uint64(1) << c.Value
+	}
+	expected := statusCapSet(t, "CapPrm") & statusCapSet(t, "CapBnd") & known
+
+	caps, err := GetProcessAmbient()
+	if err != nil {
+		t.Fatalf("unexpected error while getting process ambient capabilities: %s", err)
+	}
+	var got uint64
+	for _, c := range caps {
+		got |= uint64(1) << c
+	}
+	if got != expected {
+		t.Fatalf("ambient set 0x%x differs from the permitted and bounding sets 0x%x in the thread status", got, expected)
 	}
 }
