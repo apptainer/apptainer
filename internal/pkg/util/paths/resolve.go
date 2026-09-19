@@ -105,19 +105,46 @@ func Resolve(fileList []string) ([]string, []string, []string, error) {
 
 	libraries := resolveLibs(fileList, machine, class, ldCache, ContainerLibsDir)
 
+	// A module a loader opens by path, the GBM backend or an X server module,
+	// is bound at its host path as well: a container laid out like the host
+	// finds it there without being told, and one laid out differently is told
+	// through the configuration file bound next.
+	for _, lib := range libraries {
+		if !isModulePath(lib) || strings.HasPrefix(lib, ContainerLibsDir) {
+			continue
+		}
+		bind := lib + ":" + lib
+		if _, ok := filesMap[bind]; !ok {
+			filesMap[bind] = struct{}{}
+			files = append(files, bind)
+		}
+	}
+
+	prefixes := filePrefixes()
+	// A host file bound once: two entries can name the same file under
+	// different configuration roots, and a loader would take it twice.
+	sources := make(map[string]struct{})
 	for _, file := range fileList {
 		if strings.Contains(file, ".so") {
 			// libraries are handled by resolveLibs above
 			continue
 		}
 		if filepath.IsAbs(file) {
-			// if the file is absolute path
-			if _, err := os.Stat(file); err != nil && errors.Is(err, os.ErrNotExist) {
+			src, ok := resolveFile(file, prefixes)
+			if !ok {
 				continue
 			}
-			if _, ok := filesMap[file]; !ok {
-				filesMap[file] = struct{}{}
-				files = append(files, file)
+			if _, ok := sources[src]; ok {
+				continue
+			}
+			sources[src] = struct{}{}
+			bind := file
+			if src != file {
+				bind = src + ":" + file
+			}
+			if _, ok := filesMap[bind]; !ok {
+				filesMap[bind] = struct{}{}
+				files = append(files, bind)
 			}
 		} else {
 			// treat the file as a binary file - find on PATH and add it to the bind list
@@ -272,7 +299,6 @@ func libraryCache() (map[string][]string, error) {
 		} else {
 			sylog.Debugf("Not using the ld cache: %v", err)
 		}
-		return libCache, nil
 	}
 	for libName, libPaths := range ldCache {
 		for _, libPath := range libPaths {
@@ -281,8 +307,131 @@ func libraryCache() (map[string][]string, error) {
 			}
 		}
 	}
+	// The module directories next to the library directories, those of
+	// the configured search paths first.
+	var cacheDirs []string
+	for _, libPaths := range ldCache {
+		for _, libPath := range libPaths {
+			cacheDirs = append(cacheDirs, filepath.Dir(libPath))
+		}
+	}
+	slices.Sort(cacheDirs)
+	for _, dir := range moduleDirs(append(searchPaths, slices.Compact(cacheDirs)...)) {
+		addDirToCache(libCache, dir)
+	}
 
 	return libCache, nil
+}
+
+// moduleSubdirs are the directories, relative to a library directory or its
+// parent, in which a driver installs the modules that are loaded by path
+// rather than through the dynamic loader, so the ld cache never lists them:
+// the GBM backend and the X server's driver and GLX modules.
+var moduleSubdirs = []string{
+	"gbm", "nvidia/xorg",
+	"xorg/modules/drivers", "xorg/modules/extensions",
+	"xorg/modules/updates/drivers", "xorg/modules/updates/extensions",
+}
+
+// moduleDirs returns the module directories found next to the given library
+// directories and next to their parents, which is where Debian keeps
+// /usr/lib/xorg/modules relative to /usr/lib/<multiarch>, in that order.
+func moduleDirs(libDirs []string) []string {
+	seen := make(map[string]struct{})
+	var dirs []string
+	for _, libDir := range libDirs {
+		for _, base := range []string{libDir, filepath.Dir(libDir)} {
+			for _, sub := range moduleSubdirs {
+				dir := filepath.Join(base, sub)
+				if _, ok := seen[dir]; ok {
+					continue
+				}
+				seen[dir] = struct{}{}
+				if fi, err := os.Stat(dir); err == nil && fi.IsDir() {
+					dirs = append(dirs, dir)
+				}
+			}
+		}
+	}
+	return dirs
+}
+
+// isModulePath reports whether libPath sits in one of the module directories,
+// where a loader opens it by path rather than through the dynamic loader.
+func isModulePath(libPath string) bool {
+	dir := filepath.Dir(libPath)
+	for _, sub := range moduleSubdirs {
+		if strings.HasSuffix(dir, "/"+sub) {
+			return true
+		}
+	}
+	return false
+}
+
+// configRoots are the roots a distribution keeps the same configuration
+// trees under; a file named under one is looked for under the others.
+var configRoots = []string{"/etc", "/usr/share", "/usr/local/share"}
+
+// WithoutModuleBinds returns the file binds without those that place a
+// module at its host path.
+func WithoutModuleBinds(binds []string) []string {
+	kept := make([]string, 0, len(binds))
+	for _, bind := range binds {
+		src, dst, _ := strings.Cut(bind, ":")
+		if dst == src && isModulePath(src) {
+			continue
+		}
+		kept = append(kept, bind)
+	}
+	return kept
+}
+
+// filePrefixes returns the installation prefixes above the configured 'gpu
+// library path' directories, under which a driver installed outside the
+// standard tree keeps its share and etc directories beside its libraries.
+func filePrefixes() []string {
+	var prefixes []string
+	for _, dir := range gpuLibraryPath() {
+		prefix := filepath.Dir(filepath.Clean(dir))
+		if prefix != "/" && !slices.Contains(prefixes, prefix) {
+			prefixes = append(prefixes, prefix)
+		}
+	}
+	return prefixes
+}
+
+// resolveFile finds the host file for a configuration entry, which names the
+// path a container's loaders read: the same path on the host first, then the
+// same tree under the other configuration roots, then the file under each
+// prefix (its /usr part dropped, so that /usr/share/x becomes <prefix>/share/x
+// and /etc/x becomes <prefix>/etc/x). The entry stays the destination in the
+// container.
+func resolveFile(entry string, prefixes []string) (string, bool) {
+	exists := func(path string) bool {
+		_, err := os.Stat(path)
+		return err == nil
+	}
+	if exists(entry) {
+		return entry, true
+	}
+	for _, root := range configRoots {
+		rel, ok := strings.CutPrefix(entry, root+"/")
+		if !ok {
+			continue
+		}
+		for _, alt := range configRoots {
+			if candidate := filepath.Join(alt, rel); alt != root && exists(candidate) {
+				return candidate, true
+			}
+		}
+		break
+	}
+	for _, prefix := range prefixes {
+		if candidate := filepath.Join(prefix, strings.TrimPrefix(entry, "/usr")); exists(candidate) {
+			return candidate, true
+		}
+	}
+	return "", false
 }
 
 // gpuLibraryPath returns the directories configured as 'gpu library path' in
