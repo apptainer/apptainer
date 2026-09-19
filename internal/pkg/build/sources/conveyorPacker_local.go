@@ -44,6 +44,11 @@ func (cp *CopyPacker) Pack(_ context.Context) (*types.Bundle, error) {
 
 // GetLocalPacker ...
 func GetLocalPacker(ctx context.Context, src string, b *types.Bundle) (LocalPacker, error) {
+	// Special case: stdin for data partition builds (src == "-")
+	if src == "-" && b.Opts.DataPartition {
+		return &TarPacker{srcfile: src, b: b}, nil
+	}
+
 	imageObject, err := image.Init(src, false)
 	if err != nil {
 		return nil, err
@@ -112,6 +117,17 @@ func GetLocalPacker(ctx context.Context, src string, b *types.Bundle) (LocalPack
 			b:       b,
 			img:     imageObject,
 		}, nil
+	case image.TAR:
+		sylog.Debugf("Packing from Tar")
+
+		if b.Opts.DataPartition {
+			return &TarPacker{
+				srcfile: src,
+				b:       b,
+			}, nil
+		}
+
+		return nil, fmt.Errorf("tar format only supported for data partition builds")
 	case image.SANDBOX:
 		sylog.Debugf("Packing from Sandbox")
 

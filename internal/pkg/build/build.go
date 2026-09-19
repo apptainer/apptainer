@@ -432,7 +432,18 @@ func makeDef(spec string) (types.Definition, error) {
 }
 
 // MakeAllDefs gets a definition object from a spec
-func MakeAllDefs(spec string, buildArgsMap map[string]string) ([]types.Definition, []string, error) {
+func MakeAllDefs(spec string, buildArgsMap map[string]string, data bool) ([]types.Definition, []string, error) {
+	if spec == "-" && data {
+		// For stdin (spec == "-"), return localimage definition (tar from stdin)
+		def := types.Definition{
+			Header: map[string]string{
+				"bootstrap": "localimage",
+				"from":      "-",
+			},
+		}
+		return []types.Definition{def}, nil, nil
+	}
+
 	if ok, err := uri.IsValid(spec); ok && err == nil {
 		// URI passed as spec
 		d, err := types.NewDefinitionFromURI(spec)

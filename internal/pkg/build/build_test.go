@@ -15,6 +15,7 @@ func TestProcessDefsSingleDef(t *testing.T) {
 			"OS_VER": "1",
 			"AUTHOR": "jason",
 		},
+		false,
 	)
 
 	assert.NilError(t, err)
@@ -31,6 +32,7 @@ func TestProcessDefsMultipleDef(t *testing.T) {
 			"DEVEL_IMAGE": "golang:1.12.3-alpine3.9",
 			"FINAL_IMAGE": "alpine:3.9",
 		},
+		false,
 	)
 
 	assert.NilError(t, err)
@@ -53,6 +55,7 @@ func TestProcessWithAdditionalArgs(t *testing.T) {
 			"AUTHOR":   "jason",
 			"ADDITION": "1",
 		},
+		false,
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(unusedArgs), 1)

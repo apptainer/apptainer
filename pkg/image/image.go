@@ -38,6 +38,8 @@ const (
 	RAW
 	// GOCRYPTFS constant for encrypted gocryptfs format
 	GOCRYPTFSSQUASHFS
+	// TAR constant for tar format
+	TAR
 )
 
 type Usage uint8
@@ -107,6 +109,7 @@ var registeredFormats = []struct {
 	{"sif", &sifFormat{}},
 	{"squashfs", &squashfsFormat{}},
 	{"ext3", &ext3Format{}},
+	{"tar", &tarFormat{}},
 }
 
 // format describes the interface that an image format type must implement.

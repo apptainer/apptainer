@@ -297,7 +297,7 @@ func runBuildLocal(ctx context.Context, cmd *cobra.Command, dst, spec string, fa
 	if err != nil {
 		sylog.Fatalf("While processing the definition file: %v", err)
 	}
-	defs, unusedArgs, err := build.MakeAllDefs(spec, buildArgsMap)
+	defs, unusedArgs, err := build.MakeAllDefs(spec, buildArgsMap, buildArgs.data)
 	if err != nil {
 		sylog.Fatalf("Unable to build from %s: %v", spec, err)
 	}
