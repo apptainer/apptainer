@@ -25,10 +25,11 @@ const (
 // bindOptions is a map of option strings valid in bind specifications.
 // If true, the option is a flag. If false, the option takes a value.
 var bindOptions = map[string]bool{
-	"ro":        flagOption,
-	"rw":        flagOption,
-	"image-src": valueOption,
-	"id":        valueOption,
+	"ro":          flagOption,
+	"rw":          flagOption,
+	"image-src":   valueOption,
+	"id":          valueOption,
+	"archive-src": valueOption,
 }
 
 // BindPath stores a parsed bind path specification. Source and Destination
@@ -57,6 +58,19 @@ func (b *BindPath) ImageSrc() string {
 func (b *BindPath) ID() string {
 	if b.Options != nil && b.Options["id"] != nil {
 		return b.Options["id"].Value
+	}
+	return ""
+}
+
+// ArchiveSrc returns the value of the option archive-src for a BindPath, or an
+// empty string if the option wasn't set.
+func (b *BindPath) ArchiveSrc() string {
+	if b.Options != nil && b.Options["archive-src"] != nil {
+		src := b.Options["archive-src"].Value
+		if src == "" {
+			return "/"
+		}
+		return src
 	}
 	return ""
 }

@@ -9,6 +9,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Now `archivemount` is bundled with Apptainer, but you might want to
+  install `ratarmount` because it has better performance. It is not bundled
+  because it is a python program and so requires many dependencies.
+- Add support for mounting archive files (tar, tar.gz, etc.) using
+  `--bind` or `--mount` with `archive-src=` option, similar to mounting
+  images with `image-src=`. Archive mounts require a FUSE-based archiver
+  such as `ratarmount`, `fuse-archive`, or `archivemount` to be installed.
 - List the Fedora build dependencies explicitly instead of installing a
   development tools group.
 - Allow building RPM packages with Fedora 45's renamed protobuf-c library.
