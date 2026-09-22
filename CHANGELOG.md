@@ -9,15 +9,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
-- Allow concatenating multiple uncompressed archives on stdin when using
-  `apptainer build --data image.sif -`. Can use `cat`, `zcat`, `xzcat`,
-  `zstdcat`, or `lzop -dc` to concatenate multiple archives before piping.
-- Add support for building data partitions from compressed tar files (.tar.gz,
-  .tar.xz, .tar.zst, .tar.lzo) using `apptainer build --data image.sif input.tar.gz`.
-  Uses native compression tools (gzip, xz, zstd, lzop) directly.
-- Add support for building data partitions from .tar files using
-  `apptainer build --data image.sif input.tar`. The tar file is converted
-  to squashfs using `mksquashfs -` with the -tar flag to read from stdin.
+- Add support for building data partitions from tar files using
+  `apptainer build --data image.sif input.tar*`. Supports uncompressed (.tar) and
+  compressed (.tar.gz, .tar.xz, .tar.zst, .tar.lzo) archives, with decompression
+  done on the fly. Local files show a progress bar. Uncompressed .tar files are
+  converted to squashfs using `mksquashfs -` with the -tar flag.
+  For uncompressed archives, multiple files can be concatenated on stdin
+  (e.g., via `cat`, `zcat`, `xzcat`, `zstdcat`, or `lzop -dc`).
 - List the Fedora build dependencies explicitly instead of installing a
   development tools group.
 - Allow building RPM packages with Fedora 45's renamed protobuf-c library.
