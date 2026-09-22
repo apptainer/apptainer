@@ -132,12 +132,12 @@ func DownloadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.A
 	return nil
 }
 
-// UploadImage uploads the image specified by path and pushes it to the provided oci reference,
-// it will use credentials if supplied
-func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) error {
-	// ensure that are uploading a SIF
+// uploadSingleImage uploads a single image and returns the image and its descriptor.
+// The annotations parameter is a slice of key=value pairs to add to the image manifest.
+func uploadSingleImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) (v1.Image, *v1.Descriptor, error) {
+	// ensure that we are uploading a SIF
 	if err := ensureSIF(path); err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	ref = strings.TrimPrefix(ref, "oras://")
@@ -150,29 +150,15 @@ func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.Aut
 	}
 	ir, err := name.ParseReference(ref, opts...)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
-	annotationsMap := map[string]string{}
-	for _, annotation := range annotations {
-		key, value, found := strings.Cut(annotation, "=")
-		if !found {
-			sylog.Warningf("Value missing for %q, not setting", key)
-			continue
-		}
-		annotationsMap[key] = value
-	}
+	annotationsMap := getAnnotationsMap(annotations)
 
 	im, err := NewImageFromSIF(path, SifConfigMediaTypeV1, SifLayerMediaTypeV1, annotationsMap) // nolint:contextcheck
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
-
-	digest, err := im.Digest()
-	if err != nil {
-		return err
-	}
-	sylog.Infof("Digest: %s\n", digest)
 
 	platform := v1.Platform{
 		Architecture: arch,
@@ -212,12 +198,42 @@ func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.Aut
 		}()
 		remoteOpts = append(remoteOpts, remote.WithProgress(progChan))
 	}
-	return remote.Write(ir, im, remoteOpts...)
+	err = remote.Write(ir, im, remoteOpts...)
+	if err != nil {
+		return nil, nil, err
+	}
+	desc, err := partial.Descriptor(partial.Describable(im))
+	if err != nil {
+		return nil, nil, err
+	}
+	desc.Platform = &platform
+	return im, desc, nil
 }
 
-// UploadImages uploads the images specified by paths and pushes them along with an index to the provided oci reference,
-// it will use credentials if supplied
+// UploadImage uploads the image specified by path and pushes it to the provided oci reference.
+// It will use credentials if supplied.
+func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) error {
+	im, _, err := uploadSingleImage(ctx, path, ref, arch, ociAuth, noHTTPS, reqAuthFile, annotations)
+	if err != nil {
+		return err
+	}
+
+	digest, err := im.Digest()
+	if err != nil {
+		return err
+	}
+	sylog.Infof("Digest: %s\n", digest)
+
+	return err
+}
+
+// UploadImages uploads the images specified by paths and pushes them along with an index to the provided oci reference.
+// It will use credentials if supplied.
 func UploadImages(ctx context.Context, paths []string, ref string, archs []string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) error {
+	if len(paths) != len(archs) {
+		return fmt.Errorf("paths and archs must have the same length")
+	}
+
 	var base v1.ImageIndex = empty.Index
 	var adds []mutate.IndexAddendum
 
@@ -234,25 +250,10 @@ func UploadImages(ctx context.Context, paths []string, ref string, archs []strin
 		return err
 	}
 
-	annotationsMap := map[string]string{}
-	for _, annotation := range annotations {
-		key, value, found := strings.Cut(annotation, "=")
-		if !found {
-			sylog.Warningf("Value missing for %q, not setting", key)
-			continue
-		}
-		annotationsMap[key] = value
-	}
-
 	archSeen := map[string]bool{}
 
 	for i, path := range paths {
 		arch := archs[i]
-
-		// ensure that are uploading a SIF
-		if err := ensureSIF(path); err != nil {
-			return err
-		}
 
 		// We don't want to overwrite same arch
 		if archSeen[arch] {
@@ -266,7 +267,7 @@ func UploadImages(ctx context.Context, paths []string, ref string, archs []strin
 			return err
 		}
 
-		im, err := NewImageFromSIF(path, SifConfigMediaTypeV1, SifLayerMediaTypeV1, annotationsMap) // nolint:contextcheck
+		im, desc, err := uploadSingleImage(ctx, path, ia.Name(), arch, ociAuth, noHTTPS, reqAuthFile, annotations)
 		if err != nil {
 			return err
 		}
@@ -276,57 +277,6 @@ func UploadImages(ctx context.Context, paths []string, ref string, archs []strin
 			return err
 		}
 		sylog.Infof("Digest: %s (%s)\n", digest, arch)
-
-		platform := v1.Platform{
-			Architecture: arch,
-			OS:           "linux",
-		}
-		remoteOpts := []remote.Option{
-			ociauth.AuthOptn(ociAuth, reqAuthFile),
-			remote.WithUserAgent(useragent.Value()),
-			remote.WithContext(ctx),
-			remote.WithPlatform(platform),
-		}
-
-		if term.IsTerminal(2) {
-			pb := &client.DownloadProgressBar{}
-			progChan := make(chan v1.Update, 1)
-			go func() {
-				var total int64
-				soFar := int64(0)
-				for {
-					// The following is concurrency-safe because this is the only
-					// goroutine that's going to be reading progChan updates.
-					update := <-progChan
-					if update.Error != nil {
-						pb.Abort(false)
-						return
-					}
-					if update.Total != total {
-						pb.Init(update.Total)
-						total = update.Total
-					}
-					pb.IncrBy(int(update.Complete - soFar))
-					soFar = update.Complete
-					if soFar >= total {
-						pb.Wait()
-						return
-					}
-				}
-			}()
-			remoteOpts = append(remoteOpts, remote.WithProgress(progChan))
-		}
-
-		err = remote.Write(ia, im, remoteOpts...)
-		if err != nil {
-			return err
-		}
-
-		desc, err := partial.Descriptor(partial.Describable(im))
-		if err != nil {
-			return err
-		}
-		desc.Platform = &platform
 
 		adds = append(adds, mutate.IndexAddendum{
 			Add:        im,
@@ -349,6 +299,20 @@ func UploadImages(ctx context.Context, paths []string, ref string, archs []strin
 	}
 
 	return remote.WriteIndex(ir, idx, remoteOpts...)
+}
+
+// getAnnotationsMap converts a slice of annotation strings to a map
+func getAnnotationsMap(annotations []string) map[string]string {
+	annotationsMap := map[string]string{}
+	for _, annotation := range annotations {
+		key, value, found := strings.Cut(annotation, "=")
+		if !found {
+			sylog.Warningf("Value missing for %q, not setting", key)
+			continue
+		}
+		annotationsMap[key] = value
+	}
+	return annotationsMap
 }
 
 // ensureSIF checks for a SIF image at filepath and returns an error if it is not, or an error is encountered
