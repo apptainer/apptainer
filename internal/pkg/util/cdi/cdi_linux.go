@@ -12,7 +12,9 @@ package cdi
 
 import (
 	"fmt"
+	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/opencontainers/runtime-spec/specs-go"
 	cdilib "tags.cncf.io/container-device-interface/pkg/cdi"
@@ -56,7 +58,14 @@ func GetCdiDevs(spec *specs.Spec) ([]string, error) {
 
 	if spec.Linux != nil {
 		for _, d := range spec.Linux.Devices {
-			devs = append(devs, d.Path)
+			cleanPath := filepath.Clean(d.Path)
+			if d.Path != cleanPath || !strings.HasPrefix(cleanPath, "/dev/") {
+				return nil, fmt.Errorf(
+					"CDI device path %q must be a clean path beneath /dev",
+					d.Path,
+				)
+			}
+			devs = append(devs, cleanPath)
 		}
 	}
 	return devs, nil

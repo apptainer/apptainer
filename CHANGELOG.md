@@ -7,6 +7,10 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.5.x changes
 
+- Prevent non-root users when running in suid mode from using the
+  `--cdi-dirs` option.
+- Add a "cdi dirs" apptainer.conf option to set default directories to
+  search for CDI specifications when the `--cdi-dirs` option is not used.
 - Fixed a bug that prevented multiple mount entries in the `APPTAINER_MOUNT`
   env var from having different numbers of options.
 - Fix the help text for the `--mount` option not wrapping at 80 columns,

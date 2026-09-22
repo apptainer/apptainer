@@ -135,7 +135,8 @@ type File struct {
 	// apptheus unix socket
 	ApptheusSocketPath string `default:"/run/apptheus/gateway.sock" directive:"apptheus communication socket path"`
 	// Allow monitoring by apptheus, default is `no` because it requires an additional tool, i.e. apptheus
-	AllowMonitoring bool `default:"no" authorized:"yes,no" directive:"allow monitoring"`
+	AllowMonitoring bool     `default:"no" authorized:"yes,no" directive:"allow monitoring"`
+	CdiDirs         []string `directive:"cdi dirs"`
 }
 
 // NOTE: if you think that we may want to change the default for any
@@ -553,6 +554,16 @@ memory fs type = {{ .MemoryFSType }}
 # Defines path where CNI executable plugins are stored
 #cni plugin path =
 {{ if ne .CniPluginPath "" }}cni plugin path = {{ .CniPluginPath }}{{ end }}
+
+# CDI DIRECTORIES: [STRING]
+# DEFAULT: Undefined
+# Comma-separated list of directories in which CDI should look for
+# device definition JSON files.  Can be overridden by --cdi-dirs command line
+# option when not in suid mode or by root user.
+#cdi dirs = /etc/cdi,/var/run/cdi
+{{ range $index, $dir := .CdiDirs }}
+{{- if eq $index 0 }}cdi dirs = {{ else }},{{ end }}{{$dir}}
+{{- end }}
 
 # BINARY PATH: [STRING]
 # DEFAULT: $PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

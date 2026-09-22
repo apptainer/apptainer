@@ -314,6 +314,66 @@ func (c ctx) testRunCDI(t *testing.T) {
 
 	imageRef := c.env.OrasTestImage
 
+	cdiOptTests := []struct {
+		name       string
+		profile    e2e.Profile
+		expectExit int
+	}{
+		{
+			name:       "cdi-dirs-opt-suid",
+			profile:    e2e.UserProfile,
+			expectExit: 255,
+		},
+		{
+			name:       "cdi-dirs-opt-root",
+			profile:    e2e.RootProfile,
+			expectExit: 0,
+		},
+	}
+
+	for _, tt := range cdiOptTests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmdArgs := []string{
+				"--contain",
+				"--device", "apptainer.org/device=testDevice",
+				"--cdi-dirs", cdiDir,
+				imageRef,
+				"ls", "-ld", "/dev/fuse",
+			}
+
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(tt.profile),
+				e2e.WithCommand("exec"),
+				e2e.WithArgs(cmdArgs...),
+				e2e.ExpectExit(tt.expectExit),
+			)
+		})
+	}
+
+	t.Run("cdi-dirs-conf-suid", func(t *testing.T) {
+		cmdArgs := []string{
+			"--contain",
+			"--device", "apptainer.org/device=testDevice",
+			imageRef,
+			"ls", "-ld", "/dev/fuse",
+		}
+
+		c.env.RunApptainer(
+			t,
+			e2e.WithProfile(e2e.UserProfile),
+			e2e.PreRun(func(t *testing.T) {
+				e2e.SetDirective(t, c.env, "cdi dirs", cdiDir)
+			}),
+			e2e.PostRun(func(t *testing.T) {
+				e2e.ResetDirective(t, c.env, "cdi dirs")
+			}),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(cmdArgs...),
+			e2e.ExpectExit(0),
+		)
+	})
+
 	devTests := []struct {
 		name       string
 		devPath    string
@@ -354,7 +414,7 @@ func (c ctx) testRunCDI(t *testing.T) {
 
 			c.env.RunApptainer(
 				t,
-				e2e.WithProfile(e2e.UserProfile),
+				e2e.WithProfile(e2e.UserNamespaceProfile),
 				e2e.WithCommand("exec"),
 				e2e.WithArgs(cmdArgs...),
 				e2e.ExpectExit(tt.expectExit),
@@ -425,7 +485,7 @@ func (c ctx) testRunCDI(t *testing.T) {
 
 			c.env.RunApptainer(
 				t,
-				e2e.WithProfile(e2e.UserProfile),
+				e2e.WithProfile(e2e.UserNamespaceProfile),
 				e2e.WithCommand("run"),
 				e2e.WithArgs(cmdArgs...),
 				e2e.ExpectExit(0),

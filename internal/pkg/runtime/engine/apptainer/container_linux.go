@@ -1738,7 +1738,10 @@ func (c *container) addDevMount(system *mount.System) error {
 			}
 		}
 
-		devs, _ := cdi.GetCdiDevs(&c.engine.EngineConfig.JSON.CdiSpec)
+		devs, err := cdi.GetCdiDevs(&c.engine.EngineConfig.JSON.CdiSpec)
+		if err != nil {
+			return fmt.Errorf("invalid CDI device: %w", err)
+		}
 		for _, dev := range devs {
 			if err := c.addSessionDev(dev, system); err != nil {
 				return err
