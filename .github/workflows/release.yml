@@ -112,8 +112,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        # Using "with: fetch-depth: 0" instead of the below sometimes results
+        # in it not recognizing the release tag.
+        run: git fetch --prune --unshallow --tags --force
 
       - name: Check if release is needed because tag matches latest annotated
         env:
