@@ -514,6 +514,32 @@ func TestGetCdiDevs(t *testing.T) {
 			wantDevs: []string{"/dev/gpu0", "/dev/gpu1", "/dev/dri/card0"},
 			wantErr:  false,
 		},
+		{
+			name: "rejects unclean device path into internal underlay layout",
+			spec: &specs.Spec{
+				Linux: &specs.Linux{
+					Devices: []specs.LinuxDevice{
+						{
+							Path: "/tmp/cdi-hop/../../../../../../../../underlay/cryptattack",
+						},
+					},
+				},
+			},
+			wantDevs: nil,
+			wantErr:  true,
+		},
+		{
+			name: "rejects device path outside dev",
+			spec: &specs.Spec{
+				Linux: &specs.Linux{
+					Devices: []specs.LinuxDevice{
+						{Path: "/underlay/cryptattack"},
+					},
+				},
+			},
+			wantDevs: nil,
+			wantErr:  true,
+		},
 	}
 
 	for _, tt := range tests {

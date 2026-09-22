@@ -903,7 +903,7 @@ var actionCdiDirsFlag = cmdline.Flag{
 	Value:        &cdiDirs,
 	DefaultValue: []string{},
 	Name:         "cdi-dirs",
-	Usage:        "comma-separated list of directories in which CDI should look for device definition JSON files. If omitted, default will be: /etc/cdi,/var/run/cdi",
+	Usage:        "comma-separated list of directories in which CDI should look for device definition JSON files. If omitted and not set in apptainer.conf, default will be: /etc/cdi,/var/run/cdi. Not allowed in suid mode by non-root users.",
 }
 
 func init() {
