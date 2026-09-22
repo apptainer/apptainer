@@ -1,0 +1,13 @@
+FROM ubuntu:24.04
+
+RUN ln -s /usr/share/zoneinfo/UTC /etc/localtime && \
+  apt-get -yq update && \
+  apt-get -yq install curl jq && \
+  PACKAGE_URL=$(curl -s https://api.github.com/repos/apptainer/apptainer/releases/latest | jq -r --arg arch "$(dpkg --print-architecture)" '.assets[] | select(.name | test("^apptainer_[0-9.]+_\($arch)\\.deb$")) | .browser_download_url') && \
+  curl -L -o /tmp/nested-apptainer.deb "${PACKAGE_URL}" && \
+  apt-get -yq install /tmp/nested-apptainer.deb && \
+  rm /tmp/nested-apptainer.deb && \
+  rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
+
+ENTRYPOINT ["/usr/bin/apptainer"]
+CMD ["version"]
