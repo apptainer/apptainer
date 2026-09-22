@@ -87,12 +87,24 @@ Changes since 1.5.x
   reproducibility by ensuring a `libpython` dependency does not get
   introduced based on the build host's environment.
 
-## v1.5.x changes
+## v1.5.4 - \[2026-09-22\]
 
-- Fix the help text for the `--mount` option not wrapping at 80 columns,
-  by using the shorter `src` and `dst` aliases in the example.
+### Security fix
+
+- Fix for [GHSA-cr2j-534f-mf3g (CVE not yet assigned)](https://github.com/apptainer/apptainer/security/advisories/GHSA-4wg8-vhjg-jq8p)
+  which is a high severity local privilege escalation in suid mode
+  affecting the 1.5.x series.  The fix is to
+  prevent non-root users when running in suid mode from using the
+  `--cdi-dirs` option.
+
+### Other changes
+
+- Add a "cdi dirs" apptainer.conf option to set default directories to
+  search for CDI specifications when the `--cdi-dirs` option is not used.
 - Fixed a bug that prevented multiple mount entries in the `APPTAINER_MOUNT`
   env var from having different numbers of options.
+- Fix the help text for the `--mount` option not wrapping at 80 columns,
+  by using the shorter `src` and `dst` aliases in the example.
 - Skip attempting to build PRoot in rpm packages on riscv64 architecture
   like had already been done for ppc64le and s390x.
 - Fix rootless image builds on Ubuntu 24.04 and later (where apparmor by

@@ -176,13 +176,22 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 
 	if len(e.EngineConfig.JSON.Devices) > 0 {
 		// Initialize the CDI Spec if devices specified
+		cdiDirs := e.EngineConfig.JSON.CdiDirs
+		// The --cdi-dirs command line option is not allowed in suid
+		// mode for security reasons.
+		if len(cdiDirs) > 0 && starterConfig.GetIsSUID() && os.Getuid() != 0 {
+			return fmt.Errorf("--cdi-dirs option is not allowed in suid mode by non-root user")
+		}
+		// If not set on command line, use configuration option
+		if len(cdiDirs) == 0 {
+			cdiDirs = e.EngineConfig.File.CdiDirs
+		}
+		for _, cdiDir := range cdiDirs {
+			sylog.Debugf("Adding CDI dir %s", cdiDir)
+		}
 		devices := e.EngineConfig.JSON.Devices
 		for _, device := range devices {
 			sylog.Debugf("Adding CDI device %s", device)
-		}
-		cdiDirs := e.EngineConfig.JSON.CdiDirs
-		for _, cdiDir := range cdiDirs {
-			sylog.Debugf("Adding CDI dir %s", cdiDir)
 		}
 		if err := cdi.AddCdiDevices(&e.EngineConfig.JSON.CdiSpec, devices, cdiDirs); err != nil {
 			return fmt.Errorf("while setting up CDI devices: %w", err)

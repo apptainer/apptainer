@@ -1800,7 +1800,10 @@ func (c *container) addDevMount(system *mount.System) error {
 			}
 		}
 
-		devs, _ := cdi.GetCdiDevs(&c.engine.EngineConfig.JSON.CdiSpec)
+		devs, err := cdi.GetCdiDevs(&c.engine.EngineConfig.JSON.CdiSpec)
+		if err != nil {
+			return fmt.Errorf("invalid CDI device: %w", err)
+		}
 		for _, dev := range devs {
 			// --nv or --rocm may have staged the same node
 			if _, err := c.session.GetPath(dev); err == nil {
