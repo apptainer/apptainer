@@ -5,10 +5,18 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## v1.5.x changes
+## v1.5.4 - \[2026-09-22\]
 
-- Prevent non-root users when running in suid mode from using the
+### Security fix
+
+- Fix for [GHSA-cr2j-534f-mf3g (CVE not yet assigned)](https://github.com/apptainer/apptainer/security/advisories/GHSA-4wg8-vhjg-jq8p)
+  which is a high severity local privilege escalation in suid mode
+  affecting the 1.5.x series.  The fix is to
+  prevent non-root users when running in suid mode from using the
   `--cdi-dirs` option.
+
+### Other changes
+
 - Add a "cdi dirs" apptainer.conf option to set default directories to
   search for CDI specifications when the `--cdi-dirs` option is not used.
 - Fixed a bug that prevented multiple mount entries in the `APPTAINER_MOUNT`
