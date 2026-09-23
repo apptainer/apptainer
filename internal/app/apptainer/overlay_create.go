@@ -135,7 +135,7 @@ func OverlayCreate(size int, imgPath string, tmpDir string, overlaySparse bool, 
 	sifImage := false
 
 	if err := unix.Access(imgPath, unix.W_OK); err == nil {
-		img, err := image.Init(imgPath, false)
+		img, err := image.Init(imgPath, false, false)
 		if err != nil {
 			return fmt.Errorf("while opening image file %s: %s", imgPath, err)
 		}

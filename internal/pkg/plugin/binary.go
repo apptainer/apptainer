@@ -31,7 +31,7 @@ import (
 func Install(sifPath string) error {
 	sylog.Debugf("Installing plugin from SIF to %q", rootDir)
 
-	img, err := image.Init(sifPath, false)
+	img, err := image.Init(sifPath, false, false)
 	if err != nil {
 		return fmt.Errorf("could not load plugin: %w", err)
 	} else if !isPluginFile(img) {
@@ -194,7 +194,7 @@ func Inspect(name string) (pluginapi.Manifest, error) {
 	} else {
 		// at this point, either the file is there under the original
 		// name or we found one by looking at the metafile.
-		img, err := image.Init(name, false)
+		img, err := image.Init(name, false, false)
 		if err != nil {
 			return manifest, fmt.Errorf("could not load plugin: %w", err)
 		} else if !isPluginFile(img) {

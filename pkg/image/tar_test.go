@@ -76,7 +76,7 @@ func TestTarInitializer(t *testing.T) {
 		t.Fatalf("cannot stat the image file: %s\n", err)
 	}
 
-	err = tarfmt.initializer(img, fileinfo)
+	err = tarfmt.initializer(img, fileinfo, false)
 	if err != nil {
 		t.Fatalf("unexpected error for tar initializer: %s\n", err)
 	}
@@ -165,7 +165,7 @@ func TestTarInitializerDirectory(t *testing.T) {
 		t.Fatalf("cannot stat the directory: %s\n", err)
 	}
 
-	err = tarfmt.initializer(img, fileinfo)
+	err = tarfmt.initializer(img, fileinfo, false)
 	if err == nil {
 		t.Fatal("tar initializer succeeded with a directory while expected to fail")
 	}
@@ -248,7 +248,7 @@ func TestTarInitializerWithCompression(t *testing.T) {
 				t.Fatalf("cannot stat the image file: %s\n", err)
 			}
 
-			err = tarfmt.initializer(img, fileinfo)
+			err = tarfmt.initializer(img, fileinfo, false)
 			if err != nil {
 				t.Fatalf("unexpected error for compressed tar initializer: %s\n", err)
 			}

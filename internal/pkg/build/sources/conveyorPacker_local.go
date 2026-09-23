@@ -49,7 +49,7 @@ func GetLocalPacker(ctx context.Context, src string, b *types.Bundle) (LocalPack
 		return &TarPacker{srcfile: src, b: b}, nil
 	}
 
-	imageObject, err := image.Init(src, false)
+	imageObject, err := image.Init(src, false, false)
 	if err != nil {
 		return nil, err
 	}

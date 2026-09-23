@@ -86,7 +86,7 @@ func CheckExt3Header(b []byte) (uint64, error) {
 	return offset, nil
 }
 
-func (f *ext3Format) initializer(img *Image, fileinfo os.FileInfo) error {
+func (f *ext3Format) initializer(img *Image, fileinfo os.FileInfo, _ bool) error {
 	if fileinfo.IsDir() {
 		return debugError("not an ext3 image")
 	}

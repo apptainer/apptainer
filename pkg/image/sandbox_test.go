@@ -38,7 +38,7 @@ func runSandboxInitializerTest(t *testing.T, img *Image, path string) error {
 		t.Fatalf("cannot stat file %s: %s\n", path, statErr)
 	}
 
-	err = sandboxfmt.initializer(img, fileinfo)
+	err = sandboxfmt.initializer(img, fileinfo, false)
 	// Only the caller can interpret the result (valid vs. invalid test case)
 	return err
 }

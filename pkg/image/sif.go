@@ -59,7 +59,7 @@ func checkPartitionType(img *Image, fstype sif.FSType, offset int64) (uint32, er
 	return 0, fmt.Errorf("unknown filesystem type %v", fstype)
 }
 
-func (f *sifFormat) initializer(img *Image, fi os.FileInfo) error {
+func (f *sifFormat) initializer(img *Image, fi os.FileInfo, forExecution bool) error {
 	if fi.IsDir() {
 		return debugError("not a sif file image")
 	}
@@ -105,7 +105,7 @@ func (f *sifFormat) initializer(img *Image, fi os.FileInfo) error {
 		// CompatibleWith call will also check that the current machine
 		// has persistent emulation enabled in /proc/sys/fs/binfmt_misc to
 		// be able to execute container process correctly
-		if goArch != "unknown" && !machine.CompatibleWith(goArch) {
+		if forExecution && goArch != "unknown" && !machine.CompatibleWith(goArch) {
 			return fmt.Errorf("the image's architecture (%s) could not run on the host's (%s)", goArch, runtime.GOARCH)
 		}
 

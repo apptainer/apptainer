@@ -215,7 +215,7 @@ func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.Aut
 
 // ensureSIF checks for a SIF image at filepath and returns an error if it is not, or an error is encountered
 func ensureSIF(filepath string) error {
-	img, err := image.Init(filepath, false)
+	img, err := image.Init(filepath, false, false)
 	if err != nil {
 		return fmt.Errorf("could not open image %s for verification: %s", filepath, err)
 	}
