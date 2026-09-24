@@ -75,6 +75,7 @@ func createSIF(path string, b *types.Bundle, squashfile string, encOpts *encrypt
 				if err != nil {
 					return fmt.Errorf("while detecting SBOM format: %v", err)
 				}
+
 				dt = sif.DataSBOM
 				opts = append(opts, sif.OptSBOMMetadata(format))
 			}
@@ -199,6 +200,20 @@ func detectSBOMFormat(data []byte) (sif.SBOMFormat, error) {
 	if bomFormat, ok := jsonData["bomFormat"].(string); ok {
 		if strings.Contains(bomFormat, "CycloneDX") {
 			return sif.SBOMFormatCycloneDXJSON, nil
+		}
+	}
+
+	if schema, ok := jsonData["schema"].(map[string]any); ok {
+		if url, ok := schema["url"].(string); ok {
+			if strings.Contains(url, "syft") {
+				return sif.SBOMFormatSyftJSON, nil
+			}
+		}
+	}
+
+	if trivy, ok := jsonData["Trivy"].(map[string]any); ok {
+		if _, ok := trivy["Version"].(string); ok {
+			return sif.SBOMFormatTrivyJSON, nil
 		}
 	}
 
