@@ -52,7 +52,7 @@ func (c ctx) apptainerInspect(t *testing.T) {
 			if t.Failed() {
 				return
 			}
-			img, err := image.Init(sifImage, false)
+			img, err := image.Init(sifImage, false, false)
 			if err != nil {
 				t.Fatalf("failed to open %s: %s", sifImage, err)
 			}

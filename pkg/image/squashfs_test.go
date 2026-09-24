@@ -81,7 +81,7 @@ func TestSquashfsInitializer(t *testing.T) {
 	}
 
 	// initializer must fail if writable is true
-	err = squashfsfmt.initializer(img, fileinfo)
+	err = squashfsfmt.initializer(img, fileinfo, false)
 	if err == nil {
 		t.Fatalf("unexpected success for squashfs initializer\n")
 	}
@@ -89,7 +89,7 @@ func TestSquashfsInitializer(t *testing.T) {
 	img.File.Seek(0, io.SeekStart)
 	// initialized must succeed if writable is false
 	img.Writable = false
-	err = squashfsfmt.initializer(img, fileinfo)
+	err = squashfsfmt.initializer(img, fileinfo, false)
 	if err != nil {
 		t.Fatalf("unexpected error for squashfs initializer: %s\n", err)
 	}
@@ -107,7 +107,7 @@ func TestSquashfsInitializer(t *testing.T) {
 		t.Fatalf("cannot stat file pointer: %s\n", err)
 	}
 
-	err = squashfsfmt.initializer(img, fileinfo)
+	err = squashfsfmt.initializer(img, fileinfo, false)
 	if err == nil {
 		t.Fatal("squashfs succeeded with a directory while expected to fail")
 	}

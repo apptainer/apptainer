@@ -96,7 +96,7 @@ func ext3InitializerTest(t *testing.T, img *Image, path string, fsType string) e
 	}
 
 	var ext3format ext3Format
-	err = ext3format.initializer(img, fileinfo)
+	err = ext3format.initializer(img, fileinfo, false)
 	// err is just to be returned and analyzed by the caller
 
 	img.File.Close()
@@ -171,7 +171,7 @@ func TestInitializer(t *testing.T) {
 	}
 
 	// This test will fail because we did not set a valid ext3 FS yet
-	err = ext3format.initializer(img, fileinfo)
+	err = ext3format.initializer(img, fileinfo, false)
 	if err == nil {
 		t.Fatal("initializer succeeded while expected to fail")
 	}
@@ -235,7 +235,7 @@ func TestInitializer(t *testing.T) {
 		t.Fatalf("invalid fileinfo for %s\n", resolvedPath)
 	}
 
-	err = ext3format.initializer(img, fileinfo)
+	err = ext3format.initializer(img, fileinfo, false)
 	if err == nil {
 		t.Fatal("ext3 initializer succeeded with a directory while expected to fail")
 	}

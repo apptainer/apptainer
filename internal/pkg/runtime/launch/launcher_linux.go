@@ -597,7 +597,7 @@ func (l *Launcher) setImageOrInstance(image string, name string) error {
 // Allows us to fail fast if required key material is not available / usable.
 func (l *Launcher) checkEncryptionKey() error {
 	sylog.Debugf("Checking for encrypted system partition")
-	img, err := imgutil.Init(l.engineConfig.GetImage(), false)
+	img, err := imgutil.Init(l.engineConfig.GetImage(), false, true)
 	if err != nil {
 		return fmt.Errorf("could not open image %s: %w", l.engineConfig.GetImage(), err)
 	}
@@ -1450,7 +1450,7 @@ func hidepidProc() bool {
 // tempDir. If the unsquashfs binary is not located, the binary at unsquashfsPath is used. It is
 // the caller's responsibility to remove rootfsDir when no longer needed.
 func convertImage(filename string, unsquashfsPath string, tmpDir string) (rootfsDir string, imageDir string, err error) {
-	img, err := imgutil.Init(filename, false)
+	img, err := imgutil.Init(filename, false, true)
 	if err != nil {
 		return "", "", fmt.Errorf("could not open image %s: %s", filename, err)
 	}

@@ -743,5 +743,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		// Regressions
 		// Manipulates remotes, so must run alone
 		"issue5808": np(c.issue5808),
+		// Test that cross-arch images can be pulled without QEMU/binfmt_misc
+		"pullCrossArchImageWithoutQEMU": np(c.pullCrossArchImageWithoutQEMU),
 	}
 }

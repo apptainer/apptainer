@@ -98,7 +98,7 @@ func CheckTarHeaderWithDecompression(b []byte, filename string) error {
 	}
 }
 
-func (f *tarFormat) initializer(img *Image, fileinfo os.FileInfo) error {
+func (f *tarFormat) initializer(img *Image, fileinfo os.FileInfo, _ bool) error {
 	if fileinfo.IsDir() {
 		return debugError("not a tar image")
 	}

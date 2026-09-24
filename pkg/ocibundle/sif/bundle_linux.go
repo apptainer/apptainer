@@ -97,7 +97,7 @@ func (s *sifBundle) Create(ociConfig *specs.Spec) error {
 		return fmt.Errorf("image wasn't set, need one to create bundle")
 	}
 
-	img, err := image.Init(s.image, s.writable)
+	img, err := image.Init(s.image, s.writable, true)
 	if err != nil {
 		return fmt.Errorf("failed to load SIF image %s: %s", s.image, err)
 	}

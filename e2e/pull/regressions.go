@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
+	"github.com/apptainer/apptainer/internal/pkg/util/machine"
 )
 
 // If a remote is set to a different endpoint we should be able to pull
@@ -108,5 +109,47 @@ func (c ctx) issueSylabs1087(t *testing.T) {
 	}
 	if string(content) != data {
 		t.Errorf("Content of file not correct. Expected %s, got %s", data, content)
+	}
+}
+
+// Test that cross-architecture SIF images can be downloaded without QEMU/binfmt_misc
+// Before the fix, ensureSIF was checking machine.CompatibleWith() even just for
+// download/validation, not execution. This caused downloads to fail without QEMU.
+func (c ctx) pullCrossArchImageWithoutQEMU(t *testing.T) {
+	// This test pulls an arm64 image on non-arm64 archs.
+	// The fix makes architecture checks optional via the forExecution parameter.
+
+	// Mock binfmt_misc to appear disabled to test that downloads work without QEMU
+	originalPath := machine.TestBinfmtMisc
+	mockBinfmtDir, err := os.MkdirTemp("", "mock-binfmt-")
+	if err == nil {
+		// Write status as "disabled" so CompatibleWith will return false
+		if err := os.WriteFile(filepath.Join(mockBinfmtDir, "status"), []byte("disabled\n"), 0o644); err == nil {
+			// Write an arm64 entry but with persistent=false so it won't match
+			if err := os.WriteFile(filepath.Join(mockBinfmtDir, "qemu-arm64"), []byte("enabled\nflags:\n"), 0o644); err == nil {
+				machine.TestBinfmtMisc = mockBinfmtDir
+				t.Cleanup(func() {
+					machine.TestBinfmtMisc = originalPath
+					os.RemoveAll(mockBinfmtDir)
+				})
+			}
+		}
+	}
+
+	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "pull-cross-arch-", "")
+	defer cleanup(t)
+	pullPath := filepath.Join(tmpDir, "arm64-alpine.sif")
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithArgs([]string{"--force", "--arch", "arm64", pullPath, "docker://arm64v8/alpine:3.6"}...),
+		e2e.ExpectExit(0),
+	)
+
+	_, err = os.Stat(pullPath)
+	if err != nil {
+		t.Fatalf("Image not found at %s: %v", pullPath, err)
 	}
 }

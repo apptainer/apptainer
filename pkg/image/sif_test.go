@@ -201,7 +201,7 @@ func TestSIFInitializer(t *testing.T) {
 				t.Fatalf("cannot stat the image file: %s\n", err)
 			}
 
-			err = sifFmt.initializer(img, fileinfo)
+			err = sifFmt.initializer(img, fileinfo, true)
 			os.Remove(tt.path)
 
 			if (err == nil) != tt.expectedSuccess {

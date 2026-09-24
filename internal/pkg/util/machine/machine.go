@@ -227,6 +227,10 @@ func ArchFromContainer(container string) string {
 
 const binfmtMisc = "/proc/sys/fs/binfmt_misc"
 
+// TestBinfmtMisc can be set by tests to override the binfmt_misc path.
+// Set it before calling CompatibleWith and restore it after.
+var TestBinfmtMisc string
+
 type binfmtEntry struct {
 	magic      string
 	enabled    bool
@@ -249,7 +253,11 @@ func canEmulate(arch string) bool {
 	}
 
 	// look at /proc/sys/fs/binfmt_misc
-	content, err := os.ReadFile(filepath.Join(binfmtMisc, "status"))
+	path := binfmtMisc
+	if TestBinfmtMisc != "" {
+		path = TestBinfmtMisc
+	}
+	content, err := os.ReadFile(filepath.Join(path, "status"))
 	if err != nil {
 		sylog.Warningf("%v", err)
 		return false
@@ -258,7 +266,7 @@ func canEmulate(arch string) bool {
 		return false
 	}
 
-	entries, err := os.ReadDir(binfmtMisc)
+	entries, err := os.ReadDir(path)
 	if err != nil {
 		return false
 	}
@@ -266,7 +274,7 @@ func canEmulate(arch string) bool {
 	archMagic := hex.EncodeToString(format.ElfMagic)
 
 	for _, entry := range entries {
-		f := filepath.Join(binfmtMisc, entry.Name())
+		f := filepath.Join(path, entry.Name())
 		b, err := os.ReadFile(f)
 		if err != nil {
 			continue

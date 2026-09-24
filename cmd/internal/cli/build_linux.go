@@ -454,7 +454,7 @@ func checkSections() error {
 }
 
 func isImage(spec string) bool {
-	i, err := image.Init(spec, false)
+	i, err := image.Init(spec, false, false)
 	if i != nil {
 		_ = i.File.Close()
 	}

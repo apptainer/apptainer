@@ -134,7 +134,7 @@ func TestReader(t *testing.T) {
 			t.Errorf("unexpected success with non opened file")
 		}
 
-		img, err := Init(filename, false)
+		img, err := Init(filename, false, false)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -201,7 +201,7 @@ func TestAuthorizedPath(t *testing.T) {
 	if err := fs.CopyFileAtomic(busyboxSIF, path, 0o755); err != nil {
 		t.Fatalf("Could not copy test image: %v", err)
 	}
-	img, err := Init(path, true)
+	img, err := Init(path, true, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -277,7 +277,7 @@ func createImage(t *testing.T) (*Image, string) {
 	path := copyImage(t)
 
 	// Now load the image which will be used next for a bunch of tests
-	img, err := Init(path, true)
+	img, err := Init(path, true, false)
 	if err != nil {
 		t.Fatal("impossible to load image for testing")
 	}

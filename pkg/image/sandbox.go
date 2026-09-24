@@ -15,7 +15,7 @@ import (
 
 type sandboxFormat struct{}
 
-func (f *sandboxFormat) initializer(img *Image, fi os.FileInfo) error {
+func (f *sandboxFormat) initializer(img *Image, fi os.FileInfo, _ bool) error {
 	if fi.IsDir() {
 		img.Type = SANDBOX
 	} else {
