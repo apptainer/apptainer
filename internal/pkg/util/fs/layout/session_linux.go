@@ -23,10 +23,10 @@ const (
 	finalDir  = "/final"
 )
 
-// Session directory layout manager
 type Session struct {
 	*Manager
-	Layer layer
+	Layer  layer
+	Reader FileReader
 }
 
 // Layer describes a layer interface added on top of session layout
@@ -38,7 +38,7 @@ type layer interface {
 // NewSession creates and returns a session directory layout manager
 func NewSession(path string, fstype string, size int, system *mount.System, layer layer) (*Session, error) {
 	manager := &Manager{VFS: DefaultVFS}
-	session := &Session{Manager: manager}
+	session := &Session{Manager: manager, Reader: DefaultFileReader}
 
 	if err := manager.SetRootPath(path); err != nil {
 		return nil, err

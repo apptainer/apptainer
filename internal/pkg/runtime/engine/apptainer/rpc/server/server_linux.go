@@ -430,6 +430,12 @@ func (t *Methods) Umask(arguments *args.UmaskArgs, reply *int) (err error) {
 	return nil
 }
 
+// ReadFile reads a file with the specified path.
+func (t *Methods) ReadFile(arguments *args.ReadFileArgs, reply *args.ReadFileReply) error {
+	reply.Data, reply.Err = os.ReadFile(arguments.Path)
+	return nil
+}
+
 // WriteFile creates an empty file if it doesn't exist or a file with the provided data.
 func (t *Methods) WriteFile(arguments *args.WriteFileArgs, _ *int) error {
 	f, err := os.OpenFile(arguments.Filename, os.O_CREATE|os.O_WRONLY|os.O_EXCL, arguments.Perm)

@@ -147,6 +147,17 @@ type UmaskArgs struct {
 	Mask int
 }
 
+// ReadFileArgs defines the arguments to readfile.
+type ReadFileArgs struct {
+	Path string
+}
+
+// ReadFileReply defines the reply for readfile.
+type ReadFileReply struct {
+	Data []byte
+	Err  error
+}
+
 // WriteFileArgs defines the arguments to writefile.
 type WriteFileArgs struct {
 	Filename string

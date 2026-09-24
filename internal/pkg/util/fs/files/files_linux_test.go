@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/layout"
 )
 
 func TestGroup(t *testing.T) {
@@ -24,11 +25,11 @@ func TestGroup(t *testing.T) {
 	var gids []int
 	uid := os.Getuid()
 
-	_, err := Group("/fake", uid, gids, nil)
+	_, err := Group("/fake", uid, gids, layout.DefaultVFS, layout.DefaultFileReader, nil)
 	if err == nil {
 		t.Errorf("should have failed with bad group file")
 	}
-	_, err = Group("/etc/group", uid, gids, nil)
+	_, err = Group("/etc/group", uid, gids, layout.DefaultVFS, layout.DefaultFileReader, nil)
 	if err != nil {
 		t.Errorf("should have passed with correct group file")
 	}
@@ -40,7 +41,7 @@ func TestGroup(t *testing.T) {
 	emptyGroup := f.Name()
 	f.Close()
 
-	_, err = Group(emptyGroup, uid, gids, nil)
+	_, err = Group(emptyGroup, uid, gids, layout.DefaultVFS, layout.DefaultFileReader, nil)
 	if err != nil {
 		t.Error(err)
 	}

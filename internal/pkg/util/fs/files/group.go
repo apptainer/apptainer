@@ -11,10 +11,9 @@ package files
 
 import (
 	"fmt"
-	"io"
 	"os"
 
-	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/layout"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/ccoveille/go-safecast/v2"
@@ -22,21 +21,20 @@ import (
 
 // Group creates a group template based on content of file provided in path,
 // updates content with current user information and returns content
-func Group(path string, uid int, gids []int, customLookup UserGroupLookup) (content []byte, err error) {
+func Group(path string, uid int, gids []int, vfs layout.VFS, reader layout.FileReader, customLookup UserGroupLookup) (content []byte, err error) {
 	duplicate := false
 	var groups []int
 
 	sylog.Verbosef("Checking for template group file: %s\n", path)
-	if !fs.IsFile(path) {
+	if _, err := vfs.Stat(path); err != nil {
 		return content, fmt.Errorf("group file doesn't exist in container, not updating")
 	}
 
 	sylog.Verbosef("Creating group content\n")
-	groupFile, err := os.Open(path)
+	content, err = reader.ReadFile(path)
 	if err != nil {
-		return content, fmt.Errorf("failed to open group file in container: %s", err)
+		return content, fmt.Errorf("failed to read group file in container: %s", err)
 	}
-	defer groupFile.Close()
 
 	getPwUID := user.GetPwUID
 	getGrGID := user.GetGrGID
@@ -78,10 +76,6 @@ func Group(path string, uid int, gids []int, customLookup UserGroupLookup) (cont
 		if len(gids) == 0 {
 			groups = append(groups, int(pwInfo.GID))
 		}
-	}
-	content, err = io.ReadAll(groupFile)
-	if err != nil {
-		return content, fmt.Errorf("failed to read group file content in container: %s", err)
 	}
 
 	if len(content) > 0 && content[len(content)-1] != '\n' {

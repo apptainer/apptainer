@@ -12,13 +12,12 @@ package files
 import (
 	"bufio"
 	"fmt"
-	"os"
 	"strings"
 
 	pwd "github.com/astromechza/etcpwdparse"
 	"github.com/ccoveille/go-safecast/v2"
 
-	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/layout"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
@@ -31,24 +30,26 @@ type UserGroupLookup interface {
 
 // Passwd creates a passwd template based on content of file provided in path,
 // updates content with current user information and returns content.
-func Passwd(path string, home string, uid int, customLookup UserGroupLookup) (content []byte, err error) {
+func Passwd(path string, home string, uid int, vfs layout.VFS, reader layout.FileReader, customLookup UserGroupLookup) (content []byte, err error) {
 	sylog.Verbosef("Checking for template passwd file: %s", path)
-	if !fs.IsFile(path) {
+	if _, err := vfs.Stat(path); err != nil {
 		return content, fmt.Errorf("passwd file doesn't exist in container, not updating")
 	}
 
 	sylog.Verbosef("Creating passwd content")
-	file, err := os.Open(path)
+	data, err := reader.ReadFile(path)
 	if err != nil {
-		return content, fmt.Errorf("error opening passwd file %#v for reading: %v", path, err)
+		return content, fmt.Errorf("error reading passwd file %#v: %v", path, err)
 	}
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(strings.NewReader(string(data)))
 	scanner.Split(bufio.ScanLines)
 	lines := []string{}
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
-	file.Close()
+	if err := scanner.Err(); err != nil {
+		return content, fmt.Errorf("error reading passwd file %#v: %v", path, err)
+	}
 
 	getPwUID := user.GetPwUID
 	if customLookup != nil {

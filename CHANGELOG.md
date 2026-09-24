@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Fix passwd and group file injection when running with SUID fakeroot and
+  subordinate UID/GID mappings.
 - Add support for mounting archive files (tar, tar.gz, etc.) using
   `--bind` or `--mount` with `archive-src=` option, similar to mounting
   images with `image-src=`. Archive mounts require a FUSE-based archiver

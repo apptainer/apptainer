@@ -60,6 +60,10 @@ type VFS interface {
 	WriteFile(string, []byte, os.FileMode) error
 }
 
+type FileReader interface {
+	ReadFile(string) ([]byte, error)
+}
+
 type defaultVFS struct{}
 
 func (v *defaultVFS) Chown(name string, uid, gid int) error {
@@ -76,6 +80,10 @@ func (v *defaultVFS) Lchown(name string, uid, gid int) error {
 
 func (v *defaultVFS) Mkdir(name string, perm os.FileMode) error {
 	return os.Mkdir(name, perm)
+}
+
+func (v *defaultVFS) ReadFile(name string) ([]byte, error) {
+	return os.ReadFile(name)
 }
 
 func (v *defaultVFS) Readlink(name string) (string, error) {
@@ -115,8 +123,11 @@ func (v *defaultVFS) WriteFile(filename string, data []byte, perm os.FileMode) e
 	return err
 }
 
-// DefaultVFS is the default VFS.
+// DefaultVFS is the default virtual filesystem.
 var DefaultVFS VFS = &defaultVFS{}
+
+// DefaultFileReader is the default file-content reader.
+var DefaultFileReader FileReader = &defaultVFS{}
 
 // Manager manages a filesystem layout in a given path
 type Manager struct {

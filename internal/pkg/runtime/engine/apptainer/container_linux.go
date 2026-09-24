@@ -554,6 +554,7 @@ func (c *container) setupImageDriver(system *mount.System, containerPid int) err
 				// user namespace, so we redirect session VFS calls via RPC in order
 				// to be in the user namespace when dealing with filesystem related calls.
 				c.session.VFS = c.rpcOps
+				c.session.Reader = c.rpcOps
 
 				if params.UsernsFd != -1 {
 					defer unix.Close(params.UsernsFd)
@@ -2783,7 +2784,7 @@ func (c *container) addIdentityMount(system *mount.System) error {
 		return nil
 	}
 
-	rootfs := c.session.RootFsPath()
+	rootfs := c.session.FinalPath()
 	defer c.session.Update()
 
 	if c.engine.EngineConfig.File.ConfigPasswd {
@@ -2792,7 +2793,7 @@ func (c *container) addIdentityMount(system *mount.System) error {
 		if err != nil {
 			sylog.Warningf("%s", err)
 		} else {
-			content, err := files.Passwd(passwd, home, uid, c)
+			content, err := files.Passwd(passwd, home, uid, c.session.VFS, c.session.Reader, c)
 			if err != nil {
 				sylog.Warningf("%s", err)
 			} else {
@@ -2815,7 +2816,7 @@ func (c *container) addIdentityMount(system *mount.System) error {
 
 	if c.engine.EngineConfig.File.ConfigGroup {
 		group := filepath.Join(rootfs, "/etc/group")
-		content, err := files.Group(group, uid, c.engine.EngineConfig.GetTargetGID(), c)
+		content, err := files.Group(group, uid, c.engine.EngineConfig.GetTargetGID(), c.session.VFS, c.session.Reader, c)
 		if err != nil {
 			sylog.Warningf("%s", err)
 		} else {

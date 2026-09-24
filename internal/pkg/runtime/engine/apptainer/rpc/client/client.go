@@ -265,6 +265,16 @@ func (t *RPC) Umask(mask int) int {
 	return reply
 }
 
+// ReadFile calls the readfile RPC using the supplied path.
+func (t *RPC) ReadFile(path string) ([]byte, error) {
+	arguments := &args.ReadFileArgs{Path: path}
+	var reply args.ReadFileReply
+	if err := t.Client.Call(t.Name+".ReadFile", arguments, &reply); err != nil {
+		return nil, err
+	}
+	return reply.Data, reply.Err
+}
+
 // WriteFile calls the writefile RPC using the supplied arguments.
 func (t *RPC) WriteFile(filename string, data []byte, perm os.FileMode) error {
 	arguments := &args.WriteFileArgs{

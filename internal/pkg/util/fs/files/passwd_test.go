@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs/layout"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/ccoveille/go-safecast/v2"
 )
@@ -28,7 +29,7 @@ func TestPasswd(t *testing.T) {
 	uid := os.Getuid()
 
 	// Test how Passwd() works with a bad passwd file
-	_, err := Passwd("/fake", "/fake", uid, nil)
+	_, err := Passwd("/fake", "/fake", uid, layout.DefaultVFS, layout.DefaultFileReader, nil)
 	if err == nil {
 		t.Errorf("should have failed with bad passwd file")
 	}
@@ -40,14 +41,14 @@ func TestPasswd(t *testing.T) {
 	}
 	emptyPasswd := f.Name()
 	f.Close()
-	_, err = Passwd(emptyPasswd, "/home", uid, nil)
+	_, err = Passwd(emptyPasswd, "/home", uid, layout.DefaultVFS, layout.DefaultFileReader, nil)
 	if err != nil {
 		t.Fatalf("Unexpected error in Passwd() when adding uid %d: %v", uid, err)
 	}
 
 	// Modifying root user in test file
 	inputPasswdFilePath := filepath.Join(".", "testdata", "passwd.in")
-	outputPasswd, err := Passwd(inputPasswdFilePath, "/tmp", 0, nil)
+	outputPasswd, err := Passwd(inputPasswdFilePath, "/tmp", 0, layout.DefaultVFS, layout.DefaultFileReader, nil)
 	if err != nil {
 		t.Fatalf("Unexpected error in Passwd() when modifying root entry: %v", err)
 	}
@@ -72,12 +73,62 @@ func TestPasswd(t *testing.T) {
 	if err := os.WriteFile(passwdWithUser, []byte(wrongName), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	outputPasswd, err = Passwd(passwdWithUser, "/new/home", uid, nil)
+	outputPasswd, err = Passwd(passwdWithUser, "/new/home", uid, layout.DefaultVFS, layout.DefaultFileReader, nil)
 	if err != nil {
 		t.Fatalf("Unexpected error in Passwd() when modifying non-root entry: %v", err)
 	}
 	expectEntry := fmt.Sprintf("%s:x:%d:%d:%s:/new/home:/bin/sh\n", pwInfo.Name, uid, pwInfo.GID, pwInfo.Gecos)
 	if !strings.HasPrefix(string(outputPasswd), expectEntry) {
 		t.Errorf("Expected entry %q, not found in:\n%s", expectEntry, string(outputPasswd))
+	}
+}
+
+type passwdVFS struct {
+	layout.VFS
+	info os.FileInfo
+}
+
+func (v *passwdVFS) Stat(string) (os.FileInfo, error) {
+	return v.info, nil
+}
+
+type passwdReader struct {
+	content []byte
+}
+
+func (r *passwdReader) ReadFile(string) ([]byte, error) {
+	return r.content, nil
+}
+
+func TestPasswdUsesVFS(t *testing.T) {
+	test.DropPrivilege(t)
+	defer test.ResetPrivilege(t)
+
+	backingFile, err := os.CreateTemp(t.TempDir(), "passwd-vfs-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := backingFile.WriteString("root:x:0:0:root:/root:/bin/sh\n"); err != nil {
+		t.Fatal(err)
+	}
+	if err := backingFile.Close(); err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(backingFile.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	vfs := &passwdVFS{
+		VFS:  layout.DefaultVFS,
+		info: info,
+	}
+	reader := &passwdReader{content: []byte("root:x:0:0:root:/root:/bin/sh\n")}
+	content, err := Passwd("/container/etc/passwd", "/root", 0, vfs, reader, nil)
+	if err != nil {
+		t.Fatalf("Passwd failed with VFS-backed file: %v", err)
+	}
+	if !strings.HasPrefix(string(content), "root:x:0:0:root:/root:/bin/sh\n") {
+		t.Fatalf("unexpected passwd content: %s", content)
 	}
 }
