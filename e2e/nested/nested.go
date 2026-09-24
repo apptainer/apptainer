@@ -2,7 +2,7 @@
 //   Apptainer a Series of LF Projects LLC.
 //   For website terms of use, trademark policy, privacy policy and other
 //   project policies see https://lfprojects.org/policies
-// Copyright (c) 2025, Sylabs Inc. All rights reserved.
+// Copyright (c) 2025-2026, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
@@ -55,7 +55,7 @@ func containerBuild(t *testing.T, prog, dockerFile, ref, contextPath, baseImage,
 		cmd := exec.Command(prog, "build", "--network=host",
 			"--build-arg", "BASEIMAGE="+baseImage,
 			"-t", ref, "-f", dockerFile, contextPath)
-		cmd.Env = append(cmd.Env, "HOME="+homeDir)
+		cmd.Env = append(os.Environ(), "HOME="+homeDir)
 		out, err := cmd.CombinedOutput()
 		t.Log(cmd.Args)
 		if err != nil {
@@ -67,7 +67,7 @@ func containerBuild(t *testing.T, prog, dockerFile, ref, contextPath, baseImage,
 func containerRMI(t *testing.T, prog, ref, homeDir string) {
 	t.Run("rmi/"+ref, e2e.Privileged(func(t *testing.T) {
 		cmd := exec.Command(prog, "rmi", ref)
-		cmd.Env = append(cmd.Env, "HOME="+homeDir)
+		cmd.Env = append(os.Environ(), "HOME="+homeDir)
 		out, err := cmd.CombinedOutput()
 		t.Log(cmd.Args)
 		if err != nil {
@@ -87,7 +87,7 @@ func containerRun(t *testing.T, prog, name, ref, homeDir string, args ...string)
 			ref)
 		cmdArgs = append(cmdArgs, args...)
 		cmd := exec.Command(prog, cmdArgs...)
-		cmd.Env = append(cmd.Env, "HOME="+homeDir)
+		cmd.Env = append(os.Environ(), "HOME="+homeDir)
 		out, err := cmd.CombinedOutput()
 		t.Log(cmd.Args)
 		if err != nil {
