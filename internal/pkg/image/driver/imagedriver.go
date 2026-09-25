@@ -64,6 +64,7 @@ type fuseappsDriver struct {
 	cmdPrefix      []string
 	squashSetUID   bool
 	unprivileged   bool
+	fakerootHybrid bool
 	stopped        atomic.Bool
 	mountErrCh     chan error
 	instanceCh     chan *fuseappsInstance
@@ -227,9 +228,13 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, _ image.MountFunc) err
 	var f *fuseappsFeature
 	var cmd *exec.Cmd
 	cmdArgs := d.cmdPrefix
-	// This avoids sometimes seeing "Permission denied" when FUSE
-	// is fooled into thinking two different user ids are involved.
-	optsStr := "allow_other"
+	// if optsStr is not empty it will always start with ","
+	var optsStr string
+	if !d.fakerootHybrid {
+		// This avoids sometimes seeing "Permission denied" when FUSE
+		// is fooled into thinking two different user ids are involved.
+		optsStr += ",allow_other"
+	}
 	if (params.Flags & syscall.MS_RDONLY) != 0 {
 		optsStr += ",ro"
 	}
@@ -245,12 +250,12 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, _ image.MountFunc) err
 		// filesystem type (for example tmpfs) does not support it,
 		// when the fuse-overlayfs version is 1.8 or greater.
 		optsStr += ",noacl"
-		cmdArgs = append(cmdArgs, f.cmdPath, "-f", "-o", optsStr, params.Target)
+		cmdArgs = append(cmdArgs, f.cmdPath, "-f", "-o", optsStr[1:], params.Target)
 		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
 
 	case "squashfs":
 		f = &d.squashFeature
-		if d.squashSetUID {
+		if d.squashSetUID && !d.fakerootHybrid {
 			optsStr += fmt.Sprintf(",uid=%v,gid=%v", os.Getuid(), os.Getgid())
 		}
 		if params.Offset > 0 {
@@ -258,7 +263,7 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, _ image.MountFunc) err
 		}
 		cmdArgs = append(cmdArgs, f.cmdPath, "-f")
 		if optsStr != "" {
-			cmdArgs = append(cmdArgs, "-o", optsStr)
+			cmdArgs = append(cmdArgs, "-o", optsStr[1:])
 		}
 		cmdArgs = append(cmdArgs, params.Source, params.Target)
 		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
@@ -280,7 +285,11 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, _ image.MountFunc) err
 			//  warnings sometimes sent through stdout
 			cmdArgs = append(cmdArgs, stdbuf, "-oL")
 		}
-		cmdArgs = append(cmdArgs, f.cmdPath, "-f", "-o", optsStr, params.Source, params.Target)
+		cmdArgs = append(cmdArgs, f.cmdPath, "-f")
+		if optsStr != "" {
+			cmdArgs = append(cmdArgs, "-o", optsStr[1:])
+		}
+		cmdArgs = append(cmdArgs, params.Source, params.Target)
 		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
 
 		if params.Offset > 0 {
@@ -470,6 +479,7 @@ func (d *fuseappsDriver) Start(_ *image.DriverParams, containerPid int, hybrid b
 	// start process monitor
 	d.monitor()
 
+	d.fakerootHybrid = hybrid
 	if hybrid {
 		// Running in hybrid setuid-fakeroot mode
 		// Need any subcommand to first enter the container's

@@ -103,6 +103,13 @@ Changes since 1.5.x
   reproducibility by ensuring a `libpython` dependency does not get
   introduced based on the build host's environment.
 
+## v1.5.x changes
+
+- Fix problems in suid fakeroot mode when using subuid/subgid mappings
+  and mounting a SIF file: there were warnings about mounting /etc/passwd
+  and /etc/group, and files appeared to belong to the user rather than
+  to fake root.
+
 ## v1.5.4 - \[2026-09-22\]
 
 ### Security fix
