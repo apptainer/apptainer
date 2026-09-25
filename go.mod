@@ -67,7 +67,7 @@ require (
 	github.com/moby/sys/userns v0.2.1
 	github.com/samber/lo v1.53.0
 	github.com/sirupsen/logrus v1.10.2
-	tags.cncf.io/container-device-interface v1.1.0
+	tags.cncf.io/container-device-interface v1.1.1
 )
 
 require (
@@ -169,7 +169,6 @@ require (
 	go.podman.io/storage v1.64.1 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/mod v0.41.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260803160001-6ac0973c030d // indirect
@@ -177,10 +176,8 @@ require (
 	google.golang.org/grpc v1.83.2 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 	sigs.k8s.io/knftables v0.0.18 // indirect
-	sigs.k8s.io/yaml v1.6.0 // indirect
-	tags.cncf.io/container-device-interface/specs-go v1.1.0 // indirect
+	tags.cncf.io/container-device-interface/specs-go v1.1.1 // indirect
 )
 
 replace (
