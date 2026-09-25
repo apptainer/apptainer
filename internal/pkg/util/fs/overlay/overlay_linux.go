@@ -40,6 +40,7 @@ const (
 	Lustre int64 = 0x0BD00BD0 //nolint:misspell
 	Gpfs   int64 = 0x47504653
 	Panfs  int64 = 0xAAD7AAEA
+	Dpc    int64 = 0xFFEA36969
 )
 
 var incompatibleFs = map[int64]fs{
@@ -72,6 +73,11 @@ var incompatibleFs = map[int64]fs{
 	// PANFS filesystem
 	Panfs: {
 		name:       "PANFS",
+		overlayDir: lowerDir | upperDir,
+	},
+	// DPC filesystem (Huawei OceanStor Pacific)
+	Dpc: {
+		name:       "DPC",
 		overlayDir: lowerDir | upperDir,
 	},
 }
