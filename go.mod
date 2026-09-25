@@ -67,7 +67,7 @@ require (
 	github.com/moby/sys/userns v0.1.0
 	github.com/samber/lo v1.53.0
 	github.com/sirupsen/logrus v1.9.4
-	tags.cncf.io/container-device-interface v1.1.0
+	tags.cncf.io/container-device-interface v1.1.1
 )
 
 require (
@@ -163,8 +163,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.44.0 // indirect
 	go.opentelemetry.io/otel/trace v1.44.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/mod v0.36.0 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260414002931-afd174a4e478 // indirect
@@ -174,8 +173,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	sigs.k8s.io/knftables v0.0.18 // indirect
-	sigs.k8s.io/yaml v1.4.0 // indirect
-	tags.cncf.io/container-device-interface/specs-go v1.1.0 // indirect
+	tags.cncf.io/container-device-interface/specs-go v1.1.1 // indirect
 )
 
 replace (
