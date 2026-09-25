@@ -1836,6 +1836,22 @@ func (c *container) addDevMount(system *mount.System) error {
 			}
 		}
 
+		// nvidia-container-cli stages the driver's own device nodes but no
+		// DRM node: those of the GPUs it was asked for are bound here.
+		if c.engine.EngineConfig.GetNvCCLI() {
+			visible := ""
+			for _, kv := range c.engine.EngineConfig.GetNvCCLIEnv() {
+				if value, ok := strings.CutPrefix(kv, "NVIDIA_VISIBLE_DEVICES="); ok {
+					visible = value
+				}
+			}
+			for _, dev := range gpu.NvidiaDrmDevices(visible) {
+				if err := c.addSessionDev(dev, system); err != nil {
+					return err
+				}
+			}
+		}
+
 		if c.engine.EngineConfig.GetRocm() {
 			devs, err := gpu.RocmDevices()
 			if err != nil {
@@ -2694,18 +2710,20 @@ func (c *container) addLibsDirMount(system *mount.System, libraries []string, se
 	}
 
 	for _, lib := range libraries {
-		splits := strings.Split(lib, ":")
-		var file string
-		if len(splits) > 1 {
+		src, dst, hasDst := strings.Cut(lib, ":")
+		file := filepath.Base(src)
+		if hasDst {
 			// this can happen with a user bind (including for
 			//   the fakeroot command) to the libs directory
-			//   where the base name is desired to be changed
-			lib = splits[0]
-			file = filepath.Base(splits[1])
-		} else {
-			file = filepath.Base(lib)
+			//   where the base name is desired to be changed,
+			//   and with a module bound under a subdirectory
+			//   of it, e.g. gbm/, as it is laid out on the host
+			file = filepath.Base(dst)
+			if rel, err := filepath.Rel(containerDir, dst); err == nil && rel != "." && !strings.HasPrefix(rel, "..") {
+				file = rel
+			}
 		}
-		sylog.Debugf("Add library %s to mount list", lib)
+		sylog.Debugf("Add library %s to mount list", src)
 		sessionFile := filepath.Join(sessionDir, file)
 
 		if err := c.session.AddFile(sessionFile, []byte{}); err != nil {
@@ -2714,9 +2732,9 @@ func (c *container) addLibsDirMount(system *mount.System, libraries []string, se
 
 		sessionFilePath, _ := c.session.GetPath(sessionFile)
 
-		err := system.Points.AddBind(mount.FilesTag, lib, sessionFilePath, flags)
+		err := system.Points.AddBind(mount.FilesTag, src, sessionFilePath, flags)
 		if err != nil {
-			return fmt.Errorf("unable to add %s to mount list: %s", lib, err)
+			return fmt.Errorf("unable to add %s to mount list: %s", src, err)
 		}
 
 		system.Points.AddRemount(mount.FilesTag, sessionFilePath, flags)

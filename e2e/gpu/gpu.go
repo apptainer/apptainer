@@ -95,6 +95,61 @@ func (c ctx) testNvidiaLegacy(t *testing.T) {
 			e2e.ExpectExit(0),
 		)
 	}
+
+	// The driver's GBM backend, which the ld cache does not list, is bound
+	// in the gbm directory of the libraries directory, which is named in
+	// GBM_BACKENDS_PATH ahead of the container's own backend directory.
+	if hostHasGBMBackend() {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest("GBMBackend"),
+			e2e.WithProfile(e2e.UserProfile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs("--nv", imagePath, "sh", "-c", "ls /.singularity.d/libs/gbm/nvidia-drm_gbm.so && echo $GBM_BACKENDS_PATH"),
+			e2e.ExpectExit(0, e2e.ExpectOutput(e2e.RegexMatch, `(?m)^/\.singularity\.d/libs/gbm(:|$)`)),
+		)
+	}
+
+	// The DRM nodes are bound beside the driver's own under --contain.
+	if renderNodes, _ := filepath.Glob("/dev/dri/renderD*"); len(renderNodes) > 0 {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest("UserContainDRM"),
+			e2e.WithProfile(e2e.UserProfile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs("--contain", "--nv", imagePath, "sh", "-c", "ls /dev/dri/renderD*"),
+			e2e.ExpectExit(0),
+		)
+	}
+}
+
+// hostHasGBMBackend reports whether the host has the driver's GBM backend in
+// the gbm directory next to a library directory.
+func hostHasGBMBackend() bool {
+	backends, _ := filepath.Glob("/usr/lib*/gbm/nvidia-drm_gbm.so")
+	multiarch, _ := filepath.Glob("/usr/lib/*/gbm/nvidia-drm_gbm.so")
+	return len(backends)+len(multiarch) > 0
+}
+
+// drmNodesOfGPU returns the names of the DRM device nodes of the GPU at the
+// given index in PCI bus order, from the driver's report and sysfs, and ""
+// when either is missing.
+func drmNodesOfGPU(index int) string {
+	gpus, _ := filepath.Glob("/proc/driver/nvidia/gpus/*")
+	if index >= len(gpus) {
+		return ""
+	}
+	entries, err := os.ReadDir(filepath.Join("/sys/bus/pci/devices", filepath.Base(gpus[index]), "drm"))
+	if err != nil {
+		return ""
+	}
+	var names []string
+	for _, entry := range entries {
+		if _, err := os.Stat(filepath.Join("/dev/dri", entry.Name())); err == nil {
+			names = append(names, entry.Name())
+		}
+	}
+	return strings.Join(names, "\n")
 }
 
 func (c ctx) testNvidiaCompat32(t *testing.T) {
@@ -225,6 +280,14 @@ func (c ctx) testNvCCLI(t *testing.T) {
 			expectExit:  255,
 		},
 		{
+			// Every capability at once, which the CLI has no flag for
+			name:       "UserContainAllCapabilities",
+			profile:    e2e.RootProfile,
+			args:       []string{"--contain", "--nvccli", imagePath, "nvidia-smi"},
+			env:        []string{"NVIDIA_VISIBLE_DEVICES=all", "NVIDIA_DRIVER_CAPABILITIES=all"},
+			expectExit: 0,
+		},
+		{
 			name:    "UserNamespace",
 			profile: e2e.UserNamespaceProfile,
 			args:    []string{"--nvccli", imagePath, "nvidia-smi"},
@@ -250,6 +313,34 @@ func (c ctx) testNvCCLI(t *testing.T) {
 			e2e.WithArgs(tt.args...),
 			e2e.WithEnv(tt.env),
 			e2e.ExpectExit(tt.expectExit, tt.expectMatch),
+		)
+	}
+
+	// The DRM nodes of the GPUs NVIDIA_VISIBLE_DEVICES names, and no other,
+	// are bound under --contain.
+	if nodes := drmNodesOfGPU(0); nodes != "" {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest("UserContainDRMSelection"),
+			e2e.WithProfile(e2e.RootProfile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs("--contain", "--nvccli", imagePath, "ls", "/dev/dri"),
+			e2e.WithEnv([]string{"NVIDIA_VISIBLE_DEVICES=0"}),
+			e2e.ExpectExit(0, e2e.ExpectOutput(e2e.ExactMatch, nodes)),
+		)
+	}
+
+	// The libraries nvidia-container-cli stages are left to it, while the
+	// GBM backend, a module it does not stage, is bound.
+	if hostHasGBMBackend() {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest("UserContainUnstagedOnly"),
+			e2e.WithProfile(e2e.RootProfile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs("--contain", "--nvccli", imagePath, "sh", "-c", "ls /.singularity.d/libs/gbm/nvidia-drm_gbm.so && ! ls /.singularity.d/libs/libcuda.so.1"),
+			e2e.WithEnv([]string{"NVIDIA_VISIBLE_DEVICES=all", "NVIDIA_DRIVER_CAPABILITIES=all"}),
+			e2e.ExpectExit(0),
 		)
 	}
 }

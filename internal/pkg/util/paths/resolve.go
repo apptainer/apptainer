@@ -86,6 +86,13 @@ func soLinks(libPath string) (paths []string, err error) {
 
 // Resolve takes a list of library/binary files (absolute paths, or bare filenames) and processes them into lists of
 // resolved library and binary paths to be bound into the container.
+//
+// A library given as a relative path, e.g. gbm/nvidia-drm_gbm.so, is a module
+// that a program opens by path rather than by name: it is looked for under
+// that directory next to each library directory, and is returned as a
+// host:container pair placing it at the same relative path under
+// ContainerLibsDir. ModuleHostBinds gives the binds that also place the
+// modules at their host paths.
 func Resolve(fileList []string) ([]string, []string, []string, error) {
 	machine, class, err := elfMachine()
 	if err != nil {
@@ -105,19 +112,24 @@ func Resolve(fileList []string) ([]string, []string, []string, error) {
 
 	libraries := resolveLibs(fileList, machine, class, ldCache, ContainerLibsDir)
 
+	prefixes := filePrefixes()
 	for _, file := range fileList {
 		if strings.Contains(file, ".so") {
 			// libraries are handled by resolveLibs above
 			continue
 		}
 		if filepath.IsAbs(file) {
-			// if the file is absolute path
-			if _, err := os.Stat(file); err != nil && errors.Is(err, os.ErrNotExist) {
+			src, ok := resolveFile(file, prefixes)
+			if !ok {
 				continue
 			}
-			if _, ok := filesMap[file]; !ok {
-				filesMap[file] = struct{}{}
-				files = append(files, file)
+			bind := file
+			if src != file {
+				bind = src + ":" + file
+			}
+			if _, ok := filesMap[bind]; !ok {
+				filesMap[bind] = struct{}{}
+				files = append(files, bind)
 			}
 		} else {
 			// treat the file as a binary file - find on PATH and add it to the bind list
@@ -161,12 +173,18 @@ func ResolveCompat32(fileList []string) ([]string, error) {
 // the host, considering only libraries built for the given ELF machine and
 // class. Non-library entries are ignored. Libraries already present in
 // boundLibsDir, i.e. inherited from a parent container, are carried over and
-// take precedence over anything found on the host.
+// take precedence over anything found on the host. A module entry, a relative
+// path, resolves to host:container pairs, see resolveModule.
 func resolveLibs(fileList []string, machine elf.Machine, class elf.Class, ldCache map[string][]string, boundLibsDir string) []string {
 	// Track processed libraries to eliminate duplicates
 	libs := make(map[string]struct{})
+	modules := make(map[string]struct{})
 
 	var libraries []string
+
+	// The modules are looked for next to the library directories, the
+	// directory they are inherited from first.
+	moduleDirs := append([]string{boundLibsDir}, libraryDirs(ldCache)...)
 
 	if boundLibs, err := os.ReadDir(boundLibsDir); err == nil {
 		// Inherit all libraries from a parent
@@ -197,6 +215,11 @@ func resolveLibs(fileList []string, machine elf.Machine, class elf.Class, ldCach
 				continue
 			}
 			libraries = append(libraries, links...)
+			continue
+		}
+
+		if strings.Contains(file, "/") {
+			libraries = append(libraries, resolveModule(file, moduleDirs, machine, class, boundLibsDir, modules)...)
 			continue
 		}
 
@@ -272,7 +295,6 @@ func libraryCache() (map[string][]string, error) {
 		} else {
 			sylog.Debugf("Not using the ld cache: %v", err)
 		}
-		return libCache, nil
 	}
 	for libName, libPaths := range ldCache {
 		for _, libPath := range libPaths {
@@ -281,8 +303,140 @@ func libraryCache() (map[string][]string, error) {
 			}
 		}
 	}
-
 	return libCache, nil
+}
+
+// libraryDirs returns the directories the libraries of libCache are found
+// in: the configured 'gpu library path' directories first, in order, then
+// the others in sorted order.
+func libraryDirs(libCache map[string][]string) []string {
+	dirs := gpuLibraryPath()
+	seen := make(map[string]struct{}, len(dirs))
+	for _, dir := range dirs {
+		seen[dir] = struct{}{}
+	}
+	var cacheDirs []string
+	for _, libPaths := range libCache {
+		for _, libPath := range libPaths {
+			dir := filepath.Dir(libPath)
+			if _, ok := seen[dir]; !ok {
+				seen[dir] = struct{}{}
+				cacheDirs = append(cacheDirs, dir)
+			}
+		}
+	}
+	slices.Sort(cacheDirs)
+	return append(dirs, cacheDirs...)
+}
+
+// resolveModule resolves a module entry, the path of a module relative to a
+// library directory or to its parent, e.g. gbm/nvidia-drm_gbm.so, to the
+// files of that name prefix built for the given machine and class in that
+// directory next to each of libDirs, the first directory holding a file
+// winning; this is where the GBM backend and the X server modules are
+// installed, which the ld cache never lists as a program opens them by path.
+// Each is returned as a host:container pair placing it at the same relative
+// path under boundLibsDir; seen holds the relative paths resolved so far.
+func resolveModule(entry string, libDirs []string, machine elf.Machine, class elf.Class, boundLibsDir string, seen map[string]struct{}) []string {
+	moduleDir, name := filepath.Split(entry)
+	moduleDir = filepath.Clean(moduleDir)
+	var modules []string
+	for _, libDir := range libDirs {
+		for _, base := range []string{libDir, filepath.Dir(libDir)} {
+			dir := filepath.Join(base, moduleDir)
+			entries, err := os.ReadDir(dir)
+			if err != nil {
+				continue
+			}
+			for _, e := range entries {
+				rel := filepath.Join(moduleDir, e.Name())
+				if _, ok := seen[rel]; ok || !strings.HasPrefix(e.Name(), name) {
+					continue
+				}
+				path := filepath.Join(dir, e.Name())
+				if !matchingLib(path, machine, class) {
+					continue
+				}
+				seen[rel] = struct{}{}
+				modules = append(modules, path+":"+filepath.Join(boundLibsDir, rel))
+			}
+		}
+	}
+	return modules
+}
+
+// ModuleHostBinds returns the binds placing the modules among the resolved
+// libraries at their host paths as well, where a container laid out like the
+// host has its loader look. A module inherited from a parent container is
+// already in place there.
+func ModuleHostBinds(libs []string) []string {
+	var binds []string
+	for _, lib := range libs {
+		src, _, isModule := strings.Cut(lib, ":")
+		if isModule && !strings.HasPrefix(src, ContainerLibsDir) {
+			binds = append(binds, src+":"+src)
+		}
+	}
+	return binds
+}
+
+// WithoutFiles returns the libraries in libs other than those that are one
+// of the given files, symlinks resolved on both sides. A module is kept
+// whichever file it links to, as it is bound as a module rather than by name.
+func WithoutFiles(libs, files []string) []string {
+	excluded := make(map[string]struct{}, len(files))
+	for _, file := range files {
+		if file, err := filepath.EvalSymlinks(file); err == nil {
+			excluded[file] = struct{}{}
+		}
+	}
+	kept := make([]string, 0, len(libs))
+	for _, lib := range libs {
+		if !strings.Contains(lib, ":") {
+			if path, err := filepath.EvalSymlinks(lib); err == nil {
+				if _, ok := excluded[path]; ok {
+					continue
+				}
+			}
+		}
+		kept = append(kept, lib)
+	}
+	return kept
+}
+
+// filePrefixes returns the installation prefixes above the configured 'gpu
+// library path' directories, under which a driver installed outside the
+// standard tree keeps its share and etc directories beside its libraries.
+func filePrefixes() []string {
+	var prefixes []string
+	for _, dir := range gpuLibraryPath() {
+		prefix := filepath.Dir(filepath.Clean(dir))
+		if prefix != "/" && !slices.Contains(prefixes, prefix) {
+			prefixes = append(prefixes, prefix)
+		}
+	}
+	return prefixes
+}
+
+// resolveFile finds the host file for a configuration entry, which names the
+// path a container's loaders read: the same path on the host first, then the
+// file under each prefix (its /usr part dropped, so that /usr/share/x becomes
+// <prefix>/share/x and /etc/x becomes <prefix>/etc/x). The entry stays the
+// destination in the container.
+func resolveFile(entry string, prefixes []string) (string, bool) {
+	exists := func(path string) bool {
+		_, err := os.Stat(path)
+		return err == nil
+	}
+	if exists(entry) {
+		return entry, true
+	}
+	for _, prefix := range prefixes {
+		if candidate := filepath.Join(prefix, strings.TrimPrefix(entry, "/usr")); exists(candidate) {
+			return candidate, true
+		}
+	}
+	return "", false
 }
 
 // gpuLibraryPath returns the directories configured as 'gpu library path' in

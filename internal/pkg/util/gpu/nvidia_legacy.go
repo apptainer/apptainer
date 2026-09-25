@@ -68,5 +68,10 @@ func NvidiaDevices(withGPU bool) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not list nvidia devices: %v", err)
 	}
+	// The DRM nodes too: what GBM, the EGL device platform and an X server
+	// open on the GPU.
+	if _, err := os.Stat("/dev/dri"); err == nil {
+		devs = append(devs, "/dev/dri")
+	}
 	return devs, nil
 }
