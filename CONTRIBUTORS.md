@@ -79,6 +79,7 @@
 - Kundan Kumar <iamkundankumar28@gmail.com>
 - Linsen Zhou <i@lin.moe>
 - Lorenz Sieben <sieben@gea.mpg.de>
+- Lukáš Krupčík <lukas.krupcik@vsb.cz>
 - Luís Simas <luis.simas@cern.ch>
 - Maciej Sieczka <msieczka@sieczka.org>
 - Marcelo Magallon <marcelo@sylabs.io>
