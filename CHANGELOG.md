@@ -102,6 +102,15 @@ Changes since 1.5.x
   Python extension, and explicitly disabling it improves the build
   reproducibility by ensuring a `libpython` dependency does not get
   introduced based on the build host's environment.
+- Apply `registries.conf` to `docker://` references the same way other
+  containers/image tools such as podman and skopeo do. The image digest
+  lookup, used for the cache, now also goes to the configured mirrors
+  instead of always contacting the registry named in the reference. All
+  mirrors are tried in order before the primary location, a `location`
+  that rewrites a `prefix` is now honored (so a registry can be remapped
+  without a `[[registry.mirror]]` entry), and `blocked = true` refuses the
+  pull. Previously only the first mirror was used, and only for the layer
+  download.
 
 ## v1.5.4 - \[2026-09-22\]
 

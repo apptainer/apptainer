@@ -22,7 +22,6 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/ociimage"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"go.podman.io/image/v5/copy"
-	"go.podman.io/image/v5/docker"
 	"go.podman.io/image/v5/oci/layout"
 	"go.podman.io/image/v5/signature"
 	"go.podman.io/image/v5/transports"
@@ -208,7 +207,7 @@ func RepoDigest(ctx context.Context, uri string, topts *ociimage.TransportOption
 		return "", "", nil
 	}
 	// nolint:staticcheck
-	d, err := docker.GetDigest(ctx, ociimage.SystemContextFromTransportOptions(topts), ref)
+	d, err := ociimage.DockerDigest(ctx, ociimage.SystemContextFromTransportOptions(topts), ref)
 	if err != nil {
 		return "", "", err
 	}
@@ -270,7 +269,7 @@ func getRefDigest(ctx context.Context, ref types.ImageReference, topts *ociimage
 // getDockerRefDigest obtains the manifest digest for a docker ref.
 func getDockerRefDigest(ctx context.Context, ref types.ImageReference, topts *ociimage.TransportOptions) (digest string, err error) {
 	// nolint:staticcheck
-	d, err := docker.GetDigest(ctx, ociimage.SystemContextFromTransportOptions(topts), ref)
+	d, err := ociimage.DockerDigest(ctx, ociimage.SystemContextFromTransportOptions(topts), ref)
 	if err != nil {
 		return "", err
 	}
