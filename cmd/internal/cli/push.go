@@ -17,6 +17,7 @@ import (
 	"github.com/apptainer/apptainer/docs"
 	"github.com/apptainer/apptainer/internal/pkg/client/library"
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
+	"github.com/apptainer/apptainer/internal/pkg/cosign"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/internal/pkg/signature"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
@@ -38,6 +39,9 @@ var (
 
 	// pushAnnotations holds the annotations to be set against an oras image
 	pushAnnotations []string
+
+	// cosign signing with cosign
+	cosignPush bool
 )
 
 // --library
@@ -80,6 +84,15 @@ var pushAnnotationFlag = cmdline.Flag{
 	Usage:        "annotation for container image (oras:// only, key=val format)",
 }
 
+// --with-cosign
+var pushCosignFlag = cmdline.Flag{
+	ID:           "cosignFlag",
+	Value:        &cosignPush,
+	DefaultValue: false,
+	Name:         "with-cosign",
+	Usage:        "sign image with cosign after pushing",
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(PushCmd)
@@ -88,6 +101,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&pushAllowUnsignedFlag, PushCmd)
 		cmdManager.RegisterFlagForCmd(&pushDescriptionFlag, PushCmd)
 		cmdManager.RegisterFlagForCmd(&pushAnnotationFlag, PushCmd)
+		cmdManager.RegisterFlagForCmd(&pushCosignFlag, PushCmd)
 		cmdManager.RegisterFlagForCmd(&commonNoHTTPSFlag, PushCmd)
 
 		cmdManager.RegisterFlagForCmd(&dockerHostFlag, PushCmd)
@@ -189,11 +203,19 @@ var PushCmd = &cobra.Command{
 				sylog.Fatalf("Unable to make docker oci credentials: %s", err)
 			}
 
-			_, err := oras.Push(cmd.Context(), files, ref, ociAuth, noHTTPS, reqAuthFile, pushAnnotations)
+			digest, err := oras.Push(cmd.Context(), files, ref, ociAuth, noHTTPS, reqAuthFile, pushAnnotations)
 			if err != nil {
 				sylog.Fatalf("Unable to push image to oci registry: %v", err)
 			}
 			sylog.Infof("Upload complete")
+			if cosignPush {
+				if err := cosign.Verify(cmd.Context(), digest, false); err == nil {
+					return
+				}
+				if err := cosign.Sign(cmd.Context(), digest); err != nil {
+					sylog.Fatalf("Cosign signing failed: %v", err)
+				}
+			}
 		case "":
 			sylog.Fatalf("Transport type URI required but not supplied")
 		default:

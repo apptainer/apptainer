@@ -25,6 +25,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/client/oci"
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
 	"github.com/apptainer/apptainer/internal/pkg/client/shub"
+	"github.com/apptainer/apptainer/internal/pkg/cosign"
 	"github.com/apptainer/apptainer/internal/pkg/ociimage"
 	"github.com/apptainer/apptainer/internal/pkg/ociplatform"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
@@ -67,6 +68,8 @@ var (
 	pullReproducible bool
 	// pullSandbox indicates whether pulling images as sandbox format
 	pullSandbox bool
+	// cosign signing with cosign
+	cosignPull bool
 )
 
 // --arch
@@ -175,6 +178,15 @@ var pullSandboxFlag = cmdline.Flag{
 	EnvKeys:      []string{"SANDBOX"},
 }
 
+// --with-cosign
+var pullCosignFlag = cmdline.Flag{
+	ID:           "cosignFlag",
+	Value:        &cosignPull,
+	DefaultValue: false,
+	Name:         "with-cosign",
+	Usage:        "verify image with cosign after pulling",
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(PullCmd)
@@ -201,6 +213,7 @@ func init() {
 
 		cmdManager.RegisterFlagForCmd(&pullReproducibleFlag, PullCmd)
 		cmdManager.RegisterFlagForCmd(&pullSandboxFlag, PullCmd)
+		cmdManager.RegisterFlagForCmd(&pullCosignFlag, PullCmd)
 	})
 }
 
@@ -314,6 +327,11 @@ func pullRun(cmd *cobra.Command, args []string) {
 		_, err = oras.PullToFile(ctx, imgCache, pullTo, pullFrom, pullArch, ociAuth, noHTTPS, reqAuthFile, pullSandbox)
 		if err != nil {
 			sylog.Fatalf("While pulling image from oci registry: %v", err)
+		}
+		if cosignPull {
+			if err := cosign.Verify(cmd.Context(), pullFrom, true); err != nil {
+				sylog.Fatalf("Cosign verification failed: %v", err)
+			}
 		}
 	case IPFSProtocol:
 		_, err := ipfs.PullToFile(ctx, imgCache, pullTo, pullFrom, pullSandbox)

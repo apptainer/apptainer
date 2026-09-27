@@ -16,6 +16,7 @@ import (
 	"os"
 
 	"github.com/apptainer/apptainer/docs"
+	"github.com/apptainer/apptainer/internal/pkg/cosign"
 	"github.com/apptainer/apptainer/internal/pkg/remote/endpoint"
 	"github.com/apptainer/apptainer/internal/pkg/sypgp"
 	"github.com/apptainer/apptainer/internal/pkg/util/interactive"
@@ -75,7 +76,16 @@ var (
 		Usage:        "specify to push the public key to the remote keystore",
 	}
 
-	// KeyNewPairCmd is 'apptainer key newpair' and generate a new OpenPGP key pair
+	keyNewPairCosign     bool
+	keyNewPairCosignFlag = &cmdline.Flag{
+		ID:           "KeyNewPairCosignFlag",
+		Value:        &keyNewPairCosign,
+		DefaultValue: false,
+		Name:         "with-cosign",
+		Usage:        "generate a cosign-compatible key pair instead of OpenPGP",
+	}
+
+	// KeyNewPairCmd is 'apptainer key newpair' and generate a new OpenPGP or cosign key pair
 	KeyNewPairCmd = &cobra.Command{
 		Args:                  cobra.ExactArgs(0),
 		DisableFlagsInUseLine: true,
@@ -93,6 +103,15 @@ type keyNewPairOptions struct {
 }
 
 func runNewPairCmd(cmd *cobra.Command, _ []string) {
+	if keyNewPairCosign {
+		if err := cosign.GenerateKeyPair(cmd.Context(), keyNewPairPassword); err != nil {
+			sylog.Errorf("could not generate cosign key pair: %v", err)
+			os.Exit(2)
+			return
+		}
+		return
+	}
+
 	path := keyLocalDir
 	keyring := sypgp.NewHandle(path)
 

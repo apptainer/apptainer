@@ -125,6 +125,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(keyNewPairCommentFlag, KeyNewPairCmd)
 		cmdManager.RegisterFlagForCmd(keyNewPairPasswordFlag, KeyNewPairCmd)
 		cmdManager.RegisterFlagForCmd(keyNewPairPushFlag, KeyNewPairCmd)
+		cmdManager.RegisterFlagForCmd(keyNewPairCosignFlag, KeyNewPairCmd)
 
 		cmdManager.RegisterSubCmd(KeyCmd, KeyListCmd)
 		cmdManager.RegisterSubCmd(KeyCmd, KeySearchCmd)
