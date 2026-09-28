@@ -651,6 +651,86 @@ func (c ctx) testAddPackageWithFakerootAndTmpfs(t *testing.T) {
 	)
 }
 
+func (c ctx) testFileOwnershipUnderFakerootModes(t *testing.T) {
+	e2e.EnsureDebianImage(t, c.env)
+
+	tempDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "", "")
+	defer e2e.Privileged(cleanup)(t)
+
+	sandbox, err := os.MkdirTemp(tempDir, "sandbox")
+	if err != nil {
+		t.Fatalf("could not create sandbox folder inside tempdir: %s", tempDir)
+	}
+
+	sif := c.env.DebianImagePath
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--sandbox", "--force", sandbox, sif),
+		e2e.ExpectExit(0),
+	)
+
+	modeTests := []struct {
+		name    string
+		options []string
+		image   string
+	}{
+		{
+			name:    "mode 1a",
+			options: []string{},
+			image:   sif,
+		},
+		{
+			name:    "mode 1b",
+			options: []string{"--userns"},
+			image:   sif,
+		},
+		{
+			name: "mode 2",
+			options: []string{
+				"--userns",
+				"--ignore-subuid",
+				"--ignore-fakeroot-command",
+			},
+			image: sif,
+		},
+		{
+			name: "mode 3",
+			options: []string{
+				"--userns",
+				"--ignore-subuid",
+			},
+			image: sif,
+		},
+		{
+			name: "mode 4",
+			options: []string{
+				"--ignore-userns",
+				"--ignore-subuid",
+			},
+			image: sandbox,
+		},
+	}
+
+	for _, tt := range modeTests {
+		t.Run(tt.name, func(t *testing.T) {
+			args := append(tt.options, tt.image, "stat", "-c", "%U", "/run")
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(e2e.FakerootProfile),
+				e2e.WithCommand("exec"),
+				e2e.WithArgs(args...),
+				e2e.ExpectExit(
+					0,
+					e2e.ExpectOutput(e2e.ExactMatch, "root"),
+				),
+			)
+		})
+	}
+}
+
 func (c ctx) testExecGocryptfsEncryptedSIF(t *testing.T) {
 	pemPubFile, pemPrivFile := e2e.GeneratePemFiles(t, c.env.TestDir)
 	// We create a temporary directory to store the image, making sure tests
@@ -805,6 +885,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"fuse squash mount":                   c.testFuseSquashMount,
 		"fuse ext3 mount":                     c.testFuseExt3Mount,
 		"add package with fakeroot and tmpfs": c.testAddPackageWithFakerootAndTmpfs,
+		"file ownership under fakeroot modes": c.testFileOwnershipUnderFakerootModes,
 		"gocryptfs sif execution":             c.testExecGocryptfsEncryptedSIF,
 		"test running on multiple archs":      c.testMultiArchRun,
 		"oci cdi device flags":                c.testRunCDI,
