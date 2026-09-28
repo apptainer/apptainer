@@ -167,6 +167,24 @@ func TestCheckLowerUpper(t *testing.T) {
 			expectedSuccess:       false,
 			expectIncompatibleErr: true,
 		},
+		{
+			name:                  "DPC mock lower",
+			path:                  "/",
+			fsName:                "DPC",
+			dir:                   lowerDir,
+			fsType:                Dpc,
+			expectedSuccess:       false,
+			expectIncompatibleErr: true,
+		},
+		{
+			name:                  "DPC mock upper",
+			path:                  "/",
+			fsName:                "DPC",
+			dir:                   upperDir,
+			fsType:                Dpc,
+			expectedSuccess:       false,
+			expectIncompatibleErr: true,
+		},
 	}
 
 	if IsIncompatible(nil) {

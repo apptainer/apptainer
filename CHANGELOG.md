@@ -9,6 +9,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Add Huawei OceanStor Pacific DPC filesystem (magic `0xFFEA36969`) to the
+  overlay incompatible filesystem list, preventing kernel panic caused by
+  kernel overlayfs operating on DPC inodes.
 - Add support for mounting archive files (tar, tar.gz, etc.) using
   `--bind` or `--mount` with `archive-src=` option, similar to mounting
   images with `image-src=`. Archive mounts require a FUSE-based archiver
