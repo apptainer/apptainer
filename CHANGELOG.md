@@ -5,6 +5,13 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.5.x changes
+
+- Fix problems in suid fakeroot mode when using subuid/subgid mappings
+  and mounting a SIF file: there were warnings about mounting /etc/passwd
+  and /etc/group, and files appeared to belong to the user rather than
+  to fake root.
+
 ## v1.5.4 - \[2026-09-22\]
 
 ### Security fix
