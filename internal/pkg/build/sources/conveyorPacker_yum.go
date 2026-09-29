@@ -193,6 +193,14 @@ func (c *YumConveyor) getBootstrapOptions() (err error) {
 		c.updateurl = regex.ReplaceAllString(c.updateurl, c.osversion)
 	}
 
+	// look for build arch if a mirror specifies it
+	archRegex := regexp.MustCompile(`(?i)%{BUILDARCH}`)
+	if archRegex.MatchString(c.mirrorurl) || archRegex.MatchString(c.updateurl) {
+		arch := rpm.Arch(c.b.Opts.Platform.Architecture, c.b.Opts.Platform.Variant)
+		c.mirrorurl = archRegex.ReplaceAllString(c.mirrorurl, arch)
+		c.updateurl = archRegex.ReplaceAllString(c.updateurl, arch)
+	}
+
 	include := c.b.Recipe.Header["include"]
 
 	// check for include environment variable and add it to requires string
