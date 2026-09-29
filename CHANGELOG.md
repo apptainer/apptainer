@@ -236,6 +236,10 @@ Changes since v1.4.5
 - Add `--data` build option which creates a SIF file with a squashfs
   data partition instead of a code partition, given an existing squashfs
   file as the source.
+- Make the `--reproducible` flag apply also to building data images with
+  `--data`. Sets deterministic timestamps for squashfs images and tar
+  archives, enabling reproducible builds. For the other formats of data
+  image input, use the `SOURCE_DATE_EPOCH` environment variable.
 - If `PREPEND_LD_LIBRARY_PATH` is set in the container environment (through
   an `--env` option, an `APPTAINERENV_` prefix from the host, or in the
   container definition) then prepend that string to `:$LD_LIBRARY_PATH`.

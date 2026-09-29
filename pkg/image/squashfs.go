@@ -14,6 +14,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
+	"time"
 	"unsafe"
 
 	"github.com/apptainer/apptainer/pkg/sylog"
@@ -79,6 +80,32 @@ func parseSquashfsHeader(b []byte) (*squashfsInfo, uint64, error) {
 	}
 
 	return sinfo, offset, nil
+}
+
+// GetSourceDateEpochFromSquashfs reads the MkfsTime from a squashfs file
+// and returns it as a time.Time for reproducible builds
+func GetSourceDateEpochFromSquashfs(path string) (time.Time, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("could not open squashfs file: %v", err)
+	}
+	defer f.Close()
+
+	// Read first 128 bytes to get superblock (MkfsTime is at offset 8)
+	header := make([]byte, 128)
+	n, err := f.Read(header)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("could not read squashfs header: %v", err)
+	}
+
+	// Find the squashfs superblock (skip launch script if present)
+	sinfo, _, err := parseSquashfsHeader(header[:n])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("could not parse squashfs header: %v", err)
+	}
+
+	// MkfsTime is a uint32 Unix timestamp
+	return time.Unix(int64(sinfo.MkfsTime), 0), nil
 }
 
 // CheckSquashfsHeader checks if byte content contains a valid squashfs header
