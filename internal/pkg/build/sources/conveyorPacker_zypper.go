@@ -26,6 +26,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/rpm"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
@@ -55,7 +56,7 @@ func machine() (string, error) {
 	if err = cmd.Run(); err != nil {
 		return "", err
 	}
-	return stdout.String(), err
+	return strings.TrimSpace(stdout.String()), err
 }
 
 // Get downloads container information from the specified source
@@ -176,6 +177,14 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) error 
 		if len(array) == 3 {
 			machine = array[2]
 		}
+		archRegex := regexp.MustCompile(`(?i)%{BUILDARCH}`)
+		rpmArch := rpm.Arch(machine, "")
+		if archRegex.MatchString(mirrorurl) {
+			mirrorurl = archRegex.ReplaceAllString(mirrorurl, rpmArch)
+		}
+		if archRegex.MatchString(sleproduct) {
+			sleproduct = archRegex.ReplaceAllString(sleproduct, rpmArch)
+		}
 		suseconnectProduct = sleproduct
 		suseconnectModver = osmajor + osminor + "/" + machine
 		switch len(array) {
@@ -200,6 +209,15 @@ func (cp *ZypperConveyorPacker) Get(ctx context.Context, b *types.Bundle) error 
 			mirrorurl = regex.ReplaceAllString(mirrorurl, osversion)
 			if updateurlOk {
 				updateurl = regex.ReplaceAllString(updateurl, osversion)
+			}
+		}
+
+		archRegex := regexp.MustCompile(`(?i)%{BUILDARCH}`)
+		if archRegex.MatchString(mirrorurl) || (updateurlOk && archRegex.MatchString(updateurl)) {
+			arch := rpm.Arch(cp.b.Opts.Platform.Architecture, cp.b.Opts.Platform.Variant)
+			mirrorurl = archRegex.ReplaceAllString(mirrorurl, arch)
+			if updateurlOk {
+				updateurl = archRegex.ReplaceAllString(updateurl, arch)
 			}
 		}
 	} else if suseVars.HasScc {
