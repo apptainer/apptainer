@@ -15,6 +15,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/apptainer/apptainer/internal/pkg/client"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
@@ -51,10 +52,28 @@ func getDecompressCmd(filename string) (string, []string, error) {
 	}
 }
 
+// getSourceDateEpochFromTar returns the file modification time for reproducible builds
+func getSourceDateEpochFromTar(path string) (time.Time, error) {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return fileInfo.ModTime(), nil
+}
+
 // Pack converts a tar file to a squashfs image using mksquashfs -tar
 // and sets b.RootfsImage to the resulting squashfs path
 func (tp *TarPacker) Pack(ctx context.Context) (*types.Bundle, error) {
 	sylog.Debugf("Packing from Tar")
+
+	if tp.b.Opts.Reproducible {
+		if sourceDateEpoch, err := getSourceDateEpochFromTar(tp.srcfile); err == nil {
+			sylog.Debugf("Setting SourceDateEpoch to %s", sourceDateEpoch)
+			tp.b.SourceDateEpoch = sourceDateEpoch
+			// Need to set the SOURCE_DATE_EPOCH environment variable, for mksquashfs
+			os.Setenv("SOURCE_DATE_EPOCH", fmt.Sprintf("%d", sourceDateEpoch.Unix()))
+		}
+	}
 
 	decompressCmd, decompressArgs, err := getDecompressCmd(tp.srcfile)
 	if err != nil {

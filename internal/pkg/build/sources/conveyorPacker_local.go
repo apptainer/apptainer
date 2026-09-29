@@ -38,6 +38,13 @@ type CopyPacker struct {
 }
 
 func (cp *CopyPacker) Pack(_ context.Context) (*types.Bundle, error) {
+	if cp.b.Opts.Reproducible {
+		if sourceDateEpoch, err := image.GetSourceDateEpochFromSquashfs(cp.srcfile); err == nil {
+			sylog.Debugf("Setting SourceDateEpoch to %s", sourceDateEpoch)
+			cp.b.SourceDateEpoch = sourceDateEpoch
+		}
+	}
+
 	cp.b.RootfsImage = cp.srcfile
 	return cp.b, nil
 }
