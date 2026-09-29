@@ -69,26 +69,43 @@ func NewManager() Manager {
 	return &checkpointManager{}
 }
 
+func validateCheckpointName(name string) error {
+	if name == "" {
+		return fmt.Errorf("checkpoint name must not be empty")
+	}
+
+	if filepath.IsAbs(name) || name == "." || name == ".." || filepath.Base(name) != name {
+		return fmt.Errorf("checkpoint name %q must be a single path component", name)
+	}
+
+	return nil
+}
+
 func (checkpointManager) Create(name string) (*Entry, error) {
-	err := os.MkdirAll(filepath.Join(dmtcpDir(), name), 0o700)
-	if err != nil {
+	if err := validateCheckpointName(name); err != nil {
 		return nil, err
 	}
 
-	return &Entry{filepath.Join(dmtcpDir(), name)}, nil
+	path := filepath.Join(dmtcpDir(), name)
+	if err := os.MkdirAll(path, 0o700); err != nil {
+		return nil, err
+	}
+
+	return &Entry{path}, nil
 }
 
 func (checkpointManager) Get(name string) (*Entry, error) {
-	if name == "" {
-		return nil, fmt.Errorf("checkpoint name must not be empty")
+	if err := validateCheckpointName(name); err != nil {
+		return nil, err
 	}
 
-	_, err := os.Stat(filepath.Join(dmtcpDir(), name))
+	path := filepath.Join(dmtcpDir(), name)
+	_, err := os.Stat(path)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Entry{filepath.Join(dmtcpDir(), name)}, nil
+	return &Entry{path}, nil
 }
 
 func (checkpointManager) List() ([]*Entry, error) {
@@ -110,12 +127,17 @@ func (checkpointManager) List() ([]*Entry, error) {
 }
 
 func (checkpointManager) Delete(name string) error {
-	_, err := os.Stat(filepath.Join(dmtcpDir(), name))
+	if err := validateCheckpointName(name); err != nil {
+		return err
+	}
+
+	path := filepath.Join(dmtcpDir(), name)
+	_, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return fmt.Errorf("checkpoint %q not found", name)
 		}
 	}
 
-	return os.RemoveAll(filepath.Join(dmtcpDir(), name))
+	return os.RemoveAll(path)
 }

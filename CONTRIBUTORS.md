@@ -46,6 +46,7 @@
 - Emmanuel Ferdman <emmanuelferdman@gmail.com>
 - Eng Zer Jun <engzerjun@gmail.com>
 - Eric Müller <mueller@kip.uni-heidelberg.de>
+- ExceedImanity <exceedimanity@proton.me>
 - Felix Abecassis <fabecassis@nvidia.com>
 - Filip Gorczyca <filip.gorczyca141@gmail.com>
 - Fotis Nikolaidis <nikolaidis.fotis@gmail.com>
