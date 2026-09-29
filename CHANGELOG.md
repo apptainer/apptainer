@@ -97,6 +97,8 @@ Changes since 1.5.x
   writable extfs image mounts use the `sync` mount option.
 - Added support for NVIDIA Tegra to `nvliblist.conf`
 - The `APPTAINER_TMPDIR` now defaults to /var/tmp, if /tmp is on tmpfs.
+- Validate DMTCP checkpoint names as single path components, preventing
+  checkpoint operations from escaping the checkpoint directory.
 - Build the bundled PRoot without its optional Python extension. The
   extension was enabled automatically whenever `swig` and `python3-config`
   happened to be installed on the build host, which made the resulting
