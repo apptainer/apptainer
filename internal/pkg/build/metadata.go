@@ -379,6 +379,11 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 		labels["org.opencontainers.image.base.digest"] = b.Opts.Digest
 	}
 
+	// Overlay base hash
+	if b.Opts.Overlay && b.Opts.OverlayBaseHash != "" {
+		labels["org.label-schema.usage.singularity.overlay.base-hash"] = b.Opts.OverlayBaseHash
+	}
+
 	// Architecture of build
 	buildarch, _ := oci.LookupArch(b.Opts.Arch, b.Opts.Var)
 	labels["org.opencontainers.image.architecture"] = buildarch.Arch

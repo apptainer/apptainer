@@ -135,6 +135,17 @@ type Options struct {
 	Platform ggcrv1.Platform
 	// Reproducible build
 	Reproducible bool
+	// Overlay, when true, builds an overlay-only image: only the files
+	// added or changed compared to the base image (the `From:` bootstrap
+	// source) are included, tagged with a hash of the base image so that
+	// it can be located at runtime via `--basepath`/`APPTAINER_BASEPATH`.
+	Overlay bool
+	// OverlayBaseHash is the hash of the base image for overlay builds
+	OverlayBaseHash string
+	// OverlayBaseArch is the architecture of the base image for overlay
+	// builds, determined before the bundle rootfs is replaced by the
+	// overlay upper layer (which typically contains no ELF binaries).
+	OverlayBaseArch string
 }
 
 // NewEncryptedBundle creates an Encrypted Bundle environment.

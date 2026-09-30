@@ -60,6 +60,7 @@ var buildArgs struct {
 	ignoreUserns        bool     // Ignore user namespace(hidden)
 	remote              bool     // Remote flag(hidden, only for helpful error message)
 	reproducible        bool     // Reproducible build
+	overlay             bool     // Build an overlay-only image
 	buildVarArgs        []string // Variables passed to build procedure.
 	buildVarArgFile     string   // Variables file passed to build procedure.
 	buildArgsUnusedWarn bool     // Variables passed to build procedure to turn fatal error to warn.
@@ -366,6 +367,16 @@ var buildReproducibleFlag = cmdline.Flag{
 	EnvKeys:      []string{"REPRODUCIBLE"},
 }
 
+// --overlay
+var buildOverlayFlag = cmdline.Flag{
+	ID:           "buildOverlayFlag",
+	Value:        &buildArgs.overlay,
+	DefaultValue: false,
+	Name:         "overlay",
+	Usage:        "build an overlay-only image, containing only the files added or changed compared to the base",
+	EnvKeys:      []string{"BUILD_OVERLAY"},
+}
+
 // --build-arg
 var buildVarArgsFlag = cmdline.Flag{
 	ID:           "buildVarArgsFlag",
@@ -440,6 +451,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildIgnoreUsernsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildRemoteFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildReproducibleFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildOverlayFlag, buildCmd)
 
 		cmdManager.RegisterFlagForCmd(&buildVarArgsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildVarArgFileFlag, buildCmd)
@@ -469,6 +481,9 @@ func preRun(cmd *cobra.Command, args []string) {
 	}
 	spec := args[len(args)-1]
 	isDeffile := fs.IsFile(spec) && !isImage(spec)
+	if buildArgs.overlay && !isDeffile {
+		sylog.Fatalf("--overlay requires a definition file so it cannot be used with %q", spec)
+	}
 	if buildArgs.fakeroot {
 		fakerootExec(isDeffile, false)
 	} else {

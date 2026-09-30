@@ -8,6 +8,7 @@ package overlay
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -193,6 +194,61 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 	}
 }
 
+func (c ctx) createOverlayBuild(t *testing.T, baseImage string, tmpDir string) string {
+	definition := e2e.PrepareDefFile(e2e.DefFileDetails{
+		Bootstrap: "localimage",
+		From:      baseImage,
+		Post:      []string{"echo overlay-marker > /overlay-marker"},
+	})
+	t.Cleanup(func() {
+		if !t.Failed() {
+			if err := os.Remove(definition); err != nil {
+				t.Logf("failed to remove definition file %s: %v", definition, err)
+			}
+		}
+	})
+
+	overlayImage := filepath.Join(tmpDir, "overlay.sif")
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--overlay", overlayImage, definition),
+		e2e.ExpectExit(0),
+	)
+
+	return overlayImage
+}
+
+func (c ctx) testBuildOverlay(t *testing.T) {
+	baseImage := e2e.BusyboxSIF(t)
+	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "build-overlay", "")
+	t.Cleanup(func() {
+		cleanup(t)
+	})
+
+	overlayImage := c.createOverlayBuild(t, baseImage, tmpDir)
+
+	overlaySquashfs := filepath.Join(tmpDir, "overlay.squashfs")
+
+	// Can't use RunApptainer here because need to redirect stdout
+	cmd := exec.Command("/bin/sh", "-c", "apptainer sif dump 4 "+overlayImage+"> "+overlaySquashfs)
+	cmd.Env = os.Environ()
+	out, err := cmd.CombinedOutput()
+	t.Log(cmd.Args)
+	if err != nil {
+		t.Fatalf("Failed dumping squashfs partition from %s\n%s: %s", baseImage, err, string(out))
+	}
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("exec"),
+		e2e.WithArgs("--overlay", overlaySquashfs, baseImage, "test", "-f", "/overlay-marker"),
+		e2e.ExpectExit(0),
+	)
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -200,6 +256,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"create": c.testOverlayCreate,
+		"create":        c.testOverlayCreate,
+		"build overlay": c.testBuildOverlay,
 	}
 }
