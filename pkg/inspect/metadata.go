@@ -32,6 +32,7 @@ type Attributes struct {
 	Helpfile    string                    `json:"helpfile,omitempty"`
 	Deffile     string                    `json:"deffile,omitempty"`
 	Startscript string                    `json:"startscript,omitempty"`
+	SBOM        string                    `json:"sbom,omitempty"`
 }
 
 // Data holds the container metadata attributes.

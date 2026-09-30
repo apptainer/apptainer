@@ -48,6 +48,7 @@ var buildArgs struct {
 	sandbox             bool
 	update              bool
 	data                bool
+	sbom                string
 	nvidia              bool
 	nvccli              bool
 	compat32            bool
@@ -105,6 +106,16 @@ var buildJSONFlag = cmdline.Flag{
 	Name:         "json",
 	Usage:        "interpret build definition as JSON",
 	EnvKeys:      []string{"JSON"},
+}
+
+// --sbom
+var buildSBOMFlag = cmdline.Flag{
+	ID:           "buildSBOMFlag",
+	Value:        &buildArgs.sbom,
+	DefaultValue: "",
+	Name:         "sbom",
+	Usage:        "path to an existing SBOM (Software Bill of Materials) JSON file to include in the image",
+	EnvKeys:      []string{"SBOM"},
 }
 
 // -u|--update
@@ -419,6 +430,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildLibraryFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildNoCleanupFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildNoTestFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildSBOMFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildSandboxFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildDataFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildSectionFlag, buildCmd)

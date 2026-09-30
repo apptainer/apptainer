@@ -146,6 +146,8 @@ type Options struct {
 	// builds, determined before the bundle rootfs is replaced by the
 	// overlay upper layer (which typically contains no ELF binaries).
 	OverlayBaseArch string
+	// SBOMPath is the path to an SBOM file to include in the image
+	SBOMPath string
 }
 
 // NewEncryptedBundle creates an Encrypted Bundle environment.
