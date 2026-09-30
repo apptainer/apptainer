@@ -26,6 +26,8 @@ const (
 	SIFDescOCIConfigJSON = "oci-config.json"
 	// SIFDescInspectMetadataJSON is the name of the SIF descriptor holding the container metadata.
 	SIFDescInspectMetadataJSON = "inspect-metadata.json"
+	// SIFDescSBOMJSON is the name of the SIF descriptor holding the SBOM (Software Bill of Materials).
+	SIFDescSBOMJSON = "sbom.json"
 )
 
 type sifFormat struct{}

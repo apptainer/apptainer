@@ -47,6 +47,7 @@ var (
 	listApps    bool
 	labels      bool
 	deffile     bool
+	sbom        bool
 	jsonfmt     bool
 )
 
@@ -158,6 +159,15 @@ var inspectAllFlag = cmdline.Flag{
 	Usage:        "show all available data (imply --json option)",
 }
 
+// --sbom
+var inspectSBOMFlag = cmdline.Flag{
+	ID:           "inspectSBOMFlag",
+	Value:        &sbom,
+	DefaultValue: false,
+	Name:         "sbom",
+	Usage:        "show the SBOM (Software Bill of Materials) for the image",
+}
+
 func init() {
 	addCmdInit(func(cmdManager *cmdline.CommandManager) {
 		cmdManager.RegisterCmd(InspectCmd)
@@ -173,12 +183,14 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&inspectTestFlag, InspectCmd)
 		cmdManager.RegisterFlagForCmd(&inspectAppsListFlag, InspectCmd)
 		cmdManager.RegisterFlagForCmd(&inspectAllFlag, InspectCmd)
+		cmdManager.RegisterFlagForCmd(&inspectSBOMFlag, InspectCmd)
 	})
 }
 
 const (
 	sectionDelim = "~~##@@> "
 	metadataJSON = "inspect-metadata.json"
+	sbomJSON     = "sbom.json"
 )
 
 type command struct {
@@ -556,6 +568,14 @@ func (c *command) addDefinitionCommand() {
 	}
 }
 
+func (c *command) addSBOMCommand() {
+	sbom, err := getSIFSBOM(c.img)
+	if err != nil {
+		sylog.Warningf("Unable to inspect SBOM: %s", err)
+	}
+	c.metadata.Attributes.SBOM = sbom
+}
+
 func getInspectMetadataFromSIF(img *image.Image) (*inspect.Metadata, error) {
 	r, err := image.NewSectionReader(img, metadataJSON, -1)
 	if err != nil {
@@ -568,6 +588,35 @@ func getInspectMetadataFromSIF(img *image.Image) (*inspect.Metadata, error) {
 	}
 
 	return metadata, nil
+}
+
+func getSIFSBOM(img *image.Image) (string, error) {
+	if img.Type == image.SANDBOX {
+		sbomPath := filepath.Join(img.Path, ".singularity.d", "sbom.json")
+		if _, err := os.Stat(sbomPath); err == nil {
+			data, err := os.ReadFile(sbomPath)
+			if err != nil {
+				return "", fmt.Errorf("while reading SBOM file: %s", err)
+			}
+			return string(data), nil
+		}
+		sylog.Warningf("No SBOM file found in sandbox")
+		return "", errNoSIFMetadata
+	}
+
+	if img.Type != image.SIF {
+		return "", errNoSIF
+	}
+
+	r, err := image.NewSectionReader(img, sbomJSON, -1)
+	if err != nil {
+		return "", err
+	}
+	b, err := io.ReadAll(r)
+	if err != nil {
+		return "", fmt.Errorf("while reading SBOM: %s", err)
+	}
+	return string(b), nil
 }
 
 func getSIFMetadata(img *image.Image, dataType uint32) ([]byte, error) {
@@ -694,6 +743,11 @@ var InspectCmd = &cobra.Command{
 			inspectCmd.addEnvironmentCommand()
 		}
 
+		if sbom {
+			sylog.Debugf("Inspection of SBOM selected.")
+			inspectCmd.addSBOMCommand()
+		}
+
 		if listApps || allData {
 			sylog.Debugf("Listing all apps in container")
 		}
@@ -710,7 +764,9 @@ var InspectCmd = &cobra.Command{
 		}
 
 		// Output the inspection results (use JSON if requested).
-		if jsonfmt {
+		if sbom {
+			fmt.Print(inspectData.Attributes.SBOM)
+		} else if jsonfmt {
 			jsonObj, err := json.MarshalIndent(inspectData, "", "\t")
 			if err != nil {
 				sylog.Fatalf("Could not format inspected data as JSON")

@@ -66,6 +66,11 @@ func (s *stage) insertMetadata() error {
 		return fmt.Errorf("while inserting test script: %v", err)
 	}
 
+	// insert SBOM if provided
+	if err := insertSBOM(s.b); err != nil {
+		return fmt.Errorf("while inserting SBOM: %v", err)
+	}
+
 	// insert JSON inspect metadata (must be the last call)
 	if err := insertJSONInspectMetadata(s.b, []string{"--all"}); err != nil {
 		return fmt.Errorf("while inserting JSON inspect metadata: %v", err)
@@ -83,6 +88,11 @@ func (s *stage) insertMetadataForData() error {
 	// insert definition
 	if err := insertDefinition(s.b); err != nil {
 		return fmt.Errorf("while inserting definition: %v", err)
+	}
+
+	// insert SBOM if provided
+	if err := insertSBOM(s.b); err != nil {
+		return fmt.Errorf("while inserting SBOM: %v", err)
 	}
 
 	// insert JSON inspect metadata (must be the last call)
@@ -386,6 +396,37 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 		labels["org.opencontainers.image.variant"] = buildarch.Var
 	}
 	labels["org.label-schema.build-arch"] = buildarch.Arch
+
+	return nil
+}
+
+func insertSBOM(b *types.Bundle) error {
+	if b.Opts.SBOMPath == "" {
+		return nil
+	}
+
+	var sbomData []byte
+	var err error
+
+	if b.Opts.SBOMPath != "" {
+		sylog.Infof("Adding SBOM from %s", b.Opts.SBOMPath)
+		sbomData, err = os.ReadFile(b.Opts.SBOMPath)
+		if err != nil {
+			return fmt.Errorf("while reading SBOM file %s: %v", b.Opts.SBOMPath, err)
+		}
+	}
+
+	b.JSONObjects[image.SIFDescSBOMJSON] = sbomData
+
+	if b.Opts.SandboxTarget {
+		sbomPath := filepath.Join(b.RootfsPath, ".singularity.d", "sbom.json")
+		if err := b.Rootfs.MkdirAll(filepath.Dir(sbomPath), 0o755); err != nil {
+			return fmt.Errorf("while creating .singularity.d directory: %v", err)
+		}
+		if err := b.Rootfs.WriteFile(sbomPath, sbomData, 0o644); err != nil {
+			return fmt.Errorf("while writing SBOM to sandbox: %v", err)
+		}
+	}
 
 	return nil
 }

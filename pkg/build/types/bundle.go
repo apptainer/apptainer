@@ -135,6 +135,8 @@ type Options struct {
 	Platform ggcrv1.Platform
 	// Reproducible build
 	Reproducible bool
+	// SBOMPath is the path to an SBOM file to include in the image
+	SBOMPath string
 }
 
 // NewEncryptedBundle creates an Encrypted Bundle environment.
