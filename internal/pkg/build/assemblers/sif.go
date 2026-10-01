@@ -45,7 +45,7 @@ type encryptionOptions struct {
 	plaintext []byte
 }
 
-func createSIF(path string, b *types.Bundle, squashfile string, encOpts *encryptionOptions, arch string, data bool) (err error) {
+func createSIF(path string, b *types.Bundle, squashfile string, encOpts *encryptionOptions, arch string, data, overlay bool) (err error) {
 	var dis []sif.DescriptorInput
 
 	// data we need to create a definition file descriptor
@@ -98,6 +98,8 @@ func createSIF(path string, b *types.Bundle, squashfile string, encOpts *encrypt
 	pt := sif.PartPrimSys
 	if data {
 		pt = sif.PartData
+	} else if overlay {
+		pt = sif.PartOverlay
 	}
 
 	// data we need to create a system partition (or data) descriptor
@@ -219,10 +221,17 @@ func (a *SIFAssembler) Assemble(b *types.Bundle, path string) error {
 	arch := runtime.GOARCH
 
 	if !data {
-		arch = machine.ArchFromContainer(b.RootfsPath)
-		if arch == "" {
-			sylog.Infof("Architecture not recognized, use native")
-			arch = runtime.GOARCH
+		if b.Opts.Overlay && b.Opts.OverlayBaseArch != "" {
+			// RootfsPath is only the overlay upper layer at this point,
+			// which typically contains no ELF binary, so inherit the
+			// architecture determined from the base image instead.
+			arch = b.Opts.OverlayBaseArch
+		} else {
+			arch = machine.ArchFromContainer(b.RootfsPath)
+			if arch == "" {
+				sylog.Infof("Architecture not recognized, use native")
+				arch = runtime.GOARCH
+			}
 		}
 		if buildarch, ok := oci.LookupArch(b.Opts.Arch, b.Opts.Var); ok {
 			if arch != buildarch.Arch {
@@ -296,7 +305,7 @@ func (a *SIFAssembler) Assemble(b *types.Bundle, path string) error {
 		}
 	}
 
-	err = createSIF(path, b, fsPath, encOpts, arch, data)
+	err = createSIF(path, b, fsPath, encOpts, arch, data, b.Opts.Overlay)
 	if err != nil {
 		return fmt.Errorf("while creating SIF: %v", err)
 	}

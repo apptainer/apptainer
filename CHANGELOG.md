@@ -18,6 +18,13 @@ Changes since 1.5.x
   Now "archivemount-ng" is bundled with Apptainer, but you might want to
   install "ratarmount" because it has better performance. It is not bundled
   because it is a python program and so requires many dependencies.
+- Add an `--overlay` option to `apptainer build` that produces an image
+  containing only the files added, changed, or removed relative to a
+  `Bootstrap: localimage` base image.  A hash of the base image is
+  included in the metadata of the overlay image.  The default is to
+  build a SIF file with an overlay partition in it, but adding a
+  `--sandbox` option will build a sandbox.  The base image itself cannot
+  be a sandbox because a sandbox does not have a hash.
 - Allow pushing multiple images with different architectures (multi-arch)
   to an oras URI, creating an image index with all the pushed arch images.
 - Add support for building data partitions from tar files using
