@@ -143,6 +143,11 @@ Changes since 1.5.x
   Python extension, and explicitly disabling it improves the build
   reproducibility by ensuring a `libpython` dependency does not get
   introduced based on the build host's environment.
+- Fix `apptainer pull` picking an empty or malformed default destination
+  filename when the source URI ends in a trailing slash, e.g.
+  `docker://sylabs.io/lolcow/` or `https://example.com/foo/`. Only
+  leading slashes were trimmed from the reference before taking its last
+  path component, so a trailing slash left an empty final component.
 
 ## v1.5.x changes
 

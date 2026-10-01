@@ -23,6 +23,9 @@ func Test_GetName(t *testing.T) {
 		{"docker scoped", "docker://user/image", "image_latest.sif"},
 		{"dave's magical lolcow", "docker://sylabs.io/lolcow", "lolcow_latest.sif"},
 		{"docker w/ tags", "docker://sylabs.io/lolcow:3.7", "lolcow_3.7.sif"},
+		{"docker trailing slash", "docker://sylabs.io/lolcow/", "lolcow_latest.sif"},
+		{"http basic", "https://example.com/foo", "foo"},
+		{"http trailing slash", "https://example.com/foo/", "foo"},
 	}
 
 	for _, tt := range tests {
