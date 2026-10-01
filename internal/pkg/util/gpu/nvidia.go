@@ -10,6 +10,7 @@
 package gpu
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -41,7 +42,12 @@ var nVDriverCapabilities = []string{
 	"utility",
 	"video",
 	"display",
+	"ngx",
 }
+
+// nVDriverAllCapabilities is the value that asks for every capability. The
+// container CLI has no flag for it, so it is expanded here.
+const nVDriverAllCapabilities = "all"
 
 // nVDriverDefaultCapabilities is the default set of nvidia-container-cli driver capabilities.
 // It is used if NVIDIA_DRIVER_CAPABILITIES is not set.
@@ -167,6 +173,36 @@ func NVCLIConfigure(nvidiaEnv []string, rootfs string, userNS bool) error {
 	return nil
 }
 
+// NVCLILibraries returns the host libraries nvidia-container-cli stages for
+// the driver, whichever capabilities are requested, as its list command
+// reports them.
+func NVCLILibraries() ([]string, error) {
+	nvCCLIPath, err := bin.FindBin("nvidia-container-cli")
+	if err != nil {
+		return nil, err
+	}
+	return nvcliLibraries(nvCCLIPath)
+}
+
+// nvcliLibraries runs the list command of the given nvidia-container-cli, in
+// user mode unless root, and returns the libraries it prints, one per line.
+func nvcliLibraries(nvCCLIPath string) ([]string, error) {
+	args := []string{"list", "--libraries"}
+	if os.Geteuid() != 0 {
+		args = append([]string{"--user"}, args...)
+	}
+	sylog.Debugf("nvidia-container-cli binary: %q args: %q", nvCCLIPath, args)
+	out, err := exec.Command(nvCCLIPath, args...).Output()
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			err = fmt.Errorf("%w: %s", err, bytes.TrimSpace(exitErr.Stderr))
+		}
+		return nil, fmt.Errorf("nvidia-container-cli list failed: %w", err)
+	}
+	return strings.Fields(string(out)), nil
+}
+
 // NVCLIEnvToFlags reads the passed in NVIDIA_ environment variables supported
 // by nvidia-container-runtime and converts them to flags for
 // nvidia-container-cli. See:
@@ -200,6 +236,9 @@ func NVCLIEnvToFlags(nvidiaEnv []string) (flags []string, err error) {
 		if pair[0] == "NVIDIA_DRIVER_CAPABILITIES" && pair[1] != "" {
 			defaultDriverCaps = false
 			caps := strings.Split(pair[1], ",")
+			if slice.ContainsString(caps, nVDriverAllCapabilities) {
+				caps = nVDriverCapabilities
+			}
 
 			for _, capability := range caps {
 				if slice.ContainsString(nVDriverCapabilities, capability) {
