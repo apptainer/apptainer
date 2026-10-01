@@ -87,7 +87,11 @@ func ProgressBarCallback(ctx context.Context) ProgressCallback {
 		p, bar := initProgressBar(totalSize, remove) //nolint:contextcheck
 
 		// create proxy reader
-		bodyProgress := bar.ProxyReader(r)
+		bodyProgress, err := bar.ProxyReader(r)
+		if err != nil {
+			bar.Abort(true)
+			return err
+		}
 		defer bodyProgress.Close()
 
 		written, err := CopyWithContext(ctx, w, bodyProgress)
@@ -141,7 +145,20 @@ func (dpb *DownloadProgressBar) Init(contentLength int64) {
 }
 
 func (dpb *DownloadProgressBar) ProxyReader(r io.Reader) io.ReadCloser {
-	return dpb.bar.ProxyReader(r)
+	if dpb.bar == nil {
+		if rc, ok := r.(io.ReadCloser); ok {
+			return rc
+		}
+		return io.NopCloser(r)
+	}
+	rc, err := dpb.bar.ProxyReader(r)
+	if err != nil {
+		if rc, ok := r.(io.ReadCloser); ok {
+			return rc
+		}
+		return io.NopCloser(r)
+	}
+	return rc
 }
 
 func (dpb *DownloadProgressBar) IncrBy(n int) {
@@ -179,7 +196,12 @@ func (upb *UploadProgressBar) InitUpload(totalSize int64, r io.Reader) {
 		return
 	}
 	upb.progress, upb.bar = initProgressBar(totalSize, false)
-	upb.r = upb.bar.ProxyReader(r)
+	bodyProgress, err := upb.bar.ProxyReader(r)
+	if err != nil {
+		upb.r = r
+		return
+	}
+	upb.r = bodyProgress
 }
 
 func (upb *UploadProgressBar) GetReader() io.Reader {
