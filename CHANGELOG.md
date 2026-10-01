@@ -25,6 +25,11 @@ Changes since 1.5.x
   build a SIF file with an overlay partition in it, but adding a
   `--sandbox` option will build a sandbox.  The base image itself cannot
   be a sandbox because a sandbox does not have a hash.
+- Add a `--basepath` action command option (and `APPTAINER_BASEPATH`
+  environment variable), a colon-separated list of paths to search for
+  the base image of an overlay image built with `apptainer build
+  --overlay`, so it can be combined with the overlay automatically at
+  run time.
 - Allow pushing multiple images with different architectures (multi-arch)
   to an oras URI, creating an image index with all the pushed arch images.
 - Add support for building data partitions from tar files using

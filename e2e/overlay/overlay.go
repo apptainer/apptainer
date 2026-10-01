@@ -10,9 +10,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
+	"github.com/apptainer/apptainer/pkg/image"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
 	"github.com/apptainer/apptainer/e2e/internal/testhelper"
@@ -249,6 +251,86 @@ func (c ctx) testBuildOverlay(t *testing.T) {
 	)
 }
 
+func (c ctx) testActionBasePath(t *testing.T) {
+	baseImage := e2e.BusyboxSIF(t)
+	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "build-overlay", "")
+	t.Cleanup(func() {
+		cleanup(t)
+	})
+
+	overlayImage := c.createOverlayBuild(t, baseImage, tmpDir)
+
+	baseHash, ok, err := image.GetOverlayBaseHash(overlayImage)
+	if err != nil {
+		t.Fatalf("failed to get overlay base hash: %v", err)
+	}
+	if !ok {
+		t.Fatal("built image is missing its overlay base hash")
+	}
+
+	basePath := filepath.Join(filepath.Dir(overlayImage), "basepath")
+	if err := os.Mkdir(basePath, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	baseImage, err = filepath.Abs(baseImage)
+	if err != nil {
+		t.Fatal(err)
+	}
+	hash := strings.TrimPrefix(baseHash, "sha256:")
+	baseImagePath := filepath.Join(basePath, hash)
+	t.Log("linking", baseImage, "to", baseImagePath)
+	if err := os.Symlink(baseImage, baseImagePath); err != nil {
+		t.Fatal(err)
+	}
+
+	basePath2 := basePath + "2"
+	if err := os.Mkdir(basePath2, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	prefix := "sha256:" + hash[:2]
+	if err := os.Mkdir(filepath.Join(basePath2, prefix), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	baseImagePath2 := filepath.Join(basePath2, prefix, hash[2:])
+	t.Log("linking", baseImage, "to", baseImagePath2)
+	if err := os.Symlink(baseImage, baseImagePath2); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name string
+		args []string
+		exit int
+	}{
+		{
+			name: "missing basepath",
+			args: []string{overlayImage, "true"},
+			exit: 255,
+		},
+		{
+			name: "basepath hash search",
+			args: []string{"--basepath", basePath, overlayImage, "test", "-f", "/overlay-marker"},
+			exit: 0,
+		},
+		{
+			name: "basepath fanout hash search",
+			args: []string{"--basepath", basePath2, overlayImage, "test", "-f", "/overlay-marker"},
+			exit: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		c.env.RunApptainer(
+			t,
+			e2e.AsSubtest(tt.name),
+			e2e.WithProfile(e2e.RootProfile),
+			e2e.WithCommand("exec"),
+			e2e.WithArgs(tt.args...),
+			e2e.ExpectExit(tt.exit),
+		)
+	}
+}
+
 // E2ETests is the main func to trigger the test suite
 func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	c := ctx{
@@ -256,7 +338,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"create":        c.testOverlayCreate,
-		"build overlay": c.testBuildOverlay,
+		"create":          c.testOverlayCreate,
+		"build overlay":   c.testBuildOverlay,
+		"action basepath": c.testActionBasePath,
 	}
 }
