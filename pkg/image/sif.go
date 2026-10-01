@@ -26,6 +26,10 @@ const (
 	SIFDescOCIConfigJSON = "oci-config.json"
 	// SIFDescInspectMetadataJSON is the name of the SIF descriptor holding the container metadata.
 	SIFDescInspectMetadataJSON = "inspect-metadata.json"
+	// SIFDescOverlayBaseHash is the name of the SIF descriptor holding the
+	// hash of the base image an overlay-only image was built on top of,
+	// via `apptainer build --overlay`.
+	SIFDescOverlayBaseHash = "overlay-basehash.json"
 )
 
 type sifFormat struct{}

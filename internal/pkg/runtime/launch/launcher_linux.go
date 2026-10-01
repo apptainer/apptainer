@@ -32,6 +32,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci"
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
 	"github.com/apptainer/apptainer/internal/pkg/security"
+	"github.com/apptainer/apptainer/internal/pkg/util/basepath"
 	"github.com/apptainer/apptainer/internal/pkg/util/bin"
 	"github.com/apptainer/apptainer/internal/pkg/util/cdi"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
@@ -202,6 +203,10 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	}
 
 	// Set image to run, or instance to join, and APPTAINER_CONTAINER/APPTAINER_NAME env vars.
+	image, err = l.resolveOverlayBase(image)
+	if err != nil {
+		sylog.Fatalf("While resolving overlay base image: %s", err)
+	}
 	if err := l.setImageOrInstance(image, instanceName); err != nil {
 		sylog.Fatalf("While setting image/instance: %s", err)
 	}
@@ -528,6 +533,55 @@ func (l *Launcher) setTargetIDs(useSuid bool) (err error) {
 	}
 
 	return nil
+}
+
+// resolveOverlayBase checks whether image is an overlay-only image, built
+// with `apptainer build --overlay`. If so, it uses l.cfg.BasePath to locate
+// the corresponding base image, returns the base image path to be used as
+// the primary image, and prepends the original overlay image (defaulting to
+// read-only, unless a writable image was explicitly requested) to
+// l.cfg.OverlayPaths so it is layered on top of the base at start up.
+//
+// If image is not an overlay-only image, it is returned unchanged.
+func (l *Launcher) resolveOverlayBase(image string) (string, error) {
+	if strings.Contains(image, "://") {
+		return image, nil
+	}
+
+	hash, ok, err := imgutil.GetOverlayBaseHash(image)
+	if err != nil {
+		return "", fmt.Errorf("while checking whether %s is an overlay image: %w", image, err)
+	}
+	if !ok {
+		return image, nil
+	}
+
+	if l.cfg.BasePath == "" {
+		return "", fmt.Errorf("%s is an overlay-only image built with 'apptainer build --overlay'; "+
+			"use --basepath or the APPTAINER_BASEPATH environment variable to specify where to search "+
+			"for its base image (hash %s)", image, hash)
+	}
+
+	base, err := basepath.FindBaseImage(hash, filepath.SplitList(l.cfg.BasePath))
+	if err != nil {
+		return "", fmt.Errorf("while searching --basepath for the base image of %s: %w", image, err)
+	}
+	base, err = filepath.Abs(base)
+	if err != nil {
+		return "", fmt.Errorf("failed to determine absolute path for base image %s: %w", base, err)
+	}
+	sylog.Debugf("Found base image %s for overlay image %s (hash %s)", base, image, hash)
+
+	overlaySpec, err := filepath.Abs(image)
+	if err != nil {
+		return "", fmt.Errorf("failed to determine absolute path for overlay image %s: %w", image, err)
+	}
+	if !l.cfg.Writable {
+		overlaySpec += ":ro"
+	}
+	l.cfg.OverlayPaths = append([]string{overlaySpec}, l.cfg.OverlayPaths...)
+
+	return base, nil
 }
 
 // setImageOrInstance sets the image to start, or instance and it's image to be joined.

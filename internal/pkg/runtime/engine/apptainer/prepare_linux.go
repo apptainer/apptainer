@@ -1446,10 +1446,40 @@ func (e *EngineOperations) loadOverlayImages(starterConfig *starter.Config, writ
 		if err != nil && !image.IsReadOnlyFilesystem(err) {
 			return nil, fmt.Errorf("failed to open overlay image %s: %s", splitted[0], err)
 		}
+		// Otherwise either err is nil or err is read-only filesystem.
+		// Note that img.Writable is always false for squashfs images.
+
+		// A SIF image can only be writable through an EXT3 overlay
+		// partition.  If its overlay partition(s) are squashfs, it can
+		// never actually be written to, so infer it to be read-only,
+		// just like a bare squashfs image.
+		sifWritablePartition := false
+		if writableOverlay && img.Type == image.SIF {
+			overlays, ovErr := img.GetOverlayPartitions()
+			if ovErr != nil {
+				return nil, fmt.Errorf("while getting overlay partitions in SIF image %s: %s", img.Path, ovErr)
+			}
+			for _, o := range overlays {
+				if o.Type == image.EXT3 {
+					sifWritablePartition = true
+					break
+				}
+			}
+			if !sifWritablePartition {
+				img.Writable = false
+			}
+		}
+
 		if err != nil || (writableOverlay && !img.Writable) {
 			// let's proceed with readonly filesystem and set
 			// writableOverlay to appropriate value
-			sylog.Warningf("Overlay image %s is not writable, proceeding with read-only", img.Path)
+			if img.Type == image.SQUASHFS {
+				sylog.Debugf("Inferring overlay image %s to be read-only because it is squashfs", img.Path)
+			} else if img.Type == image.SIF && !sifWritablePartition {
+				sylog.Debugf("Inferring %s to be read-only because it has no writable overlay partition", img.Path)
+			} else {
+				sylog.Warningf("Overlay image %s is not writable, proceeding with read-only", img.Path)
+			}
 			writableOverlay = false
 		}
 		img.Usage = image.OverlayUsage
@@ -1478,7 +1508,7 @@ func (e *EngineOperations) loadOverlayImages(starterConfig *starter.Config, writ
 	}
 
 	if e.EngineConfig.GetWritableTmpfs() && writableOverlayPath != "" {
-		return nil, fmt.Errorf("you can't specify --writable-tmpfs with another writable overlay image (%s)", writableOverlayPath)
+		return nil, fmt.Errorf("--writable-tmpfs conflicts with another writable overlay image (%s)", writableOverlayPath)
 	}
 
 	return images, nil

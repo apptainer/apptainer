@@ -2,17 +2,18 @@
 #*
 *#
 apptainer-*.tar.gz
+archivemount-*
 e2fsprogs-*
 fuse-overlayfs-*
 gocryptfs[_-]*
 PRoot-*
 squashfuse-*
 squashfs-tools-*
-archivemount-ng-*
 *.m4
 *.pyc
 *.swp
 
+.codegraph
 .vscode
 .DS_store
 builddir/
