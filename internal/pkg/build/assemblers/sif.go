@@ -11,6 +11,7 @@ package assemblers
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 	"regexp"
@@ -25,6 +26,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/crypt"
 	"github.com/apptainer/apptainer/internal/pkg/util/machine"
 	"github.com/apptainer/apptainer/pkg/build/types"
+	"github.com/apptainer/apptainer/pkg/image"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
 	"github.com/apptainer/sif/v2/pkg/sif"
@@ -66,9 +68,19 @@ func createSIF(path string, b *types.Bundle, squashfile string, encOpts *encrypt
 
 	for _, name := range sorted {
 		if len(b.JSONObjects[name]) > 0 {
+			dt := sif.DataGenericJSON
+			opts := []sif.DescriptorInputOpt{sif.OptObjectName(name)}
+			if name == image.SIFDescSBOMJSON {
+				format, err := detectSBOMFormat(b.JSONObjects[name])
+				if err != nil {
+					return fmt.Errorf("while detecting SBOM format: %v", err)
+				}
+				dt = sif.DataSBOM
+				opts = append(opts, sif.OptSBOMMetadata(format))
+			}
 			// data we need to create a definition file descriptor
-			in, err := sif.NewDescriptorInput(sif.DataGenericJSON, bytes.NewReader(b.JSONObjects[name]),
-				sif.OptObjectName(name),
+			in, err := sif.NewDescriptorInput(dt, bytes.NewReader(b.JSONObjects[name]),
+				opts...,
 			)
 			if err != nil {
 				return err
@@ -170,6 +182,25 @@ func createSIF(path string, b *types.Bundle, squashfile string, encOpts *encrypt
 	}
 
 	return nil
+}
+
+func detectSBOMFormat(data []byte) (sif.SBOMFormat, error) {
+	var jsonData map[string]any
+	if err := json.Unmarshal(data, &jsonData); err != nil {
+		return 0, fmt.Errorf("invalid JSON in SBOM data: %v", err)
+	}
+
+	if _, ok := jsonData["spdxVersion"]; ok {
+		return sif.SBOMFormatSPDXJSON, nil
+	}
+
+	if bomFormat, ok := jsonData["bomFormat"].(string); ok {
+		if strings.Contains(bomFormat, "CycloneDX") {
+			return sif.SBOMFormatCycloneDXJSON, nil
+		}
+	}
+
+	return 0, fmt.Errorf("unknown SBOM format")
 }
 
 // Assemble creates a SIF image from a Bundle.

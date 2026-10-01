@@ -1262,6 +1262,21 @@ func (c *imgBuildTests) ensureImageIsGocryptfsEncrypted(t *testing.T, imgPath st
 	)
 }
 
+func (c *imgBuildTests) ensureImageHasSBOMDescriptor(t *testing.T, imgPath string) {
+	sifID := "4"
+	cmdArgs := []string{"info", sifID, imgPath}
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("sif"),
+		e2e.WithArgs(cmdArgs...),
+		e2e.ExpectExit(
+			0,
+			e2e.ExpectOutput(e2e.RegexMatch, "Data Type:[ ]+SBOM"),
+		),
+	)
+}
+
 func (c *imgBuildTests) ensureImageHasDataPartition(t *testing.T, imgPath string) {
 	sifID := "3"
 	cmdArgs := []string{"info", sifID, imgPath}
@@ -2521,6 +2536,42 @@ func (c imgBuildTests) reproducibleBuild(t *testing.T) {
 	}
 }
 
+func (c imgBuildTests) buildImageWithSBOM(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	tmpdir, cleanup := c.tempDir(t, "build-with-sbom")
+
+	t.Cleanup(func() {
+		if !t.Failed() {
+			cleanup()
+		}
+	})
+
+	// import "github.com/CycloneDX/cyclonedx-go"
+	// bom := cyclonedx.NewBOM()
+	sbom := `{"$schema":"http://cyclonedx.org/schema/bom-1.7.schema.json",` +
+		`"bomFormat":"CycloneDX","specVersion":"1.7","version":1}`
+
+	img := path.Join(tmpdir, "test.sif")
+	sbomFile := filepath.Join(tmpdir, "sbom.json")
+	if err := os.WriteFile(sbomFile, []byte(sbom), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--sbom", sbomFile, img, c.env.ImagePath),
+		e2e.WithEnv(append(os.Environ(), "APPTAINER_VERBOSE=true")),
+		e2e.ExpectExit(
+			0,
+		),
+	)
+
+	c.ensureImageHasSBOMDescriptor(t, img)
+}
+
 func (c imgBuildTests) buildDataPartition(t *testing.T) {
 	require.Command(t, "mksquashfs")
 
@@ -2696,6 +2747,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"auth":                                   np(c.buildWithAuth),                    // build with custom auth file
 		"issue 2607":                             c.issue2607,                            // https://github.com/sylabs/singularity/issues/2607
 		"reproducible build":                     c.reproducibleBuild,                    // build sifs as reproducible
+		"build with sbom json":                   c.buildImageWithSBOM,                   // build sifs with sbom json
 		"build with data part":                   c.buildDataPartition,                   // build sifs with data part
 		"build with data part from tar":          c.buildDataPartitionFromTar,            // build sifs with data part from tar
 		"build with data part from tar.gz":       c.buildDataPartitionFromTargz,          // build sifs with data part from tar.gz

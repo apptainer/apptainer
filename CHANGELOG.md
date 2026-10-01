@@ -9,6 +9,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Add support for Software Bill of Materials (SBOM) in SIF images. Build with
+  `--sbom <path>` to include an SBOM file (SPDX JSON or CycloneDX JSON format)
+  in the image. Inspect with `--sbom` to view the SBOM from an existing image.
 - Add a new %{BUILDARCH} macro to the yum/dnf and zypper templates.
   It resolves to the architecture of the image currently being built.
 - Add support for mounting archive files (tar, tar.gz, etc.) using
