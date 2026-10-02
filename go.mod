@@ -29,7 +29,7 @@ require (
 	github.com/opencontainers/cgroups v0.1.0
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1
-	github.com/opencontainers/runc v1.5.1
+	github.com/opencontainers/runc v1.5.2
 	github.com/opencontainers/runtime-spec v1.3.0
 	github.com/opencontainers/runtime-tools v0.9.1-0.20260316125833-8a4db579f5c8
 	github.com/opencontainers/selinux v1.15.1
@@ -71,7 +71,7 @@ require (
 )
 
 require (
-	cyphar.com/go-pathrs v0.2.5 // indirect
+	cyphar.com/go-pathrs v0.2.6 // indirect
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
