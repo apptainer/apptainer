@@ -109,8 +109,7 @@ func GlobalConfig(args []string, configFile string, dry bool, op GlobalConfigOp)
 
 	values := []string{}
 	if value != "" {
-		for _, v := range strings.Split(value, ",") {
-			va := strings.TrimSpace(v)
+		for _, va := range apptainerconf.SplitDirectiveValue(directive, value) {
 			if va != "" {
 				if contains(values, va) {
 					continue
@@ -124,6 +123,13 @@ func GlobalConfig(args []string, configFile string, dry bool, op GlobalConfigOp)
 	case GlobalConfigSet:
 		if len(values) == 0 {
 			return fmt.Errorf("you must specify a value for directive %q", directive)
+		}
+		if directive == "bind path" {
+			for _, v := range values {
+				if _, err := apptainerconf.ParseBindPath(v); err != nil {
+					return err
+				}
+			}
 		}
 
 		if _, ok := directives[directive]; ok {

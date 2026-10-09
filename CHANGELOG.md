@@ -143,6 +143,13 @@ Changes since 1.5.x
   Python extension, and explicitly disabling it improves the build
   reproducibility by ensuring a `libpython` dependency does not get
   introduced based on the build host's environment.
+- Allow `dev` and `suid` mount options on `bind path` entries in
+  apptainer.conf, as `bind path = <src>[:<dst>[:<options>]]`. An empty
+  destination is the same as the source, e.g. `bind path = /opt/tools::dev`.
+  `dev` and `suid` stop Apptainer from adding `nodev` and `nosuid` to that bind.
+  Flags already set on the host mount are kept, with a warning. `apptainer
+  confgen` now warns when it converts a configuration that sets `trusted bind
+  paths = yes` (from SingularityCE).
 
 ## v1.5.x changes
 

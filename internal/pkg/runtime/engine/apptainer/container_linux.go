@@ -43,6 +43,7 @@ import (
 	apptainercallback "github.com/apptainer/apptainer/pkg/plugin/callback/runtime/engine/apptainer"
 	apptainer "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/sylog"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 	"github.com/apptainer/apptainer/pkg/util/fs/proc"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	"github.com/apptainer/apptainer/pkg/util/slice"
@@ -2024,14 +2025,14 @@ func (c *container) addBindsMount(system *mount.System) error {
 	}
 
 	for _, bindpath := range c.engine.EngineConfig.File.BindPath {
-		splitted := strings.Split(bindpath, ":")
-		src := splitted[0]
-		dst := ""
-		if len(splitted) > 1 {
-			dst = splitted[1]
-		} else {
-			dst = src
+		bp, err := apptainerconf.ParseBindPath(bindpath)
+		if errors.Is(err, apptainerconf.ErrUnsupportedBindOption) {
+			sylog.Warningf("%s; ignoring it", err)
+		} else if err != nil {
+			return err
 		}
+		src := bp.Source
+		dst := bp.Destination
 
 		sylog.Verbosef("Found 'bind path' = %s, %s", src, dst)
 
@@ -2051,16 +2052,55 @@ func (c *container) addBindsMount(system *mount.System) error {
 			bindOpt = "skip-on-error"
 		}
 
-		err := system.Points.AddBind(mount.BindsTag, src, dst, flags, bindOpt)
-		if err != nil {
+		bindFlags, remount := bindPathFlags(flags, bp)
+		warnHostBindFlags(bp)
+
+		if err := system.Points.AddBind(mount.BindsTag, src, dst, bindFlags, bindOpt); err != nil {
 			return fmt.Errorf("unable to add %s to mount list: %s", src, err)
 		}
-		if err := system.Points.AddRemount(mount.BindsTag, dst, flags); err != nil {
+		if !remount {
+			sylog.Debugf("Skipping remount of %s to keep host mount flags", dst)
+			continue
+		}
+		if err := system.Points.AddRemount(mount.BindsTag, dst, bindFlags); err != nil {
 			return fmt.Errorf("unable to add %s for remount: %s", dst, err)
 		}
 	}
 
 	return nil
+}
+
+// bindPathFlags returns the mount flags for a bind path entry and whether a
+// remount is needed to apply them. With no flags left to add, the bind must
+// not be remounted: getBindFlags does not merge host flags for a plain bind,
+// so remounting would clear them.
+func bindPathFlags(flags uintptr, bp apptainerconf.BindPathEntry) (uintptr, bool) {
+	if bp.Dev {
+		flags &^= syscall.MS_NODEV
+	}
+	if bp.Suid {
+		flags &^= syscall.MS_NOSUID
+	}
+	return flags, flags != syscall.MS_BIND|syscall.MS_REC
+}
+
+// warnHostBindFlags warns when a bind path requests dev or suid but the host
+// mount of its source is already nodev or nosuid, as the host flag is kept.
+func warnHostBindFlags(bp apptainerconf.BindPathEntry) {
+	if !bp.Dev && !bp.Suid {
+		return
+	}
+	var stfs unix.Statfs_t
+	if err := unix.Statfs(bp.Source, &stfs); err != nil {
+		sylog.Debugf("Could not check host mount flags of %s: %s", bp.Source, err)
+		return
+	}
+	if bp.Dev && stfs.Flags&unix.ST_NODEV != 0 {
+		sylog.Warningf("bind path %s: 'dev' has no effect, host mount is nodev", bp.Source)
+	}
+	if bp.Suid && stfs.Flags&unix.ST_NOSUID != 0 {
+		sylog.Warningf("bind path %s: 'suid' has no effect, host mount is nosuid", bp.Source)
+	}
 }
 
 // copyHostLocaltime creates a bind point in the overlay layer so the bind mount does not overwrite the
