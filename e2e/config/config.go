@@ -22,6 +22,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
+	"golang.org/x/sys/unix"
 )
 
 type configTests struct {
@@ -136,6 +137,23 @@ func (c configTests) configGlobal(t *testing.T) {
 	g, err := user.GetGrGID(u.GID)
 	if err != nil {
 		t.Fatalf("could not retrieve user group information: %s", err)
+	}
+
+	// bindFlags prints the nosuid and nodev mount options of dst.
+	bindFlags := func(dst string) []string {
+		script := fmt.Sprintf(`echo "flags=$(awk '$5 == "%s" {print $6}' /proc/self/mountinfo | tr , '\n' | grep -E '^no(suid|dev)$' | xargs)"`, dst)
+		return []string{c.env.ImagePath, "sh", "-c", script}
+	}
+	// requireNodevNosuidShm skips tests that need /dev/shm to be mounted
+	// nodev,nosuid on the host.
+	requireNodevNosuidShm := func(t *testing.T) {
+		var stfs unix.Statfs_t
+		if err := unix.Statfs("/dev/shm", &stfs); err != nil {
+			t.Skipf("could not statfs /dev/shm: %s", err)
+		}
+		if stfs.Flags&unix.ST_NODEV == 0 || stfs.Flags&unix.ST_NOSUID == 0 {
+			t.Skip("/dev/shm is not mounted nodev,nosuid on the host")
+		}
 	}
 
 	tests := []struct {
@@ -403,6 +421,136 @@ func (c configTests) configGlobal(t *testing.T) {
 			directive:      "bind path",
 			directiveValue: "/etc/passwd:/passwd",
 			exit:           0,
+		},
+		{
+			name:           "BindPathFlagsDefaultUser",
+			argv:           bindFlags("/bindpath"),
+			profile:        e2e.UserProfile,
+			directive:      "bind path",
+			directiveValue: "/sbin:/bindpath",
+			exit:           0,
+			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid nodev"),
+		},
+		{
+			name:           "BindPathFlagsDevUser",
+			argv:           bindFlags("/bindpath"),
+			profile:        e2e.UserProfile,
+			directive:      "bind path",
+			directiveValue: "/sbin:/bindpath:dev",
+			exit:           0,
+			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid"),
+		},
+		{
+			name:           "BindPathFlagsSuidUser",
+			argv:           bindFlags("/bindpath"),
+			profile:        e2e.UserProfile,
+			directive:      "bind path",
+			directiveValue: "/sbin:/bindpath:suid",
+			exit:           0,
+			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nodev"),
+		},
+		{
+			name:           "BindPathFlagsDevSuidUser",
+			argv:           bindFlags("/bindpath"),
+			profile:        e2e.UserProfile,
+			directive:      "bind path",
+			directiveValue: "/sbin:/bindpath:dev,suid",
+			exit:           0,
+			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags="),
+		},
+		{
+			name:           "BindPathFlagsDevSameDestUser",
+			argv:           bindFlags("/sbin"),
+			profile:        e2e.UserProfile,
+			directive:      "bind path",
+			directiveValue: "/sbin::dev",
+			exit:           0,
+			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid"),
+		},
+		{
+			name:           "BindPathFlagsDefaultRoot",
+			argv:           bindFlags("/bindpath"),
+			profile:        e2e.RootProfile,
+			directive:      "bind path",
+			directiveValue: "/sbin:/bindpath",
+			exit:           0,
+			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid nodev"),
+		},
+		{
+			name:           "BindPathFlagsDevRoot",
+			argv:           bindFlags("/bindpath"),
+			profile:        e2e.RootProfile,
+			directive:      "bind path",
+			directiveValue: "/sbin:/bindpath:dev",
+			exit:           0,
+			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid"),
+		},
+		{
+			name:           "BindPathFlagsSuidRoot",
+			argv:           bindFlags("/bindpath"),
+			profile:        e2e.RootProfile,
+			directive:      "bind path",
+			directiveValue: "/sbin:/bindpath:suid",
+			exit:           0,
+			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nodev"),
+		},
+		{
+			name:           "BindPathFlagsDevSuidRoot",
+			argv:           bindFlags("/bindpath"),
+			profile:        e2e.RootProfile,
+			directive:      "bind path",
+			directiveValue: "/sbin:/bindpath:dev,suid",
+			exit:           0,
+			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags="),
+		},
+		{
+			name:           "BindPathFlagsDevSameDestRoot",
+			argv:           bindFlags("/sbin"),
+			profile:        e2e.RootProfile,
+			directive:      "bind path",
+			directiveValue: "/sbin::dev",
+			exit:           0,
+			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid"),
+		},
+		{
+			name:              "BindPathHostFlagsUser",
+			argv:              bindFlags("/bindpath"),
+			profile:           e2e.UserProfile,
+			addRequirementsFn: requireNodevNosuidShm,
+			directive:         "bind path",
+			directiveValue:    "/dev/shm:/bindpath:dev,suid",
+			exit:              0,
+			resultOp:          e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid nodev"),
+		},
+		{
+			name:              "BindPathHostFlagsRoot",
+			argv:              bindFlags("/bindpath"),
+			profile:           e2e.RootProfile,
+			addRequirementsFn: requireNodevNosuidShm,
+			directive:         "bind path",
+			directiveValue:    "/dev/shm:/bindpath:dev,suid",
+			exit:              0,
+			resultOp:          e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid nodev"),
+		},
+		{
+			name:              "BindPathHostFlagsAllowSetuidRoot",
+			argv:              append([]string{"--allow-setuid"}, bindFlags("/bindpath")...),
+			profile:           e2e.RootProfile,
+			addRequirementsFn: requireNodevNosuidShm,
+			directive:         "bind path",
+			directiveValue:    "/dev/shm:/bindpath:dev",
+			exit:              0,
+			resultOp:          e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid nodev"),
+		},
+		{
+			name:              "BindPathHostFlagsWarning",
+			argv:              bindFlags("/bindpath"),
+			profile:           e2e.UserProfile,
+			addRequirementsFn: requireNodevNosuidShm,
+			directive:         "bind path",
+			directiveValue:    "/dev/shm:/bindpath:dev,suid",
+			exit:              0,
+			resultOp:          e2e.ExpectError(e2e.ContainMatch, "'dev' has no effect, host mount is nodev"),
 		},
 		{
 			name:           "UserBindControlNo",
@@ -835,12 +983,25 @@ func (c configTests) configGlobal(t *testing.T) {
 			}),
 			e2e.PostRun(func(t *testing.T) {
 				e2e.ResetDirective(t, c.env, tt.directive)
+				if tt.directive == "bind path" {
+					// A reset leaves no bind paths at all, so restore the defaults.
+					e2e.SetDirective(t, c.env, tt.directive, "/etc/localtime,/etc/hosts")
+				}
 			}),
 			e2e.WithCommand("exec"),
 			e2e.WithArgs(tt.argv...),
 			e2e.ExpectExit(tt.exit, tt.resultOp),
 		)
 	}
+
+	c.env.RunApptainer(
+		t,
+		e2e.AsSubtest("BindPathBadOption"),
+		e2e.WithProfile(e2e.RootProfile),
+		e2e.WithCommand("config global"),
+		e2e.WithArgs("--set", "bind path", "/sbin:/bindpath:bogus"),
+		e2e.ExpectExit(255, e2e.ExpectError(e2e.ContainMatch, `unsupported mount option "bogus"`)),
+	)
 }
 
 // Tests that require combinations of directives to be set

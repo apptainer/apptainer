@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test"
+	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
 
 func TestGenConf(t *testing.T) {
@@ -28,13 +29,16 @@ func TestGenConf(t *testing.T) {
 		{"gen_new", "", "testdata/test_1.out", "testdata/test_1.out.correct"},
 		{"gen_update", "testdata/test_2.in", "testdata/test_2.out", "testdata/test_2.out.correct"},
 		{"gen_update_newvals", "testdata/test_3.in", "testdata/test_3.out", "testdata/test_3.out.correct"},
+		{"gen_bind_path_options", "testdata/test_4.in", "testdata/test_4.out", "testdata/test_4.out.correct"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
 			defer os.Remove(tt.confOutPath)
 
-			genConf(tmpl, tt.confInPath, tt.confOutPath)
+			if err := genConf(tmpl, tt.confInPath, tt.confOutPath); err != nil {
+				t.Fatalf("Unable to generate config: %v", err)
+			}
 
 			if eq, err := compareFile(tt.confOutPath, tt.confCorrectPath); err != nil {
 				t.Fatalf("Unable to compare files: %v\n", err)
@@ -42,6 +46,25 @@ func TestGenConf(t *testing.T) {
 				t.Fatalf("Output file %v does not match correct output %v\n", tt.confOutPath, tt.confCorrectPath)
 			}
 		}))
+	}
+}
+
+func TestWarnTrustedBindPaths(t *testing.T) {
+	tests := []struct {
+		name       string
+		directives apptainerconf.Directives
+		want       bool
+	}{
+		{"Absent", apptainerconf.Directives{}, false},
+		{"No", apptainerconf.Directives{"trusted bind paths": {"no"}}, false},
+		{"Yes", apptainerconf.Directives{"trusted bind paths": {"yes"}}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := warnTrustedBindPaths(tt.directives); got != tt.want {
+				t.Errorf("warnTrustedBindPaths() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
 

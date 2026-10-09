@@ -274,9 +274,20 @@ mount hostfs = {{ if eq .MountHostfs true }}yes{{ else }}no{{ end }}
 # NOTE: these are ignored if apptainer is invoked with --contain except
 # for /etc/hosts and /etc/localtime. When invoked with --contain and --net,
 # /etc/hosts would contain a default generated content for localhost resolution.
+#
+# Bind paths are mounted nosuid,nodev by default. A third colon-separated
+# field takes comma-separated mount options that relax the default
+# nosuid,nodev for that entry; an empty destination is the same as the source:
+#   bind path = <src>[:<dst>[:<options>]]
+#   dev   do not add nodev, so device files on the path can be opened
+#   suid  do not add nosuid; setuid binaries are still blocked for
+#         unprivileged users, as PR_SET_NO_NEW_PRIVS is always set for them
+# These options never remove a flag that is already set on the host mount.
+# Unsupported options are ignored with a warning.
 #bind path = /etc/apptainer/default-nsswitch.conf:/etc/nsswitch.conf
 #bind path = /opt
 #bind path = /scratch
+#bind path = /opt/tools::dev
 {{ range $path := .BindPath }}
 {{- if ne $path "" -}}
 bind path = {{$path}}
