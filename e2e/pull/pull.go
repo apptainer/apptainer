@@ -247,19 +247,14 @@ func (c ctx) testPullCmd(t *testing.T) {
 			expectedExitCode: 0,
 		},
 		{
-			// XXX(mem): this specific test is passing both --path and an image path to
-			// apptainer pull. The current behavior is that the code is joining both paths and
-			// failing to find the image in the expected location indicated by image path
-			// because image path is absolute, so after joining /tmp/a/b/c and
-			// /tmp/a/b/image.sif, the code expects to find /tmp/a/b/c/tmp/a/b/image.sif. Since
-			// the directory /tmp/a/b/c/tmp/a/b does not exist, it fails to create the file
-			// image.sif in there.
+			// An absolute image path takes precedence over --dir: the image is
+			// written to the image path itself, not joined below the pull dir.
 			desc:             "dir image path",
 			srcURI:           "oras://ghcr.io/apptainer/alpine:3.15.0",
 			unauthenticated:  true,
 			setPullDir:       true,
 			setImagePath:     true,
-			expectedExitCode: 255,
+			expectedExitCode: 0,
 		},
 
 		// transport tests
@@ -743,6 +738,8 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		// Regressions
 		// Manipulates remotes, so must run alone
 		"issue5808": np(c.issue5808),
+		// APPTAINER_PULLDIR must not break absolute destination paths
+		"pullDirWithAbsolutePath": c.pullDirWithAbsolutePath,
 		// Test that cross-arch images can be pulled without QEMU/binfmt_misc
 		"pullCrossArchImageWithoutQEMU": np(c.pullCrossArchImageWithoutQEMU),
 	}

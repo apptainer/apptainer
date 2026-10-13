@@ -146,6 +146,10 @@ Changes since 1.5.x
 
 ## v1.5.x changes
 
+- Fix `apptainer pull` failing when `APPTAINER_PULLDIR` is set and the
+  destination (`--name` or positional) is an absolute path. An absolute
+  destination now takes precedence over the pull directory instead of
+  being incorrectly joined below it.
 - Fix problems in suid fakeroot mode when using subuid/subgid mappings
   and mounting a SIF file: there were warnings about mounting /etc/passwd
   and /etc/group, and files appeared to belong to the user rather than
