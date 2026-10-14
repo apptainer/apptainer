@@ -9,6 +9,11 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- When the host lacks the `/dev/fd`, `/dev/stdin`, `/dev/stdout` or
+  `/dev/stderr` symlinks (e.g. hosts without udev), create them in the
+  container's minimal `/dev` instead of failing.
+- Do not fail `--fakeroot` builds when the kernel has no `binfmt_misc`
+  support (`/proc/sys/fs/binfmt_misc` is missing).
 - Add a new %{BUILDARCH} macro to the yum/dnf and zypper templates.
   It resolves to the architecture of the image currently being built.
 - Add support for mounting archive files (tar, tar.gz, etc.) using
