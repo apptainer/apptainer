@@ -240,7 +240,9 @@ func pullRun(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	if pullDir != "" {
+	// An absolute pullTo (from --name or positional destination) is not
+	// joined below pullDir, which would produce an invalid path.
+	if pullDir != "" && !filepath.IsAbs(pullTo) {
 		pullTo = filepath.Join(pullDir, pullTo)
 	}
 

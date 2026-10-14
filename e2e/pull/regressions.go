@@ -153,3 +153,42 @@ func (c ctx) pullCrossArchImageWithoutQEMU(t *testing.T) {
 		t.Fatalf("Image not found at %s: %v", pullPath, err)
 	}
 }
+
+// APPTAINER_PULLDIR must not break pulling when the destination is an
+// absolute path, e.g. via `pull --name /tmp/test.sif`. Before the fix,
+// the absolute path was joined below pullDir, producing an invalid
+// destination such as /tmp/pull/tmp/test.sif.
+func (c ctx) pullDirWithAbsolutePath(t *testing.T) {
+	e2e.EnsureImage(t, c.env)
+
+	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "issue-3672-", "")
+	defer cleanup(t)
+
+	pullDir := filepath.Join(tmpDir, "pull")
+	if err := os.Mkdir(pullDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	// Serve the local test image over http(s) so that pull performs a
+	// download and then copies to the requested destination.
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, c.env.ImagePath)
+	}))
+	defer srv.Close()
+
+	// Absolute destination path, as with `--name`.
+	dest := filepath.Join(tmpDir, "test.sif")
+
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserProfile),
+		e2e.WithCommand("pull"),
+		e2e.WithEnv(append(os.Environ(), "APPTAINER_PULLDIR="+pullDir)),
+		e2e.WithArgs("--name", dest, srv.URL),
+		e2e.ExpectExit(0),
+	)
+
+	if _, err := os.Stat(dest); err != nil {
+		t.Errorf("expected image at %s: %v", dest, err)
+	}
+}
