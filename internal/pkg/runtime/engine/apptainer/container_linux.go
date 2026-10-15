@@ -1642,6 +1642,18 @@ func (c *container) addKernelMount(system *mount.System) error {
 	return nil
 }
 
+// devStdLinks are the standard /dev symlinks added to a minimal /dev, along
+// with the target used when they are missing on the host.
+var devStdLinks = []struct {
+	path   string
+	target string
+}{
+	{"/dev/fd", "/proc/self/fd"},
+	{"/dev/stdin", "/proc/self/fd/0"},
+	{"/dev/stdout", "/proc/self/fd/1"},
+	{"/dev/stderr", "/proc/self/fd/2"},
+}
+
 func (c *container) addSessionDevAt(srcpath string, atpath string, system *mount.System) error {
 	fi, err := os.Lstat(srcpath)
 	if err != nil {
@@ -1896,17 +1908,19 @@ func (c *container) addDevMount(system *mount.System) error {
 			}
 		}
 
-		if err := c.addSessionDev("/dev/fd", system); err != nil {
-			return err
-		}
-		if err := c.addSessionDev("/dev/stdin", system); err != nil {
-			return err
-		}
-		if err := c.addSessionDev("/dev/stdout", system); err != nil {
-			return err
-		}
-		if err := c.addSessionDev("/dev/stderr", system); err != nil {
-			return err
+		for _, l := range devStdLinks {
+			// hosts without udev (e.g. gokrazy) may lack these symlinks,
+			// create them directly in the session /dev in this case
+			if _, err := os.Lstat(l.path); os.IsNotExist(err) {
+				sylog.Debugf("%s not found on host, creating symlink to %s", l.path, l.target)
+				if err := c.session.AddSymlink(l.path, l.target); err != nil {
+					return fmt.Errorf("failed to create symlink %s: %s", l.path, err)
+				}
+				continue
+			}
+			if err := c.addSessionDev(l.path, system); err != nil {
+				return err
+			}
 		}
 
 		// devices could be added in addUserbindsMount so bind session dev

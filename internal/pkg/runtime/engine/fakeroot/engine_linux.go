@@ -330,9 +330,14 @@ func (e *EngineOperations) StartProcess(_ int) error {
 		if err != nil {
 			return fmt.Errorf("failed to mount proc filesystem: %s", err)
 		}
-		err = syscall.Mount(binfmtMisc, filepath.Join(tmpdir, "sys", "fs", "binfmt_misc"), "", syscall.MS_BIND, "")
-		if err != nil {
-			return fmt.Errorf("failed to mount binfmt_misc filesystem: %s", err)
+		// binfmt_misc is absent when the kernel lacks CONFIG_BINFMT_MISC
+		if _, err := os.Stat(binfmtMisc); err == nil {
+			err = syscall.Mount(binfmtMisc, filepath.Join(tmpdir, "sys", "fs", "binfmt_misc"), "", syscall.MS_BIND, "")
+			if err != nil {
+				return fmt.Errorf("failed to mount binfmt_misc filesystem: %s", err)
+			}
+		} else {
+			sylog.Debugf("Skipping bind of %s: %s", binfmtMisc, err)
 		}
 		err = syscall.Mount(tmpdir, "/proc", "", syscall.MS_MOVE, "")
 		if err != nil {

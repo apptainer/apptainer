@@ -15,6 +15,7 @@
 - Aron Öfjörð Jóhannesson <aron1991@gmail.com>
 - Avikam Rozenfeld (avikam.roze@gmail.com)
 - Bart Oldeman <bart.oldeman@calculquebec.ca>
+- Ben Emmons <ben@ascension.us.org>
 - Benedikt Riedel <benedikt.riedel@gmail.com>
 - Bernard Li <bernardli@lbl.gov>
 - Brian Bockelman <bbockelm@cse.unl.edu>
