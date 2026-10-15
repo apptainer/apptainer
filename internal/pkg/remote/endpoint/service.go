@@ -21,7 +21,7 @@ import (
 
 	"github.com/apptainer/apptainer/internal/pkg/remote/credential"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
-	jsonresp "github.com/sylabs/json-resp"
+	jsonresp "github.com/apptainer/json-resp"
 )
 
 const defaultTimeout = 10 * time.Second

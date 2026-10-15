@@ -31,10 +31,12 @@ github.com/apex/log v1.9.0/go.mod h1:m82fZlWIuiWzWP04XCTXmnX0xRkYYbCdYn8jbJeLBEA
 github.com/apex/logs v1.0.0/go.mod h1:XzxuLZ5myVHDy9SAmYpamKKRNApGj54PfYLcFrXqDwo=
 github.com/aphistic/golf v0.0.0-20180712155816-02c07f170c5a/go.mod h1:3NqKYiepwy8kCu4PNA+aP7WUV72eXWJeP9/r3/K9aLE=
 github.com/aphistic/sweet v0.2.0/go.mod h1:fWDlIh/isSE9n6EPsRmC0det+whmX6dJid3stzu0Xys=
-github.com/apptainer/container-key-client v0.8.0 h1:K181Zrejb53mR2YQZwCathSj8YReCen+Wi2YuBxGH60=
-github.com/apptainer/container-key-client v0.8.0/go.mod h1:wMeJdiMXlPRiwJfUyae2WRHsZlHG9Af6iPQ9TZcBnS8=
-github.com/apptainer/container-library-client v1.4.16 h1:/m7GtzENLeNPJ1TkRjSpvUM/RIJ0VowqtUNYkCyBrys=
-github.com/apptainer/container-library-client v1.4.16/go.mod h1:yDS5hDC64TPAfBC3ghXYdV3bb+PXAlyPyTnZ+nCPw3I=
+github.com/apptainer/container-key-client v0.9.0 h1:FZK/7M6Pe37XSlyp/qex9ppkoHcJos8snebG8NhiA9s=
+github.com/apptainer/container-key-client v0.9.0/go.mod h1:gmGbeqBs2gbZNHmc/QHw52O3cqtEPhxSMuMaV+0Im7k=
+github.com/apptainer/container-library-client v1.5.0 h1:1Y12HBpX16kTa/HWTLr6TAo+3jL5iTDUzk10R36rK1A=
+github.com/apptainer/container-library-client v1.5.0/go.mod h1:tAaj7YJzIfXQx65BBKBe/emOKIjj8qJdsmBYc90RaZA=
+github.com/apptainer/json-resp v0.10.0 h1:WFomRI6HYMcRs30dRlAm7UgohXTOeo1UsHkvdaJon1Q=
+github.com/apptainer/json-resp v0.10.0/go.mod h1:uFWuRQk/tx2Ahz3VTEX/oEj8BYb1O6OWSfFtFEt4Drw=
 github.com/apptainer/sif/v2 v2.24.1 h1:5nleuo0v+W2OONIWJeUxg4FFSBcUi/nAWFGuoFc6Ims=
 github.com/apptainer/sif/v2 v2.24.1/go.mod h1:MKn5693YXNQTOL0+zEzuZB7RUIuoak5wX1/XhvYJk0E=
 github.com/astromechza/etcpwdparse v0.0.0-20170319193008-f0e5f0779716 h1:MWNxJj2HIBx5Skyz30rxjHkXwGCr05O2bAz0VrwgADM=
@@ -390,8 +392,6 @@ github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.12.1 h1:EuwCh5fleGS7H32xRwO3wRGT7DxrDhLAT6FF8MpWDWE=
 github.com/stretchr/testify v1.12.1/go.mod h1:MDEgiDPPsNp5cuIrHPPCyornHKgEVbtFUmoNlxoYthg=
-github.com/sylabs/json-resp v0.9.5 h1:mSMWgfolaCOeWB/+IpedxlZ+MRYh4PcCLMgay5b/Xyk=
-github.com/sylabs/json-resp v0.9.5/go.mod h1:Q9X4wRlZNPv3x76KaL8vTCBO4aC/DP2gh13xdtEqd1g=
 github.com/tj/assert v0.0.0-20171129193455-018094318fb0/go.mod h1:mZ9/Rh9oLWpLLDRpvE+3b7gP/C2YyLFYxNmcLnPTMe0=
 github.com/tj/assert v0.0.3 h1:Df/BlaZ20mq6kuai7f5z2TvPFiwC3xaWJSDQNiIS3Rk=
 github.com/tj/assert v0.0.3/go.mod h1:Ne6X72Q+TB1AteidzQncjw9PabbMp4PBMZ1k+vd1Pvk=
