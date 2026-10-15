@@ -6,8 +6,8 @@ require (
 	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2
 	github.com/ProtonMail/go-crypto v1.4.1
 	github.com/apex/log v1.9.0
-	github.com/apptainer/container-key-client v0.8.0
-	github.com/apptainer/container-library-client v1.4.16
+	github.com/apptainer/container-key-client v0.9.0
+	github.com/apptainer/container-library-client v1.5.0
 	github.com/apptainer/sif/v2 v2.24.1
 	github.com/astromechza/etcpwdparse v0.0.0-20170319193008-f0e5f0779716
 	github.com/blang/semver/v4 v4.0.0
@@ -41,7 +41,6 @@ require (
 	github.com/sigstore/sigstore v1.10.11
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
-	github.com/sylabs/json-resp v0.9.5
 	github.com/vbauerster/mpb/v8 v8.15.2
 	go.podman.io/common v0.69.2
 	go.podman.io/image/v5 v5.41.2
@@ -57,6 +56,7 @@ require (
 require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/adigunhammedolalekan/registry-auth v0.0.0-20200730122110-8cde180a3a60
+	github.com/apptainer/json-resp v0.10.0
 	github.com/buger/goterm v1.0.4
 	github.com/ccoveille/go-safecast/v2 v2.0.1
 	github.com/docker/cli v29.8.2+incompatible

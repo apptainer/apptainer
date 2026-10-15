@@ -22,7 +22,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
-	jsonresp "github.com/sylabs/json-resp"
+	jsonresp "github.com/apptainer/json-resp"
 )
 
 // Timeout for an image pull in seconds (2 hours)
