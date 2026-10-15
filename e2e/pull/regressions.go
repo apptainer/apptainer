@@ -25,7 +25,7 @@ import (
 // with `--library https://library.production.sycloud.io` from the default Sylabs cloud library.
 func (c ctx) issue5808(t *testing.T) {
 	testEndpoint := "issue5808"
-	testEndpointURI := "https://cloud.staging.sycloud.io"
+	testEndpointURI := "https://cloud.sycloud.io"
 	defaultLibraryURI := "https://library.production.sycloud.io"
 	testImage := "library://sylabs/tests/signed:1.0.0"
 
