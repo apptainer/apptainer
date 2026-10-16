@@ -35,6 +35,9 @@ type launchOptions struct {
 	WritableTmpfs bool
 	// OverlayPaths holds paths to image or directory overlays to be applied.
 	OverlayPaths []string
+	// BasePath holds a colon-separated list of paths to search for a base
+	// image, when the primary image was built with `apptainer build --overlay`.
+	BasePath string
 	// Scratchdir lists paths into the container to be mounted from a temporary location on the host.
 	ScratchDirs []string
 	// WorkDir is the parent path for scratch directories, and contained home/tmp on the host.
@@ -215,6 +218,16 @@ func OptWritableTmpfs(b bool) Option {
 func OptOverlayPaths(op []string) Option {
 	return func(lo *launchOptions) error {
 		lo.OverlayPaths = op
+		return nil
+	}
+}
+
+// OptBasePath sets a colon-separated list of paths to search for a base
+// image, when the primary image is an overlay built with
+// `apptainer build --overlay`.
+func OptBasePath(basePath string) Option {
+	return func(lo *launchOptions) error {
+		lo.BasePath = basePath
 		return nil
 	}
 }
