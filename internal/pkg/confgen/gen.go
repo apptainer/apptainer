@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
 
@@ -34,12 +35,7 @@ func Gen(args []string) error {
 
 // genConf produces an apptainer.conf file at out. It retains set configurations from in (leave blank for default)
 func genConf(tmpl, in, out string) error {
-	inFile := in
-	// Parse current apptainer.conf file into c
-	if _, err := os.Stat(in); os.IsNotExist(err) {
-		inFile = ""
-	}
-	c, err := apptainerconf.Parse(inFile)
+	c, err := parseConf(in)
 	if err != nil {
 		return fmt.Errorf("unable to parse apptainer.conf file: %v", err)
 	}
@@ -54,4 +50,39 @@ func genConf(tmpl, in, out string) error {
 		return fmt.Errorf("unable to generate config file: %v", err)
 	}
 	return nil
+}
+
+// parseConf parses the configuration file at in, or returns the default
+// configuration if in does not exist.
+func parseConf(in string) (*apptainerconf.File, error) {
+	f, err := os.Open(in)
+	if os.IsNotExist(err) {
+		return apptainerconf.GetConfig(nil)
+	} else if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	directives, err := apptainerconf.GetDirectives(f)
+	if err != nil {
+		return nil, err
+	}
+	warnTrustedBindPaths(directives)
+	return apptainerconf.GetConfig(directives)
+}
+
+// warnTrustedBindPaths warns if directives enable the SingularityCE
+// "trusted bind paths" directive, which Apptainer does not support, and
+// returns whether it did.
+func warnTrustedBindPaths(directives apptainerconf.Directives) bool {
+	for _, v := range directives["trusted bind paths"] {
+		if v == "yes" {
+			sylog.Warningf("'trusted bind paths = yes' is not supported and is dropped; " +
+				"bind path entries will be mounted nosuid,nodev. To keep host mount flags, " +
+				"add mount options to the bind path entries that need them, e.g. " +
+				"'bind path = /src::dev'. Add 'suid' only if needed ('bind path = /src::dev,suid').")
+			return true
+		}
+	}
+	return false
 }
