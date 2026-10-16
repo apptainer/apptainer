@@ -231,10 +231,10 @@ jobs:
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
-      - name: Install and test unprivileged for ubuntu 20.04
+      - name: Install and test unprivileged for ubuntu 22.04
         env:
           OS_TYPE: ubuntu
-          OS_VERSION: 20.04
+          OS_VERSION: 22.04
           TEST_TYPE: unpriv
         run: ./scripts/ci-docker-run
 
