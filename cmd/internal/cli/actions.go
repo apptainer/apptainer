@@ -318,6 +318,7 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 		launch.OptWritable(isWritable),
 		launch.OptWritableTmpfs(isWritableTmpfs),
 		launch.OptOverlayPaths(overlayPath),
+		launch.OptBasePath(basePath),
 		launch.OptScratchDirs(scratchPath),
 		launch.OptWorkDir(workdirPath),
 		launch.OptHome(
