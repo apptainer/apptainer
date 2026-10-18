@@ -71,7 +71,7 @@ func GetName(uri string) string {
 		return ""
 	}
 
-	ref = strings.TrimLeft(ref, "/")    // Trim leading "/" characters
+	ref = strings.Trim(ref, "/")        // Trim leading and trailing "/" characters
 	refSplit := strings.Split(ref, "/") // Split ref into parts
 
 	if transport == HTTP || transport == HTTPS {
