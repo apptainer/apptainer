@@ -23,7 +23,72 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/stretchr/testify/assert"
 )
+
+// Check that --disable-cache only removes temporary downloads after unsquashing.
+func (c actionTests) issue3847(t *testing.T) {
+	original, err := os.ReadFile(e2e.BusyboxSIF(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "issue-3847-", "")
+	defer cleanup(t)
+	imagePath := filepath.Join(dir, "image.sif")
+	linkPath := filepath.Join(dir, "image-link.sif")
+	if err := os.Symlink(imagePath, linkPath); err != nil {
+		t.Fatal(err)
+	}
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, imagePath)
+	}))
+	defer srv.Close()
+
+	tests := []struct {
+		name  string
+		image string
+	}{
+		{name: "absolute path", image: imagePath},
+		{name: "relative path", image: filepath.Base(imagePath)},
+		{name: "symlink", image: linkPath},
+		{name: "http", image: srv.URL + "/image.sif"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Use a private copy so a regression cannot delete the shared image.
+			if err := os.WriteFile(imagePath, original, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			tmpDir, cleanup := e2e.MakeTempDir(t, dir, "tmp-", "")
+			defer cleanup(t)
+
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(e2e.UserProfile),
+				e2e.WithCommand("exec"),
+				e2e.WithDir(dir),
+				e2e.WithArgs("--disable-cache", "--unsquash", "--tmpdir", tmpDir, tt.image, "true"),
+				e2e.ExpectExit(0),
+				e2e.PostRun(func(t *testing.T) {
+					data, err := os.ReadFile(imagePath)
+					if assert.NoError(t, err, "original SIF must be preserved") {
+						assert.Equal(t, original, data, "original SIF must not change")
+					}
+					if tt.image == linkPath {
+						target, err := os.Readlink(linkPath)
+						assert.NoError(t, err, "image symlink must be preserved")
+						assert.Equal(t, imagePath, target)
+					}
+					entries, err := os.ReadDir(tmpDir)
+					assert.NoError(t, err)
+					assert.Empty(t, entries, "temporary sandbox and download must be removed")
+				}),
+			)
+		})
+	}
+}
 
 // Check there is no file descriptor leaked in the container
 // process. This test expect 4 file descriptors, 3 for stdin,

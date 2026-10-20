@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Preserve local SIF images when `--disable-cache` is combined with
+  `--unsquash` or automatic extraction to a temporary sandbox.
 - When the host lacks the `/dev/fd`, `/dev/stdin`, `/dev/stdout` or
   `/dev/stderr` symlinks (e.g. hosts without udev), create them in the
   container's minimal `/dev` instead of failing.
