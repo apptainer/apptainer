@@ -3468,6 +3468,7 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		"issue 3502":                   c.issue3502,             // https://github.com/apptainer/apptainer/issues/3502
 		"issue 1097":                   c.issue1097,             // https://github.com/apptainer/apptainer/issues/1097
 		"issue 1848":                   c.issue1848,             // https://github.com/apptainer/apptainer/issues/1848
+		"issue 3847":                   c.issue3847,             // https://github.com/apptainer/apptainer/issues/3847
 		"network":                      c.actionNetwork,         // test basic networking
 		"netns-path":                   c.actionNetnsPath,       // test netns joining
 		"binds":                        c.actionBinds,           // test various binds with --bind and --mount

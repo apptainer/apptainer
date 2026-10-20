@@ -40,6 +40,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/gpu"
 	"github.com/apptainer/apptainer/internal/pkg/util/paths"
 	"github.com/apptainer/apptainer/internal/pkg/util/starter"
+	"github.com/apptainer/apptainer/internal/pkg/util/uri"
 	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	imgutil "github.com/apptainer/apptainer/pkg/image"
@@ -1384,8 +1385,10 @@ func (l *Launcher) prepareImage(_ context.Context, insideUserNs bool, image stri
 			l.engineConfig.SetImage(imageDir)
 			l.engineConfig.SetDeleteTempDir(rootfsDir)
 			l.generator.SetProcessEnvWithPrefixes(env.ApptainerPrefixes, "CONTAINER", imageDir)
-			// if '--disable-cache' flag, then remove original SIF after converting to sandbox
-			if l.cfg.CacheDisabled {
+			// Only remove temporary images pulled with caching disabled.
+			// Local images must be preserved, even with --disable-cache.
+			isURI, _ := uri.IsValid(l.engineConfig.GetImageArg())
+			if l.cfg.CacheDisabled && isURI {
 				sylog.Debugf("Removing tmp image: %s", image)
 				err := os.Remove(image)
 				if err != nil {
