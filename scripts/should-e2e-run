@@ -22,7 +22,7 @@ usage() {
 }
 
 # Give the possibility to force E2E run
-if ! test -z "${FORCE_E2E}" ; then
+if test -n "${FORCE_E2E}" ; then
     echo "FORCE_E2E set, forcing e2e tests."
     exit 0
 fi
