@@ -98,7 +98,10 @@ jobs:
           cd test/certs/ && go run ./gen_certs.go && cd ../..
 
       - name: Check Test Corpus Tidiness
-        run: git diff --exit-code --
+        run: |
+         # Starting with go1.26 as defined in go.mod, leaf.pem no
+         # longer stays consistent between runs, so skip checking it
+         git diff --exit-code -- root.pem intermediate.pem
 
   check_license_dependencies:
     name: check_license_dependencies
