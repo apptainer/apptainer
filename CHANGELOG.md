@@ -5,10 +5,10 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## v1.5.x changes
+## v1.5.5 - \[2026-10-22\]
 
 - Update minimum go to 1.26.10 in order to pick up fix to block
-  compromised emSign CA certificates.
+  compromised emSign intermediate CA certificates.
 - Fix `apptainer pull` failing when `APPTAINER_PULLDIR` is set and the
   destination (`--name` or positional) is an absolute path. An absolute
   destination now takes precedence over the pull directory instead of
