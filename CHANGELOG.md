@@ -163,6 +163,8 @@ Changes since 1.5.x
 
 ## v1.5.x changes
 
+- Update minimum go to 1.26.10 in order to pick up fix to block
+  compromised emSign CA certificates.
 - Fix `apptainer pull` failing when `APPTAINER_PULLDIR` is set and the
   destination (`--name` or positional) is an absolute path. An absolute
   destination now takes precedence over the pull directory instead of
