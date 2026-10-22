@@ -9,6 +9,8 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Skip missing host `/etc/hosts` and `/etc/resolv.conf` files when staging
+  builds, allowing OCI-to-SIF conversion on minimal hosts.
 - Preserve local SIF images when `--disable-cache` is combined with
   `--unsquash` or automatic extraction to a temporary sandbox.
 - When the host lacks the `/dev/fd`, `/dev/stdin`, `/dev/stdout` or
