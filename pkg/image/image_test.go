@@ -360,20 +360,21 @@ func TestAuthorizedOwner(t *testing.T) {
 
 	// Note that we do not test the "root" case; the privileged cases are
 	// tested in a separate function.
-	tests := []ownerGroupTest{
-		{
+	tests := make([]ownerGroupTest, 0, 3)
+	tests = append(tests,
+		ownerGroupTest{
 			name:       "empty owner list",
 			privileged: false,
 			owners:     []string{""},
 			shouldPass: false,
 		},
-		{
+		ownerGroupTest{
 			name:       "invalid owner list",
 			privileged: false,
 			owners:     []string{"2"},
 			shouldPass: false,
 		},
-	}
+	)
 
 	// We test with the current username, note that because we are under
 	// test.DropPrivilege, this needs to be done a very specific way.
@@ -466,20 +467,21 @@ func TestAuthorizedGroup(t *testing.T) {
 
 	// Note that we do not test the "root" case here, privileged cases are
 	// performed in a separate function.
-	tests := []groupTest{
-		{
+	tests := make([]groupTest, 0, 3)
+	tests = append(tests,
+		groupTest{
 			name:       "empty group list",
 			privileged: false,
 			groups:     []string{""},
 			shouldPass: false,
 		},
-		{
+		groupTest{
 			name:       "invalid group list",
 			privileged: false,
 			groups:     []string{"-"},
 			shouldPass: false,
 		},
-	}
+	)
 
 	gid := os.Getgid()
 	myGroup, err := user.LookupGroupId(strconv.Itoa(gid))

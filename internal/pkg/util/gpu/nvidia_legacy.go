@@ -33,7 +33,7 @@ func NvidiaPaths(configFilePath string) ([]string, []string, []string, error) {
 // Currently this is only the persistenced socket (if found).
 func NvidiaIpcsPath() ([]string, error) {
 	const persistencedSocket = "/var/run/nvidia-persistenced/socket"
-	var nvidiaFiles []string
+	nvidiaFiles := make([]string, 0, 1)
 	_, err := os.Stat(persistencedSocket)
 	// If it doesn't exist that's okay - probably persistenced isn't running.
 	if os.IsNotExist(err) {

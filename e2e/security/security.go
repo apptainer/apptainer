@@ -108,7 +108,7 @@ func (c ctx) testSecurityUnpriv(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
 	for _, tt := range tests {
-		optArgs := []string{}
+		optArgs := make([]string, 0, len(tt.opts)+1+len(tt.argv))
 		optArgs = append(optArgs, tt.opts...)
 		optArgs = append(optArgs, c.env.ImagePath)
 		optArgs = append(optArgs, tt.argv...)
@@ -204,7 +204,7 @@ func (c ctx) testSecurityPriv(t *testing.T) {
 	e2e.EnsureImage(t, c.env)
 
 	for _, tt := range tests {
-		optArgs := []string{}
+		optArgs := make([]string, 0, len(tt.opts)+1+len(tt.argv))
 		optArgs = append(optArgs, tt.opts...)
 		optArgs = append(optArgs, c.env.ImagePath)
 		optArgs = append(optArgs, tt.argv...)
@@ -289,7 +289,7 @@ func (c ctx) testApparmor(t *testing.T) {
 	for _, profile := range e2e.Profiles {
 		t.Run(profile.String(), func(t *testing.T) {
 			for _, tt := range tests {
-				optArgs := []string{}
+				optArgs := make([]string, 0, len(tt.opts)+1+len(tt.argv))
 				optArgs = append(optArgs, tt.opts...)
 				optArgs = append(optArgs, c.env.ImagePath)
 				optArgs = append(optArgs, tt.argv...)
@@ -356,7 +356,7 @@ func (c ctx) testSELinux(t *testing.T) {
 	for _, profile := range e2e.Profiles {
 		t.Run(profile.String(), func(t *testing.T) {
 			for _, tt := range tests {
-				optArgs := []string{}
+				optArgs := make([]string, 0, len(tt.opts)+1+len(tt.argv))
 				optArgs = append(optArgs, tt.opts...)
 				optArgs = append(optArgs, sandbox)
 				optArgs = append(optArgs, tt.argv...)
