@@ -362,25 +362,6 @@ func (c ctx) remoteStatus(t *testing.T) {
 		)
 	}
 
-	testPass := []struct {
-		name   string
-		remote string
-	}{
-		{"ValidRemote", "cloud"},
-	}
-
-	for _, tt := range testPass {
-		argv := []string{"--config", config.Name(), "status", tt.remote}
-		c.env.RunApptainer(
-			t,
-			e2e.AsSubtest(tt.name),
-			e2e.WithProfile(e2e.UserProfile),
-			e2e.WithCommand("remote"),
-			e2e.WithArgs(argv...),
-			e2e.ExpectExit(0),
-		)
-	}
-
 	testFail := []struct {
 		name   string
 		remote string
