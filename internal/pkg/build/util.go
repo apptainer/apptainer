@@ -29,17 +29,21 @@ func createStageFile(source string, b *types.Bundle, warnMsg string) (string, er
 		return "", nil
 	}
 
+	content, err := os.ReadFile(source)
+	if os.IsNotExist(err) {
+		sylog.Warningf("Skipping missing host file %s. %s.", source, warnMsg)
+		return "", nil
+	}
+	if err != nil {
+		return "", fmt.Errorf("failed to read %s: %s", source, err)
+	}
+
 	sessionFile := filepath.Join(b.TmpDir, filepath.Base(source))
 	stageFile, err := os.Create(sessionFile)
 	if err != nil {
 		return "", fmt.Errorf("failed to create staging %s file: %s", sessionFile, err)
 	}
 	defer stageFile.Close()
-
-	content, err := os.ReadFile(source)
-	if err != nil {
-		return "", fmt.Errorf("failed to read %s: %s", source, err)
-	}
 
 	// Append an extra blank line to the end of the staged file. This is a trick to fix #5250
 	// where a yum install of the `setup` package can fail
