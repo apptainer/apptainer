@@ -59,7 +59,7 @@ require (
 	github.com/apptainer/json-resp v0.10.0
 	github.com/buger/goterm v1.0.4
 	github.com/ccoveille/go-safecast/v2 v2.0.1
-	github.com/docker/cli v29.9.0+incompatible
+	github.com/docker/cli v29.9.2+incompatible
 	github.com/docker/distribution v2.8.3+incompatible
 	github.com/docker/docker v28.5.2+incompatible
 	github.com/moby/sys/sequential v0.7.0
