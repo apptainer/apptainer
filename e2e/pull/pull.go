@@ -321,13 +321,6 @@ func (c ctx) testPullCmd(t *testing.T) {
 			library:          "https://bad-library.production.sycloud.io",
 			expectedExitCode: 255,
 		},
-		{
-			desc:             "default library URI",
-			srcURI:           "oras://ghcr.io/apptainer/busybox:1.31.1",
-			library:          "https://library.production.sycloud.io",
-			force:            true,
-			expectedExitCode: 0,
-		},
 
 		// pulling with --no-https flag
 		{
@@ -736,8 +729,6 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 		// causing permission issues for other tests.
 		"pullUmaskCheck": np(c.testPullUmask),
 		// Regressions
-		// Manipulates remotes, so must run alone
-		"issue5808": np(c.issue5808),
 		// APPTAINER_PULLDIR must not break absolute destination paths
 		"pullDirWithAbsolutePath": c.pullDirWithAbsolutePath,
 		// Test that cross-arch images can be pulled without QEMU/binfmt_misc

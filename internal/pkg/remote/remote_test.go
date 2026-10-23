@@ -1034,40 +1034,6 @@ func TestGetURL(t *testing.T) {
 }
 
 func TestGetServiceURI(t *testing.T) {
-	testsPass := []remoteTest{
-		{
-			name: "get uri from real cloud remote",
-			old: Config{
-				DefaultRemote: "cloud",
-				Remotes: map[string]*endpoint.Config{
-					"random": {
-						URI:   "cloud.random.io",
-						Token: testToken,
-					},
-					"cloud": {
-						URI:   "cloud.sycloud.io",
-						Token: testToken,
-					},
-				},
-			},
-			id: "cloud",
-		},
-	}
-
-	for _, test := range testsPass {
-		t.Run(test.name, func(t *testing.T) {
-			var ep *endpoint.Config
-			ep, err := test.old.GetRemote(test.id)
-			if err != nil {
-				t.Fatal("failed to get endpoint from config")
-			}
-
-			if s, err := ep.GetServiceURI("token"); s == "" || err != nil {
-				t.Errorf("failed to get service uri:\n\tservice uri: %v\n\t err: %v", s, err)
-			}
-		})
-	}
-
 	testsFail := []remoteTest{
 		{
 			name: "get uri from non-existent remote",

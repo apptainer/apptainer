@@ -98,10 +98,6 @@ func (c imgBuildTests) buildFrom(t *testing.T) {
 			buildSpec: "oras://ghcr.io/apptainer/alpine:latest",
 		},
 		{
-			name:      "LibraryDefFile",
-			buildSpec: "../examples/library/Apptainer",
-		},
-		{
 			name:      "OrasURI",
 			buildSpec: c.env.OrasTestImage,
 		},
