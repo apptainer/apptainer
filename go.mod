@@ -4,11 +4,11 @@ go 1.26.10
 
 require (
 	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2
-	github.com/ProtonMail/go-crypto v1.4.1
+	github.com/ProtonMail/go-crypto v1.5.2
 	github.com/apex/log v1.9.0
 	github.com/apptainer/container-key-client v0.9.0
 	github.com/apptainer/container-library-client v1.5.0
-	github.com/apptainer/sif/v2 v2.24.1
+	github.com/apptainer/sif/v2 v2.25.0
 	github.com/astromechza/etcpwdparse v0.0.0-20170319193008-f0e5f0779716
 	github.com/blang/semver/v4 v4.0.0
 	github.com/buger/jsonparser v1.6.1
