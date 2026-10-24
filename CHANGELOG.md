@@ -9,6 +9,15 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Do not fail to start containers when the host has no `/etc/localtime`.
+  The container's own `/etc/localtime`, if any, is now left in place.
+  Missing sources of `skip-on-error` bind mounts such as `/etc/hosts` are
+  also skipped instead of failing.
+- Do not fail to start containers when the host has no `/etc/resolv.conf`.
+  The container's own `/etc/resolv.conf`, if any, is left in place.
+- `apptainer inspect` of a sandbox image, and therefore `apptainer build`,
+  no longer requires a `sh` on the host. Without one, the inspection runs
+  inside the container instead.
 - Skip missing host `/etc/hosts` and `/etc/resolv.conf` files when staging
   builds, allowing OCI-to-SIF conversion on minimal hosts.
 - Preserve local SIF images when `--disable-cache` is combined with
