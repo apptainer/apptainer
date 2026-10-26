@@ -164,6 +164,7 @@ func (c configTests) configGlobal(t *testing.T) {
 		cwd               string
 		directive         string
 		directiveValue    string
+		rawDirective      bool // append to apptainer.conf, for values `config global --set` rejects
 		exit              int
 		resultOp          e2e.ApptainerCmdResultOp
 	}{
@@ -441,22 +442,14 @@ func (c configTests) configGlobal(t *testing.T) {
 			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid"),
 		},
 		{
-			name:           "BindPathFlagsSuidUser",
-			argv:           bindFlags("/bindpath"),
-			profile:        e2e.UserProfile,
-			directive:      "bind path",
-			directiveValue: "/sbin:/bindpath:suid",
-			exit:           0,
-			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nodev"),
-		},
-		{
-			name:           "BindPathFlagsDevSuidUser",
+			name:           "BindPathSuidIgnoredUser",
 			argv:           bindFlags("/bindpath"),
 			profile:        e2e.UserProfile,
 			directive:      "bind path",
 			directiveValue: "/sbin:/bindpath:dev,suid",
+			rawDirective:   true,
 			exit:           0,
-			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags="),
+			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid"),
 		},
 		{
 			name:           "BindPathFlagsDevSameDestUser",
@@ -486,22 +479,24 @@ func (c configTests) configGlobal(t *testing.T) {
 			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid"),
 		},
 		{
-			name:           "BindPathFlagsSuidRoot",
-			argv:           bindFlags("/bindpath"),
-			profile:        e2e.RootProfile,
-			directive:      "bind path",
-			directiveValue: "/sbin:/bindpath:suid",
-			exit:           0,
-			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nodev"),
-		},
-		{
-			name:           "BindPathFlagsDevSuidRoot",
+			name:           "BindPathSuidIgnoredRoot",
 			argv:           bindFlags("/bindpath"),
 			profile:        e2e.RootProfile,
 			directive:      "bind path",
 			directiveValue: "/sbin:/bindpath:dev,suid",
+			rawDirective:   true,
 			exit:           0,
-			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags="),
+			resultOp:       e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid"),
+		},
+		{
+			name:           "BindPathSuidWarning",
+			argv:           bindFlags("/bindpath"),
+			profile:        e2e.UserProfile,
+			directive:      "bind path",
+			directiveValue: "/sbin:/bindpath:dev,suid",
+			rawDirective:   true,
+			exit:           0,
+			resultOp:       e2e.ExpectError(e2e.ContainMatch, `unsupported mount option "suid"`),
 		},
 		{
 			name:           "BindPathFlagsDevSameDestRoot",
@@ -518,7 +513,7 @@ func (c configTests) configGlobal(t *testing.T) {
 			profile:           e2e.UserProfile,
 			addRequirementsFn: requireNodevNosuidShm,
 			directive:         "bind path",
-			directiveValue:    "/dev/shm:/bindpath:dev,suid",
+			directiveValue:    "/dev/shm:/bindpath:dev",
 			exit:              0,
 			resultOp:          e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid nodev"),
 		},
@@ -528,7 +523,7 @@ func (c configTests) configGlobal(t *testing.T) {
 			profile:           e2e.RootProfile,
 			addRequirementsFn: requireNodevNosuidShm,
 			directive:         "bind path",
-			directiveValue:    "/dev/shm:/bindpath:dev,suid",
+			directiveValue:    "/dev/shm:/bindpath:dev",
 			exit:              0,
 			resultOp:          e2e.ExpectOutput(e2e.ExactMatch, "flags=nosuid nodev"),
 		},
@@ -548,7 +543,7 @@ func (c configTests) configGlobal(t *testing.T) {
 			profile:           e2e.UserProfile,
 			addRequirementsFn: requireNodevNosuidShm,
 			directive:         "bind path",
-			directiveValue:    "/dev/shm:/bindpath:dev,suid",
+			directiveValue:    "/dev/shm:/bindpath:dev",
 			exit:              0,
 			resultOp:          e2e.ExpectError(e2e.ContainMatch, "'dev' has no effect, host mount is nodev"),
 		},
@@ -979,7 +974,11 @@ func (c configTests) configGlobal(t *testing.T) {
 				if tt.addRequirementsFn != nil {
 					tt.addRequirementsFn(t)
 				}
-				e2e.SetDirective(t, c.env, tt.directive, tt.directiveValue)
+				if tt.rawDirective {
+					e2e.AppendDirective(t, tt.directive, tt.directiveValue)
+				} else {
+					e2e.SetDirective(t, c.env, tt.directive, tt.directiveValue)
+				}
 			}),
 			e2e.PostRun(func(t *testing.T) {
 				e2e.ResetDirective(t, c.env, tt.directive)

@@ -27,14 +27,12 @@ type BindPathEntry struct {
 	Destination string
 	// Dev prevents nodev from being added to the bind mount.
 	Dev bool
-	// Suid prevents nosuid from being added to the bind mount.
-	Suid bool
 }
 
 // SplitDirectiveValue splits a raw directive value on commas. For the
 // "bind path" directive, empty tokens are dropped and a token that is not an
 // absolute path is a mount option that stays attached to the preceding
-// entry, so that "/a::dev,suid,/b" yields "/a::dev,suid" and "/b".
+// entry, so that "/a::dev,ro,/b" yields "/a::dev,ro" and "/b".
 func SplitDirectiveValue(directive, value string) []string {
 	var values []string
 	for _, v := range strings.Split(value, ",") {
@@ -55,7 +53,7 @@ func SplitDirectiveValue(directive, value string) []string {
 
 // ParseBindPath parses a "bind path" directive value of the form
 // <src>[:<dst>[:<options>]]. An empty destination means the same as the
-// source. Supported options are "dev" and "suid"; if there are others, the
+// source. The only supported option is "dev"; if there are others, the
 // parsed entry is returned with an error wrapping ErrUnsupportedBindOption.
 func ParseBindPath(entry string) (BindPathEntry, error) {
 	fields := strings.SplitN(entry, ":", 3)
@@ -84,14 +82,12 @@ func ParseBindPath(entry string) (BindPathEntry, error) {
 		case "":
 		case "dev":
 			bp.Dev = true
-		case "suid":
-			bp.Suid = true
 		default:
 			unsupported = append(unsupported, fmt.Sprintf("%q", opt))
 		}
 	}
 	if len(unsupported) > 0 {
-		return bp, fmt.Errorf("bind path %q: %w %s (supported: dev, suid)",
+		return bp, fmt.Errorf("bind path %q: %w %s (supported: dev)",
 			entry, ErrUnsupportedBindOption, strings.Join(unsupported, ", "))
 	}
 

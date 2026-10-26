@@ -162,13 +162,12 @@ Changes since 1.5.x
   `docker://sylabs.io/lolcow/` or `https://example.com/foo/`. Only
   leading slashes were trimmed from the reference before taking its last
   path component, so a trailing slash left an empty final component.
-- Allow `dev` and `suid` mount options on `bind path` entries in
-  apptainer.conf, as `bind path = <src>[:<dst>[:<options>]]`. An empty
-  destination is the same as the source, e.g. `bind path = /opt/tools::dev`.
-  `dev` and `suid` stop Apptainer from adding `nodev` and `nosuid` to that bind.
-  Flags already set on the host mount are kept, with a warning. `apptainer
-  confgen` now warns when it converts a configuration that sets `trusted bind
-  paths = yes` (from SingularityCE).
+- Allow a `dev` mount option on `bind path` entries in apptainer.conf, as
+  `bind path = <src>[:<dst>[:<options>]]`. An empty destination is the same
+  as the source, e.g. `bind path = /opt/tools::dev`. `dev` stops Apptainer
+  from adding `nodev` to that bind. A `nodev` already set on the host mount
+  is kept, with a warning. `apptainer confgen` now warns when it converts a
+  configuration that sets `trusted bind paths = yes` (from SingularityCE).
 
 ## v1.5.5 - \[2026-10-22\]
 

@@ -21,20 +21,23 @@ func TestGlobalConfigBindPathOptions(t *testing.T) {
 	configFile := filepath.Join(t.TempDir(), "apptainer.conf")
 	assert.NilError(t, os.WriteFile(configFile, []byte("bind path = /etc/hosts\n"), 0o644))
 
-	err := GlobalConfig([]string{"bind path", "/a::dev,suid,/b:/c:dev,suid"}, configFile, false, GlobalConfigSet)
+	err := GlobalConfig([]string{"bind path", "/a::dev,/b:/c:dev"}, configFile, false, GlobalConfigSet)
 	assert.NilError(t, err)
 	c, err := apptainerconf.Parse(configFile)
 	assert.NilError(t, err)
-	assert.DeepEqual(t, c.BindPath, []string{"/a::dev,suid", "/b:/c:dev,suid", "/etc/hosts"})
+	assert.DeepEqual(t, c.BindPath, []string{"/a::dev", "/b:/c:dev", "/etc/hosts"})
 
-	err = GlobalConfig([]string{"bind path", "/a::dev,suid"}, configFile, false, GlobalConfigUnset)
+	err = GlobalConfig([]string{"bind path", "/a::dev"}, configFile, false, GlobalConfigUnset)
 	assert.NilError(t, err)
 	c, err = apptainerconf.Parse(configFile)
 	assert.NilError(t, err)
-	assert.DeepEqual(t, c.BindPath, []string{"/b:/c:dev,suid", "/etc/hosts"})
+	assert.DeepEqual(t, c.BindPath, []string{"/b:/c:dev", "/etc/hosts"})
 
 	err = GlobalConfig([]string{"bind path", "/a::bogus"}, configFile, false, GlobalConfigSet)
 	assert.ErrorContains(t, err, `unsupported mount option "bogus"`)
+
+	err = GlobalConfig([]string{"bind path", "/a::dev,suid"}, configFile, false, GlobalConfigSet)
+	assert.ErrorContains(t, err, `unsupported mount option "suid"`)
 }
 
 func TestGlobalConfigUnsupportedBindPathOption(t *testing.T) {

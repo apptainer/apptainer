@@ -2092,16 +2092,13 @@ func bindPathFlags(flags uintptr, bp apptainerconf.BindPathEntry) (uintptr, bool
 	if bp.Dev {
 		flags &^= syscall.MS_NODEV
 	}
-	if bp.Suid {
-		flags &^= syscall.MS_NOSUID
-	}
 	return flags, flags != syscall.MS_BIND|syscall.MS_REC
 }
 
-// warnHostBindFlags warns when a bind path requests dev or suid but the host
-// mount of its source is already nodev or nosuid, as the host flag is kept.
+// warnHostBindFlags warns when a bind path requests dev but the host mount of
+// its source is already nodev, as the host flag is kept.
 func warnHostBindFlags(bp apptainerconf.BindPathEntry) {
-	if !bp.Dev && !bp.Suid {
+	if !bp.Dev {
 		return
 	}
 	var stfs unix.Statfs_t
@@ -2109,11 +2106,8 @@ func warnHostBindFlags(bp apptainerconf.BindPathEntry) {
 		sylog.Debugf("Could not check host mount flags of %s: %s", bp.Source, err)
 		return
 	}
-	if bp.Dev && stfs.Flags&unix.ST_NODEV != 0 {
+	if stfs.Flags&unix.ST_NODEV != 0 {
 		sylog.Warningf("bind path %s: 'dev' has no effect, host mount is nodev", bp.Source)
-	}
-	if bp.Suid && stfs.Flags&unix.ST_NOSUID != 0 {
-		sylog.Warningf("bind path %s: 'suid' has no effect, host mount is nosuid", bp.Source)
 	}
 }
 

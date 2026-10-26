@@ -78,9 +78,9 @@ func warnTrustedBindPaths(directives apptainerconf.Directives) bool {
 	for _, v := range directives["trusted bind paths"] {
 		if v == "yes" {
 			sylog.Warningf("'trusted bind paths = yes' is not supported and is dropped; " +
-				"bind path entries will be mounted nosuid,nodev. To keep host mount flags, " +
-				"add mount options to the bind path entries that need them, e.g. " +
-				"'bind path = /src::dev'. Add 'suid' only if needed ('bind path = /src::dev,suid').")
+				"bind path entries will be mounted nosuid,nodev. To allow device access, " +
+				"add the 'dev' option to the bind path entries that need it, e.g. " +
+				"'bind path = /src::dev'.")
 			return true
 		}
 	}

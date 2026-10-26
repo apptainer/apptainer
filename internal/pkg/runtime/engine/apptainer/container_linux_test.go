@@ -25,22 +25,18 @@ func TestBindPathFlags(t *testing.T) {
 	tests := []struct {
 		name        string
 		flags       uintptr
-		dev, suid   bool
+		dev         bool
 		wantFlags   uintptr
 		wantRemount bool
 	}{
-		{"Default", bind | nosuid | nodev, false, false, bind | nosuid | nodev, true},
-		{"Dev", bind | nosuid | nodev, true, false, bind | nosuid, true},
-		{"Suid", bind | nosuid | nodev, false, true, bind | nodev, true},
-		{"DevSuid", bind | nosuid | nodev, true, true, bind, false},
-		{"AllowSetuidDefault", bind | nodev, false, false, bind | nodev, true},
-		{"AllowSetuidDev", bind | nodev, true, false, bind, false},
-		{"AllowSetuidSuid", bind | nodev, false, true, bind | nodev, true},
-		{"AllowSetuidDevSuid", bind | nodev, true, true, bind, false},
+		{"Default", bind | nosuid | nodev, false, bind | nosuid | nodev, true},
+		{"Dev", bind | nosuid | nodev, true, bind | nosuid, true},
+		{"AllowSetuidDefault", bind | nodev, false, bind | nodev, true},
+		{"AllowSetuidDev", bind | nodev, true, bind, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bp := apptainerconf.BindPathEntry{Source: "/a", Destination: "/a", Dev: tt.dev, Suid: tt.suid}
+			bp := apptainerconf.BindPathEntry{Source: "/a", Destination: "/a", Dev: tt.dev}
 			flags, remount := bindPathFlags(tt.flags, bp)
 			assert.Equal(t, flags, tt.wantFlags)
 			assert.Equal(t, remount, tt.wantRemount)
