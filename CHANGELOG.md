@@ -9,6 +9,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Fix SIF execution failing when `activated = false` in `ecl.toml` and
+  an execution group references a removed directory. ECL only works in
+  suid mode and is only effective when user namespaces are disabled.
 - Skip missing host `/etc/hosts` and `/etc/resolv.conf` files when staging
   builds, allowing OCI-to-SIF conversion on minimal hosts.
 - Preserve local SIF images when `--disable-cache` is combined with
