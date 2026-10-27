@@ -284,8 +284,8 @@ func (b *Build) Full(ctx context.Context) error {
 		if b.Conf.Opts.EncryptionKeyInfo != nil {
 			return fmt.Errorf("'--overlay' cannot be used together with '--encrypt'")
 		}
-		if bs := b.stages[len(b.stages)-1].b.Recipe.Header["bootstrap"]; bs != "localimage" {
-			return fmt.Errorf("'--overlay' currently requires 'Bootstrap: localimage', got %q", bs)
+		if bs := b.stages[len(b.stages)-1].b.Recipe.Header["bootstrap"]; bs != "localimage" && bs != "docker" && bs != "oras" {
+			return fmt.Errorf("'--overlay' requires a Bootstrap of 'localimage', 'docker', or 'oras', but got %q", bs)
 		}
 	}
 
@@ -372,10 +372,19 @@ func (b *Build) Full(ctx context.Context) error {
 					return fmt.Errorf("while reopening overlay rootfs: %w", err)
 				}
 
-				// Hash the base image for later use
-				overlayBaseHash, err := hashBaseImage(stage.b.Recipe.Header["from"])
-				if err != nil {
-					return fmt.Errorf("while hashing base image for overlay build: %w", err)
+				// Hash the base image for later use.
+				var overlayBaseHash string
+				if stage.b.Recipe.Header["bootstrap"] == "docker" || stage.b.Recipe.Header["bootstrap"] == "oras" {
+					// For docker/oras, the base image is the fetched OCI
+					// image itself, identified by its manifest digest,
+					// which the conveyor recorded on the bundle options.
+					overlayBaseHash = stage.b.Opts.Digest
+				} else {
+					// For a localimage bootstrap, hash the base image file.
+					overlayBaseHash, err = hashBaseImage(stage.b.Recipe.Header["from"])
+					if err != nil {
+						return fmt.Errorf("while hashing base image for overlay build: %w", err)
+					}
 				}
 
 				// Store in Options for label insertion

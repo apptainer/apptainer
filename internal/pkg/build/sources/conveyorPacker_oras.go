@@ -39,6 +39,14 @@ func (cp *OrasConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err err
 		return fmt.Errorf("while fetching library image: %v", err)
 	}
 
+	// Record the manifest digest so an overlay build can tag the overlay
+	// with the base image identity, the same way a docker build does.
+	digest, err := oras.RefDigest(ctx, b.Recipe.Header["from"], runtime.GOARCH, b.Opts.OCIAuthConfig, b.Opts.NoHTTPS, b.Opts.ReqAuthFile)
+	if err != nil {
+		return fmt.Errorf("while getting ORAS image digest: %v", err)
+	}
+	b.Opts.Digest = digest.String()
+
 	// insert base metadata before unpacking fs
 	if err = makeBaseEnv(b, true); err != nil {
 		return fmt.Errorf("while inserting base environment: %v", err)
