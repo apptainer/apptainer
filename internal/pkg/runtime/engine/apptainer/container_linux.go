@@ -774,6 +774,11 @@ func (c *container) mountGeneric(mnt *mount.Point, system *mount.System) (err er
 	if bindMount {
 		if !remount {
 			if _, err := os.Stat(source); os.IsNotExist(err) {
+				if mount.SkipOnError(mnt.InternalOptions) {
+					sylog.Debugf("Skipping mount of %s: source doesn't exist", source)
+					c.skippedMount = append(c.skippedMount, mnt.Destination)
+					return nil
+				}
 				return fmt.Errorf("mount source %s doesn't exist", source)
 			} else if err != nil {
 				return fmt.Errorf("while getting stat for %s: %s", source, err)
@@ -2086,9 +2091,10 @@ func (c *container) copyHostLocaltime(localtimePath string) error {
 		content, err := os.ReadFile(localtimePath)
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
 			return fmt.Errorf("while reading host %s, err: %s", localtimePath, err)
-		}
-		if err := c.session.AddFile(filepath.Join(c.session.Layer.Dir(), localtimePath), content); err != nil {
-			return fmt.Errorf("while adding file to overlay session folder, err: %s", err)
+		} else if err == nil {
+			if err := c.session.AddFile(filepath.Join(c.session.Layer.Dir(), localtimePath), content); err != nil {
+				return fmt.Errorf("while adding file to overlay session folder, err: %s", err)
+			}
 		}
 	}
 	return nil
@@ -2890,7 +2896,11 @@ func (c *container) addResolvConfMount(system *mount.System) error {
 		if dns == "" {
 			var fi os.FileInfo
 			fi, err = os.Lstat(resolvConf)
-			if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				// Leave the container's own resolv.conf, if any, in place.
+				sylog.Verbosef("Skipping bind of the host's %s: no such file", resolvConf)
+				return nil
+			} else if err != nil {
 				return err
 			}
 			done := false

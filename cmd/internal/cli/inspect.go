@@ -187,6 +187,9 @@ type command struct {
 	metadata    *inspect.Metadata
 	sifMetadata *inspect.Metadata
 	img         *image.Image
+	// shell is the host shell used to run the script against a sandbox
+	// image, empty if the script must run inside the container instead.
+	shell string
 }
 
 //nolint:dupword
@@ -198,7 +201,14 @@ func newCommand(allData bool, appName string, img *image.Image) *command {
 
 	prefix := ""
 	if img.Type == image.SANDBOX {
-		prefix = img.Path
+		os.Setenv("PATH", env.DefaultPath)
+		if shell, err := exec.LookPath("sh"); err == nil {
+			command.shell = shell
+			prefix = img.Path
+		} else {
+			// Hosts without a shell
+			sylog.Debugf("sh command not found in %q, inspecting from within the container", env.DefaultPath)
+		}
 	} else if img.Type == image.SIF {
 		metadata, err := getInspectMetadataFromSIF(img)
 		if err == nil {
@@ -342,15 +352,8 @@ func (c *command) getMetadata() (*inspect.Metadata, error) {
 	outBuf := new(bytes.Buffer)
 
 	// Execute the compound script.
-	if c.img.Type == image.SANDBOX {
-		os.Setenv("PATH", env.DefaultPath)
-
-		// look for sh
-		shell, err := exec.LookPath("sh")
-		if err != nil {
-			return nil, fmt.Errorf("could not inspect container: sh command not found in %q", env.DefaultPath)
-		}
-		args[0] = shell
+	if c.shell != "" {
+		args[0] = c.shell
 
 		cmd := exec.Command(args[0], args[1:]...)
 		cmd.Env = []string{"PATH=" + env.DefaultPath}
@@ -361,7 +364,8 @@ func (c *command) getMetadata() (*inspect.Metadata, error) {
 		outBuf.Write(out)
 		prefix = c.img.Path
 	} else {
-		// single file image, run apptainer exec with the compound script
+		// single file image, or sandbox on a host without a shell:
+		// run apptainer exec with the compound script
 		out, err := apptainerExec(c.img.Path, args)
 		if err != nil {
 			return nil, fmt.Errorf("could not inspect container: %v", err)
