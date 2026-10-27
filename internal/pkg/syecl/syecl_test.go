@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/ProtonMail/go-crypto/openpgp"
+	"github.com/stretchr/testify/assert"
 	"gotest.tools/v3/golden"
 )
 
@@ -242,29 +243,40 @@ func TestValidateConfig(t *testing.T) {
 	}{
 		{
 			name: "DuplicatePaths",
-			c: EclConfig{ExecGroups: []Execgroup{
-				{DirPath: dirPath},
-				{DirPath: dirPath},
+			c: EclConfig{Activated: true, ExecGroups: []Execgroup{
+				{DirPath: dirPath, ListMode: "whitelist"},
+				{DirPath: dirPath, ListMode: "whitelist"},
+			}},
+			wantErr: true,
+		},
+		{
+			name: "MissingPath",
+			c: EclConfig{Activated: true, ExecGroups: []Execgroup{
+				{
+					DirPath:  filepath.Join(t.TempDir(), "removed"),
+					ListMode: "whitelist",
+					KeyFPs:   []string{KeyFP1},
+				},
 			}},
 			wantErr: true,
 		},
 		{
 			name: "RelativePath",
-			c: EclConfig{ExecGroups: []Execgroup{
+			c: EclConfig{Activated: true, ExecGroups: []Execgroup{
 				{DirPath: "testdata"},
 			}},
 			wantErr: true,
 		},
 		{
 			name: "BadMode",
-			c: EclConfig{ExecGroups: []Execgroup{
+			c: EclConfig{Activated: true, ExecGroups: []Execgroup{
 				{ListMode: "bad"},
 			}},
 			wantErr: true,
 		},
 		{
 			name: "BadFingerprint",
-			c: EclConfig{ExecGroups: []Execgroup{
+			c: EclConfig{Activated: true, ExecGroups: []Execgroup{
 				{ListMode: "whitelist", KeyFPs: []string{"bad"}},
 			}},
 			wantErr: true,
@@ -313,9 +325,16 @@ func TestValidateConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.c.ValidateConfig(); (err != nil) != tt.wantErr {
-				t.Errorf("got error %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr {
+				assert.Error(t, tt.c.ValidateConfig())
+			} else {
+				assert.NoError(t, tt.c.ValidateConfig())
 			}
+
+			t.Run("Deactivated", func(t *testing.T) {
+				tt.c.Activated = false
+				assert.NoError(t, tt.c.ValidateConfig())
+			})
 		})
 	}
 }

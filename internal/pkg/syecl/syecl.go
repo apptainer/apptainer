@@ -81,8 +81,12 @@ func PutConfig(ecl EclConfig, confPath string) (err error) {
 }
 
 // ValidateConfig makes sure paths from configs are fully resolved and that
-// values from an execgroup are logically correct.
+// values from an execgroup are logically correct when ECL is activated.
 func (ecl *EclConfig) ValidateConfig() error {
+	if !ecl.Activated {
+		return nil
+	}
+
 	m := map[string]bool{}
 
 	for _, v := range ecl.ExecGroups {
