@@ -570,7 +570,7 @@ func (l *Launcher) resolveOverlayBase(image string) (string, error) {
 			"for its base image (hash %s)", image, hash)
 	}
 
-	base, err := basepath.FindBaseImage(hash, filepath.SplitList(l.cfg.BasePath))
+	base, err := basepath.FindBaseImage(hash, strings.Split(l.cfg.BasePath, ","))
 	if err != nil {
 		return "", fmt.Errorf("while searching --basepath for the base image of %s: %w", image, err)
 	}

@@ -318,6 +318,11 @@ func (c ctx) testActionBasePath(t *testing.T) {
 			args: []string{"--basepath", basePath2, overlayImage, "test", "-f", "/overlay-marker"},
 			exit: 0,
 		},
+		{
+			name: "comma-separated basepath search",
+			args: []string{"--basepath", basePath + "," + basePath2, overlayImage, "test", "-f", "/overlay-marker"},
+			exit: 0,
+		},
 	}
 
 	for _, tt := range tests {

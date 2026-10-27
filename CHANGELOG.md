@@ -35,7 +35,7 @@ Changes since 1.5.x
   `--sandbox` option will build a sandbox.  The base image itself cannot
   be a sandbox because a sandbox does not have a hash.
 - Add a `--basepath` action command option (and `APPTAINER_BASEPATH`
-  environment variable), a colon-separated list of paths to search for
+  environment variable), a comma-separated list of paths to search for
   the base image of an overlay image built with `apptainer build
   --overlay`, so it can be combined with the overlay automatically at
   run time.
