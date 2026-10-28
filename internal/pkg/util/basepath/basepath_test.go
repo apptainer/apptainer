@@ -199,3 +199,138 @@ func TestFindBaseImage(t *testing.T) {
 		})
 	}
 }
+
+func TestResolveRemoteBase(t *testing.T) {
+	const hash = "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+
+	labels := map[string]string{
+		overlayBootstrapLabel: "oras",
+		overlayFromLabel:      "docker://docker.io/library/ubuntu:22.04",
+		overlayHashLabel:      hash,
+	}
+
+	tests := []struct {
+		name    string
+		uri     string
+		labels  map[string]string
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "transport only uses default reference",
+			uri:  "oras://",
+			want: "oras://index.docker.io/library/ubuntu@" + hash,
+		},
+		{
+			name: "docker transport only uses default reference",
+			uri:  "docker://",
+			labels: map[string]string{
+				overlayBootstrapLabel: "docker",
+				overlayFromLabel:      "docker://docker.io/library/ubuntu:22.04",
+				overlayHashLabel:      hash,
+			},
+			want: "docker://index.docker.io/library/ubuntu@" + hash,
+		},
+		{
+			name: "default registry and repository placeholders",
+			uri:  "oras://-.-/-",
+			want: "oras://index.docker.io/library/ubuntu@" + hash,
+		},
+		{
+			name: "override registry and repository with tag",
+			uri:  "oras://registry.example/team/image:stable",
+			want: "oras://registry.example/team/image:stable",
+		},
+		{
+			name: "default registry with overridden repository and tag",
+			uri:  "oras://-.-/team/image:stable",
+			want: "oras://index.docker.io/team/image:stable",
+		},
+		{
+			name: "override registry repository and digest",
+			uri:  "oras://registry.example/team/image@" + hash,
+			want: "oras://registry.example/team/image@" + hash,
+		},
+		{
+			name:    "unsupported transport",
+			uri:     "https://registry.example/team/image:stable",
+			wantErr: true,
+		},
+		{
+			name:    "missing transport separator",
+			uri:     "oras",
+			wantErr: true,
+		},
+		{
+			name:    "bootstrap transport mismatch",
+			uri:     "docker://",
+			wantErr: true,
+		},
+		{
+			name: "missing bootstrap source",
+			uri:  "oras://",
+			labels: map[string]string{
+				overlayBootstrapLabel: "oras",
+				overlayHashLabel:      hash,
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing base hash",
+			uri:  "oras://",
+			labels: map[string]string{
+				overlayBootstrapLabel: "oras",
+				overlayFromLabel:      "docker://docker.io/library/ubuntu:22.04",
+			},
+			wantErr: true,
+		},
+		{
+			name: "source reference has no version tag",
+			uri:  "oras://",
+			labels: map[string]string{
+				overlayBootstrapLabel: "oras",
+				overlayFromLabel:      "docker://docker.io/library/ubuntu",
+				overlayHashLabel:      hash,
+			},
+			want: "oras://index.docker.io/library/ubuntu@" + hash,
+		},
+		{
+			name: "invalid source reference",
+			uri:  "oras://",
+			labels: map[string]string{
+				overlayBootstrapLabel: "oras",
+				overlayFromLabel:      "not a valid reference:tag",
+				overlayHashLabel:      hash,
+			},
+			wantErr: true,
+		},
+		{
+			name:    "invalid remote reference",
+			uri:     "oras://not a valid reference",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testLabels := labels
+			if tt.labels != nil {
+				testLabels = tt.labels
+			}
+
+			got, err := ResolveRemoteBase(tt.uri, testLabels)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatalf("expected error, got result %q", got)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got != tt.want {
+				t.Fatalf("got %q, want %q", got, tt.want)
+			}
+		})
+	}
+}

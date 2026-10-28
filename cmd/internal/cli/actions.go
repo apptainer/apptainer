@@ -319,6 +319,11 @@ func launchContainer(cmd *cobra.Command, image string, args []string, instanceNa
 		launch.OptWritableTmpfs(isWritableTmpfs),
 		launch.OptOverlayPaths(overlayPath),
 		launch.OptBasePath(basePath),
+		launch.OptBasePathPuller(func(ctx context.Context, image string) (string, error) {
+			args := []string{image}
+			replaceURIWithImage(ctx, cmd, args)
+			return args[0], nil
+		}),
 		launch.OptScratchDirs(scratchPath),
 		launch.OptWorkDir(workdirPath),
 		launch.OptHome(

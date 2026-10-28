@@ -20,6 +20,8 @@
 package launch
 
 import (
+	"context"
+
 	"github.com/apptainer/apptainer/internal/pkg/runtime/engine/config/oci/generate"
 	apptainerConfig "github.com/apptainer/apptainer/pkg/runtime/engine/apptainer/config"
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
@@ -35,9 +37,11 @@ type launchOptions struct {
 	WritableTmpfs bool
 	// OverlayPaths holds paths to image or directory overlays to be applied.
 	OverlayPaths []string
-	// BasePath holds a colon-separated list of paths to search for a base
+	// BasePath holds a comma-separated list of paths to search for a base
 	// image, when the primary image was built with `apptainer build --overlay`.
 	BasePath string
+	// BasePathPuller pulls a remote base image reference to a local image file.
+	BasePathPuller func(context.Context, string) (string, error)
 	// Scratchdir lists paths into the container to be mounted from a temporary location on the host.
 	ScratchDirs []string
 	// WorkDir is the parent path for scratch directories, and contained home/tmp on the host.
@@ -222,12 +226,20 @@ func OptOverlayPaths(op []string) Option {
 	}
 }
 
-// OptBasePath sets a colon-separated list of paths to search for a base
+// OptBasePath sets a comma-separated list of paths to search for a base
 // image, when the primary image is an overlay built with
 // `apptainer build --overlay`.
 func OptBasePath(basePath string) Option {
 	return func(lo *launchOptions) error {
 		lo.BasePath = basePath
+		return nil
+	}
+}
+
+// OptBasePathPuller sets the function used to pull remote --basepath images.
+func OptBasePathPuller(puller func(context.Context, string) (string, error)) Option {
+	return func(lo *launchOptions) error {
+		lo.BasePathPuller = puller
 		return nil
 	}
 }

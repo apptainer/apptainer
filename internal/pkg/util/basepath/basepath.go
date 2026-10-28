@@ -19,6 +19,13 @@ import (
 	"strings"
 
 	"github.com/apptainer/apptainer/pkg/image"
+	"github.com/google/go-containerregistry/pkg/name"
+)
+
+const (
+	overlayBootstrapLabel = "org.label-schema.usage.singularity.deffile.bootstrap"
+	overlayFromLabel      = "org.label-schema.usage.singularity.deffile.from"
+	overlayHashLabel      = "org.label-schema.usage.singularity.overlay.base-hash"
 )
 
 // isImage returns true if path directly refers to a SIF file, or a sandbox
@@ -122,4 +129,74 @@ func FindBaseImage(hash string, paths []string) (string, error) {
 	}
 
 	return "", fmt.Errorf("could not find base image for hash %q in basepath %v", hash, paths)
+}
+
+// ResolveRemoteBase combines a --basepath remote reference with the base
+// image reference recorded in an overlay image's metadata.
+// The basepath must be a transport alone ("oras://" or "docker://") or a
+// transport followed by a parseable OCI registry reference.  To indicate that
+// a registry should come from the overlay image's default, use a registry of
+// "-.-".  To indicate that a repository should be likewise from the default,
+// use a repository of "-".  To use the default digest, leave it off the
+// reference.  So for example "oras://" is equivalent to "oras://-.-/-".
+func ResolveRemoteBase(uri string, labels map[string]string) (string, error) {
+	transport, ref, ok := strings.Cut(uri, "://")
+	if !ok || (transport != "oras" && transport != "docker") {
+		return "", fmt.Errorf("unsupported remote basepath %q", uri)
+	}
+	if labels[overlayBootstrapLabel] != transport {
+		return "", fmt.Errorf("basepath transport %q does not match overlay bootstrap transport %q", transport, labels[overlayBootstrapLabel])
+	}
+
+	from := strings.TrimSpace(labels[overlayFromLabel])
+	hash := strings.TrimSpace(labels[overlayHashLabel])
+	if from == "" || hash == "" {
+		return "", fmt.Errorf("overlay image metadata is missing its bootstrap source or base hash")
+	}
+	if _, fromRef, ok := strings.Cut(from, "://"); ok {
+		from = fromRef
+	}
+	sourceRef, err := name.ParseReference(from)
+	if err != nil {
+		return "", fmt.Errorf("invalid overlay bootstrap source: %w", err)
+	}
+	defaultRef, err := name.ParseReference(sourceRef.Context().Name() + "@" + hash)
+	if err != nil {
+		return "", fmt.Errorf("invalid default base image reference: %w", err)
+	}
+	if ref == "" {
+		return transport + "://" + defaultRef.String(), nil
+	}
+	baseRef, err := name.ParseReference(ref)
+	if err != nil {
+		return "", fmt.Errorf("invalid remote basepath reference: %w", err)
+	}
+
+	defaultRepo := defaultRef.Context()
+	baseRepo := baseRef.Context()
+	registry := defaultRepo.RegistryStr()
+	baseRegistry := baseRepo.RegistryStr()
+	if baseRegistry != "-.-" {
+		registry = baseRegistry
+	}
+
+	repository := defaultRepo.RepositoryStr()
+	baseRepository := baseRepo.RepositoryStr()
+	if baseRepository != "-" && baseRepository != "library/-" {
+		repository = baseRepository
+	}
+
+	identifier := defaultRef.Identifier()
+	sep := "@" // the defaultRef is always a digest
+	baseIdentifier := baseRef.Identifier()
+	if baseIdentifier != "-" && (baseIdentifier != "latest" || strings.HasSuffix(from, ":latest")) {
+		identifier = baseIdentifier
+		switch baseRef.(type) {
+		case name.Tag:
+			sep = ":"
+		}
+	}
+
+	reference := registry + "/" + repository + sep + identifier
+	return transport + "://" + reference, nil
 }

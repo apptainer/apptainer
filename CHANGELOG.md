@@ -29,16 +29,35 @@ Changes since 1.5.x
   because it is a python program and so requires many dependencies.
 - Add an `--overlay` option to `apptainer build` that produces an image
   containing only the files added, changed, or removed relative to a
-  `Bootstrap: localimage` base image.  A hash of the base image is
-  included in the metadata of the overlay image.  The default is to
-  build a SIF file with an overlay partition in it, but adding a
-  `--sandbox` option will build a sandbox.  The base image itself cannot
-  be a sandbox because a sandbox does not have a hash.
+  base image from a `localimage`, `docker`, or `oras` bootstrap as
+  specified in a container definition file.  A hash of the base image is
+  saved in the metadata of the overlay image for later use by the
+  `--basepath` action command option.  The default is to build a SIF
+  file with an overlay partition in it, but adding a `--sandbox` option
+  will build a sandbox.  The base image itself cannot be a sandbox
+  because a sandbox does not have a hash.
 - Add a `--basepath` action command option (and `APPTAINER_BASEPATH`
   environment variable), a comma-separated list of paths to search for
   the base image of an overlay image built with `apptainer build
   --overlay`, so it can be combined with the overlay automatically at
-  run time.
+  run time.  If the base path is a local directory, the base image is
+  expected to be stored in a file name matching its hash, optionally
+  with a hash type prefix (such as `sha256:`) and the first two
+  characters of the hash as another subdirectory.  The last path in the
+  --basepath may be an `oras://` or `docker://` reference, which is
+  combined with the image reference of the base that was recorded in the
+  overlay's metadata.  The basepath may be just the `oras` or `docker`
+  transport followed by `://` alone, or it may be a complete reference
+  such as `oras://ghcr.io/animage`.  The transport must match the
+  original one, but it may include a different registry or image name
+  that override the original reference.  To override only the registry
+  you can use `-` as the image name, for example `oras://my.host/-`, or
+  to override only the image name you can use `-.-` as the registry, for
+  examaple `oras://-.-/myimage`. If a specific version is not given, the
+  original hash is applied.  If the original bootstrap was `localimage`
+  then using `--basepath` is required, if the original bootstrap was
+  `oras` then the default --basepath is `oras://`, or if the original
+  bootstrap was `docker` then the default --basepath is `docker://`.
 - Allow pushing multiple images with different architectures (multi-arch)
   to an oras URI, creating an image index with all the pushed arch images.
 - Add support for building data partitions from tar files using
