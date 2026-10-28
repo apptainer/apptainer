@@ -196,9 +196,14 @@ func (c ctx) testOverlayCreate(t *testing.T) {
 	}
 }
 
-func (c ctx) createOverlayBuild(t *testing.T, baseImage string, tmpDir string) string {
+func (c ctx) createOverlayBuild(t *testing.T, bootstrap string, baseImage string, tmpDir string) string {
+	start := strings.Index(baseImage, "://")
+	if start > 0 {
+		// skip past the transport part of the URI
+		baseImage = baseImage[start+3:]
+	}
 	definition := e2e.PrepareDefFile(e2e.DefFileDetails{
-		Bootstrap: "localimage",
+		Bootstrap: bootstrap,
 		From:      baseImage,
 		Post:      []string{"echo overlay-marker > /overlay-marker"},
 		Test:      []string{"ls -l /overlay-marker"},
@@ -211,26 +216,31 @@ func (c ctx) createOverlayBuild(t *testing.T, baseImage string, tmpDir string) s
 		}
 	})
 
-	overlayImage := filepath.Join(tmpDir, "overlay.sif")
+	overlayImage := filepath.Join(tmpDir, bootstrap+"-overlay.sif")
+	args := []string{}
+	if bootstrap != "localimage" {
+		args = append(args, "--disable-cache", "--no-https")
+	}
+	args = append(args, "--overlay", overlayImage, definition)
 	c.env.RunApptainer(
 		t,
 		e2e.WithProfile(e2e.UserNamespaceProfile),
 		e2e.WithCommand("build"),
-		e2e.WithArgs("--overlay", overlayImage, definition),
+		e2e.WithArgs(args...),
 		e2e.ExpectExit(0),
 	)
 
 	return overlayImage
 }
 
-func (c ctx) testBuildOverlay(t *testing.T) {
+func (c ctx) testLocalBuildOverlay(t *testing.T) {
 	baseImage := e2e.BusyboxSIF(t)
 	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "build-overlay", "")
 	t.Cleanup(func() {
 		cleanup(t)
 	})
 
-	overlayImage := c.createOverlayBuild(t, baseImage, tmpDir)
+	overlayImage := c.createOverlayBuild(t, "localimage", baseImage, tmpDir)
 
 	overlaySquashfs := filepath.Join(tmpDir, "overlay.squashfs")
 
@@ -252,6 +262,60 @@ func (c ctx) testBuildOverlay(t *testing.T) {
 	)
 }
 
+func (c ctx) testRemoteBootstrapOverlay(t *testing.T) {
+	e2e.EnsureORASImage(t, c.env)
+
+	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "remote-build-overlay", "")
+	t.Cleanup(func() {
+		cleanup(t)
+	})
+
+	for _, tt := range []struct {
+		bootstrap string
+		baseImage string
+	}{
+		{bootstrap: "docker", baseImage: c.env.TestRegistryImage},
+		{bootstrap: "oras", baseImage: c.env.OrasTestImage},
+	} {
+		t.Run(tt.bootstrap, func(t *testing.T) {
+			overlayImage := c.createOverlayBuild(t, tt.bootstrap, tt.baseImage, tmpDir)
+
+			withoutVersion := tt.baseImage[:strings.LastIndex(tt.baseImage, ":")]
+			start := strings.Index(withoutVersion, "://") + 3
+			end := strings.Index(withoutVersion[start:], "/") + start
+
+			wildRegistry := withoutVersion[:start] + "-.-" + withoutVersion[end:]
+			wildImage := withoutVersion[:end] + "/-"
+			for _, tc := range []struct {
+				name     string
+				basePath string
+			}{
+				{name: "default remote basepath"},
+				{name: "transport-only remote basepath", basePath: tt.bootstrap + "://"},
+				{name: "complete remote basepath", basePath: tt.baseImage},
+				{name: "without version", basePath: withoutVersion},
+				{name: "with wildcard registry", basePath: wildRegistry},
+				{name: "with wildcard image", basePath: wildImage},
+			} {
+				args := []string{"--disable-cache", "--no-https"}
+				if tc.basePath != "" {
+					args = append(args, "--basepath", tc.basePath)
+				}
+				args = append(args, overlayImage, "test", "-f", "/overlay-marker")
+
+				c.env.RunApptainer(
+					t,
+					e2e.AsSubtest(tc.name),
+					e2e.WithProfile(e2e.RootProfile),
+					e2e.WithCommand("exec"),
+					e2e.WithArgs(args...),
+					e2e.ExpectExit(0),
+				)
+			}
+		})
+	}
+}
+
 func (c ctx) testActionBasePath(t *testing.T) {
 	baseImage := e2e.BusyboxSIF(t)
 	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "build-overlay", "")
@@ -259,7 +323,7 @@ func (c ctx) testActionBasePath(t *testing.T) {
 		cleanup(t)
 	})
 
-	overlayImage := c.createOverlayBuild(t, baseImage, tmpDir)
+	overlayImage := c.createOverlayBuild(t, "localimage", baseImage, tmpDir)
 
 	baseHash, ok, err := image.GetOverlayBaseHash(overlayImage)
 	if err != nil {
@@ -344,8 +408,9 @@ func E2ETests(env e2e.TestEnv) testhelper.Tests {
 	}
 
 	return testhelper.Tests{
-		"create":          c.testOverlayCreate,
-		"build overlay":   c.testBuildOverlay,
-		"action basepath": c.testActionBasePath,
+		"create":                   c.testOverlayCreate,
+		"local build overlay":      c.testLocalBuildOverlay,
+		"remote bootstrap overlay": c.testRemoteBootstrapOverlay,
+		"action basepath":          c.testActionBasePath,
 	}
 }
