@@ -204,7 +204,7 @@ func (l *Launcher) Exec(ctx context.Context, image string, args []string, instan
 	}
 
 	// Set image to run, or instance to join, and APPTAINER_CONTAINER/APPTAINER_NAME env vars.
-	image, err = l.resolveOverlayBase(image)
+	image, err = l.resolveOverlayBase(ctx, image)
 	if err != nil {
 		sylog.Fatalf("While resolving overlay base image: %s", err)
 	}
@@ -543,7 +543,7 @@ func (l *Launcher) setTargetIDs(useSuid bool) (err error) {
 // l.cfg.OverlayPaths so it is layered on top of the base at start up.
 //
 // If image is not an overlay-only image, it is returned unchanged.
-func (l *Launcher) resolveOverlayBase(image string) (string, error) {
+func (l *Launcher) resolveOverlayBase(ctx context.Context, image string) (string, error) {
 	if strings.Contains(image, "://") {
 		return image, nil
 	}
@@ -556,22 +556,61 @@ func (l *Launcher) resolveOverlayBase(image string) (string, error) {
 		return image, nil
 	}
 
-	hash, ok, err := imgutil.GetOverlayBaseHash(image)
+	labels, err := imgutil.GetOverlayBaseLabels(image)
 	if err != nil {
 		return "", fmt.Errorf("while checking whether %s is an overlay image: %w", image, err)
 	}
+	hash := strings.TrimSpace(labels["org.label-schema.usage.singularity.overlay.base-hash"])
+	ok := hash != ""
 	if !ok {
 		return image, nil
 	}
 
 	if l.cfg.BasePath == "" {
-		return "", fmt.Errorf("%s is an overlay-only image built with 'apptainer build --overlay'; "+
-			"use --basepath or the APPTAINER_BASEPATH environment variable to specify where to search "+
-			"for its base image (hash %s)", image, hash)
+		bootstrap := strings.TrimSpace(labels["org.label-schema.usage.singularity.deffile.bootstrap"])
+		if bootstrap != "oras" && bootstrap != "docker" {
+			return "", fmt.Errorf("%s is an overlay-only image built with 'apptainer build --overlay'; "+
+				"use --basepath or the APPTAINER_BASEPATH environment variable to specify where to search "+
+				"for its base image (hash %s)", image, hash)
+		}
+		// default to using the same remote transport as the original
+		l.cfg.BasePath = bootstrap + "://"
 	}
 
-	base, err := basepath.FindBaseImage(hash, filepath.SplitList(l.cfg.BasePath))
-	if err != nil {
+	paths := strings.Split(l.cfg.BasePath, ",")
+	for _, path := range paths[:len(paths)-1] {
+		if strings.HasPrefix(path, "oras://") || strings.HasPrefix(path, "docker://") {
+			return "", fmt.Errorf("remote image references are only allowed as the last --basepath entry")
+		}
+	}
+
+	lastPath := paths[len(paths)-1]
+	if l.cfg.Writable {
+		return "", fmt.Errorf("using --writable with an overlay image is not allowed")
+	}
+
+	var base string
+	isRemoteBase := strings.HasPrefix(lastPath, "oras://") || strings.HasPrefix(lastPath, "docker://")
+	localPaths := paths
+	if isRemoteBase {
+		localPaths = paths[:len(paths)-1]
+	}
+	if len(localPaths) > 0 {
+		base, err = basepath.FindBaseImage(hash, localPaths)
+	}
+	if err != nil && isRemoteBase || (base == "" && isRemoteBase) {
+		if l.cfg.BasePathPuller == nil {
+			return "", fmt.Errorf("remote --basepath reference %q requires an image puller", lastPath)
+		}
+		remoteRef, err := basepath.ResolveRemoteBase(lastPath, labels)
+		if err != nil {
+			return "", fmt.Errorf("while resolving remote --basepath %q: %w", lastPath, err)
+		}
+		base, err = l.cfg.BasePathPuller(ctx, remoteRef)
+		if err != nil {
+			return "", fmt.Errorf("while pulling remote base image %s: %w", remoteRef, err)
+		}
+	} else if err != nil {
 		return "", fmt.Errorf("while searching --basepath for the base image of %s: %w", image, err)
 	}
 	base, err = filepath.Abs(base)
@@ -583,9 +622,6 @@ func (l *Launcher) resolveOverlayBase(image string) (string, error) {
 	overlaySpec, err := filepath.Abs(image)
 	if err != nil {
 		return "", fmt.Errorf("failed to determine absolute path for overlay image %s: %w", image, err)
-	}
-	if l.cfg.Writable {
-		return "", fmt.Errorf("using --writable with an overlay image is not allowed")
 	}
 	overlaySpec += ":ro"
 	l.cfg.OverlayPaths = append([]string{overlaySpec}, l.cfg.OverlayPaths...)

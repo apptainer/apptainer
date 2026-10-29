@@ -167,9 +167,9 @@ var actionBasePathFlag = cmdline.Flag{
 	Value:        &basePath,
 	DefaultValue: "",
 	Name:         "basepath",
-	Usage:        "colon-separated list of paths to search for the base image of an overlay-only image (built with 'apptainer build --overlay'), when it is used as the container name",
+	Usage:        "comma-separated paths to search for the base image of an overlay-only image (built with 'apptainer build --overlay'); the last path may be an oras:// or docker:// image reference matching original transport",
 	EnvKeys:      []string{"BASEPATH"},
-	Tag:          "<path[:path...]>",
+	Tag:          "<path[,path...]>",
 }
 
 // -S|--scratch

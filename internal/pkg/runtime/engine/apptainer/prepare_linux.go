@@ -1433,18 +1433,14 @@ func (e *EngineOperations) loadOverlayImages(starterConfig *starter.Config, writ
 	images := make([]image.Image, 0)
 
 	for _, overlayImg := range e.EngineConfig.GetOverlayImage() {
-		writableOverlay := true
+		// Use CutSuffix because the overlayImg can contain a colon,
+		// for example it may include a hash with "sha256:"
+		overlayPath, readOnly := strings.CutSuffix(overlayImg, ":ro")
+		writableOverlay := !readOnly
 
-		splitted := strings.SplitN(overlayImg, ":", 2)
-		if len(splitted) == 2 {
-			if splitted[1] == "ro" {
-				writableOverlay = false
-			}
-		}
-
-		img, err := e.loadImage(splitted[0], writableOverlay, userNS, elevated)
+		img, err := e.loadImage(overlayPath, writableOverlay, userNS, elevated)
 		if err != nil && !image.IsReadOnlyFilesystem(err) {
-			return nil, fmt.Errorf("failed to open overlay image %s: %s", splitted[0], err)
+			return nil, fmt.Errorf("failed to open overlay image %s: %s", overlayPath, err)
 		}
 		// Otherwise either err is nil or err is read-only filesystem.
 		// Note that img.Writable is always false for squashfs images.
@@ -1514,7 +1510,6 @@ func (e *EngineOperations) loadOverlayImages(starterConfig *starter.Config, writ
 	return images, nil
 }
 
-// loadBindImages load data bind images.
 func (e *EngineOperations) loadBindImages(starterConfig *starter.Config, userNS bool, elevated bool) ([]image.Image, error) {
 	images := make([]image.Image, 0)
 
