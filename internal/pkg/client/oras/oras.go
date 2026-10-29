@@ -31,7 +31,7 @@ import (
 	"github.com/apptainer/sif/v2/pkg/sif"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
 	"github.com/google/go-containerregistry/pkg/v1/layout"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
@@ -134,7 +134,7 @@ func DownloadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.A
 
 // uploadSingleImage uploads a single image and returns the image and its descriptor.
 // The annotations parameter is a slice of key=value pairs to add to the image manifest.
-func uploadSingleImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) (v1.Image, *v1.Descriptor, error) {
+func uploadSingleImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) (ggcr.Image, *ggcr.Descriptor, error) {
 	// ensure that we are uploading a SIF
 	if err := ensureSIF(path); err != nil {
 		return nil, nil, err
@@ -160,7 +160,7 @@ func uploadSingleImage(ctx context.Context, path, ref, arch string, ociAuth *aut
 		return nil, nil, err
 	}
 
-	platform := v1.Platform{
+	platform := ggcr.Platform{
 		Architecture: arch,
 		OS:           "linux",
 	}
@@ -172,7 +172,7 @@ func uploadSingleImage(ctx context.Context, path, ref, arch string, ociAuth *aut
 	}
 	if term.IsTerminal(2) {
 		pb := &client.DownloadProgressBar{}
-		progChan := make(chan v1.Update, 1)
+		progChan := make(chan ggcr.Update, 1)
 		go func() {
 			var total int64
 			soFar := int64(0)
@@ -234,7 +234,7 @@ func UploadImages(ctx context.Context, paths []string, ref string, archs []strin
 		return fmt.Errorf("paths and archs must have the same length")
 	}
 
-	var base v1.ImageIndex = empty.Index
+	var base ggcr.ImageIndex = empty.Index
 	var adds []mutate.IndexAddendum
 
 	ref = strings.TrimPrefix(ref, "oras://")
@@ -331,24 +331,24 @@ func ensureSIF(filepath string) error {
 }
 
 // RefHash returns the digest of the SIF layer of the OCI manifest for supplied ref
-func RefHash(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (v1.Hash, error) {
+func RefHash(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (ggcr.Hash, error) {
 	im, err := remoteImage(ctx, ref, arch, ociAuth, noHTTPS, nil, reqAuthFile)
 	if err != nil {
-		return v1.Hash{}, err
+		return ggcr.Hash{}, err
 	}
 
 	// Check manifest to ensure we have a SIF as single layer
 	manifest, err := im.Manifest()
 	if err != nil {
-		return v1.Hash{}, err
+		return ggcr.Hash{}, err
 	}
 	if len(manifest.Layers) != 1 {
-		return v1.Hash{}, fmt.Errorf("ORAS SIF image should have a single layer, found %d", len(manifest.Layers))
+		return ggcr.Hash{}, fmt.Errorf("ORAS SIF image should have a single layer, found %d", len(manifest.Layers))
 	}
 	layer := manifest.Layers[0]
 	if layer.MediaType != SifLayerMediaTypeV1 &&
 		layer.MediaType != SifLayerMediaTypeProto {
-		return v1.Hash{}, fmt.Errorf("invalid layer mediatype: %s", layer.MediaType)
+		return ggcr.Hash{}, fmt.Errorf("invalid layer mediatype: %s", layer.MediaType)
 	}
 
 	hash := layer.Digest
@@ -380,10 +380,10 @@ func RefSize(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, n
 	return size, nil
 }
 
-func RefDigest(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (v1.Hash, error) {
+func RefDigest(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (ggcr.Hash, error) {
 	im, err := remoteImage(ctx, ref, arch, ociAuth, noHTTPS, nil, reqAuthFile)
 	if err != nil {
-		return v1.Hash{}, err
+		return ggcr.Hash{}, err
 	}
 	return im.Digest()
 }
@@ -427,25 +427,25 @@ func ImageCreated(filePath string) (time.Time, error) {
 }
 
 // ImageDigest returns the digest for a file
-func ImageHash(ctx context.Context, filePath string) (v1.Hash, error) {
+func ImageHash(ctx context.Context, filePath string) (ggcr.Hash, error) {
 	st, err := os.Stat(filePath)
 	if err != nil {
-		return v1.Hash{}, err
+		return ggcr.Hash{}, err
 	}
 	file, err := os.Open(filePath)
 	if err != nil {
-		return v1.Hash{}, err
+		return ggcr.Hash{}, err
 	}
 	defer file.Close()
 
 	sha, err := sha256sum(ctx, st.Size(), file)
 	if err != nil {
-		return v1.Hash{}, err
+		return ggcr.Hash{}, err
 	}
 
-	hash, err := v1.NewHash(sha)
+	hash, err := ggcr.NewHash(sha)
 	if err != nil {
-		return v1.Hash{}, err
+		return ggcr.Hash{}, err
 	}
 
 	return hash, nil
@@ -475,7 +475,7 @@ func sha256sum(ctx context.Context, nBytes int64, r io.Reader) (result string, e
 }
 
 // remoteImage returns a v1.Image for the provided remote ref.
-func remoteImage(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, rt *client.RoundTripper, reqAuthFile string) (v1.Image, error) {
+func remoteImage(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, rt *client.RoundTripper, reqAuthFile string) (ggcr.Image, error) {
 	ref = strings.TrimPrefix(ref, "oras://")
 	ref = strings.TrimPrefix(ref, "//")
 
@@ -488,7 +488,7 @@ func remoteImage(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfi
 	if err != nil {
 		return nil, fmt.Errorf("invalid reference %q: %w", ref, err)
 	}
-	platform := v1.Platform{
+	platform := ggcr.Platform{
 		Architecture: arch,
 		OS:           "linux",
 	}
@@ -508,7 +508,7 @@ func remoteImage(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfi
 }
 
 // digestReference returns ref pinned to digest, preserving the reference's repository.
-func digestReference(ref string, digest v1.Hash, noHTTPS bool) (string, error) {
+func digestReference(ref string, digest ggcr.Hash, noHTTPS bool) (string, error) {
 	ref = strings.TrimPrefix(ref, "oras://")
 	ref = strings.TrimPrefix(ref, "//")
 
@@ -528,7 +528,7 @@ func SearchRegistry(ctx context.Context, ref, arch string, ociAuth *authn.AuthCo
 	ref = strings.TrimPrefix(ref, "oras://")
 	ref = strings.TrimPrefix(ref, "//")
 
-	platform := v1.Platform{
+	platform := ggcr.Platform{
 		Architecture: arch,
 		OS:           "linux",
 	}
@@ -614,7 +614,7 @@ func DeleteImage(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfi
 	if err != nil {
 		return fmt.Errorf("invalid reference %q: %w", ref, err)
 	}
-	platform := v1.Platform{
+	platform := ggcr.Platform{
 		Architecture: arch,
 		OS:           "linux",
 	}

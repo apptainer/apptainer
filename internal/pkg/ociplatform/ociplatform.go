@@ -14,11 +14,11 @@ import (
 	"runtime"
 
 	"github.com/apptainer/apptainer/pkg/sylog"
-	ggcrv1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 )
 
 // CheckImagePlatform ensures that an image reference satisfies the provided platform requirements.
-func CheckImagePlatform(platform ggcrv1.Platform, img ggcrv1.Image) error {
+func CheckImagePlatform(platform ggcr.Platform, img ggcr.Image) error {
 	cf, err := img.ConfigFile()
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func CheckImagePlatform(platform ggcrv1.Platform, img ggcrv1.Image) error {
 	return fmt.Errorf("image (%s) does not satisfy required platform (%s)", cf.Platform(), platform)
 }
 
-func DefaultPlatform() (*ggcrv1.Platform, error) {
+func DefaultPlatform() (*ggcr.Platform, error) {
 	os := runtime.GOOS
 	arch := runtime.GOARCH
 	variant := CPUVariant()
@@ -47,15 +47,15 @@ func DefaultPlatform() (*ggcrv1.Platform, error) {
 
 	arch, variant = normalizeArch(arch, variant)
 
-	return &ggcrv1.Platform{
+	return &ggcr.Platform{
 		OS:           os,
 		Architecture: arch,
 		Variant:      variant,
 	}, nil
 }
 
-func PlatformFromString(p string) (*ggcrv1.Platform, error) {
-	plat, err := ggcrv1.ParsePlatform(p)
+func PlatformFromString(p string) (*ggcr.Platform, error) {
+	plat, err := ggcr.ParsePlatform(p)
 	if err != nil {
 		return nil, err
 	}
@@ -68,14 +68,14 @@ func PlatformFromString(p string) (*ggcrv1.Platform, error) {
 	return plat, nil
 }
 
-func PlatformFromArch(a string, v string) (*ggcrv1.Platform, error) {
+func PlatformFromArch(a string, v string) (*ggcr.Platform, error) {
 	if runtime.GOOS != "linux" {
 		return nil, fmt.Errorf("%q is not a valid platform OS for apptainer", runtime.GOOS)
 	}
 
 	arch, variant := normalizeArch(a, v)
 
-	return &ggcrv1.Platform{
+	return &ggcr.Platform{
 		OS:           runtime.GOOS,
 		Architecture: arch,
 		Variant:      variant,

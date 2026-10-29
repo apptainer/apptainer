@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 )
 
 func TestNormalizeRef(t *testing.T) {
@@ -45,7 +45,7 @@ func TestNormalizeRef(t *testing.T) {
 }
 
 func TestDigestReference(t *testing.T) {
-	digest := v1.Hash{Algorithm: "sha256", Hex: strings.Repeat("a", 64)}
+	digest := ggcr.Hash{Algorithm: "sha256", Hex: strings.Repeat("a", 64)}
 	tests := []struct {
 		name     string
 		ref      string

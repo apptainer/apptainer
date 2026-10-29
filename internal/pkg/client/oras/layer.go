@@ -11,7 +11,7 @@ import (
 	"os"
 	"time"
 
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 )
 
@@ -31,17 +31,17 @@ type SifLayer struct {
 	size      int64
 	created   time.Time
 	rc        io.ReadCloser
-	hash      v1.Hash
+	hash      ggcr.Hash
 	mediaType types.MediaType
 }
 
-var _ = v1.Layer(&SifLayer{})
+var _ = ggcr.Layer(&SifLayer{})
 
-func (sl *SifLayer) Digest() (v1.Hash, error) {
+func (sl *SifLayer) Digest() (ggcr.Hash, error) {
 	return sl.hash, nil
 }
 
-func (sl *SifLayer) DiffID() (v1.Hash, error) {
+func (sl *SifLayer) DiffID() (ggcr.Hash, error) {
 	return sl.hash, nil
 }
 

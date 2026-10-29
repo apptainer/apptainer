@@ -33,7 +33,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	"github.com/google/go-containerregistry/pkg/authn"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 )
 
 type ociRunscriptData struct {
@@ -125,9 +125,9 @@ const variableRegex = `^[a-zA-Z_]{1,}[a-zA-Z0-9_]{0,}$`
 
 // OCIConveyorPacker holds stuff that needs to be packed into the bundle
 type OCIConveyorPacker struct {
-	srcImg    v1.Image
+	srcImg    ggcr.Image
 	b         *sytypes.Bundle
-	imgConfig v1.Config
+	imgConfig ggcr.Config
 	topts     *ociimage.TransportOptions
 }
 
@@ -162,7 +162,7 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 
 	if cp.b.Opts.Arch != "" {
 		if arch, ok := build_oci.LookupArch(cp.b.Opts.Arch, cp.b.Opts.Var); ok {
-			cp.topts.Platform = v1.Platform{
+			cp.topts.Platform = ggcr.Platform{
 				OS:           dp.OS,
 				Architecture: arch.Arch,
 				Variant:      arch.Var,

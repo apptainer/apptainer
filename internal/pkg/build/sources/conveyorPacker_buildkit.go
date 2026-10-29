@@ -29,7 +29,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/google/go-containerregistry/pkg/authn"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 )
 
 type buildkitOptions struct {
@@ -73,7 +73,7 @@ func (cp *BuildKitConveyorPacker) Get(_ context.Context, b *types.Bundle) (err e
 
 	if cp.b.Opts.Arch != "" {
 		if arch, ok := build_oci.LookupArch(cp.b.Opts.Arch, cp.b.Opts.Var); ok {
-			cp.topts.Platform = v1.Platform{
+			cp.topts.Platform = ggcr.Platform{
 				OS:           dp.OS,
 				Architecture: arch.Arch,
 				Variant:      arch.Var,

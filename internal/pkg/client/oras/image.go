@@ -10,24 +10,24 @@ import (
 	"path/filepath"
 	"time"
 
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 )
 
 // SifImage implements a go-containerregistry v1.Image representing an ORAS / OCI artifact of a single SIF image.
 type SifImage struct {
-	manifest v1.Manifest
+	manifest ggcr.Manifest
 	config   *SifConfig
 	layer    *SifLayer
 }
 
-var _ = v1.Image(&SifImage{})
+var _ = ggcr.Image(&SifImage{})
 
 // Layers returns the ordered collection of filesystem layers that comprise this image.
 // The order of the list is oldest/base layer first, and most-recent/top layer last.
-func (si *SifImage) Layers() ([]v1.Layer, error) {
-	return []v1.Layer{si.layer}, nil
+func (si *SifImage) Layers() ([]ggcr.Layer, error) {
+	return []ggcr.Layer{si.layer}, nil
 }
 
 // ArtifactType of this image's manifest.
@@ -47,13 +47,13 @@ func (si *SifImage) Size() (int64, error) {
 
 // ConfigName returns the hash of the image's config file, also known as
 // the Image ID.
-func (si *SifImage) ConfigName() (v1.Hash, error) {
+func (si *SifImage) ConfigName() (ggcr.Hash, error) {
 	return si.manifest.Config.Digest, nil
 }
 
 // ConfigFile returns the hash of the image's config file, also known as
 // the Image ID.
-func (si *SifImage) ConfigFile() (*v1.ConfigFile, error) {
+func (si *SifImage) ConfigFile() (*ggcr.ConfigFile, error) {
 	return nil, nil
 }
 
@@ -63,12 +63,12 @@ func (si *SifImage) RawConfigFile() ([]byte, error) {
 }
 
 // Digest returns the sha256 of this image's manifest.
-func (si *SifImage) Digest() (v1.Hash, error) {
+func (si *SifImage) Digest() (ggcr.Hash, error) {
 	return partial.Digest(si)
 }
 
 // Manifest returns this image's Manifest object.
-func (si *SifImage) Manifest() (*v1.Manifest, error) {
+func (si *SifImage) Manifest() (*ggcr.Manifest, error) {
 	return &si.manifest, nil
 }
 
@@ -79,7 +79,7 @@ func (si *SifImage) RawManifest() ([]byte, error) {
 
 // LayerByDigest returns a Layer for interacting with a particular layer of
 // the image, looking it up by "digest" (the compressed hash).
-func (si *SifImage) LayerByDigest(hash v1.Hash) (v1.Layer, error) {
+func (si *SifImage) LayerByDigest(hash ggcr.Hash) (ggcr.Layer, error) {
 	if si.layer == nil || si.layer.hash != hash {
 		return nil, fmt.Errorf("requested hash doesn't match SIF layer")
 	}
@@ -88,7 +88,7 @@ func (si *SifImage) LayerByDigest(hash v1.Hash) (v1.Layer, error) {
 
 // LayerByDiffID is an analog to LayerByDigest, looking up by "diff id"
 // (the uncompressed hash).
-func (si *SifImage) LayerByDiffID(hash v1.Hash) (v1.Layer, error) {
+func (si *SifImage) LayerByDiffID(hash ggcr.Hash) (ggcr.Layer, error) {
 	return si.LayerByDigest(hash)
 }
 
@@ -170,16 +170,16 @@ func NewImageFromSIF(file string, configMediaType, layerMediaType types.MediaTyp
 	//        "org.opencontainers.image.created": "2023-12-19T16:02:14Z"
 	//      }
 	//   }
-	si.manifest = v1.Manifest{
+	si.manifest = ggcr.Manifest{
 		SchemaVersion: 2,
 		MediaType:     types.OCIManifestSchema1,
-		Config: v1.Descriptor{
+		Config: ggcr.Descriptor{
 			MediaType: cMediaType,
 			Digest:    cDigest,
 			Size:      cSize,
 			Data:      cData,
 		},
-		Layers: []v1.Descriptor{
+		Layers: []ggcr.Descriptor{
 			{
 				MediaType: lMediaType,
 				Digest:    lDigest,

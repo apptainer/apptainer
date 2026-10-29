@@ -26,12 +26,12 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/ccoveille/go-safecast/v2"
 	"github.com/docker/docker/client"
-	ggcrv1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 )
 
 // cachedImage will ensure that the provided v1.Image is present in the Apptainer
 // OCI cache layout dir, and return a new v1.Image pointing to the cached copy.
-func cachedImage(ctx context.Context, imgCache *cache.Handle, srcImg ggcrv1.Image) (ggcrv1.Image, error) {
+func cachedImage(ctx context.Context, imgCache *cache.Handle, srcImg ggcr.Image) (ggcr.Image, error) {
 	if imgCache == nil || imgCache.IsDisabled() {
 		return nil, fmt.Errorf("undefined image cache")
 	}
@@ -61,7 +61,7 @@ func cachedImage(ctx context.Context, imgCache *cache.Handle, srcImg ggcrv1.Imag
 // OCI layout. If the cache is disabled, the image will be fetched into a
 // subdirectory of the provided tmpDir. The caller is responsible for cleaning
 // up tmpDir.
-func FetchToLayout(ctx context.Context, tOpts *TransportOptions, imgCache *cache.Handle, imageURI, tmpDir string) (ggcrv1.Image, error) {
+func FetchToLayout(ctx context.Context, tOpts *TransportOptions, imgCache *cache.Handle, imageURI, tmpDir string) (ggcr.Image, error) {
 	// docker-daemon - Save archive to a temporary file, possibly in OCI format.
 	//                 This is to be able to use the new docker-archive code below.
 	if strings.HasPrefix(imageURI, "docker-daemon:") {
