@@ -10,7 +10,10 @@
 package oras
 
 import (
+	"strings"
 	"testing"
+
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
 func TestNormalizeRef(t *testing.T) {
@@ -36,6 +39,40 @@ func TestNormalizeRef(t *testing.T) {
 
 			if result != tt.expected {
 				t.Errorf("expected %s, got %s", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestDigestReference(t *testing.T) {
+	digest := v1.Hash{Algorithm: "sha256", Hex: strings.Repeat("a", 64)}
+	tests := []struct {
+		name     string
+		ref      string
+		noHTTPS  bool
+		expected string
+	}{
+		{
+			name:     "tagged reference",
+			ref:      "oras://alpine:latest",
+			expected: defaultRegistry + "/library/alpine@" + digest.String(),
+		},
+		{
+			name:     "reference with registry",
+			ref:      "//registry.local/team/image:tag",
+			noHTTPS:  true,
+			expected: "registry.local/team/image@" + digest.String(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := digestReference(tt.ref, digest, tt.noHTTPS)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got != tt.expected {
+				t.Errorf("expected %s, got %s", tt.expected, got)
 			}
 		})
 	}

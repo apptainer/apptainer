@@ -507,6 +507,22 @@ func remoteImage(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfi
 	return im, nil
 }
 
+// digestReference returns ref pinned to digest, preserving the reference's repository.
+func digestReference(ref string, digest v1.Hash, noHTTPS bool) (string, error) {
+	ref = strings.TrimPrefix(ref, "oras://")
+	ref = strings.TrimPrefix(ref, "//")
+
+	opts := []name.Option{name.WithDefaultTag(name.DefaultTag), name.WithDefaultRegistry(name.DefaultRegistry)}
+	if noHTTPS {
+		opts = append(opts, name.Insecure)
+	}
+	ir, err := name.ParseReference(ref, opts...)
+	if err != nil {
+		return "", fmt.Errorf("invalid reference %q: %w", ref, err)
+	}
+	return ir.Context().Digest(digest.String()).Name(), nil
+}
+
 // SearchRegistry searches the registry and outputs results to stdout
 func SearchRegistry(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, reqAuthFile string) error {
 	ref = strings.TrimPrefix(ref, "oras://")
