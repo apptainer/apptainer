@@ -31,10 +31,12 @@ github.com/apex/log v1.9.0/go.mod h1:m82fZlWIuiWzWP04XCTXmnX0xRkYYbCdYn8jbJeLBEA
 github.com/apex/logs v1.0.0/go.mod h1:XzxuLZ5myVHDy9SAmYpamKKRNApGj54PfYLcFrXqDwo=
 github.com/aphistic/golf v0.0.0-20180712155816-02c07f170c5a/go.mod h1:3NqKYiepwy8kCu4PNA+aP7WUV72eXWJeP9/r3/K9aLE=
 github.com/aphistic/sweet v0.2.0/go.mod h1:fWDlIh/isSE9n6EPsRmC0det+whmX6dJid3stzu0Xys=
-github.com/apptainer/container-key-client v0.8.0 h1:K181Zrejb53mR2YQZwCathSj8YReCen+Wi2YuBxGH60=
-github.com/apptainer/container-key-client v0.8.0/go.mod h1:wMeJdiMXlPRiwJfUyae2WRHsZlHG9Af6iPQ9TZcBnS8=
+github.com/apptainer/container-key-client v0.9.0 h1:FZK/7M6Pe37XSlyp/qex9ppkoHcJos8snebG8NhiA9s=
+github.com/apptainer/container-key-client v0.9.0/go.mod h1:gmGbeqBs2gbZNHmc/QHw52O3cqtEPhxSMuMaV+0Im7k=
 github.com/apptainer/container-library-client v1.4.14 h1:LMd297uZ9Ss15mO239MSk/rMkRU7+sIkF3eWe1hUS8w=
 github.com/apptainer/container-library-client v1.4.14/go.mod h1:2M5BSCW8mvNZxn3HvARCzG0/6ou95DXObEpAERNoMLI=
+github.com/apptainer/json-resp v0.10.0 h1:WFomRI6HYMcRs30dRlAm7UgohXTOeo1UsHkvdaJon1Q=
+github.com/apptainer/json-resp v0.10.0/go.mod h1:uFWuRQk/tx2Ahz3VTEX/oEj8BYb1O6OWSfFtFEt4Drw=
 github.com/apptainer/sif/v2 v2.24.0 h1:dE+3zMrCyq1Zsbe96TYJoxi7OJrYqzZ8pLWeaUXyi6g=
 github.com/apptainer/sif/v2 v2.24.0/go.mod h1:OMCtI3d1WQW7XGfBp9Yex2gM+AucfvIvUyHQ/nMmeqk=
 github.com/astromechza/etcpwdparse v0.0.0-20170319193008-f0e5f0779716 h1:MWNxJj2HIBx5Skyz30rxjHkXwGCr05O2bAz0VrwgADM=
