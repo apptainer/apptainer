@@ -184,6 +184,9 @@ Changes since 1.5.x
 - The `APPTAINER_TMPDIR` now defaults to /var/tmp, if /tmp is on tmpfs.
 - Validate DMTCP checkpoint names as single path components, preventing
   checkpoint operations from escaping the checkpoint directory.
+- Hide the `apptainer --build-config` option so it doesn't show up in help
+  messages.  It's only intended for internal use by the `apptainer build`
+  command.
 - Build the bundled PRoot without its optional Python extension. The
   extension was enabled automatically whenever `swig` and `python3-config`
   happened to be installed on the build host, which made the resulting
