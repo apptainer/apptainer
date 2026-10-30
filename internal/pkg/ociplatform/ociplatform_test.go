@@ -13,14 +13,14 @@ import (
 	"reflect"
 	"testing"
 
-	ggcrv1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 )
 
 func TestPlatformFromString(t *testing.T) {
 	tests := []struct {
 		name    string
 		plat    string
-		want    *ggcrv1.Platform
+		want    *ggcr.Platform
 		wantErr bool
 	}{
 		{
@@ -38,43 +38,43 @@ func TestPlatformFromString(t *testing.T) {
 		{
 			name:    "NormalizeAMD64",
 			plat:    "linux/amd64",
-			want:    &ggcrv1.Platform{OS: "linux", Architecture: "amd64", Variant: ""},
+			want:    &ggcr.Platform{OS: "linux", Architecture: "amd64", Variant: ""},
 			wantErr: false,
 		},
 		{
 			name:    "NormalizeAMD64/v2",
 			plat:    "linux/amd64/v2",
-			want:    &ggcrv1.Platform{OS: "linux", Architecture: "amd64", Variant: "v2"},
+			want:    &ggcr.Platform{OS: "linux", Architecture: "amd64", Variant: "v2"},
 			wantErr: false,
 		},
 		{
 			name:    "NormalizeARM",
 			plat:    "linux/arm",
-			want:    &ggcrv1.Platform{OS: "linux", Architecture: "arm", Variant: ""},
+			want:    &ggcr.Platform{OS: "linux", Architecture: "arm", Variant: ""},
 			wantErr: false,
 		},
 		{
 			name:    "NormalizeARM/v6",
 			plat:    "linux/arm/v6",
-			want:    &ggcrv1.Platform{OS: "linux", Architecture: "arm", Variant: "v6"},
+			want:    &ggcr.Platform{OS: "linux", Architecture: "arm", Variant: "v6"},
 			wantErr: false,
 		},
 		{
 			name:    "NormalizeARM64",
 			plat:    "linux/arm64",
-			want:    &ggcrv1.Platform{OS: "linux", Architecture: "arm64", Variant: ""},
+			want:    &ggcr.Platform{OS: "linux", Architecture: "arm64", Variant: ""},
 			wantErr: false,
 		},
 		{
 			name:    "NormalizeARM64/v8",
 			plat:    "linux/arm64/v8",
-			want:    &ggcrv1.Platform{OS: "linux", Architecture: "arm64", Variant: "v8"},
+			want:    &ggcr.Platform{OS: "linux", Architecture: "arm64", Variant: "v8"},
 			wantErr: false,
 		},
 		{
 			name:    "NormalizeAARCH64",
 			plat:    "linux/aarch64",
-			want:    &ggcrv1.Platform{OS: "linux", Architecture: "arm64", Variant: ""},
+			want:    &ggcr.Platform{OS: "linux", Architecture: "arm64", Variant: ""},
 			wantErr: false,
 		},
 	}

@@ -6,7 +6,7 @@
 package oras
 
 import (
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 )
 
@@ -27,8 +27,8 @@ type SifConfig struct {
 	mediaType types.MediaType
 }
 
-func (sc *SifConfig) Digest() (v1.Hash, error) {
-	return v1.NewHash(emptyConfigDigest)
+func (sc *SifConfig) Digest() (ggcr.Hash, error) {
+	return ggcr.NewHash(emptyConfigDigest)
 }
 
 func (sc *SifConfig) Size() (int64, error) {

@@ -41,7 +41,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/util/cryptkey"
 	keyClient "github.com/apptainer/container-key-client/client"
 	"github.com/google/go-containerregistry/pkg/authn"
-	ggcrv1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 	ocitypes "go.podman.io/image/v5/types"
 	"golang.org/x/sys/unix"
 )
@@ -132,7 +132,7 @@ type Options struct {
 	// Extra arguments for mksquashfs
 	MksquashfsArgs string
 	// Which Platform to use when retrieving images for the build
-	Platform ggcrv1.Platform
+	Platform ggcr.Platform
 	// Reproducible build
 	Reproducible bool
 	// Overlay, when true, builds an overlay-only image: only the files

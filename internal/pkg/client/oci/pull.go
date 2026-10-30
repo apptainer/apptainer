@@ -27,7 +27,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	useragent "github.com/apptainer/apptainer/pkg/util/user-agent"
 	"github.com/google/go-containerregistry/pkg/authn"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 )
 
 type PullOptions struct {
@@ -39,7 +39,7 @@ type PullOptions struct {
 	Pullarch     string
 	Pullvar      string
 	ReqAuthFile  string
-	Platform     v1.Platform
+	Platform     ggcr.Platform
 	Reproducible bool
 }
 
@@ -66,7 +66,7 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom string
 	to := transportOptions(opts)
 	if opts.Pullarch != "" {
 		if arch, ok := oci.LookupArch(opts.Pullarch, opts.Pullvar); ok {
-			to.Platform = v1.Platform{
+			to.Platform = ggcr.Platform{
 				Architecture: arch.Arch,
 				Variant:      arch.Var,
 			}

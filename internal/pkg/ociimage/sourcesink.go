@@ -19,7 +19,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/ociauth"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/google/go-containerregistry/pkg/name"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/daemon"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
 	"github.com/google/go-containerregistry/pkg/v1/layout"
@@ -41,7 +41,7 @@ const (
 	DaemonSourceSink
 )
 
-func getDockerImage(ctx context.Context, src string, tOpts *TransportOptions, rt *progressClient.RoundTripper) (v1.Image, error) {
+func getDockerImage(ctx context.Context, src string, tOpts *TransportOptions, rt *progressClient.RoundTripper) (ggcr.Image, error) {
 	var nameOpts []name.Option
 	if tOpts != nil && tOpts.Insecure {
 		nameOpts = append(nameOpts, name.Insecure)
@@ -123,7 +123,7 @@ func getDockerImage(ctx context.Context, src string, tOpts *TransportOptions, rt
 // getOCIImage retrieves an image from a layout ref provided in <dir>[@digest] format.
 // If no digest is provided, and there is only one image in the layout, it will be returned.
 // A digest must be specified when retrieving an image from a layout containing multiple images.
-func getOCIImage(src string, tOpts *TransportOptions) (v1.Image, error) {
+func getOCIImage(src string, tOpts *TransportOptions) (ggcr.Image, error) {
 	dir, base := filepath.Split(src)
 	refParts := strings.SplitN(base, "@", 2)
 
@@ -172,7 +172,7 @@ func getOCIImage(src string, tOpts *TransportOptions) (v1.Image, error) {
 	return nil, fmt.Errorf("image %q not found in layout", src)
 }
 
-func getPlatformImage(ii v1.ImageIndex, platform v1.Platform) (v1.Image, error) {
+func getPlatformImage(ii ggcr.ImageIndex, platform ggcr.Platform) (ggcr.Image, error) {
 	im, err := ii.IndexManifest()
 	if err != nil {
 		return nil, err
@@ -201,7 +201,7 @@ func getPlatformImage(ii v1.ImageIndex, platform v1.Platform) (v1.Image, error) 
 	return nil, fmt.Errorf("%s image not found in index", platform)
 }
 
-func getDaemonImage(ctx context.Context, src string, tOpts *TransportOptions) (v1.Image, error) {
+func getDaemonImage(ctx context.Context, src string, tOpts *TransportOptions) (ggcr.Image, error) {
 	var nameOpts []name.Option
 	if tOpts != nil && tOpts.Insecure {
 		nameOpts = append(nameOpts, name.Insecure)
@@ -244,7 +244,7 @@ func (ss SourceSink) Reference(s string, tOpts *TransportOptions) (name.Referenc
 	}
 }
 
-func (ss SourceSink) Image(ctx context.Context, ref string, tOpts *TransportOptions, rt *progressClient.RoundTripper) (v1.Image, error) {
+func (ss SourceSink) Image(ctx context.Context, ref string, tOpts *TransportOptions, rt *progressClient.RoundTripper) (ggcr.Image, error) {
 	switch ss {
 	case RegistrySourceSink:
 		return getDockerImage(ctx, ref, tOpts, rt)
@@ -261,7 +261,7 @@ func (ss SourceSink) Image(ctx context.Context, ref string, tOpts *TransportOpti
 	}
 }
 
-func (ss SourceSink) WriteImage(img v1.Image, dstName string, tOpts *TransportOptions) error {
+func (ss SourceSink) WriteImage(img ggcr.Image, dstName string, tOpts *TransportOptions) error {
 	switch ss {
 	case OCISourceSink:
 		lp, err := layout.FromPath(dstName)

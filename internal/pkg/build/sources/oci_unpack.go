@@ -24,7 +24,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	"github.com/ccoveille/go-safecast/v2"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/opencontainers/runtime-spec/specs-go"
 	umocilayer "github.com/opencontainers/umoci/oci/layer"
 )
@@ -32,7 +32,7 @@ import (
 // isExtractable checks if we have extractable layers in the image. Shouldn't be
 // an ORAS artifact or similar. Avoids creating an empty rootfs from 0 layers,
 // leading to odd error messages elsewhere.
-func isExtractable(layers []v1.Layer) (bool, error) {
+func isExtractable(layers []ggcr.Layer) (bool, error) {
 	for _, l := range layers {
 		mt, err := l.MediaType()
 		if err != nil {
@@ -46,7 +46,7 @@ func isExtractable(layers []v1.Layer) (bool, error) {
 }
 
 // UnpackRootfs extracts all of the layers of the given srcImage into destDir.
-func UnpackRootfs(_ context.Context, srcImage v1.Image, destDir string) (err error) {
+func UnpackRootfs(_ context.Context, srcImage ggcr.Image, destDir string) (err error) {
 	layers, err := srcImage.Layers()
 	if err != nil {
 		return fmt.Errorf("while getting layers from image: %w", err)
@@ -114,7 +114,7 @@ func UnpackRootfs(_ context.Context, srcImage v1.Image, destDir string) (err err
 	return nil
 }
 
-func extractLayer(l v1.Layer, mapOptions umocilayer.MapOptions, destDir string) error {
+func extractLayer(l ggcr.Layer, mapOptions umocilayer.MapOptions, destDir string) error {
 	layerDigest, err := l.Digest()
 	if err != nil {
 		return fmt.Errorf("while getting digest: %w", err)

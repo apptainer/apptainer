@@ -17,7 +17,7 @@ import (
 
 	"github.com/apptainer/apptainer/pkg/util/slice"
 	"github.com/google/go-containerregistry/pkg/authn"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 	"go.podman.io/image/v5/docker"
 	dockerarchive "go.podman.io/image/v5/docker/archive"
 	dockerdaemon "go.podman.io/image/v5/docker/daemon"
@@ -58,7 +58,7 @@ type TransportOptions struct {
 	DockerDaemonHost string
 	// Platform specifies the OS / Architecture / Variant that the pulled images
 	// should satisfy.
-	Platform v1.Platform
+	Platform ggcr.Platform
 	// UserAgent will be set on HTTP(S) request made by transports.
 	UserAgent string
 	// TmpDir is a location in which a transport can create temporary files.
@@ -134,7 +134,7 @@ func TransportOptionsFromSystemContext(sc *types.SystemContext) *TransportOption
 		AuthFilePath: sc.AuthFilePath,
 		TmpDir:       sc.BigFilesTemporaryDir,
 		UserAgent:    sc.DockerRegistryUserAgent,
-		Platform: v1.Platform{
+		Platform: ggcr.Platform{
 			OS:           sc.OSChoice,
 			Architecture: sc.ArchitectureChoice,
 			Variant:      sc.VariantChoice,

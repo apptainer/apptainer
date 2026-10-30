@@ -19,7 +19,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/google/go-containerregistry/pkg/authn"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	ggcr "github.com/google/go-containerregistry/pkg/v1"
 )
 
 // contextKey is a custom type for context keys to avoid collisions
@@ -29,68 +29,68 @@ type contextKey string
 const TmpDirKey contextKey = "tmpDir"
 
 // pull will pull an oras image into the cache if directTo="", or a specific file if directTo is set.
-func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, digest v1.Hash, err error) {
+func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, digest ggcr.Hash, err error) {
 	digest, err = RefDigest(ctx, pullFrom, arch, ociAuth, noHTTPS, reqAuthFile)
 	if err != nil {
-		return "", v1.Hash{}, fmt.Errorf("failed to get digest for %s: %s", pullFrom, err)
+		return "", ggcr.Hash{}, fmt.Errorf("failed to get digest for %s: %s", pullFrom, err)
 	}
 	resolvedRef, err := digestReference(pullFrom, digest, noHTTPS)
 	if err != nil {
-		return "", v1.Hash{}, fmt.Errorf("failed to pin reference %s to digest %s: %s", pullFrom, digest, err)
+		return "", ggcr.Hash{}, fmt.Errorf("failed to pin reference %s to digest %s: %s", pullFrom, digest, err)
 	}
 
 	hash, err := RefHash(ctx, resolvedRef, arch, ociAuth, noHTTPS, reqAuthFile)
 	if err != nil {
-		return "", v1.Hash{}, fmt.Errorf("failed to get checksum for %s: %s", pullFrom, err)
+		return "", ggcr.Hash{}, fmt.Errorf("failed to get checksum for %s: %s", pullFrom, err)
 	}
 	size, err := RefSize(ctx, resolvedRef, arch, ociAuth, noHTTPS, reqAuthFile)
 	if err != nil {
-		return "", v1.Hash{}, fmt.Errorf("failed to get size for %s: %s", pullFrom, err)
+		return "", ggcr.Hash{}, fmt.Errorf("failed to get size for %s: %s", pullFrom, err)
 	}
 
 	if directTo != "" {
 		sylog.Infof("Downloading oras image")
 		if err := DownloadImage(ctx, directTo, resolvedRef, arch, ociAuth, noHTTPS, reqAuthFile); err != nil {
-			return "", v1.Hash{}, fmt.Errorf("unable to Download Image: %v", err)
+			return "", ggcr.Hash{}, fmt.Errorf("unable to Download Image: %v", err)
 		}
 		if imageSize, err := ImageSize(directTo); err != nil {
-			return "", v1.Hash{}, fmt.Errorf("error getting ImageSize: %v", err)
+			return "", ggcr.Hash{}, fmt.Errorf("error getting ImageSize: %v", err)
 		} else if imageSize != size {
-			return "", v1.Hash{}, fmt.Errorf("image file size(%d) and expected size(%d) does not match", imageSize, size)
+			return "", ggcr.Hash{}, fmt.Errorf("image file size(%d) and expected size(%d) does not match", imageSize, size)
 		}
 		if imageHash, err := ImageHash(ctx, directTo); err != nil {
-			return "", v1.Hash{}, fmt.Errorf("error getting ImageHash: %v", err)
+			return "", ggcr.Hash{}, fmt.Errorf("error getting ImageHash: %v", err)
 		} else if imageHash != hash {
-			return "", v1.Hash{}, fmt.Errorf("image file hash(%s) and expected hash(%s) does not match", imageHash, hash)
+			return "", ggcr.Hash{}, fmt.Errorf("image file hash(%s) and expected hash(%s) does not match", imageHash, hash)
 		}
 		imagePath = directTo
 
 	} else {
 		cacheEntry, err := imgCache.GetEntry(cache.OrasCacheType, hash.String())
 		if err != nil {
-			return "", v1.Hash{}, fmt.Errorf("unable to check if %v exists in cache: %v", hash, err)
+			return "", ggcr.Hash{}, fmt.Errorf("unable to check if %v exists in cache: %v", hash, err)
 		}
 		defer cacheEntry.CleanTmp()
 		if !cacheEntry.Exists {
 			sylog.Infof("Downloading oras image")
 
 			if err := DownloadImage(ctx, cacheEntry.TmpPath, resolvedRef, arch, ociAuth, noHTTPS, reqAuthFile); err != nil {
-				return "", v1.Hash{}, fmt.Errorf("unable to Download Image: %v", err)
+				return "", ggcr.Hash{}, fmt.Errorf("unable to Download Image: %v", err)
 			}
 			if cacheFileSize, err := ImageSize(cacheEntry.TmpPath); err != nil {
-				return "", v1.Hash{}, fmt.Errorf("error getting ImageSize: %v", err)
+				return "", ggcr.Hash{}, fmt.Errorf("error getting ImageSize: %v", err)
 			} else if cacheFileSize != size {
-				return "", v1.Hash{}, fmt.Errorf("cached file size(%d) and expected size(%d) does not match", cacheFileSize, size)
+				return "", ggcr.Hash{}, fmt.Errorf("cached file size(%d) and expected size(%d) does not match", cacheFileSize, size)
 			}
 			if cacheFileHash, err := ImageHash(ctx, cacheEntry.TmpPath); err != nil {
-				return "", v1.Hash{}, fmt.Errorf("error getting ImageHash: %v", err)
+				return "", ggcr.Hash{}, fmt.Errorf("error getting ImageHash: %v", err)
 			} else if cacheFileHash != hash {
-				return "", v1.Hash{}, fmt.Errorf("cached file hash(%s) and expected hash(%s) does not match", cacheFileHash, hash)
+				return "", ggcr.Hash{}, fmt.Errorf("cached file hash(%s) and expected hash(%s) does not match", cacheFileHash, hash)
 			}
 
 			err = cacheEntry.Finalize()
 			if err != nil {
-				return "", v1.Hash{}, err
+				return "", ggcr.Hash{}, err
 			}
 
 		} else {
@@ -111,13 +111,13 @@ func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom, arch, tmpDir st
 }
 
 // PullWithDigest pulls an oras image and returns the resolved manifest digest.
-func PullWithDigest(ctx context.Context, imgCache *cache.Handle, pullFrom, arch, tmpDir string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, digest v1.Hash, err error) {
+func PullWithDigest(ctx context.Context, imgCache *cache.Handle, pullFrom, arch, tmpDir string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, digest ggcr.Hash, err error) {
 	directTo := ""
 
 	if imgCache.IsDisabled() {
 		file, err := os.CreateTemp(tmpDir, "sbuild-tmp-cache-")
 		if err != nil {
-			return "", v1.Hash{}, fmt.Errorf("unable to create tmp file: %v", err)
+			return "", ggcr.Hash{}, fmt.Errorf("unable to create tmp file: %v", err)
 		}
 		directTo = file.Name()
 		sylog.Infof("Downloading oras image to tmp cache: %s", directTo)
