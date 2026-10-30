@@ -41,7 +41,7 @@ require (
 	github.com/sigstore/sigstore v1.10.11
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
-	github.com/vbauerster/mpb/v8 v8.16.2
+	github.com/vbauerster/mpb/v8 v8.16.3
 	go.podman.io/common v0.69.2
 	go.podman.io/image/v5 v5.42.0
 	go.yaml.in/yaml/v4 v4.0.0-rc.6
