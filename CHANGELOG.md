@@ -191,6 +191,8 @@ Changes since 1.5.x
   Python extension, and explicitly disabling it improves the build
   reproducibility by ensuring a `libpython` dependency does not get
   introduced based on the build host's environment.
+- Update bundled squashfuse to version 0.6.5.
+- Update bundled fuse-overlayfs to version 1.18.
 - Fix `apptainer pull` picking an empty or malformed default destination
   filename when the source URI ends in a trailing slash, e.g.
   `docker://sylabs.io/lolcow/` or `https://example.com/foo/`. Only
