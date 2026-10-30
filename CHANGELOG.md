@@ -32,6 +32,9 @@ Changes since 1.5.x
   support (`/proc/sys/fs/binfmt_misc` is missing).
 - Add a new %{BUILDARCH} macro to the yum/dnf and zypper templates.
   It resolves to the architecture of the image currently being built.
+- Add Huawei OceanStor Pacific DPC filesystem (magic `0xFFEA36969`) to the
+  overlay incompatible filesystem list, preventing kernel panic caused by
+  kernel overlayfs operating on DPC inodes.
 - Add support for mounting archive files (tar, tar.gz, etc.) using
   `--bind` or `--mount` with `archive-src=` option, similar to mounting
   images with `image-src=`. Archive mounts require a FUSE-based archiver
