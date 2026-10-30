@@ -30,9 +30,9 @@
 %global package_version @PACKAGE_VERSION@
 
 %global gocryptfs_version 2.6.1
-%global squashfuse_version 0.6.2
+%global squashfuse_version 0.6.5
 %global e2fsprogs_version 1.47.4
-%global fuse_overlayfs_version 1.16
+%global fuse_overlayfs_version 1.18
 %global squashfs_tools_version 4.7.5
 %global archivemount_version 1b
 %ifnarch ppc64le s390x riscv64
