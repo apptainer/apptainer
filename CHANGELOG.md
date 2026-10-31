@@ -9,6 +9,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.5.x
 
+- Add `dist/static`, which builds a statically linked, non-SUID and
+  relocatable Apptainer installation tarball, including static `mksquashfs`
+  and `unsquashfs`, for hosts without the usual runtime dependencies.
 - Do not fail to start containers when the host has no `/etc/localtime`.
   The container's own `/etc/localtime`, if any, is now left in place.
   Missing sources of `skip-on-error` bind mounts such as `/etc/hosts` are
