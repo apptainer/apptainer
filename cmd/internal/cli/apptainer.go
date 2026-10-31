@@ -274,6 +274,7 @@ var singBuildConfigFlag = cmdline.Flag{
 	ID:           "singBuildConfigFlag",
 	Value:        &useBuildConfig,
 	DefaultValue: false,
+	Hidden:       true,
 	Name:         "build-config",
 	Usage:        "use configuration needed for building containers",
 }

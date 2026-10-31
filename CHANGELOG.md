@@ -187,6 +187,9 @@ Changes since 1.5.x
 - The `APPTAINER_TMPDIR` now defaults to /var/tmp, if /tmp is on tmpfs.
 - Validate DMTCP checkpoint names as single path components, preventing
   checkpoint operations from escaping the checkpoint directory.
+- Hide the `apptainer --build-config` option so it doesn't show up in help
+  messages.  It's only intended for internal use by the `apptainer build`
+  command.
 - Build the bundled PRoot without its optional Python extension. The
   extension was enabled automatically whenever `swig` and `python3-config`
   happened to be installed on the build host, which made the resulting
@@ -194,6 +197,8 @@ Changes since 1.5.x
   Python extension, and explicitly disabling it improves the build
   reproducibility by ensuring a `libpython` dependency does not get
   introduced based on the build host's environment.
+- Update bundled squashfuse to version 0.6.5.
+- Update bundled fuse-overlayfs to version 1.18.
 - Fix `apptainer pull` picking an empty or malformed default destination
   filename when the source URI ends in a trailing slash, e.g.
   `docker://sylabs.io/lolcow/` or `https://example.com/foo/`. Only
