@@ -98,7 +98,7 @@ broader testing.
    `git tag -a -m "Apptainer v1.2.0 Release Candidate 1" v1.2.0-rc.1`.
 1. Push the tag via `git push upstream v1.2.0-rc.1`.
 1. Create a GitHub pre-release, using the previous release as a guide and
-   incorporating `CHANGELOG.md` information. Make sure it is clear to use
+   incorporating `CHANGELOG.md` information.
 1. Notify the community about the release candidate via the announce Google Group
    and Slack #general channel.
 
