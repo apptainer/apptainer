@@ -134,22 +134,9 @@ func DownloadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.A
 
 // uploadSingleImage uploads a single image and returns the image and its descriptor.
 // The annotations parameter is a slice of key=value pairs to add to the image manifest.
-func uploadSingleImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) (ggcr.Image, *ggcr.Descriptor, error) {
+func uploadSingleImage(ctx context.Context, path string, ir name.Reference, arch string, ociAuth *authn.AuthConfig, reqAuthFile string, annotations []string) (ggcr.Image, *ggcr.Descriptor, error) {
 	// ensure that we are uploading a SIF
 	if err := ensureSIF(path); err != nil {
-		return nil, nil, err
-	}
-
-	ref = strings.TrimPrefix(ref, "oras://")
-	ref = strings.TrimPrefix(ref, "//")
-
-	// Get reference to image in the remote
-	opts := []name.Option{name.WithDefaultTag(name.DefaultTag), name.WithDefaultRegistry(name.DefaultRegistry)}
-	if noHTTPS {
-		opts = append(opts, name.Insecure)
-	}
-	ir, err := name.ParseReference(ref, opts...)
-	if err != nil {
 		return nil, nil, err
 	}
 
@@ -210,28 +197,45 @@ func uploadSingleImage(ctx context.Context, path, ref, arch string, ociAuth *aut
 	return im, desc, nil
 }
 
+func digestRef(ref name.Reference, digest ggcr.Hash) string {
+	return ref.Context().Digest(digest.String()).String()
+}
+
 // UploadImage uploads the image specified by path and pushes it to the provided oci reference.
 // It will use credentials if supplied.
-func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) error {
-	im, _, err := uploadSingleImage(ctx, path, ref, arch, ociAuth, noHTTPS, reqAuthFile, annotations)
+func UploadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) (string, error) {
+	ref = strings.TrimPrefix(ref, "oras://")
+	ref = strings.TrimPrefix(ref, "//")
+
+	// Get reference to image in the remote
+	opts := []name.Option{name.WithDefaultTag(name.DefaultTag), name.WithDefaultRegistry(name.DefaultRegistry)}
+	if noHTTPS {
+		opts = append(opts, name.Insecure)
+	}
+	ir, err := name.ParseReference(ref, opts...)
 	if err != nil {
-		return err
+		return "", err
+	}
+
+	im, _, err := uploadSingleImage(ctx, path, ir, arch, ociAuth, reqAuthFile, annotations)
+	if err != nil {
+		return "", err
 	}
 
 	digest, err := im.Digest()
 	if err != nil {
-		return err
+		return "", err
 	}
 	sylog.Infof("Digest: %s\n", digest)
 
-	return err
+	return digestRef(ir, digest), err
 }
 
 // UploadImages uploads the images specified by paths and pushes them along with an index to the provided oci reference.
 // It will use credentials if supplied.
-func UploadImages(ctx context.Context, paths []string, ref string, archs []string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) error {
+func UploadImages(ctx context.Context, paths []string, ref string, archs []string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string, annotations []string) (string, error) {
 	if len(paths) != len(archs) {
-		return fmt.Errorf("paths and archs must have the same length")
+		return "", fmt.Errorf("paths and archs must have the same length")
 	}
 
 	var base ggcr.ImageIndex = empty.Index
@@ -247,7 +251,7 @@ func UploadImages(ctx context.Context, paths []string, ref string, archs []strin
 	}
 	ir, err := name.ParseReference(ref, opts...)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	archSeen := map[string]bool{}
@@ -257,24 +261,24 @@ func UploadImages(ctx context.Context, paths []string, ref string, archs []strin
 
 		// We don't want to overwrite same arch
 		if archSeen[arch] {
-			return fmt.Errorf("have already added arch %q to %s", arch, ref)
+			return "", fmt.Errorf("have already added arch %q to %s", arch, ref)
 		}
 		archSeen[arch] = true
 
 		// Get reference to image in the remote
 		ia, err := name.ParseReference(ir.Name()+"_"+arch, opts...)
 		if err != nil {
-			return err
+			return "", err
 		}
 
-		im, desc, err := uploadSingleImage(ctx, path, ia.Name(), arch, ociAuth, noHTTPS, reqAuthFile, annotations)
+		im, desc, err := uploadSingleImage(ctx, path, ia, arch, ociAuth, reqAuthFile, annotations)
 		if err != nil {
-			return err
+			return "", err
 		}
 
 		digest, err := im.Digest()
 		if err != nil {
-			return err
+			return "", err
 		}
 		sylog.Infof("Digest: %s (%s)\n", digest, arch)
 
@@ -288,7 +292,7 @@ func UploadImages(ctx context.Context, paths []string, ref string, archs []strin
 
 	digest, err := idx.Digest()
 	if err != nil {
-		return err
+		return "", err
 	}
 	sylog.Infof("Digest: %s\n", digest)
 
@@ -298,7 +302,7 @@ func UploadImages(ctx context.Context, paths []string, ref string, archs []strin
 		remote.WithContext(ctx),
 	}
 
-	return remote.WriteIndex(ir, idx, remoteOpts...)
+	return digestRef(ir, digest), remote.WriteIndex(ir, idx, remoteOpts...)
 }
 
 // getAnnotationsMap converts a slice of annotation strings to a map
