@@ -6,15 +6,25 @@ on:
 
 jobs:
   release_assets:
-    name: release_assets
-    runs-on: ubuntu-22.04
+    name: release_assets_${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
     if: startsWith(github.ref, 'refs/tags/')
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-22.04
+          - arch: arm64
+            runner: ubuntu-22.04-arm
+    outputs:
+      do-release: ${{ steps.release-check.outputs.do-release }}
 
     steps:
       - uses: actions/checkout@v4
       - run: git fetch --prune --unshallow --tags --force
 
       - name: Check if release is needed because tag matches latest annotated
+        id: release-check
         env:
           GITHUB_REF: ${{github.ref}}
         run: |
@@ -23,8 +33,10 @@ jobs:
           if [ "$GETVERSION" == "$GITTAG" ]
           then
             echo "do_release=true" >> $GITHUB_ENV
+            echo "do-release=true" >> $GITHUB_OUTPUT
           else
             echo "Skipping because $GETVERSION did not match $GITTAG"
+            echo "do-release=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Make dist tarball and rpm packages
@@ -33,11 +45,13 @@ jobs:
           OS_TYPE: rockylinux
           OS_VERSION: 8
           HIDE_DIST: true
-          GO_ARCH: linux-amd64
+          GO_ARCH: linux-${{ matrix.arch }}
         run: |
           # Move the source directory down a level to separate it
           #  from later builds; the docker build runs privileged and
           #  changes the ownership of the files.
+          # The source tarball is arch-neutral and byte-identical to
+          #  the one produced by the other arch leg.
           set -x
           mkdir rpmdir
           shopt -s extglob
@@ -53,7 +67,7 @@ jobs:
           OS_TYPE: rockylinux/rockylinux
           OS_VERSION: 10
           BUILD_TYPE: rebuild-rpm
-          GO_ARCH: linux-amd64
+          GO_ARCH: linux-${{ matrix.arch }}
         run: |
           # Make a new copy of the source files for this build
           set -x
@@ -69,7 +83,7 @@ jobs:
         env:
           OS_TYPE: debian
           OS_VERSION: 12
-          GO_ARCH: linux-amd64
+          GO_ARCH: linux-${{ matrix.arch }}
         run: |
           # Make another new copy of the source files for this build
           set -x
@@ -85,7 +99,7 @@ jobs:
         env:
           OS_TYPE: debian
           OS_VERSION: 13
-          GO_ARCH: linux-amd64
+          GO_ARCH: linux-${{ matrix.arch }}
         run: |
           # Make another new copy of the source files for this build
           set -x
@@ -96,8 +110,42 @@ jobs:
           for d in *.deb; do cp $d ../`echo $d|sed 's/\(_[^_]*$\)/-trixie+\1/'`; done
           cd ..
 
-      - name: Release
+      - name: Upload artifacts
         if: env.do_release
+        uses: actions/upload-artifact@v4
+        with:
+          name: assets-${{ matrix.arch }}
+          path: |
+            *.tar.gz
+            *.rpm
+            *.deb
+          if-no-files-found: error
+          retention-days: 14
+
+  create_release:
+    name: create_release
+    runs-on: ubuntu-22.04
+    if: >
+      needs.release_assets.result == 'success' &&
+      needs.release_assets.outputs.do-release == 'true'
+    needs: [release_assets]
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Combine assets from all architectures
+        run: |
+          set -ex
+          # Flatten each arch's artifact tree into the current directory.
+          # The source tarball is arch-neutral; cp -n keeps the first
+          # copy and skips the identical ones.
+          for each in artifacts/assets-*; do cp -n "$each"/*. .; done
+          ls -al
+
+      - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
