@@ -37,7 +37,7 @@ Changes since 1.5.5
   that override the original reference.  To override only the registry
   you can use `-` as the image name, for example `oras://my.host/-`, or
   to override only the image name you can use `-.-` as the registry, for
-  examaple `oras://-.-/myimage`. If a specific version is not given, the
+  example `oras://-.-/myimage`. If a specific version is not given, the
   original hash is applied.  If the original bootstrap was `localimage`
   then using `--basepath` is required, if the original bootstrap was
   `oras` then the default --basepath is `oras://`, or if the original
