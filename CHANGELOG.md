@@ -10,8 +10,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 Changes since 1.5.x
 
 - Add `dist/static`, which builds a statically linked, non-SUID and
-  relocatable Apptainer installation tarball, including static `mksquashfs`
-  and `unsquashfs`, for hosts without the usual runtime dependencies.
+  relocatable Apptainer installation tarball, using Apptainer, for
+  hosts without the usual runtime dependencies. It includes static builds
+  of all the normally bundled tools, such as `squashfuse_ll`, `fuse2fs` and
+  `fuse-overlayfs`. It does not include `offsetpreload.so`.
+- When `offsetpreload.so` is not installed, EXT3 partitions inside SIF
+  files are mounted with the `offset` option of `fuse2fs`, which requires
+  e2fsprogs 1.46.6 or later.
 - Do not fail to start containers when the host has no `/etc/localtime`.
   The container's own `/etc/localtime`, if any, is now left in place.
   Missing sources of `skip-on-error` bind mounts such as `/etc/hosts` are

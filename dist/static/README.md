@@ -7,9 +7,12 @@ it from source is not possible, such as minimal or appliance-style systems.
 
 Each tarball contains a single top level `apptainer-<version>` directory with
 the usual `bin`, `etc`, `libexec`, `share` and `var` installation tree. Static
-`mksquashfs` and `unsquashfs` binaries are included in
-`libexec/apptainer/bin`, so that images can be built and pulled without
-squashfs-tools installed on the host.
+builds of the same tools that the rpm and deb packages bundle are included in
+`libexec/apptainer/bin`: `mksquashfs`, `unsquashfs`, `squashfuse_ll`,
+`fuse2fs`, `fuse-overlayfs`, `gocryptfs`, `archivemount` and, where it is
+supported, `proot`. Their versions are taken from
+`dist/rpm/apptainer.spec.in`, and they are built with
+`scripts/download-dependencies` and `scripts/compile-dependencies`.
 
 ## Quick start
 
@@ -42,8 +45,8 @@ configuration is read from `etc/apptainer` below the extracted directory.
 
 ## Building
 
-Docker with BuildKit (`docker buildx`) is required. From the top of the
-Apptainer source tree run:
+An existing Apptainer installation that can use `--fakeroot` is required.
+From the top of the Apptainer source tree run:
 
 ```sh
 dist/static/build.sh amd64 arm64
@@ -52,12 +55,16 @@ dist/static/build.sh amd64 arm64
 This writes `apptainer-<version>-linux-<arch>.tar.gz` for each architecture to
 the top of the source tree.
 
-The build runs natively for the target platform inside a
-`golang:<version>-alpine` container. To build `arm64` tarballs on an `amd64`
-host, register QEMU user-mode emulation first, for example with:
+The build runs `build-in-container.sh` in `%post` of `static.def`, inside a
+`golang:<version>-alpine` container, because Alpine provides the musl C
+library and static versions of the libraries that the bundled tools need.
+The sandbox that `apptainer build` leaves behind is removed afterwards.
+
+To build `arm64` tarballs on an `amd64` host, register QEMU user-mode
+emulation first, for example with:
 
 ```sh
-docker run --privileged --rm tonistiigi/binfmt --install arm64
+sudo apptainer run docker://multiarch/qemu-user-static --reset -p yes
 ```
 
 ## Limitations
@@ -70,6 +77,7 @@ docker run --privileged --rm tonistiigi/binfmt --install arm64
 - Built without seccomp support, so `--security seccomp:...` is unavailable.
 - Built without `libsubid` support, so subordinate IDs are read from
   `/etc/subuid` and `/etc/subgid` only.
-- `squashfuse`, `fuse2fs`, `fuse-overlayfs` and `gocryptfs` are not included.
-  If they are found on the host they are used, otherwise unprivileged runs of
-  SIF images extract them to a temporary sandbox.
+- `offsetpreload.so` is not included, as a static build cannot be preloaded
+  into host programs. EXT3 partitions in SIF files, such as persistent
+  overlays, are instead mounted with the `offset` option of the bundled
+  `fuse2fs`, which needs e2fsprogs 1.46.6 or later.

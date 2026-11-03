@@ -9,6 +9,9 @@
 # arm64). The tarballs are written to the top of the source tree.
 #
 # Usage: dist/static/build.sh [amd64] [arm64]
+#
+# The build runs with apptainer in %post of static.def, in a golang alpine
+# container.
 
 set -e
 
@@ -26,12 +29,18 @@ fi
 
 for arch in "$@"; do
 	echo "Building static apptainer ${version} for linux/${arch}"
-	docker buildx build \
-		--platform "linux/${arch}" \
+	# The build happens in %post; the sandbox it leaves is not needed
+	sandbox=$(mktemp -d)
+	# The go module cache in the sandbox is read-only
+	trap 'chmod -R u+w "${sandbox}"; rm -rf "${sandbox}"' EXIT
+	apptainer build --fakeroot --fix-perms --force --sandbox \
+		--arch "${arch}" \
+		--bind "${toplevel}:/src" \
 		--build-arg "GOLANG_VERSION=${golang_version}" \
 		--build-arg "VERSION=${version}" \
-		--file "${here}/Dockerfile" \
-		--output "type=local,dest=${toplevel}" \
-		.
+		"${sandbox}" "${here}/static.def"
+	chmod -R u+w "${sandbox}"
+	rm -rf "${sandbox}"
+	trap - EXIT
 	echo "Wrote ${toplevel}/apptainer-${version}-linux-${arch}.tar.gz"
 done
