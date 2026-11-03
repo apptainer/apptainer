@@ -5,43 +5,12 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
-## v1.6.x changes
+## v1.6.0-rc.1 \[2026-11-03\]
 
-Changes since 1.5.x
+Changes since 1.5.5
 
-- Do not fail to start containers when the host has no `/etc/localtime`.
-  The container's own `/etc/localtime`, if any, is now left in place.
-  Missing sources of `skip-on-error` bind mounts such as `/etc/hosts` are
-  also skipped instead of failing.
-- Do not fail to start containers when the host has no `/etc/resolv.conf`.
-  The container's own `/etc/resolv.conf`, if any, is left in place.
-- `apptainer inspect` of a sandbox image, and therefore `apptainer build`,
-  no longer requires a `sh` on the host. Without one, the inspection runs
-  inside the container instead.
-- Fix SIF execution failing when `activated = false` in `ecl.toml` and
-  an execution group references a removed directory. ECL only works in
-  suid mode and is only effective when user namespaces are disabled.
-- Skip missing host `/etc/hosts` and `/etc/resolv.conf` files when staging
-  builds, allowing OCI-to-SIF conversion on minimal hosts.
-- Preserve local SIF images when `--disable-cache` is combined with
-  `--unsquash` or automatic extraction to a temporary sandbox.
-- When the host lacks the `/dev/fd`, `/dev/stdin`, `/dev/stdout` or
-  `/dev/stderr` symlinks (e.g. hosts without udev), create them in the
-  container's minimal `/dev` instead of failing.
-- Do not fail `--fakeroot` builds when the kernel has no `binfmt_misc`
-  support (`/proc/sys/fs/binfmt_misc` is missing).
-- Add a new %{BUILDARCH} macro to the yum/dnf and zypper templates.
-  It resolves to the architecture of the image currently being built.
-- Add Huawei OceanStor Pacific DPC filesystem (magic `0xFFEA36969`) to the
-  overlay incompatible filesystem list, preventing kernel panic caused by
-  kernel overlayfs operating on DPC inodes.
-- Add support for mounting archive files (tar, tar.gz, etc.) using
-  `--bind` or `--mount` with `archive-src=` option, similar to mounting
-  images with `image-src=`. Archive mounts require a FUSE-based archiver
-  such as `ratarmount`, `fuse-archive`, or `archivemount` to be installed.
-  Now "archivemount-ng" is bundled with Apptainer, but you might want to
-  install "ratarmount" because it has better performance. It is not bundled
-  because it is a python program and so requires many dependencies.
+### New Features & functionality
+
 - Add an `--overlay` option to `apptainer build` that produces an image
   containing only the files added, changed, or removed relative to a
   base image from a `localimage`, `docker`, or `oras` bootstrap as
@@ -73,18 +42,55 @@ Changes since 1.5.x
   then using `--basepath` is required, if the original bootstrap was
   `oras` then the default --basepath is `oras://`, or if the original
   bootstrap was `docker` then the default --basepath is `docker://`.
-- Allow pushing multiple images with different architectures (multi-arch)
-  to an oras URI, creating an image index with all the pushed arch images.
 - Add support for building data partitions from tar files using
-  `apptainer build --data image.sif input.tar*`. Supports uncompressed (.tar) and
-  compressed (.tar.gz, .tar.xz, .tar.zst, .tar.lzo) archives, with decompression
-  done on the fly. Local files show a progress bar. Uncompressed .tar files are
-  converted to squashfs using `mksquashfs -` with the -tar flag.
-  For uncompressed archives, multiple files can be concatenated on stdin
-  (e.g., via `cat`, `zcat`, `xzcat`, `zstdcat`, or `lzop -dc`).
-- List the Fedora build dependencies explicitly instead of installing a
-  development tools group.
-- Allow building RPM packages with Fedora 45's renamed protobuf-c library.
+  `apptainer build --data image.sif input.tar*`. Supports uncompressed
+  (.tar) and compressed (.tar.gz, .tar.xz, .tar.zst, .tar.lzo) archives,
+  with decompression done on the fly. Local files show a progress bar.
+  Uncompressed .tar files are converted to squashfs using `mksquashfs -`
+  with the -tar flag.  For uncompressed archives, multiple files can be
+  concatenated on stdin (e.g., via `cat`, `zcat`, `xzcat`, `zstdcat`, or
+  `lzop -dc`).
+- Add support for mounting archive files (tar, tar.gz, etc.) using
+  `--bind` or `--mount` with `archive-src=` option, similar to mounting
+  images with `image-src=`. Archive mounts require a FUSE-based archiver
+  such as `ratarmount`, `fuse-archive`, or `archivemount` to be installed.
+  Now "archivemount-ng" is bundled with Apptainer, but you might want to
+  install "ratarmount" because it has better performance. It is not bundled
+  because it is a python program and so requires many dependencies.
+- Allow pushing multiple images with different architectures
+  (multi-arch) to an oras URI, creating an image index with all the
+  pushed arch images.
+- Add a new %{BUILDARCH} macro to the yum/dnf and zypper templates.  It
+  resolves to the architecture of the image currently being built.
+- Allow searching images from oras registries using `apptainer search`.
+  Only the images and tags are listed, descriptions are not searched.
+- Allow deleting images from oras registries using `apptainer delete`.
+  Not all registries support deleting images and manifests, though.
+- Add new `apptainer tag` command for tagging existing images in oras
+  registries, without having to push extra copies (it also works for
+  image indexes).
+- Add new the OCI labels: "org.opencontainers.image.created" and
+  "org.opencontainers.image.architecture" (optional ".variant").
+  The old deprecated labels: "org.label-schema.build-date" and
+  "org.label-schema.build-arch" are still set, for compatibility.
+- Add possibility to add description and annotations for oras,
+  when pushing images to a registry using the `push` command.
+  The --description flag sets "org.opencontainers.image.description",
+  and --annotation flag can be used multiple times with "key=value".
+- Add oras `org.opencontainers.image.created` annotation when pushing images.
+  The `org.opencontainers.image.created` label from the SIF image is used.
+
+### Changed behaviors regarding Nvidia and other gpu options, including CDI
+
+- Add a new `gpu library path` option to `apptainer.conf`, giving a list of
+  directories to search for the GPU driver libraries named in
+  `nvliblist.conf` and `rocmliblist.conf` when binding them with `--nv` or
+  `--rocm`. The directories are searched ahead of the ld.so cache, and make
+  `ldconfig` optional: when it cannot be found or run, the configured
+  directories are used on their own. This allows the host GPU libraries to be
+  found on systems that keep them outside the ld.so cache, or that do not
+  ship `ldconfig` at all, such as NixOS and Guix, where previously no host
+  GPU libraries would be found at all.
 - Make `--nv` and `--nvccli` work for graphics as well as compute. The
   driver files that a program opens by path rather than by name, the GBM
   backend and the X server's `nvidia` modules, are now bound into the
@@ -107,8 +113,8 @@ Changes since 1.5.x
   prefix of a `gpu library path` directory when the driver is installed
   there. The obsolete `libglx.so` entry is dropped, as that name now matches
   the X server's own module.
-- `--nvccli` accepts `NVIDIA_DRIVER_CAPABILITIES=all`, which asks for every
-  capability and previously failed to start the container.
+- `--nvccli` now accepts `NVIDIA_DRIVER_CAPABILITIES=all`, which asks for
+  every capability and previously failed to start the container.
 - `--nvccli` binds the files `nvliblist.conf` names that
   `nvidia-container-cli` does not stage itself, such as the EGL platform
   libraries, the way `--nv` does. What the CLI stages is left to it.
@@ -126,15 +132,6 @@ Changes since 1.5.x
   an unprivileged user namespace keeps them across the exec.
 - Keep `--device` in effect when `--nv` or `--nvccli` is also given. A device
   node that `--nv` or `--rocm` already staged is not staged again.
-- Add a new `gpu library path` option to `apptainer.conf`, giving a list of
-  directories to search for the GPU driver libraries named in
-  `nvliblist.conf` and `rocmliblist.conf` when binding them with `--nv` or
-  `--rocm`. The directories are searched ahead of the ld.so cache, and make
-  `ldconfig` optional: when it cannot be found or run, the configured
-  directories are used on their own. This allows the host GPU libraries to be
-  found on systems that keep them outside the ld.so cache, or that do not
-  ship `ldconfig` at all, such as NixOS and Guix, where previously no host
-  GPU libraries would be found at all.
 - Add a new `--compat32` flag (action and build) which, alongside `--nv` or
   `--rocm`, additionally binds the 32-bit GPU driver libraries of the
   host into `/.singularity.d/libs32` in the container, and adds that
@@ -148,42 +145,48 @@ Changes since 1.5.x
   lists several architectures of a library under the same name. Previously
   only the first listed variant was considered, so a library could be
   silently skipped if the wrong architecture happened to be listed first.
-- Update minimum go version to 1.26.5.
+- Added support for NVIDIA Tegra to `nvliblist.conf`.
+
+### Changed behaviours regarding minimal hosts
+
+- Do not fail to start containers when the host has no `/etc/localtime`.
+  The container's own `/etc/localtime`, if any, is now left in place.
+  Missing sources of `skip-on-error` bind mounts such as `/etc/hosts` are
+  also skipped instead of failing.
+- Do not fail to start containers when the host has no `/etc/resolv.conf`.
+  The container's own `/etc/resolv.conf`, if any, is left in place.
+- Skip missing host `/etc/hosts` and `/etc/resolv.conf` files when staging
+  builds, allowing OCI-to-SIF conversion on minimal hosts.
+- When the host lacks the `/dev/fd`, `/dev/stdin`, `/dev/stdout` or
+  `/dev/stderr` symlinks (e.g. hosts without udev), create them in the
+  container's minimal `/dev` instead of failing.
+- Do not fail `--fakeroot` builds when the kernel has no `binfmt_misc`
+  support (`/proc/sys/fs/binfmt_misc` is missing).
+- `apptainer inspect` of a sandbox image, and therefore `apptainer build`,
+  no longer requires a `sh` on the host. Without one, the inspection runs
+  inside the container instead.
+
+### Other changed defaults / behaviours
+
+- The `APPTAINER_TMPDIR` now defaults to /var/tmp, if /tmp is on tmpfs.
+- When `/proc` cannot be mounted in a new PID namespace while using
+  fakeroot to build an image from a definition file, use the host PID
+  namespace instead of a separate PID namespace and print an INFO
+  message.  This can happen inside unprivileged docker which by default
+  blocks mounting `/proc`.
+- Add a `sync writable extfs` directive to apptainer.conf. When enabled,
+  writable extfs image mounts use the `sync` mount option.
 - Add support for variant to more architectures, but without verification.
   The previous arm32v5, arm32v6 and arm32v7 (= "arm") are still verified.
 - Any architecture variant, if used, is also included in the platform.
   Previously it was silently being ignored on the non-ARM architectures.
 - Change from arm32v7 to "arm", just like arm64v8 is now just "arm64".
 - Remove support for the old obsolete arm32v3 and arm32v4 architectures.
-- Add new the OCI labels: "org.opencontainers.image.created" and
-  "org.opencontainers.image.architecture" (optional ".variant").
-  The old deprecated labels: "org.label-schema.build-date" and
-  "org.label-schema.build-arch" are still set, for compatibility.
-- When `/proc` cannot be mounted in a new PID namespace while using
-  fakeroot to build an image from a definition file, use the host PID
-  namespace instead of a separate PID namespace and print an INFO
-  message.  This can happen inside unprivileged docker which by default
-  blocks mounting `/proc`.
-- Add possibility to add description and annotations for oras,
-  when pushing images to a registry using the `push` command.
-  The --description flag sets "org.opencontainers.image.description",
-  and --annotation flag can be used multiple times with "key=value".
-- Add oras `org.opencontainers.image.created` annotation when pushing images.
-  The `org.opencontainers.image.created` label from the SIF image is used.
-- Allow searching images from oras registries, in addition to library.
-  Only the images and tags are listed, descriptions are not searched.
-- Allow deleting images from oras registries, in addition to library.
-  Not all registries support deleting images and manifests, though.
-- Add new `tag` command for tagging existing images in oras registries,
-  without having to push extra copies (it also works for image indexes).
-- Change the implementation of extended globbing patterns in the %files
-  section to use a safer method.
-- Add a `sync writable extfs` directive to apptainer.conf. When enabled,
-  writable extfs image mounts use the `sync` mount option.
-- Added support for NVIDIA Tegra to `nvliblist.conf`
-- The `APPTAINER_TMPDIR` now defaults to /var/tmp, if /tmp is on tmpfs.
 - Validate DMTCP checkpoint names as single path components, preventing
   checkpoint operations from escaping the checkpoint directory.
+- Allow building RPM packages with Fedora 45's renamed protobuf-c library.
+- Change the implementation of extended globbing patterns in the %files
+  section to use a safer method.
 - Hide the `apptainer --build-config` option so it doesn't show up in help
   messages.  It's only intended for internal use by the `apptainer build`
   command.
@@ -196,7 +199,19 @@ Changes since 1.5.x
   introduced based on the build host's environment.
 - Update bundled squashfuse to version 0.6.5.
 - Update bundled fuse-overlayfs to version 1.18.
-- Fix `apptainer pull` picking an empty or malformed default destination
+
+### Bug fixes
+
+- Prevent local SIF images from getting deleted when they are
+  used with `--disable-cache` combined with `--unsquash` or automatic
+  extraction to a temporary sandbox.
+- Fix SIF execution failing when `activated = false` in `ecl.toml` and
+  an execution group references a removed directory. ECL only works in
+  suid mode and is only effective when user namespaces are disabled.
+- Add Huawei OceanStor Pacific DPC filesystem (magic `0xFFEA36969`) to the
+  overlay incompatible filesystem list, preventing kernel panic caused by
+  kernel overlayfs operating on DPC inodes.
+- Fix `apptainer pull` from picking an empty or malformed default destination
   filename when the source URI ends in a trailing slash, e.g.
   `docker://sylabs.io/lolcow/` or `https://example.com/foo/`. Only
   leading slashes were trimmed from the reference before taking its last
@@ -434,10 +449,6 @@ Changes since v1.4.5
   it passes through LD_LIBRARY_PATH.  This makes it work correctly when it
   was installed with install-unprivileged.sh on a host operating system
   that's different than the one the installed binaries were built on.
-
-## v1.4.x changes
-
-Changes since 1.4.5
 
 ## v1.4.5 - \[2025-12-02\]
 
