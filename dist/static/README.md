@@ -74,7 +74,6 @@ sudo apptainer run docker://multiarch/qemu-user-static --reset -p yes
 - For users listed in `/etc/subuid`, `--fakeroot` uses the host's setuid
   `newuidmap` and `newgidmap`. Other users get a root-mapped user namespace
   instead.
-- Built without seccomp support, so `--security seccomp:...` is unavailable.
 - Built without `libsubid` support, so subordinate IDs are read from
   `/etc/subuid` and `/etc/subgid` only.
 - `offsetpreload.so` is not included, as a static build cannot be preloaded

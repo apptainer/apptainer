@@ -17,6 +17,8 @@ Changes since 1.5.x
 - When `offsetpreload.so` is not installed, EXT3 partitions inside SIF
   files are mounted with the `offset` option of `fuse2fs`, which requires
   e2fsprogs 1.46.6 or later.
+- `mconfig -s` no longer always disables seccomp support. It is enabled
+  when a static libseccomp is available, as in `dist/static`.
 - Do not fail to start containers when the host has no `/etc/localtime`.
   The container's own `/etc/localtime`, if any, is now left in place.
   Missing sources of `skip-on-error` bind mounts such as `/etc/hosts` are

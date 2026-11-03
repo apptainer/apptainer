@@ -23,7 +23,7 @@ install_packages() {
 		fuse3-dev fuse3-static libarchive-dev libarchive-static \
 		acl-dev acl-static expat-dev expat-static \
 		openssl-dev openssl-libs-static talloc-dev talloc-static \
-		bsd-compat-headers protobuf-c-dev
+		bsd-compat-headers protobuf-c-dev libseccomp-dev libseccomp-static
 }
 
 build() {
@@ -77,7 +77,7 @@ EOF
 		make squashfuse_ll LDFLAGS=-all-static
 	)
 
-	./mconfig -s -S --without-suid --without-seccomp --without-libsubid \
+	./mconfig -s -S --without-suid --without-libsubid \
 		-b "${work}/builddir" -p "${PREFIX}"
 	make -C "${work}/builddir" -j"$(nproc)"
 	make -C "${work}/builddir" install DESTDIR="${work}/out"
