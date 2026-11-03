@@ -80,3 +80,9 @@ sudo apptainer run docker://multiarch/qemu-user-static --reset -p yes
   into host programs. EXT3 partitions in SIF files, such as persistent
   overlays, are instead mounted with the `offset` option of the bundled
   `fuse2fs`, which needs e2fsprogs 1.46.6 or later.
+- The musl C library does not support NSS modules, so users and groups are
+  looked up in `/etc/passwd` and `/etc/group`, and through `nscd` if it is
+  running. Users and groups that come only from other sources, such as
+  LDAP through SSSD, are not resolved by name. This is also what makes the
+  build reliable: a static glibc build loads the host's NSS modules for
+  these lookups, which can crash it, as in issue #2449.
