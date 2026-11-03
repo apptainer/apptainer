@@ -5,6 +5,12 @@ The Singularity Project has been
 and re-branded as Apptainer.
 For older changes see the [archived Singularity change log](https://github.com/apptainer/singularity/blob/release-3.8/CHANGELOG.md).
 
+## v1.7.x changes
+
+## v1.6.x changes
+
+Changes since 1.6.0-rc.1
+
 ## v1.6.0-rc.1 \[2026-11-03\]
 
 Changes since 1.5.5
