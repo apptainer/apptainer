@@ -163,6 +163,8 @@ BuildRequires: xz-devel
 BuildRequires: libzstd-devel
 %endif
 %if "%{?archivemount_version}" != ""
+# el8 does not have a "g++" package but later el versions do
+BuildRequires: /usr/bin/g++
 BuildRequires: libarchive-devel
 %endif
 %if "%{_target_vendor}" == "suse"
