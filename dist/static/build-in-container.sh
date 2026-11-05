@@ -39,27 +39,9 @@ build() {
 	cd "${work}/src"
 	echo "${version}" >VERSION
 
-	# The bundled dependencies, with versions taken from the rpm spec.
-	# A pkg-config wrapper makes builds that call it directly link
-	# against all the static libraries they need.
+	# The bundled dependencies, with versions taken from the rpm spec
 	scripts/download-dependencies "${work}/deps"
-	mkdir "${work}/bin"
-	cat >"${work}/bin/pkg-config" <<'EOF'
-#!/bin/sh
-exec /usr/bin/pkg-config --static "$@"
-EOF
-	chmod +x "${work}/bin/pkg-config"
-	(
-		cd "${work}/deps"
-		export PATH="${work}/bin:${PATH}"
-		export LDFLAGS=-static EXTRA_LDFLAGS=-static
-		"${work}/src/scripts/compile-dependencies"
-		# libtool ignores -static for programs, so relink squashfuse_ll
-		# with its own flag for a fully static binary
-		cd squashfuse-*/
-		rm -f squashfuse_ll
-		make squashfuse_ll LDFLAGS=-all-static
-	)
+	(cd "${work}/deps" && "${work}/src/scripts/compile-dependencies" -s)
 
 	./mconfig -s -S --without-suid --without-libsubid \
 		-b "${work}/builddir" -p "${PREFIX}"
@@ -69,9 +51,8 @@ EOF
 	root="${work}/out${PREFIX}"
 	(cd "${work}/deps" && "${work}/src/scripts/install-dependencies" "${root}/libexec")
 
-	# offsetpreload.so is preloaded into host programs, which a musl build
-	# cannot be, so it is dropped; the static fuse2fs handles offsets
-	# itself. Every remaining executable must be static.
+	# offsetpreload.so cannot be preloaded into the static fuse2fs, which
+	# does not need it. Every remaining executable must be static.
 	rm -rf "${root}/libexec/apptainer/lib"
 	find "${root}" -type f -perm -u+x | while read -r f; do
 		if ! file "$f" | grep -q ELF; then

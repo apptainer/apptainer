@@ -12,7 +12,7 @@ builds of the same tools that the rpm and deb packages bundle are included in
 `fuse2fs`, `fuse-overlayfs`, `gocryptfs`, `archivemount` and, where it is
 supported, `proot`. Their versions are taken from
 `dist/rpm/apptainer.spec.in`, and they are built with
-`scripts/download-dependencies` and `scripts/compile-dependencies`.
+`scripts/download-dependencies` and `scripts/compile-dependencies -s`.
 
 ## Quick start
 
@@ -76,13 +76,9 @@ sudo apptainer run docker://multiarch/qemu-user-static --reset -p yes
   instead.
 - Built without `libsubid` support, so subordinate IDs are read from
   `/etc/subuid` and `/etc/subgid` only.
-- `offsetpreload.so` is not included, as a static build cannot be preloaded
-  into host programs. EXT3 partitions in SIF files, such as persistent
-  overlays, are instead mounted with the `offset` option of the bundled
-  `fuse2fs`, which needs e2fsprogs 1.46.6 or later.
 - The musl C library does not support NSS modules, so users and groups are
   looked up in `/etc/passwd` and `/etc/group`, and through `nscd` if it is
   running. Users and groups that come only from other sources, such as
-  LDAP through SSSD, are not resolved by name. This is also what makes the
-  build reliable: a static glibc build loads the host's NSS modules for
-  these lookups, which can crash it, as in issue #2449.
+  LDAP through SSSD, are not resolved by name. Static glibc builds have the
+  same limitation, because loading the host's NSS modules can crash them
+  (issue #2449).

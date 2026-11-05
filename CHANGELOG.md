@@ -21,6 +21,8 @@ Changes since 1.6.x
   when a static libseccomp is available, as in `dist/static`.
 - Update bundled PRoot to version 5.4.0-rootless.4, which builds with the
   musl C library.
+- Add a `-s` option to `scripts/compile-dependencies` that links the
+  bundled dependencies statically.
 
 ## v1.6.x changes
 
