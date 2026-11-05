@@ -11,6 +11,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.6.0-rc.1
 
+- Release packages (rpm, deb) are now also built for `aarch64`
+  (`arm64`), in addition to the existing `x86_64` (`amd64`) builds.
+
 ## v1.6.0-rc.1 \[2026-11-03\]
 
 Changes since 1.5.5
