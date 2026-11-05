@@ -11,6 +11,13 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.6.0-rc.1
 
+- Fix random crashes of Apptainer built statically with glibc
+  (`mconfig -s`) when looking up users and groups. A statically linked
+  glibc crashes when it loads the host's NSS modules, so such builds now
+  read `/etc/passwd` and `/etc/group` directly. Users and groups that come
+  only from other sources, such as LDAP through SSSD, are not resolved by
+  name in these builds.
+
 ## v1.6.0-rc.1 \[2026-11-03\]
 
 Changes since 1.5.5
