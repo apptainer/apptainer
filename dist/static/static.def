@@ -1,0 +1,20 @@
+# Builds a statically linked, non-SUID apptainer installation and packs it
+# into a relocatable tarball. Use dist/static/build.sh rather than invoking
+# this directly. The source tree is expected to be bound to /src, and the
+# tarball is written to its top.
+
+Bootstrap: docker
+From: golang:{{ GOLANG_VERSION }}-alpine
+
+%arguments
+    GOLANG_VERSION=pass-in-as-build-arg
+    VERSION=dev
+
+%setup
+    # Mount point for the source tree, bound with apptainer build --bind
+    mkdir -p "${APPTAINER_ROOTFS}/src"
+
+%post
+    apk add -q --no-cache bash
+    /src/dist/static/build-in-container.sh packages
+    /src/dist/static/build-in-container.sh build /src /src "{{ VERSION }}"

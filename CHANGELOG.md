@@ -7,6 +7,23 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.7.x changes
 
+Changes since 1.6.x
+
+- Add `dist/static`, which builds a statically linked, non-SUID and
+  relocatable Apptainer installation tarball, using Apptainer, for
+  hosts without the usual runtime dependencies. It includes static builds
+  of all the normally bundled tools, such as `squashfuse_ll`, `fuse2fs` and
+  `fuse-overlayfs`. It does not include `offsetpreload.so`.
+- When `offsetpreload.so` is not installed, EXT3 partitions inside SIF
+  files are mounted with the `offset` option of `fuse2fs`, which requires
+  e2fsprogs 1.46.6 or later.
+- `mconfig -s` no longer always disables seccomp support. It is enabled
+  when a static libseccomp is available, as in `dist/static`.
+- Update bundled PRoot to version 5.4.0-rootless.4, which builds with the
+  musl C library.
+- Add a `-s` option to `scripts/compile-dependencies` that links the
+  bundled dependencies statically.
+
 ## v1.6.x changes
 
 Changes since 1.6.0-rc.1

@@ -279,6 +279,19 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, _ image.MountFunc) err
 			//  especially overlay work dir
 			optsStr += ",fakeroot"
 		}
+		// fuse2fs before 1.46.6 cannot natively offset into a file,
+		//  so a preload wrapper is used when it is installed.
+		//  Builds without it, such as static ones, rely on the
+		//  offset option of newer fuse2fs instead.
+		offsetPreload := ""
+		if params.Offset > 0 {
+			offsetPreload = buildcfg.LIBEXECDIR + "/apptainer/lib/offsetpreload.so"
+			if _, err := os.Stat(offsetPreload); err != nil {
+				sylog.Debugf("%s not found, using fuse2fs offset option", offsetPreload)
+				offsetPreload = ""
+				optsStr += ",offset=" + strconv.FormatUint(params.Offset, 10)
+			}
+		}
 		stdbuf, err := bin.FindBin("stdbuf")
 		if err == nil {
 			// Run fuse2fs through stdbuf to be able to read the
@@ -292,11 +305,9 @@ func (d *fuseappsDriver) Mount(params *image.MountParams, _ image.MountFunc) err
 		cmdArgs = append(cmdArgs, params.Source, params.Target)
 		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
 
-		if params.Offset > 0 {
-			// fuse2fs cannot natively offset into a file,
-			//  so load a preload wrapper
+		if offsetPreload != "" {
 			cmd.Env = []string{
-				"LD_PRELOAD=" + buildcfg.LIBEXECDIR + "/apptainer/lib/offsetpreload.so",
+				"LD_PRELOAD=" + offsetPreload,
 				"OFFSETPRELOAD_FILE=" + params.Source,
 				"OFFSETPRELOAD_OFFSET=" + strconv.FormatUint(params.Offset, 10),
 			}
