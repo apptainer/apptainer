@@ -43,22 +43,6 @@ build() {
 	# A pkg-config wrapper makes builds that call it directly link
 	# against all the static libraries they need.
 	scripts/download-dependencies "${work}/deps"
-	# compile-dependencies applies <package>-*.patch files. PRoot calls
-	# basename(3) without including libgen.h, which musl requires.
-	cat >"${work}/deps/PRoot-musl-basename.patch" <<'EOF'
---- a/src/cli/cli.c
-+++ b/src/cli/cli.c
-@@ -24,6 +24,9 @@
- #include <stdbool.h>       /* bool, true, false,  */
- #include <linux/limits.h>  /* ARG_MAX, PATH_MAX, */
- #include <string.h>        /* str*(3), basename(3),  */
-+#if !defined(__GLIBC__)
-+#include <libgen.h>        /* basename(3), */
-+#endif
- #include <talloc.h>        /* talloc*,  */
- #include <stdlib.h>        /* exit(3), EXIT_*, strtol(3), {g,s}etenv(3), */
- #include <assert.h>        /* assert(3),  */
-EOF
 	mkdir "${work}/bin"
 	cat >"${work}/bin/pkg-config" <<'EOF'
 #!/bin/sh

@@ -19,6 +19,8 @@ Changes since 1.5.x
   e2fsprogs 1.46.6 or later.
 - `mconfig -s` no longer always disables seccomp support. It is enabled
   when a static libseccomp is available, as in `dist/static`.
+- Update bundled PRoot to version 5.4.0-rootless.4, which builds with the
+  musl C library.
 - Do not fail to start containers when the host has no `/etc/localtime`.
   The container's own `/etc/localtime`, if any, is now left in place.
   Missing sources of `skip-on-error` bind mounts such as `/etc/hosts` are
