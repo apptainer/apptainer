@@ -364,7 +364,7 @@ var buildReproducibleFlag = cmdline.Flag{
 	Value:        &buildArgs.reproducible,
 	DefaultValue: false,
 	Name:         "reproducible",
-	Usage:        "creates a reproducible build by using the creation date of the source image",
+	Usage:        "use the source image creation date for build timestamps; also use --no-legacy-labels for reproducibility across time zones and Apptainer versions",
 	EnvKeys:      []string{"REPRODUCIBLE"},
 }
 
