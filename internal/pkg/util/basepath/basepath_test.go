@@ -237,6 +237,60 @@ func TestResolveRemoteBase(t *testing.T) {
 			want: "oras://index.docker.io/library/ubuntu@" + hash,
 		},
 		{
+			name: "OCI base labels",
+			uri:  "docker://",
+			labels: map[string]string{
+				overlayBootstrapLabel:                  "docker",
+				"org.opencontainers.image.base.name":   "docker.io/library/ubuntu:22.04",
+				"org.opencontainers.image.base.digest": hash,
+			},
+			want: "docker://index.docker.io/library/ubuntu@" + hash,
+		},
+		{
+			name: "OCI base name with legacy hash",
+			uri:  "oras://",
+			labels: map[string]string{
+				overlayBootstrapLabel:                "oras",
+				overlayHashLabel:                     hash,
+				"org.opencontainers.image.base.name": "docker.io/library/ubuntu:22.04",
+			},
+			want: "oras://index.docker.io/library/ubuntu@" + hash,
+		},
+		{
+			name: "legacy source with OCI digest",
+			uri:  "oras://",
+			labels: map[string]string{
+				overlayBootstrapLabel:                  "oras",
+				overlayFromLabel:                       "docker.io/library/ubuntu:22.04",
+				"org.opencontainers.image.base.digest": hash,
+			},
+			want: "oras://index.docker.io/library/ubuntu@" + hash,
+		},
+		{
+			name: "legacy labels take precedence over inherited OCI labels",
+			uri:  "oras://",
+			labels: map[string]string{
+				overlayBootstrapLabel:                  "oras",
+				overlayFromLabel:                       "docker.io/library/ubuntu:22.04",
+				overlayHashLabel:                       hash,
+				"org.opencontainers.image.base.name":   "registry.example/other:latest",
+				"org.opencontainers.image.base.digest": "invalid digest",
+			},
+			want: "oras://index.docker.io/library/ubuntu@" + hash,
+		},
+		{
+			name: "empty legacy labels fall back to trimmed OCI labels",
+			uri:  "oras://",
+			labels: map[string]string{
+				overlayBootstrapLabel:                  "oras",
+				overlayFromLabel:                       " \n",
+				overlayHashLabel:                       " \n",
+				"org.opencontainers.image.base.name":   " docker.io/library/ubuntu:22.04\n",
+				"org.opencontainers.image.base.digest": " " + hash + "\n",
+			},
+			want: "oras://index.docker.io/library/ubuntu@" + hash,
+		},
+		{
 			name: "override registry and repository with tag",
 			uri:  "oras://registry.example/team/image:stable",
 			want: "oras://registry.example/team/image:stable",

@@ -348,17 +348,20 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 		// create reproducible timestamp
 		currentTime = b.SourceDateEpoch
 	}
-	labels["org.opencontainers.image.created"] = currentTime.Format(time.RFC3339)
-	year, month, day := currentTime.Date()
-	date := strconv.Itoa(day) + `_` + month.String() + `_` + strconv.Itoa(year)
-	hours, minutes, secs := currentTime.Clock()
-	time := strconv.Itoa(hours) + `:` + strconv.Itoa(minutes) + `:` + strconv.Itoa(secs)
-	zone, _ := currentTime.Zone()
-	timeString := currentTime.Weekday().String() + `_` + date + `_` + time + `_` + zone
-	labels["org.label-schema.build-date"] = timeString
-
-	// apptainer version
-	labels["org.label-schema.usage.apptainer.version"] = buildcfg.PACKAGE_VERSION
+	labels["org.opencontainers.image.created"] = currentTime.UTC().Format(time.RFC3339)
+	if b.Opts.NoLegacyLabels {
+		delete(labels, "org.label-schema.build-date")
+		delete(labels, "org.label-schema.usage.apptainer.version")
+	} else {
+		year, month, day := currentTime.Date()
+		date := strconv.Itoa(day) + `_` + month.String() + `_` + strconv.Itoa(year)
+		hours, minutes, secs := currentTime.Clock()
+		time := strconv.Itoa(hours) + `:` + strconv.Itoa(minutes) + `:` + strconv.Itoa(secs)
+		zone, _ := currentTime.Zone()
+		timeString := currentTime.Weekday().String() + `_` + date + `_` + time + `_` + zone
+		labels["org.label-schema.build-date"] = timeString
+		labels["org.label-schema.usage.apptainer.version"] = buildcfg.PACKAGE_VERSION
+	}
 
 	// help info if help exists in the definition and is run in the build
 	if b.RunSection("help") && b.Recipe.Help.Script != "" {

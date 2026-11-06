@@ -7,6 +7,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.7.x changes
 
+- Add `build --no-legacy-labels` (and `APPTAINER_NO_LEGACY_LABELS`) to omit
+  the legacy build date and Apptainer version labels independently of
+  `--reproducible`. Other legacy labels are preserved. Write the OCI
+  creation date in UTC, and let remote `--basepath` resolution fall back to
+  the OCI base name and digest labels when the legacy labels are absent.
+
 ## v1.6.x changes
 
 Changes since 1.6.0-rc.1

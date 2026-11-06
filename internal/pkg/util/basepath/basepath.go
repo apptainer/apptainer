@@ -149,7 +149,13 @@ func ResolveRemoteBase(uri string, labels map[string]string) (string, error) {
 	}
 
 	from := strings.TrimSpace(labels[overlayFromLabel])
+	if from == "" {
+		from = strings.TrimSpace(labels["org.opencontainers.image.base.name"])
+	}
 	hash := strings.TrimSpace(labels[overlayHashLabel])
+	if hash == "" {
+		hash = strings.TrimSpace(labels["org.opencontainers.image.base.digest"])
+	}
 	if from == "" || hash == "" {
 		return "", fmt.Errorf("overlay image metadata is missing its bootstrap source or base hash")
 	}

@@ -135,6 +135,8 @@ type Options struct {
 	Platform ggcr.Platform
 	// Reproducible build
 	Reproducible bool
+	// NoLegacyLabels omits the legacy build date and Apptainer version labels.
+	NoLegacyLabels bool
 	// Overlay, when true, builds an overlay-only image: only the files
 	// added or changed compared to the base image (the `From:` bootstrap
 	// source) are included, tagged with a hash of the base image so that
