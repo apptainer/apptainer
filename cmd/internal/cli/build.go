@@ -60,6 +60,7 @@ var buildArgs struct {
 	ignoreUserns        bool     // Ignore user namespace(hidden)
 	remote              bool     // Remote flag(hidden, only for helpful error message)
 	reproducible        bool     // Reproducible build
+	noLegacyLabels      bool     // Omit legacy build date and version labels
 	overlay             bool     // Build an overlay-only image
 	buildVarArgs        []string // Variables passed to build procedure.
 	buildVarArgFile     string   // Variables file passed to build procedure.
@@ -363,8 +364,18 @@ var buildReproducibleFlag = cmdline.Flag{
 	Value:        &buildArgs.reproducible,
 	DefaultValue: false,
 	Name:         "reproducible",
-	Usage:        "creates a reproducible build by using the creation date of the source image",
+	Usage:        "use the source image creation date for build timestamps; also use --no-legacy-labels for reproducibility across time zones and Apptainer versions",
 	EnvKeys:      []string{"REPRODUCIBLE"},
+}
+
+// --no-legacy-labels
+var buildNoLegacyLabelsFlag = cmdline.Flag{
+	ID:           "buildNoLegacyLabelsFlag",
+	Value:        &buildArgs.noLegacyLabels,
+	DefaultValue: false,
+	Name:         "no-legacy-labels",
+	Usage:        "omit legacy build date and Apptainer version labels",
+	EnvKeys:      []string{"NO_LEGACY_LABELS"},
 }
 
 // --overlay
@@ -451,6 +462,7 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildIgnoreUsernsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildRemoteFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildReproducibleFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildNoLegacyLabelsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildOverlayFlag, buildCmd)
 
 		cmdManager.RegisterFlagForCmd(&buildVarArgsFlag, buildCmd)

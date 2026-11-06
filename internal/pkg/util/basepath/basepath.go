@@ -26,6 +26,8 @@ const (
 	overlayBootstrapLabel = "org.label-schema.usage.singularity.deffile.bootstrap"
 	overlayFromLabel      = "org.label-schema.usage.singularity.deffile.from"
 	overlayHashLabel      = "org.label-schema.usage.singularity.overlay.base-hash"
+	ociBaseNameLabel      = "org.opencontainers.image.base.name"
+	ociBaseDigestLabel    = "org.opencontainers.image.base.digest"
 )
 
 // isImage returns true if path directly refers to a SIF file, or a sandbox
@@ -149,7 +151,13 @@ func ResolveRemoteBase(uri string, labels map[string]string) (string, error) {
 	}
 
 	from := strings.TrimSpace(labels[overlayFromLabel])
+	if from == "" {
+		from = strings.TrimSpace(labels[ociBaseNameLabel])
+	}
 	hash := strings.TrimSpace(labels[overlayHashLabel])
+	if hash == "" {
+		hash = strings.TrimSpace(labels[ociBaseDigestLabel])
+	}
 	if from == "" || hash == "" {
 		return "", fmt.Errorf("overlay image metadata is missing its bootstrap source or base hash")
 	}
