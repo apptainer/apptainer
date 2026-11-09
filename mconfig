@@ -781,6 +781,11 @@ cat $makeit_fragsdir/go_common_opts.mk >> $makeit_makefile
 if [ "$hststatic" = "1" ]; then
 	drawline $makeit_fragsdir/go_static_opts.mk
 	cat $makeit_fragsdir/go_static_opts.mk >> $makeit_makefile
+	if printf '#include <features.h>\n#ifndef __GLIBC__\n#error not glibc\n#endif\n' | \
+	   $hstcc -E -x c - >/dev/null 2>&1; then
+		drawline $makeit_fragsdir/go_static_glibc_opts.mk
+		cat $makeit_fragsdir/go_static_glibc_opts.mk >> $makeit_makefile
+	fi
 fi
 
 if [ -f "$makeit_fragsdir/go_${host}_opts.mk" ]; then
