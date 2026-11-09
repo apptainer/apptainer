@@ -14,6 +14,8 @@ Changes since 1.6.x
   e2fsprogs 1.46.6 or later.
 - `mconfig -s` no longer always disables seccomp support. It is enabled
   when a static libseccomp is available, as in `dist/static`.
+- Add a `-s` option to `scripts/compile-dependencies` that links the
+  bundled dependencies statically.
 
 ## v1.6.x changes
 
