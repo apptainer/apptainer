@@ -566,7 +566,6 @@ echo
 if [ "$hststatic" = "1" ]; then
 	export CGO_ENABLED=0
 	export CGO_LDFLAGS="-static"
-	with_seccomp_check=0 
 fi
 
 #######################################################################

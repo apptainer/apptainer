@@ -12,6 +12,8 @@ Changes since 1.6.x
 - When `offsetpreload.so` is not installed, EXT3 partitions inside SIF
   files are mounted with the `offset` option of `fuse2fs`, which requires
   e2fsprogs 1.46.6 or later.
+- `mconfig -s` no longer always disables seccomp support. It is enabled
+  when a static libseccomp is available, as in `dist/static`.
 
 ## v1.6.x changes
 
