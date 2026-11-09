@@ -5,11 +5,18 @@
 #   project policies see https://lfprojects.org/policies
 #
 # Compile dependencies.  The source tarballs and patches should be in the
-# directory passed in as $1, default "."
+# directory passed in as $1, default ".".  With -s, link all of them
+# statically; that requires static versions of the libraries they use.
 
+STATIC=false
+if [ "$1" = "-s" ]; then
+    STATIC=true
+    shift
+fi
 if [ -n "$2" ] || [[ "$1" = -* ]]; then
-    echo "Usage: $0 [sourcedir]" >&2
+    echo "Usage: $0 [-s] [sourcedir]" >&2
     echo "The default sourcedir is '.'" >&2
+    echo "-s links the dependencies statically" >&2
     exit 2
 fi
 SRC=$PWD
@@ -18,6 +25,22 @@ if [ -n "$1" ]; then
 fi
 
 set -ex
+LIBTOOL_LDFLAGS=
+if $STATIC; then
+    export LDFLAGS="-static $LDFLAGS"
+    # squashfs-tools takes extra linker flags in EXTRA_LDFLAGS
+    export EXTRA_LDFLAGS="-static $EXTRA_LDFLAGS"
+    # libtool ignores -static for programs, it needs -all-static instead
+    LIBTOOL_LDFLAGS=-all-static
+    # Some builds call pkg-config directly rather than through configure,
+    # so put a wrapper first in PATH that asks for static libraries
+    PKGCONFIG="$(command -v pkg-config)"
+    PKGCONFIG_DIR="$(mktemp -d)"
+    trap 'rm -rf "$PKGCONFIG_DIR"' EXIT
+    printf '#!/bin/sh\nexec %s --static "$@"\n' "$PKGCONFIG" >"$PKGCONFIG_DIR/pkg-config"
+    chmod +x "$PKGCONFIG_DIR/pkg-config"
+    export PATH="$PKGCONFIG_DIR:$PATH"
+fi
 for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs PRoot archivemount-ng; do
     TGZ="$(echo $SRC/${PKG}[_-]*.tar.gz)"
     if [ ! -f "$TGZ" ]; then
@@ -42,7 +65,11 @@ for PKG in squashfs-tools squashfuse e2fsprogs fuse-overlayfs gocryptfs PRoot ar
         squashfuse)
             ./autogen.sh
             FLAGS=-std=c99 ./configure --enable-multithreading
-            make squashfuse_ll
+            if [ -n "$LIBTOOL_LDFLAGS" ]; then
+                make squashfuse_ll LDFLAGS="$LDFLAGS $LIBTOOL_LDFLAGS"
+            else
+                make squashfuse_ll
+            fi
             ;;
         e2fsprogs)
             ./configure

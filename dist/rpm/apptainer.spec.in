@@ -40,7 +40,7 @@
 # On fedora45 & epel11 x86_64 building PRoot dies with
 # "relocation truncated to fit: R_X86_64_PC32 against `.rodata'"
 # See https://github.com/proot-me/proot/issues/414
-%global PRoot_version 5.4.0-rootless.3
+%global PRoot_version 5.4.0-rootless.4
 %endif
 %endif
 

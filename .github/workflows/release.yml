@@ -122,13 +122,58 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  release_static:
+    name: release_static_${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    needs: [release_assets]
+    if: needs.release_assets.outputs.do-release == 'true'
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-22.04
+          - arch: arm64
+            runner: ubuntu-22.04-arm
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: git fetch --prune --unshallow --tags --force
+
+      - name: Install Apptainer to build with
+        run: |
+          set -e
+          sudo add-apt-repository -y ppa:apptainer/ppa
+          sudo apt-get -q update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y apptainer
+
+      - name: Build static tarball
+        run: |
+          dist/static/build.sh ${{ matrix.arch }}
+
+      - name: Remove the installed Apptainer
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get remove -y apptainer
+
+      - name: Test static tarball
+        run: |
+          dist/static/test.sh apptainer-static-*-linux-${{ matrix.arch }}.tar.gz
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: assets-static-${{ matrix.arch }}
+          path: apptainer-static-*-linux-${{ matrix.arch }}.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
   create_release:
     name: create_release
     runs-on: ubuntu-22.04
     if: >
       needs.release_assets.result == 'success' &&
+      needs.release_static.result == 'success' &&
       needs.release_assets.outputs.do-release == 'true'
-    needs: [release_assets]
+    needs: [release_assets, release_static]
 
     steps:
       - name: Download artifacts
