@@ -892,7 +892,7 @@ const (
 	RunHelpShort string = `Show the user-defined help for an image`
 	RunHelpLong  string = `
   The help text is from the '%help' section of the definition file. If you are 
-  using the '--apps' option, the help text is instead from that app's '%apphelp' 
+  using the '--app' option, the help text is instead from that app's '%apphelp' 
   section.`
 	RunHelpExample string = `
   $ cat my_container.def
