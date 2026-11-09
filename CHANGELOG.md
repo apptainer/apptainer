@@ -7,6 +7,12 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 ## v1.7.x changes
 
+Changes since 1.6.x
+
+- When `offsetpreload.so` is not installed, EXT3 partitions inside SIF
+  files are mounted with the `offset` option of `fuse2fs`, which requires
+  e2fsprogs 1.46.6 or later.
+
 ## v1.6.x changes
 
 Changes since 1.6.0-rc.1
