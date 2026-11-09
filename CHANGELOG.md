@@ -9,6 +9,15 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.6.x
 
+- Add `dist/static`, which builds a statically linked, non-SUID and
+  relocatable Apptainer installation tarball, using Apptainer, for
+  hosts without the usual runtime dependencies. It includes static builds
+  of all the normally bundled tools, such as `squashfuse_ll`, `fuse2fs` and
+  `fuse-overlayfs`. Tarballs for `amd64` and `arm64`, named
+  `apptainer-static-<version>-linux-<arch>.tar.gz`, are attached to
+  releases. Users and groups are only looked up in `/etc/passwd`,
+  `/etc/group` and `nscd`, so the static build is mostly useful on
+  standalone systems rather than ones with users in LDAP or SSSD.
 - When `offsetpreload.so` is not installed, EXT3 partitions inside SIF
   files are mounted with the `offset` option of `fuse2fs`, which requires
   e2fsprogs 1.46.6 or later.

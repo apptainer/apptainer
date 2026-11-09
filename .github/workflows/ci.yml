@@ -583,3 +583,42 @@ jobs:
             /usr/local/go/bin/go list -f '{{.ImportPath}} - {{.Deps}}' ./pkg/... | grep buildcfg
             exit 1
           fi
+
+  static:
+    name: static (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Disable Ubuntu 24.04 userns apparmor restriction
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Install Apptainer to build with
+        run: |
+          set -e
+          sudo add-apt-repository -y ppa:apptainer/ppa
+          sudo apt-get -q update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y apptainer
+
+      - name: Build static tarball
+        run: |
+          dist/static/build.sh ${{ matrix.arch }}
+
+      - name: Remove the installed Apptainer
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get remove -y apptainer
+
+      - name: Test static tarball
+        run: |
+          dist/static/test.sh apptainer-static-*-linux-${{ matrix.arch }}.tar.gz
