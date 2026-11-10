@@ -9,6 +9,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.6.x
 
+- Add support for Software Bill of Materials (SBOM) in SIF images. Build with
+  `--sbom <path>` to include an SBOM file (SPDX JSON or CycloneDX JSON format)
+  in the image. Inspect with `--sbom` to view the SBOM from an existing image.
 - Add `dist/static`, which builds a statically linked, non-SUID and
   relocatable Apptainer installation tarball, using Apptainer, for
   hosts without the usual runtime dependencies. It includes static builds

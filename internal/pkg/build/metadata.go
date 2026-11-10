@@ -66,6 +66,11 @@ func (s *stage) insertMetadata() error {
 		return fmt.Errorf("while inserting test script: %v", err)
 	}
 
+	// insert SBOM if provided
+	if err := insertSBOM(s.b); err != nil {
+		return fmt.Errorf("while inserting SBOM: %v", err)
+	}
+
 	// insert JSON inspect metadata (must be the last call)
 	if err := insertJSONInspectMetadata(s.b, []string{"--all"}); err != nil {
 		return fmt.Errorf("while inserting JSON inspect metadata: %v", err)
@@ -83,6 +88,11 @@ func (s *stage) insertMetadataForData() error {
 	// insert definition
 	if err := insertDefinition(s.b); err != nil {
 		return fmt.Errorf("while inserting definition: %v", err)
+	}
+
+	// insert SBOM if provided
+	if err := insertSBOM(s.b); err != nil {
+		return fmt.Errorf("while inserting SBOM: %v", err)
 	}
 
 	// insert JSON inspect metadata (must be the last call)
@@ -393,4 +403,120 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 	labels["org.label-schema.build-arch"] = buildarch.Arch
 
 	return nil
+}
+
+func insertSBOM(b *types.Bundle) error {
+	if b.Opts.SBOMPath == "" && b.Opts.SBOMGenerator == "" {
+		return nil
+	}
+
+	if b.Opts.SBOMPath != "" && b.Opts.SBOMGenerator != "" {
+		return fmt.Errorf("cannot specify both --sbom and --sbom-generator")
+	}
+
+	var sbomData []byte
+	var err error
+
+	if b.Opts.SBOMPath != "" {
+		sylog.Infof("Adding SBOM from %s", b.Opts.SBOMPath)
+		sbomData, err = os.ReadFile(b.Opts.SBOMPath)
+		if err != nil {
+			return fmt.Errorf("while reading SBOM file %s: %v", b.Opts.SBOMPath, err)
+		}
+	} else {
+		sbomData, err = generateSBOM(b)
+		if err != nil {
+			return fmt.Errorf("while generating SBOM: %v", err)
+		}
+	}
+
+	b.JSONObjects[image.SIFDescSBOMJSON] = sbomData
+
+	if b.Opts.SandboxTarget {
+		sbomPath := filepath.Join(b.RootfsPath, ".singularity.d", "sbom.json")
+		if err := b.Rootfs.MkdirAll(filepath.Dir(sbomPath), 0o755); err != nil {
+			return fmt.Errorf("while creating .singularity.d directory: %v", err)
+		}
+		if err := b.Rootfs.WriteFile(sbomPath, sbomData, 0o644); err != nil {
+			return fmt.Errorf("while writing SBOM to sandbox: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func generateSBOM(b *types.Bundle) ([]byte, error) {
+	cmdName := b.Opts.SBOMGenerator
+	cmdFormat := b.Opts.SBOMGeneratorFormat
+	cmdArgs := b.Opts.SBOMGeneratorArgs
+
+	switch b.Opts.SBOMGenerator {
+	case "syft":
+		if len(cmdArgs) == 0 {
+			cmdArgs = []string{"scan"}
+			if cmdFormat == "" {
+				// default to SyftJSON
+				cmdFormat = "json"
+			}
+		}
+	case "trivy":
+		if len(cmdArgs) == 0 {
+			cmdArgs = []string{"fs"} //nolint:prealloc
+			// disable scanning for vulnerabilities and secrets
+			cmdArgs = append(cmdArgs, []string{"--scanners", ""}...)
+			if cmdFormat == "" {
+				// default to TrivyJSON
+				cmdFormat = "json"
+			}
+		}
+	}
+
+	if cmdFormat != "" {
+		formatArgs := []string{}
+
+		switch cmdName {
+		case "syft":
+			switch strings.ToLower(cmdFormat) {
+			case "cyclonedx":
+				formatArgs = []string{"-o", "cyclonedx-json"}
+			case "spdx":
+				formatArgs = []string{"-o", "spdx-json"}
+			default:
+				formatArgs = []string{"-o", cmdFormat}
+			}
+		case "trivy":
+			switch strings.ToLower(cmdFormat) {
+			case "cyclonedx":
+				formatArgs = []string{"-f", "cyclonedx"} // <sic>
+			case "spdx":
+				formatArgs = []string{"-f", "spdx-json"}
+			default:
+				formatArgs = []string{"-f", cmdFormat}
+			}
+		}
+
+		cmdArgs = append(cmdArgs, formatArgs...)
+	}
+
+	sylog.Infof("Generating SBOM using %s %v", cmdName, cmdArgs)
+
+	cmdArgs = append(cmdArgs, b.RootfsPath)
+	sylog.Debugf("Running: %s %v", cmdName, cmdArgs)
+
+	cmd := exec.Command(cmdName, cmdArgs...)
+	cmd.Dir = b.RootfsPath
+
+	output, err := cmd.Output()
+	if err != nil {
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			sylog.Debugf("%s", exiterr.Stderr)
+		}
+		return nil, fmt.Errorf("SBOM generation failed: %v", err)
+	}
+
+	if len(output) == 0 {
+		return nil, fmt.Errorf("SBOM generator produced no output")
+	}
+
+	return output, nil
 }

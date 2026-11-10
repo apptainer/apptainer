@@ -48,6 +48,10 @@ var buildArgs struct {
 	sandbox             bool
 	update              bool
 	data                bool
+	sbom                string
+	sbomGenerator       string
+	sbomGeneratorFormat string
+	sbomGeneratorArgs   []string
 	nvidia              bool
 	nvccli              bool
 	compat32            bool
@@ -105,6 +109,46 @@ var buildJSONFlag = cmdline.Flag{
 	Name:         "json",
 	Usage:        "interpret build definition as JSON",
 	EnvKeys:      []string{"JSON"},
+}
+
+// --sbom
+var buildSBOMFlag = cmdline.Flag{
+	ID:           "buildSBOMFlag",
+	Value:        &buildArgs.sbom,
+	DefaultValue: "",
+	Name:         "sbom",
+	Usage:        "path to an existing SBOM (Software Bill of Materials) JSON file to include in the image",
+	EnvKeys:      []string{"SBOM"},
+}
+
+// --sbom-generator
+var buildSBOMGeneratorFlag = cmdline.Flag{
+	ID:           "buildSBOMGeneratorFlag",
+	Value:        &buildArgs.sbomGenerator,
+	DefaultValue: "",
+	Name:         "sbom-generator",
+	Usage:        "SBOM generator to use (syft, trivy)",
+	EnvKeys:      []string{"SBOM_GENERATOR"},
+}
+
+// --sbom-generator-format
+var buildSBOMGeneratorFormatFlag = cmdline.Flag{
+	ID:           "buildSBOMGeneratorFormatFlag",
+	Value:        &buildArgs.sbomGeneratorFormat,
+	DefaultValue: "",
+	Name:         "sbom-generator-format",
+	Usage:        "SBOM format to pass to generator (CycloneDX, SPDX)",
+	EnvKeys:      []string{"SBOM_GENERATOR_FORMAT"},
+}
+
+// --sbom-generator-args
+var buildSBOMGeneratorArgsFlag = cmdline.Flag{
+	ID:           "buildSBOMGeneratorArgsFlag",
+	Value:        &buildArgs.sbomGeneratorArgs,
+	DefaultValue: []string{},
+	Name:         "sbom-generator-args",
+	Usage:        "extra arguments to pass to the SBOM generator",
+	EnvKeys:      []string{"SBOM_GENERATOR_ARGS"},
 }
 
 // -u|--update
@@ -419,6 +463,10 @@ func init() {
 		cmdManager.RegisterFlagForCmd(&buildLibraryFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildNoCleanupFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildNoTestFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildSBOMFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildSBOMGeneratorFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildSBOMGeneratorFormatFlag, buildCmd)
+		cmdManager.RegisterFlagForCmd(&buildSBOMGeneratorArgsFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildSandboxFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildDataFlag, buildCmd)
 		cmdManager.RegisterFlagForCmd(&buildSectionFlag, buildCmd)

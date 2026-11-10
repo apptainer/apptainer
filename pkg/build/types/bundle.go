@@ -146,6 +146,14 @@ type Options struct {
 	// builds, determined before the bundle rootfs is replaced by the
 	// overlay upper layer (which typically contains no ELF binaries).
 	OverlayBaseArch string
+	// SBOMPath is the path to an SBOM file to include in the image
+	SBOMPath string
+	// SBOMGenerator is the SBOM generator tool to use (e.g., "syft", "trivy")
+	SBOMGenerator string
+	// SBOMGeneratorFormat is the format to pass to the SBOM generator (cyclonedx, spdx)
+	SBOMGeneratorFormat string
+	// SBOMGeneratorArgs are extra arguments to pass to the SBOM generator
+	SBOMGeneratorArgs []string
 }
 
 // NewEncryptedBundle creates an Encrypted Bundle environment.
