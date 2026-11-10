@@ -9,6 +9,9 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.6.x
 
+- Make `--reproducible` (and `APPTAINER_REPRODUCIBLE`) omit the legacy build
+  date and Apptainer version labels, including inherited values, while
+  preserving other legacy labels. Write the OCI creation date in UTC.
 - Add `dist/static`, which builds a statically linked, non-SUID and
   relocatable Apptainer installation tarball, using Apptainer, for
   hosts without the usual runtime dependencies. It includes static builds
