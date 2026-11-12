@@ -400,7 +400,7 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 	// If running in a root-mapped user namespace, switch to unprivileged
 	// because otherwise unsquashfs thinks it is running as root and
 	// tries to chown files that are not owned and grouped by root
-	if isOnlyRootMapped {
+	if isOnlyRootMapped && !needsRoot {
 		uid, err := namespaces.HostUID()
 		gid, err2 := namespaces.HostGID()
 		if err != nil || err2 != nil {

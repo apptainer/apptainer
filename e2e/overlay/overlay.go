@@ -295,6 +295,38 @@ func (c ctx) testRemoteBootstrapOverlay(t *testing.T) {
 		t.Run(tt.bootstrap, func(t *testing.T) {
 			overlayImage := c.createOverlayBuild(t, tt.bootstrap, tt.baseImage, tmpDir)
 
+			sandboxPath := filepath.Join(tmpDir, tt.bootstrap+"-overlay-sandbox")
+			c.env.RunApptainer(
+				t,
+				e2e.WithProfile(e2e.UserNamespaceProfile),
+				e2e.WithCommand("build"),
+				e2e.WithArgs("--sandbox", sandboxPath, overlayImage),
+				e2e.ExpectExit(0),
+			)
+
+			for _, tc := range []struct {
+				name     string
+				basePath string
+			}{
+				{name: "converted overlay default remote basepath"},
+				{name: "converted overlay explicit remote basepath", basePath: tt.bootstrap + "://"},
+			} {
+				args := []string{"--disable-cache", "--no-https"}
+				if tc.basePath != "" {
+					args = append(args, "--basepath", tc.basePath)
+				}
+				args = append(args, sandboxPath, "test", "-f", "/overlay-marker")
+
+				c.env.RunApptainer(
+					t,
+					e2e.AsSubtest(tc.name),
+					e2e.WithProfile(e2e.RootProfile),
+					e2e.WithCommand("exec"),
+					e2e.WithArgs(args...),
+					e2e.ExpectExit(0),
+				)
+			}
+
 			withoutVersion := tt.baseImage[:strings.LastIndex(tt.baseImage, ":")]
 			start := strings.Index(withoutVersion, "://") + 3
 			end := strings.Index(withoutVersion[start:], "/") + start
