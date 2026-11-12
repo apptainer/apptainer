@@ -36,7 +36,7 @@ func (p *SquashfsPacker) Pack(context.Context) (*types.Bundle, error) {
 	s := unpacker.NewSquashfs()
 
 	// extract root filesystem
-	if err := s.ExtractAll(reader, p.b.RootfsPath); err != nil {
+	if err := s.ExtractAll(reader, p.b.RootfsPath, false); err != nil {
 		return nil, fmt.Errorf("root filesystem extraction failed: %s", err)
 	}
 

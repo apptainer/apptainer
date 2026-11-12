@@ -368,7 +368,15 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 
 	// bootstrap header info, only if this build actually bootstrapped
 	if !b.Opts.Update || b.Opts.Force {
+		// A sandbox built from an overlay-only SIF is a conversion of that
+		// overlay, not a new localimage bootstrap. Keep its original bootstrap
+		// source so the overlay can still locate its base image at runtime.
+		preserveOverlaySource := b.Opts.SandboxTarget &&
+			labels["org.label-schema.usage.singularity.overlay.base-hash"] != ""
 		for key, value := range b.Recipe.Header {
+			if preserveOverlaySource && (key == "bootstrap" || key == "from") {
+				continue
+			}
 			labels["org.label-schema.usage.singularity.deffile."+key] = value
 		}
 	}
