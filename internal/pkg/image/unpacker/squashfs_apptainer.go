@@ -226,7 +226,9 @@ func parseLibraryBinds(buf io.Reader) ([]libBind, error) {
 
 // unsquashfsSandboxCmd is the command instance for executing unsquashfs command
 // in a sandboxed environment with apptainer.
-func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filter string, opts ...string) (*exec.Cmd, error) {
+//
+//nolint:maintidx
+func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filter string, needsRoot bool, opts ...string) (*exec.Cmd, error) {
 	const (
 		// will contain both dest and filename inside the sandbox
 		rootfsImageDir = "/image"
@@ -284,6 +286,13 @@ func unsquashfsSandboxCmd(unsquashfs string, dest string, filename string, filte
 		"--no-init",
 		"--writable",
 		"-B", fmt.Sprintf("%s:%s", tmpdir, rootfsImageDir),
+	}
+	if needsRoot && os.Getuid() != 0 {
+		// Enable fakeroot, but not using the fakeroot command
+		// because that interferes with character device files used
+		// by overlay containers.  This then can be either subuid
+		// fakeroot or root-mapped user namespace only.
+		args = append(args, "--fakeroot", "--ignore-fakeroot-command")
 	}
 
 	// if there are not bind mounts under /proc (which happens under
