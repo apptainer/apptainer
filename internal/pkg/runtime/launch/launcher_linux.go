@@ -1680,7 +1680,7 @@ func convertImage(filename string, unsquashfsPath string, tmpDir string) (rootfs
 	}
 
 	// extract root filesystem
-	if err := s.ExtractAll(reader, imageDir); err != nil {
+	if err := s.ExtractAll(reader, imageDir, false); err != nil {
 		return "", "", fmt.Errorf("root filesystem extraction failed: %s", err)
 	}
 

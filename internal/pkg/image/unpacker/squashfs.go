@@ -30,11 +30,11 @@ const (
 	excludeDevRegex = `^(.{0}[^d]|.{1}[^e]|.{2}[^v]|.{3}[^\x2f]).*$`
 )
 
-var cmdFunc func(unsquashfs string, dest string, filename string, filter string, opts ...string) (*exec.Cmd, error)
+var cmdFunc func(unsquashfs string, dest string, filename string, filter string, needsRoot bool, opts ...string) (*exec.Cmd, error)
 
 // unsquashfsCmd is the command instance for executing unsquashfs command
 // in a non sandboxed environment when this package is used for unit tests.
-func unsquashfsCmd(unsquashfs string, dest string, filename string, filter string, opts ...string) (*exec.Cmd, error) {
+func unsquashfsCmd(unsquashfs string, dest string, filename string, filter string, _ bool, opts ...string) (*exec.Cmd, error) {
 	args := []string{}
 	args = append(args, opts...)
 	// remove the destination directory if any, if the directory is
@@ -74,7 +74,7 @@ func (s *Squashfs) HasUnsquashfs() bool {
 	return s.UnsquashfsPath != ""
 }
 
-func (s *Squashfs) extract(files []string, reader io.Reader, dest string) (err error) {
+func (s *Squashfs) extract(files []string, reader io.Reader, dest string, needsRoot bool) (err error) {
 	if !s.HasUnsquashfs() {
 		return fmt.Errorf("%w: could not extract squashfs data, unsquashfs not found", os.ErrNotExist)
 	}
@@ -159,7 +159,7 @@ func (s *Squashfs) extract(files []string, reader io.Reader, dest string) (err e
 
 	// Now run unsquashfs with our 'best' options
 	sylog.Debugf("Trying unsquashfs options: %v", opts)
-	cmd, err := cmdFunc(s.UnsquashfsPath, dest, filename, filter, opts...)
+	cmd, err := cmdFunc(s.UnsquashfsPath, dest, filename, filter, needsRoot, opts...)
 	if err != nil {
 		return fmt.Errorf("command error: %s", err)
 	}
@@ -182,9 +182,10 @@ func (s *Squashfs) extract(files []string, reader io.Reader, dest string) (err e
 }
 
 // ExtractAll extracts a squashfs filesystem read from reader to a
-// destination directory.
-func (s *Squashfs) ExtractAll(reader io.Reader, dest string) error {
-	return s.extract(nil, reader, dest)
+// destination directory. If needsRoot is true, it enables fakeroot when
+// invoking Apptainer for extraction as a non-root user.
+func (s *Squashfs) ExtractAll(reader io.Reader, dest string, needsRoot bool) error {
+	return s.extract(nil, reader, dest, needsRoot)
 }
 
 // ExtractFiles extracts provided files from a squashfs filesystem
@@ -193,7 +194,7 @@ func (s *Squashfs) ExtractFiles(files []string, reader io.Reader, dest string) e
 	if len(files) == 0 {
 		return fmt.Errorf("no files to extract")
 	}
-	return s.extract(files, reader, dest)
+	return s.extract(files, reader, dest, false)
 }
 
 // TestUserXattr tries to set a user xattr on PATH to ensure they are supported on this fs

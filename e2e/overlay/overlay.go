@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/test/tool/require"
+	"github.com/apptainer/apptainer/internal/pkg/util/fs"
 	"github.com/apptainer/apptainer/pkg/image"
 
 	"github.com/apptainer/apptainer/e2e/internal/e2e"
@@ -241,6 +242,20 @@ func (c ctx) testLocalBuildOverlay(t *testing.T) {
 	})
 
 	overlayImage := c.createOverlayBuild(t, "localimage", baseImage, tmpDir)
+
+	// An overlay-only SIF has no primary system partition, but can still be
+	// used as the source for a sandbox build.
+	sandboxPath := filepath.Join(tmpDir, "overlay-sandbox")
+	c.env.RunApptainer(
+		t,
+		e2e.WithProfile(e2e.UserNamespaceProfile),
+		e2e.WithCommand("build"),
+		e2e.WithArgs("--sandbox", sandboxPath, overlayImage),
+		e2e.ExpectExit(0),
+	)
+	if !fs.IsFile(filepath.Join(sandboxPath, "overlay-marker")) {
+		t.Fatal("overlay marker was not extracted into sandbox")
+	}
 
 	overlaySquashfs := filepath.Join(tmpDir, "overlay.squashfs")
 
