@@ -23,6 +23,7 @@ func FindBin(name string) (path string, err error) {
 	// We will search for these only in default PATH when in the suid flow
 	case "cp",
 		"dd",
+		"getent",
 		"mkfs.ext3",
 		"mknod",
 		"mount",

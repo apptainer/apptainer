@@ -19,7 +19,6 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -34,6 +33,7 @@ import (
 	"github.com/apptainer/apptainer/internal/pkg/sypgp"
 	"github.com/apptainer/apptainer/internal/pkg/util/env"
 	"github.com/apptainer/apptainer/internal/pkg/util/fs"
+	"github.com/apptainer/apptainer/internal/pkg/util/user"
 	"github.com/apptainer/apptainer/pkg/cmdline"
 	clicallback "github.com/apptainer/apptainer/pkg/plugin/callback/cli"
 	"github.com/apptainer/apptainer/pkg/syfs"
@@ -51,8 +51,9 @@ import (
 // for commands/flags registration.
 var cmdInits = make([]func(*cmdline.CommandManager), 0)
 
-// CurrentUser holds the current user account information
-var CurrentUser = getCurrentUser()
+// CurrentUser holds the current user account information. It is nil
+// until the user is found, see lookupCurrentUser and checkCurrentUser.
+var CurrentUser = lookupCurrentUser()
 
 // currentRemoteEndpoint holds the current remote endpoint
 var currentRemoteEndpoint *endpoint.Config
@@ -289,12 +290,43 @@ var commonAuthFileFlag = cmdline.Flag{
 	EnvKeys:      []string{"AUTH_FILE"},
 }
 
-func getCurrentUser() *user.User {
+// lookupCurrentUser looks up the current user when the command line is
+// set up, returning nil if that fails. In static builds a user that only
+// the host's getent knows cannot be found yet, because getent is located
+// with the binary path from the configuration; checkCurrentUser looks up
+// such a user once that is loaded.
+func lookupCurrentUser() *user.User {
+	usr, err := user.Current()
+	if err != nil {
+		return nil
+	}
+	return usr
+}
+
+// defaultHomeDir returns the default for --home, which is empty if the
+// current user was not found when the command line was set up.
+func defaultHomeDir() string {
+	if CurrentUser == nil {
+		return ""
+	}
+	return CurrentUser.Dir
+}
+
+// checkCurrentUser looks up the current user if that failed when the
+// command line was set up, after the configuration and binary path are
+// loaded, and uses its home directory unless --home was given.
+func checkCurrentUser(cmd *cobra.Command) {
+	if CurrentUser != nil {
+		return
+	}
 	usr, err := user.Current()
 	if err != nil {
 		sylog.Fatalf("Couldn't determine user account information: %v", err)
 	}
-	return usr
+	CurrentUser = usr
+	if f := cmd.Flags().Lookup(actionHomeFlag.Name); f != nil && !f.Changed {
+		homePath = usr.Dir
+	}
 }
 
 func addCmdInit(cmdInit func(*cmdline.CommandManager)) {
@@ -555,6 +587,7 @@ func persistentPreRun(cmd *cobra.Command, _ []string) error {
 	// Include the user's PATH for now.
 	// It will be overridden later if using setuid flow.
 	apptainerconf.SetBinaryPath(buildcfg.LIBEXECDIR, true)
+	checkCurrentUser(cmd)
 
 	// Handle the config dir (~/.apptainer),
 	// then check the remove conf file permission.
