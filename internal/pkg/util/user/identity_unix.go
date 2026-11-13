@@ -10,7 +10,11 @@
 package user
 
 import (
+	"errors"
+	osuser "os/user"
+	"strconv"
 	"sync/atomic"
+	"syscall"
 
 	"github.com/apptainer/apptainer/pkg/util/namespaces"
 )
@@ -33,27 +37,47 @@ type Group struct {
 
 // GetPwUID returns a pointer to User structure associated with user uid.
 func GetPwUID(uid uint32) (*User, error) {
-	return lookupUnixUid(int(uid))
+	u, err := lookupUnixUid(int(uid))
+	if isUnknown(err) {
+		return getentUserFallback(strconv.FormatUint(uint64(uid), 10), true, u, err)
+	}
+	return u, err
 }
 
 // GetPwNam returns a pointer to User structure associated with user name.
 func GetPwNam(name string) (*User, error) {
-	return lookupUser(name)
+	u, err := lookupUser(name)
+	if isUnknown(err) {
+		return getentUserFallback(name, false, u, err)
+	}
+	return u, err
 }
 
 // GetGrGID returns a pointer to Group structure associated with group gid.
 func GetGrGID(gid uint32) (*Group, error) {
-	return lookupUnixGid(int(gid))
+	g, err := lookupUnixGid(int(gid))
+	if isUnknown(err) {
+		return getentGroupFallback(strconv.FormatUint(uint64(gid), 10), true, g, err)
+	}
+	return g, err
 }
 
 // GetGrNam returns a pointer to Group structure associated with group name.
 func GetGrNam(name string) (*Group, error) {
-	return lookupGroup(name)
+	g, err := lookupGroup(name)
+	if isUnknown(err) {
+		return getentGroupFallback(name, false, g, err)
+	}
+	return g, err
 }
 
 // Current returns a pointer to User structure associated with current user.
 func Current() (*User, error) {
-	return current()
+	u, err := current()
+	if isUnknown(err) {
+		return getentUserFallback(strconv.Itoa(syscall.Getuid()), true, u, err)
+	}
+	return u, err
 }
 
 var currentOriginalUser atomic.Pointer[User]
@@ -77,4 +101,15 @@ func CurrentOriginal() (*User, error) {
 // original user when user database lookup could fail.
 func SetCurrentOriginal(u *User) {
 	currentOriginalUser.Store(u)
+}
+
+// isUnknown reports whether err means that a user or group does not exist,
+// as opposed to the lookup itself failing.
+func isUnknown(err error) bool {
+	var uid osuser.UnknownUserIdError
+	var name osuser.UnknownUserError
+	var gid osuser.UnknownGroupIdError
+	var group osuser.UnknownGroupError
+	return errors.As(err, &uid) || errors.As(err, &name) ||
+		errors.As(err, &gid) || errors.As(err, &group)
 }

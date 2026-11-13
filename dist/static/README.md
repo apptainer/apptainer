@@ -79,9 +79,9 @@ sudo apptainer run docker://multiarch/qemu-user-static --reset -p yes
   instead.
 - Built without `libsubid` support, so subordinate IDs are read from
   `/etc/subuid` and `/etc/subgid` only.
-- The musl C library does not support NSS modules, so users and groups are
-  looked up in `/etc/passwd` and `/etc/group`, and through `nscd` if it is
-  running. Users and groups that come only from other sources, such as
-  LDAP through SSSD, are not resolved by name. Static glibc builds have the
-  same limitation, because loading the host's NSS modules can crash them
-  (issue #2449).
+- A static build cannot load the host's NSS modules. Users and groups are
+  looked up in `/etc/passwd` and `/etc/group` (and through `nscd` with
+  musl), and those that come only from other sources, such as LDAP through
+  SSSD, are looked up by running the host's `getent`, found in the
+  `binary path` from `etc/apptainer/apptainer.conf`. On a host without
+  `getent`, such users and groups are not resolved by name.

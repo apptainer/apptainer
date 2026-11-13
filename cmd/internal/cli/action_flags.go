@@ -141,7 +141,7 @@ var actionMountFlag = cmdline.Flag{
 var actionHomeFlag = cmdline.Flag{
 	ID:           "actionHomeFlag",
 	Value:        &homePath,
-	DefaultValue: CurrentUser.HomeDir,
+	DefaultValue: defaultHomeDir(),
 	Name:         "home",
 	ShortHand:    "H",
 	Usage:        "a home directory specification.  spec can either be a src path or src:dest pair.  src is the source path of the home directory outside the container and dest overrides the home directory within the container.",
