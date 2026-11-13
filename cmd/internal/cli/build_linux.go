@@ -49,34 +49,49 @@ func fakerootExec(isDeffile, unprivEncrypt bool) {
 	useSuid := buildcfg.APPTAINER_SUID_INSTALL == 1 && !buildArgs.userns
 
 	// First remove fakeroot option from args and environment if present
-	short := "-" + buildFakerootFlag.ShortHand
-	long := "--" + buildFakerootFlag.Name
 	for _, pfx := range env.ApptainerPrefixes {
 		envKey := fmt.Sprintf("%s_%s", pfx, buildFakerootFlag.EnvKeys[0])
 		if os.Getenv(envKey) != "" {
 			os.Unsetenv(envKey)
 		}
 	}
-	var args []string
-	for i, arg := range os.Args {
-		if i == 0 {
-			path, _ := osExec.LookPath(arg)
-			arg = path
+
+	args := make([]string, 0, len(os.Args))
+	// Use a full path to our binary
+	path, _ := osExec.LookPath(os.Args[0])
+	args = append(args, path)
+
+	// Strip out fakeroot options, taking care to ignore a parameter
+	// to --mkquashfs-args because it has long options starting with
+	// a single hyphen
+	preserveNext := false
+	for _, arg := range os.Args[1:] {
+		if preserveNext {
+			args = append(args, arg)
+			preserveNext = false
+			continue
 		}
+		if arg == "--"+buildMksquashfsArgsFlag.Name {
+			args = append(args, arg)
+			preserveNext = true
+			continue
+		}
+		if arg == "--"+buildFakerootFlag.Name {
+			continue
+		}
+		// Remove -f from short options, which can be combined
+		//   with other short options
 		// This does not treat options before the "build" command
 		//   differently than after, which is OK currently because
 		//   there is no -f defined there
-		if arg != short && arg != long {
-			if len(arg) > 2 && arg[0] == '-' && arg[1] != '-' {
-				// remove all f within the multiple short options
-				arg = strings.ReplaceAll(arg, buildFakerootFlag.ShortHand, "")
-				if arg == "-" {
-					// could have been -ff
-					continue
-				}
+		if len(arg) > 1 && arg[0] == '-' && arg[1] != '-' {
+			// Remove all f within the potentially multiple short options
+			arg = strings.ReplaceAll(arg, buildFakerootFlag.ShortHand, "")
+			if arg == "-" {
+				continue
 			}
-			args = append(args, arg)
 		}
+		args = append(args, arg)
 	}
 
 	var err error
