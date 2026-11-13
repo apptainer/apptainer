@@ -73,19 +73,19 @@ func testSquashfs(t *testing.T, tmpParent string) {
 
 	// test with an empty unsquashfs path
 	s.UnsquashfsPath = ""
-	if err := s.ExtractAll(archive, dir); err == nil {
+	if err := s.ExtractAll(archive, dir, false); err == nil {
 		t.Errorf("unexpected success with empty unsquashfs path")
 	}
 	// test with a bad unsquashfs path
 	s.UnsquashfsPath = "/unsquashfs-no-exists"
-	if err := s.ExtractAll(archive, dir); err == nil {
+	if err := s.ExtractAll(archive, dir, false); err == nil {
 		t.Errorf("unexpected success with bad unsquashfs path")
 	}
 
 	s.UnsquashfsPath = savedPath
 
 	// extract all into temporary folder
-	if err := s.ExtractAll(archive, dir); err != nil {
+	if err := s.ExtractAll(archive, dir, false); err != nil {
 		t.Error(err)
 	}
 

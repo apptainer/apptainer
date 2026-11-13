@@ -42,30 +42,54 @@ func (p *SIFPacker) Pack(context.Context) (*types.Bundle, error) {
 // in the sandbox. First pass just assumes a single system partition,
 // later passes will handle more complex sif files.
 func unpackSIF(b *types.Bundle, img *image.Image) (err error) {
+	fsType := "root filesystem"
+	needsRoot := false
 	part, err := img.GetRootFsPartition()
 	if err != nil {
-		return fmt.Errorf("while getting root filesystem in %s: %s", img.Name, err)
+		overlays, overlayErr := img.GetOverlayPartitions()
+		if overlayErr != nil {
+			return fmt.Errorf("while getting overlay filesystem in %s: %s", img.Name, overlayErr)
+		}
+		if len(overlays) == 0 {
+			return fmt.Errorf("while getting root filesystem in %s: %s", img.Name, err)
+		}
+		fsType = "overlay filesystem"
+		needsRoot = true
+		part = &overlays[0]
+	}
+
+	// Locate the selected partition so an overlay-only SIF can be unpacked
+	// even though it does not have a primary system partition.
+	partIndex := -1
+	for i, p := range img.Partitions {
+		if p.ID == part.ID {
+			partIndex = i
+			break
+		}
+	}
+	if partIndex < 0 {
+		return fmt.Errorf("partition %d not found in %s", part.ID, img.Name)
 	}
 
 	switch part.Type {
 	case image.SQUASHFS:
 		// create a reader for rootfs partition
-		reader, err := image.NewPartitionReader(img, "", 0)
+		reader, err := image.NewPartitionReader(img, "", partIndex)
 		if err != nil {
-			return fmt.Errorf("could not extract root filesystem: %s", err)
+			return fmt.Errorf("could not extract %s: %s", fsType, err)
 		}
 
 		s := unpacker.NewSquashfs()
 
-		// extract root filesystem
-		if err := s.ExtractAll(reader, b.RootfsPath); err != nil {
-			return fmt.Errorf("root filesystem extraction failed: %s", err)
+		// extract filesystem
+		if err := s.ExtractAll(reader, b.RootfsPath, needsRoot); err != nil {
+			return fmt.Errorf("%s extraction failed: %s", fsType, err)
 		}
 	case image.EXT3:
 
 		// extract ext3 partition by mounting
 		sylog.Debugf("Ext3 partition detected, mounting to extract.")
-		if err := unpackExt3(b, img); err != nil {
+		if err := unpackExt3(b, img, part); err != nil {
 			return fmt.Errorf("while copying partition data to bundle: %v", err)
 		}
 	default:

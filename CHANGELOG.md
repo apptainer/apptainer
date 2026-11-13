@@ -17,6 +17,13 @@ Changes since 1.6.0-rc.1
   read `/etc/passwd` and `/etc/group` directly. Users and groups that come
   only from other sources, such as LDAP through SSSD, are not resolved by
   name in these builds.
+- Add support for `apptainer build --sandbox` to use an overlay SIF as a
+  source.  It has to do the extraction using unsquashfs with an apptainer
+  fakeroot mode but cannot use the fakeroot command mode.  The result
+  is that if the definition file changes the owner or group of any files,
+  this only works with `/etc/sub[ug]id` mapping enabled.  That limitation
+  does not apply when `--sandbox` is used during the initial build of
+  an overlay from definition file.
 
 ## v1.6.0-rc.1 \[2026-11-03\]
 

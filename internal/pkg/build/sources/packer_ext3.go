@@ -32,7 +32,7 @@ type Ext3Packer struct {
 
 // Pack puts relevant objects in a Bundle!
 func (p *Ext3Packer) Pack(context.Context) (*types.Bundle, error) {
-	err := unpackExt3(p.b, p.img)
+	err := unpackExt3(p.b, p.img, &p.img.Partitions[0])
 	if err != nil {
 		sylog.Errorf("while unpacking ext3 image: %v", err)
 		return nil, err
@@ -42,10 +42,10 @@ func (p *Ext3Packer) Pack(context.Context) (*types.Bundle, error) {
 }
 
 // unpackExt3 mounts the ext3 image using a loop device and then copies its contents to the bundle
-func unpackExt3(b *types.Bundle, img *image.Image) error {
+func unpackExt3(b *types.Bundle, img *image.Image, part *image.Section) error {
 	info := &unix.LoopInfo64{
-		Offset:    img.Partitions[0].Offset,
-		Sizelimit: img.Partitions[0].Size,
+		Offset:    part.Offset,
+		Sizelimit: part.Size,
 		Flags:     unix.LO_FLAGS_AUTOCLEAR,
 	}
 

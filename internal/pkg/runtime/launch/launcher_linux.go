@@ -606,6 +606,7 @@ func (l *Launcher) resolveOverlayBase(ctx context.Context, image string) (string
 		if err != nil {
 			return "", fmt.Errorf("while resolving remote --basepath %q: %w", lastPath, err)
 		}
+		sylog.Infof("Getting base image from %s", remoteRef)
 		base, err = l.cfg.BasePathPuller(ctx, remoteRef)
 		if err != nil {
 			return "", fmt.Errorf("while pulling remote base image %s: %w", remoteRef, err)
@@ -1679,7 +1680,7 @@ func convertImage(filename string, unsquashfsPath string, tmpDir string) (rootfs
 	}
 
 	// extract root filesystem
-	if err := s.ExtractAll(reader, imageDir); err != nil {
+	if err := s.ExtractAll(reader, imageDir, false); err != nil {
 		return "", "", fmt.Errorf("root filesystem extraction failed: %s", err)
 	}
 
