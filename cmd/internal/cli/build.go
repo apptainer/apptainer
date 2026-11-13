@@ -363,7 +363,7 @@ var buildReproducibleFlag = cmdline.Flag{
 	Value:        &buildArgs.reproducible,
 	DefaultValue: false,
 	Name:         "reproducible",
-	Usage:        "creates a reproducible build by using the creation date of the source image",
+	Usage:        "creates a reproducible build by holding constant metadata that normally varies",
 	EnvKeys:      []string{"REPRODUCIBLE"},
 }
 
