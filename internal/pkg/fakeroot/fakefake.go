@@ -42,7 +42,7 @@ func UnshareRootMapped(args []string, includeMountNamespace bool) error {
 	cmd.SysProcAttr.GidMappings = []syscall.SysProcIDMap{
 		{ContainerID: 0, HostID: syscall.Getgid(), Size: 1},
 	}
-	sylog.Debugf("Executing %s in root-mapped unprivileged user namespace", args[0])
+	sylog.Debugf("Executing in root-mapped unprivileged user namespace: %s", strings.Join(args, " "))
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("error re-executing in root-mapped unprivileged user namespace: %v", err)
 	}
