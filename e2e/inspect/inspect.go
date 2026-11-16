@@ -151,6 +151,26 @@ func (c ctx) apptainerInspect(t *testing.T) {
 			compareFn: compareLabel("org.label-schema.usage.singularity.deffile.from", "ghcr.io/apptainer/alpine:3.15.0", ""),
 		},
 		{
+			name:    "label_org.opencontainers.image.base.name_present",
+			insType: "--labels",
+			compareFn: func(t *testing.T, meta *inspect.Metadata) {
+				v := meta.Attributes.Labels["org.opencontainers.image.base.name"]
+				if v == "" {
+					t.Errorf("org.opencontainers.image.base.name is missing")
+				}
+			},
+		},
+		{
+			name:    "label_org.opencontainers.image.base.digest_present",
+			insType: "--labels",
+			compareFn: func(t *testing.T, meta *inspect.Metadata) {
+				v := meta.Attributes.Labels["org.opencontainers.image.base.digest"]
+				if v == "" {
+					t.Errorf("org.opencontainers.image.base.digest is missing")
+				}
+			},
+		},
+		{
 			name:      "label_org.label-schema.usage.apptainer.runscript.help",
 			insType:   "--labels",
 			compareFn: compareLabel("org.label-schema.usage.apptainer.runscript.help", "/.singularity.d/runscript.help", ""),

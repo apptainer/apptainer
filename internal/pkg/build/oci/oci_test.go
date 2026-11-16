@@ -17,12 +17,14 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/apptainer/apptainer/internal/pkg/cache"
 	"github.com/apptainer/apptainer/internal/pkg/ociimage"
 	"github.com/apptainer/apptainer/internal/pkg/test"
 	buildTypes "github.com/apptainer/apptainer/pkg/build/types"
+	"go.podman.io/image/v5/docker/reference"
 	"go.podman.io/image/v5/oci/layout"
 	"go.podman.io/image/v5/types"
 )
@@ -191,6 +193,93 @@ func TestParseURI(t *testing.T) {
 				if err != nil {
 					t.Fatalf("error occurred during the execution a valid case: %s\n", err)
 				}
+			}
+		})
+	}
+}
+
+// TestBaseName exercises the tag+digest / tag-only / digest-only / registry
+// expansion semantics in baseName. Cases include both the docker.io default
+// registry (with and without the "library" namespace) and a custom registry.
+func TestBaseName(t *testing.T) {
+	digest := "sha256:" + strings.Repeat("a", 64)
+	tests := []struct {
+		name     string
+		refStr   string
+		inputTag string
+		want     string
+	}{
+		{
+			// tag+digest form: TrimNamed strips the digest so we get a clean repo:tag
+			name:     "tag and digest",
+			refStr:   "docker.io/library/busybox:latest@" + digest,
+			inputTag: "latest",
+			want:     "docker.io/library/busybox:latest",
+		},
+		{
+			// tag only, different tag supplied via inputTag
+			name:     "tag only, different tag",
+			refStr:   "docker.io/library/busybox:stable",
+			inputTag: "v2",
+			want:     "docker.io/library/busybox:v2",
+		},
+		{
+			// digest only: TrimNamed strips the digest; WithTag adds the tag
+			name:     "digest only",
+			refStr:   "docker.io/library/busybox@" + digest,
+			inputTag: "latest",
+			want:     "docker.io/library/busybox:latest",
+		},
+		{
+			name:     "custom registry",
+			refStr:   "registry.local:5000/my/repo:latest@" + digest,
+			inputTag: "latest",
+			want:     "registry.local:5000/my/repo:latest",
+		},
+		{
+			// user (multi-component) repository on the default registry:
+			// no "library/" namespace is prepended
+			name:     "default registry, user repo",
+			refStr:   "docker.io/foo/bar:latest@" + digest,
+			inputTag: "latest",
+			want:     "docker.io/foo/bar:latest",
+		},
+		{
+			// single-component name on the default registry: "library/" is
+			// inserted by the reference parser (see TestDefaultRegistry)
+			name:     "default registry, single-component name",
+			refStr:   "docker.io/busybox:latest@" + digest,
+			inputTag: "latest",
+			want:     "docker.io/library/busybox:latest",
+		},
+		{
+			// index.docker.io must be aliased to docker.io by the library
+			name:     "index.docker.io alias is normalized to docker.io",
+			refStr:   "index.docker.io/library/busybox:latest@" + digest,
+			inputTag: "latest",
+			want:     "docker.io/library/busybox:latest",
+		},
+		{
+			// index.docker.io alias of a user repository
+			name:     "index.docker.io alias, user repo",
+			refStr:   "index.docker.io/foo/bar:latest@" + digest,
+			inputTag: "latest",
+			want:     "docker.io/foo/bar:latest",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dref, err := reference.ParseNormalizedNamed(tt.refStr)
+			if err != nil {
+				t.Fatalf("reference.ParseNormalizedNamed(%q): %v", tt.refStr, err)
+			}
+			base, err := baseName(dref, tt.inputTag)
+			if err != nil {
+				t.Fatalf("baseName(%q, %q): %v", tt.refStr, tt.inputTag, err)
+			}
+			if got := base.String(); got != tt.want {
+				t.Errorf("baseName(%q, %q).String() = %q, want %q", tt.refStr, tt.inputTag, got, tt.want)
 			}
 		})
 	}

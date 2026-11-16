@@ -26,7 +26,23 @@ const (
 	overlayBootstrapLabel = "org.label-schema.usage.singularity.deffile.bootstrap"
 	overlayFromLabel      = "org.label-schema.usage.singularity.deffile.from"
 	overlayHashLabel      = "org.label-schema.usage.singularity.overlay.base-hash"
+
+	// displayRegistry is the user-facing form of Docker Hub, matching the
+	// docker:// path. ggcr records the default registry as index.docker.io;
+	// map it back to docker.io for any reference string shown to the user.
+	defaultRegistry = name.DefaultRegistry
+	displayRegistry = "docker.io"
 )
+
+// displayRef rewrites a registry reference that ggcr has expanded to the
+// default registry (index.docker.io) into the docker.io form the user (and
+// the docker:// path) expect. Only a leading index.docker.io is touched.
+func displayRef(ref string) string {
+	if strings.HasPrefix(ref, defaultRegistry+"/") {
+		return displayRegistry + ref[len(defaultRegistry):]
+	}
+	return ref
+}
 
 // isImage returns true if path directly refers to a SIF file, or a sandbox
 // directory (i.e. one containing a ".singularity.d" subdirectory, as
@@ -165,7 +181,7 @@ func ResolveRemoteBase(uri string, labels map[string]string) (string, error) {
 		return "", fmt.Errorf("invalid default base image reference: %w", err)
 	}
 	if ref == "" {
-		return transport + "://" + defaultRef.String(), nil
+		return transport + "://" + displayRef(defaultRef.String()), nil
 	}
 	baseRef, err := name.ParseReference(ref)
 	if err != nil {
@@ -198,5 +214,5 @@ func ResolveRemoteBase(uri string, labels map[string]string) (string, error) {
 	}
 
 	reference := registry + "/" + repository + sep + identifier
-	return transport + "://" + reference, nil
+	return transport + "://" + displayRef(reference), nil
 }

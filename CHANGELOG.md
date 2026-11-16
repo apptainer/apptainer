@@ -9,6 +9,30 @@ For older changes see the [archived Singularity change log](https://github.com/a
 
 Changes since 1.6.x
 
+- Support OCI image references that combine a tag and a digest,
+  e.g. `docker://repo/name:tag@sha256:...`. The digest is
+  authoritative for the fetch; the tag is preserved in the
+  `org.opencontainers.image.base.name` label.
+- Record the `org.opencontainers.image.base.name` and
+  `org.opencontainers.image.base.digest` labels for builds from
+  `oras://` (ORAS) image references. When the reference has both a
+  tag and a digest, the tag (e.g. `repo/name:tag`) is recorded in
+  `base.name` and the digest in `base.digest`; with only a digest,
+  `base.name` is `repo/name@sha256:...`; with neither, it is
+  `repo/name:latest`.
+- When an `oras://` image is used as a base and the pulled SIF already
+  records `org.opencontainers.image.base.name` and
+  `org.opencontainers.image.base.digest`, both are inherited into the
+  derived image so that the original base (provenance) is preserved
+  (e.g. a SIF built from a `docker://` base, then pushed to a local
+  registry and used as a base via `oras://`). If those labels are not
+  both present, the base name falls back to the `oras://` reference
+  used to pull and the base digest to the pulled image's manifest.
+- Normalise Docker Hub in ORAS-derived, user-visible references to
+  `docker.io` (matching the `docker://` path), rather than ggcr's
+  `index.docker.io`. This affects the `org.opencontainers.image.base.name`
+  label and `oras` reference display (e.g. `apptainer delete`); internal
+  pulling, authentication and registry addressing are unaffected.
 - Make `--reproducible` (and `APPTAINER_REPRODUCIBLE`) omit the legacy build
   date and Apptainer version labels, including inherited values, while
   preserving other legacy labels. Write the OCI creation date in UTC.

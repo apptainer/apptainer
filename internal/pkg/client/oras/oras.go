@@ -43,7 +43,27 @@ import (
 const (
 	defaultRegistry = name.DefaultRegistry
 	defaultTag      = name.DefaultTag
+
+	// displayRegistry is the user-facing form of Docker Hub, which the
+	// docker:// path (go.podman.io) expands a short name to. ggcr records it
+	// as index.docker.io; we map that form back to docker.io in any string
+	// that is shown to the user or stored on an image, so the user never
+	// sees index.docker.io. Pulling, authentication and internal registry
+	// addressing may continue to use index.docker.io.
+	displayRegistry = "docker.io"
 )
+
+// normalizeRegistry returns ref with the default registry rewritten from
+// index.docker.io to docker.io, so that values derived from ggcr use the
+// spelling the user (and the go.podman.io docker:// path) expect to see. Only
+// refs that begin with the default registry are touched, so a registry that
+// merely contains it (e.g. "myindex.docker.io") is left alone.
+func normalizeRegistry(ref string) string {
+	if !strings.HasPrefix(ref, defaultRegistry+"/") {
+		return ref
+	}
+	return displayRegistry + ref[len(defaultRegistry):]
+}
 
 // DownloadImage downloads a SIF image specified by an oci reference to a file using the included credentials
 func DownloadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
@@ -426,6 +446,43 @@ func ImageCreated(filePath string) (time.Time, error) {
 	return created, nil
 }
 
+// ImageBase returns the org.opencontainers.image.base.name and
+// org.opencontainers.image.base.digest labels recorded in a SIF's inspect
+// metadata, if both are present. They record the original base image of a SIF
+// that was pushed to a registry, so they can be carried forward verbatim when
+// the SIF is later used as a base. If either label is missing, both names and
+// digest are returned as "".
+func ImageBase(filePath string) (name string, digest string, err error) {
+	f, err := sif.LoadContainerFromPath(filePath, sif.OptLoadWithFlag(os.O_RDONLY))
+	if err != nil {
+		return "", "", err
+	}
+	defer f.UnloadContainer()
+
+	descs, err := f.GetDescriptors(sif.WithDataType(sif.DataGenericJSON))
+	if err != nil {
+		return "", "", err
+	}
+	for _, desc := range descs {
+		if desc.Name() != image.SIFDescInspectMetadataJSON {
+			continue
+		}
+
+		metadata := new(inspect.Metadata)
+		if err := json.NewDecoder(desc.GetReader()).Decode(metadata); err != nil {
+			return "", "", err
+		}
+
+		name = metadata.Attributes.Labels["org.opencontainers.image.base.name"]
+		digest = metadata.Attributes.Labels["org.opencontainers.image.base.digest"]
+		if name == "" || digest == "" {
+			return "", "", nil
+		}
+		return name, digest, nil
+	}
+	return "", "", nil
+}
+
 // ImageDigest returns the digest for a file
 func ImageHash(ctx context.Context, filePath string) (ggcr.Hash, error) {
 	st, err := os.Stat(filePath)
@@ -589,6 +646,28 @@ func SearchRegistry(ctx context.Context, ref, arch string, ociAuth *authn.AuthCo
 	return nil
 }
 
+// BaseName returns the fully-qualified base.name reference for the given
+// repository, tag and digest components, preferring the tag, then the digest,
+// then the default tag. The reference is built with the ggcr name package so
+// the registry (and, for Docker Hub, the "library" namespace) are always
+// present and the components are validated. Use the result to
+// get the value for the "org.opencontainers.image.base.name" label.
+func BaseName(repo, tag, digest string) (string, error) {
+	r, err := name.NewRepository(repo)
+	if err != nil {
+		return "", fmt.Errorf("invalid repository %q: %w", repo, err)
+	}
+	switch {
+	case tag != "":
+		return normalizeRegistry(r.Tag(tag).String()), nil
+	case digest != "":
+		return normalizeRegistry(r.Digest(digest).String()), nil
+	default:
+		return normalizeRegistry(r.Tag(name.DefaultTag).String()), nil
+	}
+}
+
+// NormalizeRef returns the fully qualified reference
 func NormalizeRef(ref string) (string, error) {
 	ref = strings.TrimPrefix(ref, "oras://")
 	ref = strings.TrimPrefix(ref, "//")
@@ -598,7 +677,7 @@ func NormalizeRef(ref string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("invalid reference %q: %w", ref, err)
 	}
-	return ir.Name(), nil
+	return normalizeRegistry(ir.Name()), nil
 }
 
 func DeleteImage(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {

@@ -23,6 +23,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"go.podman.io/image/v5/copy"
 	"go.podman.io/image/v5/docker"
+	"go.podman.io/image/v5/docker/reference"
 	"go.podman.io/image/v5/oci/layout"
 	"go.podman.io/image/v5/signature"
 	"go.podman.io/image/v5/transports"
@@ -194,12 +195,30 @@ func parseURI(uri string) (types.ImageReference, *GoArch, error) {
 		return nil, arch, fmt.Errorf("%s not a registered transport", split[0])
 	}
 
-	imgRef, err := transport.ParseReference(split[1])
+	refStr := split[1]
+	if transport.Name() == "docker" {
+		// go.podman.io/image/v5 rejects references that have both a tag and
+		// a digest, so strip the tag here. The tag is no longer
+		// recoverable from the parsed reference, so callers that need it
+		// extract it from the raw URI (see RepoDigest).
+		if repo, tag, digest := ociimage.SplitTagAndDigest(refStr); tag != "" && digest != "" {
+			sylog.Debugf("Stripping tag %q from docker ref %q (both tag and digest present)", tag, refStr)
+			refStr = repo + "@" + digest
+		}
+	}
+	imgRef, err := transport.ParseReference(refStr)
 	return imgRef, arch, err
 }
 
 // RepoDigest returns the (tag and) digest of a docker image
 func RepoDigest(ctx context.Context, uri string, topts *ociimage.TransportOptions) (tag string, digest string, err error) {
+	// Extract the tag from the original input, before parseURI strips it.
+	// e.g. "docker://docker.io/library/busybox:latest@sha256:d2"
+	//      -> refStr = "docker.io/library/busybox:latest@sha256:d2"
+	refStr := strings.TrimPrefix(uri, "docker://")
+	refStr = strings.TrimPrefix(refStr, "docker:")
+	_, inputTag, _ := ociimage.SplitTagAndDigest(refStr)
+
 	ref, _, err := parseURI(uri)
 	if err != nil {
 		return "", "", fmt.Errorf("unable to parse image name %v: %v", uri, err)
@@ -212,7 +231,28 @@ func RepoDigest(ctx context.Context, uri string, topts *ociimage.TransportOption
 	if err != nil {
 		return "", "", err
 	}
-	return ref.DockerReference().String(), d.String(), nil
+	t, err := baseName(ref.DockerReference(), inputTag)
+	if err != nil {
+		return "", "", err
+	}
+	return t.String(), d.String(), nil
+}
+
+// baseName returns the base.name reference for a docker reference with the
+// user-supplied inputTag. The digest of dref is stripped first so the result
+// is a clean repo:tag (and not repo:tag@digest), ready for the
+// org.opencontainers.image.base.name label.
+func baseName(dref reference.Named, inputTag string) (reference.Named, error) {
+	if inputTag != "" {
+		// Record the tag (repo:tag); the digest is in base.digest.
+		base, err := reference.WithTag(reference.TrimNamed(dref), inputTag)
+		if err != nil {
+			return nil, fmt.Errorf("invalid image reference %v: %w", dref, err)
+		}
+		return base, nil
+	}
+	// Digest-only -> repo@digest ; neither -> repo:latest (TagNameOnly).
+	return dref, nil
 }
 
 // ImageDigest obtains the digest of a uri's manifest
