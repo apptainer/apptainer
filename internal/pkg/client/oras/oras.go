@@ -589,6 +589,28 @@ func SearchRegistry(ctx context.Context, ref, arch string, ociAuth *authn.AuthCo
 	return nil
 }
 
+// BaseName returns the fully-qualified base.name reference for the given
+// repository, tag and digest components, preferring the tag, then the digest,
+// then the default tag. The reference is built with the ggcr name package so
+// the registry (and, for Docker Hub, the "library" namespace) are always
+// present and the components are validated. Use the result to
+// get the value for the "org.opencontainers.image.base.name" label.
+func BaseName(repo, tag, digest string) (string, error) {
+	r, err := name.NewRepository(repo)
+	if err != nil {
+		return "", fmt.Errorf("invalid repository %q: %w", repo, err)
+	}
+	switch {
+	case tag != "":
+		return r.Tag(tag).String(), nil
+	case digest != "":
+		return r.Digest(digest).String(), nil
+	default:
+		return r.Tag(name.DefaultTag).String(), nil
+	}
+}
+
+// NormalizeRef returns the fully qualified reference
 func NormalizeRef(ref string) (string, error) {
 	ref = strings.TrimPrefix(ref, "oras://")
 	ref = strings.TrimPrefix(ref, "//")

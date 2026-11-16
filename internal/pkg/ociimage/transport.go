@@ -203,6 +203,44 @@ func URIToImageReference(imageRef string) (types.ImageReference, error) {
 	return srcRef, nil
 }
 
+// SplitTagAndDigest examines a bare registry reference (no transport
+// prefix, no "//*"//") and separates the repository, tag and digest
+// components.
+//
+// Returns:
+//
+//	repo   — the bare repository name (no domain-defaults, no tag, no
+//	         digest).
+//	tag    — the tag if one was present, else "".
+//	digest — the full digest string (e.g. "sha256:abc...") if one was
+//	         present, else "".
+//
+// Pure string manipulation. It intentionally does NOT use
+// reference.ParseNormalizedNamed or name.ParseReference because those
+// are exactly the APIs that drop the tag.
+func SplitTagAndDigest(ref string) (repo, tag, digest string) {
+	atIdx := strings.Index(ref, "@")
+	if atIdx >= 0 {
+		digest = ref[atIdx+1:]
+	}
+	// In the part before the digest (or the entire ref if there is no
+	// digest), a tag (if any) is delimited by the last ':' that appears
+	// after the last '/' (so "registry:port/repo:tag" works).
+	namePart := ref
+	if atIdx >= 0 {
+		namePart = ref[:atIdx]
+	}
+	lastSlash := strings.LastIndex(namePart, "/")
+	lastColon := strings.LastIndex(namePart, ":")
+	if lastColon > lastSlash && lastColon >= 0 {
+		tag = namePart[lastColon+1:]
+		repo = namePart[:lastColon]
+	} else {
+		repo = namePart
+	}
+	return repo, tag, digest
+}
+
 // URItoSourceSinkRef parses a uri-like OCI image reference into a SourceSink and ref
 func URItoSourceSinkRef(imageURI string) (SourceSink, string, error) {
 	parts := strings.SplitN(imageURI, ":", 2)

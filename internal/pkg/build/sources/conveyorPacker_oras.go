@@ -15,6 +15,7 @@ import (
 	"runtime"
 
 	"github.com/apptainer/apptainer/internal/pkg/client/oras"
+	"github.com/apptainer/apptainer/internal/pkg/ociimage"
 	"github.com/apptainer/apptainer/pkg/build/types"
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
@@ -38,6 +39,14 @@ func (cp *OrasConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err err
 	if err != nil {
 		return fmt.Errorf("while fetching library image: %v", err)
 	}
+
+	repo, tag, inputDigest := ociimage.SplitTagAndDigest(b.Recipe.Header["from"])
+	baseName, baseErr := oras.BaseName(repo, tag, inputDigest)
+	if baseErr != nil {
+		return fmt.Errorf("while deriving base.name for %q: %w", b.Recipe.Header["from"], baseErr)
+	}
+
+	sylog.Debugf("ORAS reference %q: base.name=%q base.digest=%q", b.Recipe.Header["from"], baseName, digest.String())
 
 	// Record the resolved manifest digest so an overlay build can tag the
 	// overlay with the base image identity, the same way a docker build does.
