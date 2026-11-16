@@ -43,7 +43,27 @@ import (
 const (
 	defaultRegistry = name.DefaultRegistry
 	defaultTag      = name.DefaultTag
+
+	// displayRegistry is the user-facing form of Docker Hub, which the
+	// docker:// path (go.podman.io) expands a short name to. ggcr records it
+	// as index.docker.io; we map that form back to docker.io in any string
+	// that is shown to the user or stored on an image, so the user never
+	// sees index.docker.io. Pulling, authentication and internal registry
+	// addressing may continue to use index.docker.io.
+	displayRegistry = "docker.io"
 )
+
+// normalizeRegistry returns ref with the default registry rewritten from
+// index.docker.io to docker.io, so that values derived from ggcr use the
+// spelling the user (and the go.podman.io docker:// path) expect to see. Only
+// refs that begin with the default registry are touched, so a registry that
+// merely contains it (e.g. "myindex.docker.io") is left alone.
+func normalizeRegistry(ref string) string {
+	if !strings.HasPrefix(ref, defaultRegistry+"/") {
+		return ref
+	}
+	return displayRegistry + ref[len(defaultRegistry):]
+}
 
 // DownloadImage downloads a SIF image specified by an oci reference to a file using the included credentials
 func DownloadImage(ctx context.Context, path, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {
@@ -639,11 +659,11 @@ func BaseName(repo, tag, digest string) (string, error) {
 	}
 	switch {
 	case tag != "":
-		return r.Tag(tag).String(), nil
+		return normalizeRegistry(r.Tag(tag).String()), nil
 	case digest != "":
-		return r.Digest(digest).String(), nil
+		return normalizeRegistry(r.Digest(digest).String()), nil
 	default:
-		return r.Tag(name.DefaultTag).String(), nil
+		return normalizeRegistry(r.Tag(name.DefaultTag).String()), nil
 	}
 }
 
@@ -657,7 +677,7 @@ func NormalizeRef(ref string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("invalid reference %q: %w", ref, err)
 	}
-	return ir.Name(), nil
+	return normalizeRegistry(ir.Name()), nil
 }
 
 func DeleteImage(ctx context.Context, ref, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) error {

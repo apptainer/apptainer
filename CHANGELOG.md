@@ -28,6 +28,11 @@ Changes since 1.6.x
   registry and used as a base via `oras://`). If those labels are not
   both present, the base name falls back to the `oras://` reference
   used to pull and the base digest to the pulled image's manifest.
+- Normalise Docker Hub in ORAS-derived, user-visible references to
+  `docker.io` (matching the `docker://` path), rather than ggcr's
+  `index.docker.io`. This affects the `org.opencontainers.image.base.name`
+  label and `oras` reference display (e.g. `apptainer delete`); internal
+  pulling, authentication and registry addressing are unaffected.
 - Make `--reproducible` (and `APPTAINER_REPRODUCIBLE`) omit the legacy build
   date and Apptainer version labels, including inherited values, while
   preserving other legacy labels. Write the OCI creation date in UTC.

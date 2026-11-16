@@ -14,6 +14,19 @@ import (
 	"testing"
 )
 
+// TestDefaultRegistry pins ggcr's default registry to index.docker.io.
+// displayRef assumes this when rewriting references to docker.io for
+// display, and would silently produce wrong results for a different value,
+// so fail loudly if ggcr changes it.
+func TestDefaultRegistry(t *testing.T) {
+	if defaultRegistry != "index.docker.io" {
+		t.Fatalf("ggcr name.DefaultRegistry changed to %q; update displayRef accordingly", defaultRegistry)
+	}
+	if displayRegistry != "docker.io" {
+		t.Fatalf("displayRegistry changed to %q; update displayRef / test expectations accordingly", displayRegistry)
+	}
+}
+
 func TestFindBaseImage(t *testing.T) {
 	tmp := t.TempDir()
 
@@ -219,7 +232,7 @@ func TestResolveRemoteBase(t *testing.T) {
 		{
 			name: "transport only uses default reference",
 			uri:  "oras://",
-			want: "oras://index.docker.io/library/ubuntu@" + hash,
+			want: "oras://docker.io/library/ubuntu@" + hash,
 		},
 		{
 			name: "docker transport only uses default reference",
@@ -229,12 +242,12 @@ func TestResolveRemoteBase(t *testing.T) {
 				overlayFromLabel:      "docker://docker.io/library/ubuntu:22.04",
 				overlayHashLabel:      hash,
 			},
-			want: "docker://index.docker.io/library/ubuntu@" + hash,
+			want: "docker://docker.io/library/ubuntu@" + hash,
 		},
 		{
 			name: "default registry and repository placeholders",
 			uri:  "oras://-.-/-",
-			want: "oras://index.docker.io/library/ubuntu@" + hash,
+			want: "oras://docker.io/library/ubuntu@" + hash,
 		},
 		{
 			name: "override registry and repository with tag",
@@ -244,7 +257,7 @@ func TestResolveRemoteBase(t *testing.T) {
 		{
 			name: "default registry with overridden repository and tag",
 			uri:  "oras://-.-/team/image:stable",
-			want: "oras://index.docker.io/team/image:stable",
+			want: "oras://docker.io/team/image:stable",
 		},
 		{
 			name: "override registry repository and digest",
@@ -292,7 +305,7 @@ func TestResolveRemoteBase(t *testing.T) {
 				overlayFromLabel:      "docker://docker.io/library/ubuntu",
 				overlayHashLabel:      hash,
 			},
-			want: "oras://index.docker.io/library/ubuntu@" + hash,
+			want: "oras://docker.io/library/ubuntu@" + hash,
 		},
 		{
 			name: "invalid source reference",
