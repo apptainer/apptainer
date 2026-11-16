@@ -426,6 +426,43 @@ func ImageCreated(filePath string) (time.Time, error) {
 	return created, nil
 }
 
+// ImageBase returns the org.opencontainers.image.base.name and
+// org.opencontainers.image.base.digest labels recorded in a SIF's inspect
+// metadata, if both are present. They record the original base image of a SIF
+// that was pushed to a registry, so they can be carried forward verbatim when
+// the SIF is later used as a base. If either label is missing, both names and
+// digest are returned as "".
+func ImageBase(filePath string) (name string, digest string, err error) {
+	f, err := sif.LoadContainerFromPath(filePath, sif.OptLoadWithFlag(os.O_RDONLY))
+	if err != nil {
+		return "", "", err
+	}
+	defer f.UnloadContainer()
+
+	descs, err := f.GetDescriptors(sif.WithDataType(sif.DataGenericJSON))
+	if err != nil {
+		return "", "", err
+	}
+	for _, desc := range descs {
+		if desc.Name() != image.SIFDescInspectMetadataJSON {
+			continue
+		}
+
+		metadata := new(inspect.Metadata)
+		if err := json.NewDecoder(desc.GetReader()).Decode(metadata); err != nil {
+			return "", "", err
+		}
+
+		name = metadata.Attributes.Labels["org.opencontainers.image.base.name"]
+		digest = metadata.Attributes.Labels["org.opencontainers.image.base.digest"]
+		if name == "" || digest == "" {
+			return "", "", nil
+		}
+		return name, digest, nil
+	}
+	return "", "", nil
+}
+
 // ImageDigest returns the digest for a file
 func ImageHash(ctx context.Context, filePath string) (ggcr.Hash, error) {
 	st, err := os.Stat(filePath)

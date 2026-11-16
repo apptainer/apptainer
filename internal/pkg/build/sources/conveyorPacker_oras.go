@@ -40,17 +40,39 @@ func (cp *OrasConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err err
 		return fmt.Errorf("while fetching library image: %v", err)
 	}
 
+	// Record the base image identity (the org.opencontainers.image.base.name
+	// and base.digest labels; b.Opts.Digest also doubles as the overlay
+	// base-hash for basepath lookup).
+	//
+	// If the pulled SIF already records both of these (e.g. it was built from
+	// a docker:// base and then pushed), inherit them so the original
+	// provenance is preserved: the SIF is the same bytes wherever it is
+	// stored, so its recorded base points at the same image.
+	//
+	// Otherwise derive the name from the oras:// reference used to pull and
+	// use the pulled image's manifest digest. Note: the manifest digest is
+	// the least-stable choice for a base-hash (it changes on each push); the
+	// SIF content checksum would be more stable under reproducible builds and
+	// is a candidate follow-up, but for now the OCI digest is used to stay
+	// consistent with the docker:// path.
+	//
+	// Either way, both b.Opts.Tag and b.Opts.Digest end up set.
 	repo, tag, inputDigest := ociimage.SplitTagAndDigest(b.Recipe.Header["from"])
-	baseName, baseErr := oras.BaseName(repo, tag, inputDigest)
-	if baseErr != nil {
-		return fmt.Errorf("while deriving base.name for %q: %w", b.Recipe.Header["from"], baseErr)
+	if existingName, existingDigest, err := oras.ImageBase(imagePath); err == nil && existingName != "" && existingDigest != "" {
+		sylog.Debugf("ORAS pulled SIF %q already records base.name=%q base.digest=%q; inheriting them", imagePath, existingName, existingDigest)
+		b.Opts.Tag = existingName
+		b.Opts.Digest = existingDigest
+	} else {
+		if err != nil {
+			sylog.Debugf("Could not read base labels from ORAS pulled SIF %q (%v); using URI-derived values", imagePath, err)
+		}
+		baseName, baseErr := oras.BaseName(repo, tag, inputDigest)
+		if baseErr != nil {
+			return fmt.Errorf("while deriving base.name for %q: %w", b.Recipe.Header["from"], baseErr)
+		}
+		b.Opts.Tag = baseName
+		b.Opts.Digest = digest.String()
 	}
-
-	// Record the preferred tag and resolved manifest digest so an overlay
-	// build can tag the overlay with the base image identity, the same way a
-	// docker build does. Including the org.opencontainers.image.base labels.
-	b.Opts.Tag = baseName
-	b.Opts.Digest = digest.String()
 
 	// insert base metadata before unpacking fs
 	if err = makeBaseEnv(b, true); err != nil {
