@@ -46,10 +46,10 @@ func (cp *OrasConveyorPacker) Get(ctx context.Context, b *types.Bundle) (err err
 		return fmt.Errorf("while deriving base.name for %q: %w", b.Recipe.Header["from"], baseErr)
 	}
 
-	sylog.Debugf("ORAS reference %q: base.name=%q base.digest=%q", b.Recipe.Header["from"], baseName, digest.String())
-
-	// Record the resolved manifest digest so an overlay build can tag the
-	// overlay with the base image identity, the same way a docker build does.
+	// Record the preferred tag and resolved manifest digest so an overlay
+	// build can tag the overlay with the base image identity, the same way a
+	// docker build does. Including the org.opencontainers.image.base labels.
+	b.Opts.Tag = baseName
 	b.Opts.Digest = digest.String()
 
 	// insert base metadata before unpacking fs
