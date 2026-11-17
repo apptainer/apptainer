@@ -16,20 +16,25 @@ import (
 	"github.com/apptainer/apptainer/pkg/sylog"
 )
 
-// OverlayBaseHashFile is the path, relative to the root of an overlay-only
-// image built with `apptainer build --overlay`, of the file holding the
-// hash of the base image it was built on top of.
-const OverlayBaseHashFile = ".singularity.d/overlay-basehash"
-
-// GetOverlayBaseHash returns the recorded base image hash for an overlay-only
-// image. ok is false when the image has no recorded overlay base hash.
-func GetOverlayBaseHash(path string) (hash string, ok bool, err error) {
+// GetOverlayBaseHashes returns the recorded base manifest hash and image
+// hash for an overlay-only image.
+// ok is false when the image has no recorded overlay base hash.
+func GetOverlayBaseHashes(path string) (hashes [2]string, ok bool, err error) {
 	labels, err := GetOverlayBaseLabels(path)
 	if err != nil {
-		return "", false, err
+		return [2]string{"", ""}, false, err
 	}
-	hash, ok = labels["org.label-schema.usage.singularity.overlay.base-hash"]
-	return strings.TrimSpace(hash), ok, nil
+	hash, ok := labels["org.label-schema.usage.singularity.overlay.base-hash"]
+	imageHash, ok2 := labels["org.label-schema.usage.singularity.overlay.base-image-hash"]
+	if ok {
+		hashes[0] = strings.TrimSpace(hash)
+	}
+	if ok2 {
+		hashes[1] = strings.TrimSpace(imageHash)
+	} else {
+		hashes[1] = hashes[0]
+	}
+	return hashes, ok, nil
 }
 
 // GetOverlayBaseLabels returns the labels recorded in an overlay-only image.

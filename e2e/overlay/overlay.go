@@ -364,48 +364,69 @@ func (c ctx) testRemoteBootstrapOverlay(t *testing.T) {
 }
 
 func (c ctx) testActionBasePath(t *testing.T) {
-	baseImage := e2e.BusyboxSIF(t)
+	e2e.EnsureORASImage(t, c.env)
+
 	tmpDir, cleanup := e2e.MakeTempDir(t, c.env.TestDir, "build-overlay", "")
 	t.Cleanup(func() {
 		cleanup(t)
 	})
 
-	overlayImage := c.createOverlayBuild(t, "localimage", baseImage, tmpDir)
+	overlayImage := c.createOverlayBuild(t, "oras", c.env.OrasTestImage, tmpDir)
 
-	baseHash, ok, err := image.GetOverlayBaseHash(overlayImage)
+	baseHashes, ok, err := image.GetOverlayBaseHashes(overlayImage)
 	if err != nil {
-		t.Fatalf("failed to get overlay base hash: %v", err)
+		t.Fatalf("failed to get overlay base hashes: %v", err)
 	}
 	if !ok {
-		t.Fatal("built image is missing its overlay base hash")
+		t.Fatal("built image is missing its overlay base hashes")
 	}
 
 	basePath := filepath.Join(filepath.Dir(overlayImage), "basepath")
 	if err := os.Mkdir(basePath, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	baseImage, err = filepath.Abs(baseImage)
+	baseImage := c.env.ImagePath
 	if err != nil {
 		t.Fatal(err)
 	}
-	hash := strings.TrimPrefix(baseHash, "sha256:")
+	// first base hash, directly in basepath
+	hash := strings.TrimPrefix(baseHashes[0], "sha256:")
 	baseImagePath := filepath.Join(basePath, hash)
 	t.Log("linking", baseImage, "to", baseImagePath)
 	if err := os.Symlink(baseImage, baseImagePath); err != nil {
 		t.Fatal(err)
 	}
 
+	// second (image) base hash, in subdirectory of basepath
+	// that's the first 2 characters of the hash
+	hash = strings.TrimPrefix(baseHashes[1], "sha256:")
 	basePath2 := basePath + "2"
 	if err := os.Mkdir(basePath2, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	prefix := "sha256:" + hash[:2]
+	prefix := hash[:2]
 	if err := os.Mkdir(filepath.Join(basePath2, prefix), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	baseImagePath2 := filepath.Join(basePath2, prefix, hash[2:])
-	t.Log("linking", baseImage, "to", baseImagePath2)
-	if err := os.Symlink(baseImage, baseImagePath2); err != nil {
+	baseImagePath = filepath.Join(basePath2, prefix, hash[2:])
+	t.Log("linking", baseImage, "to", baseImagePath)
+	if err := os.Symlink(baseImage, baseImagePath); err != nil {
+		t.Fatal(err)
+	}
+
+	// second base hash, with subdirectory of basepath that's
+	// the hash name plus the first two characters of the hash
+	basePath3 := basePath + "3"
+	if err := os.Mkdir(basePath3, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	prefix = "sha256:" + hash[:2]
+	if err := os.Mkdir(filepath.Join(basePath3, prefix), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	baseImagePath3 := filepath.Join(basePath3, prefix, hash[2:])
+	t.Log("linking", baseImage, "to", baseImagePath3)
+	if err := os.Symlink(baseImage, baseImagePath3); err != nil {
 		t.Fatal(err)
 	}
 
@@ -415,9 +436,9 @@ func (c ctx) testActionBasePath(t *testing.T) {
 		exit int
 	}{
 		{
-			name: "missing basepath",
+			name: "missing basepath, use registry",
 			args: []string{overlayImage, "true"},
-			exit: 255,
+			exit: 0,
 		},
 		{
 			name: "basepath hash search",
@@ -425,8 +446,13 @@ func (c ctx) testActionBasePath(t *testing.T) {
 			exit: 0,
 		},
 		{
-			name: "basepath fanout hash search",
+			name: "basepath image hash search",
 			args: []string{"--basepath", basePath2, overlayImage, "test", "-f", "/overlay-marker"},
+			exit: 0,
+		},
+		{
+			name: "basepath fanout hash search",
+			args: []string{"--basepath", basePath3, overlayImage, "test", "-f", "/overlay-marker"},
 			exit: 0,
 		},
 		{
