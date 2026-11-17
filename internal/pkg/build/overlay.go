@@ -11,18 +11,15 @@ package build
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"os/user"
 	"path/filepath"
-	"strings"
 	"syscall"
 
 	"github.com/apptainer/apptainer/internal/pkg/image/driver"
 	"github.com/apptainer/apptainer/pkg/image"
-	"github.com/apptainer/apptainer/pkg/inspect"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
 )
@@ -132,83 +129,6 @@ func TeardownOverlayMount(om *OverlayMount) error {
 	return nil
 }
 
-// hashBaseImageFromFile computes a sha256 hash of the base image file content.
-func hashBaseImageFromFile(path string) (string, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-
-	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return "", err
-	}
-
-	return "sha256:" + hex.EncodeToString(h.Sum(nil)), nil
-}
-
-// getHashFromSIFLabels attempts to read the base digest hash from a SIF
-// file's inspect-metadata.json labels. Returns empty string if any of
-// 1. Can't open the file as a SIF
-// 2. If there's an overlay partition in the SIF
-// 3. If the SIF was built with a definition file
-// 4. If the metadata does not include a hash
-// 5. If the hash does not begin with "sha256"
-func getHashFromSIFLabels(path string) (string, error) {
-	img, err := image.Init(path, false, false)
-	if err != nil {
-		sylog.Debugf("Can't get hash from SIF labels because %v", err)
-		return "", nil
-	}
-	defer img.File.Close()
-
-	partitions, err := img.GetOverlayPartitions()
-	if err != nil {
-		sylog.Debugf("Failed getting partition info because %v", err)
-		return "", nil
-	}
-	for _, partition := range partitions {
-		if partition.Type == image.EXT3 {
-			return "", fmt.Errorf("overlay base image includes an ext3 overlay partition")
-		}
-	}
-	if len(partitions) > 0 {
-		sylog.Debugf("Skipping using hash from SIF labels because there's an overlay partition")
-		return "", nil
-	}
-
-	r, err := image.NewSectionReader(img, image.SIFDescInspectMetadataJSON, -1)
-	if err != nil {
-		sylog.Debugf("Failed getting inspect metadata because %v", err)
-		return "", nil
-	}
-
-	metadata := new(inspect.Metadata)
-	if err := json.NewDecoder(r).Decode(metadata); err != nil {
-		sylog.Debugf("Couldn't decode inspect-metadata.json: %v", err)
-		return "", nil
-	}
-
-	// Check for "%" in the definition file because if no
-	// definition file is used Apptainer inserts a small default
-	// one with only "bootstrap" and "from".
-	if strings.Contains(metadata.Attributes.Deffile, "%") {
-		sylog.Debugf("Skipping using base digest stored in sif because deffile was used")
-		return "", nil
-	}
-
-	if digest, ok := metadata.Attributes.Labels["org.opencontainers.image.base.digest"]; ok {
-		if strings.HasPrefix(digest, "sha256:") {
-			return digest, nil
-		}
-		sylog.Debugf("Skipping using base digest stored in sif because it did not begin with 'sha256:'")
-	}
-	sylog.Debugf("Base digest not found in sif's inspect-metadata.json")
-
-	return "", nil
-}
-
 // hashBaseImage computes a sha256 hash of the base image file, used to tag
 // an overlay-only build so its base can be found at runtime with
 // `--basepath`/`APPTAINER_BASEPATH`.
@@ -221,12 +141,16 @@ func hashBaseImage(path string) (string, error) {
 		return "", fmt.Errorf("'build --overlay' does not support a sandbox base image %q; the base must be a SIF file", path)
 	}
 
-	if hash, err := getHashFromSIFLabels(path); err != nil {
+	f, err := os.Open(path)
+	if err != nil {
 		return "", err
-	} else if hash != "" {
-		sylog.Debugf("Using base digest %s from SIF labels", hash)
-		return hash, nil
+	}
+	defer f.Close()
+
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return "", err
 	}
 
-	return hashBaseImageFromFile(path)
+	return "sha256:" + hex.EncodeToString(h.Sum(nil)), nil
 }

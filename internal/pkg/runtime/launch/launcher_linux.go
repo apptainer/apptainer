@@ -561,9 +561,12 @@ func (l *Launcher) resolveOverlayBase(ctx context.Context, image string) (string
 		return "", fmt.Errorf("while checking whether %s is an overlay image: %w", image, err)
 	}
 	hash := strings.TrimSpace(labels["org.label-schema.usage.singularity.overlay.base-hash"])
-	ok := hash != ""
-	if !ok {
+	if hash == "" {
 		return image, nil
+	}
+	imageHash := strings.TrimSpace(labels["org.label-schema.usage.singularity.overlay.base-image-hash"])
+	if imageHash == "" {
+		imageHash = hash
 	}
 
 	if l.cfg.BasePath == "" {
@@ -571,7 +574,7 @@ func (l *Launcher) resolveOverlayBase(ctx context.Context, image string) (string
 		if bootstrap != "oras" && bootstrap != "docker" {
 			return "", fmt.Errorf("%s is an overlay-only image built with 'apptainer build --overlay'; "+
 				"use --basepath or the APPTAINER_BASEPATH environment variable to specify where to search "+
-				"for its base image (hash %s)", image, hash)
+				"for its base image (hash %s)", image, imageHash)
 		}
 		// default to using the same remote transport as the original
 		l.cfg.BasePath = bootstrap + "://"
@@ -596,7 +599,13 @@ func (l *Launcher) resolveOverlayBase(ctx context.Context, image string) (string
 		localPaths = paths[:len(paths)-1]
 	}
 	if len(localPaths) > 0 {
-		base, err = basepath.FindBaseImage(hash, localPaths)
+		base, err = basepath.FindBaseImage(imageHash, localPaths)
+		if err != nil {
+			base, err = basepath.FindBaseImage(hash, localPaths)
+		} else {
+			// just for the final debug message below
+			hash = imageHash
+		}
 	}
 	if err != nil && isRemoteBase || (base == "" && isRemoteBase) {
 		if l.cfg.BasePathPuller == nil {

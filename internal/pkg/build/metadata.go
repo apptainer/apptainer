@@ -391,8 +391,9 @@ func addBuildLabels(labels map[string]string, b *types.Bundle) error {
 	}
 
 	// Overlay base hash
-	if b.Opts.Overlay && b.Opts.OverlayBaseHash != "" {
-		labels["org.label-schema.usage.singularity.overlay.base-hash"] = b.Opts.OverlayBaseHash
+	if b.Opts.Overlay && b.Opts.OverlayBaseHashes[0] != "" {
+		labels["org.label-schema.usage.singularity.overlay.base-hash"] = b.Opts.OverlayBaseHashes[0]
+		labels["org.label-schema.usage.singularity.overlay.base-image-hash"] = b.Opts.OverlayBaseHashes[1]
 	}
 
 	// Architecture of build
