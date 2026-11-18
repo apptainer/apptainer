@@ -372,23 +372,27 @@ func (b *Build) Full(ctx context.Context) error {
 					return fmt.Errorf("while reopening overlay rootfs: %w", err)
 				}
 
-				// Hash the base image for later use.
-				var overlayBaseHash string
+				// Get hashes of the base image for later use
+				var overlayBaseHashes [2]string
 				if stage.b.Recipe.Header["bootstrap"] == "docker" || stage.b.Recipe.Header["bootstrap"] == "oras" {
 					// For docker/oras, the base image is the fetched OCI
 					// image itself, identified by its manifest digest,
 					// which the conveyor recorded on the bundle options.
-					overlayBaseHash = stage.b.Opts.Digest
+					overlayBaseHashes[0] = stage.b.Opts.Digest
+					overlayBaseHashes[1] = stage.b.Opts.ImageDigest
 				} else {
 					// For a localimage bootstrap, hash the base image file.
-					overlayBaseHash, err = hashBaseImage(stage.b.Recipe.Header["from"])
+					overlayBaseHash, err := hashBaseImage(stage.b.Recipe.Header["from"])
 					if err != nil {
 						return fmt.Errorf("while hashing base image for overlay build: %w", err)
 					}
+					// base hash and image base hash are the same
+					overlayBaseHashes[0] = overlayBaseHash
+					overlayBaseHashes[1] = overlayBaseHash
 				}
 
 				// Store in Options for label insertion
-				stage.b.Opts.OverlayBaseHash = overlayBaseHash
+				stage.b.Opts.OverlayBaseHashes = overlayBaseHashes
 			}
 		}
 
@@ -480,7 +484,14 @@ func (b *Build) Full(ctx context.Context) error {
 			}
 			overlayMount = nil
 
-			sylog.Infof("Built overlay image on top of base image with hash %s", stage.b.Opts.OverlayBaseHash)
+			hash := stage.b.Opts.OverlayBaseHashes[0]
+			imageHash := stage.b.Opts.OverlayBaseHashes[1]
+			if hash == imageHash {
+				sylog.Infof("Built overlay image on top of base image with hash %s", hash)
+			} else {
+				sylog.Infof("Built overlay image on top of base with manifest hash %s", hash)
+				sylog.Infof("Original base image hash was %s", imageHash)
+			}
 		}
 	}
 

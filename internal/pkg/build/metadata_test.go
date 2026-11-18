@@ -36,12 +36,12 @@ func TestAddBuildLabels(t *testing.T) {
 					Header: map[string]string{"bootstrap": "docker", "from": "alpine"},
 				},
 				Opts: types.Options{
-					Reproducible:    tt.reproducible,
-					Arch:            "amd64",
-					Tag:             "docker.io/library/alpine:latest",
-					Digest:          digest,
-					Overlay:         true,
-					OverlayBaseHash: digest,
+					Reproducible:      tt.reproducible,
+					Arch:              "amd64",
+					Tag:               "docker.io/library/alpine:latest",
+					Digest:            digest,
+					Overlay:           true,
+					OverlayBaseHashes: [2]string{digest, digest},
 				},
 			}
 			labels := map[string]string{
@@ -67,6 +67,7 @@ func TestAddBuildLabels(t *testing.T) {
 			assert.Equal(t, b.Opts.Tag, labels["org.opencontainers.image.base.name"])
 			assert.Equal(t, digest, labels["org.opencontainers.image.base.digest"])
 			assert.Equal(t, digest, labels["org.label-schema.usage.singularity.overlay.base-hash"])
+			assert.Equal(t, digest, labels["org.label-schema.usage.singularity.overlay.base-image-hash"])
 			assert.Equal(t, "alpine", labels["org.opencontainers.image.title"])
 		})
 	}
