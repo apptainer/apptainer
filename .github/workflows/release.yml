@@ -142,7 +142,7 @@ jobs:
           # Flatten each arch's artifact tree into the current directory.
           # The source tarball is arch-neutral; cp -n keeps the first
           # copy and skips the identical ones.
-          for each in artifacts/assets-*; do cp -n "$each"/*. .; done
+          for each in artifacts/assets-*; do cp -n "$each"/* .; done
           ls -al
 
       - name: Release
