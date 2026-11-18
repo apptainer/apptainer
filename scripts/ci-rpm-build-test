@@ -14,7 +14,7 @@ if [[ $OS_TYPE == *suse* ]]; then
     libprotobuf-c-devel fakeroot cryptsetup sysuser-tools \
     diffutils wget which git
   zypper install -y gcc-c++
-  if [[ $OS_TYPE == *tumbleweed* ]]; then
+  if zypper search libsubid-devel; then
     zypper install -y --allow-downgrade libsubid-devel
   fi
   zypper install -y --allow-downgrade gzip fuse3-devel libarchive-devel \
