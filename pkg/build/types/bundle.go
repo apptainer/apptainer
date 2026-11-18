@@ -121,8 +121,10 @@ type Options struct {
 	Unprivilege bool
 	// Tag info (from RepoTags)
 	Tag string
-	// Digest info (from RepoDigests)
+	// Digest info (from RepoDigests, may reference multiple variants)
 	Digest string
+	// ImageDigest info (from Config.Digest, references one variant)
+	ImageDigest string
 	// Arch info (architecture)
 	Arch string
 	// Var info (variant)
@@ -140,8 +142,9 @@ type Options struct {
 	// source) are included, tagged with a hash of the base image so that
 	// it can be located at runtime via `--basepath`/`APPTAINER_BASEPATH`.
 	Overlay bool
-	// OverlayBaseHash is the hash of the base image for overlay builds
-	OverlayBaseHash string
+	// OverlayBaseHashes is a 2-value array with the hash of the base
+	// manifest and the base image for overlay builds
+	OverlayBaseHashes [2]string
 	// OverlayBaseArch is the architecture of the base image for overlay
 	// builds, determined before the bundle rootfs is replaced by the
 	// overlay upper layer (which typically contains no ELF binaries).

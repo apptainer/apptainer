@@ -29,68 +29,68 @@ type contextKey string
 const TmpDirKey contextKey = "tmpDir"
 
 // pull will pull an oras image into the cache if directTo="", or a specific file if directTo is set.
-func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, digest ggcr.Hash, err error) {
+func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, arch string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, digest ggcr.Hash, imageDigest ggcr.Hash, err error) {
 	digest, err = RefDigest(ctx, pullFrom, arch, ociAuth, noHTTPS, reqAuthFile)
 	if err != nil {
-		return "", ggcr.Hash{}, fmt.Errorf("failed to get digest for %s: %s", pullFrom, err)
+		return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("failed to get digest for %s: %s", pullFrom, err)
 	}
 	resolvedRef, err := digestReference(pullFrom, digest, noHTTPS)
 	if err != nil {
-		return "", ggcr.Hash{}, fmt.Errorf("failed to pin reference %s to digest %s: %s", pullFrom, digest, err)
+		return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("failed to pin reference %s to digest %s: %s", pullFrom, digest, err)
 	}
 
 	hash, err := RefHash(ctx, resolvedRef, arch, ociAuth, noHTTPS, reqAuthFile)
 	if err != nil {
-		return "", ggcr.Hash{}, fmt.Errorf("failed to get checksum for %s: %s", pullFrom, err)
+		return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("failed to get checksum for %s: %s", pullFrom, err)
 	}
 	size, err := RefSize(ctx, resolvedRef, arch, ociAuth, noHTTPS, reqAuthFile)
 	if err != nil {
-		return "", ggcr.Hash{}, fmt.Errorf("failed to get size for %s: %s", pullFrom, err)
+		return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("failed to get size for %s: %s", pullFrom, err)
 	}
 
 	if directTo != "" {
 		sylog.Infof("Downloading oras image")
 		if err := DownloadImage(ctx, directTo, resolvedRef, arch, ociAuth, noHTTPS, reqAuthFile); err != nil {
-			return "", ggcr.Hash{}, fmt.Errorf("unable to Download Image: %v", err)
+			return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("unable to Download Image: %v", err)
 		}
 		if imageSize, err := ImageSize(directTo); err != nil {
-			return "", ggcr.Hash{}, fmt.Errorf("error getting ImageSize: %v", err)
+			return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("error getting ImageSize: %v", err)
 		} else if imageSize != size {
-			return "", ggcr.Hash{}, fmt.Errorf("image file size(%d) and expected size(%d) does not match", imageSize, size)
+			return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("image file size(%d) and expected size(%d) does not match", imageSize, size)
 		}
 		if imageHash, err := ImageHash(ctx, directTo); err != nil {
-			return "", ggcr.Hash{}, fmt.Errorf("error getting ImageHash: %v", err)
+			return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("error getting ImageHash: %v", err)
 		} else if imageHash != hash {
-			return "", ggcr.Hash{}, fmt.Errorf("image file hash(%s) and expected hash(%s) does not match", imageHash, hash)
+			return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("image file hash(%s) and expected hash(%s) does not match", imageHash, hash)
 		}
 		imagePath = directTo
 
 	} else {
 		cacheEntry, err := imgCache.GetEntry(cache.OrasCacheType, hash.String())
 		if err != nil {
-			return "", ggcr.Hash{}, fmt.Errorf("unable to check if %v exists in cache: %v", hash, err)
+			return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("unable to check if %v exists in cache: %v", hash, err)
 		}
 		defer cacheEntry.CleanTmp()
 		if !cacheEntry.Exists {
 			sylog.Infof("Downloading oras image")
 
 			if err := DownloadImage(ctx, cacheEntry.TmpPath, resolvedRef, arch, ociAuth, noHTTPS, reqAuthFile); err != nil {
-				return "", ggcr.Hash{}, fmt.Errorf("unable to Download Image: %v", err)
+				return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("unable to Download Image: %v", err)
 			}
 			if cacheFileSize, err := ImageSize(cacheEntry.TmpPath); err != nil {
-				return "", ggcr.Hash{}, fmt.Errorf("error getting ImageSize: %v", err)
+				return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("error getting ImageSize: %v", err)
 			} else if cacheFileSize != size {
-				return "", ggcr.Hash{}, fmt.Errorf("cached file size(%d) and expected size(%d) does not match", cacheFileSize, size)
+				return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("cached file size(%d) and expected size(%d) does not match", cacheFileSize, size)
 			}
 			if cacheFileHash, err := ImageHash(ctx, cacheEntry.TmpPath); err != nil {
-				return "", ggcr.Hash{}, fmt.Errorf("error getting ImageHash: %v", err)
+				return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("error getting ImageHash: %v", err)
 			} else if cacheFileHash != hash {
-				return "", ggcr.Hash{}, fmt.Errorf("cached file hash(%s) and expected hash(%s) does not match", cacheFileHash, hash)
+				return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("cached file hash(%s) and expected hash(%s) does not match", cacheFileHash, hash)
 			}
 
 			err = cacheEntry.Finalize()
 			if err != nil {
-				return "", ggcr.Hash{}, err
+				return "", ggcr.Hash{}, ggcr.Hash{}, err
 			}
 
 		} else {
@@ -99,25 +99,27 @@ func pull(ctx context.Context, imgCache *cache.Handle, directTo, pullFrom, arch 
 		imagePath = cacheEntry.Path
 	}
 
-	sylog.Infof("Digest: %s\n", digest)
+	sylog.Infof("Manifest Digest: %s\n", digest)
+	sylog.Infof("Image Digest: %s\n", hash)
 
-	return imagePath, digest, nil
+	return imagePath, digest, hash, nil
 }
 
 // Pull will pull an oras image to the cache or direct to a temporary file if cache is disabled
 func Pull(ctx context.Context, imgCache *cache.Handle, pullFrom, arch, tmpDir string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, err error) {
-	imagePath, _, err = PullWithDigest(ctx, imgCache, pullFrom, arch, tmpDir, ociAuth, noHTTPS, reqAuthFile)
+	imagePath, _, _, err = PullWithDigests(ctx, imgCache, pullFrom, arch, tmpDir, ociAuth, noHTTPS, reqAuthFile)
 	return imagePath, err
 }
 
-// PullWithDigest pulls an oras image and returns the resolved manifest digest.
-func PullWithDigest(ctx context.Context, imgCache *cache.Handle, pullFrom, arch, tmpDir string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, digest ggcr.Hash, err error) {
+// PullWithDigests pulls an oras image and returns the resolved manifest digest
+// and image digest
+func PullWithDigests(ctx context.Context, imgCache *cache.Handle, pullFrom, arch, tmpDir string, ociAuth *authn.AuthConfig, noHTTPS bool, reqAuthFile string) (imagePath string, digest ggcr.Hash, imageDigest ggcr.Hash, err error) {
 	directTo := ""
 
 	if imgCache.IsDisabled() {
 		file, err := os.CreateTemp(tmpDir, "sbuild-tmp-cache-")
 		if err != nil {
-			return "", ggcr.Hash{}, fmt.Errorf("unable to create tmp file: %v", err)
+			return "", ggcr.Hash{}, ggcr.Hash{}, fmt.Errorf("unable to create tmp file: %v", err)
 		}
 		directTo = file.Name()
 		sylog.Infof("Downloading oras image to tmp cache: %s", directTo)
@@ -136,7 +138,7 @@ func PullToFile(ctx context.Context, imgCache *cache.Handle, pullTo, pullFrom, a
 		sylog.Debugf("Cache disabled, pulling directly to: %s", directTo)
 	}
 
-	src, _, err := pull(ctx, imgCache, directTo, pullFrom, arch, ociAuth, noHTTPS, reqAuthFile)
+	src, _, _, err := pull(ctx, imgCache, directTo, pullFrom, arch, ociAuth, noHTTPS, reqAuthFile)
 	if err != nil {
 		return "", fmt.Errorf("error fetching image to cache: %v", err)
 	}

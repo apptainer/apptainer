@@ -213,6 +213,16 @@ func (cp *OCIConveyorPacker) Get(ctx context.Context, b *sytypes.Bundle) (err er
 	}
 	cp.imgConfig = cf.Config
 
+	manifest, err := cp.srcImg.Manifest()
+	if err != nil {
+		return err
+	}
+	if manifest.Config.Digest.String() != "" {
+		b.Opts.ImageDigest = manifest.Config.Digest.String()
+	} else {
+		b.Opts.ImageDigest = digest
+	}
+
 	if b.Opts.Reproducible {
 		sourceDateEpoch := cf.Created.In(time.UTC)
 		sylog.Debugf("Setting SourceDateEpoch to %s", sourceDateEpoch)

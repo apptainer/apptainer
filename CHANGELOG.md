@@ -24,6 +24,11 @@ Changes since 1.6.0-rc.1
   this only works with `/etc/sub[ug]id` mapping enabled.  That limitation
   does not apply when `--sandbox` is used during the initial build of
   an overlay from definition file.
+- Have `apptainer build --overlay` keep track of a second hash for the
+  base image, one specific to the variant, and search for that hash first
+  at run time.  A necessary side effect was to stop trying to use the
+  hash from the original registry when building from a localimage
+  bootstrap.
 
 ## v1.6.0-rc.1 \[2026-11-03\]
 
