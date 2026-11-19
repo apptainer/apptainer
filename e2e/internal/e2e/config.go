@@ -10,6 +10,7 @@
 package e2e
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -59,6 +60,21 @@ func SetDirective(t *testing.T, env TestEnv, directive, value string) {
 		WithArgs("--set", directive, value),
 		ExpectExit(0),
 	)
+}
+
+// AppendDirective appends a raw "directive = value" line to apptainer.conf,
+// for values that `config global --set` rejects.
+func AppendDirective(t *testing.T, directive, value string) {
+	Privileged(func(t *testing.T) {
+		f, err := os.OpenFile(buildcfg.APPTAINER_CONF_FILE, os.O_WRONLY|os.O_APPEND, 0)
+		if err != nil {
+			t.Fatalf("while opening apptainer configuration: %s", err)
+		}
+		defer f.Close()
+		if _, err := fmt.Fprintf(f, "%s = %s\n", directive, value); err != nil {
+			t.Fatalf("while appending to apptainer configuration: %s", err)
+		}
+	})(t)
 }
 
 func ResetDirective(t *testing.T, env TestEnv, directive string) {

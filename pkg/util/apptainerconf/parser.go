@@ -106,7 +106,7 @@ func GetConfig(directives Directives) (*File, error) {
 		if len(directives[dir]) > 0 {
 			for _, dv := range directives[dir] {
 				if dv != "" {
-					value = append(value, strings.Split(dv, ",")...)
+					value = append(value, SplitDirectiveValue(dir, dv)...)
 				}
 			}
 		} else {
