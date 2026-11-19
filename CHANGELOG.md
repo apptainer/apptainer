@@ -33,6 +33,10 @@ Changes since 1.6.x
 
 ## v1.6.x changes
 
+Changes since 1.6.0-rc.2
+
+## v1.6.0-rc.2 \[2026-11-18\]
+
 Changes since 1.6.0-rc.1
 
 - Release packages (rpm, deb) are now also built for `aarch64`
