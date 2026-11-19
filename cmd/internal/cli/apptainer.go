@@ -546,7 +546,11 @@ func persistentPreRun(cmd *cobra.Command, _ []string) error {
 		}
 
 		sylog.Debugf("Parsing configuration file %s", configurationFile)
-		config, err = apptainerconf.Parse(configurationFile)
+		if configurationFile == buildcfg.APPTAINER_CONF_FILE {
+			config, err = apptainerconf.ParseWithDropIns(configurationFile, buildcfg.APPTAINER_SUID_INSTALL == 1)
+		} else {
+			config, err = apptainerconf.Parse(configurationFile)
+		}
 		if err != nil {
 			return fmt.Errorf("couldn't parse configuration file %s: %s", configurationFile, err)
 		}

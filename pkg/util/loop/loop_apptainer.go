@@ -25,7 +25,7 @@ func GetMaxLoopDevices() (int, error) {
 		var err error
 
 		configFile := buildcfg.APPTAINER_CONF_FILE
-		cfg, err = apptainerconf.Parse(configFile)
+		cfg, err = apptainerconf.ParseWithDropIns(configFile, buildcfg.APPTAINER_SUID_INSTALL == 1)
 		if err != nil {
 			return 256, nil
 		}

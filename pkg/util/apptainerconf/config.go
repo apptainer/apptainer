@@ -157,6 +157,12 @@ const TemplateAsset = `# APPTAINER.CONF
 # This is the global configuration file for Apptainer. This file controls
 # what the container is allowed to do on a particular host, and as a result
 # this file must be owned by root.
+#
+# Apptainer reads regular *.conf files in the adjacent conf.d directory in
+# alphabetical order after this file. Each file replaces earlier values for
+# the directives it sets, including multi-value directives. For a setuid
+# installation, conf.d and its drop-ins must be root-owned and writable
+# only by root.
 
 # ALLOW SETUID: [BOOL]
 # DEFAULT: yes
