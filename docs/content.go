@@ -735,8 +735,8 @@ const (
 	PushUse   string = `push [push options...] <image> ... <URI>`
 	PushShort string = `Upload image(s) to the provided URI`
 	PushLong  string = `
-  The 'push' command allows you to upload a SIF container to a given
-  URI.  Supported URIs include:
+  The 'push' command allows you to upload a SIF container or containers
+  to a given URI.  Supported URIs include:
 
   library:
       library://user/collection/container[:tag]
@@ -744,6 +744,9 @@ const (
   oras:
       oras://registry/namespace/image:tag
 
+  Pushing multiple images with different architectures (multi-arch) to an
+  oras URI creates an image index with all the pushed images included.
+  Each image also gets a temporary arch-specific tag created in the push.
 
   NOTE: It's always good practice to sign your containers before
   pushing them to the library. An auth token is required to push to the library,
@@ -753,7 +756,10 @@ const (
   $ apptainer push /home/user/my.sif library://user/collection/my.sif:latest
 
   To supported OCI registry
-  $ apptainer push /home/user/my.sif oras://registry/namespace/image:tag`
+  $ apptainer push /home/user/my.sif oras://registry/namespace/image:tag
+
+  Multiple architectures
+  $ apptainer push image-amd64.sif image-arm64.sif oras://registry/image`
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// search
