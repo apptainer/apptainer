@@ -40,7 +40,7 @@ require (
 	github.com/shopspring/decimal v1.6.0
 	github.com/sigstore/sigstore v1.10.11
 	github.com/spf13/cobra v1.10.2
-	github.com/spf13/pflag v1.0.10
+	github.com/spf13/pflag v1.1.0
 	github.com/vbauerster/mpb/v8 v8.16.3
 	go.podman.io/common v0.70.0
 	go.podman.io/image/v5 v5.42.0
