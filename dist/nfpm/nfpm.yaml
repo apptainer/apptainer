@@ -30,6 +30,21 @@ contents:
       owner: root
       group: root
 
+  - dst: {{ .ConfDir }}/conf.d
+    type: dir
+    file_info:
+      mode: 0755
+      owner: root
+      group: root
+
+  - src: ./etc/conf.d/example.conf
+    dst: {{ .ConfDir }}/conf.d/example.conf
+    type: config|noreplace
+    file_info:
+      mode: 0644
+      owner: root
+      group: root
+
   - src: ./scripts/run-singularity
     dst: {{ .BinDir }}/run-singularity
     file_info:
