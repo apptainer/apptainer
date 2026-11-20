@@ -89,6 +89,17 @@ $(config_INSTALL): $(config)
 INSTALLFILES += $(config_INSTALL)
 ALL += $(config)
 
+# Configuration drop-in example
+dropin_example := $(SOURCEDIR)/etc/conf.d/example.conf
+dropin_example_INSTALL := $(DESTDIR)$(SYSCONFDIR)/apptainer/conf.d/example.conf
+
+$(dropin_example_INSTALL): $(dropin_example)
+	@echo " INSTALL" $@
+	$(V)umask 0022 && mkdir -p $(@D)
+	$(V)install -m 0644 $< $@
+
+INSTALLFILES += $(dropin_example_INSTALL)
+
 # remote config file
 remote_config := $(SOURCEDIR)/etc/remote.yaml
 

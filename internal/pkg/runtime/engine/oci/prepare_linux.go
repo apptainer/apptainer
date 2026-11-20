@@ -68,7 +68,7 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 	if !fs.IsOwner(buildcfg.APPTAINER_CONF_FILE, 0) {
 		return fmt.Errorf("%s must be owned by root", buildcfg.APPTAINER_CONF_FILE)
 	}
-	sConf, err := apptainerconf.Parse(buildcfg.APPTAINER_CONF_FILE)
+	sConf, err := apptainerconf.ParseWithDropIns(buildcfg.APPTAINER_CONF_FILE, true)
 	if err != nil {
 		return fmt.Errorf("unable to parse apptainer.conf file: %s", err)
 	}

@@ -79,7 +79,7 @@ func (e *EngineOperations) PrepareConfig(starterConfig *starter.Config) error {
 		return fmt.Errorf("%s must be owned by root", configurationFile)
 	}
 
-	fileConfig, err := apptainerconf.Parse(configurationFile)
+	fileConfig, err := apptainerconf.ParseWithDropIns(configurationFile, starterConfig.GetIsSUID())
 	if err != nil {
 		return fmt.Errorf("unable to parse apptainer.conf file: %s", err)
 	}

@@ -173,13 +173,21 @@ func GetConfig(directives Directives) (*File, error) {
 }
 
 // Parse parses configuration file with the specified path.
-func Parse(filepath string) (*File, error) {
-	if filepath == "" {
+func Parse(path string) (*File, error) {
+	if path == "" {
 		// grab the default configuration
 		return GetConfig(nil)
 	}
 
-	c, err := os.Open(filepath)
+	directives, err := readConfigDirectives(path)
+	if err != nil {
+		return nil, err
+	}
+	return GetConfig(directives)
+}
+
+func readConfigDirectives(path string) (Directives, error) {
+	c, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
@@ -187,10 +195,9 @@ func Parse(filepath string) (*File, error) {
 
 	directives, err := GetDirectives(c)
 	if err != nil {
-		return nil, fmt.Errorf("while parsing data: %s", err)
+		return nil, fmt.Errorf("while parsing %s: %w", path, err)
 	}
-
-	return GetConfig(directives)
+	return directives, nil
 }
 
 // Generate executes the default template asset on File object if
