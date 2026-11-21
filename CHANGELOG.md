@@ -18,9 +18,7 @@ Changes since 1.6.x
   of all the normally bundled tools, such as `squashfuse_ll`, `fuse2fs` and
   `fuse-overlayfs`. Tarballs for `amd64` and `arm64`, named
   `apptainer-static-<version>-linux-<arch>.tar.gz`, are attached to
-  releases. Users and groups are only looked up in `/etc/passwd`,
-  `/etc/group` and `nscd`, so the static build is mostly useful on
-  standalone systems rather than ones with users in LDAP or SSSD.
+  releases.
 - When `offsetpreload.so` is not installed, EXT3 partitions inside SIF
   files are mounted with the `offset` option of `fuse2fs`, which requires
   e2fsprogs 1.46.6 or later.
@@ -30,6 +28,11 @@ Changes since 1.6.x
   musl C library.
 - Add a `-s` option to `scripts/compile-dependencies` that links the
   bundled dependencies statically.
+- Statically linked builds (`mconfig -s`) now look up users and groups
+  that are not in `/etc/passwd` or `/etc/group`, such as ones from LDAP
+  through SSSD, by running the host's `getent`, found in the `binary path`
+  from `apptainer.conf`. Static builds cannot use the host's NSS modules
+  directly.
 
 ## v1.6.x changes
 
