@@ -7,7 +7,7 @@ Description:
   Mount will mount and create an OCI bundle from a SIF image.
 
 Options:
-  -h, --help   help for mount
+  -h, --help[=true|false]   help for mount
 
 
 Examples:

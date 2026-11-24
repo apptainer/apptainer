@@ -8,7 +8,7 @@ Description:
 
 Options:
   -b, --bundle string        specify the OCI bundle path (required)
-  -h, --help                 help for run
+  -h, --help[=true|false]    help for run
       --log-format string    specify the log file format. Available
                              formats are basic, kubernetes and json
                              (default "kubernetes")

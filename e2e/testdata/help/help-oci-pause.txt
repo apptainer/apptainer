@@ -7,7 +7,7 @@ Description:
   Pause will suspend all processes for the specified container ID.
 
 Options:
-  -h, --help   help for pause
+  -h, --help[=true|false]   help for pause
 
 
 Examples:
