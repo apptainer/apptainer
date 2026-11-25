@@ -8,7 +8,7 @@ Description:
   by container ID.
 
 Options:
-  -h, --help   help for exec
+  -h, --help[=true|false]   help for exec
 
 
 Examples:

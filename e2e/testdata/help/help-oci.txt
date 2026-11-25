@@ -9,7 +9,7 @@ Description:
   NOTE: all oci commands requires to run as root
 
 Options:
-  -h, --help   help for oci
+  -h, --help[=true|false]   help for oci
 
 Available Commands:
   attach      Attach console to a running container process (root user only)

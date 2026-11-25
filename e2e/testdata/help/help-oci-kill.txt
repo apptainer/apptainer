@@ -8,10 +8,10 @@ Description:
   identified by container ID.
 
 Options:
-  -f, --force            kill container process with SIGKILL
-  -h, --help             help for kill
-  -s, --signal string    signal sent to the container (default "SIGTERM")
-  -t, --timeout uint32   timeout in second before killing container
+  -f, --force[=true|false]   kill container process with SIGKILL
+  -h, --help[=true|false]    help for kill
+  -s, --signal string        signal sent to the container (default "SIGTERM")
+  -t, --timeout uint32       timeout in second before killing container
 
 
 Examples:

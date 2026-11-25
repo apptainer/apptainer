@@ -8,9 +8,9 @@ Description:
   must be in a RUNNING or CREATED state.
 
 Options:
-  -f, --from-file string   specify path to OCI JSON cgroups resource file
-                           ('-' to read from STDIN)
-  -h, --help               help for update
+  -f, --from-file string    specify path to OCI JSON cgroups resource file
+                            ('-' to read from STDIN)
+  -h, --help[=true|false]   help for update
 
 
 Examples:

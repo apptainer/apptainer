@@ -8,17 +8,17 @@ Description:
   bundle directory
 
 Options:
-  -b, --bundle string        specify the OCI bundle path (required)
-      --empty-process        run container without executing container
-                             process (eg: for POD container)
-  -h, --help                 help for create
-      --log-format string    specify the log file format. Available
-                             formats are basic, kubernetes and json
-                             (default "kubernetes")
-  -l, --log-path string      specify the log file path
-      --pid-file string      specify the pid file
-  -s, --sync-socket string   specify the path to unix socket for state
-                             synchronization
+  -b, --bundle string                specify the OCI bundle path (required)
+      --empty-process[=true|false]   run container without executing
+                                     container process (eg: for POD container)
+  -h, --help[=true|false]            help for create
+      --log-format string            specify the log file format.
+                                     Available formats are basic,
+                                     kubernetes and json (default "kubernetes")
+  -l, --log-path string              specify the log file path
+      --pid-file string              specify the pid file
+  -s, --sync-socket string           specify the path to unix socket for
+                                     state synchronization
 
 
 Examples:

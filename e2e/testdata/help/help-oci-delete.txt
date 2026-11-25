@@ -8,7 +8,7 @@ Description:
   container identified by container ID.
 
 Options:
-  -h, --help   help for delete
+  -h, --help[=true|false]   help for delete
 
 
 Examples:

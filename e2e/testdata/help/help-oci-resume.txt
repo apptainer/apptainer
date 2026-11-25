@@ -8,7 +8,7 @@ Description:
   ID.
 
 Options:
-  -h, --help   help for resume
+  -h, --help[=true|false]   help for resume
 
 
 Examples:

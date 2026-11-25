@@ -8,7 +8,7 @@ Description:
   mount.
 
 Options:
-  -h, --help   help for umount
+  -h, --help[=true|false]   help for umount
 
 
 Examples:
