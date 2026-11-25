@@ -39,6 +39,7 @@ import (
 	"github.com/apptainer/apptainer/pkg/syfs"
 	"github.com/apptainer/apptainer/pkg/sylog"
 	"github.com/apptainer/apptainer/pkg/util/apptainerconf"
+	"github.com/apptainer/apptainer/pkg/util/namespaces"
 	keyClient "github.com/apptainer/container-key-client/client"
 	libClient "github.com/apptainer/container-library-client/client"
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -578,7 +579,17 @@ func persistentPreRun(cmd *cobra.Command, _ []string) error {
 		}
 
 		sylog.Debugf("Parsing configuration file %s", configurationFile)
-		config, err = apptainerconf.Parse(configurationFile)
+		if configurationFile == buildcfg.APPTAINER_CONF_FILE {
+			requireRoot := buildcfg.APPTAINER_SUID_INSTALL == 1
+			if requireRoot {
+				// Host root appears unmapped in a rootless user namespace.
+				insideUserNs, _ := namespaces.IsInsideUserNamespace(os.Getpid())
+				requireRoot = !insideUserNs
+			}
+			config, err = apptainerconf.ParseWithDropIns(configurationFile, requireRoot)
+		} else {
+			config, err = apptainerconf.Parse(configurationFile)
+		}
 		if err != nil {
 			return fmt.Errorf("couldn't parse configuration file %s: %s", configurationFile, err)
 		}

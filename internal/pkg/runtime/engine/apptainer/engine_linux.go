@@ -33,7 +33,7 @@ func (e *EngineOperations) InitConfig(cfg *config.Common, privStageOne bool) {
 	if privStageOne {
 		// override the contents of File for security reasons
 		var err error
-		e.EngineConfig.File, err = apptainerconf.Parse(buildcfg.APPTAINER_CONF_FILE)
+		e.EngineConfig.File, err = apptainerconf.ParseWithDropIns(buildcfg.APPTAINER_CONF_FILE, true)
 		if err != nil {
 			sylog.Fatalf("unable to parse apptainer.conf file: %s", err)
 		}

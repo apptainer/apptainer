@@ -29,6 +29,10 @@ var parserReg = regexp.MustCompile(`(?m)^\s*([a-zA-Z _-]+)[[:blank:]]*=[[:blank:
 // GetDirectives parses configuration directives from reader
 // and returns a directive map with associated values.
 func GetDirectives(reader io.Reader) (Directives, error) {
+	return getDirectives(reader, false)
+}
+
+func getDirectives(reader io.Reader, keepEmpty bool) (Directives, error) {
 	if reader == nil {
 		return make(Directives), nil
 	}
@@ -46,6 +50,8 @@ func GetDirectives(reader io.Reader) (Directives, error) {
 			val := strings.TrimSpace(string(match[2]))
 			if val != "" {
 				directives[key] = append(directives[key], val)
+			} else if keepEmpty && len(directives[key]) == 0 {
+				directives[key] = nil
 			}
 		}
 	}
@@ -173,13 +179,21 @@ func GetConfig(directives Directives) (*File, error) {
 }
 
 // Parse parses configuration file with the specified path.
-func Parse(filepath string) (*File, error) {
-	if filepath == "" {
+func Parse(path string) (*File, error) {
+	if path == "" {
 		// grab the default configuration
 		return GetConfig(nil)
 	}
 
-	c, err := os.Open(filepath)
+	directives, err := readConfigDirectives(path)
+	if err != nil {
+		return nil, err
+	}
+	return GetConfig(directives)
+}
+
+func readConfigDirectives(path string) (Directives, error) {
+	c, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
@@ -187,10 +201,9 @@ func Parse(filepath string) (*File, error) {
 
 	directives, err := GetDirectives(c)
 	if err != nil {
-		return nil, fmt.Errorf("while parsing data: %s", err)
+		return nil, fmt.Errorf("while parsing %s: %w", path, err)
 	}
-
-	return GetConfig(directives)
+	return directives, nil
 }
 
 // Generate executes the default template asset on File object if
