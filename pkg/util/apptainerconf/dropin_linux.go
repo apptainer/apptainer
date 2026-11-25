@@ -94,7 +94,7 @@ func readDropIn(dir *os.File, name string, requireRoot bool) (Directives, error)
 		}
 	}
 
-	directives, err := GetDirectives(f)
+	directives, err := getDirectives(f, true)
 	if err != nil {
 		return nil, fmt.Errorf("while parsing %s: %w", path, err)
 	}

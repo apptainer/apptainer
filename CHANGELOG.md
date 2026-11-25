@@ -11,8 +11,8 @@ Changes since 1.6.x
 
 - Support administrator drop-ins in `/etc/apptainer/conf.d/*.conf`. Apptainer
   reads them in filename order after `apptainer.conf`. The last file that
-  sets a directive supplies all its values. The installation includes a
-  commented example in `conf.d`.
+  sets a directive supplies all its values. An empty assignment clears
+  inherited values. The installation includes a commented example in `conf.d`.
 - Make `--reproducible` (and `APPTAINER_REPRODUCIBLE`) omit the legacy build
   date and Apptainer version labels, including inherited values, while
   preserving other legacy labels. Write the OCI creation date in UTC.

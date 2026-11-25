@@ -29,6 +29,10 @@ var parserReg = regexp.MustCompile(`(?m)^\s*([a-zA-Z _-]+)[[:blank:]]*=[[:blank:
 // GetDirectives parses configuration directives from reader
 // and returns a directive map with associated values.
 func GetDirectives(reader io.Reader) (Directives, error) {
+	return getDirectives(reader, false)
+}
+
+func getDirectives(reader io.Reader, keepEmpty bool) (Directives, error) {
 	if reader == nil {
 		return make(Directives), nil
 	}
@@ -46,6 +50,8 @@ func GetDirectives(reader io.Reader) (Directives, error) {
 			val := strings.TrimSpace(string(match[2]))
 			if val != "" {
 				directives[key] = append(directives[key], val)
+			} else if keepEmpty && len(directives[key]) == 0 {
+				directives[key] = nil
 			}
 		}
 	}
