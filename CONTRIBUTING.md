@@ -85,7 +85,7 @@ acknowledging that you agree to the [Developer Certificate of Origin](DCO.md).
    appropriately for an authorized Docker Hub account. This is required as
    Apptainer's end-to-end tests perform many tests that build from or execute
    docker images. Our CI is authorized to run these tests if you cannot.
-1. Ask yourself is the code human understandable? This can be accomplished via a
+1. Ask yourself: Is the code human-understandable? This can be accomplished via a
    clear code style as well as documentation and/or comments.
 1. The pull request will be reviewed by others, and finally merged when all
    requirements are met.
@@ -141,7 +141,7 @@ using the contents of the `CHANGELOG.md` file as reference.
 1. The [user guide](https://apptainer.org/docs/user/main/) should
    document anything pertinent to the usage of Apptainer.
 1. The [admin guide](https://apptainer.org/docs/admin/main/)
-   document anything that is pertinent to a system administrator who manages a
+   documents anything that is pertinent to a system administrator who manages a
    system with Apptainer installed.
 1. If necessary, changes to the message displayed when running
    `apptainer help *` can be made by editing `docs/content.go`.
